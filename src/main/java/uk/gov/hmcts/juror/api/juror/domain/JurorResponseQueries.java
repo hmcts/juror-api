@@ -144,8 +144,7 @@ public class JurorResponseQueries {
      * @return all responses assigned to staff
      */
     public static BooleanExpression byAssignedAll(User staffMember) {
-        return jurorResponse.staff.isNotNull()
-            .and(notClosed())
-            .and(assignedTo(staffMember));
+        return assignedTo(staffMember)
+            .and(notClosed());
     }
 }

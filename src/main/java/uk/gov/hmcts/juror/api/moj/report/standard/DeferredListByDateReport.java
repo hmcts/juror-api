@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
-@SuppressWarnings("PMD.LawOfDemeter")
 public class DeferredListByDateReport extends AbstractStandardReport {
 
     @Autowired
@@ -61,7 +60,7 @@ public class DeferredListByDateReport extends AbstractStandardReport {
     }
 
     @Override
-    public Class<?> getRequestValidatorClass() {
+    public Class<? extends Validators.AbstractRequestValidator> getRequestValidatorClass() {
         return DeferredListByDateReport.RequestValidator.class;
     }
 

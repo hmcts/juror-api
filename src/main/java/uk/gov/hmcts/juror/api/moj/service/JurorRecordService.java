@@ -11,6 +11,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.JurorCreateRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNameDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorOpticRefRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorRecordFilterRequestQuery;
+import uk.gov.hmcts.juror.api.moj.controller.request.PoliceCheckStatusDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessNameChangeRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessPendingJurorRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.RequestBankDetailsDto;
@@ -72,7 +73,7 @@ public interface JurorRecordService {
 
     void editJurorDetails(BureauJwtPayload payload, EditJurorRecordRequestDto requestDto, String jurorNumber);
 
-    void updatePncStatus(String jurorNumber, PoliceCheck policeCheck);
+    PoliceCheckStatusDto updatePncStatus(String jurorNumber, PoliceCheck policeCheck);
 
     void createJurorRecord(BureauJwtPayload payload, JurorCreateRequestDto jurorCreateRequestDto);
 

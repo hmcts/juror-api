@@ -1,7 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.domain;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +26,6 @@ public class HolidayITest extends ContainerTest {
     @Autowired
     HolidaysRepository holidaysRepository;
 
-    @BeforeClass
-    public static void setUp() {
-    }
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/Holiday.sql"})

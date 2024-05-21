@@ -21,7 +21,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("PMD.LawOfDemeter")
 class NonRespondedReportTest extends AbstractStandardReportTestSupport<NonRespondedReport> {
 
     public NonRespondedReportTest() {

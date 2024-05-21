@@ -1,10 +1,10 @@
 buildscript {
     ext {
         springBootVersion = '3.2.5'
-        notifyVersion = '5.0.1-RELEASE'
+        notifyVersion = '5.1.0-RELEASE'
         springDocVersion = '2.5.0'
         queryDslVersion = '5.1.0'
-        flywayVersion = '10.12.0'
+        flywayVersion = '10.13.0'
         postgresVersion = '42.7.3'
     }
     dependencies {
@@ -17,7 +17,7 @@ buildscript {
 plugins {
     id 'org.springframework.boot' version "${springBootVersion}"
     id "org.flywaydb.flyway" version "${flywayVersion}"
-    id 'org.owasp.dependencycheck' version '9.1.0'
+    id 'org.owasp.dependencycheck' version '9.2.0'
     id 'checkstyle'
     id 'pmd'
     id 'com.github.ben-manes.versions' version '0.51.0'
@@ -82,8 +82,8 @@ dependencies {
 
     //Internal dependency overrides
     implementation 'org.yaml:snakeyaml:2.2'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:10.1.23'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.23'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:10.1.24'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.24'
     //
     implementation("org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}")
@@ -105,7 +105,7 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
     implementation 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
 
-    implementation('com.google.guava:guava:33.1.0-jre')
+    implementation('com.google.guava:guava:33.2.0-jre')
 
     implementation('org.hibernate.orm:hibernate-core:6.3.0.CR1')
 
@@ -118,7 +118,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
 
     annotationProcessor("com.querydsl:querydsl-apt:${queryDslVersion}:jakarta")
-    annotationProcessor('jakarta.persistence:jakarta.persistence-api:3.1.0')
+    annotationProcessor('jakarta.persistence:jakarta.persistence-api:3.2.0')
 
     implementation('org.projectlombok:lombok:1.18.32')
     annotationProcessor('org.projectlombok:lombok')
@@ -139,16 +139,16 @@ dependencies {
     //testImplementation 'org.apache.httpcomponents:httpclient:4.5.13'
     testImplementation 'net.javacrumbs.json-unit:json-unit-fluent:3.2.7'
     testImplementation('org.assertj:assertj-core:3.25.3')
-    testImplementation 'org.mockito:mockito-core:5.11.0'
+    testImplementation 'org.mockito:mockito-core:5.12.0'
 
     testImplementation('org.projectlombok:lombok')
     testAnnotationProcessor('org.projectlombok:lombok')
 
-    testImplementation('net.bytebuddy:byte-buddy:1.14.14')
+    testImplementation('net.bytebuddy:byte-buddy:1.14.15')
     testImplementation('junit:junit:4.13.2')
-    testImplementation "org.testcontainers:testcontainers:1.19.7"
-    testImplementation "org.testcontainers:junit-jupiter:1.19.7"
-    testImplementation 'org.testcontainers:postgresql:1.19.7'
+    testImplementation "org.testcontainers:testcontainers:1.19.8"
+    testImplementation "org.testcontainers:junit-jupiter:1.19.8"
+    testImplementation 'org.testcontainers:postgresql:1.19.8'
 
     // Validation
     testImplementation 'org.wiremock:wiremock-standalone:3.5.4'
@@ -275,14 +275,11 @@ checkstyle {
     getConfigDirectory().set(new File(rootDir, 'config/checkstyle'))
 }
 
-pmdIntegrationTest {
-    maxFailures = 366
-}
 pmdTest {
-    maxFailures = 381
+    maxFailures = 358
 }
 pmdMain {
-    maxFailures = 1113
+    maxFailures = 923
 }
 pmd {
     maxFailures = 0

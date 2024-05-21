@@ -48,7 +48,6 @@ import java.util.Objects;
 import static uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType.CERTIFICATE_OF_EXEMPTION;
 import static uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType.DEFERRAL_GRANTED;
 
-@SuppressWarnings("PMD.LawOfDemeter")
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})

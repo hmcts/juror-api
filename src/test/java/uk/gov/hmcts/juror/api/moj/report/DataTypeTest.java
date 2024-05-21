@@ -4,11 +4,13 @@ import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import org.junit.jupiter.api.Test;
+import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 
 import java.time.LocalDate;
@@ -17,10 +19,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-@SuppressWarnings({
-    "PMD.LawOfDemeter",
-    "PMD.TooManyMethods"
-})
+@SuppressWarnings("PMD.TooManyMethods")
 class DataTypeTest {
 
     @Test
@@ -134,21 +133,33 @@ class DataTypeTest {
     void reasonableAdjustmentCode() {
         assertMatchesStandard(DataType.REASONABLE_ADJUSTMENT_CODE, "reasonable_adjustment_code",
             "Reasonable Adjustment Code", String.class,
-            QJuror.juror.reasonableAdjustmentCode, QJuror.juror);
+            QReasonableAdjustments.reasonableAdjustments.code, QReasonableAdjustments.reasonableAdjustments);
     }
 
     @Test
-    void reasonableAdjustmentMessage() {
-        assertMatchesStandard(DataType.REASONABLE_ADJUSTMENT_MESSAGE, "reasonable_adjustment_message",
-            "Reasonable Adjustment Message", String.class,
-            QJuror.juror.reasonableAdjustmentMessage, QJuror.juror);
+    void reasonableAdjustmentCodeWithDescription() {
+        assertMatchesStandard(DataType.REASONABLE_ADJUSTMENT_CODE_WITH_DESCRIPTION,
+            "reasonable_adjustment_code_with_description",
+            "Reasonable Adjustment Code With Description", String.class,
+            QReasonableAdjustments.reasonableAdjustments.code
+                .concat(" - ")
+                .concat(QReasonableAdjustments.reasonableAdjustments.description),
+                        QReasonableAdjustments.reasonableAdjustments);
     }
 
     @Test
-    void reasonableAdjustment() {
-        assertMatchesCombined(DataType.REASONABLE_ADJUSTMENT, "reasonable_adjustment", "Reasonable Adjustment",
-            List.class,
-            DataType.REASONABLE_ADJUSTMENT_CODE, DataType.REASONABLE_ADJUSTMENT_MESSAGE);
+    void jurorReasonableAdjustmentMessage() {
+        assertMatchesStandard(DataType.JUROR_REASONABLE_ADJUSTMENT_MESSAGE, "juror_reasonable_adjustment_message",
+            "Juror Reasonable Adjustment Message", String.class, QJuror.juror.reasonableAdjustmentMessage,
+            QJuror.juror);
+    }
+
+    @Test
+    void jurorReasonableAdjustmentWithMessage() {
+        assertMatchesCombined(DataType.JUROR_REASONABLE_ADJUSTMENT_WITH_MESSAGE,
+            "juror_reasonable_adjustment_with_message",
+            "Reasonable Adjustments", List.class, DataType.REASONABLE_ADJUSTMENT_CODE_WITH_DESCRIPTION,
+            DataType.JUROR_REASONABLE_ADJUSTMENT_MESSAGE);
     }
 
     @Test
@@ -217,6 +228,14 @@ class DataTypeTest {
         assertMatchesCombined(DataType.JUROR_POSTAL_ADDRESS, "juror_postal_address", "Address",
             List.class, DataType.JUROR_ADDRESS_LINE_1, DataType.JUROR_ADDRESS_LINE_2, DataType.JUROR_ADDRESS_LINE_3,
             DataType.JUROR_ADDRESS_LINE_4, DataType.JUROR_ADDRESS_LINE_5, DataType.JUROR_POSTCODE);
+    }
+
+    @Test
+    void courtLocationNameAndCode() {
+        assertMatchesStandard(DataType.COURT_LOCATION_NAME_AND_CODE, "court_location_name_and_code",
+            "Court Location Name And Code", String.class,
+            QCourtLocation.courtLocation.name.concat(" (")
+                .concat(QCourtLocation.courtLocation.locCode).concat(")"), QPoolRequest.poolRequest);
     }
 
     void assertMatchesStandard(DataType dataType,

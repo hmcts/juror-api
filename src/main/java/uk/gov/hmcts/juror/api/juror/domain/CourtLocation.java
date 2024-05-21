@@ -39,7 +39,7 @@ import java.util.List;
 @AllArgsConstructor
 @Audited
 @ToString(exclude = "assemblyRoom")
-@EqualsAndHashCode(exclude = {"courtRegion","assemblyRoom"})
+@EqualsAndHashCode(exclude = {"courtRegion", "assemblyRoom"})
 @Table(name = "court_location", schema = "juror_mod")
 @SuppressWarnings("PMD.TooManyFields")
 public class CourtLocation implements Serializable {
@@ -197,5 +197,13 @@ public class CourtLocation implements Serializable {
 
     public CourtType getType() {
         return owner.equals(locCode) ? CourtType.MAIN : CourtType.SATELLITE;
+    }
+
+    public boolean isPrimaryCourt() {
+        return CourtType.MAIN.equals(getType());
+    }
+
+    public String getNameWithLocCode() {
+        return this.getName() + " (" + this.getLocCode() + ")";
     }
 }

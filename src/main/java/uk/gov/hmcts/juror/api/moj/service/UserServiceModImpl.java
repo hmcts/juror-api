@@ -83,7 +83,19 @@ public class UserServiceModImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public List<CourtDto> getCourts(String email) {
-        return findUserByEmail(email).getCourts()
+        User user = findUserByEmail(email);
+
+        if (UserType.ADMINISTRATOR.equals(user.getUserType())) {
+            return List.of(
+                CourtDto.builder()
+                    .name("ADMIN")
+                    .locCode("ADMIN")
+                    .courtType(null)
+                    .build()
+            );
+        }
+
+        return user.getCourts()
             .stream()
             .map(courtLocation -> getCourtsByOwner(courtLocation.getOwner()))
             .flatMap(Collection::stream)
@@ -99,6 +111,21 @@ public class UserServiceModImpl implements UserService {
         if (!user.isActive()) {
             throw new MojException.Forbidden("User is not active", null);
         }
+        if ("ADMIN".equals(locCode) && !UserType.ADMINISTRATOR.equals(user.getUserType())) {
+            throw new MojException.Forbidden("User must be an admin", null);
+        }
+
+        final UserType activeUserType;
+        if (UserType.ADMINISTRATOR.equals(user.getUserType())) {
+            if ("ADMIN".equals(locCode)) {
+                activeUserType = UserType.ADMINISTRATOR;
+                locCode = "400";
+            } else {
+                activeUserType = (SecurityUtil.BUREAU_OWNER.equals(locCode) ? UserType.BUREAU : UserType.COURT);
+            }
+        } else {
+            activeUserType = user.getUserType();
+        }
 
         CourtLocation loggedInCourt = getCourtLocation(locCode);
         List<CourtLocation> courtLocations = getCourtsByOwner(loggedInCourt.getOwner());
@@ -106,7 +133,7 @@ public class UserServiceModImpl implements UserService {
             return new JwtDto(
                 jwtService.generateBureauJwtToken(
                     user.getUsername(),
-                    new BureauJwtPayload(user, locCode, courtLocations)
+                    new BureauJwtPayload(user, activeUserType, locCode, courtLocations)
                 ));
         }
         throw new MojException.Forbidden("User not part of court", null);

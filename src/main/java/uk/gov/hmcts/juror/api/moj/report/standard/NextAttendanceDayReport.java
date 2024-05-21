@@ -15,7 +15,6 @@ import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import java.util.Map;
 
 @Component
-@SuppressWarnings("PMD.LawOfDemeter")
 public class NextAttendanceDayReport extends AbstractStandardReport {
     @Autowired
     public NextAttendanceDayReport(PoolRequestRepository poolRequestRepository) {
@@ -29,7 +28,7 @@ public class NextAttendanceDayReport extends AbstractStandardReport {
     }
 
     @Override
-    public Class<?> getRequestValidatorClass() {
+    public Class<? extends Validators.AbstractRequestValidator> getRequestValidatorClass() {
         return RequestValidator.class;
     }
 

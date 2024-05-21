@@ -23,7 +23,6 @@ import java.util.List;
 /**
  * Custom Repository implementation for the ActivePools at court entity.
  */
-@SuppressWarnings("PMD.LawOfDemeter")
 @Component
 @Slf4j
 public class ActivePoolsCourtRepositoryImpl implements IActivePoolsCourtRepository {

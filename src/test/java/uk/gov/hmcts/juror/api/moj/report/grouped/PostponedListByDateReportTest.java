@@ -12,19 +12,19 @@ import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.QPool;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
+import uk.gov.hmcts.juror.api.moj.report.ReportGroupBy;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.service.CourtLocationService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -39,10 +39,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
-@SuppressWarnings({
-    "PMD.LawOfDemeter",
-    "PMD.ExcessiveImports"
-})
+@SuppressWarnings("PMD.ExcessiveImports")
 class PostponedListByDateReportTest extends AbstractGroupedReportTestSupport<PostponedListByDateReport> {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
@@ -51,8 +48,10 @@ class PostponedListByDateReportTest extends AbstractGroupedReportTestSupport<Pos
     public PostponedListByDateReportTest() {
         super(QJurorPool.jurorPool,
             PostponedListByDateReport.RequestValidator.class,
-            DataType.POOL_NUMBER,
-            true,
+            ReportGroupBy.builder()
+                .dataType(DataType.POOL_NUMBER)
+                .removeGroupByFromResponse(true)
+                .build(),
             DataType.JUROR_NUMBER,
             DataType.FIRST_NAME,
             DataType.LAST_NAME,
@@ -136,17 +135,12 @@ class PostponedListByDateReportTest extends AbstractGroupedReportTestSupport<Pos
     @SuppressWarnings("unchecked")
     public Map<String, AbstractReportResponse.DataTypeValue> positiveGetHeadingsTypical(
         StandardReportRequest request,
-        AbstractReportResponse.TableData<Map<String, List<LinkedHashMap<String, Object>>>> tableData,
-        Map<String, List<LinkedHashMap<String, Object>>> data) {
+        AbstractReportResponse.TableData<GroupedTableData> tableData,
+        GroupedTableData data) {
 
         when(request.getFromDate()).thenReturn(LocalDate.of(2023, 3, 1));
         when(request.getToDate()).thenReturn(LocalDate.of(2023, 3, 2));
-        when(tableData.getData()).thenReturn(
-            Map.of(
-                "2023-03-01", List.of(new LinkedHashMap<>(), new LinkedHashMap()),
-                "2023-03-02", List.of(new LinkedHashMap<>())
-            )
-        );
+        when(data.getSize()).thenReturn(3);
         securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(true);
         securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn(TestConstants.VALID_COURT_LOCATION);
 
@@ -196,12 +190,10 @@ class PostponedListByDateReportTest extends AbstractGroupedReportTestSupport<Pos
     })
     void positiveGetHeadingsTypicalBureau() {
         StandardReportRequest request = mock(StandardReportRequest.class);
-        AbstractReportResponse.TableData<Map<String, List<LinkedHashMap<String, Object>>>> tableData =
-            mock(AbstractReportResponse.TableData.class);
-        Map<String, List<LinkedHashMap<String, Object>>> data = Map.of(
-            "2023-03-01", List.of(new LinkedHashMap<>(), new LinkedHashMap()),
-            "2023-03-02", List.of(new LinkedHashMap<>())
-        );
+        AbstractReportResponse.TableData<GroupedTableData> tableData = mock(AbstractReportResponse.TableData.class);
+        GroupedTableData data = mock(GroupedTableData.class);
+        when(data.getSize()).thenReturn(3);
+
         doReturn(data).when(tableData).getData();
 
         when(request.getFromDate()).thenReturn(LocalDate.of(2023, 3, 1));

@@ -37,7 +37,6 @@ import static org.springframework.http.HttpMethod.GET;
 /**
  * Integration tests for the API endpoints defined in {@link CourtLocationController}.
  */
-@SuppressWarnings("PMD.LawOfDemeter")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CourtLocationControllerITest extends AbstractIntegrationTest {
@@ -61,9 +60,7 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
     private void initHeaders() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("BUREAU_USER")
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -76,9 +73,7 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
 
         return mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("COURT_USER")
-            .daysToExpire(89)
             .owner(owner)
             .staff(BureauJwtPayload.Staff.builder().courts(courts).build())
             .build());
@@ -153,6 +148,7 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//Assertion done in nested method
     void testGetAllCourtLocationsByPostcodeBadRequestException() {
         //Invoke service.
         templateExchangeAllCourtLocationsByPostcode("SE1236LA", BUREAU_USER, "400", HttpStatus.BAD_REQUEST);

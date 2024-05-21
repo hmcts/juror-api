@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -19,7 +20,6 @@ import uk.gov.hmcts.juror.api.moj.domain.authentication.CourtDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.EmailDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.JwtDto;
 import uk.gov.hmcts.juror.api.moj.service.UserService;
-import uk.gov.hmcts.juror.api.validation.CourtLocationCode;
 
 import java.util.List;
 
@@ -45,7 +45,7 @@ public class AuthenticationController {
     @Operation(summary = "Creates a jwt for a given user at location")
     public ResponseEntity<JwtDto> createJwt(
         @P("loc_code") @PathVariable("loc_code") @Valid @NotBlank
-        @CourtLocationCode String locCode,
+        @Pattern(regexp = "^\\d{3}$|^ADMIN$") String locCode,
         @RequestBody @Valid EmailDto emailDto
     ) {
         return ResponseEntity.ok(userService.createJwt(emailDto.getEmail(), locCode));

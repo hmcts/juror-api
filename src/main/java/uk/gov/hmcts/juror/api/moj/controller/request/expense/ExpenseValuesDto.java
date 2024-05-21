@@ -15,13 +15,12 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 @Data
-@SuperBuilder
+@SuperBuilder(builderMethodName = "expenseValuesDtoBuilder")
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
 @EqualsAndHashCode
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-@SuppressWarnings("PMD.LawOfDemeter")
 public class ExpenseValuesDto {
 
     protected BigDecimal lossOfEarnings;

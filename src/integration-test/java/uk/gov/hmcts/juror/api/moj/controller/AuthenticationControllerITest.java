@@ -51,6 +51,7 @@ import static org.springframework.http.HttpMethod.POST;
 @Sql(value = "/db/administration/teardownUsers.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @SuppressWarnings({
     "PMD.JUnitTestsShouldIncludeAssert",
+    "PMD.ExcessiveImports",
     "PMD.JUnitAssertionsShouldIncludeMessage"//False positive
 })
 public class AuthenticationControllerITest extends AbstractIntegrationTest {
@@ -228,22 +229,19 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
                 assertThat(claims.getIssuedAt()).isAfter(new Date(clock.millis() - 60_000));
 
                 assertThat(claims)
+                    .hasSize(13)
                     .containsEntry("owner", expectedJwtClaims.getOwner())
                     .containsEntry("email", expectedJwtClaims.getEmail())
                     .containsEntry("locCode", expectedJwtClaims.getLocCode())
                     .containsEntry("login", expectedJwtClaims.getLogin())
-                    .containsEntry("userLevel", expectedJwtClaims.getUserLevel())
-                    .containsEntry("passwordWarning", false)
-                    .containsEntry("daysToExpire", 999)
                     .containsEntry("userType", expectedJwtClaims.getUserType().name())
+                    .containsEntry("activeUserType", expectedJwtClaims.getActiveUserType().name())
                     .containsEntry("staff", Map.of(
                         "name", expectedJwtClaims.getStaff().getName(),
                         "rank", expectedJwtClaims.getStaff().getRank(),
                         "active", expectedJwtClaims.getStaff().getActive(),
                         "courts", expectedJwtClaims.getStaff().getCourts()
-                    ));
-
-                assertThat(claims).hasSize(14)
+                    ))
                     .containsEntry("roles", expectedJwtClaims.getRoles()
                         .stream().map(Enum::name).toList());
             }
@@ -264,6 +262,7 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
                             .login("test_court_primary")
                             .userLevel("1")
                             .userType(UserType.COURT)
+                            .activeUserType(UserType.COURT)
                             .roles(Set.of())
                             .staff(BureauJwtPayload.Staff.builder()
                                 .name("Court Primary Only")
@@ -291,6 +290,7 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
                             .login("test_court_standard")
                             .userLevel("1")
                             .userType(UserType.COURT)
+                            .activeUserType(UserType.COURT)
                             .roles(List.of())
                             .staff(BureauJwtPayload.Staff.builder()
                                 .rank(1)
@@ -300,32 +300,6 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
                                 .build())
                             .build()
                     ));
-            }
-
-            @Test
-            void adminUserNonOwnedCourt() {
-                testBuilder()
-                    .url(toUrl("767"))
-                    .payload(new EmailDto("test_admin_standard" + EMAIL_SUFFIX))
-                    .triggerValid()
-                    .assertValid((controllerTest, response) -> responseValidator(
-                        response,
-                        "test_admin_standard",
-                        BureauJwtPayload.builder()
-                            .owner("415")
-                            .locCode("767")
-                            .email("test_admin_standard" + EMAIL_SUFFIX)
-                            .login("test_admin_standard")
-                            .userLevel("0")
-                            .userType(UserType.ADMINISTRATOR)
-                            .roles(List.of(Role.values()))
-                            .staff(BureauJwtPayload.Staff.builder()
-                                .rank(0)
-                                .name("Admin Standard")
-                                .active(1)
-                                .courts(List.of("415", "462", "767"))
-                                .build())
-                            .build()));
             }
 
             @Test
@@ -344,6 +318,7 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
                             .login("test_bureau_standard")
                             .userLevel("0")
                             .userType(UserType.BUREAU)
+                            .activeUserType(UserType.BUREAU)
                             .roles(Set.of())
                             .staff(BureauJwtPayload.Staff.builder()
                                 .name("Bureau Standard")
@@ -355,7 +330,7 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            void admin() {
+            void adminBureau() {
                 testBuilder()
                     .url(toUrl("400"))
                     .payload(new EmailDto("test_admin_standard" + EMAIL_SUFFIX))
@@ -370,6 +345,7 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
                             .login("test_admin_standard")
                             .userLevel("0")
                             .userType(UserType.ADMINISTRATOR)
+                            .activeUserType(UserType.BUREAU)
                             .roles(List.of(Role.values()))
                             .staff(BureauJwtPayload.Staff.builder()
                                 .rank(0)
@@ -379,6 +355,61 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
                                 .build())
                             .build()));
             }
+
+            @Test
+            void adminCourt() {
+                testBuilder()
+                    .url(toUrl("415"))
+                    .payload(new EmailDto("test_admin_standard" + EMAIL_SUFFIX))
+                    .triggerValid()
+                    .assertValid((controllerTest, response) -> responseValidator(
+                        response,
+                        "test_admin_standard",
+                        BureauJwtPayload.builder()
+                            .owner("415")
+                            .locCode("415")
+                            .email("test_admin_standard" + EMAIL_SUFFIX)
+                            .login("test_admin_standard")
+                            .userLevel("0")
+                            .userType(UserType.ADMINISTRATOR)
+                            .activeUserType(UserType.COURT)
+                            .roles(List.of(Role.values()))
+                            .staff(BureauJwtPayload.Staff.builder()
+                                .rank(0)
+                                .name("Admin Standard")
+                                .active(1)
+                                .courts(List.of("415", "462", "767"))
+                                .build())
+                            .build()));
+            }
+
+            @Test
+            void adminAdmin() {
+                testBuilder()
+                    .url(toUrl("ADMIN"))
+                    .payload(new EmailDto("test_admin_standard" + EMAIL_SUFFIX))
+                    .triggerValid()
+                    .assertValid((controllerTest, response) -> responseValidator(
+                        response,
+                        "test_admin_standard",
+                        BureauJwtPayload.builder()
+                            .owner("400")
+                            .locCode("400")
+                            .email("test_admin_standard" + EMAIL_SUFFIX)
+                            .login("test_admin_standard")
+                            .userLevel("0")
+                            .userType(UserType.ADMINISTRATOR)
+                            .activeUserType(UserType.ADMINISTRATOR)
+                            .roles(List.of(Role.values()))
+                            .staff(BureauJwtPayload.Staff.builder()
+                                .rank(0)
+                                .name("Admin Standard")
+                                .active(1)
+                                .courts(List.of("400"))
+                                .build())
+                            .build()));
+            }
+
 
             @Test
             void withRoles() {
@@ -396,6 +427,7 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
                             .login("test_court_sjo_mangr")
                             .userLevel("9")
                             .userType(UserType.COURT)
+                            .activeUserType(UserType.COURT)
                             .roles(List.of(Role.MANAGER, Role.SENIOR_JUROR_OFFICER))
                             .staff(BureauJwtPayload.Staff.builder()
                                 .rank(9)
@@ -415,7 +447,7 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
                 testBuilder()
                     .url(toUrl("INVALID"))
                     .triggerInvalid()
-                    .assertInvalidPathParam("createJwt.locCode: must match \"^\\d{3}$\"");
+                    .assertInvalidPathParam("createJwt.locCode: must match \"^\\d{3}$|^ADMIN$\"");
             }
 
             @Test

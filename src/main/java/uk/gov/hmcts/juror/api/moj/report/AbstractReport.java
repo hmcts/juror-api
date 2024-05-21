@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.report;
 
+import com.querydsl.core.JoinType;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
@@ -8,22 +9,26 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import lombok.Builder;
 import lombok.Getter;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
+import uk.gov.hmcts.juror.api.moj.service.report.IReport;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
@@ -33,6 +38,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,21 +48,28 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import static uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts;
+
 @Getter
 @SuppressWarnings({
-    "PMD.LawOfDemeter",
     "PMD.TooManyMethods",
     "PMD.ExcessiveImports"
 })
-public abstract class AbstractReport<T> {
+public abstract class AbstractReport<T> implements IReport {
     static final Map<EntityPath<?>, Map<EntityPath<?>, Predicate[]>> CLASS_TO_JOIN;
+
 
     static {
         CLASS_TO_JOIN = new ConcurrentHashMap<>();
         CLASS_TO_JOIN.put(QJuror.juror, Map.of(
             QJurorPool.jurorPool, new Predicate[]{QJuror.juror.eq(QJurorPool.jurorPool.juror)},
             QAppearance.appearance, new Predicate[]{QJuror.juror.jurorNumber.eq(QAppearance.appearance.jurorNumber)},
-            QPanel.panel, new Predicate[]{QPanel.panel.juror.eq(QJuror.juror)}
+            QPanel.panel, new Predicate[]{QPanel.panel.juror.eq(QJuror.juror)},
+            lowLevelFinancialAuditDetailsIncludingApprovedAmounts,
+            new Predicate[]{
+                lowLevelFinancialAuditDetailsIncludingApprovedAmounts
+                    .jurorNumber.eq(QJuror.juror.jurorNumber)
+            }
         ));
         CLASS_TO_JOIN.put(QJurorPool.jurorPool, Map.of(
             QJuror.juror, new Predicate[]{QJurorPool.jurorPool.juror.eq(QJuror.juror)}
@@ -77,6 +90,14 @@ public abstract class AbstractReport<T> {
                 QPanel.panel.juror.eq(QJuror.juror)
             }
         ));
+        CLASS_TO_JOIN.put(QReasonableAdjustments.reasonableAdjustments, Map.of(
+            QJuror.juror,
+            new Predicate[]{QReasonableAdjustments.reasonableAdjustments.code.eq(
+                QJuror.juror.reasonableAdjustmentCode)},
+            QJurorPool.jurorPool,
+            new Predicate[]{QReasonableAdjustments.reasonableAdjustments.code.eq(
+                QJurorPool.jurorPool.juror.reasonableAdjustmentCode)}
+        ));
     }
 
     @PersistenceContext
@@ -87,10 +108,11 @@ public abstract class AbstractReport<T> {
     final Set<EntityPath<?>> requiredTables;
     final List<IDataType> effectiveDataTypes;
     final EntityPath<?> from;
+    final Map<EntityPath<?>, Map<EntityPath<?>, JoinOverrideDetails>> classToJoinOverrides = new HashMap<>();
 
     final List<Consumer<StandardReportRequest>> authenticationConsumers;
 
-    public AbstractReport(EntityPath<?> from,  IDataType... dataType) {
+    public AbstractReport(EntityPath<?> from, IDataType... dataType) {
         this(null, from, dataType);
     }
 
@@ -108,6 +130,23 @@ public abstract class AbstractReport<T> {
             .flatMap(List::stream)
             .collect(Collectors.toSet());
         this.authenticationConsumers = new ArrayList<>();
+    }
+
+    @Builder
+    @Getter
+    public static class JoinOverrideDetails {
+        private EntityPath<?> from;
+        private EntityPath<?> to;
+        private JoinType joinType;
+        private List<Predicate> predicatesToAdd;
+        private List<Predicate> predicatesOverride;
+    }
+
+    public void addJoinOverride(JoinOverrideDetails joinDetails) {
+        if (!classToJoinOverrides.containsKey(joinDetails.getFrom())) {
+            classToJoinOverrides.put(joinDetails.getFrom(), new HashMap<>());
+        }
+        classToJoinOverrides.get(from).put(joinDetails.getTo(), joinDetails);
     }
 
     public void addAuthenticationConsumer(Consumer<StandardReportRequest> consumer) {
@@ -130,11 +169,8 @@ public abstract class AbstractReport<T> {
         });
     }
 
-    public abstract Class<?> getRequestValidatorClass();
+    public abstract Class<? extends Validators.AbstractRequestValidator> getRequestValidatorClass();
 
-    public final String getName() {
-        return getClass().getSimpleName();
-    }
 
     public AbstractReportResponse<T> getStandardReportResponse(StandardReportRequest request) {
         authenticationConsumers.forEach(consumer -> consumer.accept(request));
@@ -243,7 +279,43 @@ public abstract class AbstractReport<T> {
             Map<EntityPath<?>, Predicate[]> joinOptions = CLASS_TO_JOIN.get(requiredTable);
 
             if (joinOptions.containsKey(from)) {
-                query.join(requiredTable).on(joinOptions.get(from));
+                JoinOverrideDetails joinOverrideDetails = JoinOverrideDetails.builder().joinType(JoinType.DEFAULT)
+                    .build();
+
+                if (classToJoinOverrides.containsKey(from) && classToJoinOverrides.get(from)
+                    .containsKey(requiredTable)) {
+                    joinOverrideDetails = classToJoinOverrides.get(from).get(requiredTable);
+                }
+
+                final ArrayList<Predicate> predicates;
+                if (joinOverrideDetails.getPredicatesOverride() != null) {
+                    predicates = new ArrayList<>(joinOverrideDetails.getPredicatesOverride());
+                } else {
+                    predicates = new ArrayList<>(Arrays.asList(joinOptions.get(from)));
+                }
+
+                if (joinOverrideDetails.getPredicatesToAdd() != null) {
+                    predicates.addAll(joinOverrideDetails.getPredicatesToAdd());
+                }
+
+                switch (joinOverrideDetails.getJoinType()) {
+                    case DEFAULT:
+                    case FULLJOIN:
+                        query.join(requiredTable).on(predicates.toArray(new Predicate[0]));
+                        break;
+                    case LEFTJOIN:
+                        query.leftJoin(requiredTable).on(predicates.toArray(new Predicate[0]));
+                        break;
+                    case RIGHTJOIN:
+                        query.rightJoin(requiredTable).on(predicates.toArray(new Predicate[0]));
+                        break;
+                    case INNERJOIN:
+                        query.innerJoin(requiredTable).on(predicates.toArray(new Predicate[0]));
+                        break;
+                    default:
+                        throw new MojException.InternalServerError(
+                            "Join type not supported: " + joinOverrideDetails.getJoinType(), null);
+                }
             } else {
                 throw new MojException.InternalServerError(
                     "Not Implemented yet: " + requiredTable.getClass() + " from " + from.getClass(), null);
@@ -295,12 +367,12 @@ public abstract class AbstractReport<T> {
         }
     }
 
+
     public Map.Entry<String, AbstractReportResponse.DataTypeValue> getCourtNameHeader(CourtLocation courtLocation) {
         return new AbstractMap.SimpleEntry<>("court_name", AbstractReportResponse.DataTypeValue.builder()
             .displayName("Court Name")
             .dataType(String.class.getSimpleName())
-            .value(
-                courtLocation.getName() + " (" + courtLocation.getLocCode() + ")")
+            .value(courtLocation.getNameWithLocCode())
             .build());
     }
 
@@ -335,11 +407,16 @@ public abstract class AbstractReport<T> {
         ));
     }
 
-    public ConcurrentHashMap<String, AbstractReportResponse.DataTypeValue> loadStandardTrialHeaders(
+    public Map<String, AbstractReportResponse.DataTypeValue> loadStandardTrialHeaders(
         StandardReportRequest request, TrialRepository trialRepository) {
+        return loadStandardTrailHeaders(request, trialRepository, false);
+    }
+
+    public Map<String, AbstractReportResponse.DataTypeValue> loadStandardTrailHeaders(
+        StandardReportRequest request, TrialRepository trialRepository, boolean addTrialStartDate) {
 
         Trial trial = getTrial(request.getTrialNumber(), trialRepository);
-        return new ConcurrentHashMap<>(Map.of(
+        Map<String, AbstractReportResponse.DataTypeValue> trialHeaders = new HashMap<>(Map.of(
             "trial_number", AbstractReportResponse.DataTypeValue.builder()
                 .displayName("Trial Number")
                 .dataType(String.class.getSimpleName())
@@ -367,6 +444,23 @@ public abstract class AbstractReport<T> {
                     getCourtNameString(trial.getCourtLocation()))
                 .build()
         ));
+
+        if (addTrialStartDate) {
+            trialHeaders.put("trial_start_date", AbstractReportResponse.DataTypeValue.builder()
+                .displayName("Trial Start Date")
+                .dataType(LocalDate.class.getSimpleName())
+                .value(DateTimeFormatter.ISO_DATE.format(trial.getTrialStartDate()))
+                .build());
+        }
+
+        return trialHeaders;
+    }
+
+
+    public void addCourtNameHeader(Map<String, AbstractReportResponse.DataTypeValue> headings,
+                                   CourtLocation courtLocation) {
+        Map.Entry<String, GroupedReportResponse.DataTypeValue> entry = getCourtNameHeader(courtLocation);
+        headings.put(entry.getKey(), entry.getValue());
     }
 
     protected String getCourtNameString(CourtLocationRepository courtLocationRepository, String locCode) {
@@ -436,5 +530,10 @@ public abstract class AbstractReport<T> {
         public interface RequireDate {
         }
 
+        public interface RequireIncludeSummoned {
+        }
+
+        public interface RequiredJurorNumber {
+        }
     }
 }

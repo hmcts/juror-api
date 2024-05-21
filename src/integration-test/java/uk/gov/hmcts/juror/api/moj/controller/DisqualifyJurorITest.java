@@ -45,6 +45,7 @@ import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.getJurorPaperResponse;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
 public class DisqualifyJurorITest extends AbstractIntegrationTest {
 
     @Autowired
@@ -129,11 +130,11 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
         DisqualifyJurorDto disqualifyJurorDto = createDisqualifyJurorDigitalDto();
 
         //Invoke service
-        templateExchangeDisqualifyJuror(UserType.BUREAU, disqualifyJurorDto, JUROR_NUMBER_123456789, BUREAU_USER, "400",
-            HttpStatus.OK);
+        assertTemplateExchangeDisqualifyJuror(UserType.BUREAU, disqualifyJurorDto,
+            JUROR_NUMBER_123456789, BUREAU_USER, "400", HttpStatus.OK);
 
         //Post-verification: Verify tables updated
-        digitalDisqualifyJurorPostVerification();
+        assertDigitalDisqualifyJurorPostVerification();
     }
 
     @Test
@@ -147,11 +148,11 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
         DisqualifyJurorDto disqualifyJurorDto = createDisqualifyJurorPaperDto();
 
         //Invoke service
-        templateExchangeDisqualifyJuror(UserType.COURT, disqualifyJurorDto, JUROR_NUMBER_987654321, COURT_USER, "415",
-            HttpStatus.OK);
+        assertTemplateExchangeDisqualifyJuror(UserType.COURT, disqualifyJurorDto,
+            JUROR_NUMBER_987654321, COURT_USER, "415", HttpStatus.OK);
 
         //Post-verification: Verify tables updated
-        paperDisqualifyJurorPostVerification();
+        assertPaperDisqualifyJurorPostVerification();
     }
 
     @Test
@@ -161,11 +162,11 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
         //403 Forbidden exception is thrown
         DisqualifyJurorDto disqualifyJurorDto = createDisqualifyJurorPaperDto();
 
-        templateExchangeDisqualifyJuror(UserType.COURT, disqualifyJurorDto, JUROR_NUMBER_111111111, COURT_USER, "415",
-            HttpStatus.FORBIDDEN);
+        assertTemplateExchangeDisqualifyJuror(UserType.COURT, disqualifyJurorDto,
+            JUROR_NUMBER_111111111, COURT_USER, "415", HttpStatus.FORBIDDEN);
     }
 
-    private void digitalDisqualifyJurorPostVerification() {
+    private void assertDigitalDisqualifyJurorPostVerification() {
         //Juror digital response
         DigitalResponse digitalResponse = getJurorDigitalResponse(JUROR_NUMBER_123456789,
             jurorDigitalResponseRepository);
@@ -195,7 +196,7 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
         assertThat(updatedJurorHistoryList).isNotNull();
     }
 
-    private void paperDisqualifyJurorPostVerification() {
+    private void assertPaperDisqualifyJurorPostVerification() {
         //Juror paper response
         PaperResponse paperResponse = getJurorPaperResponse(JUROR_NUMBER_987654321,
             jurorPaperResponseRepository);
@@ -284,7 +285,7 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
         assertThat(jurorHistoryList).isEmpty();
     }
 
-    private void templateExchangeDisqualifyJuror(
+    private void assertTemplateExchangeDisqualifyJuror(
         UserType userType,
         DisqualifyJurorDto disqualifyJurorDto,
         String jurorNumber,

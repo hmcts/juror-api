@@ -40,8 +40,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @DisplayName("Police National Computer Manual Check")
-@SuppressWarnings("PMD.LawOfDemeter")
-public class PncCheckServiceClientImplITest extends AbstractIntegrationTest {
+class PncCheckServiceClientImplITest extends AbstractIntegrationTest {
 
     @Autowired
     private RemoteConfig config;
@@ -69,9 +68,7 @@ public class PncCheckServiceClientImplITest extends AbstractIntegrationTest {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel(level)
-            .passwordWarning(false)
             .login("BUREAU_USER")
-            .daysToExpire(89)
             .owner("400")
             .build());
 

@@ -40,7 +40,7 @@ import static uk.gov.hmcts.juror.api.bureau.service.JurorResponseSearchServiceIm
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@SuppressWarnings("PMD.LawOfDemeter")
+@SuppressWarnings("PMD.TooManyMethods")
 public class BureauResponsesControllerTest extends AbstractIntegrationTest {
 
     @Autowired
@@ -70,13 +70,11 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         "/db/standing_data.sql",
         "/db/BureauServiceImpl_getByProcessingStatus.sql"
     })
-    public void getTodo() throws Exception {
+    public void positiveGetTodo() throws Exception {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("ncrawford")
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -106,13 +104,11 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         "/db/standing_data.sql",
         "/db/BureauServiceImpl_getByProcessingStatus.sql"
     })
-    public void getRepliesPending() throws Exception {
+    public void positiveGetRepliesPending() throws Exception {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("ncrawford")
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -144,12 +140,10 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         "/db/standing_data.sql",
         "/db/BureauServiceImplTest_completedToday.sql"
     })
-    public void getCompletedToday() throws Exception {
+    public void testGCompletedToday() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("ncrawford")
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -180,12 +174,10 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         "/db/standing_data.sql",
         "/db/BureauServiceImpl_getByProcessingStatus.sql"
     })
-    public void getOverview() throws Exception {
+    public void testGOverview() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("ncrawford")
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -214,9 +206,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     public void searchForResponses_jurorNumberOnly_errorPath_notANumber() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("ncrawford")
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -241,9 +231,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     public void searchForResponses_lastNameOnly_errorPath_blank() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("ncrawford")
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -268,9 +256,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     public void searchForResponses_postcodeOnly_errorPath_blank() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("ncrawford")
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -295,9 +281,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     public void searchForResponses_poolNumber_errorPath_notANumber() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("ncrawford")
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -322,9 +306,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     public void searchForResponses_lastNameOnly() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("ncrawford")
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -511,9 +493,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     public void autoAssign_post_errorPath_userIsNotTeamLeader() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("carneson")
-            .daysToExpire(89)
             .owner("400")
             .staff(BureauJwtPayload.Staff.builder().rank(0).active(1).name("Chad Arneson").build())
             .build());
@@ -753,9 +733,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     public void autoAssign_get_errorPath_userIsNotTeamLeader() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("sbell")
-            .daysToExpire(89)
             .owner("400")
             .staff(BureauJwtPayload.Staff.builder().rank(0).active(1).name("Sandra Bell").build())
             .build());

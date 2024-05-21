@@ -9,7 +9,6 @@ import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import java.util.List;
 import java.util.Optional;
 
-@SuppressWarnings("PMD.LawOfDemeter")
 @Repository
 public interface CourtLocationRepository extends CrudRepository<CourtLocation, String>,
     QuerydslPredicateExecutor<CourtLocation>,

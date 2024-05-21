@@ -1,4 +1,4 @@
-delete from juror_mod.staff_juror_response_audit ;
+delete from juror_mod.user_juror_response_audit ;
 delete from juror_mod.juror_response_aud;
 delete from juror_mod.juror_response;
 delete from juror_mod.juror_history;
@@ -8,9 +8,14 @@ delete from juror_mod.juror;
 delete from juror_mod.pool;
 delete from juror_mod.users;
 
-INSERT INTO juror_mod.users (username,email, name, active, team_id,user_type)
-VALUES ('bureauOfficer','bureauOfficer@email.gov.uk','Bureau Officer',true,1,'BUREAU'),
-       ('teamLeader','teamLeader@email.gov.uk','Team Leader',true,2,'BUREAU');
+
+INSERT INTO juror_mod.app_setting (SETTING,VALUE) VALUES
+('SEARCH_RESULT_LIMIT_BUREAU_OFFICER','100'),
+('SEARCH_RESULT_LIMIT_TEAM_LEADER','250');
+
+INSERT INTO juror_mod.users (username,email, name, active, team_id,version,user_type)
+VALUES ('bureauOfficer','bureauOfficer@email.gov.uk','Bureau Officer',true,1,0,'BUREAU'),
+       ('teamLeader','teamLeader@email.gov.uk','Team Leader',true,2,0,'BUREAU');
 
 insert into juror_mod.user_courts (username, loc_code)
 values ('bureauOfficer', '400'),

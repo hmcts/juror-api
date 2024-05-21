@@ -33,7 +33,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import java.util.List;
 import java.util.Objects;
 
-import static uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController.validateJurorNumberPathVariable;
+import static uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController.assertJurorNumberPathVariable;
 
 @Slf4j
 @RestController
@@ -64,7 +64,7 @@ public class ResponseExcusalController {
         @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,
         BureauJwtAuthentication jwt,
         @Validated @RequestBody ExcusalCodeDto excusalCodeDto) throws ExcusalException {
-        validateJurorNumberPathVariable(jurorId);
+        assertJurorNumberPathVariable(jurorId);
         final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
         if (null == excusalCodeDto.getExcusalCode() || null == excusalCodeDto.getVersion()) {
             // there is either no body or no version present in the request
@@ -87,7 +87,7 @@ public class ResponseExcusalController {
         @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,
         BureauJwtAuthentication jwt,
         @Validated @RequestBody ExcusalCodeDto excusalCodeDto) throws ExcusalException {
-        validateJurorNumberPathVariable(jurorId);
+        assertJurorNumberPathVariable(jurorId);
         final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
         if (null == excusalCodeDto.getExcusalCode() || null == excusalCodeDto.getVersion()) {
             // there is either no body or no version present in the request

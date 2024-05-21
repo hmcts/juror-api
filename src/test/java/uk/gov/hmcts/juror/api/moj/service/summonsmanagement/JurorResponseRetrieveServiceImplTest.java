@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.service.summonsmanagement;
 
 import com.querydsl.core.Tuple;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCommonRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -59,8 +61,16 @@ class JurorResponseRetrieveServiceImplTest {
     @Mock
     private JurorResponseCommonRepositoryMod jurorResponseCommonRepository;
 
+    @Mock
+    private AppSettingService appSettingService;
+
     @InjectMocks
     private JurorResponseRetrieveServiceImpl jurorResponseRetrieveService;
+
+    @AfterEach
+    public void afterEach() {
+        TestUtils.afterAll();
+    }
 
     @DisplayName("Retrieve juror responses based on search criteria")
     @Nested
@@ -77,6 +87,7 @@ class JurorResponseRetrieveServiceImplTest {
             List<Tuple> tupleList = new ArrayList<>();
             tupleList.add(tuple);
 
+            doReturn(100).when(appSettingService).getBureauOfficerSearchResultLimit();
             doReturn(tupleList).when(jurorResponseCommonRepository).retrieveJurorResponseDetails(
                 request, false, 100);
 
@@ -127,7 +138,7 @@ class JurorResponseRetrieveServiceImplTest {
             Tuple tuple = createMockedDbResponse(1, ProcessingStatus.TODO);
             List<Tuple> tupleList = new ArrayList<>();
             tupleList.add(tuple);
-
+            doReturn(100).when(appSettingService).getBureauOfficerSearchResultLimit();
             doReturn(tupleList).when(jurorResponseCommonRepository).retrieveJurorResponseDetails(
                 request, false, 100);
 

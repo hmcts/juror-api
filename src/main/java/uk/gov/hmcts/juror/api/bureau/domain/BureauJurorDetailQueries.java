@@ -21,6 +21,7 @@ import static org.apache.commons.lang3.StringUtils.deleteWhitespace;
  *
  * @since JDB-1971
  */
+@SuppressWarnings({"PMD.TooManyFields", "PMD.TooManyMethods"})
 public class BureauJurorDetailQueries {
 
     private static final String INWARD_CODE_FRAGMENT = "^([0-9])([A-Z]{0,2})$";
@@ -275,7 +276,7 @@ public class BureauJurorDetailQueries {
      */
 
     public static BooleanExpression jurorResponsesForClosing() {
-        return processingStatusToDo().and((byPoolStatusNotSummoned()).or(byPoolStatusSummonedAndReadOnly()));
+        return processingStatusToDo().and(byPoolStatusNotSummoned()).or(byPoolStatusSummonedAndReadOnly());
 
     }
 

@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.bureau.service;
 
 import jakarta.persistence.EntityManager;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -12,7 +13,6 @@ import uk.gov.hmcts.juror.api.bureau.controller.request.StaffAssignmentRequestDt
 import uk.gov.hmcts.juror.api.bureau.controller.response.OperationFailureListDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffAssignmentResponseDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffRosterResponseDto;
-import uk.gov.hmcts.juror.api.bureau.domain.StaffAuditRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.TeamRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.UserQueries;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
@@ -22,11 +22,15 @@ import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.StaffJurorResponseAuditMod;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReplyType;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.UserJurorResponseAudit;
+import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
-import uk.gov.hmcts.juror.api.moj.repository.staff.StaffJurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCommonRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.staff.UserJurorResponseAuditRepository;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,7 +60,14 @@ public class UserServiceImplTest {
     private JurorDigitalResponseRepositoryMod mockJurorResponseRepository;
 
     @Mock
-    private StaffJurorResponseAuditRepositoryMod mockStaffJurorResponseAuditRepository;
+    private UserJurorResponseAuditRepository mockUserJurorResponseAuditRepository;
+
+    @Mock
+    private JurorResponseCommonRepositoryMod jurorResponseCommonRepositoryMod;
+
+    @Mock
+    private JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
+
 
     @Mock
     private EntityManager mockEntityManager;
@@ -70,8 +81,6 @@ public class UserServiceImplTest {
     @Mock
     private TeamRepository mockTeamRepository;
 
-    @Mock
-    private StaffAuditRepository mockStaffAuditRepository;
 
     @InjectMocks
     private UserServiceImpl userService;
@@ -94,6 +103,7 @@ public class UserServiceImplTest {
         .processingComplete(false)
         .urgent(false)
         .superUrgent(false)
+        .replyType(ReplyType.builder().type(ReplyMethod.DIGITAL.getDescription()).build())
         .processingStatus(ProcessingStatus.TODO)
         .build();
     private static final DigitalResponse JUROR_RESPONSE_2 = DigitalResponse.builder()
@@ -101,6 +111,7 @@ public class UserServiceImplTest {
         .processingComplete(false)
         .urgent(false)
         .superUrgent(false)
+        .replyType(ReplyType.builder().type(ReplyMethod.DIGITAL.getDescription()).build())
         .processingStatus(ProcessingStatus.TODO)
         .build();
     private static final DigitalResponse JUROR_RESPONSE_INVALID_AWAITING_CONTACT = DigitalResponse.builder()
@@ -129,10 +140,15 @@ public class UserServiceImplTest {
         .responseJurorNumber(JUROR_NUMBER)
         .build();
 
+    @AfterEach
+    public void afterEach() {
+        TestUtils.afterAll();
+    }
+
     @Test
     public void changeAssignment_happy() {
         given(mockuserRepository.findByUsername(ASSIGNING_LOGIN)).willReturn(ASSIGNER_STAFF_ENTITY);
-        given(mockJurorResponseRepository.findByJurorNumber(JUROR_NUMBER)).willReturn(JUROR_RESPONSE);
+        given(jurorResponseCommonRepositoryMod.findByJurorNumber(JUROR_NUMBER)).willReturn(JUROR_RESPONSE);
         given(mockuserRepository.findByUsername(TARGET_LOGIN)).willReturn(TARGET_LOGIN_ENTITY);
 
         final StaffAssignmentResponseDto responseDto = userService.changeAssignment(DTO, ASSIGNING_LOGIN);
@@ -145,16 +161,17 @@ public class UserServiceImplTest {
         assertThat(responseDto.getAssignmentDate()).isToday();
 
         verify(mockuserRepository).findByUsername(ASSIGNING_LOGIN);
-        verify(mockJurorResponseRepository).findByJurorNumber(JUROR_NUMBER);
+        verify(jurorResponseCommonRepositoryMod).findByJurorNumber(JUROR_NUMBER);
+        verify(mockJurorResponseRepository).save(any(DigitalResponse.class));
         verify(mockuserRepository).findByUsername(TARGET_LOGIN);
-        verify(mockStaffJurorResponseAuditRepository).save(any(StaffJurorResponseAuditMod.class));
+        verify(mockUserJurorResponseAuditRepository).save(any(UserJurorResponseAudit.class));
         verify(mockEntityManager).detach(any());
     }
 
     @Test
     public void changeAssignment_happy_nullStaffAssignment() {
         given(mockuserRepository.findByUsername(ASSIGNING_LOGIN)).willReturn(ASSIGNER_STAFF_ENTITY);
-        given(mockJurorResponseRepository.findByJurorNumber(JUROR_NUMBER)).willReturn(JUROR_RESPONSE);
+        given(jurorResponseCommonRepositoryMod.findByJurorNumber(JUROR_NUMBER)).willReturn(JUROR_RESPONSE);
         given(mockuserRepository.findByUsername(TARGET_LOGIN)).willReturn(TARGET_LOGIN_ENTITY);
 
         final StaffAssignmentResponseDto responseDto = userService.changeAssignment(DTO, ASSIGNING_LOGIN);
@@ -167,8 +184,8 @@ public class UserServiceImplTest {
         assertThat(responseDto.getAssignmentDate()).isToday();
 
         verify(mockuserRepository).findByUsername(ASSIGNING_LOGIN);
-        verify(mockJurorResponseRepository).findByJurorNumber(JUROR_NUMBER);
-        verify(mockStaffJurorResponseAuditRepository).save(any(StaffJurorResponseAuditMod.class));
+        verify(jurorResponseCommonRepositoryMod).findByJurorNumber(JUROR_NUMBER);
+        verify(mockUserJurorResponseAuditRepository).save(any(UserJurorResponseAudit.class));
     }
 
     @Test(expected = StaffAssignmentException.class)
@@ -181,7 +198,7 @@ public class UserServiceImplTest {
     @Test(expected = StaffAssignmentException.class)
     public void changeAssignment_unhappy_throwsExceptionOnNoJurorResponse() {
         given(mockuserRepository.findByUsername(ASSIGNING_LOGIN)).willReturn(ASSIGNER_STAFF_ENTITY);
-        given(mockJurorResponseRepository.findByJurorNumber(JUROR_NUMBER)).willReturn(null);
+        given(jurorResponseCommonRepositoryMod.findByJurorNumber(JUROR_NUMBER)).willReturn(null);
 
         userService.changeAssignment(DTO, ASSIGNING_LOGIN);
     }
@@ -190,9 +207,10 @@ public class UserServiceImplTest {
     public void changeAssignment_unhappy_throwsExceptionOnNoAssignmentTargetStaffRecord() {
         given(mockuserRepository.findByUsername(anyString()))
             .willReturn(ASSIGNER_STAFF_ENTITY)  // 1st call
-            .willReturn(null)                   // 2nd call
+            .willReturn(null)             // 2nd call
         ;
-        given(mockJurorResponseRepository.findByJurorNumber(JUROR_NUMBER)).willReturn(JUROR_RESPONSE_INVALID_CLOSED);
+        given(jurorResponseCommonRepositoryMod.findByJurorNumber(JUROR_NUMBER))
+            .willReturn(JUROR_RESPONSE_INVALID_CLOSED);
 
         userService.changeAssignment(DTO, ASSIGNING_LOGIN);
     }
@@ -247,7 +265,7 @@ public class UserServiceImplTest {
             .willReturn(ASSIGNER_STAFF_ENTITY)
             .willReturn(TARGET_LOGIN_ENTITY)
         ;
-        given(mockJurorResponseRepository.findByJurorNumber(anyString()))
+        given(jurorResponseCommonRepositoryMod.findByJurorNumber(anyString()))
             .willReturn(JUROR_RESPONSE)
             .willReturn(JUROR_RESPONSE_2)
         ;
@@ -271,17 +289,17 @@ public class UserServiceImplTest {
         userService.multipleChangeAssignment(multipleStaffAssignmentDto, ASSIGNING_LOGIN);
 
         verify(mockuserRepository, times(4)).findByUsername(anyString());
-        verify(mockJurorResponseRepository).findByJurorNumber(JUROR_NUMBER);
-        verify(mockJurorResponseRepository).findByJurorNumber(JUROR_NUMBER_2);
-        verify(mockStaffJurorResponseAuditRepository, times(2)).save(any(StaffJurorResponseAuditMod.class));
+        verify(jurorResponseCommonRepositoryMod).findByJurorNumber(JUROR_NUMBER);
+        verify(jurorResponseCommonRepositoryMod).findByJurorNumber(JUROR_NUMBER_2);
+        verify(mockUserJurorResponseAuditRepository, times(2)).save(any(UserJurorResponseAudit.class));
         verify(mockJurorResponseRepository, times(2)).save(any(DigitalResponse.class));
-        verify(mockStaffJurorResponseAuditRepository, times(2)).save(any(StaffJurorResponseAuditMod.class));
+        verify(mockUserJurorResponseAuditRepository, times(2)).save(any(UserJurorResponseAudit.class));
     }
 
     @Test
     public void multipleChangeAssignment_happy_nullStaffAssignment() {
         given(mockuserRepository.findByUsername(anyString())).willReturn(ASSIGNER_STAFF_ENTITY);
-        given(mockJurorResponseRepository.findByJurorNumber(anyString()))
+        given(jurorResponseCommonRepositoryMod.findByJurorNumber(anyString()))
             .willReturn(JUROR_RESPONSE)
             .willReturn(JUROR_RESPONSE_2)
         ;
@@ -306,17 +324,17 @@ public class UserServiceImplTest {
 
         verify(mockuserRepository, times(2)).findByUsername(anyString());//Only gets called for the assigning staff
         // members record!
-        verify(mockJurorResponseRepository).findByJurorNumber(JUROR_NUMBER);
-        verify(mockJurorResponseRepository).findByJurorNumber(JUROR_NUMBER_2);
-        verify(mockStaffJurorResponseAuditRepository, times(2)).save(any(StaffJurorResponseAuditMod.class));
+        verify(jurorResponseCommonRepositoryMod).findByJurorNumber(JUROR_NUMBER);
+        verify(jurorResponseCommonRepositoryMod).findByJurorNumber(JUROR_NUMBER_2);
+        verify(mockUserJurorResponseAuditRepository, times(2)).save(any(UserJurorResponseAudit.class));
         verify(mockJurorResponseRepository, times(2)).save(any(DigitalResponse.class));
-        verify(mockStaffJurorResponseAuditRepository, times(2)).save(any(StaffJurorResponseAuditMod.class));
+        verify(mockUserJurorResponseAuditRepository, times(2)).save(any(UserJurorResponseAudit.class));
     }
 
     @Test
     public void multipleChangeAssignment_unhappy_nullStaffAssignment_badStatus() {
         given(mockuserRepository.findByUsername(anyString())).willReturn(ASSIGNER_STAFF_ENTITY);
-        given(mockJurorResponseRepository.findByJurorNumber(anyString()))
+        given(jurorResponseCommonRepositoryMod.findByJurorNumber(anyString()))
             .willReturn(JUROR_RESPONSE)
             .willReturn(JUROR_RESPONSE_2)
             .willReturn(JUROR_RESPONSE_INVALID_AWAITING_CONTACT);
@@ -350,14 +368,14 @@ public class UserServiceImplTest {
 
         verify(mockuserRepository, times(3)).findByUsername(anyString());//Only gets called for the assigning staff
         // members record!
-        verify(mockJurorResponseRepository).findByJurorNumber(JUROR_NUMBER);
-        verify(mockJurorResponseRepository).findByJurorNumber(JUROR_NUMBER_2);
-        verify(mockJurorResponseRepository).findByJurorNumber(JUROR_NUMBER_3);
+        verify(jurorResponseCommonRepositoryMod).findByJurorNumber(JUROR_NUMBER);
+        verify(jurorResponseCommonRepositoryMod).findByJurorNumber(JUROR_NUMBER_2);
+        verify(jurorResponseCommonRepositoryMod).findByJurorNumber(JUROR_NUMBER_3);
 
         // only two attempts to update should have occurred
-        verify(mockStaffJurorResponseAuditRepository, times(2)).save(any(StaffJurorResponseAuditMod.class));
+        verify(mockUserJurorResponseAuditRepository, times(2)).save(any(UserJurorResponseAudit.class));
         verify(mockJurorResponseRepository, times(2)).save(any(DigitalResponse.class));
-        verify(mockStaffJurorResponseAuditRepository, times(2)).save(any(StaffJurorResponseAuditMod.class));
+        verify(mockUserJurorResponseAuditRepository, times(2)).save(any(UserJurorResponseAudit.class));
 
 
     }

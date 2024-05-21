@@ -19,7 +19,6 @@ import java.util.Map;
 
 
 @Component
-@SuppressWarnings("PMD.LawOfDemeter")
 public class PostponedListByPoolReport extends AbstractStandardReport {
     @Autowired
     public PostponedListByPoolReport(PoolRequestRepository poolRequestRepository) {
@@ -59,7 +58,7 @@ public class PostponedListByPoolReport extends AbstractStandardReport {
     }
 
     @Override
-    public Class<?> getRequestValidatorClass() {
+    public Class<? extends Validators.AbstractRequestValidator> getRequestValidatorClass() {
         return PostponedListByPoolReport.RequestValidator.class;
     }
 

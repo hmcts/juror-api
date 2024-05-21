@@ -46,7 +46,7 @@ public class JudgeControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void getJudgesForCourtLocationsHappy() {
+    public void testGJudgesForCourtLocationsHappy() {
         ResponseEntity<JudgeListDto> responseEntity =
             restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                 URI.create("/api/v1/moj/trial/judge/list")), JudgeListDto.class);
@@ -75,7 +75,7 @@ public class JudgeControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void getJudgesForCourtLocationsExceptionForBureauUser() {
+    public void testGJudgesForCourtLocationsExceptionForBureauUser() {
         initHeadersBureau();
 
         ResponseEntity<JudgeListDto> responseEntity =

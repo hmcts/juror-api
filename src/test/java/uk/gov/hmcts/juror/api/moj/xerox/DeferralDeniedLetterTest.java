@@ -16,7 +16,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 @ExtendWith(SpringExtension.class)
-@SuppressWarnings("PMD.LawOfDemeter")
 class DeferralDeniedLetterTest extends AbstractLetterTest {
     @Override
     protected void setupEnglishExpectedResult() {

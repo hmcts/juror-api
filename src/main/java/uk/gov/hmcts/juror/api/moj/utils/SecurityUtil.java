@@ -5,6 +5,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.config.public1.PublicJwtAuthentication;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -17,9 +18,9 @@ public final class SecurityUtil {
 
     public static final String IS_MANAGER = "hasRole('ROLE_MANAGER')";
     public static final String IS_SJO = "hasRole('ROLE_SENIOR_JUROR_OFFICER')";
-    public static final String IS_BUREAU = "principal.userType.name() == 'BUREAU'";
-    public static final String IS_COURT = "principal.userType.name() == 'COURT'";
-    public static final String IS_ADMINISTRATOR = "principal.userType.name() == 'ADMINISTRATOR'";
+    public static final String IS_BUREAU = "principal.activeUserType.name() == 'BUREAU'";
+    public static final String IS_COURT = "principal.activeUserType.name() == 'COURT'";
+    public static final String IS_ADMINISTRATOR = "principal.activeUserType.name() == 'ADMINISTRATOR'";
 
     public static final String IS_BUREAU_MANAGER = IS_BUREAU + " && " + IS_MANAGER;
     public static final String IS_COURT_MANAGER = IS_COURT + " && " + IS_MANAGER;
@@ -39,6 +40,25 @@ public final class SecurityUtil {
         throw new IllegalStateException("Utility class");
     }
 
+
+    public static boolean hasBureauJwtPayload() {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        if (securityContext != null) {
+            Authentication authentication = securityContext.getAuthentication();
+            return authentication instanceof BureauJwtAuthentication;
+        }
+        return false;
+    }
+
+    public static boolean hasPublicJwtPayload() {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        if (securityContext != null) {
+            Authentication authentication = securityContext.getAuthentication();
+            return authentication instanceof PublicJwtAuthentication;
+        }
+        return false;
+    }
+
     public static BureauJwtAuthentication getActiveUsersBureauJwtAuthentication() {
         SecurityContext securityContext = SecurityContextHolder.getContext();
         Authentication authentication = securityContext.getAuthentication();
@@ -47,6 +67,7 @@ public final class SecurityUtil {
         }
         throw new MojException.Forbidden("User must be authorised with BureauJwtAuthentication", null);
     }
+
 
     public static BureauJwtPayload getActiveUsersBureauPayload() {
         Object principal = getActiveUsersBureauJwtAuthentication().getPrincipal();
@@ -91,6 +112,12 @@ public final class SecurityUtil {
         }
     }
 
+    public static void validateCanAccessRole(Role role) {
+        if (!hasRole(role)) {
+            throw new MojException.Forbidden("User does not have access", null);
+        }
+    }
+
     public static List<String> getCourts() {
         return getActiveUsersBureauPayload().getStaff().getCourts();
     }
@@ -104,8 +131,9 @@ public final class SecurityUtil {
     }
 
     public static UserType getUserType() {
-        return getActiveUsersBureauPayload().getUserType();
+        return getActiveUsersBureauPayload().getActiveUserType();
     }
+
 
     public static String getLocCode() {
         return getActiveUsersBureauPayload().getLocCode();
@@ -122,4 +150,5 @@ public final class SecurityUtil {
     public static boolean hasRole(Role role) {
         return getActiveUsersBureauPayload().getRoles().contains(role);
     }
+
 }

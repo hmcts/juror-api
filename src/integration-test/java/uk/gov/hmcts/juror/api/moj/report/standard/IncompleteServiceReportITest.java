@@ -19,10 +19,7 @@ import java.util.List;
     "/db/mod/truncate.sql",
     "/db/mod/reports/IncompleteServiceReportITest_typical.sql"
 })
-@SuppressWarnings({
-    "PMD.LawOfDemeter",
-    "PMD.JUnitTestsShouldIncludeAssert"//False positive
-})
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
 class IncompleteServiceReportITest extends AbstractStandardReportControllerITest {
     @Autowired
     public IncompleteServiceReportITest(TestRestTemplate template) {
@@ -144,6 +141,12 @@ class IncompleteServiceReportITest extends AbstractStandardReportControllerITest
                             .headings(null)
                             .build(),
                         StandardReportResponse.TableData.Heading.builder()
+                            .id("last_attendance_date")
+                            .name("Last attended on")
+                            .dataType("LocalDate")
+                            .headings(null)
+                            .build(),
+                        StandardReportResponse.TableData.Heading.builder()
                             .id("next_attendance_date")
                             .name("Next attendance date")
                             .dataType("LocalDate")
@@ -155,22 +158,26 @@ class IncompleteServiceReportITest extends AbstractStandardReportControllerITest
                             .add("first_name", "FNAMETHREE")
                             .add("last_name", "LNAMETHREE")
                             .add("pool_number_by_jp", "415240601")
+                            .add("last_attendance_date",
+                                DateTimeFormatter.ISO_DATE.format(LocalDate.now().minusDays(1)))
                             .add("next_attendance_date",
-                                DateTimeFormatter.ISO_DATE.format(LocalDate.now().minusDays(1))),
+                                DateTimeFormatter.ISO_DATE.format(LocalDate.now().plusDays(1))),
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number", "641500011")
                             .add("first_name", "FNAMEONEONE")
                             .add("last_name", "LNAMEONEONE")
                             .add("pool_number_by_jp", "415240601")
+                            .add("last_attendance_date",
+                                DateTimeFormatter.ISO_DATE.format(LocalDate.now().minusDays(2)))
                             .add("next_attendance_date",
-                                DateTimeFormatter.ISO_DATE.format(LocalDate.now().minusDays(1))),
+                                DateTimeFormatter.ISO_DATE.format(LocalDate.now().plusDays(1))),
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number", "641500021")
                             .add("first_name", "FNAMETWOONE")
                             .add("last_name", "LNAMETWOONE")
                             .add("pool_number_by_jp", "415240601")
                             .add("next_attendance_date",
-                                DateTimeFormatter.ISO_DATE.format(LocalDate.now().minusDays(1)))))
+                                DateTimeFormatter.ISO_DATE.format(LocalDate.now().plusDays(1)))))
                     .build())
             .build();
     }
@@ -218,6 +225,12 @@ class IncompleteServiceReportITest extends AbstractStandardReportControllerITest
                             .id("pool_number_by_jp")
                             .name("Pool Number")
                             .dataType("String")
+                            .headings(null)
+                            .build(),
+                        StandardReportResponse.TableData.Heading.builder()
+                            .id("last_attendance_date")
+                            .name("Last attended on")
+                            .dataType("LocalDate")
                             .headings(null)
                             .build(),
                         StandardReportResponse.TableData.Heading.builder()

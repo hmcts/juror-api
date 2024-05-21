@@ -45,8 +45,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SuppressWarnings({
     "PMD.AbstractClassWithoutAbstractMethod",
     "PMD.TooManyMethods",
-    "PMD.LawOfDemeter",
-    "PMD.ExcessiveImports",
+    "PMD.ExcessiveImports"
 })
 public abstract class AbstractIntegrationTest extends ContainerTest {
 
@@ -174,7 +173,6 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
                 .active(1)
                 .rank(rank)
                 .build())
-            .daysToExpire(89)
             .owner(owner)
             .build());
     }
@@ -191,7 +189,9 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
                 .active(1)
                 .courts(new ArrayList<>(courtsToSet))
                 .build())
+            .locCode(courts.length >= 1 ? courts[0] : null)
             .userType(userType)
+            .activeUserType(userType)
             .roles(roles)
             .owner(owner)
             .build();

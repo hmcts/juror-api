@@ -5,6 +5,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.juror.api.TestConstants;
+import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
@@ -16,6 +17,7 @@ import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -29,7 +31,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("PMD.LawOfDemeter")
 class IncompleteServiceReportTest extends AbstractStandardReportTestSupport<IncompleteServiceReport> {
 
     private CourtLocationRepository courtLocationRepository;
@@ -41,6 +42,7 @@ class IncompleteServiceReportTest extends AbstractStandardReportTestSupport<Inco
             DataType.FIRST_NAME,
             DataType.LAST_NAME,
             DataType.POOL_NUMBER_BY_JP,
+            DataType.LAST_ATTENDANCE_DATE,
             DataType.NEXT_ATTENDANCE_DATE);
     }
 
@@ -67,16 +69,29 @@ class IncompleteServiceReportTest extends AbstractStandardReportTestSupport<Inco
 
     @Override
     public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+
+        TestUtils.setupAuthentication("415", "COURT_USER", "1");
+
+        StandardReportRequest requestMock = mock(StandardReportRequest.class);
+        when(requestMock.getDate()).thenReturn(LocalDate.now());
+        when(requestMock.getLocCode()).thenReturn(TestConstants.VALID_COURT_LOCATION);
+
         report.preProcessQuery(query, request);
         verify(query, times(1))
-            .where(QJurorPool.jurorPool.nextDate.loe(request.getDate()));
+            .where(QJurorPool.jurorPool.pool.returnDate.loe(requestMock.getDate()));
         verify(query, times(1))
-            .where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(request.getLocCode()));
+            .where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(requestMock.getLocCode()));
+        verify(query, times(1))
+            .where(QJurorPool.jurorPool.pool.owner.eq(SecurityUtil.getActiveOwner()));
+        verify(query, times(1))
+            .where(QJurorPool.jurorPool.isActive.eq(true));
         verify(query, times(1))
             .where(QJurorPool.jurorPool.status.status.in(List.of(IJurorStatus.RESPONDED, IJurorStatus.PANEL,
                 IJurorStatus.JUROR)));
+        verify(query, times(1)).orderBy(QJuror.juror.jurorNumber.asc());
         verify(query, times(1))
-            .orderBy(QJuror.juror.jurorNumber.asc());
+            .groupBy(QJuror.juror.jurorNumber, QJuror.juror.firstName, QJuror.juror.lastName,
+                QJurorPool.jurorPool.pool.poolNumber, QJurorPool.jurorPool.nextDate);
 
     }
 

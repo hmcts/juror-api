@@ -70,7 +70,6 @@ import static uk.gov.hmcts.juror.api.utils.DataConversionUtil.getExceptionDetail
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Sql({"/db/mod/truncate.sql", "/db/trial/Trial.sql"})
 @SuppressWarnings({
-    "PMD.LawOfDemeter",
     "PMD.ExcessiveImports",
     "PMD.TooManyMethods"
 })
@@ -681,6 +680,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/ReturnJuryPanel.sql"})
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     void testReturnJuryConfirmAttendance() {
         final String url = "/api/v1/moj/trial/return-jury?"
             + "trial_number=T10000001&"
@@ -701,6 +701,8 @@ class TrialControllerITest extends AbstractIntegrationTest {
         for (Panel panel : panelList) {
             assertThat(panel.getResult()).as("Expect result to be Returned")
                 .isEqualTo(PanelResult.RETURNED);
+            assertThat(panel.getReturnDate()).as("Expect result to be today's date")
+                .isEqualTo(LocalDate.now());
 
             JurorPool jurorPool = PanelUtils.getAssociatedJurorPool(jurorPoolRepository, panel);
             assertThat(jurorPool.getStatus().getStatus()).as(
@@ -733,6 +735,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/ReturnJuryPanel.sql"})
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     void testReturnJuryNoConfirmAttendance() {
         final String url = "/api/v1/moj/trial/return-jury?"
             + "trial_number=T10000001&"
@@ -753,6 +756,8 @@ class TrialControllerITest extends AbstractIntegrationTest {
         for (Panel panel : panelList) {
             assertThat(panel.getResult()).as("Expect result to be Returned")
                 .isEqualTo(PanelResult.RETURNED);
+            assertThat(panel.getReturnDate()).as("Expect result to be today's date")
+                .isEqualTo(LocalDate.now());
 
             JurorPool jurorPool = PanelUtils.getAssociatedJurorPool(jurorPoolRepository, panel);
             assertThat(jurorPool.getStatus().getStatus()).as(
@@ -778,6 +783,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/ReturnJuryPanel.sql"})
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     void testReturnJuryConfirmAttendanceAndCompleteService() {
         final String url = "/api/v1/moj/trial/return-jury?"
             + "trial_number=T10000001&"
@@ -803,6 +809,8 @@ class TrialControllerITest extends AbstractIntegrationTest {
                 .as("Expect one history item for juror " + panel.getJurorNumber())
                 .isEqualTo(2);
             assertThat(panel.isCompleted()).as("Expect completed status to be true").isTrue();
+            assertThat(panel.getReturnDate()).as("Expect result to be today's date")
+                .isEqualTo(LocalDate.now());
 
             JurorPool jurorPool = PanelUtils.getAssociatedJurorPool(jurorPoolRepository, panel);
             assertThat(jurorPool.getStatus().getStatus()).as("Expect status to be COMPLETED")
@@ -969,7 +977,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
     private void initialiseHeader(List<String> courts, String owner, String loginUserType) {
         BureauJwtPayload.Staff staff = createStaff(courts, "MsCourt");
         httpHeaders = initialiseHeaders(loginUserType,
-            (owner.equals("400") ? UserType.BUREAU : UserType.COURT), null, owner, staff);
+            "400".equals(owner) ? UserType.BUREAU : UserType.COURT, null, owner, staff);
     }
 
     private BureauJwtPayload.Staff createStaff(List<String> courts, String staffName) {

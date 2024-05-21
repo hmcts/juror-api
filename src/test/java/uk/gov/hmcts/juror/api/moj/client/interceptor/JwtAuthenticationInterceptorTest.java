@@ -27,7 +27,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
-@SuppressWarnings("PMD.LawOfDemeter")
 class JwtAuthenticationInterceptorTest {
 
     private JwtAuthenticationInterceptor jwtAuthenticationInterceptor;

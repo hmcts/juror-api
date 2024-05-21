@@ -87,7 +87,7 @@ public class VotersServiceImpl implements VotersService {
     public void markVoterAsSelected(Voters voter, Date attendanceDate) {
 
         voter.setDateSelected1(attendanceDate);
-        votersRepository.saveAndFlush(voter);
+        votersRepository.save(voter);
         log.info("Voter with Juror number {} has been selected for a pool.", voter.getJurorNumber());
     }
 

@@ -35,13 +35,13 @@ VALUES (1, EXTRACT(EPOCH FROM current_date)),--Appearance
 SELECT setval('juror_mod.rev_info_seq', 4, true);
 
 
-INSERT INTO juror_mod.users (username,email, name, active, team_id)
-VALUES ('smcintyre','smcintyre@email.gov.uk', 'Stephanie Mcintyre', true,1),
-       ('sbell','sbell@email.gov.uk', 'Sandra Bell', true, 2),
-       ('alineweaver','alineweaver@email.gov.uk', 'Albert Lineweaver', true, 3),
-       ('jbrown1','jbrown1@email.gov.uk', 'Jared Brown', true, 1),
-       ('jwilliams','jwilliams@email.gov.uk', 'Jeremy Williams', true, 2),
-       ('jbrown','jbrown@email.gov.uk', 'John Brown', true, 3);
+INSERT INTO juror_mod.users (username,email, name, active, team_id, version)
+VALUES ('smcintyre','smcintyre@email.gov.uk', 'Stephanie Mcintyre', true,1, 1),
+       ('sbell','sbell@email.gov.uk', 'Sandra Bell', true, 2, 1),
+       ('alineweaver','alineweaver@email.gov.uk', 'Albert Lineweaver', true, 3, 1),
+       ('jbrown1','jbrown1@email.gov.uk', 'Jared Brown', true, 1, 1),
+       ('jwilliams','jwilliams@email.gov.uk', 'Jeremy Williams', true, 2, 1),
+       ('jbrown','jbrown@email.gov.uk', 'John Brown', true, 3, 1);
 
 insert into juror_mod.user_courts (username, loc_code)
 values ('smcintyre', '415'),
@@ -51,11 +51,12 @@ values ('smcintyre', '415'),
        ('jwilliams', '417'),
        ('jbrown', '418');
 
-INSERT INTO juror_mod.financial_audit_details(id, juror_revision, court_location_revision, type, created_by, created_on, juror_number, loc_code)
-VALUES (123, 1, 1, 'FOR_APPROVAL', 'smcintyre', '2023-01-11 09:31:01.000','641500021','415'),
-       (321, 1, 1, 'APPROVED_BACS', 'smcintyre', '2023-01-12 09:32:02.000','641500021','415'),
-       (3, 1, 1, 'APPROVED_BACS', 'smcintyre', '2023-01-13 09:33:03.000','641500021','415'),
-       (12345, 1, 1, 'APPROVED_EDIT', 'smcintyre', '2023-01-14 09:34:04.000','641500021','415');
+INSERT INTO juror_mod.financial_audit_details(id, juror_revision, court_location_revision, type, created_by, created_on,
+                                              juror_number, loc_code)
+VALUES (123, 1, 1, 'FOR_APPROVAL', 'smcintyre', '2023-01-11 09:31:01.000', '641500021', '415'),
+       (321, 1, 1, 'APPROVED_BACS', 'smcintyre', '2023-01-12 09:32:02.000', '641500021', '415'),
+       (3, 1, 1, 'APPROVED_BACS', 'smcintyre', '2023-01-13 09:33:03.000', '641500021', '415'),
+       (12345, 1, 1, 'APPROVED_EDIT', 'smcintyre', '2023-01-14 09:34:04.000', '641500021', '415');
 
 --Approved edited
 
@@ -111,7 +112,7 @@ values
     --3 For Approval
     ('2023-01-08', '641500020', '415', '09:30', '16:00', false, '00:40', true, '415230101',
      false, 13.97, 0, 23, 0, 33, 0, 43, 0, 53, 0, 63, 0, 73, 0, 83, 0, 93, 0, 103, 0, 28, 0, 'FULL_DAY',
-     false,  '123', 'EXPENSE_ENTERED'),
+     false, '123', 'EXPENSE_ENTERED'),
     ('2023-01-09', '641500020', '415', '09:30', '16:00', false, '00:40', true, '415230101',
      false, 14.01, 0, 24, 0, 34, 0, 44, 0, 54, 0, 64, 0, 74, 0, 84, 0, 94, 0, 104, 0, 29, 0, 'FULL_DAY',
      false, '123', 'EXPENSE_ENTERED'),

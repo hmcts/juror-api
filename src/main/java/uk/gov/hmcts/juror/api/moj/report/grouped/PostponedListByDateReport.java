@@ -8,6 +8,7 @@ import uk.gov.hmcts.juror.api.juror.domain.QPool;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
@@ -15,19 +16,17 @@ import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReport;
 import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
+import uk.gov.hmcts.juror.api.moj.report.ReportGroupBy;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.service.CourtLocationService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
-@SuppressWarnings("PMD.LawOfDemeter")
 public class PostponedListByDateReport extends AbstractGroupedReport {
 
     private final CourtLocationService courtLocationService;
@@ -37,8 +36,10 @@ public class PostponedListByDateReport extends AbstractGroupedReport {
                                      CourtLocationService courtLocationService) {
         super(poolRequestRepository,
             QJurorPool.jurorPool,
-            DataType.POOL_NUMBER,
-            true,
+            ReportGroupBy.builder()
+                .dataType(DataType.POOL_NUMBER)
+                .removeGroupByFromResponse(true)
+                .build(),
             DataType.JUROR_NUMBER,
             DataType.FIRST_NAME,
             DataType.LAST_NAME,
@@ -48,7 +49,7 @@ public class PostponedListByDateReport extends AbstractGroupedReport {
     }
 
     @Override
-    public Class<?> getRequestValidatorClass() {
+    public Class<? extends Validators.AbstractRequestValidator> getRequestValidatorClass() {
         return RequestValidator.class;
     }
 
@@ -68,7 +69,7 @@ public class PostponedListByDateReport extends AbstractGroupedReport {
     @Override
     public Map<String, GroupedReportResponse.DataTypeValue> getHeadings(
         StandardReportRequest request,
-        StandardReportResponse.TableData<Map<String, List<LinkedHashMap<String, Object>>>> tableData) {
+        StandardReportResponse.TableData<GroupedTableData> tableData) {
 
         Map<String, GroupedReportResponse.DataTypeValue> map = new ConcurrentHashMap<>();
         map.put("date_from", AbstractReportResponse.DataTypeValue.builder()
@@ -84,9 +85,7 @@ public class PostponedListByDateReport extends AbstractGroupedReport {
         map.put("total_postponed", GroupedReportResponse.DataTypeValue.builder()
             .displayName("Total postponed")
             .dataType(Long.class.getSimpleName())
-            .value(tableData.getData().values().stream()
-                .map(List::size)
-                .reduce(0, Integer::sum))
+            .value(tableData.getData().getSize())
             .build());
 
         if (SecurityUtil.isCourt()) {

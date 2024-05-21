@@ -42,6 +42,7 @@ import static org.junit.Assert.fail;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SuppressWarnings("PMD.TooManyMethods")
 public class BureauEndpointControllerTest extends AbstractIntegrationTest {
     @Autowired
     private TestRestTemplate template;
@@ -93,9 +94,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
 
         final String publicJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("testlogin")
-            .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
 
@@ -120,9 +119,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
-            .passwordWarning(false)
             .login("testlogin")
-            .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build())
         );
@@ -173,9 +170,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
-            .passwordWarning(false)
             .login("testlogin")
-            .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build())
         );
@@ -205,9 +200,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("testlogin")
-            .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
 
@@ -292,9 +285,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("testlogin")
-            .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
 
@@ -371,9 +362,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("testlogin")
-            .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
 
@@ -449,9 +438,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("testlogin")
-            .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
 
@@ -525,9 +512,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("testlogin")
-            .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
 
@@ -601,9 +586,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("testlogin")
-            .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
 
@@ -677,9 +660,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("testlogin")
-            .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
 
@@ -753,9 +734,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("testlogin")
-            .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
 
@@ -819,10 +798,10 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         // assert staff assignment on response has changed and been audited
         assertThat(jdbcTemplate.queryForObject("SELECT STAFF_LOGIN FROM juror_mod.juror_response", String.class))
             .isEqualTo("testlogin");
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.staff_juror_response_audit",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
             Integer.class))
             .isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT STAFF_LOGIN FROM juror_mod.staff_juror_response_audit",
+        assertThat(jdbcTemplate.queryForObject("SELECT ASSIGNED_TO FROM juror_mod.user_juror_response_audit",
             String.class))
             .isEqualTo("testlogin");
     }

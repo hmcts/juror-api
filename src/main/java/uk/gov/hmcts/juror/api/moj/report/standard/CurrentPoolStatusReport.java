@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-@SuppressWarnings("PMD.LawOfDemeter")
 public class CurrentPoolStatusReport extends AbstractStandardReport {
 
     @Autowired
@@ -71,7 +70,7 @@ public class CurrentPoolStatusReport extends AbstractStandardReport {
     }
 
     @Override
-    public Class<?> getRequestValidatorClass() {
+    public Class<? extends Validators.AbstractRequestValidator> getRequestValidatorClass() {
         return RequestValidator.class;
     }
 

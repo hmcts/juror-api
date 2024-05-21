@@ -28,7 +28,6 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -66,8 +65,6 @@ public class BureauOfficerAllocatedRepliesControllerTest extends AbstractIntegra
     @Sql("/db/standing_data.sql")
     @Sql("/db/BureauOfficerAllocateRepliesService_BacklogData.sql")
     public void bureauAllocationReplies_happy() throws Exception {
-
-
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userType(UserType.BUREAU)
             .roles(Set.of(Role.MANAGER))
@@ -107,11 +104,12 @@ public class BureauOfficerAllocatedRepliesControllerTest extends AbstractIntegra
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(exchange.getBody().getBureauBacklogCount().getNonUrgent()).isEqualTo(4);
         assertThat(exchange.getBody().getBureauBacklogCount().getUrgent()).isEqualTo(3);
-        assertThat(exchange.getBody().getData().size()).isEqualTo(6);
+
+        assertThat(exchange.getBody().getData().size()).isEqualTo(2);
 
         List<BureauOfficerAllocatedData> carneson =
-            exchange.getBody().getData().stream().filter(r -> r.getLogin().equals("carneson"))
-                .collect(Collectors.toList());
+            exchange.getBody().getData().stream().filter(r -> "carneson".equals(r.getLogin()))
+                .toList();
         assertThat(carneson.size()).isEqualTo(1);
         assertThat(carneson.get(0).getName()).isEqualToIgnoringCase("Chad Arneson");
         assertThat(carneson.get(0).getAllReplies()).isEqualTo(8);
@@ -119,8 +117,8 @@ public class BureauOfficerAllocatedRepliesControllerTest extends AbstractIntegra
         assertThat(carneson.get(0).getNonUrgent()).isEqualTo(2);
 
         List<BureauOfficerAllocatedData> mruby =
-            exchange.getBody().getData().stream().filter(r -> r.getLogin().equals("mruby"))
-                .collect(Collectors.toList());
+            exchange.getBody().getData().stream().filter(r -> "mruby".equals(r.getLogin()))
+                .toList();
         assertThat(mruby.size()).isEqualTo(1);
         assertThat(mruby.get(0).getName()).isEqualToIgnoringCase("Martin Ruby");
         assertThat(mruby.get(0).getAllReplies()).isEqualTo(4);

@@ -422,7 +422,8 @@ public class JurorManagementServiceImpl implements JurorManagementService {
 
         sourceJurorPools.forEach(jurorPool -> {
             // status validation (acceptable status values are 1 (summoned) or 2 (responded)
-            if (jurorPool.getStatus().getStatus() > 2) {
+            if (jurorPool.getStatus().getStatus() > 2 && !(jurorPool.getStatus().getStatus() == 7
+                && requestDto.getDeferralMaintenance() != null && requestDto.getDeferralMaintenance().equals(true))) {
                 failedTransfers.put(jurorPool.getJurorNumber(),
                     new Triple<>(String.format(JurorManagementConstants.INVALID_STATUS_MESSAGE, jurorPool.getStatus()
                         .getStatusDesc()), jurorPool.getJuror().getFirstName(), jurorPool.getJuror().getLastName()));

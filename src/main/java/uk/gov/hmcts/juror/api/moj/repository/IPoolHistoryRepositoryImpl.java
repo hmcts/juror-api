@@ -24,7 +24,6 @@ import static com.querydsl.core.types.dsl.Expressions.dateTimeTemplate;
 
 @Component
 @Slf4j
-@SuppressWarnings("PMD.LawOfDemeter")
 public class IPoolHistoryRepositoryImpl implements IPoolHistoryRepository {
 
     @PersistenceContext

@@ -51,7 +51,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     }
 )
 @DisplayName("Controller: " + UserControllerTest.BASE_URL)
-@SuppressWarnings({"PMD.LawOfDemeter","PMD.ExcessiveImports"})
+@SuppressWarnings("PMD.ExcessiveImports")
 class UserControllerTest {
 
     public static final String BASE_URL = "/api/v1/moj/users";

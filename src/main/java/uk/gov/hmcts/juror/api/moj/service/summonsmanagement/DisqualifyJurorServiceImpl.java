@@ -49,7 +49,7 @@ import static uk.gov.hmcts.juror.api.moj.utils.JurorResponseUtils.createMinimalP
 
 @Slf4j
 @Service
-@SuppressWarnings({"PMD.TooManyImports", "PMD.LawOfDemeter"})
+@SuppressWarnings("PMD.TooManyImports")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
 

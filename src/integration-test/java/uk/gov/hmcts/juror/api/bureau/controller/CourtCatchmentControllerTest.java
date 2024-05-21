@@ -61,9 +61,7 @@ public class CourtCatchmentControllerTest extends AbstractIntegrationTest {
     public void courtCatchment_Changed() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("ncrawford")
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -99,9 +97,7 @@ public class CourtCatchmentControllerTest extends AbstractIntegrationTest {
     public void courtCatchment_Unchanged() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("ncrawford")
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -135,14 +131,9 @@ public class CourtCatchmentControllerTest extends AbstractIntegrationTest {
     @Sql("/db/standing_data.sql")
     @Sql("/db/BureauResponseCourtCatchmentController_Unhappy.sql")
     public void courtCatchment_Loc_Code_Not_Found_Unhappy() throws Exception {
-        final Integer validVersion = 555;
-
-
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("ncrawford")
-            .daysToExpire(89)
             .owner("400")
             .build());
 

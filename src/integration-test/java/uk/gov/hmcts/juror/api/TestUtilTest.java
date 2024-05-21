@@ -32,9 +32,7 @@ public class TestUtilTest {
     private static final String[] TEST_ROLES = {"juror", "test"};
     private static final Instant HUNDRED_YEARS = Instant.now().plusSeconds(60L * 60L * 24L * 365L * 100L);
     private static final String TEST_BUREAU_LOGIN = "testuser";
-    private static final Integer TEST_BUREAU_DAYS_TO_EXPIRE = 888;
     private static final String TEST_BUREAU_OWNER = JurorDigitalApplication.JUROR_OWNER;
-    private static final Boolean TEST_BUREAU_PASSWORD_WARNING = Boolean.FALSE;
     private static final String TEST_BUREAU_USER_LEVEL = "3";
 
     @Test
@@ -73,8 +71,8 @@ public class TestUtilTest {
 
     @Test
     public void testMintBureauJwt() throws Exception {
-        BureauJwtPayload jwtPayload = new BureauJwtPayload(TEST_BUREAU_OWNER, TEST_BUREAU_LOGIN, TEST_BUREAU_USER_LEVEL,
-            TEST_BUREAU_PASSWORD_WARNING, TEST_BUREAU_DAYS_TO_EXPIRE, null);
+        BureauJwtPayload jwtPayload = new BureauJwtPayload(TEST_BUREAU_OWNER, TEST_BUREAU_LOGIN,
+            TEST_BUREAU_USER_LEVEL, null);
 
         // encode a token
         final String jwt = TestUtil.mintBureauJwt(jwtPayload, SignatureAlgorithm.HS256, SECRET_KEY_BUREAU,
@@ -95,8 +93,6 @@ public class TestUtilTest {
         assertThat(data).isNotNull();
         assertThat(data.getLogin()).isEqualTo(TEST_BUREAU_LOGIN);
         assertThat(data.getOwner()).isEqualTo(TEST_BUREAU_OWNER);
-        assertThat(data.getDaysToExpire()).isEqualTo(TEST_BUREAU_DAYS_TO_EXPIRE);
-        assertThat(data.getPasswordWarning()).isEqualTo(TEST_BUREAU_PASSWORD_WARNING);
         assertThat(data.getUserLevel()).isEqualTo(TEST_BUREAU_USER_LEVEL);
     }
 

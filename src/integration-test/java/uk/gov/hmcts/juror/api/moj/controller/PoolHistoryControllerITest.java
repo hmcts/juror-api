@@ -55,7 +55,7 @@ public class PoolHistoryControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql","/db/PoolHistoryController_createInitialPoolHistories.sql"})
-    public void getPoolHistory_Happy_Path() {
+    public void testGetPoolHistory_Happy_Path() {
         ResponseEntity<PoolHistoryListDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, GET,
                 URI.create("/api/v1/moj/pool-history/111111111")), PoolHistoryListDto.class);
@@ -73,7 +73,7 @@ public class PoolHistoryControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql","/db/PoolHistoryController_createInitialPoolHistories.sql"})
-    public void getPoolHistory_BureauUser_PoolRequestDoesNotExist() {
+    public void testGetPoolHistory_BureauUser_PoolRequestDoesNotExist() {
 
         ResponseEntity<PoolHistoryListDto> response =
             restTemplate.exchange(new RequestEntity<>(httpHeaders, GET,
@@ -86,7 +86,7 @@ public class PoolHistoryControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql","/db/PoolHistoryController_createInitialPoolHistories.sql"})
-    public void getPoolHistory_CourtUser_NoAccess() throws Exception {
+    public void testGPoolHistory_CourtUser_NoAccess() throws Exception {
         String poolNumber = "111111111";
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415")));
 
@@ -102,9 +102,7 @@ public class PoolHistoryControllerITest extends AbstractIntegrationTest {
     private void initHeaders() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("BUREAU_USER")
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -117,9 +115,7 @@ public class PoolHistoryControllerITest extends AbstractIntegrationTest {
 
         return mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("COURT_USER")
-            .daysToExpire(89)
             .owner(owner)
             .staff(BureauJwtPayload.Staff.builder().courts(courts).build())
             .build());

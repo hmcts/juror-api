@@ -56,13 +56,13 @@ import java.util.Set;
 
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.APPEARANCE_RECORD_BEFORE_SERVICE_START_DATE;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.ATTENDANCE_RECORD_ALREADY_EXISTS;
+import static uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils.getNextWorkingDay;
 import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.isEmptyOrNull;
 import static uk.gov.hmcts.juror.api.moj.utils.JurorUtils.checkOwnershipForCurrentUser;
 import static uk.gov.hmcts.juror.api.moj.utils.JurorUtils.getActiveJurorRecord;
 import static uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils.unboxOptionalRecord;
 
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.GodClass", "PMD.CyclomaticComplexity",
-    "PMD.LawOfDemeter"})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.GodClass", "PMD.CyclomaticComplexity"})
 @Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor = @__({@Autowired}))
@@ -180,7 +180,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         appearanceRepository.saveAndFlush(appearance);
 
         // update the juror next date and clear on call flag in case it is set
-        jurorPool.setNextDate(appearanceDate);
+        jurorPool.setNextDate(getNextWorkingDay(locCode));
+
         jurorPool.setOnCall(false);
         jurorPoolRepository.saveAndFlush(jurorPool);
 
@@ -291,7 +292,6 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
     @Override
     @Transactional
-    @SuppressWarnings("PMD.LawOfDemeter")
     public String updateAttendanceDate(UpdateAttendanceDateDto request) {
         log.trace(String.format("Entered method: updateAttendanceDate(). There are %s jurors to update",
             request.getJurorNumbers().size()));
@@ -683,7 +683,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                 // get the currently active trial the juror is on
                 Panel panel = panelRepository
                     .findByTrialCourtLocationLocCodeAndJurorJurorNumberAndCompleted(locCode,
-                        jurorNumber, false);
+                        jurorNumber, true);
                 if (panel != null) {
                     appearance.setTrialNumber(panel.getTrial().getTrialNumber());
                 }

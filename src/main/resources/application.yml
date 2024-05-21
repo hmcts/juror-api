@@ -60,6 +60,8 @@ spring:
     show-sql: true
     properties:
       hibernate:
+        jdbc:
+          batch_size: 20
         dialect: org.hibernate.dialect.PostgreSQLDialect
       org:
         hibernate:
@@ -98,6 +100,7 @@ spring:
     user: ${spring.datasource.username}
     password: ${spring.datasource.password}
     # url: ${spring.datasource.url}
+    out-of-order: false
 logging:
   level:
     uk.gov.hmcts.juror.api: info

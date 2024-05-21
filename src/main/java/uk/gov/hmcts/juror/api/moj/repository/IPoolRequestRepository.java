@@ -32,7 +32,8 @@ public interface IPoolRequestRepository extends IPoolRequestSearchQueries {
 
     void deletePoolRequestByPoolNumber(String poolNumber);
 
-    List<Tuple> findActivePoolsForDateRange(String owner, String locCode, LocalDate minDate, LocalDate maxDate);
+    List<Tuple> findActivePoolsForDateRange(String owner, String locCode, LocalDate minDate, LocalDate maxDate,
+                                            boolean isReassign);
 
     List<Tuple> findActivePoolsForDateRangeWithCourtCreatedRestriction(String owner, String locCode,
                                                                        LocalDate minDate,

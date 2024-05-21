@@ -25,8 +25,8 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 public final class TestUtils {
-
     public static final ObjectMapper objectMapper;
+    private static MockedStatic<SecurityUtil> SECURITY_UTIL_MOCK;
 
     static {
         objectMapper = new ObjectMapper().findAndRegisterModules();
@@ -55,8 +55,6 @@ public final class TestUtils {
             .login(username)
             .staff(staffBuilder(username, Integer.valueOf(userLevel), List.of("415", "400")))
             .userLevel(userLevel)
-            .daysToExpire(89)
-            .passwordWarning(false)
             .build();
     }
 
@@ -64,6 +62,7 @@ public final class TestUtils {
         return BureauJwtPayload.builder()
             .owner(owner)
             .userType(userType)
+            .activeUserType(userType)
             .roles(roles)
             .login(username)
             .staff(staffBuilder(username, List.of(owner)))
@@ -76,12 +75,9 @@ public final class TestUtils {
             .login(username)
             .staff(staffBuilder(username, Integer.valueOf(userLevel), courts))
             .userLevel(userLevel)
-            .daysToExpire(89)
-            .passwordWarning(false)
             .build();
     }
 
-    @SuppressWarnings("PMD.LawOfDemeter")
     public static BureauJwtPayload.Staff staffBuilder(String staffName, Integer rank, List<String> courts) {
         return BureauJwtPayload.Staff.builder()
             .name(staffName)
@@ -148,18 +144,18 @@ public final class TestUtils {
         BureauJwtAuthentication auth = mock(BureauJwtAuthentication.class);
         when(auth.getPrincipal())
             .thenReturn(TestUtils.createJwt(owner, username, userLevel, courts));
-        SecurityContext securityContext = mock(SecurityContext.class);
 
+        SecurityContext securityContext = mock(SecurityContext.class);
         when(securityContext.getAuthentication()).thenReturn(auth);
+
         SecurityContextHolder.setContext(securityContext);
     }
-
-    private static MockedStatic<SecurityUtil> SECURITY_UTIL_MOCK;
 
     @AfterAll
     public static void afterAll() {
         if (SECURITY_UTIL_MOCK != null) {
             SECURITY_UTIL_MOCK.close();
+            SECURITY_UTIL_MOCK = null;
         }
     }
 

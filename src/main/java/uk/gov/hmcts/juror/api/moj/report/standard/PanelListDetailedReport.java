@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-@SuppressWarnings("PMD.LawOfDemeter")
 public class PanelListDetailedReport extends AbstractStandardReport {
 
     private final TrialRepository trialRepository;
@@ -57,7 +56,7 @@ public class PanelListDetailedReport extends AbstractStandardReport {
     }
 
     @Override
-    public Class<?> getRequestValidatorClass() {
+    public Class<? extends Validators.AbstractRequestValidator> getRequestValidatorClass() {
         return PanelListDetailedReport.RequestValidator.class;
     }
 

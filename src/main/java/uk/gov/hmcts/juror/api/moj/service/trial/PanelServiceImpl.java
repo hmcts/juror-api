@@ -311,6 +311,7 @@ public class PanelServiceImpl implements PanelService {
                 responded.setStatusDesc("Juror");
                 jurorPool.setStatus(responded);
                 panelMember.setCompleted(true);
+                panelMember.setEmpanelledDate(LocalDate.now());
             }
             default -> throw new MojException.BadRequest(
                 "Invalid result - Wrong result set for juror",

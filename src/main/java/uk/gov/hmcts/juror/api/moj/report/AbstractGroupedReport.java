@@ -5,6 +5,7 @@ import com.querydsl.core.types.EntityPath;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 
 import java.util.ArrayList;
@@ -14,55 +15,92 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public abstract class AbstractGroupedReport extends AbstractReport<Map<String, List<LinkedHashMap<String, Object>>>> {
+public abstract class AbstractGroupedReport extends AbstractReport<GroupedTableData> {
 
-    final DataType groupBy;
-    final boolean removeGroupByFromResponse;
 
-    public AbstractGroupedReport(EntityPath<?> from, DataType groupBy,
-                                 boolean removeGroupByFromResponse, IDataType... dataType) {
-        this(null, from, groupBy, removeGroupByFromResponse, dataType);
+    final IReportGroupBy groupBy;
+
+    public AbstractGroupedReport(EntityPath<?> from, IReportGroupBy groupBy, IDataType... dataType) {
+        this(null, from, groupBy, dataType);
     }
 
+
     public AbstractGroupedReport(PoolRequestRepository poolRequestRepository,
-                                 EntityPath<?> from, DataType groupBy,
-                                 boolean removeGroupByFromResponse, IDataType... dataType) {
+                                 EntityPath<?> from, IReportGroupBy groupBy, IDataType... dataType) {
         super(poolRequestRepository, from, combine(groupBy, dataType));
-        this.removeGroupByFromResponse = removeGroupByFromResponse;
         this.groupBy = groupBy;
     }
 
-    static IDataType[] combine(DataType groupBy, IDataType... dataType) {
-        List<IDataType> list = new ArrayList<>();
-        list.add(groupBy);
-        list.addAll(Arrays.asList(dataType));
-        return list.toArray(new IDataType[0]);
-    }
 
     @Override
-    protected Map<String, List<LinkedHashMap<String, Object>>> getTableData(List<Tuple> data) {
-        return getTableDataAsList(data)
+    protected GroupedTableData getTableData(List<Tuple> data) {
+        return groupData(groupBy,
+            getTableDataAsList(data)
+        );
+    }
+
+    private GroupedTableData groupData(IReportGroupBy groupBy, List<LinkedHashMap<String, Object>> data) {
+        List<GroupedTableData> groupedData = data
             .stream()
-            .collect(Collectors.groupingBy(e -> e.get(groupBy.getId()).toString()));
+            .map(stringObjectLinkedHashMap -> {
+                GroupedTableData groupedTableData = new GroupedTableData();
+                groupedTableData.putAll(stringObjectLinkedHashMap);
+                groupedTableData.setType(GroupedTableData.Type.DATA);
+                return groupedTableData;
+            }).toList();
+        return subGroup(groupBy, groupedData);
+    }
+
+
+    private GroupedTableData subGroup(IReportGroupBy groupBy, List<GroupedTableData> data) {
+        Map<String, List<GroupedTableData>> groupedData = data
+            .stream()
+            .collect(Collectors.groupingBy(groupBy::getGroupFunction,
+                LinkedHashMap::new,
+                Collectors.toList()));
+
+        GroupedTableData response = new GroupedTableData();
+        response.putAll(groupedData);
+        response.setType(GroupedTableData.Type.GROUPED);
+
+        if (groupBy.getNested() != null) {
+            groupedData.forEach((key, value) -> {
+                Map<String, ?> nestedData = subGroup(groupBy.getNested(), value);
+                response.put(key, nestedData);
+            });
+        }
+        return response;
     }
 
     @Override
     protected GroupedReportResponse createBlankResponse() {
         return GroupedReportResponse.builder()
-            .groupBy(groupBy)
+            .groupBy(groupBy.getGroupedByResponse())
             .build();
     }
 
     @Override
-    public AbstractReportResponse<Map<String, List<LinkedHashMap<String, Object>>>> getStandardReportResponse(
+    public AbstractReportResponse<GroupedTableData> getStandardReportResponse(
         StandardReportRequest request) {
-        AbstractReportResponse<Map<String, List<LinkedHashMap<String, Object>>>> response =
+        AbstractReportResponse<GroupedTableData> response =
             super.getStandardReportResponse(request);
-        if (removeGroupByFromResponse) {
-            response.getTableData().getHeadings().removeIf(heading -> groupBy.getId().equals(heading.getId()));
-            response.getTableData().getData().forEach((string, linkedHashMaps) -> linkedHashMaps.forEach(
-                linkedHashMap -> linkedHashMap.remove(groupBy.getId())));
+
+        IReportGroupBy tmpGroupBy = groupBy;
+        while (tmpGroupBy != null) {
+            tmpGroupBy.getCombinedKeysToRemove().forEach(key -> {
+                response.getTableData().getHeadings().removeIf(heading -> key.equals(heading.getId()));
+                response.getTableData().getData().removeDataKey(key);
+            });
+            tmpGroupBy = tmpGroupBy.getNested();
         }
         return response;
+    }
+
+
+    static IDataType[] combine(IReportGroupBy groupBy, IDataType... dataType) {
+        List<IDataType> list = new ArrayList<>();
+        list.addAll(groupBy.getCombinedRequiredDataTypes());
+        list.addAll(Arrays.asList(dataType));
+        return list.toArray(new IDataType[0]);
     }
 }

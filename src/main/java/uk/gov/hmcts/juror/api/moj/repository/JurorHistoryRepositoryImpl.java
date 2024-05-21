@@ -9,7 +9,6 @@ import uk.gov.hmcts.juror.api.moj.domain.QJurorHistory;
 import java.time.LocalDate;
 import java.util.List;
 
-@SuppressWarnings("PMD.LawOfDemeter")
 public class JurorHistoryRepositoryImpl implements IJurorHistoryRepository {
 
 

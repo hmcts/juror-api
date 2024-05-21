@@ -55,7 +55,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = "notify.disabled=false"
 )
-@SuppressWarnings("PMD.LawOfDemeter")
+@SuppressWarnings({"PMD.ExcessiveImports","PMD.TooManyMethods"})
 public class PublicEndpointControllerIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     private TestRestTemplate template;
@@ -268,7 +268,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "M1 1AB", dob40YearsOld,
                 "012341234567", "dredd@megaone.web", validQualify, null, ReplyMethod.DIGITAL)
             .title("Judge")
-            .specialNeeds(Collections.singletonList(JurorResponseDto.ReasonableAdjustment.builder()
+            .reasonableAdjustments(Collections.singletonList(JurorResponseDto.ReasonableAdjustment.builder()
                 .assistanceType("V")
                 .assistanceTypeDetails("Helmet visor tinted and cannot remove even indoors")
                 .build())
@@ -762,7 +762,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "AB3 9RY", dob,
                 "012341234567", "jcastillo0@ed.gov", validQualify, null, ReplyMethod.DIGITAL)
             .title("DR")
-            .specialNeeds(Collections.singletonList(
+            .reasonableAdjustments(Collections.singletonList(
                 JurorResponseDto.ReasonableAdjustment.builder()
                     .assistanceType("I")
                     .assistanceTypeDetails("I have a nut allergy")

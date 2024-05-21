@@ -70,7 +70,11 @@ import static uk.gov.hmcts.juror.api.TestUtil.getValuesInJsonObject;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@SuppressWarnings({"PMD.LawOfDemeter", "PMD.TooManyMethods", "PMD.ExcessiveImports"})
+@SuppressWarnings({
+    "PMD.ExcessivePublicCount",
+    "PMD.TooManyMethods",
+    "PMD.ExcessiveImports",
+    "PMD.CyclomaticComplexity"})
 public class ManagePoolControllerITest extends AbstractIntegrationTest {
     private static final String URI_AVAILABLE_POOLS = "/api/v1/moj/manage-pool/available-pools/%s";
     private static final String URI_MANAGE_POOL_SUMMARY = "/api/v1/moj/manage-pool/summary?poolNumber=%s";
@@ -140,7 +144,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         "/db/ManagePoolController_initCourtSupply.sql",
         "/db/ManagePoolController_initBureauSupply.sql"})
     @Sql(statements = "UPDATE JUROR_MOD.POOL SET NEW_REQUEST = 'N' WHERE POOL_NO = '415221001' AND OWNER = '400';")
-    public void getPoolStatistics_allDataPresent() {
+    public void testGPoolStatistics_allDataPresent() {
         ResponseEntity<PoolSummaryResponseDto> responseEntity =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
                     URI.create(String.format(URI_MANAGE_POOL_SUMMARY, POOL_NUMBER_415221001))),
@@ -223,10 +227,10 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql",
         "/db/ManagePoolController_initPool.sql",
         "/db/ManagePoolController_initCourtSupply.sql"})
-    public void getPoolStatistics_courtSupplyOnly() {
+    public void testGPoolStatistics_courtSupplyOnly() {
         ResponseEntity<PoolSummaryResponseDto> responseEntity =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create(String.format(URI_MANAGE_POOL_SUMMARY, 415221001))), PoolSummaryResponseDto.class);
+                URI.create(String.format(URI_MANAGE_POOL_SUMMARY, 415_221_001))), PoolSummaryResponseDto.class);
 
         assertThat(responseEntity.getStatusCode()).as(EXPECT_HTTP_RESPONSE_SUCCESSFUL).isEqualTo(HttpStatus.OK);
 
@@ -313,7 +317,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         "/db/ManagePoolController_initCourtSupply.sql",
         "/db/ManagePoolController_initBureauSupply.sql"})
     @Sql(statements = "UPDATE juror_mod.pool SET total_no_required = 0 WHERE pool_no = '415221001' AND owner = '400';")
-    public void getPoolStatistics_noPoolRequestExt() {
+    public void testGPoolStatistics_noPoolRequestExt() {
         ResponseEntity<PoolSummaryResponseDto> responseEntity =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
                     URI.create(String.format(URI_MANAGE_POOL_SUMMARY, POOL_NUMBER_415221001))),
@@ -519,6 +523,42 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/EditPoolController_createPool.sql"})
+    public void test_editPoolBureauUser_newRequest() throws Exception {
+        initHeaders(Role.MANAGER);
+        String poolNumber = "415221202";
+
+        //create a Pool request edit DTO
+        PoolEditRequestDto poolEditRequestDto = getPoolEditRequestDto(poolNumber);
+
+        RequestEntity<?> requestEntity = new RequestEntity<>(poolEditRequestDto, httpHeaders,
+            HttpMethod.PUT, URI.create("/api/v1/moj/manage-pool/edit-pool"));
+        ResponseEntity<?> response = restTemplate.exchange(requestEntity, String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        // check the values have changed as per request DTO
+
+        Optional<PoolRequest> poolRequestEdited = poolRequestRepository.findByPoolNumber(poolNumber);
+        assertThat(poolRequestEdited).isPresent();
+        assertThat(poolRequestEdited.get().getNewRequest()).isEqualTo('Y');
+
+        PoolRequest poolRequest = poolRequestEdited.get();
+        assertThat(poolRequest.getNumberRequested()).as("Expect the Number Requested to be updated to 55")
+            .isEqualTo(55);
+
+        assertThat(poolCommentRepository.count(POOL_COMMENTS.pool.poolNumber.eq(poolNumber)))
+            .as("Expect a record to be added to POOL_COMMENTS table")
+            .isEqualTo(1);
+
+        assertThat(poolHistoryRepository.count(QPoolHistory.poolHistory.historyCode.eq(HistoryCode.PREQ)))
+            .as("Expect a record to be added to POOL_HISTORY with a History code of PREQ")
+            .isEqualTo(1);
+
+    }
+
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/EditPoolController_createPool.sql"})
     public void test_editPool_NoRequestedSame_BureauUser() throws Exception {
         initHeaders(Role.MANAGER);
         String poolNumber = "415221201";
@@ -700,14 +740,13 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         assertThat(responseDto.getAvailableForMove().size())
             .as("Expect a single juror in the list to be available for transfer (passes validation)")
             .isEqualTo(1);
-        assertThat(responseDto.getAvailableForMove().stream().allMatch(jurorNumber ->
-            jurorNumber.equalsIgnoreCase("111111111"))).isTrue();
+        assertThat(responseDto.getAvailableForMove().stream().allMatch("111111111"::equals)).isTrue();
 
         List<JurorManagementResponseDto.ValidationFailure> validationFailuresList =
             responseDto.getUnavailableForMove();
 
         JurorManagementResponseDto.ValidationFailure validationFailure1 = validationFailuresList.stream()
-            .filter(failure -> failure.getJurorNumber().equalsIgnoreCase("222222222"))
+            .filter(failure -> "222222222".equals(failure.getJurorNumber()))
             .findFirst().orElse(null);
         assertThat(validationFailure1).isNotNull();
         assertThat(validationFailure1.getFailureReason())
@@ -716,7 +755,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         assertThat(validationFailure1.getLastName()).isEqualToIgnoringCase("LNAMETWOS");
 
         JurorManagementResponseDto.ValidationFailure validationFailure2 = validationFailuresList.stream()
-            .filter(failure -> failure.getJurorNumber().equalsIgnoreCase("333333333"))
+            .filter(failure -> "333333333".equals(failure.getJurorNumber()))
             .findFirst().orElse(null);
         assertThat(validationFailure2).isNotNull();
         assertThat(validationFailure2.getFailureReason())
@@ -725,7 +764,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         assertThat(validationFailure2.getLastName()).isEqualToIgnoringCase("LNAMETHREES");
 
         JurorManagementResponseDto.ValidationFailure validationFailure3 = validationFailuresList.stream()
-            .filter(failure -> failure.getJurorNumber().equalsIgnoreCase("444444444"))
+            .filter(failure -> "444444444".equals(failure.getJurorNumber()))
             .findFirst().orElse(null);
         assertThat(validationFailure3).isNotNull();
         assertThat(validationFailure3.getFailureReason())
@@ -1029,7 +1068,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
             .isEqualTo(1);
 
         transferJurorPoolValidateNewlyCreatedPoolRequest(sourcePoolNumber, "457230702",
-            targetCourtLocation, targetServiceStartDate, 1);
+            targetCourtLocation, targetServiceStartDate);
 
         transferJurorPoolValidateSourceJurorPool("111111111", sourcePoolNumber);
 
@@ -1073,7 +1112,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
             .isEqualTo(2);
 
         transferJurorPoolValidateNewlyCreatedPoolRequest(sourcePoolNumber, "457230702",
-            targetCourtLocation, targetServiceStartDate, 2);
+            targetCourtLocation, targetServiceStartDate);
 
         for (String jurorNumber : Arrays.asList("111111111", "555555555")) {
             transferJurorPoolValidateSourceJurorPool(jurorNumber, sourcePoolNumber);
@@ -1112,7 +1151,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
             .isEqualTo(1);
 
         transferJurorPoolValidateNewlyCreatedPoolRequest(sourcePoolNumber, "415230702",
-            targetCourtLocation, targetServiceStartDate, 1);
+            targetCourtLocation, targetServiceStartDate);
 
         transferJurorPoolValidateSourceJurorPool("111111111", sourcePoolNumber);
 
@@ -1393,7 +1432,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     //Tests related to controller operation: getAvailablePoolsInCourtLocation
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initAvailablePools_courtUser.sql"})
-    public void availablePoolsInCourtLocationCourtUserHappy() throws NullPointerException {
+    public void availablePoolsInCourtLocationCourtUserHappy() {
         final URI uri = URI.create(String.format(URI_AVAILABLE_POOLS, "416"));
         httpHeaders = initialiseHeaders(COURT_USER, UserType.COURT, null, "416");
 
@@ -1424,7 +1463,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initAvailablePools_courtUser.sql"})
-    public void availablePoolsInCourtLocationCourtUserOwnerNotFoundException() throws NullPointerException {
+    public void availablePoolsInCourtLocationCourtUserOwnerNotFoundException() {
         final URI uri = URI.create(String.format(URI_AVAILABLE_POOLS, "404"));
         httpHeaders = initialiseHeaders(COURT_USER, UserType.COURT, null, "505");
 
@@ -1448,7 +1487,8 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     public void availablePoolsInCourtLocationBureauUserHappy() {
         ResponseEntity<AvailablePoolsInCourtLocationDto> responseEntity =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/manage-pool/available-pools/415")), AvailablePoolsInCourtLocationDto.class);
+                    URI.create("/api/v1/moj/manage-pool/available-pools/415?is-reassign=true")),
+                AvailablePoolsInCourtLocationDto.class);
 
         assertThat(responseEntity.getStatusCode()).as(EXPECT_HTTP_RESPONSE_SUCCESSFUL).isEqualTo(HttpStatus.OK);
 
@@ -1520,7 +1560,6 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     public void test_reassignJuror_BureauUser_happy() throws Exception {
 
         final String jurorNumber = "555555553";
-        final String bureauOwner = "400";
         final String targetPoolNumber = "416220502";
         List<String> jurorNumbers = List.of(jurorNumber);
 
@@ -1881,7 +1920,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
     private void transferJurorPoolValidateNewlyCreatedPoolRequest(String sourcePoolNumber, String targetPoolNumber,
                                                                   String receivingCourtLocation,
-                                                                  LocalDate targetServiceStartDate, int poolTotal) {
+                                                                  LocalDate targetServiceStartDate) {
         PoolRequest targetPoolRequest = poolRequestRepository
             .findByPoolNumber(targetPoolNumber)
             .orElse(null);
@@ -1929,6 +1968,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
             .isEqualTo(LocalDate.now());
     }
 
+    @SuppressWarnings("PMD.NcssCount")
     private void transferJurorPoolValidateNewlyCreatedJurorPool(String jurorNumber, String sourcePoolNumber,
                                                                 String targetPoolNumber, String targetLocCode,
                                                                 LocalDate targetStartDate, String currentUser) {

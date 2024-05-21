@@ -357,6 +357,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
 
     private void updateJurorHistory(String owner, String userId, List<JurorPool> jurorPools) {
 
+        List<JurorHistory> historyList = new ArrayList<>();
         jurorPools.forEach(jurorPool -> {
             Juror juror = jurorPool.getJuror();
             log.trace(String.format(
@@ -377,9 +378,9 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                 jurorHistBuilder.otherInformation(HistoryCodeMod.PRINT_SUMMONS.getDescription());
                 jurorHistBuilder.historyCode(HistoryCodeMod.PRINT_SUMMONS);
             }
-            jurorHistoryRepository.save(jurorHistBuilder.build());
+            historyList.add(jurorHistBuilder.build());
         });
-
+        jurorHistoryRepository.saveAll(historyList);
     }
 
     private List<JurorPool> getJurorPools(String login, String owner, PoolCreateRequestDto poolCreateRequestDto) {
@@ -420,24 +421,30 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                 // Increment the previous sequence number by one to get the new sequence number
                 sequenceNumber++;
 
-                if (!Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.DISQUALIFIED)) {
-                    // create a summons letter for juror
-                    printDataService.printSummonsLetter(jurorPool);
-                }
-
                 if (jurorsFound == poolCreateRequestDto.getCitizensToSummon()) {
                     break;  // we've found the number of jurors required, no need to process any further.
                 }
-
             }
 
             if (jurorsFound < poolCreateRequestDto.getCitizensToSummon()) {
                 throw new RuntimeException(); // we were unable to find the required number of jurors who can serve.
             }
 
+            // Saving records (bulk)
+            jurorRepository.saveAll(jurorPools.stream().map(JurorPool::getJuror).toList());
+            jurorPoolRepository.saveAll(jurorPools);
+
+            // create a summons letter for juror
+            List<JurorPool> summonedJurors = jurorPools.stream()
+                .filter(jurorPool -> !Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.DISQUALIFIED))
+                .toList();
+
+            if (!summonedJurors.isEmpty()) {
+                printDataService.bulkPrintSummonsLetter(summonedJurors);
+            }
             // increment the pool total by the number of new pool members
             poolRequest.setNewRequest('N');
-            poolRequestRepository.saveAndFlush(poolRequest);
+            poolRequestRepository.save(poolRequest);
 
         } catch (Exception e) {
             log.error("Exception occurred when adding members to pool - {}", e.getMessage());
@@ -500,9 +507,6 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         juror.setDateOfBirth(voter.getDateOfBirth());
         juror.setResponded(false);
         juror.setContactPreference(null);
-
-        juror = jurorRepository.saveAndFlush(juror);
-
         jurorPool.setIsActive(true);
 
         // pool sequence
@@ -512,8 +516,6 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         jurorPool.setLastUpdate(LocalDateTime.now());
 
         jurorPool.setJuror(juror);
-
-        jurorPoolRepository.saveAndFlush(jurorPool);
         log.info("Pool member {} added to the Pool Member table", juror.getJurorNumber());
 
         return jurorPool;
@@ -676,17 +678,17 @@ public class PoolCreateServiceImpl implements PoolCreateService {
 
     @Override
     public void createNilPool(String owner, NilPoolRequestDto nilPoolRequestDto) {
+        // validate court location
+        CourtLocation courtLocation = getLocation(nilPoolRequestDto);
+        if (courtLocation == null) {
+            throw new PoolCreateException.UnableToCreatePool();
+        }
 
         final String poolNumber = nilPoolRequestDto.getPoolNumber();
         final LocalDate attendanceDate = nilPoolRequestDto.getAttendanceDate();
         final LocalTime attendanceTime = nilPoolRequestDto.getAttendanceTime();
         final String poolTypeStr = nilPoolRequestDto.getPoolType();
 
-        // validate court location
-        CourtLocation courtLocation = getLocation(nilPoolRequestDto);
-        if (courtLocation == null) {
-            throw new PoolCreateException.UnableToCreatePool();
-        }
 
         String courtLocationCode = courtLocation.getLocCode();
 

@@ -6,7 +6,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.AvailablePo
 
 public interface ManagePoolsService {
 
-    AvailablePoolsInCourtLocationDto findAvailablePools(String locCode, BureauJwtPayload payload);
+    AvailablePoolsInCourtLocationDto findAvailablePools(String locCode, BureauJwtPayload payload, boolean isReassign);
 
     SummoningProgressResponseDto getPoolMonitoringStats(BureauJwtPayload payload, String courtLocationCode,
                                                         String poolType);

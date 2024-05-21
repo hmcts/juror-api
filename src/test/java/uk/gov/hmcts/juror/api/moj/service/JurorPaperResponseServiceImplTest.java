@@ -59,7 +59,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 
 @SuppressWarnings({
-    "PMD.LawOfDemeter",
     "PMD.ExcessiveImports",
     "PMD.CouplingBetweenObjects",
     "PMD.ExcessivePublicCount",
@@ -1289,9 +1288,7 @@ public class JurorPaperResponseServiceImplTest {
     private BureauJwtPayload buildPayload() {
         return BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("SOME_USER")
-            .daysToExpire(89)
             .owner("400")
             .build();
     }

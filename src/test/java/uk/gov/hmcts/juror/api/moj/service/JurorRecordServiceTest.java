@@ -141,7 +141,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.LawOfDemeter", "PMD.CouplingBetweenObjects",
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects",
     "PMD.TooManyMethods", "PMD.TooManyFields", "PMD.NcssCount"})
 class JurorRecordServiceTest {
 
@@ -1162,9 +1162,7 @@ class JurorRecordServiceTest {
     private BureauJwtPayload buildPayload(String owner) {
         return BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("SOME_USER")
-            .daysToExpire(89)
             .owner(owner)
             .build();
     }
@@ -3097,7 +3095,6 @@ class JurorRecordServiceTest {
 
         @ParameterizedTest
         @ValueSource(strings = {"416", "400"})
-        @SuppressWarnings("PMD.LawOfDemeter")
         void positiveJurorAttendanceTab(String owner) {
 
             //test scenario where juror has attended
@@ -3143,7 +3140,6 @@ class JurorRecordServiceTest {
 
         @ParameterizedTest
         @ValueSource(strings = {"416", "100"})
-        @SuppressWarnings("PMD.LawOfDemeter")
         void negativeWrongOwner(String userOwner) {
 
             final String owner = "415";
@@ -3333,7 +3329,6 @@ class JurorRecordServiceTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.LawOfDemeter")
         void positiveRejectPendingJuror() {
 
             TestUtils.setupAuthentication("415", "SENIORJURORUSER", "9");

@@ -9,6 +9,8 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.FinancialAuditRepo
 import uk.gov.hmcts.juror.api.moj.controller.request.FilterableJurorDetailsRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.CombinedExpenseDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseDetailsWithOriginalDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseDetailsWithOriginalTotalsDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseTotal;
 import uk.gov.hmcts.juror.api.moj.controller.response.FilterableJurorDetailsResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
@@ -19,12 +21,12 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
-@SuppressWarnings("PMD.LawOfDemeter")
 public class FinancialAuditReportServiceImpl implements FinancialAuditReportService {
     private final FinancialAuditService financialAuditService;
     private final JurorRecordService jurorRecordService;
@@ -35,7 +37,7 @@ public class FinancialAuditReportServiceImpl implements FinancialAuditReportServ
         long financialAuditNumber =
             Long.parseLong(financialAuditNumberString.substring(FinancialAuditDetails.F_AUDIT_PREFIX.length()));
         FinancialAuditDetails financialAuditDetails = financialAuditService
-            .getFinancialAuditDetails(financialAuditNumber);
+            .getFinancialAuditDetails(financialAuditNumber, SecurityUtil.getLocCode());
 
         SecurityUtil.validateCourtLocationPermitted(financialAuditDetails.getLocCode());
 
@@ -78,18 +80,24 @@ public class FinancialAuditReportServiceImpl implements FinancialAuditReportServ
 
     private CombinedExpenseDetailsDto<ExpenseDetailsWithOriginalDto> getExpenses(
         FinancialAuditDetails financialAuditDetails) {
-        CombinedExpenseDetailsDto<ExpenseDetailsWithOriginalDto> combinedExpenseDetailsDto =
-            new CombinedExpenseDetailsDto<>(true);
 
         final Function<Appearance, Appearance> origionalAppearanceFunction;
-
+        ExpenseTotal<ExpenseDetailsWithOriginalDto> expenseTotal = new ExpenseTotal<>(true);
         //If this is an edit report get the original values
         if (FinancialAuditDetails.Type.GenericType.EDIT.equals(financialAuditDetails.getType().getGenericType())) {
             origionalAppearanceFunction =
                 appearance -> financialAuditService.getPreviousAppearance(financialAuditDetails, appearance);
+        } else if (Set.of(FinancialAuditDetails.Type.REAPPROVED_BACS,
+            FinancialAuditDetails.Type.REAPPROVED_CASH).contains(financialAuditDetails.getType())) {
+            origionalAppearanceFunction = appearance -> financialAuditService
+                .getPreviousApprovedValue(financialAuditDetails, appearance);
+            expenseTotal = new ExpenseDetailsWithOriginalTotalsDto();
         } else {
             origionalAppearanceFunction = appearance -> null;
         }
+
+        CombinedExpenseDetailsDto<ExpenseDetailsWithOriginalDto> combinedExpenseDetailsDto =
+            new CombinedExpenseDetailsDto<>(expenseTotal);
 
         financialAuditService.getAppearances(financialAuditDetails)
             .stream()

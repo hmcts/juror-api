@@ -18,7 +18,6 @@ import java.util.List;
 /**
  * Custom Repository implementation for the Juror entity.
  */
-@SuppressWarnings("PMD.LawOfDemeter")
 public class JurorRepositoryImpl implements IJurorRepository {
 
     @PersistenceContext
@@ -71,10 +70,15 @@ public class JurorRepositoryImpl implements IJurorRepository {
         if (!SecurityUtil.isBureau()) {
             // If the user is not a Bureau user, filter by the courts they have access to
             partialQuery.where(JUROR_POOL.pool.courtLocation.locCode.in(SecurityUtil.getCourts()));
+            partialQuery.where(JUROR_POOL.owner.eq(SecurityUtil.getActiveOwner()));
         }
 
         if (null != query.getJurorNumber()) {
-            partialQuery.where(JUROR.jurorNumber.startsWith(query.getJurorNumber()));
+            if (query.getJurorNumber().length() == 9) {
+                partialQuery.where(JUROR.jurorNumber.eq(query.getJurorNumber()));
+            } else {
+                partialQuery.where(JUROR.jurorNumber.startsWith(query.getJurorNumber()));
+            }
         }
 
         if (null != query.getJurorName()) {
@@ -87,8 +91,14 @@ public class JurorRepositoryImpl implements IJurorRepository {
         }
 
         if (null != query.getPoolNumber()) {
-            partialQuery.where(JUROR_POOL.pool.poolNumber.startsWith(query.getPoolNumber()));
+            if (query.getPoolNumber().length() == 9) {
+                partialQuery.where(JUROR_POOL.pool.poolNumber.eq(query.getPoolNumber()));
+            } else {
+                partialQuery.where(JUROR_POOL.pool.poolNumber.startsWith(query.getPoolNumber()));
+
+            }
         }
+
 
         return partialQuery.distinct().select(
             JUROR.jurorNumber,

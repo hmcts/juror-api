@@ -44,7 +44,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@SuppressWarnings("PMD.LawOfDemeter")
+@SuppressWarnings("PMD.ExcessiveImports")
 public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
     private static final String WORK_RELATED_EXCUSAL_CODE = "W";
 
@@ -74,6 +74,7 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
         "/db/standing_data.sql",
         "/db/ResponseDeferralControllerTest_processJurorDeferral.sql"
     })
+    @SuppressWarnings("PMD.NcssCount")
     public void processJurorDeferralAccept_happy() throws Exception {
         final String jurorNumber = "644892530";
         final String staffLogin = "STAFF1";
@@ -88,9 +89,7 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
-            .passwordWarning(false)
             .login(staffLogin)
-            .daysToExpire(89)
             .owner(staffLogin)
             .build());
 
@@ -297,9 +296,7 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
-            .passwordWarning(false)
             .login(staffLogin)
-            .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
 
@@ -397,9 +394,7 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
-            .passwordWarning(false)
             .login(staffLogin)
-            .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
 
@@ -480,6 +475,7 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
         "/db/standing_data.sql",
         "/db/ResponseDeferralControllerTest_processJurorDeferral.sql"
     })
+    @SuppressWarnings("PMD.NcssCount")
     public void processJurorDeferralDenial_happy() throws Exception {
         final String jurorNumber = "644892530";
         final String staffLogin = "STAFF1";
@@ -490,9 +486,7 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
-            .passwordWarning(false)
             .login(staffLogin)
-            .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
 
@@ -674,9 +668,7 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
-            .passwordWarning(false)
             .login(staffLogin)
-            .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
 
