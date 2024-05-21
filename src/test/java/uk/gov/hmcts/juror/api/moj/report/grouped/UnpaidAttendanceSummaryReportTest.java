@@ -85,13 +85,15 @@ class UnpaidAttendanceSummaryReportTest extends AbstractGroupedReportTestSupport
     public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(true);
         securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn(TestConstants.VALID_COURT_LOCATION);
+        securityUtilMockedStatic.when(SecurityUtil::getLocCode).thenReturn(TestConstants.VALID_COURT_LOCATION);
+
         report.preProcessQuery(query, request);
 
         verify(query, times(1)).where(QAppearance.appearance.appearanceStage.in(
             AppearanceStage.EXPENSE_ENTERED,
             AppearanceStage.EXPENSE_EDITED
         ));
-        verify(query, times(1)).where(QAppearance.appearance.locCode.in(SecurityUtil.getCourts()));
+        verify(query, times(1)).where(QAppearance.appearance.locCode.in(SecurityUtil.getLocCode()));
         verify(query, times(1)).where(
             QAppearance.appearance.attendanceDate.between(request.getFromDate(), request.getToDate()));
 
