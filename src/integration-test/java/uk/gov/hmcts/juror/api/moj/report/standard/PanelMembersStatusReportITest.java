@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/PanelMembersStatusReportITest_Typical.sql"
 })
+@SuppressWarnings({"PMD.LawOfDemeter", "PMD.JUnitTestsShouldIncludeAssert"})
 public class PanelMembersStatusReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired
@@ -72,6 +73,7 @@ public class PanelMembersStatusReportITest extends AbstractStandardReportControl
     }
 
     @Test
+    @SuppressWarnings({"CheckStyle.VariableDeclarationUsageDistance"})
     void assertTotals() {
         StandardReportResponse report = testBuilder()
             .triggerValid()
@@ -79,31 +81,31 @@ public class PanelMembersStatusReportITest extends AbstractStandardReportControl
 
         long expectedPanelled = report.getTableData().getData().size();
         long expectedEmpanelled = report.getTableData().getData().stream()
-            .filter(juror -> juror.get("panel_status").equals("Juror")).count();
+            .filter(juror -> "Juror".equals(juror.get("panel_status"))).count();
         long expectedReturned = report.getTableData().getData().stream()
-            .filter(juror -> juror.get("panel_status").equals("Returned")).count();
+            .filter(juror -> "Returned".equals(juror.get("panel_status"))).count();
         long expectedNotUsed = report.getTableData().getData().stream()
-            .filter(juror -> juror.get("panel_status").equals("Not Used")).count() + expectedReturned;
+            .filter(juror -> "Not Used".equals(juror.get("panel_status"))).count() + expectedReturned;
         long expectedChallenged = report.getTableData().getData().stream()
-            .filter(juror -> juror.get("panel_status").equals("Challenged")).count();
+            .filter(juror -> "Challenged".equals(juror.get("panel_status"))).count();
 
         StandardReportResponse otherReport = getTypicalResponse();
 
         long actualPanelled = otherReport.getTableData().getData().size();
         long actualEmpanelled = otherReport.getTableData().getData().stream()
-            .filter(juror -> juror.get("panel_status").equals("Juror")).count();
+            .filter(juror -> "Juror".equals(juror.get("panel_status"))).count();
         long actualReturned = otherReport.getTableData().getData().stream()
-            .filter(juror -> juror.get("panel_status").equals("Returned")).count();
+            .filter(juror -> "Returned".equals(juror.get("panel_status"))).count();
         long actualNotUsed = otherReport.getTableData().getData().stream()
-            .filter(juror -> juror.get("panel_status").equals("Not Used")).count() + actualReturned;
+            .filter(juror -> "Not Used".equals(juror.get("panel_status"))).count() + actualReturned;
         long actualChallenged = otherReport.getTableData().getData().stream()
-            .filter(juror -> juror.get("panel_status").equals("Challenged")).count();
+            .filter(juror -> "Challenged".equals(juror.get("panel_status"))).count();
 
-        assertEquals(expectedPanelled, actualPanelled);
-        assertEquals(expectedEmpanelled, actualEmpanelled);
-        assertEquals(expectedReturned, actualReturned);
-        assertEquals(expectedNotUsed, actualNotUsed);
-        assertEquals(expectedChallenged, actualChallenged);
+        assertEquals(expectedPanelled, actualPanelled, "Panelled totals should match");
+        assertEquals(expectedEmpanelled, actualEmpanelled, "Empanelled totals should match");
+        assertEquals(expectedReturned, actualReturned, "Returned totals should match");
+        assertEquals(expectedNotUsed, actualNotUsed, "Not Used totals should match");
+        assertEquals(expectedChallenged, actualChallenged, "Challenged totals should match");
     }
 
     @Test
@@ -153,7 +155,7 @@ public class PanelMembersStatusReportITest extends AbstractStandardReportControl
         headingsMap.add("names", StandardReportResponse.DataTypeValue.builder()
             .displayName("Names")
             .dataType("String")
-            .value("CName1, CName2, CName3, et al")
+            .value("CName1, et el")
             .build());
         headingsMap.add("trial_number", StandardReportResponse.DataTypeValue.builder()
             .displayName("Trial Number")

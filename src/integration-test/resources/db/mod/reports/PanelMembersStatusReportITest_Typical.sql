@@ -54,9 +54,9 @@ VALUES (1, '415', 'JUD1', 'The Judge');
 INSERT INTO juror_mod.courtroom (id, loc_code, room_number, description)
 VALUES (1, '415', '1', 'The Courtroom');
 INSERT INTO juror_mod.trial (trial_number, loc_code, trial_start_date, trial_type, description, courtroom, judge)
-VALUES ('111111', '415', current_date, 'CRI', 'CName1, CName2, CName3, et al', 1, 1);
+VALUES ('111111', '415', current_date, 'CRI', 'CName1, et el', 1, 1);
 INSERT INTO juror_mod.trial (trial_number, loc_code, trial_start_date, trial_type, description, courtroom, judge)
-VALUES ('111112', '415', current_date, 'CRI', 'CName1, CName2, CName3, et al', 1, 1);
+VALUES ('111112', '415', current_date, 'CRI', 'CName1, et el', 1, 1);
 
 
 INSERT INTO juror_mod.appearance (attendance_date, juror_number, pool_number, loc_code, time_in, time_out, trial_number,
