@@ -71,6 +71,9 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
     }
 
     @Test
+    @SuppressWarnings({
+        "PMD.JUnitTestsShouldIncludeAssert"//False positive
+    })
     void positiveTypicalNoData() {
         StandardReportRequest request = getValidPayload();
         request.setFromDate(LocalDate.of(2024, 12, 9));
@@ -83,6 +86,9 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
     }
 
     @Test
+    @SuppressWarnings({
+        "PMD.JUnitTestsShouldIncludeAssert"//False positive
+    })
     void negativeUnauthorised() {
         testBuilder()
             .jwt(getBureauJwt())
@@ -91,6 +97,9 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
     }
 
     @Test
+    @SuppressWarnings({
+        "PMD.JUnitTestsShouldIncludeAssert"//False positive
+    })
     void negativeInvalidPayloadMissingDate() {
         StandardReportRequest request = getValidPayload();
         request.setToDate(null);
