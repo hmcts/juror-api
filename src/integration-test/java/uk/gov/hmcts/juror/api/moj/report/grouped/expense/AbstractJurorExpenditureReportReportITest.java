@@ -7,6 +7,7 @@ import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReportControllerITest;
 
 import java.time.LocalDate;
 
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 public abstract class AbstractJurorExpenditureReportReportITest extends AbstractGroupedReportControllerITest {
 
     protected static final LocalDate DEFAULT_FROM_DATE = LocalDate.of(2024, 5, 1);

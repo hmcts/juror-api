@@ -101,7 +101,7 @@ import static org.springframework.http.HttpMethod.PUT;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + JurorExpenseControllerITest.BASE_URL)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@SuppressWarnings("PMD.ExcessiveImports")
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
     public static final String JUROR_NUMBER = "641500020";
@@ -1218,7 +1218,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 GetEnteredExpenseRequest request = buildRequest(dateOfExpense);
 
                 ResponseEntity<List<GetEnteredExpenseResponse>> responseEntity = triggerValid(request);
-                assertThat(responseEntity).isNotNull();
+                assertThat(responseEntity).as("Response Entity").isNotNull();
                 assertThat(responseEntity.getBody()).isNotNull();
                 List<GetEnteredExpenseResponse> responseList = responseEntity.getBody();
                 assertThat(responseList).hasSize(1);
@@ -1647,14 +1647,14 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getAppearanceStage())
                 .as("Appearance stage should remain unchanged (still entered)")
                 .isEqualTo(AppearanceStage.EXPENSE_ENTERED);
-            if (!appearance.getAttendanceDate().equals(LocalDate.of(2024, 1, 5))) {
-                assertThat(appearance.isDraftExpense())
-                    .as("Is draft expense flag should remain unchanged (expense still in draft)")
-                    .isTrue();
-            } else {
+            if (appearance.getAttendanceDate().equals(LocalDate.of(2024, 1, 5))) {
                 assertThat(appearance.isDraftExpense())
                     .as("Is draft expense flag should remain unchanged")
                     .isFalse();
+            } else {
+                assertThat(appearance.isDraftExpense())
+                    .as("Is draft expense flag should remain unchanged (expense still in draft)")
+                    .isTrue();
             }
         }
     }
@@ -2537,14 +2537,13 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @Sql(
-                value = {
-                    "/db/mod/truncate.sql",
-                    "/db/truncate.sql",
-                    "/db/JurorExpenseControllerITest_approveExpenseSetUp.sql",
-                    "/db/JurorExpenseControllerITest_expenseRates.sql",
-                    "/db/JurorExpenseControllerITest_ApproveExpensesSupport.sql"
-                }
+            @Sql({
+                "/db/mod/truncate.sql",
+                "/db/truncate.sql",
+                "/db/JurorExpenseControllerITest_approveExpenseSetUp.sql",
+                "/db/JurorExpenseControllerITest_expenseRates.sql",
+                "/db/JurorExpenseControllerITest_ApproveExpensesSupport.sql"
+            }
             )
             void typicalReApproved() throws Exception {
                 ApproveExpenseDto approveExpenseDto = ApproveExpenseDto.builder()
@@ -2571,8 +2570,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
                 List<FinancialAuditDetails> financialAuditDetails = new ArrayList<>();
                 financialAuditDetailsRepository.findAll().forEach(financialAuditDetails1 -> {
-                    if (financialAuditDetails1.getId() == 12344
-                        || financialAuditDetails1.getId() == 12345) {
+                    if (financialAuditDetails1.getId() == 12_344
+                        || financialAuditDetails1.getId() == 12_345) {
                         return;
                     }
                     financialAuditDetails.add(financialAuditDetails1);
@@ -2583,8 +2582,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 List<FinancialAuditDetailsAppearances> financialAuditDetailsAppearances = new ArrayList<>();
                 financialAuditDetailsAppearancesRepository.findAll()
                     .forEach(financialAuditDetailsAppearances1 -> {
-                        if (financialAuditDetailsAppearances1.getFinancialAuditId() == 12344
-                            || financialAuditDetailsAppearances1.getFinancialAuditId() == 12345) {
+                        if (financialAuditDetailsAppearances1.getFinancialAuditId() == 12_344
+                            || financialAuditDetailsAppearances1.getFinancialAuditId() == 12_345) {
                             return;
                         }
                         financialAuditDetailsAppearances.add(financialAuditDetailsAppearances1);
@@ -2596,11 +2595,11 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 long id = assertFinancialAuditDetailsApproved(financialAuditDetails.get(0),
                     LocalDateTime.now(), FinancialAuditDetails.Type.REAPPROVED_BACS);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(0),
-                    id, LocalDate.of(2023, 1, 14), 4, 12344L);
+                    id, LocalDate.of(2023, 1, 14), 4, 12_344L);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(1),
-                    id, LocalDate.of(2023, 1, 15), 4, 12344L);
+                    id, LocalDate.of(2023, 1, 15), 4, 12_344L);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(2),
-                    id, LocalDate.of(2023, 1, 16), 4, 12344L);
+                    id, LocalDate.of(2023, 1, 16), 4, 12_344L);
 
                 assertApproved(
                     appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR_NUMBER,
@@ -2650,7 +2649,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                                             String paymentMethod,
                                                             ApproveExpenseDto... expenseDto) throws Exception {
                 return triggerInvalid(owner, locCode, paymentMethod,
-                    COURT_USER, owner.equals("400") ? UserType.BUREAU : UserType.COURT,
+                    COURT_USER, "400".equals(owner) ? UserType.BUREAU : UserType.COURT,
                     Set.of(Role.MANAGER), expenseDto);
             }
 
@@ -2880,6 +2879,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             return toUrl(jurorNumber, type.name());
         }
 
+        @Override
         public String toUrl(String jurorNumber, String type) {
             return URL
                 .replace("{loc_code}", COURT_LOCATION)
@@ -3282,6 +3282,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             return toUrl(COURT_LOCATION, jurorNumber);
         }
 
+        @Override
         public String toUrl(String locCode, String jurorNumber) {
             return URL
                 .replace("{loc_code}", locCode)
@@ -3931,6 +3932,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
+            @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
             void typicalCash() throws Exception {
                 PendingApprovalList pendingApprovals = triggerValid(COURT_LOCATION, null, null, PaymentMethod.CASH);
                 assertThat(pendingApprovals.getTotalPendingCash()).isEqualTo(2L);
@@ -4095,6 +4097,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
+            @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
             void typicalToDateFilter() throws Exception {
                 PendingApprovalList pendingApprovals =
                     triggerValid(COURT_LOCATION, null, LocalDate.of(2023, 1, 9), PaymentMethod.BACS);
@@ -4151,6 +4154,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
+            @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
             void typicalBothFromAndToFilter() throws Exception {
                 PendingApprovalList pendingApprovals =
                     triggerValid(COURT_LOCATION, LocalDate.of(2023, 1, 9), LocalDate.of(2023, 1, 10), PaymentMethod
@@ -4158,7 +4162,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertThat(pendingApprovals.getTotalPendingCash()).isEqualTo(2L);
                 assertThat(pendingApprovals.getTotalPendingBacs()).isEqualTo(3L);
 
-                assertThat(pendingApprovals.getPendingApproval()).as("Verify pendingApprovals").containsExactly(
+                assertThat(pendingApprovals.getPendingApproval()).containsExactly(
                     PendingApproval.builder()
                         .jurorNumber("641500020")
                         .poolNumber("415230101")
@@ -4209,12 +4213,13 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
+            @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
             void canNotApprove() throws Exception {
                 PendingApprovalList pendingApprovals =
                     triggerValid("COURT_USER2", COURT_LOCATION, LocalDate.of(2023, 1, 9), LocalDate.of(2023, 1, 10),
                         PaymentMethod.BACS);
-                assertThat(pendingApprovals.getTotalPendingCash()).isEqualTo(2L);
-                assertThat(pendingApprovals.getTotalPendingBacs()).isEqualTo(3L);
+                assertThat(pendingApprovals.getTotalPendingCash()).as("Total Pending Cash").isEqualTo(2L);
+                assertThat(pendingApprovals.getTotalPendingBacs()).as("Total Pending Bacs").isEqualTo(3L);
 
                 assertThat(pendingApprovals.getPendingApproval()).containsExactly(
                     PendingApproval.builder()
@@ -4346,17 +4351,18 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
         private static final String JUROR_NUMBER = "641500020";
 
-        public String toUrl(String locCode, String jurorNumber) {
-            return URL
-                .replace("{loc_code}", locCode)
-                .replace("{juror_number}", jurorNumber);
-        }
 
         private static final List<LocalDate> ATTENDANCE_DATES = List.of(
             LocalDate.of(2023, 1, 5),
             LocalDate.of(2023, 1, 6),
             LocalDate.of(2023, 1, 7)
         );
+
+        public String toUrl(String locCode, String jurorNumber) {
+            return URL
+                .replace("{loc_code}", locCode)
+                .replace("{juror_number}", jurorNumber);
+        }
 
         protected ApportionSmartCardRequest getValidPayload(BigDecimal smartCardAmount) {
             return ApportionSmartCardRequest.builder()

@@ -62,6 +62,7 @@ import static org.springframework.http.HttpStatus.OK;
  * Integration tests for the API endpoints defined in {@link RequestPoolController}.
  */
 @RunWith(SpringRunner.class)
+@SuppressWarnings({"PMD.ExcessivePublicCount", "PMD.TooManyMethods", "PMD.ExcessiveImports"})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class RequestPoolControllerITest extends AbstractIntegrationTest {
 
@@ -2204,7 +2205,6 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
 
         PoolsAtCourtLocationListDto.PoolsAtCourtLocationDataDto poolsAtCourtLocationDataDto
             = poolsAtCourtLocationDataDtosUnsorted.get(0);
-        LocalDate serviceStartDate = LocalDate.now().minusDays(10);
 
         assertThat(poolsAtCourtLocationDataDto.getPoolNumber()).as("Expect the pool number to be 419230101")
             .isEqualTo("419230101");
@@ -2244,7 +2244,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<PoolsAtCourtLocationListDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestUrl)), PoolsAtCourtLocationListDto.class);
+                HttpMethod.GET, URI.create(requestUrl)), PoolsAtCourtLocationListDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")

@@ -38,6 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SuppressWarnings("PMD.TooManyMethods")
 public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
 
     @Autowired
@@ -57,7 +58,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
-    public void getExcusalReasons_happy() throws Exception {
+    public void testGExcusalReasons_happy() throws Exception {
         final String loginName = "testlogin";
         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")

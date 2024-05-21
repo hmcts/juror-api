@@ -19,7 +19,7 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/UndeliverableListReportITest_typical.sql"
 })
-public class UndeliverableListReportITest extends AbstractStandardReportControllerITest {
+class UndeliverableListReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired
     public UndeliverableListReportITest(TestRestTemplate template) {
