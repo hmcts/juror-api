@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
+import uk.gov.hmcts.juror.api.moj.report.IDataType;
 
 import java.util.List;
 import java.util.Map;
@@ -45,6 +46,17 @@ public class AbstractReportResponse<T> {
     public static class TableData<T> {
         private List<Heading> headings;
         private T data;
+
+        public void removeData(IDataType... dataTypes) {
+            if (data instanceof StandardTableData standardTableData) {
+                for (IDataType dataType : dataTypes) {
+                    headings.removeIf(heading -> dataType.getId().equals(heading.getId()));
+                }
+                standardTableData.removeDataTypes(dataTypes);
+            }
+            throw new UnsupportedOperationException("This operation curretnly only supports StandardTableData");
+
+        }
 
         @Data
         @Builder

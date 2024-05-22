@@ -8,15 +8,13 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-
 @EqualsAndHashCode(callSuper = true)
 @Data
+@ToString(callSuper = true)
 @SuperBuilder
 @NoArgsConstructor
-@ToString(callSuper = true)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class StandardReportResponse
-    extends AbstractReportResponse<List<LinkedHashMap<String, Object>>> {
+public class StandardReportResponse extends
+    AbstractReportResponse<StandardTableData> {
+
 }
