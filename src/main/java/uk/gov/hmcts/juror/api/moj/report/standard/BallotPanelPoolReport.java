@@ -15,8 +15,10 @@ import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
+import javax.xml.crypto.Data;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,36 +26,24 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 @Component
-public class PersonAttendingSummaryReport extends AbstractStandardReport {
-    private final CourtLocationRepository courtLocationRepository;
+public class BallotPanelPoolReport extends AbstractStandardReport {
 
     @Autowired
-    public PersonAttendingSummaryReport(PoolRequestRepository poolRequestRepository,
-                                        CourtLocationRepository courtLocationRepository) {
+    public BallotPanelPoolReport(PoolRequestRepository poolRequestRepository) {
         super(poolRequestRepository,
-            QJurorPool.jurorPool,
-            DataType.JUROR_NUMBER,
-            DataType.FIRST_NAME,
-            DataType.LAST_NAME);
-
-        this.courtLocationRepository = courtLocationRepository;
+              QJurorPool.jurorPool,
+              DataType.JUROR_NUMBER,
+              DataType.FIRST_NAME,
+              DataType.LAST_NAME,
+              DataType.JUROR_POSTCODE
+        );
         isCourtUserOnly();
     }
 
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
-        query.where(QJurorPool.jurorPool.nextDate.eq(request.getDate()));
-        query.where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(SecurityUtil.getLocCode()));
-        if (request.getIncludeSummoned()) {
-            query.where(QJurorPool.jurorPool.status.status.in(IJurorStatus.SUMMONED,
-                                                              IJurorStatus.RESPONDED,
-                                                              IJurorStatus.PANEL,
-                                                              IJurorStatus.JUROR));
-        } else {
-            query.where(QJurorPool.jurorPool.status.status.in(IJurorStatus.RESPONDED,
-                                                              IJurorStatus.PANEL,
-                                                              IJurorStatus.JUROR));
-        }
+        query.where(QJurorPool.jurorPool.pool.poolNumber.eq(request.getPoolNumber()));
+        query.where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(request.getLocCode()));
         query.orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
     }
 
@@ -63,23 +53,7 @@ public class PersonAttendingSummaryReport extends AbstractStandardReport {
                                                                              List<LinkedHashMap<String, Object>>>
                                                                              tableData) {
 
-        Map<String, StandardReportResponse.DataTypeValue> map = new ConcurrentHashMap<>();
-        map.put("total_due", StandardReportResponse.DataTypeValue.builder()
-            .displayName("Total due to attend")
-            .dataType(Integer.class.getSimpleName())
-            .value(tableData.getData().size())
-            .build());
-
-        map.put("attendance_date", AbstractReportResponse.DataTypeValue.builder().displayName("Attendance date")
-            .dataType(LocalDate.class.getSimpleName())
-            .value(DateTimeFormatter.ISO_DATE.format(request.getDate())).build());
-
-        map.put("court_name", AbstractReportResponse.DataTypeValue.builder().displayName("Court Name")
-            .dataType(String.class.getSimpleName())
-            .value(getCourtNameString(courtLocationRepository, SecurityUtil.getLocCode()))
-            .build());
-
-        return map;
+        return new HashMap<>();
     }
 
     @Override

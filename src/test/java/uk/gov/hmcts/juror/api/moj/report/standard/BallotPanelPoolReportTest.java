@@ -19,6 +19,7 @@ import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -35,16 +36,17 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
-class PersonAttendingSummaryReportTest extends AbstractStandardReportTestSupport<PersonAttendingSummaryReport> {
+class BallotPanelPoolReportTest extends AbstractStandardReportTestSupport<BallotPanelPoolReport> {
 
     private CourtLocationRepository courtLocationRepository;
 
-    public PersonAttendingSummaryReportTest() {
+    public BallotPanelPoolReportTest() {
         super(QJurorPool.jurorPool,
             PersonAttendingSummaryReport.RequestValidator.class,
             DataType.JUROR_NUMBER,
             DataType.FIRST_NAME,
-            DataType.LAST_NAME);
+            DataType.LAST_NAME,
+              DataType.JUROR_POSTCODE);
     }
 
     @BeforeEach
@@ -60,8 +62,8 @@ class PersonAttendingSummaryReportTest extends AbstractStandardReportTestSupport
     }
 
     @Override
-    public PersonAttendingSummaryReport createReport(PoolRequestRepository poolRequestRepository) {
-        return new PersonAttendingSummaryReport(poolRequestRepository, this.courtLocationRepository);
+    public BallotPanelPoolReport createReport(PoolRequestRepository poolRequestRepository) {
+        return new BallotPanelPoolReport(poolRequestRepository);
     }
 
     @Override
@@ -75,51 +77,17 @@ class PersonAttendingSummaryReportTest extends AbstractStandardReportTestSupport
 
     @Override
     public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
-        String locCode = "415";
-        TestUtils.mockSecurityUtil(BureauJwtPayload.builder().locCode(locCode).userType(UserType.COURT).build());
 
-        StandardReportRequest requestMock = mock(StandardReportRequest.class);
-        when(requestMock.getDate()).thenReturn(LocalDate.now());
-
+        request.setPoolNumber(TestConstants.VALID_POOL_NUMBER);
+        request.setLocCode(TestConstants.VALID_COURT_LOCATION);
         report.preProcessQuery(query, request);
-        verify(query, times(1))
-            .where(QJurorPool.jurorPool.nextDate.eq(requestMock.getDate()));
-        verify(query, times(1))
-            .where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(locCode));
-        verify(query, times(1))
-            .where(QJurorPool.jurorPool.status.status.in(IJurorStatus.RESPONDED,
-                                                         IJurorStatus.PANEL,
-                                                         IJurorStatus.JUROR));
-        verify(query, times(1)).orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
-    }
 
-    @Test
-    void positivePreProcessQueryWithSummoned() {
-        String locCode = "415";
-        TestUtils.mockSecurityUtil(BureauJwtPayload.builder().locCode(locCode).userType(UserType.COURT).build());
-
-        StandardReportRequest requestMock = mock(StandardReportRequest.class);
-        when(requestMock.getDate()).thenReturn(LocalDate.now());
-
-        JPAQuery<Tuple> query = mock(JPAQuery.class,
-                                     withSettings().defaultAnswer(RETURNS_SELF));
-        StandardReportRequest request = getValidRequest();
-
-        request.setIncludeSummoned(true);
-
-        report.preProcessQuery(query, request);
         verify(query, times(1))
-            .where(QJurorPool.jurorPool.nextDate.eq(requestMock.getDate()));
+            .where(QJurorPool.jurorPool.pool.poolNumber.eq(request.getPoolNumber()));
         verify(query, times(1))
-            .where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(locCode));
+            .where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(request.getLocCode()));
         verify(query, times(1))
-            .where(QJurorPool.jurorPool.status.status.in(IJurorStatus.SUMMONED,
-                                                         IJurorStatus.RESPONDED,
-                                                         IJurorStatus.PANEL,
-                                                         IJurorStatus.JUROR));
-        verify(query, times(1)).orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
-
-        verifyNoMoreInteractions(query);
+            .orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
     }
 
     @Override
@@ -127,34 +95,9 @@ class PersonAttendingSummaryReportTest extends AbstractStandardReportTestSupport
         StandardReportRequest request,
         AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData,
         List<LinkedHashMap<String, Object>> data) {
-        String locCode = "415";
-        TestUtils.mockSecurityUtil(BureauJwtPayload.builder().locCode(locCode).userType(UserType.COURT).build());
-
-        when(request.getDate()).thenReturn(LocalDate.now());
-        when(request.getLocCode()).thenReturn(TestConstants.VALID_COURT_LOCATION);
-        CourtLocation courtLocation = new CourtLocation();
-        courtLocation.setLocCode(TestConstants.VALID_COURT_LOCATION);
-        courtLocation.setName("CHESTER");
-        when(courtLocationRepository.findByLocCode(TestConstants.VALID_COURT_LOCATION))
-            .thenReturn(Optional.of(courtLocation));
 
         Map<String, StandardReportResponse.DataTypeValue> map = report.getHeadings(request, tableData);
-        assertHeadingContains(map, request, false, Map.of(
-            "attendance_date", StandardReportResponse.DataTypeValue.builder()
-                .displayName("Attendance date")
-                .dataType("LocalDate")
-                .value(DateTimeFormatter.ISO_DATE.format(LocalDate.now()))
-                .build(),
-            "total_due", StandardReportResponse.DataTypeValue.builder()
-                .displayName("Total due to attend")
-                .dataType("Integer")
-                .value(0)
-                .build(),
-            "court_name", StandardReportResponse.DataTypeValue.builder()
-                .displayName("Court Name")
-                .dataType("String")
-                .value("CHESTER (415)")
-                .build()));
+        assertHeadingContains(map, request, false, Map.of());
         return map;
     }
 
