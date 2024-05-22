@@ -50,9 +50,10 @@ public class JurorDigitalResponseRepositoryModImpl implements IJurorDigitalRespo
                 new CaseBuilder().when(
                     digitalResponse.processingStatus.eq(ProcessingStatus.TODO)
                 ).then(1).otherwise(0).sum().as("allReplies")
-            ).from(digitalResponse)
-            .join(user)
-            .on(user.eq(digitalResponse.staff).and(user.userType.eq(UserType.BUREAU)))
+            ).from(user)
+            .where(user.userType.eq(UserType.BUREAU))
+            .leftJoin(digitalResponse)
+            .on(user.eq(digitalResponse.staff))
             .groupBy(user.username, user.name);
         return query.fetch();
     }

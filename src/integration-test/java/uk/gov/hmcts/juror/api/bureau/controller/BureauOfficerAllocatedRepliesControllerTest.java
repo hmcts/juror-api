@@ -105,7 +105,7 @@ public class BureauOfficerAllocatedRepliesControllerTest extends AbstractIntegra
         assertThat(exchange.getBody().getBureauBacklogCount().getNonUrgent()).isEqualTo(4);
         assertThat(exchange.getBody().getBureauBacklogCount().getUrgent()).isEqualTo(3);
 
-        assertThat(exchange.getBody().getData().size()).isEqualTo(2);
+        assertThat(exchange.getBody().getData().size()).isEqualTo(6);
 
         List<BureauOfficerAllocatedData> carneson =
             exchange.getBody().getData().stream().filter(r -> "carneson".equals(r.getLogin()))
@@ -125,6 +125,13 @@ public class BureauOfficerAllocatedRepliesControllerTest extends AbstractIntegra
         assertThat(mruby.get(0).getUrgent()).isEqualTo(2);
         assertThat(mruby.get(0).getNonUrgent()).isEqualTo(2);
 
+        exchange.getBody().getData()
+            .stream()
+            .filter(r -> !("carneson".equals(r.getLogin()) || "mruby".equals(r.getLogin())))
+            .forEach(bureauOfficerAllocatedData -> {
+                assertThat(bureauOfficerAllocatedData.getAllReplies()).isEqualTo(0);
+                assertThat(bureauOfficerAllocatedData.getUrgent()).isEqualTo(0);
+                assertThat(bureauOfficerAllocatedData.getNonUrgent()).isEqualTo(0);
+            });
     }
-
 }
