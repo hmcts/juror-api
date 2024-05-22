@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
     "/db/mod/reports/PanelMembersStatusReportITest_Typical.sql"
 })
 @SuppressWarnings({"PMD.LawOfDemeter", "PMD.JUnitTestsShouldIncludeAssert"})
-public class PanelMembersStatusReportITest extends AbstractStandardReportControllerITest {
+class PanelMembersStatusReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired
     public PanelMembersStatusReportITest(TestRestTemplate template) {
