@@ -36,6 +36,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.expense.DateDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseType;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.GetEnteredExpenseRequest;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.UnpaidExpenseSummaryRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpense;
 import uk.gov.hmcts.juror.api.moj.controller.response.DefaultExpenseResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.CombinedSimplifiedExpenseDetailDto;
@@ -46,6 +47,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.expense.GetEnteredExpenseR
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApprovalList;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.SummaryExpenseDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.UnpaidExpenseSummaryResponseDto;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.SortDirection;
 import uk.gov.hmcts.juror.api.moj.enumeration.PaymentMethod;
 import uk.gov.hmcts.juror.api.moj.service.BulkService;
@@ -233,27 +235,22 @@ public class JurorExpenseController {
         return ResponseEntity.ok(jurorExpenseService.calculateSummaryTotals(locCode, jurorNumber));
     }
 
-
-    @GetMapping("/unpaid-summary")
+    @PostMapping("/unpaid-summary")
     @Operation(summary = "Retrieve a list of jurors with outstanding unpaid "
         + "expenses. List will always be filtered by court location (using location code) and additionally can be "
         + "filtered by supplying minimum and maximum dates to return only jurors with appearances in the provided "
         + "date range")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Page<UnpaidExpenseSummaryResponseDto>> getUnpaidExpensesForCourtLocation(
+    public ResponseEntity<PaginatedList<UnpaidExpenseSummaryResponseDto>> getUnpaidExpenses(
         @PathVariable("loc_code") @CourtLocationCode @Valid @P("loc_code") String locCode,
-        @RequestParam(value = "min_date", required = false) LocalDate minDate,
-        @RequestParam(value = "max_date", required = false) LocalDate maxDate,
-        @RequestParam("page_number") @PathVariable("pageNumber") int pageNumber,
-        @RequestParam("sort_by") @PathVariable("sortBy") String sortBy,
-        @RequestParam("sort_order") @PathVariable("sortOrder") SortDirection sortOrder) {
+        @RequestBody @Valid @NotNull UnpaidExpenseSummaryRequestDto search) {
 
-        Page<UnpaidExpenseSummaryResponseDto> responseDto =
-            jurorExpenseService.getUnpaidExpensesForCourtLocation(locCode,
-                minDate, maxDate, pageNumber, sortBy, sortOrder);
+        PaginatedList<UnpaidExpenseSummaryResponseDto> responseDto =
+            jurorExpenseService.getUnpaidExpensesForCourtLocation(locCode, search);
 
         return ResponseEntity.ok().body(responseDto);
     }
+
 
     @GetMapping("/{juror_number}/default-expenses")
     @Operation(summary = "Retrieve default expenses details and persists them to juror and appearance tables ")

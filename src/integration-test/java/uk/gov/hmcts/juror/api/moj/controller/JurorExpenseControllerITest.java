@@ -33,6 +33,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseTotal;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseType;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.GetEnteredExpenseRequest;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.UnpaidExpenseSummaryRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpense;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseApplyToAllDays;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseFinancialLoss;
@@ -49,13 +50,16 @@ import uk.gov.hmcts.juror.api.moj.controller.response.expense.GetEnteredExpenseR
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApproval;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApprovalList;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.SimplifiedExpenseDetailDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.expense.UnpaidExpenseSummaryResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.AppearanceId;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetailsAppearances;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PaymentData;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
+import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
@@ -108,13 +112,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     public static final String COURT_LOCATION = "415";
     public static final String JUROR_NUMBER_NO_APPEARANCES = "641500024";
     public static final String POOL_NUMBER = "415230101";
-
-    private static final String PAGINATION_PAGE_NO = "&page_number=0";
-    private static final String PAGINATION_SORT_BY = "&sort_by=totalUnapproved&sort_order=DESC";
-    private static final String MAX_DATE = "&max_date=";
     private static final String COURT_USER = "COURT_USER";
     private static final String BUREAU_USER = "BUREAU_USER";
-    private static final String MIN_DATE = "?min_date=";
 
     public static final String BASE_URL = "/api/v1/moj/expenses/{loc_code}";
     private static final String URL_UNPAID_SUMMARY = BASE_URL + "/unpaid-summary";
@@ -186,11 +185,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     }
 
     @Nested
-    @DisplayName("GET " + URL_UNPAID_SUMMARY)
+    @DisplayName("POST " + URL_UNPAID_SUMMARY)
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_setUp.sql"})
     class GetUnpaidExpenses {
-        private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
         public String toUrl(String courtLocation) {
             return URL_UNPAID_SUMMARY.replace("{loc_code}", courtLocation);
         }
@@ -200,24 +197,32 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         void happyPathNoDateRangeFirstPage() throws Exception {
             final String courtLocation = COURT_LOCATION;
             final String jwt = createJwt(COURT_USER, courtLocation);
-            final URI uri = URI.create(toUrl(courtLocation) + "?page_number=0&sort_by"
-                + "=totalUnapproved&sort_order=DESC");
+            final URI uri = URI.create(toUrl(courtLocation));
+
+            UnpaidExpenseSummaryRequestDto requestDto =
+                UnpaidExpenseSummaryRequestDto.builder()
+                    .pageNumber(1)
+                    .pageLimit(25)
+                    .sortField(UnpaidExpenseSummaryRequestDto.SortField.TOTAL_IN_DRAFT)
+                    .sortMethod(SortMethod.DESC)
+                    .build();
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
-            ResponseEntity<CustomPageImpl<Void>> response =
-                template.exchange(new RequestEntity<>(httpHeaders, GET, uri),
+            ResponseEntity<PaginatedList<UnpaidExpenseSummaryResponseDto>> response =
+                template.exchange(new RequestEntity<>(requestDto, httpHeaders, POST, uri),
                     new ParameterizedTypeReference<>() {
                     });
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-            CustomPageImpl<Void> responseBody = response.getBody();
+            System.out.println(response.getBody());
+            PaginatedList<UnpaidExpenseSummaryResponseDto> responseBody = response.getBody();
             assertNotNull(responseBody, "Response must be present");
 
             assertThat(responseBody.getTotalPages()).isEqualTo(1);
-            assertThat(responseBody.getTotalElements()).isEqualTo(25);
-            assertThat(responseBody.getContent().size()).isEqualTo(25);
+            assertThat(responseBody.getTotalItems()).isEqualTo(25);
+            assertThat(responseBody.getData().size()).isEqualTo(25);
         }
 
         @Test
@@ -225,23 +230,30 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         void happyPathNoDateRangeLastPage() {
             final String courtLocation = COURT_LOCATION;
             final String jwt = createJwt(COURT_USER, courtLocation);
-            final URI uri = URI.create(toUrl(courtLocation) + "?page_number=1&sort_by"
-                + "=totalUnapproved&sort_order=DESC");
+            final URI uri = URI.create(toUrl(courtLocation));
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
-            ResponseEntity<CustomPageImpl<Void>> response =
-                template.exchange(new RequestEntity<>(httpHeaders, GET, uri),
+            UnpaidExpenseSummaryRequestDto requestDto =
+                UnpaidExpenseSummaryRequestDto.builder()
+                    .pageNumber(2)
+                    .pageLimit(25)
+                    .sortField(UnpaidExpenseSummaryRequestDto.SortField.TOTAL_IN_DRAFT)
+                    .sortMethod(SortMethod.DESC)
+                    .build();
+
+            ResponseEntity<PaginatedList<UnpaidExpenseSummaryResponseDto>> response =
+                template.exchange(new RequestEntity<>(requestDto, httpHeaders, POST, uri),
                     new ParameterizedTypeReference<>() {
                     });
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-            CustomPageImpl<Void> responseBody = response.getBody();
+            PaginatedList<UnpaidExpenseSummaryResponseDto> responseBody = response.getBody();
             assertNotNull(responseBody, "Response must be present");
 
             assertThat(responseBody.getTotalPages()).isEqualTo(2);
-            assertThat(responseBody.getTotalElements()).isEqualTo(26);
-            assertThat(responseBody.getContent().size()).isEqualTo(1);
+            assertThat(responseBody.getTotalItems()).isEqualTo(26);
+            assertThat(responseBody.getData().size()).isEqualTo(1);
         }
 
         @Test
@@ -251,25 +263,33 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             final String jwt = createJwt(COURT_USER, courtLocation);
             final LocalDate minDate = LocalDate.of(2023, 1, 5);
             final LocalDate maxDate = LocalDate.of(2023, 1, 10);
-            final URI uri = URI.create(toUrl(courtLocation) + MIN_DATE
-                + dateFormatter.format(minDate) + MAX_DATE + dateFormatter.format(maxDate) + PAGINATION_PAGE_NO
-                + PAGINATION_SORT_BY);
+            final URI uri = URI.create(toUrl(courtLocation));
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
-            ResponseEntity<CustomPageImpl<Void>> response =
-                template.exchange(new RequestEntity<>(httpHeaders, GET, uri),
+            UnpaidExpenseSummaryRequestDto requestDto =
+                UnpaidExpenseSummaryRequestDto.builder()
+                    .pageNumber(1)
+                    .pageLimit(25)
+                    .from(minDate)
+                    .to(maxDate)
+                    .sortField(UnpaidExpenseSummaryRequestDto.SortField.TOTAL_IN_DRAFT)
+                    .sortMethod(SortMethod.DESC)
+                    .build();
+
+            ResponseEntity<PaginatedList<UnpaidExpenseSummaryResponseDto>> response =
+                template.exchange(new RequestEntity<>(requestDto, httpHeaders, POST, uri),
                     new ParameterizedTypeReference<>() {
                     });
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-            CustomPageImpl<Void> responseBody = response.getBody();
+            PaginatedList<UnpaidExpenseSummaryResponseDto> responseBody = response.getBody();
             assertNotNull(responseBody, "Response must be present");
 
             assertThat(responseBody.getTotalPages()).isEqualTo(1);
-            assertThat(responseBody.getTotalElements()).isEqualTo(10);
-            assertThat(responseBody.getContent().size()).isEqualTo(10);
+            assertThat(responseBody.getTotalItems()).isEqualTo(10);
+            assertThat(responseBody.getData().size()).isEqualTo(10);
         }
 
         @Test
@@ -278,36 +298,24 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             final String jwt = createJwtBureau(COURT_USER);
             final LocalDate minDate = LocalDate.of(2023, 1, 5);
             final LocalDate maxDate = LocalDate.of(2023, 1, 10);
-            final URI uri = URI.create(toUrl(COURT_LOCATION) + MIN_DATE
-                + dateFormatter.format(minDate) + MAX_DATE + dateFormatter.format(maxDate) + PAGINATION_PAGE_NO
-                + PAGINATION_SORT_BY);
+            final URI uri = URI.create(toUrl(COURT_LOCATION));
 
+            UnpaidExpenseSummaryRequestDto requestDto =
+                UnpaidExpenseSummaryRequestDto.builder()
+                    .pageNumber(1)
+                    .pageLimit(25)
+                    .from(minDate)
+                    .to(maxDate)
+                    .sortField(UnpaidExpenseSummaryRequestDto.SortField.TOTAL_IN_DRAFT)
+                    .sortMethod(SortMethod.DESC)
+                    .build();
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
-            RequestEntity<Void> request = new RequestEntity<>(httpHeaders, GET, uri);
+            RequestEntity<UnpaidExpenseSummaryRequestDto> request = new RequestEntity<>(requestDto, httpHeaders, POST, uri);
             ResponseEntity<Object> response = template.exchange(request, Object.class);
 
             assertThat(response).isNotNull();
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
-        }
-
-        @Test
-        @DisplayName("400 Bad Request - Missing Parameter")
-        void missingParameter() {
-            final String jwt = createJwtBureau(COURT_USER);
-            final LocalDate minDate = LocalDate.of(2023, 1, 5);
-            final LocalDate maxDate = LocalDate.of(2023, 1, 10);
-            final URI uri = URI.create(toUrl(COURT_LOCATION) + MIN_DATE
-                + dateFormatter.format(minDate) + MAX_DATE + dateFormatter.format(maxDate)
-                + PAGINATION_SORT_BY);
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
-
-            RequestEntity<Void> request = new RequestEntity<>(httpHeaders, GET, uri);
-            ResponseEntity<Object> response = template.exchange(request, Object.class);
-
-            assertThat(response).isNotNull();
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         }
     }
 

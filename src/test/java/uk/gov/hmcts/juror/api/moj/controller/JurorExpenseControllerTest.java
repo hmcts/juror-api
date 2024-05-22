@@ -32,6 +32,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.expense.DateDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseType;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.GetEnteredExpenseRequest;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.UnpaidExpenseSummaryRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpense;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseFinancialLoss;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseTime;
@@ -43,6 +44,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApprovalLis
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.SimplifiedExpenseDetailDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.UnpaidExpenseSummaryResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.SortDirection;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.PayAttendanceType;
@@ -105,7 +107,7 @@ class JurorExpenseControllerTest {
     private JurorRepository jurorRepository;
 
     @Nested
-    @DisplayName("GET " + UnpaidExpensesForCourtLocation.URL)
+    @DisplayName("POST " + UnpaidExpensesForCourtLocation.URL)
     class UnpaidExpensesForCourtLocation {
 
         public static final String URL = BASE_URL + "/unpaid-summary";
@@ -114,226 +116,84 @@ class JurorExpenseControllerTest {
             return URL.replace("{loc_code}", locCode);
         }
 
-        @Test
-        @DisplayName("Valid court user - with date range filter")
-        void happyPathForValidCourtUserWithDates() throws Exception {
-            BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
-            jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,
-                Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
-            BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
-            when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
-            BigDecimal totalUnapproved = BigDecimal.valueOf(65.95).setScale(2, RoundingMode.HALF_UP);
-            UnpaidExpenseSummaryResponseDto responseItem =
-                createUnpaidExpenseSummaryResponseDto("111111111", totalUnapproved);
-            Sort sort = Sort.by("jurorNumber").ascending();
-
-            int pageNumber = 0;
-            Pageable pageable = PageRequest.of(pageNumber, PAGE_SIZE, sort);
-
-            Mockito.doReturn(new PageImpl<>(Collections.singletonList(responseItem), pageable, 1))
-                .when(jurorExpenseService)
-                .getUnpaidExpensesForCourtLocation(TestConstants.VALID_COURT_LOCATION,
-                    LocalDate.of(2023, 1, 5), LocalDate.of(2023, 1, 19),
-                    pageNumber, "jurorNumber", SortDirection.ASC);
-
-
-            mockMvc.perform(
-                    get(String.format(toUrl(TestConstants.VALID_COURT_LOCATION) + "?min_date=2023-01-05&max_date=2023"
-                        + "-01-19"
-                        + "&page_number=0"
-                        + "&sort_by=jurorNumber&sort_order=ASC"))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .principal(mockPrincipal))
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].juror_number", CoreMatchers.is(responseItem.getJurorNumber())))
-                .andExpect(jsonPath("$.content[0].pool_number", CoreMatchers.is(responseItem.getPoolNumber())))
-                .andExpect(jsonPath("$.content[0].first_name", CoreMatchers.is(responseItem.getFirstName())))
-                .andExpect(jsonPath("$.content[0].last_name", CoreMatchers.is(responseItem.getLastName())))
-                .andExpect(jsonPath("$.content[0].total_unapproved", CoreMatchers.is(totalUnapproved.doubleValue())));
-
-            verify(jurorExpenseService, times(1))
-                .getUnpaidExpensesForCourtLocation(TestConstants.VALID_COURT_LOCATION,
-                    LocalDate.of(2023, 1, 5), LocalDate.of(2023, 1, 19),
-                    0, "jurorNumber", SortDirection.ASC);
+        private UnpaidExpenseSummaryRequestDto getValidRequest() {
+            return UnpaidExpenseSummaryRequestDto.builder()
+                .pageNumber(1)
+                .pageLimit(25)
+                .build();
         }
 
         @Test
-        @DisplayName("Valid court user - without date range filter")
-        void happyPathForValidCourtUserWithoutDate() throws Exception {
+        @DisplayName("Valid court user")
+        void happyPathForValidCourt() throws Exception {
             BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
-            jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,
-                Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
             BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
             when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
             BigDecimal totalUnapproved = BigDecimal.valueOf(65.95).setScale(2, RoundingMode.HALF_UP);
             UnpaidExpenseSummaryResponseDto responseItem =
                 createUnpaidExpenseSummaryResponseDto("111111111", totalUnapproved);
-            Sort sort = Sort.by("jurorNumber").ascending();
 
-            int pageNumber = 0;
-            Pageable pageable = PageRequest.of(pageNumber, PAGE_SIZE, sort);
+            PaginatedList<UnpaidExpenseSummaryResponseDto> paginatedList = new PaginatedList<>();
+            paginatedList.setData(List.of(responseItem));
 
-            Mockito.doReturn(new PageImpl<>(Collections.singletonList(responseItem), pageable, 1))
+            Mockito.doReturn(paginatedList)
                 .when(jurorExpenseService)
-                .getUnpaidExpensesForCourtLocation(TestConstants.VALID_COURT_LOCATION, null, null,
-                    pageNumber, "jurorNumber", SortDirection.ASC);
+                .getUnpaidExpensesForCourtLocation(any(), any());
 
+            UnpaidExpenseSummaryRequestDto request = getValidRequest();
 
             mockMvc.perform(
-                    get(String.format(toUrl(TestConstants.VALID_COURT_LOCATION) + "?page_number=0&sort_by=jurorNumber"
-                        + "&sort_order=ASC"))
+                    post(toUrl(TestConstants.VALID_COURT_LOCATION))
+                        .content(TestUtils.asJsonString(request))
                         .contentType(MediaType.APPLICATION_JSON)
                         .principal(mockPrincipal))
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].juror_number", CoreMatchers.is(responseItem.getJurorNumber())))
-                .andExpect(jsonPath("$.content[0].pool_number", CoreMatchers.is(responseItem.getPoolNumber())))
-                .andExpect(jsonPath("$.content[0].first_name", CoreMatchers.is(responseItem.getFirstName())))
-                .andExpect(jsonPath("$.content[0].last_name", CoreMatchers.is(responseItem.getLastName())))
-                .andExpect(jsonPath("$.content[0].total_unapproved", CoreMatchers.is(totalUnapproved.doubleValue())));
+                .andExpect(status().isOk());
 
             verify(jurorExpenseService, times(1))
-                .getUnpaidExpensesForCourtLocation(TestConstants.VALID_COURT_LOCATION, null, null,
-                    0, "jurorNumber", SortDirection.ASC);
+                .getUnpaidExpensesForCourtLocation(TestConstants.VALID_COURT_LOCATION, request);
         }
 
         @Test
         @DisplayName("Invalid court location")
         void invalidCourtLocation() throws Exception {
-            BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
-            jwtPayload.setStaff(
-                TestUtils.staffBuilder("Court User", 1, Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
-            BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
-            when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
-
-            BigDecimal totalUnapproved = BigDecimal.valueOf(65.95).setScale(2, RoundingMode.HALF_UP);
-            UnpaidExpenseSummaryResponseDto responseItem =
-                createUnpaidExpenseSummaryResponseDto("111111111", totalUnapproved);
-            Sort sort = Sort.by("jurorNumber").ascending();
-
-            int pageNumber = 0;
-            Pageable pageable = PageRequest.of(pageNumber, PAGE_SIZE, sort);
-
-            Mockito.doReturn(new PageImpl<>(Collections.singletonList(responseItem), pageable, 1))
-                .when(jurorExpenseService).getUnpaidExpensesForCourtLocation(TestConstants.VALID_COURT_LOCATION,
-                    null, null, pageNumber, "jurorNumber", SortDirection.ASC);
-
-            mockMvc.perform(get(String.format(toUrl(TestConstants.INVALID_COURT_LOCATION) + "?page_number=0&sort_by"
-                    + "=jurorNumber"
-                    + "&sort_order=ASC"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .principal(mockPrincipal))
+            mockMvc.perform(
+                    post(toUrl(TestConstants.INVALID_COURT_LOCATION))
+                        .content(TestUtils.asJsonString(getValidRequest()))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest());
-
-            verify(jurorExpenseService, Mockito.never())
-                .getUnpaidExpensesForCourtLocation(TestConstants.VALID_COURT_LOCATION, null, null,
-                    0, "jurorNumber", SortDirection.ASC);
         }
 
 
         @Test
-        @DisplayName("Missing page number")
-        void missingPageNumber() throws Exception {
-            BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
-            jwtPayload.setStaff(
-                TestUtils.staffBuilder("Court User", 1, Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
-            BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
-            when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
-
-            BigDecimal totalUnapproved = BigDecimal.valueOf(65.95).setScale(2, RoundingMode.HALF_UP);
-            UnpaidExpenseSummaryResponseDto responseItem =
-                createUnpaidExpenseSummaryResponseDto("111111111", totalUnapproved);
-            Sort sort = Sort.by("jurorNumber").ascending();
-
-            int pageNumber = 0;
-            Pageable pageable = PageRequest.of(pageNumber, PAGE_SIZE, sort);
-
-            Mockito.doReturn(new PageImpl<>(Collections.singletonList(responseItem), pageable, 1))
-                .when(jurorExpenseService).getUnpaidExpensesForCourtLocation(TestConstants.VALID_COURT_LOCATION,
-                    null, null, pageNumber, "jurorNumber", SortDirection.ASC);
-
+        @DisplayName("Invalid page number")
+        void invalidPageNumber() throws Exception {
+            UnpaidExpenseSummaryRequestDto requestDto = getValidRequest();
+            requestDto.setPageNumber(-1);
             mockMvc.perform(
-                    get(String.format(toUrl(TestConstants.VALID_COURT_LOCATION) + "?&sort_by=jurorNumber&sort_order"
-                        + "=ASC"))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .principal(mockPrincipal))
+                    post(toUrl(TestConstants.VALID_COURT_LOCATION))
+                        .content(TestUtils.asJsonString(requestDto))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest());
-
-            verify(jurorExpenseService, Mockito.never())
-                .getUnpaidExpensesForCourtLocation(TestConstants.VALID_COURT_LOCATION, null, null,
-                    0, "jurorNumber", SortDirection.ASC);
         }
 
         @Test
-        @DisplayName("Missing sort by")
-        void missingSortBy() throws Exception {
-            BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
-            jwtPayload.setStaff(
-                TestUtils.staffBuilder("Court User", 1, Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
-            BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
-            when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
-
-            BigDecimal totalUnapproved = BigDecimal.valueOf(65.95).setScale(2, RoundingMode.HALF_UP);
-            UnpaidExpenseSummaryResponseDto responseItem =
-                createUnpaidExpenseSummaryResponseDto("111111111", totalUnapproved);
-            Sort sort = Sort.by("jurorNumber").ascending();
-
-            int pageNumber = 0;
-            Pageable pageable = PageRequest.of(pageNumber, PAGE_SIZE, sort);
-
-            Mockito.doReturn(new PageImpl<>(Collections.singletonList(responseItem), pageable, 1))
-                .when(jurorExpenseService).getUnpaidExpensesForCourtLocation(TestConstants.VALID_COURT_LOCATION,
-                    null, null, pageNumber, "jurorNumber", SortDirection.ASC);
-
+        @DisplayName("Invalid page Limit")
+        void invalidPageLimit() throws Exception {
+            UnpaidExpenseSummaryRequestDto requestDto = getValidRequest();
+            requestDto.setPageLimit(-1);
             mockMvc.perform(
-                    get(String.format(toUrl(TestConstants.VALID_COURT_LOCATION) + "?page_number=0&sort_order=ASC"))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .principal(mockPrincipal))
+                    post(toUrl(TestConstants.VALID_COURT_LOCATION))
+                        .content(TestUtils.asJsonString(requestDto))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest());
-
-            verify(jurorExpenseService, Mockito.never())
-                .getUnpaidExpensesForCourtLocation(TestConstants.VALID_COURT_LOCATION, null, null,
-                    0, "jurorNumber", SortDirection.ASC);
         }
 
-        @Test
-        @DisplayName("Missing sort order")
-        void missingSortOrder() throws Exception {
-            BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
-            jwtPayload.setStaff(
-                TestUtils.staffBuilder("Court User", 1, Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
-            BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
-            when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
-
-            BigDecimal totalUnapproved = BigDecimal.valueOf(65.95).setScale(2, RoundingMode.HALF_UP);
-            UnpaidExpenseSummaryResponseDto responseItem =
-                createUnpaidExpenseSummaryResponseDto("111111111", totalUnapproved);
-            Sort sort = Sort.by("jurorNumber").ascending();
-
-            int pageNumber = 0;
-            Pageable pageable = PageRequest.of(pageNumber, PAGE_SIZE, sort);
-
-            Mockito.doReturn(new PageImpl<>(Collections.singletonList(responseItem), pageable, 1))
-                .when(jurorExpenseService).getUnpaidExpensesForCourtLocation(TestConstants.VALID_COURT_LOCATION,
-                    null, null, pageNumber, "jurorNumber", SortDirection.ASC);
-
-            mockMvc.perform(
-                    get(String.format(toUrl(TestConstants.VALID_COURT_LOCATION) + "?page_number=0&sort_by=jurorNumber"))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .principal(mockPrincipal))
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(status().isBadRequest());
-
-            verify(jurorExpenseService, Mockito.never())
-                .getUnpaidExpensesForCourtLocation(TestConstants.VALID_COURT_LOCATION, null, null,
-                    0, "jurorNumber", SortDirection.ASC);
-        }
 
         private UnpaidExpenseSummaryResponseDto createUnpaidExpenseSummaryResponseDto(String jurorNumber,
                                                                                       BigDecimal totalUnapproved) {
