@@ -41,7 +41,7 @@ public class UnpaidExpenseSummaryRequestDto implements IsPageable {
     @JsonProperty("sort_field")
     private UnpaidExpenseSummaryRequestDto.SortField sortField;
 
-    public final static NumberPath<BigDecimal> TOTAL_OUTSTANDING_EXPRESSION =
+    public static final NumberPath<BigDecimal> TOTAL_OUTSTANDING_EXPRESSION =
         Expressions.numberPath(BigDecimal.class, "total_outstanding");
 
     @Getter

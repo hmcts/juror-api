@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.service.expense;
 
-import org.springframework.data.domain.Page;
 import uk.gov.hmcts.juror.api.moj.controller.request.RequestDefaultExpensesDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ApportionSmartCardRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ApproveExpenseDto;
@@ -25,7 +24,6 @@ import uk.gov.hmcts.juror.api.moj.domain.ExpenseRates;
 import uk.gov.hmcts.juror.api.moj.domain.ExpenseRatesDto;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
-import uk.gov.hmcts.juror.api.moj.domain.SortDirection;
 import uk.gov.hmcts.juror.api.moj.enumeration.PaymentMethod;
 
 import java.time.LocalDate;
@@ -81,5 +79,6 @@ public interface JurorExpenseService {
 
     void realignExpenseDetails(Appearance appearance, boolean isDeleted);
 
-    PaginatedList<UnpaidExpenseSummaryResponseDto> getUnpaidExpensesForCourtLocation(String locCode, UnpaidExpenseSummaryRequestDto search);
+    PaginatedList<UnpaidExpenseSummaryResponseDto> getUnpaidExpensesForCourtLocation(
+        String locCode, UnpaidExpenseSummaryRequestDto search);
 }

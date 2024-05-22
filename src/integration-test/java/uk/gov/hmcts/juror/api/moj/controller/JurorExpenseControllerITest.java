@@ -76,7 +76,6 @@ import uk.gov.hmcts.juror.api.moj.repository.FinancialAuditDetailsAppearancesRep
 import uk.gov.hmcts.juror.api.moj.repository.FinancialAuditDetailsRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PaymentDataRepository;
-import uk.gov.hmcts.juror.api.utils.CustomPageImpl;
 
 import java.math.BigDecimal;
 import java.net.URI;
@@ -216,12 +215,11 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-            System.out.println(response.getBody());
             PaginatedList<UnpaidExpenseSummaryResponseDto> responseBody = response.getBody();
             assertNotNull(responseBody, "Response must be present");
 
-            assertThat(responseBody.getTotalPages()).isEqualTo(1);
-            assertThat(responseBody.getTotalItems()).isEqualTo(25);
+            assertThat(responseBody.getTotalPages()).isEqualTo(2);
+            assertThat(responseBody.getTotalItems()).isEqualTo(26);
             assertThat(responseBody.getData().size()).isEqualTo(25);
         }
 
@@ -281,7 +279,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 template.exchange(new RequestEntity<>(requestDto, httpHeaders, POST, uri),
                     new ParameterizedTypeReference<>() {
                     });
-
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
             PaginatedList<UnpaidExpenseSummaryResponseDto> responseBody = response.getBody();
@@ -311,7 +308,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     .build();
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
-            RequestEntity<UnpaidExpenseSummaryRequestDto> request = new RequestEntity<>(requestDto, httpHeaders, POST, uri);
+            RequestEntity<UnpaidExpenseSummaryRequestDto> request =
+                new RequestEntity<>(requestDto, httpHeaders, POST, uri);
             ResponseEntity<Object> response = template.exchange(request, Object.class);
 
             assertThat(response).isNotNull();

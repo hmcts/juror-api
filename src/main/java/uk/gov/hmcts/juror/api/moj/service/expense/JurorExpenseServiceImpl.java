@@ -659,7 +659,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     public CombinedExpenseDetailsDto<ExpenseDetailsDto> getExpenses(String locCode, String jurorNumber,
                                                                     List<LocalDate> dates) {
         CombinedExpenseDetailsDto<ExpenseDetailsDto> result = getExpenses(appearanceRepository
-            .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(locCode, jurorNumber, dates));
+            .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(locCode, jurorNumber,
+                dates));
 
         if (result.getExpenseDetails().size() != dates.size()) {
             throw new MojException.NotFound("Not all dates found", null);
@@ -762,9 +763,10 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     }
 
     @Override
-    public PaginatedList<UnpaidExpenseSummaryResponseDto> getUnpaidExpensesForCourtLocation(String locCode,
-                                                                                            UnpaidExpenseSummaryRequestDto search) {
-        return appearanceRepository.findUnpaidExpenses(locCode,search);
+    public PaginatedList<UnpaidExpenseSummaryResponseDto> getUnpaidExpensesForCourtLocation(
+        String locCode,
+        UnpaidExpenseSummaryRequestDto search) {
+        return appearanceRepository.findUnpaidExpenses(locCode, search);
     }
 
     @Override

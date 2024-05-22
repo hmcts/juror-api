@@ -26,9 +26,12 @@ public class BureauOfficerAllocatedRepliesServiceImpl implements BureauOfficerAl
 
         log.trace("Extracting backlog data");
         BureauBacklogCountData bureauBacklogCountDto = BureauBacklogCountData.builder()
-            .nonUrgent(Optional.ofNullable(backlogStats.get(Expressions.numberPath(Long.class, "nonUrgent"))).orElse(0L))
-            .urgent(Optional.ofNullable(backlogStats.get(Expressions.numberPath(Long.class, "urgent"))).orElse(0L))
-            .allReplies(Optional.ofNullable(backlogStats.get(Expressions.numberPath(Long.class, "urgent"))).orElse(0L))
+            .nonUrgent(Optional.ofNullable(backlogStats.get(Expressions.numberPath(Long.class, "nonUrgent")))
+                .orElse(0L))
+            .urgent(Optional.ofNullable(backlogStats.get(Expressions.numberPath(Long.class, "urgent")))
+                .orElse(0L))
+            .allReplies(Optional.ofNullable(backlogStats.get(Expressions.numberPath(Long.class, "allReplies")))
+                .orElse(0L))
             .build();
 
         List<Tuple> assignedRepliesStats = jurorResponseRepository.getAssignRepliesStatisticForUsers();
@@ -41,9 +44,12 @@ public class BureauOfficerAllocatedRepliesServiceImpl implements BureauOfficerAl
                             .staffAllocationResponseBuilder()
                             .login(data.get(Expressions.stringPath("login")))
                             .name(data.get(Expressions.stringPath("name")))
-                            .nonUrgent(Optional.ofNullable(data.get(Expressions.numberPath(Long.class,"nonUrgent"))).orElse(0L))
-                            .urgent(Optional.ofNullable(data.get(Expressions.numberPath(Long.class,"urgent"))).orElse(0L))
-                            .all(Optional.ofNullable(data.get(Expressions.numberPath(Long.class,"allReplies"))).orElse(0L))
+                            .nonUrgent(Optional.ofNullable(data.get(Expressions.numberPath(Long.class,"nonUrgent")))
+                                .orElse(0L))
+                            .urgent(Optional.ofNullable(data.get(Expressions.numberPath(Long.class,"urgent")))
+                                .orElse(0L))
+                            .all(Optional.ofNullable(data.get(Expressions.numberPath(Long.class,"allReplies")))
+                                .orElse(0L))
                             .build()
                     ).toList()
             )
