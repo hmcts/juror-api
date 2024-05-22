@@ -26,12 +26,15 @@ import uk.gov.hmcts.juror.api.moj.controller.request.deferralmaintenance.Process
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralOptionsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralResponseDto;
+import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.CurrentlyDeferred;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CurrentlyDeferredRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
@@ -97,6 +100,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
     private final TestRestTemplate template;
     private final CurrentlyDeferredRepository currentlyDeferredRepository;
+    private final BulkPrintDataRepository bulkPrintDataRepository;
     private final JurorPoolRepository jurorPoolRepository;
     private final JurorRepository jurorRepository;
     private final PoolRequestRepository poolRequestRepository;
@@ -1413,7 +1417,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/DeferralMaintenanceController_postponeJuror.sql"})
         void bureauPostponeJurorActivePool() throws Exception {
-            setHeaders(BUREAU_USER, OWNER_400);
+            setHeaders(BUREAU_USER, OWNER_400, UserType.BUREAU);
 
             ProcessJurorPostponementRequestDto request =
                 createProcessJurorPostponementRequestDto(Collections.singletonList(JUROR_555555551));
@@ -1448,12 +1452,16 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             // check to make sure the juror has not been added to deferral maintenance
             Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_555555551);
             assertThat(deferral.isPresent()).as("Expect juror not to be in deferral maintenance").isFalse();
+
+            // verify postpone letter has been queued for bulk print
+            List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findAll();
+            assertThat(bulkPrintData.size()).isEqualTo(1);
         }
 
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/DeferralMaintenanceController_postponeJuror.sql"})
         void courtPostponeJurorActivePool() throws Exception {
-            setHeaders(COURT_USER, OWNER_415);
+            setHeaders(COURT_USER, OWNER_415, UserType.COURT);
 
             ProcessJurorPostponementRequestDto request =
                 createProcessJurorPostponementRequestDto(Collections.singletonList(JUROR_555555559));
@@ -1488,12 +1496,16 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             // check to make sure the juror has not been added to deferral maintenance
             Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_555555559);
             assertThat(deferral.isPresent()).as("Expect juror not to be in deferral maintenance").isFalse();
+
+            // verify no postpone letter has been queued for bulk print
+            List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findAll();
+            assertThat(bulkPrintData.size()).isEqualTo(0);
         }
 
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/DeferralMaintenanceController_postponeJuror.sql"})
         void bureauPostponeJurorDeferralMaintenance() throws Exception {
-            setHeaders(BUREAU_USER, OWNER_400);
+            setHeaders(BUREAU_USER, OWNER_400, UserType.BUREAU);
 
             ProcessJurorPostponementRequestDto request = new ProcessJurorPostponementRequestDto();
             request.setDeferralDate(LocalDate.now().plusDays(20));
@@ -1524,12 +1536,16 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             // check to make sure a record was created for the deferral maintenance table
             Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_555555552);
             assertThat(deferral.isPresent()).isTrue();
+
+            // verify postpone letter has been queued for bulk print
+            List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findAll();
+            assertThat(bulkPrintData.size()).isEqualTo(1);
         }
 
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/DeferralMaintenanceController_postponeJuror.sql"})
         void bureauPostponeJurorToTheSamePool() throws Exception {
-            setHeaders(BUREAU_USER, OWNER_400);
+            setHeaders(BUREAU_USER, OWNER_400, UserType.BUREAU);
 
             ResponseEntity<MojException.BadRequest> response = template.exchange(new RequestEntity<>(
                 createProcessJurorPostponementRequestDto(Collections.singletonList(JUROR_555555557)),
@@ -1541,7 +1557,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
         @Test
         void bureauPostponeJurorWithAnInvalidCode() throws Exception {
-            setHeaders(BUREAU_USER, OWNER_400);
+            setHeaders(BUREAU_USER, OWNER_400, UserType.BUREAU);
 
             ProcessJurorPostponementRequestDto request =
                 createProcessJurorPostponementRequestDto(Collections.singletonList(JUROR_555555551));
@@ -1556,7 +1572,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
         @Test
         void bureauPostponeJurorForNonExistingJuror() throws Exception {
-            setHeaders(BUREAU_USER, OWNER_400);
+            setHeaders(BUREAU_USER, OWNER_400, UserType.BUREAU);
 
             ProcessJurorPostponementRequestDto request =
                 createProcessJurorPostponementRequestDto(Collections.singletonList("999999999"));
@@ -1570,7 +1586,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
         @Test
         void bureauPostponeJurorPoolNumberDoesNotExist() throws Exception {
-            setHeaders(BUREAU_USER, OWNER_400);
+            setHeaders(BUREAU_USER, OWNER_400, UserType.BUREAU);
 
             ProcessJurorPostponementRequestDto request =
                 createProcessJurorPostponementRequestDto(Collections.singletonList(JUROR_555555551));
@@ -1585,7 +1601,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
         @Test
         void courtPostponeJurorNoJurorsInRequest() throws Exception {
-            setHeaders(COURT_USER, OWNER_415);
+            setHeaders(COURT_USER, OWNER_415, UserType.COURT);
 
             ProcessJurorPostponementRequestDto request = createProcessJurorPostponementRequestDto(new ArrayList<>());
             request.setJurorNumbers(new ArrayList<>());
@@ -1599,7 +1615,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
         @Test
         void courtPostponeJurorNullJurorsInRequest() throws Exception {
-            setHeaders(COURT_USER, OWNER_415);
+            setHeaders(COURT_USER, OWNER_415, UserType.COURT);
 
             ProcessJurorPostponementRequestDto request = createProcessJurorPostponementRequestDto(new ArrayList<>());
             request.setJurorNumbers(null);
@@ -1611,8 +1627,8 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
                 .isEqualTo(BAD_REQUEST);
         }
 
-        private void setHeaders(String user, String owner) throws Exception {
-            final String bureauJwt = createJwt(user, owner);
+        private void setHeaders(String user, String owner, UserType userType) throws Exception {
+            final String bureauJwt = createJwt(user, owner, userType);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
         }
@@ -1650,6 +1666,21 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         return mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login(login)
+            .staff(BureauJwtPayload.Staff.builder()
+                .name("Test User")
+                .active(1)
+                .rank(1)
+                .courts(List.of("415", "400"))
+                .build())
+            .owner(owner)
+            .build());
+    }
+
+    protected String createJwt(String login, String owner, UserType userType) {
+        return mintBureauJwt(BureauJwtPayload.builder()
+            .userLevel("1")
+            .login(login)
+            .userType(userType)
             .staff(BureauJwtPayload.Staff.builder()
                 .name("Test User")
                 .active(1)

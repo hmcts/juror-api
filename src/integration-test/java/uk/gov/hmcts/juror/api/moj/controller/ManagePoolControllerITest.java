@@ -25,6 +25,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.PoolSummaryResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.SummoningProgressResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.AvailablePoolsInCourtLocationDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.ReassignPoolMembersResultDto;
+import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
@@ -38,6 +39,7 @@ import uk.gov.hmcts.juror.api.moj.domain.letter.ConfirmationLetter;
 import uk.gov.hmcts.juror.api.moj.domain.letter.LetterId;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription;
+import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ConfirmationLetterRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
@@ -107,7 +109,8 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     private JurorHistoryRepository jurorHistoryRepository;
     @Autowired
     private CourtLocationRepository courtLocationRepository;
-
+    @Autowired
+    private BulkPrintDataRepository bulkPrintDataRepository;
     private HttpHeaders httpHeaders;
     @Autowired
     private ConfirmationLetterRepository confirmationLetterRepository;
@@ -1079,6 +1082,10 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         transferJurorPoolValidateNewlyCreatedJurorPool("111111111", sourcePoolNumber,
             "457230702", targetCourtLocation, targetServiceStartDate, COURT_USER);
 
+        // verify no letters have been queued for bulk print
+        List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findAll();
+        assertThat(bulkPrintData.size()).isEqualTo(0);
+
     }
 
     @Test
@@ -1576,6 +1583,10 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
         String expectedHistoryInfo = "To " + targetPoolNumber + " " + targetCourt.getName();
         assertThat(jurorHistory.getOtherInformation()).isEqualTo(expectedHistoryInfo);
+
+        // verify confirm letter has been queued for bulk print
+        List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findAll();
+        assertThat(bulkPrintData.size()).isEqualTo(1);
     }
 
     @Test
@@ -1597,6 +1608,9 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
         validateReassignedJuror(jurorNumber, POOL_NUMBER_415220401, POOL_NUMBER_416220502);
 
+        // verify confirm letter has been queued for bulk print
+        List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findAll();
+        assertThat(bulkPrintData.size()).isEqualTo(1);
     }
 
     @Test
@@ -1625,6 +1639,9 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
             validateReassignedJuror(jurorNumber, POOL_NUMBER_415220401, POOL_NUMBER_416220502);
         }
 
+        // verify confirmation letters have been queued for bulk print
+        List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findAll();
+        assertThat(bulkPrintData.size()).isEqualTo(3);
     }
 
     @Test
