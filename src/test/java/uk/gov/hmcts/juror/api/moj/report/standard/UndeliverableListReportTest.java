@@ -10,6 +10,7 @@ import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportTestSupport;
@@ -79,8 +80,8 @@ class UndeliverableListReportTest extends AbstractStandardReportTestSupport<Unde
     @Override
     public Map<String, StandardReportResponse.DataTypeValue> positiveGetHeadingsTypical(
         StandardReportRequest request,
-        AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData,
-        List<LinkedHashMap<String, Object>> data) {
+        AbstractReportResponse.TableData<StandardTableData> tableData,
+        StandardTableData data) {
 
         when(data.size()).thenReturn(5);
 

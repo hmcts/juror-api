@@ -10,6 +10,7 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResp
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupByResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
@@ -77,7 +78,7 @@ class AbstractGroupedReportTest {
     void positiveGetTableData() {
         final List<Tuple> data = List.of(mock(Tuple.class), mock(Tuple.class));
 
-        List<LinkedHashMap<String, Object>> tableData = new ArrayList<>();
+        StandardTableData tableData = new StandardTableData();
         tableData.add(new GroupedTableData()
             .setType(GroupedTableData.Type.DATA)
             .add(DataType.JUROR_NUMBER.getId(), "1231")

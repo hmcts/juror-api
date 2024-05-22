@@ -7,6 +7,7 @@ import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
@@ -78,8 +79,8 @@ class CurrentPoolStatusReportTest extends AbstractStandardReportTestSupport<Curr
     @Override
     public Map<String, StandardReportResponse.DataTypeValue> positiveGetHeadingsTypical(
         StandardReportRequest request,
-        AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData,
-        List<LinkedHashMap<String, Object>> data) {
+        AbstractReportResponse.TableData<StandardTableData> tableData,
+        StandardTableData data) {
         when(data.size()).thenReturn(2);
 
         Map<String, StandardReportResponse.DataTypeValue> map = report.getHeadings(request, tableData);

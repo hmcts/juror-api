@@ -5,6 +5,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportTestSupport;
@@ -65,8 +66,8 @@ public class PoolStatusReportTest extends AbstractStandardReportTestSupport<Pool
     @Override
     public Map<String, AbstractReportResponse.DataTypeValue> positiveGetHeadingsTypical(
         StandardReportRequest request,
-        AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData,
-        List<LinkedHashMap<String, Object>> data) {
+        AbstractReportResponse.TableData<StandardTableData> tableData,
+        StandardTableData data) {
         final String poolNumber = "41500001";
         PoolRequest poolRequest = createPoolRequest(poolNumber);
         doReturn("41500001").when(request).getPoolNumber();

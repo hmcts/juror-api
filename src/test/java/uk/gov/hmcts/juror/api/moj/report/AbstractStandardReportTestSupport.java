@@ -1,14 +1,11 @@
 package uk.gov.hmcts.juror.api.moj.report;
 
 import com.querydsl.core.types.EntityPath;
-
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 
 public abstract class AbstractStandardReportTestSupport
     <R extends AbstractStandardReport>
-    extends AbstractReportTestSupport<List<LinkedHashMap<String, Object>>, R> {
+    extends AbstractReportTestSupport<StandardTableData, R> {
 
 
     public AbstractStandardReportTestSupport(EntityPath<?> from,
@@ -18,7 +15,7 @@ public abstract class AbstractStandardReportTestSupport
 
 
     @Override
-    protected List<LinkedHashMap<String, Object>> createData() {
-        return new ArrayList<>();
+    protected StandardTableData createData() {
+        return new StandardTableData();
     }
 }
