@@ -37,7 +37,7 @@ import static org.mockito.Mockito.when;
     "PMD.LawOfDemeter",
     "PMD.ExcessiveImports"
 })
-public class UnconfirmedAttendanceReportTest extends AbstractGroupedReportTestSupport<UnconfirmedAttendanceReport> {
+class UnconfirmedAttendanceReportTest extends AbstractGroupedReportTestSupport<UnconfirmedAttendanceReport> {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
     private CourtLocationService courtLocationService;
