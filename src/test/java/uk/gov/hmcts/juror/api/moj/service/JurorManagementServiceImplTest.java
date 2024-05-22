@@ -28,8 +28,6 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
-import uk.gov.hmcts.juror.api.moj.service.letter.CertLetterServiceImpl;
-import uk.gov.hmcts.juror.api.moj.service.letter.ConfirmationLetterServiceImpl;
 import uk.gov.hmcts.juror.api.moj.service.poolmanagement.JurorManagementConstants;
 import uk.gov.hmcts.juror.api.moj.service.poolmanagement.JurorManagementServiceImpl;
 import uk.gov.hmcts.juror.api.validation.ResponseInspector;
@@ -74,26 +72,21 @@ public class JurorManagementServiceImplTest {
     private JurorPoolRepository jurorPoolRepository;
     @Mock
     private JurorHistoryRepository jurorHistoryRepository;
-
     @Mock
-    GeneratePoolNumberService generatePoolNumberService;
-
+    private GeneratePoolNumberService generatePoolNumberService;
     @Mock
-    CertLetterServiceImpl certLetterService;
-
-    @Mock
-    ResponseInspector responseInspector;
+    private ResponseInspector responseInspector;
     @Mock
     private PoolMemberSequenceService poolMemberSequenceService;
     @Mock
-    private ConfirmationLetterServiceImpl confirmationLetterService;
+    private PrintDataService printDataService;
 
     @InjectMocks
     JurorManagementServiceImpl jurorManagementService;
 
     @Before
     public void setUpMocks() {
-        doNothing().when(certLetterService).enqueueNewLetter(any(), any());
+        doNothing().when(printDataService).printConfirmationLetter(any());
         doReturn(1).when(poolMemberSequenceService).getPoolMemberSequenceNumber(any());
         doReturn(null).when(poolRequestRepository).saveAndFlush(any());
         doReturn(null).when(jurorPoolRepository).save(any());
@@ -133,8 +126,8 @@ public class JurorManagementServiceImplTest {
                 anyList(), anyBoolean(), any(),
                 any(CourtLocation.class), anyList()
             );
-        verify(confirmationLetterService, times(0))
-            .enqueueLetter(any());
+        verify(printDataService, times(0))
+            .printConfirmationLetter(any());
 
     }
 
@@ -188,7 +181,7 @@ public class JurorManagementServiceImplTest {
         verify(poolMemberSequenceService, times(1))
             .getPoolMemberSequenceNumber(anyString());
         verify(jurorHistoryRepository, times(1)).save(any(JurorHistory.class));
-        verify(confirmationLetterService, times(1)).enqueueLetter(any());
+        verify(printDataService, times(1)).printConfirmationLetter(any());
     }
 
     @Test
@@ -272,8 +265,8 @@ public class JurorManagementServiceImplTest {
             .getPoolMemberSequenceNumber(anyString());
         verify(jurorHistoryRepository, times(1))
             .save(any(JurorHistory.class));
-        verify(confirmationLetterService, never())
-            .enqueueLetter(any());
+        verify(printDataService, never())
+            .printConfirmationLetter(any());
 
         ArgumentCaptor<JurorPool> jurorPoolArgumentCaptor = ArgumentCaptor.forClass(JurorPool.class);
         verify(jurorPoolRepository, times(2)).save(jurorPoolArgumentCaptor.capture());
@@ -330,8 +323,8 @@ public class JurorManagementServiceImplTest {
             .findByLocCode(anyString());
         verify(jurorHistoryRepository, never())
             .save(any(JurorHistory.class));
-        verify(confirmationLetterService, never())
-            .enqueueLetter(any());
+        verify(printDataService, never())
+            .printConfirmationLetter(any());
         verify(jurorPoolRepository, never())
             .save(any());
     }
@@ -359,8 +352,8 @@ public class JurorManagementServiceImplTest {
                 anyList(), anyBoolean(), any(),
                 any(CourtLocation.class), anyList()
             );
-        verify(confirmationLetterService, times(0))
-            .enqueueLetter(any());
+        verify(printDataService, times(0))
+            .printConfirmationLetter(any());
     }
 
     @Test
@@ -390,8 +383,8 @@ public class JurorManagementServiceImplTest {
                 anyList(), anyBoolean(), any(),
                 any(CourtLocation.class), anyList()
             );
-        verify(confirmationLetterService, times(0))
-            .enqueueLetter(any());
+        verify(printDataService, times(0))
+            .printConfirmationLetter(any());
     }
 
     @Test
@@ -431,8 +424,8 @@ public class JurorManagementServiceImplTest {
                 anyList(), anyBoolean(), any(),
                 any(CourtLocation.class), anyList()
             );
-        verify(confirmationLetterService, times(0))
-            .enqueueLetter(any());
+        verify(printDataService, times(0))
+            .printConfirmationLetter(any());
     }
 
     @Test
@@ -510,8 +503,6 @@ public class JurorManagementServiceImplTest {
             .saveAndFlush(any());
         verify(jurorHistoryRepository, times(jurorNumbers.size()))
             .save(any());
-        verify(certLetterService, times(jurorNumbers.size()))
-            .enqueueNewLetter(any(), any());
     }
 
     @Test
@@ -591,8 +582,7 @@ public class JurorManagementServiceImplTest {
             .saveAndFlush(any());
         verify(jurorHistoryRepository, times(jurorNumbers.size()))
             .save(any());
-        verify(certLetterService, times(jurorNumbers.size()))
-            .enqueueNewLetter(any(), any());
+
     }
 
     @Test
@@ -671,8 +661,6 @@ public class JurorManagementServiceImplTest {
             .saveAndFlush(any());
         verify(jurorHistoryRepository, times(jurorNumbers.size()))
             .save(any());
-        verify(certLetterService, times(jurorNumbers.size()))
-            .enqueueNewLetter(any(), any());
     }
 
     @Test
@@ -760,8 +748,6 @@ public class JurorManagementServiceImplTest {
             .saveAndFlush(any());
         verify(jurorHistoryRepository, times(2))
             .save(any());
-        verify(certLetterService, times(2))
-            .enqueueNewLetter(any(), any());
     }
 
     @Test
@@ -811,8 +797,6 @@ public class JurorManagementServiceImplTest {
             .saveAndFlush(any());
         verify(jurorHistoryRepository, never())
             .save(any());
-        verify(certLetterService, never())
-            .enqueueNewLetter(any(), any());
     }
 
     @Test
@@ -860,8 +844,6 @@ public class JurorManagementServiceImplTest {
             .saveAndFlush(any());
         verify(jurorHistoryRepository, never())
             .save(any());
-        verify(certLetterService, never())
-            .enqueueNewLetter(any(), any());
     }
 
     @Test
@@ -911,8 +893,6 @@ public class JurorManagementServiceImplTest {
             .saveAndFlush(any());
         verify(jurorHistoryRepository, never())
             .save(any());
-        verify(certLetterService, never())
-            .enqueueNewLetter(any(), any());
     }
 
     @Test
@@ -969,8 +949,6 @@ public class JurorManagementServiceImplTest {
             .saveAndFlush(any());
         verify(jurorHistoryRepository, never())
             .save(any());
-        verify(certLetterService, never())
-            .enqueueNewLetter(any(), any());
     }
 
     @Test
@@ -1027,8 +1005,6 @@ public class JurorManagementServiceImplTest {
             .saveAndFlush(any());
         verify(jurorHistoryRepository, never())
             .save(any());
-        verify(certLetterService, never())
-            .enqueueNewLetter(any(), any());
     }
 
     @Test
@@ -1083,8 +1059,6 @@ public class JurorManagementServiceImplTest {
             .saveAndFlush(any());
         verify(jurorHistoryRepository, never())
             .save(any());
-        verify(certLetterService, never())
-            .enqueueNewLetter(any(), any());
     }
 
     @Test
@@ -1142,8 +1116,6 @@ public class JurorManagementServiceImplTest {
             .saveAndFlush(any());
         verify(jurorHistoryRepository, never())
             .save(any());
-        verify(certLetterService, never())
-            .enqueueNewLetter(any(), any());
     }
 
     @Test
@@ -1222,8 +1194,7 @@ public class JurorManagementServiceImplTest {
             .saveAndFlush(any());
         verify(jurorHistoryRepository, never())
             .save(any());
-        verify(certLetterService, never())
-            .enqueueNewLetter(any(), any());
+
     }
 
     @Test
@@ -1301,8 +1272,6 @@ public class JurorManagementServiceImplTest {
             .saveAndFlush(any());
         verify(jurorHistoryRepository, never())
             .save(any());
-        verify(certLetterService, never())
-            .enqueueNewLetter(any(), any());
     }
 
     @Test
@@ -1379,8 +1348,7 @@ public class JurorManagementServiceImplTest {
             .saveAndFlush(any());
         verify(jurorHistoryRepository, never())
             .save(any());
-        verify(certLetterService, never())
-            .enqueueNewLetter(any(), any());
+
     }
 
     @Test
@@ -1430,8 +1398,6 @@ public class JurorManagementServiceImplTest {
             .saveAndFlush(any());
         verify(jurorHistoryRepository, never())
             .save(any());
-        verify(certLetterService, never())
-            .enqueueNewLetter(any(), any());
     }
 
     @Test
