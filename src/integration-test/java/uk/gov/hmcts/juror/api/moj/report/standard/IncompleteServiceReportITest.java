@@ -13,7 +13,6 @@ import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 @Sql({

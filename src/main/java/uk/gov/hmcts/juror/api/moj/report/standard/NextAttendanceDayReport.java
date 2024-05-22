@@ -41,8 +41,9 @@ public class NextAttendanceDayReport extends AbstractStandardReport {
     }
 
     @Override
-    public Map<String, StandardReportResponse.DataTypeValue> getHeadings(StandardReportRequest request,
-                                                                         StandardReportResponse.TableData<StandardTableData> tableData) {
+    public Map<String, StandardReportResponse.DataTypeValue> getHeadings(
+        StandardReportRequest request,
+        StandardReportResponse.TableData<StandardTableData> tableData) {
         return loadStandardPoolHeaders(request, true, true);
     }
 

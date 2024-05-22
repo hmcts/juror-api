@@ -11,7 +11,6 @@ import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 
 @Sql({

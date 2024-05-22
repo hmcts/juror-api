@@ -48,8 +48,8 @@ public class AbstractReportResponse<T> {
         private T data;
 
         public void removeData(IDataType... dataTypes) {
-            if(data instanceof StandardTableData standardTableData){
-                for(IDataType dataType : dataTypes) {
+            if (data instanceof StandardTableData standardTableData) {
+                for (IDataType dataType : dataTypes) {
                     headings.removeIf(heading -> dataType.getId().equals(heading.getId()));
                 }
                 standardTableData.removeDataTypes(dataTypes);
