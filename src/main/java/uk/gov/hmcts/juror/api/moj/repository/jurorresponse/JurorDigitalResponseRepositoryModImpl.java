@@ -22,10 +22,12 @@ public class JurorDigitalResponseRepositoryModImpl implements IJurorDigitalRespo
     @Override
     public Tuple getAssignRepliesStatistics() {
         JPAQuery<Tuple> query = getJpaQueryFactory().select(
-                new CaseBuilder().when(digitalResponse.urgent.isFalse().and(digitalResponse.superUrgent.isFalse()))
+                new CaseBuilder()
+                    .when(digitalResponse.urgent.isFalse().and(digitalResponse.superUrgent.isFalse()))
                     .then(1L).otherwise(0L).sum().as("nonUrgent"),
-                new CaseBuilder().when(digitalResponse.urgent.isTrue().or(digitalResponse.superUrgent.isTrue())
-                ).then(1L).otherwise(0L).sum().as("urgent"),
+                new CaseBuilder()
+                    .when(digitalResponse.urgent.isTrue().or(digitalResponse.superUrgent.isTrue()))
+                    .then(1L).otherwise(0L).sum().as("urgent"),
                 digitalResponse.count().as("allReplies"))
             .from(digitalResponse)
             .where(digitalResponse.processingStatus.eq(ProcessingStatus.TODO))
@@ -38,17 +40,17 @@ public class JurorDigitalResponseRepositoryModImpl implements IJurorDigitalRespo
         JPAQuery<Tuple> query = getJpaQueryFactory().select(
                 user.username.as("login"),
                 user.name.as("name"),
-                new CaseBuilder().when(digitalResponse.urgent.isFalse().and(digitalResponse.superUrgent.isFalse())
-                ).then(1L).otherwise(0L).sum().as("nonUrgent"),
-                new CaseBuilder().when(
-                   digitalResponse.urgent.isTrue().or(digitalResponse.superUrgent.isTrue())
-                ).then(1L).otherwise(0L).sum().as("urgent"),
+                new CaseBuilder()
+                    .when(digitalResponse.urgent.isFalse().and(digitalResponse.superUrgent.isFalse()))
+                    .then(1L).otherwise(0L).sum().as("nonUrgent"),
+                new CaseBuilder()
+                    .when(digitalResponse.urgent.isTrue().or(digitalResponse.superUrgent.isTrue()))
+                    .then(1L).otherwise(0L).sum().as("urgent"),
                 digitalResponse.count().as("allReplies")
             ).from(user)
             .where(user.userType.eq(UserType.BUREAU))
             .leftJoin(digitalResponse)
-            .on(user.eq(digitalResponse.staff))
-            .where(digitalResponse.processingStatus.eq(ProcessingStatus.TODO))
+            .on(user.eq(digitalResponse.staff).and(digitalResponse.processingStatus.eq(ProcessingStatus.TODO)))
             .groupBy(user.username, user.name);
         return query.fetch();
     }
