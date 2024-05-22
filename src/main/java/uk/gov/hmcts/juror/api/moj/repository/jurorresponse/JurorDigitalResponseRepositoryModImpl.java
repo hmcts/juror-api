@@ -22,15 +22,14 @@ public class JurorDigitalResponseRepositoryModImpl implements IJurorDigitalRespo
     @Override
     public Tuple getAssignRepliesStatistics() {
         JPAQuery<Tuple> query = getJpaQueryFactory().select(
-                new CaseBuilder().when(digitalResponse.staff.isNull()
-                        .and(digitalResponse.urgent.isFalse().and(digitalResponse.superUrgent.isFalse())))
-                    .then(1).otherwise(0).sum().as("nonUrgent"),
-                new CaseBuilder().when(digitalResponse.staff.isNull()
-                    .and(digitalResponse.urgent.isTrue().or(digitalResponse.superUrgent.isTrue()))
-                ).then(1).otherwise(0).sum().as("urgent"),
-                new CaseBuilder().when(digitalResponse.staff.isNull()).then(1).otherwise(0).sum().as("allReplies"))
+                new CaseBuilder().when(digitalResponse.urgent.isFalse().and(digitalResponse.superUrgent.isFalse()))
+                    .then(1L).otherwise(0L).sum().as("nonUrgent"),
+                new CaseBuilder().when(digitalResponse.urgent.isTrue().or(digitalResponse.superUrgent.isTrue())
+                ).then(1L).otherwise(0L).sum().as("urgent"),
+                digitalResponse.count().as("allReplies"))
             .from(digitalResponse)
-            .where(digitalResponse.processingStatus.eq(ProcessingStatus.TODO));
+            .where(digitalResponse.processingStatus.eq(ProcessingStatus.TODO))
+            .where(digitalResponse.staff.isNull());
         return query.fetchOne();
     }
 
@@ -39,20 +38,16 @@ public class JurorDigitalResponseRepositoryModImpl implements IJurorDigitalRespo
         JPAQuery<Tuple> query = getJpaQueryFactory().select(
                 user.username.as("login"),
                 user.name.as("name"),
+                new CaseBuilder().when(digitalResponse.urgent.isFalse().and(digitalResponse.superUrgent.isFalse())
+                ).then(1L).otherwise(0L).sum().as("nonUrgent"),
                 new CaseBuilder().when(
-                    digitalResponse.processingStatus.eq(ProcessingStatus.TODO)
-                        .and(digitalResponse.urgent.isFalse().and(digitalResponse.superUrgent.isFalse()))
-                ).then(1).otherwise(0).sum().as("nonUrgent"),
-                new CaseBuilder().when(
-                    digitalResponse.processingStatus.eq(ProcessingStatus.TODO)
-                        .and(digitalResponse.urgent.isTrue().or(digitalResponse.superUrgent.isTrue()))
-                ).then(1).otherwise(0).sum().as("urgent"),
-                new CaseBuilder().when(
-                    digitalResponse.processingStatus.eq(ProcessingStatus.TODO)
-                ).then(1).otherwise(0).sum().as("allReplies")
+                   digitalResponse.urgent.isTrue().or(digitalResponse.superUrgent.isTrue())
+                ).then(1L).otherwise(0L).sum().as("urgent"),
+                digitalResponse.count().as("allReplies")
             ).from(digitalResponse)
             .join(user)
             .on(user.eq(digitalResponse.staff).and(user.userType.eq(UserType.BUREAU)))
+            .where(digitalResponse.processingStatus.eq(ProcessingStatus.TODO))
             .groupBy(user.username, user.name);
         return query.fetch();
     }
