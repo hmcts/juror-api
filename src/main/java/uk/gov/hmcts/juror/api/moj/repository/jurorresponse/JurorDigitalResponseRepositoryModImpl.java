@@ -44,9 +44,10 @@ public class JurorDigitalResponseRepositoryModImpl implements IJurorDigitalRespo
                    digitalResponse.urgent.isTrue().or(digitalResponse.superUrgent.isTrue())
                 ).then(1L).otherwise(0L).sum().as("urgent"),
                 digitalResponse.count().as("allReplies")
-            ).from(digitalResponse)
-            .join(user)
-            .on(user.eq(digitalResponse.staff).and(user.userType.eq(UserType.BUREAU)))
+            ).from(user)
+            .where(user.userType.eq(UserType.BUREAU))
+            .leftJoin(digitalResponse)
+            .on(user.eq(digitalResponse.staff))
             .where(digitalResponse.processingStatus.eq(ProcessingStatus.TODO))
             .groupBy(user.username, user.name);
         return query.fetch();

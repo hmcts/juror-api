@@ -279,7 +279,7 @@ pmdTest {
     maxFailures = 352
 }
 pmdMain {
-    maxFailures = 923
+    maxFailures = 902
 }
 pmd {
     maxFailures = 0
