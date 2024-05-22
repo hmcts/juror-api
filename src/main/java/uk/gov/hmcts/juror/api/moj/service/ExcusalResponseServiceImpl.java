@@ -30,7 +30,6 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
-import uk.gov.hmcts.juror.api.moj.service.letter.ExcusalLetterServiceImpl;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
@@ -69,8 +68,6 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
     private final JurorHistoryRepository jurorHistoryRepository;
     @NonNull
     private final PrintDataService printDataService;
-    @NonNull
-    private final ExcusalLetterServiceImpl excusalLetterService;
 
     @Override
     @Transactional
