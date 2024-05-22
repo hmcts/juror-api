@@ -32,8 +32,7 @@ public class TrialAttendanceReport extends AbstractGroupedReport {
     @Autowired
     public TrialAttendanceReport(CourtLocationRepository courtLocationRepository,
                                  TrialRepository trialRepository) {
-        super(
-            QReportsJurorPayments.reportsJurorPayments,
+        super(QReportsJurorPayments.reportsJurorPayments,
             ReportGroupBy.builder()
                   .dataType(ReportsJurorPaymentsDataTypes.ATTENDANCE_DATE)
                   .removeGroupByFromResponse(true)

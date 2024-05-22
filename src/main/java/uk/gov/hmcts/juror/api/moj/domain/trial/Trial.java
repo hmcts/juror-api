@@ -11,10 +11,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.validator.constraints.Length;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.TrialType;
@@ -29,6 +26,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @IdClass(TrialId.class)
+@Builder
 @Getter
 @Setter
 @Table(name = "trial", schema = "juror_mod")
