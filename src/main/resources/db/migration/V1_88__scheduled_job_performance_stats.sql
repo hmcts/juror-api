@@ -105,8 +105,8 @@ $$
   *
   * Replaces the latest n months of summons counts as specified by the no_of_months input parameter
   *
-  * It is recommended to use use no_of_months = 6
-  * 	- It needs to be at least 3 given jurors are summoned 9 weeks in advance of their atttendance date
+  * It is recommended to use no_of_months = 6
+  * 	- It needs to be at least 3 given jurors are summoned 9 weeks in advance of their attendance date
   * 	- Using 6 allows some contingency in case it is decided to summon jurors earlier
   */
 declare
@@ -320,8 +320,8 @@ $$
  *
  * Replaces the latest n months of summons counts as specified by the no_of_months input parameter
  *
- * It is recommended to use use no_of_months = 6
- * 	- It needs to be at least 3 given jurors are summoned 9 weeks in advance of their atttendance date
+ * It is recommended to use no_of_months = 6
+ * 	- It needs to be at least 3 given jurors are summoned 9 weeks in advance of their attendance date
  * 	- Using 6 allows some contingency in case it is decided to summon jurors earlier
  *
  * Using delete then insert rather than merge due to the need to identify and delete rows that no longer have a non responded count
@@ -423,8 +423,8 @@ $$
  *
  * Replaces the latest n months of summons months as specified by the no_of_months input parameter
  *
- * It is recommended to use use no_of_months = 6
- * 	- It needs to be at least 3 given jurors are summoned 9 weeks in advance of their atttendance date
+ * It is recommended to use no_of_months = 6
+ * 	- It needs to be at least 3 given jurors are summoned 9 weeks in advance of their attendance date
  * 	- Using 6 allows some contingency in case it is decided to summon jurors earlier
  */
 declare
