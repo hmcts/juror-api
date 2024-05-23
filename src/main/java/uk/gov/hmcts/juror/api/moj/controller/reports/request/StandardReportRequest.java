@@ -46,6 +46,7 @@ public class StandardReportRequest {
         //Grouped
         "AbsencesReport",
         "PostponedListByDateReport",
+        "UnpaidAttendanceSummaryReport",
         "ReasonableAdjustmentsReport",
         "PersonAttendingDetailReport",
         "UnpaidAttendanceReportDetailedReport",
