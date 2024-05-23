@@ -8,7 +8,9 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -21,6 +23,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.envers.AuditOverride;
 import org.hibernate.envers.Audited;
@@ -29,6 +32,7 @@ import org.hibernate.validator.constraints.Length;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCommon;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -50,7 +54,8 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REG
 @AllArgsConstructor
 @SuperBuilder
 @AuditOverride(forClass = Address.class)
-@EqualsAndHashCode(callSuper = true, exclude = {"associatedPools"})
+@ToString(exclude = {"jurorResponse"})
+@EqualsAndHashCode(callSuper = true, exclude = {"associatedPools", "jurorResponse"})
 public class Juror extends Address implements Serializable {
 
     @Id
@@ -272,6 +277,12 @@ public class Juror extends Address implements Serializable {
     @NotAudited
     @OneToMany(mappedBy = "juror", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
     private Set<JurorPool> associatedPools;
+
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "juror_number", referencedColumnName = "juror_number")
+    @NotAudited
+    private JurorResponseCommon jurorResponse;
 
 
     @PrePersist
