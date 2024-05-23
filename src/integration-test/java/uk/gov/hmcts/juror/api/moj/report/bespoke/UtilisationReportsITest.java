@@ -471,6 +471,9 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
             String responseBody = responseEntity.getBody();
             assertThat(responseBody).isNotNull();
 
+            assertThat(responseBody).isEqualTo("June 2024,May 2024,April 2024,March 2024,February 2024,February 2024,"
+                + "January 2024,December 2023,November 2023,October 2023,September 2023,August 2023,");
+
         }
 
         @Test
