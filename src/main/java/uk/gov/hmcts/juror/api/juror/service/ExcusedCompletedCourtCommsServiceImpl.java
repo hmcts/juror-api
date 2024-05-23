@@ -12,6 +12,7 @@ import uk.gov.hmcts.juror.api.bureau.exception.JurorCommsNotificationServiceExce
 import uk.gov.hmcts.juror.api.bureau.service.BureauProcessService;
 import uk.gov.hmcts.juror.api.config.NotifyConfigurationProperties;
 import uk.gov.hmcts.juror.api.config.NotifyRegionsConfigurationProperties;
+import uk.gov.hmcts.juror.api.moj.client.contracts.SchedulerServiceClient;
 import uk.gov.hmcts.juror.api.moj.domain.CourtRegionMod;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.RegionNotifyTemplateMod;
@@ -93,7 +94,7 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
 
     @Override
     @Transactional
-    public void process() {
+    public SchedulerServiceClient.Result process() {
 
 
         SimpleDateFormat dateFormat = new SimpleDateFormat();
@@ -105,7 +106,8 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
 
         Map<String, String> myRegionMap = new HashMap<>();
 
-
+        @SuppressWarnings("PMD.VariableDeclarationUsageDistance")
+        int errorCount = 0;
         for (int i = 0;
              i < setUpNotifyRegionKeys().size();
              i++) {
@@ -269,8 +271,10 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
                 jurorCourtDetailExcusalList.getJuror().setServiceCompCommsStatus(updateMessageStatusNotSent);
 
                 updateCommsStatusFlagExcusal(jurorCourtDetailExcusalList);
+                errorCount++;
             } catch (Exception e) {
                 log.info("Unexpected exception: {}", e);
+                errorCount++;
             }
 
 
@@ -427,8 +431,10 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
                 jurorCourtDetailCompletedList.getJuror().setServiceCompCommsStatus(updateMessageStatusNotSent);
 
                 updateCommsStatusFlagCompleted(jurorCourtDetailCompletedList);
+                errorCount++;
             } catch (Exception e) {
                 log.info("Unexpected exception: {}", e);
+                errorCount++;
             }
 
 
@@ -614,8 +620,10 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
 
                 jurorRepository.save(welshJurorCourtDetailExcusalList);
                 updateCommsStatusFlagExcusalWelsh(welshJurorCourtDetailExcusalList);
+                errorCount++;
             } catch (Exception e) {
                 log.info("Unexpected exception: {}", e);
+                errorCount++;
             }
 
 
@@ -791,9 +799,10 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
                 welshJurorCourtDetailCompletedList.getJuror().setServiceCompCommsStatus(updateMessageStatusNotSent);
 
                 updateCommsStatusFlagCompletedWelsh(welshJurorCourtDetailCompletedList);
-
+                errorCount++;
             } catch (Exception e) {
                 log.info("Unexpected exception: {}", e);
+                errorCount++;
             }
 
 
@@ -803,6 +812,11 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
          */
 
         log.info("Excused Completed Court Comms Processing : Finished - {}", dateFormat.format(new Date()));
+        return new SchedulerServiceClient.Result(
+            errorCount == 0
+                ? SchedulerServiceClient.Result.Status.SUCCESS
+                : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS, null,
+            Map.of("ERROR_COUNT", "" + errorCount));
     }
 
     public Proxy setUpConnection() {
@@ -852,8 +866,6 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
                 );
             }
         }
-
-
     }
 
     private void updateCommsStatusFlagCompleted(JurorPool poolCourtDetailCompletedList) {
