@@ -220,8 +220,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
     @Transactional
     @Override
     public void updateJurorDetailsFirstPerson(final FirstPersonJurorDetailsDto dto,
-                                              final String jurorId, final String login)
-        throws BureauOptimisticLockingException {
+                                              final String jurorId, final String login) {
         log.debug("First person response {} juror details edit", jurorId);
         final DigitalResponse domain = responseRepository.findByJurorNumber(jurorId);
         final User staff = userRepository.findByUsername(login);
@@ -274,8 +273,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
     @Transactional
     @Override
     public void updateJurorDetailsThirdParty(final ThirdPartyJurorDetailsDto dto,
-                                             final String jurorId, final String login)
-        throws BureauOptimisticLockingException {
+                                             final String jurorId, final String login) {
         log.debug("Third party response {} juror details edit", jurorId);
         final DigitalResponse domain = responseRepository.findByJurorNumber(jurorId);
         final User staff = userRepository.findByUsername(login);
@@ -343,8 +341,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
     @Transactional
     @Override
     public void updateExcusalDeferral(final DeferralExcusalDto dto,
-                                      final String jurorId, final String login)
-        throws BureauOptimisticLockingException {
+                                      final String jurorId, final String login) {
 
         log.debug("Deferral/excusal {} juror details edit", jurorId);
         final DigitalResponse domain = responseRepository.findByJurorNumber(jurorId);
@@ -402,8 +399,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
 
     @Transactional
     @Override
-    public void updateSpecialNeeds(final ReasonableAdjustmentsDto dto, final String jurorId, final String login)
-        throws BureauOptimisticLockingException {
+    public void updateSpecialNeeds(final ReasonableAdjustmentsDto dto, final String jurorId, final String login) {
         log.debug("Reasonable adjustment juror {} edit", jurorId);
         final DigitalResponse domain = responseRepository.findByJurorNumber(jurorId);
         final User staff = userRepository.findByUsername(login);
@@ -439,8 +435,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
 
     @Transactional
     @Override
-    public void updateCjs(final CjsEmploymentDetailsDto dto, final String jurorId, final String login)
-        throws BureauOptimisticLockingException {
+    public void updateCjs(final CjsEmploymentDetailsDto dto, final String jurorId, final String login) {
         log.debug("CJS employment for juror {} edit", jurorId);
         final DigitalResponse domain = responseRepository.findByJurorNumber(jurorId);
         final User staff = userRepository.findByUsername(login);

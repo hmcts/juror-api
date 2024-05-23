@@ -19,6 +19,7 @@ import uk.gov.hmcts.juror.api.bureau.domain.SurveyResponse;
 import uk.gov.hmcts.juror.api.bureau.domain.SurveyResponseKey;
 import uk.gov.hmcts.juror.api.bureau.domain.SurveyResponseRepository;
 import uk.gov.hmcts.juror.api.config.SmartSurveyConfigurationProperties;
+import uk.gov.hmcts.juror.api.moj.client.contracts.SchedulerServiceClient;
 import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 
 import java.net.InetSocketAddress;
@@ -77,7 +78,7 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
 
     @Override
     @Transactional
-    public void process() {
+    public SchedulerServiceClient.Result process() {
 
         SimpleDateFormat dateFormatSurvey = new SimpleDateFormat();
         log.info("Smart Survey Processing : STARTED- {}", dateFormatSurvey.format(new Date()));
@@ -215,6 +216,12 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
 
         log.info("Smart Survey Processing : FINISHED- {}", dateFormatSurvey.format(new Date()));
 
+        return new SchedulerServiceClient.Result(SchedulerServiceClient.Result.Status.SUCCESS,
+            "Successfully loaded survey records",
+            Map.of(
+                "RECORDS_INSERTED", "" + dbInsertCount,
+                "RECORDS_SKIPPED", "" + dbSkipCount
+            ));
     }
 
 

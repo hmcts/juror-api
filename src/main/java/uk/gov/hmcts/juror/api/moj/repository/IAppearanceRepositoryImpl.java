@@ -369,7 +369,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
 
         return PaginationUtil.toPaginatedList(query, search,
             UnpaidExpenseSummaryRequestDto.SortField.JUROR_NUMBER,
-            SortMethod.ASC,
+            SortMethod.DESC,
             tuple -> UnpaidExpenseSummaryResponseDto.builder()
                 .jurorNumber(tuple.get(QAppearance.appearance.jurorNumber))
                 .poolNumber(tuple.get(QAppearance.appearance.jurorNumber))
