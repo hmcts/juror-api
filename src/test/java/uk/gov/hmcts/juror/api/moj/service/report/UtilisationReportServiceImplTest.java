@@ -79,6 +79,7 @@ class UtilisationReportServiceImplTest {
 
     @Nested
     @DisplayName("Daily Utilisation report tests")
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") //false positive
     class DailyUtilisationTests {
 
         @Test
@@ -108,7 +109,8 @@ class UtilisationReportServiceImplTest {
             assertThat(timeCreated.getDataType()).isEqualTo("LocalDateTime");
             LocalDateTime createdTime = LocalDateTime.parse((String) timeCreated.getValue(),
                 DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-            assertThat(createdTime).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS));
+            assertThat(createdTime).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS))
+                .as("Creation time should be correct");
 
             assertThat(response.getTableData()).isNotNull();
             DailyUtilisationReportResponse.TableData tableData = response.getTableData();
@@ -206,6 +208,7 @@ class UtilisationReportServiceImplTest {
 
     @Nested
     @DisplayName("Daily Utilisation Jurors tests")
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") //false positive
     class DailyUtilisationJurorsTests {
 
         @Test
@@ -233,7 +236,8 @@ class UtilisationReportServiceImplTest {
             assertThat(timeCreated.getDataType()).isEqualTo("LocalDateTime");
             LocalDateTime createdTime = LocalDateTime.parse((String) timeCreated.getValue(),
                 DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-            assertThat(createdTime).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS));
+            assertThat(createdTime).as("Creation time should be correct")
+                .isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS));
 
             assertThat(response.getTableData()).isNotNull();
             DailyUtilisationReportJurorsResponse.TableData tableData = response.getTableData();
@@ -345,7 +349,8 @@ class UtilisationReportServiceImplTest {
             assertThat(timeCreated.getDataType()).isEqualTo("LocalDateTime");
             LocalDateTime createdTime = LocalDateTime.parse((String) timeCreated.getValue(),
                 DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-            assertThat(createdTime).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS));
+            assertThat(createdTime).as("Creation time should be correct")
+                .isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS));
 
             assertThat(response.getTableData()).isNotNull();
             MonthlyUtilisationReportResponse.TableData tableData = response.getTableData();
@@ -465,7 +470,8 @@ class UtilisationReportServiceImplTest {
             assertThat(timeCreated.getDataType()).isEqualTo("LocalDateTime");
             LocalDateTime createdTime = LocalDateTime.parse((String) timeCreated.getValue(),
                 DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-            assertThat(createdTime).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS));
+            assertThat(createdTime).as("Creation time should be correct")
+                .isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS));
 
             assertThat(response.getTableData()).isNotNull();
             MonthlyUtilisationReportResponse.TableData tableData = response.getTableData();
