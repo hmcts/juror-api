@@ -17,13 +17,10 @@ public class JurorPoolQueries {
     private static final String OWNER_IS_BUREAU = "400";
 
     private static final String deceased = "D";
-    private static final Boolean Y = true;
-    private static final Boolean N = false;
 
     private JurorPoolQueries() {
 
     }
-
 
     private static final QJurorPool jurorDetail = QJurorPool.jurorPool;
 
@@ -36,8 +33,8 @@ public class JurorPoolQueries {
         return jurorDetail.jurorPool.status.status.eq(IJurorStatus.RESPONDED);
     }
 
-
-    /**ø
+    /**
+     * ø
      * Matches Juror instances where notification flag indicates, sentToCourt comms has not been sent.
      */
     public static BooleanExpression sentToCourtCommsNotSent() {
@@ -59,13 +56,6 @@ public class JurorPoolQueries {
     }
 
     /**
-     * Matches on all records not with bureau.
-     */
-    public static BooleanExpression jurorRecordNotWithBureau() {
-        return jurorDetail.owner.ne(OWNER_IS_BUREAU);
-    }
-
-    /**
      * Query to match instance where an email exists.
      */
     public static BooleanExpression emailIsPresent() {
@@ -74,7 +64,6 @@ public class JurorPoolQueries {
 
     /**
      * Query to match all records where bureau_to_court_transfer date is between 6pm and midnight.
-     *
      */
 
     public static BooleanExpression bureauToCourtTransferDate() {
@@ -130,7 +119,6 @@ public class JurorPoolQueries {
 
     /**
      * Query to match where SERVICE_COMP_COMMS_STATUS EQUALS NULL.
-     *
      */
     public static BooleanExpression serviceCompCommsStatus() {
         return jurorDetail.juror.serviceCompCommsStatus.isNull();
@@ -150,21 +138,6 @@ public class JurorPoolQueries {
     public static BooleanExpression excusedCode() {
         return jurorDetail.juror.excusalCode.ne(deceased).or(jurorDetail.juror.excusalCode.isNull());
     }
-
-    /**
-     * Query to match Responded Welsh Juror instances.
-     */
-    public static BooleanExpression respondedWelsh() {
-        return jurorDetail.juror.welsh.eq(Y);
-    }
-
-    /**
-     * Query to match not Responded Welsh PoolCourt instances.
-     */
-    public static BooleanExpression notRespondedWelsh() {
-        return jurorDetail.juror.welsh.eq(N).or(jurorDetail.juror.welsh.isNull());
-    }
-
 
     /**
      * Query to match  Date_EXCUS between now and now minus excusal date parameter.
@@ -197,9 +170,10 @@ public class JurorPoolQueries {
      */
 
     public static BooleanExpression recordsForExcusalComms() {
-        return excusalDateBetweenSysdateExcusalParameter().and(excusedStatus().and(serviceCompCommsStatus().and(
-            excusedCode()
-                .and(notRespondedWelsh()))));
+        return excusalDateBetweenSysdateExcusalParameter()
+            .and(excusedStatus())
+            .and(serviceCompCommsStatus())
+            .and(excusedCode());
     }
 
     /**
@@ -207,31 +181,13 @@ public class JurorPoolQueries {
      */
 
     public static BooleanExpression recordsForServiceCompletedComms() {
-        return completionDateBetweenSysdateCompletionParameter().and(respondedStatus().and(serviceCompCommsStatus().and(
-                completionDateNotNull())
-            .and(notRespondedWelsh())));
+        return completionDateBetweenSysdateCompletionParameter()
+            .and(respondedStatus())
+            .and(serviceCompCommsStatus())
+            .and(completionDateNotNull());
 
 
     }
-
-    /**
-     * Identify all Juror Records for Excusal Comms in Welsh.
-     */
-    public static BooleanExpression welshRecordsForExcusalComms() {
-        return excusalDateBetweenSysdateExcusalParameter().and(excusedStatus().and(serviceCompCommsStatus()
-            .and(excusedCode().and(
-                respondedWelsh()))));
-    }
-
-    /**
-     * Identify all Juror Records for Service Completed Comms in Welsh.
-     */
-    public static BooleanExpression welshRecordsForServiceCompletedComms() {
-        return completionDateBetweenSysdateCompletionParameter().and(respondedStatus().and(serviceCompCommsStatus().and(
-            completionDateNotNull()).and(respondedWelsh())));
-    }
-
-
 }
 
 
