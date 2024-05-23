@@ -17,6 +17,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Locale;
 
@@ -149,8 +150,15 @@ public enum DataType implements IDataType {
             .otherwise(""), QAppearance.appearance),
 
     AUDIT_NUMBER("Audit number", String.class, QAppearance.appearance.attendanceAuditNumber, QAppearance.appearance),
+
     APPEARANCE_TRIAL_NUMBER("Trial Number", String.class, QAppearance.appearance.trialNumber, QAppearance.appearance),
     APPEARANCE_POOL_NUMBER("Pool Number", String.class, QAppearance.appearance.poolNumber, QAppearance.appearance),
+    APPEARANCE_CHECKED_IN("Checked In", LocalTime.class, QAppearance.appearance.timeIn, QAppearance.appearance),
+    APPEARANCE_CHECKED_OUT("Checked Out", LocalTime.class, QAppearance.appearance.timeOut, QAppearance.appearance),
+    APPEARANCE_DATE_AND_POOL_TYPE("Appearance Date And Pool Type", String.class,
+        QAppearance.appearance.attendanceDate.stringValue()
+            .concat(",").concat(QPoolRequest.poolRequest.poolType.description),
+        QAppearance.appearance, QPoolRequest.poolRequest),
 
     DATE_OF_ABSENCE("Date of absence", LocalDate.class, QAppearance.appearance.attendanceDate, QAppearance.appearance),
 

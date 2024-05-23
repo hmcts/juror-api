@@ -59,4 +59,12 @@ public class Address implements Serializable {
     @Pattern(regexp = POSTCODE_REGEX)
     private String postcode;
 
+
+    public String getCombinedAddressExcludingPostcode() {
+        return addressLine1 + ","
+            + addressLine2 + ","
+            + addressLine3 + ","
+            + addressLine4 + ","
+            + addressLine5;
+    }
 }

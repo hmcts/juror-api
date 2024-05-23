@@ -21,9 +21,9 @@ INSERT INTO juror_mod.expense_rates
 (id, rate_per_mile_car_0_passengers, rate_per_mile_car_1_passengers, rate_per_mile_car_2_or_more_passengers,
  rate_per_mile_motorcycle_0_passengers, rate_per_mile_motorcycle_1_or_more_passengers, rate_per_mile_bike,
  limit_financial_loss_half_day, limit_financial_loss_full_day, limit_financial_loss_half_day_long_trial,
- limit_financial_loss_full_day_long_trial, rate_subsistence_standard, rate_subsistence_long_day, rates_effective_from)
+ limit_financial_loss_full_day_long_trial, rate_subsistence_standard, rate_subsistence_long_day)
 VALUES (2, 0.31400, 0.35600, 0.39800, 0.31400, 0.32400, 0.09600, 32.47000, 64.95000, 64.95000, 129.91000, 5.71000,
-        12.17000, '2024-04-11');
+        12.17000);
 
 INSERT INTO juror_mod.pool
 (pool_no, "owner", return_date, no_requested, pool_type, loc_code, new_request, last_update, additional_summons,

@@ -19,4 +19,5 @@ import lombok.experimental.SuperBuilder;
 public class GroupedReportResponse extends
     AbstractReportResponse<GroupedTableData> {
     private GroupByResponse groupBy;
+
 }

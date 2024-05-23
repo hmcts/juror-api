@@ -42,7 +42,6 @@ import uk.gov.hmcts.juror.api.moj.repository.ExpenseRatesRepository;
 
 import java.math.BigDecimal;
 import java.net.URI;
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
@@ -910,7 +909,6 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
                         .limitFinancialLossFullDayLongTrial(new BigDecimal("0.10000"))
                         .subsistenceRateStandard(new BigDecimal("0.10000"))
                         .subsistenceRateLongDay(new BigDecimal("0.10000"))
-                        .ratesEffectiveFrom(LocalDate.now().minusDays(1))
                         .build());
                 assertThat(expenseRates.get(1)).isEqualTo(
                     ExpenseRates.builder()
@@ -927,7 +925,6 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
                         .limitFinancialLossFullDayLongTrial(new BigDecimal("129.91000"))
                         .subsistenceRateStandard(new BigDecimal("5.71000"))
                         .subsistenceRateLongDay(new BigDecimal("12.17000"))
-                        .ratesEffectiveFrom(LocalDate.now())
                         .build());
 
                 ExpenseRates addedExpenseRates = expenseRates.get(2);
@@ -955,7 +952,6 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
                     request.getSubsistenceRateStandard());
                 assertThat(addedExpenseRates.getSubsistenceRateLongDay()).isEqualTo(
                     request.getSubsistenceRateLongDay());
-                assertThat(addedExpenseRates.getRatesEffectiveFrom()).isToday();
             }
         }
 

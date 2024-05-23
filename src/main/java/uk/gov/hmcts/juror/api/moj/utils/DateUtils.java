@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -68,7 +69,7 @@ public class DateUtils {
      * . SummoningProgressResponseDTO
      *
      * @param numberOfWeeks total number of weeks wanted
-     * @param startDate the start date for calculating the number of weeks needed
+     * @param startDate     the start date for calculating the number of weeks needed
      * @return A List of starting dates
      */
     public static List<LocalDate> getNumberOfStartingWeeks(int numberOfWeeks, LocalDate startDate) {
@@ -80,5 +81,13 @@ public class DateUtils {
             dates.add(weekCommencing.plusWeeks(i));
         }
         return dates;
+    }
+
+    public static long toEpochMilli(LocalDateTime localDateTime) {
+        return localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    }
+
+    public static LocalDateTime fromEpochMilli(long timestamp) {
+        return LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault());
     }
 }

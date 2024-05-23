@@ -22,6 +22,7 @@ import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -104,6 +105,9 @@ public class PoolRequest implements Serializable {
 
     @OneToMany(mappedBy = "pool", cascade = CascadeType.REMOVE)
     private Set<PoolComment> poolComments;
+
+    @OneToMany(mappedBy = "pool")
+    private List<JurorPool> jurorPools;
 
     @PrePersist
     @SuppressWarnings("PMD.UnusedPrivateMethod")

@@ -3,10 +3,6 @@ DELETE FROM juror_mod.juror_history;
 DELETE FROM juror_mod.juror_audit;
 DELETE FROM juror_mod.juror_pool;
 
-DELETE FROM JUROR.DEFER_DBF;
-
-DELETE FROM JUROR.POSTPONE_LETT;
-
 -- Create POOL records associated with POOL recrods
 DELETE FROM juror_mod.pool;
 

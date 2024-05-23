@@ -7,11 +7,11 @@ import org.springframework.test.context.jdbc.Sql;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 
 @Sql({
@@ -95,7 +95,7 @@ class PanelListDetailedReportITest extends AbstractStandardReportControllerITest
                     .value("CHESTER (415)")
                     .build()))
             .tableData(
-                StandardReportResponse.TableData.<List<LinkedHashMap<String, Object>>>builder()
+                StandardReportResponse.TableData.<StandardTableData>builder()
                     .headings(List.of(
                         StandardReportResponse.TableData.Heading.builder()
                             .id("juror_number")
@@ -151,7 +151,7 @@ class PanelListDetailedReportITest extends AbstractStandardReportControllerITest
                                         .headings(null)
                                         .build()))
                                 .build()))
-                    .data(List.of(
+                    .data(StandardTableData.of(
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number", "415000001")
                             .add("first_name", "Jenna")
