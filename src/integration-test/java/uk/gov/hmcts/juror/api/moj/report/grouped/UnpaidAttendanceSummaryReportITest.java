@@ -24,7 +24,9 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/UnpaidAttendanceSummaryReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.LawOfDemeter")
+@SuppressWarnings({
+    "PMD.JUnitTestsShouldIncludeAssert", "PMD.LawOfDemeter"
+})
 class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportControllerITest {
     @Autowired
     public UnpaidAttendanceSummaryReportITest(TestRestTemplate template) {
@@ -45,9 +47,7 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
     }
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
+   
     void positiveTypical() {
         testBuilder()
             .triggerValid()
@@ -56,9 +56,7 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
     }
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
+   
     void positiveTypicalDifferentDates() {
         StandardReportRequest request = getValidPayload();
         request.setFromDate(LocalDate.of(2024, 11, 9));
@@ -71,9 +69,6 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
     }
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
     void positiveTypicalNoData() {
         StandardReportRequest request = getValidPayload();
         request.setFromDate(LocalDate.of(2024, 12, 9));
@@ -86,9 +81,7 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
     }
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
+   
     void negativeUnauthorised() {
         testBuilder()
             .jwt(getBureauJwt())
@@ -97,9 +90,7 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
     }
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
+   
     void negativeInvalidPayloadMissingDate() {
         StandardReportRequest request = getValidPayload();
         request.setToDate(null);
