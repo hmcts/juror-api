@@ -538,7 +538,51 @@ class UtilisationReportServiceImplTest {
                 .isThrownBy(() -> utilisationReportService.viewMonthlyUtilisationReport(locCode, reportDate, false));
 
             verify(courtLocationRepository, times(1)).findById(locCode);
-            verifyNoInteractions(jurorRepository);
+            verifyNoInteractions(utilisationStatsRepository);
+
+        }
+    }
+
+
+    @Nested
+    @DisplayName("Get Monthly Utilisation tests")
+    class GetMonthlyUtilisationTests {
+
+        @Test
+        @SneakyThrows
+        void monthlyUtilisationNoResults() {
+
+            final String locCode = "415";
+            final LocalDate reportDate = LocalDate.of(2024, 4, 01);
+
+            setupCourt(locCode, "415", locCode);
+
+            when(jurorRepository.callDailyUtilStats(locCode, reportDate, LocalDate.of(2024, 4, 30)))
+                .thenReturn(List.of());
+
+            String response = utilisationReportService.getMonthlyUtilisationReports(locCode);
+
+            assertThat(response).isNotNull();
+            assertThat(response).isEmpty();
+
+            verify(courtLocationRepository, times(1)).findById(locCode);
+            verify(utilisationStatsRepository, times(1))
+                .findTop12ByLocCodeOrderByMonthStartDesc(locCode);
+        }
+
+        @Test
+        void monthlyUtilisationReportInvalidCourtLocation() {
+
+            final String locCode = "416";
+            final LocalDate reportDate = LocalDate.of(2024, 4, 20);
+
+            setupCourt(locCode, "416", "415");
+
+            assertThatExceptionOfType(MojException.Forbidden.class)
+                .isThrownBy(() -> utilisationReportService.getMonthlyUtilisationReports(locCode));
+
+            verify(courtLocationRepository, times(1)).findById(locCode);
+            verifyNoInteractions(utilisationStatsRepository);
 
         }
     }
