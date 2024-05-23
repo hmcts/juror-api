@@ -563,7 +563,7 @@ class UtilisationReportServiceImplTest {
 
             setupCourt(locCode, "415", locCode);
 
-            when(jurorRepository.callDailyUtilStats(locCode, reportDate, LocalDate.of(2024, 4, 30)))
+            when(utilisationStatsRepository.findTop12ByLocCodeOrderByMonthStartDesc(locCode))
                 .thenReturn(List.of());
 
             String response = utilisationReportService.getMonthlyUtilisationReports(locCode);
