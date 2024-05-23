@@ -18,6 +18,7 @@ import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -95,7 +96,7 @@ public class TrialAttendanceReport extends AbstractGroupedReport {
         map.put("trial_start_date", GroupedReportResponse.DataTypeValue.builder()
             .displayName("Trial start date")
             .dataType("LocalDate")
-            .value(trial.getTrialStartDate())
+            .value(DateTimeFormatter.ISO_DATE.format(trial.getTrialStartDate()))
             .build());
         map.put("trial_courtroom", GroupedReportResponse.DataTypeValue.builder()
             .displayName("Courtroom")

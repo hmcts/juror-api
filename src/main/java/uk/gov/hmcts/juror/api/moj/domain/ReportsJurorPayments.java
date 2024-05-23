@@ -1,7 +1,10 @@
 package uk.gov.hmcts.juror.api.moj.domain;
 
 import groovy.transform.Immutable;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
@@ -15,7 +18,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-import static uk.gov.hmcts.juror.api.validation.ValidationConstants.*;
+import static uk.gov.hmcts.juror.api.moj.service.letter.court.CourtLetterService.JUROR_NUMBER;
+import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REGEX;
+import static uk.gov.hmcts.juror.api.validation.ValidationConstants.POOL_NUMBER;
+
 
 @Entity
 @Table(name = "reports_juror_payments_summary", schema = "juror_mod")

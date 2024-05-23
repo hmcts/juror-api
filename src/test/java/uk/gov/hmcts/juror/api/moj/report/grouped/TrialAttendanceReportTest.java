@@ -26,10 +26,14 @@ import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 
 @SuppressWarnings("PMD.LawOfDemeter")
@@ -149,7 +153,7 @@ class TrialAttendanceReportTest extends AbstractGroupedReportTestSupport<TrialAt
             "trial_start_date", GroupedReportResponse.DataTypeValue.builder()
                 .displayName("Trial start date")
                 .dataType("LocalDate")
-                .value(trial.getTrialStartDate())
+                .value(DateTimeFormatter.ISO_DATE.format(trial.getTrialStartDate()))
                 .build(),
             "trial_courtroom", GroupedReportResponse.DataTypeValue.builder()
                 .displayName("Courtroom")
