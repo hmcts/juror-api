@@ -3,7 +3,6 @@ package uk.gov.hmcts.juror.api.moj.report.standard;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportControllerITest;
@@ -34,6 +33,7 @@ public class BallotPanelPoolReportITest  extends AbstractStandardReportControlle
     void positiveTypicalCourt() {
         testBuilder()
             .triggerValid()
+            .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(getTypicalResponse());
     }
 
@@ -51,19 +51,14 @@ public class BallotPanelPoolReportITest  extends AbstractStandardReportControlle
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void negativeUnauthorised() {
         testBuilder()
-            .jwt("")
+            .jwt(getBureauJwt())
             .triggerInvalid()
-            .assertMojForbiddenResponse("User not allowed to access this pool");
+            .assertMojForbiddenResponse("User not allowed to access this report");
     }
 
     private StandardReportResponse getTypicalResponse(){
         return StandardReportResponse.builder()
-            .headings(new ReportHashMap<String, StandardReportResponse.DataTypeValue>()
-                          .add("report Created", StandardReportResponse.DataTypeValue.builder()
-                              .displayName(null)
-                              .dataType("LocalDateTime")
-                              .value(LocalDateTime.now())
-                              .build()))
+            .headings(new ReportHashMap<>())
             .tableData(
                 StandardReportResponse.TableData.<List<LinkedHashMap<String, Object>>>builder()
                     .headings(

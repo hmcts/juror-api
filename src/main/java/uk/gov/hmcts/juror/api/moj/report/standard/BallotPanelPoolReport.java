@@ -9,7 +9,6 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResp
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
-import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.HashMap;
@@ -22,9 +21,8 @@ import java.util.Map;
 public class BallotPanelPoolReport extends AbstractStandardReport {
 
     @Autowired
-    public BallotPanelPoolReport(PoolRequestRepository poolRequestRepository) {
-        super(poolRequestRepository,
-              QJurorPool.jurorPool,
+    public BallotPanelPoolReport() {
+        super(QJurorPool.jurorPool,
               DataType.JUROR_NUMBER,
               DataType.FIRST_NAME,
               DataType.LAST_NAME,

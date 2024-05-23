@@ -35,6 +35,12 @@ class BallotPanelPoolReportTest extends AbstractStandardReportTestSupport<Ballot
               DataType.FIRST_NAME,
               DataType.LAST_NAME,
               DataType.JUROR_POSTCODE);
+        setHasPoolRepository(false);
+    }
+
+    @Override
+    public BallotPanelPoolReport createReport(PoolRequestRepository poolRequestRepository) {
+        return new BallotPanelPoolReport();
     }
 
     @BeforeEach
@@ -51,16 +57,10 @@ class BallotPanelPoolReportTest extends AbstractStandardReportTestSupport<Ballot
     }
 
     @Override
-    public BallotPanelPoolReport createReport(PoolRequestRepository poolRequestRepository) {
-        return new BallotPanelPoolReport(poolRequestRepository);
-    }
-
-    @Override
     protected StandardReportRequest getValidRequest() {
         return StandardReportRequest.builder()
             .reportType(report.getName())
-            .date(LocalDate.now())
-            .includeSummoned(false)
+            .poolNumber(TestConstants.VALID_POOL_NUMBER)
             .build();
     }
 
@@ -93,7 +93,7 @@ class BallotPanelPoolReportTest extends AbstractStandardReportTestSupport<Ballot
     @Test
     void negativeMissingPoolNumber() {
         StandardReportRequest request = getValidRequest();
-        request.setIncludeSummoned(null);
+        request.setPoolNumber(null);
         assertValidationFails(request, new ValidationFailure("poolNumber", "must not be null"));
     }
 }
