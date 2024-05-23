@@ -101,7 +101,7 @@ class AbstractReportTest {
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QPanel.panel)).hasSize(1);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QJuror.juror)).hasSize(4);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QJurorPool.jurorPool)).hasSize(1);
-            assertThat(AbstractReport.CLASS_TO_JOIN.get(QPoolRequest.poolRequest)).hasSize(1);
+            assertThat(AbstractReport.CLASS_TO_JOIN.get(QPoolRequest.poolRequest)).hasSize(2);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QAppearance.appearance)).hasSize(2);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QReasonableAdjustments.reasonableAdjustments))
                 .hasSize(2);
@@ -170,6 +170,17 @@ class AbstractReportTest {
             assertThat(map.containsKey(QJurorPool.jurorPool)).isTrue();
             assertThat(map.get(QJurorPool.jurorPool)).isEqualTo(
                 new Predicate[]{QPoolRequest.poolRequest.poolNumber.eq(QJurorPool.jurorPool.pool.poolNumber)}
+            );
+        }
+
+        @Test
+        void poolRequestToAppearance() {
+            assertThat(AbstractReport.CLASS_TO_JOIN.containsKey(QPoolRequest.poolRequest)).isTrue();
+            Map<EntityPath<?>, Predicate[]> map = AbstractReport.CLASS_TO_JOIN.get(QPoolRequest.poolRequest);
+
+            assertThat(map.containsKey(QAppearance.appearance)).isTrue();
+            assertThat(map.get(QAppearance.appearance)).isEqualTo(
+                new Predicate[]{QPoolRequest.poolRequest.poolNumber.eq(QAppearance.appearance.poolNumber)}
             );
         }
 
