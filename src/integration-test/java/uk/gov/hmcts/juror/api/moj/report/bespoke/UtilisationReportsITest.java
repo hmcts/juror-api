@@ -305,6 +305,31 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
         }
 
         @Test
+        void generateMonthlyUtilisationEarlierReportIsOverwritten() {
+
+            LocalDate may2024 = LocalDate.parse("2024-05-01");
+
+            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                    URI.create(GENERATE_MONTHLY_UTILISATION_REPORT_URL
+                        + "/415?reportDate=2024-05-01")),
+                MonthlyUtilisationReportResponse.class);
+
+            // verify the report has been saved first time
+            assertThat(utilisationStatsRepository.findByMonthStartBetweenAndLocCode(may2024,
+                may2024, "415").size()).isEqualTo(1);
+
+            // generate the same report again
+            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                    URI.create(GENERATE_MONTHLY_UTILISATION_REPORT_URL
+                        + "/415?reportDate=2024-05-01")),
+                MonthlyUtilisationReportResponse.class);
+
+            // verify the report has been saved over the previous one
+            assertThat(utilisationStatsRepository.findByMonthStartBetweenAndLocCode(may2024,
+                may2024, "415").size()).isEqualTo(1);
+        }
+
+        @Test
         void generateMonthlyUtilisationJurorsInvalidUserType() {
 
             final String bureauJwt = createBureauJwt();
@@ -471,8 +496,8 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
             String responseBody = responseEntity.getBody();
             assertThat(responseBody).isNotNull();
 
-            assertThat(responseBody).isEqualTo("June 2024,May 2024,April 2024,March 2024,February 2024,February 2024,"
-                + "January 2024,December 2023,November 2023,October 2023,September 2023,August 2023,");
+            assertThat(responseBody).isEqualTo("June 2024,May 2024,April 2024,March 2024,February 2024,"
+                + "January 2024,December 2023,November 2023,October 2023,September 2023,August 2023,July 2023,");
 
         }
 

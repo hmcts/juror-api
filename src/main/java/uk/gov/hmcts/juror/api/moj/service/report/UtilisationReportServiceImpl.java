@@ -128,7 +128,7 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
         }
 
         // check the difference between the report from and report to dates is less than or equal to 31 days
-        if (reportFromDate.plusDays(32).isBefore(reportToDate)) {
+        if (reportFromDate.plusDays(31).isBefore(reportToDate)) {
             throw new MojException.BadRequest("Report date range cannot be more than 31 days", null);
         }
     }
@@ -298,7 +298,6 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
         List<UtilisationStats> utilisationStats = utilisationStatsRepository
             .findByMonthStartBetweenAndLocCode(reportFromDate, reportToDate, locCode);
 
-        // The monthly utilisation report uses the exact same headers as the daily utilisation report
         Map<String, AbstractReportResponse.DataTypeValue> reportHeadings
             = getViewMonthlyUtilReportHeaders(courtLocation.getName());
 
