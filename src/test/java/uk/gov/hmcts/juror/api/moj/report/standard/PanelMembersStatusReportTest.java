@@ -10,6 +10,7 @@ import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Judge;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
@@ -20,8 +21,6 @@ import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -41,8 +40,11 @@ class PanelMembersStatusReportTest extends AbstractStandardReportTestSupport<Pan
         super(
             QPanel.panel,
             PanelMembersStatusReport.RequestValidator.class,
-            DataType.JUROR_NUMBER, DataType.PANEL_STATUS
+            DataType.JUROR_NUMBER_FROM_TRIAL,
+            DataType.PANEL_STATUS
         );
+
+        setHasPoolRepository(false);
     }
 
     @BeforeEach
@@ -60,7 +62,7 @@ class PanelMembersStatusReportTest extends AbstractStandardReportTestSupport<Pan
 
     @Override
     public PanelMembersStatusReport createReport(PoolRequestRepository poolRequestRepository) {
-        return new PanelMembersStatusReport(poolRequestRepository, trialRepository);
+        return new PanelMembersStatusReport(trialRepository);
     }
 
     @Override
@@ -75,19 +77,19 @@ class PanelMembersStatusReportTest extends AbstractStandardReportTestSupport<Pan
     public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         request.setTrialNumber("111111");
 
-        securityUtilMockedStatic.when(SecurityUtil::getLocCode).thenReturn(TestConstants.VALID_COURT_LOCATION);
+        securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn(TestConstants.VALID_COURT_LOCATION);
         report.preProcessQuery(query, request);
 
         verify(query).where(QPanel.panel.trial.trialNumber.eq(request.getTrialNumber()));
-        verify(query).where(QPanel.panel.trial.courtLocation.owner.eq(SecurityUtil.getLocCode()));
+        verify(query).where(QPanel.panel.trial.courtLocation.owner.eq(SecurityUtil.getActiveOwner()));
         verify(query).orderBy(QPanel.panel.juror.jurorNumber.asc());
     }
 
     @Override
     public Map<String, AbstractReportResponse.DataTypeValue> positiveGetHeadingsTypical(
         StandardReportRequest request,
-        AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData,
-        List<LinkedHashMap<String, Object>> data) {
+        AbstractReportResponse.TableData<StandardTableData> tableData,
+        StandardTableData data) {
 
         request.setTrialNumber("111111");
         securityUtilMockedStatic.when(SecurityUtil::getLocCode).thenReturn(TestConstants.VALID_COURT_LOCATION);

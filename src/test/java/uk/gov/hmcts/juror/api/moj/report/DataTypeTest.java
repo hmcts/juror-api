@@ -274,6 +274,7 @@ class DataTypeTest {
             QAppearance.appearance, QPoolRequest.poolRequest);
     }
 
+    @Test
     void panelStatus() {
         assertMatchesStandard(DataType.PANEL_STATUS, "panel_status", "Panel Status", String.class,
             new CaseBuilder()
@@ -283,6 +284,12 @@ class DataTypeTest {
                 .when(QPanel.panel.result.eq(PanelResult.RETURNED)).then("Returned")
                 .otherwise(""),
             QPanel.panel);
+    }
+
+    @Test
+    void jurorNumberFromTrial() {
+        assertMatchesStandard(DataType.JUROR_NUMBER_FROM_TRIAL, "juror_number_from_trial", "Juror Number",
+            String.class, QPanel.panel.juror.jurorNumber, QPanel.panel);
     }
 
     void assertMatchesStandard(DataType dataType,
