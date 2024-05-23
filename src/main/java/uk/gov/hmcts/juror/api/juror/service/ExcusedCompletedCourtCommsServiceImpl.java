@@ -304,19 +304,15 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
                 RegionNotifyTemplateQueriesMod.regionNotifyTriggeredExcusalTemplateEmailId(
                     regionIdExcusalEmail);
 
-            String isExcusalEmailWelsh = "Y";
-            String isExcusalSmsWelsh = "Y";
-
-
             BooleanExpression welshRegionNotifyTriggeredExcusalTemplateSmsFilter =
                 RegionNotifyTemplateQueriesMod.welshRegionNotifyTriggeredExcusalTemplateSmsId(
                     regionIdExcusalSms,
-                    isExcusalSmsWelsh
+                    "Y"
                 );
             BooleanExpression welshRegionNotifyTriggeredExcusalTemplateEmailFilter =
                 RegionNotifyTemplateQueriesMod.welshRegionNotifyTriggeredExcusalTemplateEmailId(
                     regionIdExcusalEmail,
-                    isExcusalEmailWelsh
+                    "Y"
                 );
 
             NotificationClient notificationClient = new NotificationClient(regionApikey, gotProxy);
