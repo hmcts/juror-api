@@ -47,7 +47,6 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
     }
 
     @Test
-   
     void positiveTypical() {
         testBuilder()
             .triggerValid()
@@ -56,7 +55,6 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
     }
 
     @Test
-   
     void positiveTypicalDifferentDates() {
         StandardReportRequest request = getValidPayload();
         request.setFromDate(LocalDate.of(2024, 11, 9));
@@ -81,7 +79,6 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
     }
 
     @Test
-   
     void negativeUnauthorised() {
         testBuilder()
             .jwt(getBureauJwt())
@@ -90,7 +87,6 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
     }
 
     @Test
-   
     void negativeInvalidPayloadMissingDate() {
         StandardReportRequest request = getValidPayload();
         request.setToDate(null);
