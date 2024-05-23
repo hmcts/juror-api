@@ -28,12 +28,14 @@ class BallotPanelPoolReportTest extends AbstractStandardReportTestSupport<Ballot
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
     public BallotPanelPoolReportTest() {
-        super(QJurorPool.jurorPool,
-              BallotPanelPoolReport.RequestValidator.class,
-              DataType.JUROR_NUMBER,
-              DataType.FIRST_NAME,
-              DataType.LAST_NAME,
-              DataType.JUROR_POSTCODE);
+        super(
+            QJurorPool.jurorPool,
+            BallotPanelPoolReport.RequestValidator.class,
+            DataType.JUROR_NUMBER,
+            DataType.FIRST_NAME,
+            DataType.LAST_NAME,
+            DataType.JUROR_POSTCODE
+        );
         setHasPoolRepository(false);
     }
 

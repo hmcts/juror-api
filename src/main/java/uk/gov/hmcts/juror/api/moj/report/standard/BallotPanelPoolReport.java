@@ -22,11 +22,12 @@ public class BallotPanelPoolReport extends AbstractStandardReport {
 
     @Autowired
     public BallotPanelPoolReport() {
-        super(QJurorPool.jurorPool,
-              DataType.JUROR_NUMBER,
-              DataType.FIRST_NAME,
-              DataType.LAST_NAME,
-              DataType.JUROR_POSTCODE
+        super(
+            QJurorPool.jurorPool,
+            DataType.JUROR_NUMBER,
+            DataType.FIRST_NAME,
+            DataType.LAST_NAME,
+            DataType.JUROR_POSTCODE
         );
         isCourtUserOnly();
     }

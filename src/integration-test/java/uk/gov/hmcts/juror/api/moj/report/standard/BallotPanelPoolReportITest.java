@@ -12,11 +12,12 @@ import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+
 @Sql({
     "/db/mod/truncate.sql",
     "/db/mod/reports/CurrentPoolStatusReportControllerITest_typical.sql"
 })
-public class BallotPanelPoolReportITest  extends AbstractStandardReportControllerITest {
+public class BallotPanelPoolReportITest extends AbstractStandardReportControllerITest {
     @Autowired
     public BallotPanelPoolReportITest(TestRestTemplate template) {
         super(template, BallotPanelPoolReport.class);
@@ -33,6 +34,7 @@ public class BallotPanelPoolReportITest  extends AbstractStandardReportControlle
                                  .poolNumber("415230103")
                                  .build());
     }
+
     @Test
     void positiveTypicalCourt() {
         testBuilder()
@@ -42,7 +44,8 @@ public class BallotPanelPoolReportITest  extends AbstractStandardReportControlle
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+//False positive
     void negativeInvalidPayload() {
         StandardReportRequest request = getValidPayload();
         request.setPoolNumber(null);
@@ -51,8 +54,10 @@ public class BallotPanelPoolReportITest  extends AbstractStandardReportControlle
             .triggerInvalid()
             .assertInvalidPathParam("poolNumber: must not be null");
     }
+
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+//False positive
     void negativeUnauthorised() {
         testBuilder()
             .jwt(getBureauJwt())
@@ -60,7 +65,7 @@ public class BallotPanelPoolReportITest  extends AbstractStandardReportControlle
             .assertMojForbiddenResponse("User not allowed to access this report");
     }
 
-    private StandardReportResponse getTypicalResponse(){
+    private StandardReportResponse getTypicalResponse() {
         return StandardReportResponse.builder()
             .headings(new ReportHashMap<>())
             .tableData(
@@ -90,7 +95,8 @@ public class BallotPanelPoolReportITest  extends AbstractStandardReportControlle
                                 .name("Postcode")
                                 .dataType("String")
                                 .headings(null)
-                                .build()))
+                                .build()
+                        ))
                     .data(List.of(
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number", "641500023")
@@ -108,7 +114,7 @@ public class BallotPanelPoolReportITest  extends AbstractStandardReportControlle
                             .add("juror_number", "641500026")
                             .add("first_name", "John6")
                             .add("last_name", "Smith6")
-                          ))
+                    ))
                     .build())
             .build();
     }
