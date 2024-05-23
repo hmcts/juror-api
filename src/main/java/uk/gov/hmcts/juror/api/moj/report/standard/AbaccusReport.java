@@ -5,7 +5,8 @@ import com.querydsl.jpa.impl.JPAQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
-import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.domain.QBulkPrintData;
 import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
@@ -13,8 +14,6 @@ import uk.gov.hmcts.juror.api.moj.report.DataType;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -50,7 +49,7 @@ public class AbaccusReport extends AbstractStandardReport {
 
     @Override
     public Map<String, DataTypeValue> getHeadings(StandardReportRequest request,
-                                  AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData) {
+                                  StandardReportResponse.TableData<StandardTableData> tableData) {
         Map<String, DataTypeValue> map = new ConcurrentHashMap<>();
         map.put("date_from", DataTypeValue.builder()
             .displayName("Date from")

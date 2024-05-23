@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.service.expense;
 
-import org.springframework.data.domain.Page;
 import uk.gov.hmcts.juror.api.moj.controller.request.RequestDefaultExpensesDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ApportionSmartCardRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ApproveExpenseDto;
@@ -8,6 +7,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.expense.CalculateTotalExpen
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.CombinedExpenseDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseType;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.UnpaidExpenseSummaryRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpense;
 import uk.gov.hmcts.juror.api.moj.controller.response.DefaultExpenseResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.CombinedSimplifiedExpenseDetailDto;
@@ -23,18 +23,13 @@ import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.ExpenseRates;
 import uk.gov.hmcts.juror.api.moj.domain.ExpenseRatesDto;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
-import uk.gov.hmcts.juror.api.moj.domain.SortDirection;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.enumeration.PaymentMethod;
 
 import java.time.LocalDate;
 import java.util.List;
 
 public interface JurorExpenseService {
-
-    Page<UnpaidExpenseSummaryResponseDto> getUnpaidExpensesForCourtLocation(String locCode, LocalDate minDate,
-                                                                            LocalDate maxDate, int pageNumber,
-                                                                            String sortBy, SortDirection sortOrder);
-
 
     void applyDefaultExpenses(Appearance appearance, Juror juror);
 
@@ -83,4 +78,7 @@ public interface JurorExpenseService {
     SummaryExpenseDetailsDto calculateSummaryTotals(String locCode, String jurorNumber);
 
     void realignExpenseDetails(Appearance appearance, boolean isDeleted);
+
+    PaginatedList<UnpaidExpenseSummaryResponseDto> getUnpaidExpensesForCourtLocation(
+        String locCode, UnpaidExpenseSummaryRequestDto search);
 }

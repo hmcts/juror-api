@@ -22,7 +22,6 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
-import uk.gov.hmcts.juror.api.moj.domain.letter.ExcusalLetterMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.ExcusalResponseException;
@@ -34,7 +33,6 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
-import uk.gov.hmcts.juror.api.moj.service.letter.ExcusalLetterServiceImpl;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -72,8 +70,6 @@ public class ExcusalResponseServiceImplTest {
     private JurorHistoryRepository jurorHistoryRepository;
     @Mock
     private PrintDataService printDataService;
-    @Mock
-    private ExcusalLetterServiceImpl excusalLetterService;
 
     @InjectMocks
     private ExcusalResponseServiceImpl excusalResponseService;
@@ -101,10 +97,6 @@ public class ExcusalResponseServiceImplTest {
         Mockito.doReturn(Optional.of(createJurorStatus(5))).when(jurorStatusRepository).findById(5);
 
         Mockito.doNothing().when(printDataService).printExcusalDeniedLetter(any());
-
-        Mockito.doReturn(new ExcusalLetterMod()).when(excusalLetterService).getLetterToEnqueue(any(),
-            any());
-        Mockito.doNothing().when(excusalLetterService).enqueueLetter(any());
 
         Mockito.doReturn(null).when(jurorHistoryRepository).save(any());
         Mockito.doReturn(null).when(jurorPaperResponseRepository).save(any());

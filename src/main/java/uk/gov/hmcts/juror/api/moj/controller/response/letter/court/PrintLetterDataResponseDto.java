@@ -66,7 +66,7 @@ public class PrintLetterDataResponseDto implements Serializable {
     @Setter
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class AttendanceData {
-        private String nonAttendance;
+        private Boolean nonAttendance;
         private BigDecimal lossOfEarnings;
         private BigDecimal childCare;
         private BigDecimal misc;

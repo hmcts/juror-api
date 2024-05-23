@@ -6,11 +6,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +20,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.expense.CalculateTotalExpen
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.CombinedExpenseDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseType;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.UnpaidExpenseSummaryRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpense;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseApplyToAllDays;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseFinancialLoss;
@@ -48,10 +44,9 @@ import uk.gov.hmcts.juror.api.moj.domain.ExpenseRates;
 import uk.gov.hmcts.juror.api.moj.domain.ExpenseRatesDto;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
-import uk.gov.hmcts.juror.api.moj.domain.JurorExpenseTotals;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PaymentData;
-import uk.gov.hmcts.juror.api.moj.domain.SortDirection;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
@@ -62,7 +57,6 @@ import uk.gov.hmcts.juror.api.moj.enumeration.TravelMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ExpenseRatesRepository;
-import uk.gov.hmcts.juror.api.moj.repository.JurorExpenseTotalsRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PaymentDataRepository;
@@ -94,7 +88,6 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-import static uk.gov.hmcts.juror.api.JurorDigitalApplication.PAGE_SIZE;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CAN_NOT_APPROVE_MORE_THAN_LIMIT;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.EXPENSES_CANNOT_BE_LESS_THAN_ZERO;
 import static uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils.getOrZero;
@@ -111,7 +104,6 @@ import static uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils.getOrZero;
 public class JurorExpenseServiceImpl implements JurorExpenseService {
 
     private final ValidationService validationService;
-    private final JurorExpenseTotalsRepository jurorExpenseTotalsRepository;
     private final AppearanceRepository appearanceRepository;
     private final JurorRepository jurorRepository;
     private final JurorPoolRepository jurorPoolRepository;
@@ -152,41 +144,6 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             throw new MojException.InternalServerError(
                 "Appearances must be of the same type  (Unless EXPENSE_EDITED)", null);
         }
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Page<UnpaidExpenseSummaryResponseDto> getUnpaidExpensesForCourtLocation(
-        String locCode, LocalDate minDate, LocalDate maxDate,
-        int pageNumber, String sortBy, SortDirection sortOrder) {
-
-        Sort sort = SortDirection.DESC.equals(sortOrder)
-            ? Sort.by(sortBy).descending()
-            : Sort.by(sortBy).ascending();
-
-        Pageable pageable = PageRequest.of(pageNumber, PAGE_SIZE, sort);
-
-        List<JurorExpenseTotals> jurorExpenseTotalsList;
-
-        long totalUnpaidAttendances = 0;
-        if (minDate != null && maxDate != null) {
-            totalUnpaidAttendances =
-                jurorExpenseTotalsRepository.countUnpaidByCourtLocationCodeAndAppearanceDate(locCode, minDate, maxDate);
-            jurorExpenseTotalsList = jurorExpenseTotalsRepository
-                .findUnpaidByCourtLocationCodeAndAppearanceDate(locCode, minDate, maxDate, pageable);
-        } else {
-            totalUnpaidAttendances =
-                jurorExpenseTotalsRepository.countByCourtLocationCodeAndTotalUnapprovedGreaterThan(locCode,
-                    0);
-            jurorExpenseTotalsList = jurorExpenseTotalsRepository.findUnpaidByCourtLocationCode(locCode, pageable);
-        }
-
-        List<UnpaidExpenseSummaryResponseDto> dtoList = new ArrayList<>();
-        for (JurorExpenseTotals jurorExpenseTotals : jurorExpenseTotalsList) {
-            dtoList.add(createUnpaidAttendanceSummaryItem(jurorExpenseTotals));
-        }
-
-        return new PageImpl<>(dtoList, pageable, totalUnpaidAttendances);
     }
 
     @Override
@@ -702,7 +659,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     public CombinedExpenseDetailsDto<ExpenseDetailsDto> getExpenses(String locCode, String jurorNumber,
                                                                     List<LocalDate> dates) {
         CombinedExpenseDetailsDto<ExpenseDetailsDto> result = getExpenses(appearanceRepository
-            .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(locCode, jurorNumber, dates));
+            .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(locCode, jurorNumber,
+                dates));
 
         if (result.getExpenseDetails().size() != dates.size()) {
             throw new MojException.NotFound("Not all dates found", null);
@@ -802,6 +760,13 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 );
             }
         }
+    }
+
+    @Override
+    public PaginatedList<UnpaidExpenseSummaryResponseDto> getUnpaidExpensesForCourtLocation(
+        String locCode,
+        UnpaidExpenseSummaryRequestDto search) {
+        return appearanceRepository.findUnpaidExpenses(locCode, search);
     }
 
     @Override
@@ -1274,15 +1239,6 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         appearance.setSmartCardAmountDue(foodAndDrink.getSmartCardAmount());
     }
 
-    private UnpaidExpenseSummaryResponseDto createUnpaidAttendanceSummaryItem(JurorExpenseTotals jurorExpenseTotals) {
-        return UnpaidExpenseSummaryResponseDto.builder()
-            .jurorNumber(jurorExpenseTotals.getJurorNumber())
-            .poolNumber(jurorExpenseTotals.getPoolNumber())
-            .firstName(jurorExpenseTotals.getFirstName())
-            .lastName(jurorExpenseTotals.getLastName())
-            .totalUnapproved(jurorExpenseTotals.getTotalUnapproved())
-            .build();
-    }
 
     @Override
     @Transactional(readOnly = true)
