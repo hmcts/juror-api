@@ -3,15 +3,19 @@ package uk.gov.hmcts.juror.api.moj.report.standard;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.test.context.jdbc.Sql;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
+import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
-import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
-
+@Sql({
+    "/db/mod/truncate.sql",
+    "/db/mod/reports/CurrentPoolStatusReportControllerITest_typical.sql"
+})
 public class BallotPanelPoolReportITest  extends AbstractStandardReportControllerITest {
     @Autowired
     public BallotPanelPoolReportITest(TestRestTemplate template) {
@@ -87,7 +91,24 @@ public class BallotPanelPoolReportITest  extends AbstractStandardReportControlle
                                 .dataType("String")
                                 .headings(null)
                                 .build()))
-                    .data(List.of())
+                    .data(List.of(
+                        new ReportLinkedMap<String, Object>()
+                            .add("juror_number", "641500023")
+                            .add("first_name", "John3")
+                            .add("last_name", "Smith3"),
+                        new ReportLinkedMap<String, Object>()
+                            .add("juror_number", "641500024")
+                            .add("first_name", "John4")
+                            .add("last_name", "Smith4"),
+                        new ReportLinkedMap<String, Object>()
+                            .add("juror_number", "641500025")
+                            .add("first_name", "John5")
+                            .add("last_name", "Smith5"),
+                        new ReportLinkedMap<String, Object>()
+                            .add("juror_number", "641500026")
+                            .add("first_name", "John6")
+                            .add("last_name", "Smith6")
+                          ))
                     .build())
             .build();
     }
