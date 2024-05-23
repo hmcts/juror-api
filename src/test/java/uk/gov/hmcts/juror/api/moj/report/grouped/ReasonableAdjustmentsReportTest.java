@@ -37,10 +37,9 @@ import static org.mockito.Mockito.when;
 
 @SuppressWarnings({
     "unchecked",
-    "PMD.LawOfDemeter",
     "PMD.ExcessiveImports"
 })
-public class ReasonableAdjustmentsReportTest extends AbstractGroupedReportTestSupport<ReasonableAdjustmentsReport> {
+class ReasonableAdjustmentsReportTest extends AbstractGroupedReportTestSupport<ReasonableAdjustmentsReport> {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
     private CourtLocationService courtLocationService;

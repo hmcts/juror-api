@@ -16,7 +16,6 @@ import java.util.Date;
  *
  */
 @Slf4j
-@SuppressWarnings("PMD.LawOfDemeter")
 public class PoolCourtQueries {
 
     private static final String deceased = "D";

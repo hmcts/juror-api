@@ -29,7 +29,7 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 
 import java.io.Serializable;
 
-import static uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController.validateJurorNumberPathVariable;
+import static uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController.assertJurorNumberPathVariable;
 
 @Slf4j
 @RestController
@@ -59,7 +59,7 @@ public class ResponseSendToCourtController {
         @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,
         BureauJwtAuthentication jwt,
         @Validated @RequestBody SendToCourtDto sendToCourtDto) throws ExcusalException {
-        validateJurorNumberPathVariable(jurorId);
+        assertJurorNumberPathVariable(jurorId);
         final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
 
         log.info("Attempting to send juror {} using code {}, by user {}", jurorId, jwtPayload.getLogin());

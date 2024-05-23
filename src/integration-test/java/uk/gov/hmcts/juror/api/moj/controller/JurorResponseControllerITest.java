@@ -19,7 +19,6 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
-import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.bureau.controller.request.BureauResponseStatusUpdateDto;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
@@ -80,7 +79,8 @@ import static org.springframework.http.HttpStatus.OK;
 @SuppressWarnings({
     "java:S2259",
     "java:S5960",
-    "PMD.LawOfDemeter"
+    "PMD.ExcessiveImports",
+    "PMD.TooManyMethods"
 })
 class JurorResponseControllerITest extends AbstractIntegrationTest {
     private HttpHeaders httpHeaders;
@@ -412,12 +412,12 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
         /**
          * Todo - test needs review as part of juror response redesign (JM-5011).
          *
-         * @see #updateResponseStatus_happy_nonMergeStatusChange_awaitingCourt()
-         * @see #updateResponseStatus_happy_nonMergeStatusChange_awaitingTranslation()
-         * @see #updateResponseStatus_happy_nonMergeStatusChange_todo()
+         * @see #updateResponseStatusHappyNonMergeStatusChangeAwaitingCourt()
+         * @see #updateResponseStatusHappyNonMergeStatusChangeAwaitingTranslation()
+         * @see #updateResponseStatusHappyNonMergeStatusChangeTodo()
          */
         @Test
-        void updateResponseStatus_happy_nonMergeStatusChange_awaitingJurorContact() throws Exception {
+        void updateResponseStatusHappyNonMergeStatusChangeAwaitingJurorContact() throws Exception {
             final ProcessingStatus newProcessingStatus = ProcessingStatus.AWAITING_CONTACT;
 
             final String description = "Update juror response status happy path.";
@@ -467,12 +467,12 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
         /**
          * Todo - test needs review as part of juror response redesign (JM-5011).
          *
-         * @see #updateResponseStatus_happy_nonMergeStatusChange_awaitingJurorContact()
-         * @see #updateResponseStatus_happy_nonMergeStatusChange_awaitingTranslation()
-         * @see #updateResponseStatus_happy_nonMergeStatusChange_todo()
+         * @see #updateResponseStatusHappyNonMergeStatusChangeAwaitingJurorContact()
+         * @see #updateResponseStatusHappyNonMergeStatusChangeAwaitingTranslation()
+         * @see #updateResponseStatusHappyNonMergeStatusChangeTodo()
          */
         @Test
-        void updateResponseStatus_happy_nonMergeStatusChange_awaitingCourt() throws Exception {
+        void updateResponseStatusHappyNonMergeStatusChangeAwaitingCourt() throws Exception {
             final ProcessingStatus newProcessingStatus = ProcessingStatus.AWAITING_COURT_REPLY;
 
             final String description = "Update juror response status happy path.";
@@ -516,12 +516,12 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
         /**
          * Todo - test needs review as part of juror response redesign (JM-5011).
          *
-         * @see #updateResponseStatus_happy_nonMergeStatusChange_awaitingJurorContact()
-         * @see #updateResponseStatus_happy_nonMergeStatusChange_awaitingCourt()
-         * @see #updateResponseStatus_happy_nonMergeStatusChange_todo()
+         * @see #updateResponseStatusHappyNonMergeStatusChangeAwaitingJurorContact()
+         * @see #updateResponseStatusHappyNonMergeStatusChangeAwaitingCourt()
+         * @see #updateResponseStatusHappyNonMergeStatusChangeTodo()
          */
         @Test
-        void updateResponseStatus_happy_nonMergeStatusChange_awaitingTranslation() throws Exception {
+        void updateResponseStatusHappyNonMergeStatusChangeAwaitingTranslation() throws Exception {
 
             final ProcessingStatus newProcessingStatus = ProcessingStatus.AWAITING_TRANSLATION;
 
@@ -565,12 +565,12 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
         /**
          * Todo - test needs review as part of juror response redesign (JM-5011).
          *
-         * @see #updateResponseStatus_happy_nonMergeStatusChange_awaitingJurorContact()
-         * @see #updateResponseStatus_happy_nonMergeStatusChange_awaitingCourt()
-         * @see #updateResponseStatus_happy_nonMergeStatusChange_awaitingTranslation()
+         * @see #updateResponseStatusHappyNonMergeStatusChangeAwaitingJurorContact()
+         * @see #updateResponseStatusHappyNonMergeStatusChangeAwaitingCourt()
+         * @see #updateResponseStatusHappyNonMergeStatusChangeAwaitingTranslation()
          */
         @Test
-        void updateResponseStatus_happy_nonMergeStatusChange_todo() throws Exception {
+        void updateResponseStatusHappyNonMergeStatusChangeTodo() throws Exception {
 
             final ProcessingStatus newProcessingStatus = ProcessingStatus.TODO;
 
@@ -649,8 +649,8 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
 
             // validate data
             JurorResponseRetrieveResponseDto.JurorResponseDetails data = body.getRecords().get(0);
-            validateData(data, JUROR_NUMBER_111222333, "415220502", "TestOne",
-                "PersonOne", "CH1 2AN", "Chester", OFFICER_ASSIGNED_BUREAU_OFFICER,
+            validateData(data, JUROR_NUMBER_111222333, "TestOne",
+                "PersonOne", OFFICER_ASSIGNED_BUREAU_OFFICER,
                 ProcessingStatus.TODO, LocalDateTime.of(2023, 3, 8, 0, 0, 0));
         }
 
@@ -671,8 +671,8 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             // validate data
             List<JurorResponseRetrieveResponseDto.JurorResponseDetails> records = body.getRecords();
 
-            validateData(records.get(0), JUROR_NUMBER_222222222, "415220502", "Test4Paper",
-                "Person4Paper", "CH1 2AN", "Chester", OFFICER_ASSIGNED_BUREAU_OFFICER,
+            validateData(records.get(0), JUROR_NUMBER_222222222, "Test4Paper",
+                "Person4Paper", OFFICER_ASSIGNED_BUREAU_OFFICER,
                 ProcessingStatus.CLOSED, LocalDateTime.of(2023, 3, 9, 0, 0, 0));
         }
 
@@ -692,8 +692,8 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
 
             // validate data
             JurorResponseRetrieveResponseDto.JurorResponseDetails data = body.getRecords().get(0);
-            validateData(data, JUROR_NUMBER_555555555, "415220502", "Test5Paper",
-                "Person5Paper", "CH1 2AN", "Chester", "JDoe",
+            validateData(data, JUROR_NUMBER_555555555, "Test5Paper",
+                "Person5Paper", "JDoe",
                 ProcessingStatus.AWAITING_COURT_REPLY, LocalDateTime.of(2023, 3, 9, 10, 0, 0));
         }
 
@@ -712,8 +712,8 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
 
             // validate data
             JurorResponseRetrieveResponseDto.JurorResponseDetails data = body.getRecords().get(0);
-            validateData(data, JUROR_NUMBER_555555555, "415220502", "Test5Paper",
-                "Person5Paper", "CH1 2AN", "Chester", "JDoe",
+            validateData(data, JUROR_NUMBER_555555555, "Test5Paper",
+                "Person5Paper", "JDoe",
                 ProcessingStatus.AWAITING_COURT_REPLY, LocalDateTime.of(2023, 3, 9, 10, 0, 0));
         }
 
@@ -732,8 +732,8 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
 
             // validate data
             JurorResponseRetrieveResponseDto.JurorResponseDetails data = body.getRecords().get(0);
-            validateData(data, JUROR_NUMBER_555555555, "415220502", "Test5Paper",
-                "Person5Paper", "CH1 2AN", "Chester", "JDoe",
+            validateData(data, JUROR_NUMBER_555555555, "Test5Paper",
+                "Person5Paper", "JDoe",
                 ProcessingStatus.AWAITING_COURT_REPLY, LocalDateTime.of(2023, 3, 9, 10, 0, 0));
         }
 
@@ -766,8 +766,8 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
 
             // validate data
             JurorResponseRetrieveResponseDto.JurorResponseDetails data = body.getRecords().get(0);
-            validateData(data, JUROR_NUMBER_111222333, "415220502", "TestOne",
-                "PersonOne", "CH1 2AN", "Chester", OFFICER_ASSIGNED_BUREAU_OFFICER,
+            validateData(data, JUROR_NUMBER_111222333, "TestOne",
+                "PersonOne", OFFICER_ASSIGNED_BUREAU_OFFICER,
                 ProcessingStatus.TODO, LocalDateTime.of(2023, 3, 8, 0, 0, 0));
         }
 
@@ -786,24 +786,24 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
 
             // validate data - results should be in correct
             List<JurorResponseRetrieveResponseDto.JurorResponseDetails> records = body.getRecords();
-            validateData(records.get(0), JUROR_NUMBER_111222333, "415220502", "TestOne",
-                "PersonOne", "CH1 2AN", "Chester", OFFICER_ASSIGNED_BUREAU_OFFICER,
+            validateData(records.get(0), JUROR_NUMBER_111222333, "TestOne",
+                "PersonOne", OFFICER_ASSIGNED_BUREAU_OFFICER,
                 ProcessingStatus.TODO, LocalDateTime.of(2023, 3, 8, 0, 0, 0));
 
-            validateData(records.get(1), "333222111", "415220502", "TestTwo",
-                "PersonTwo", "CH1 2AN", "Chester", OFFICER_ASSIGNED_BUREAU_OFFICER,
+            validateData(records.get(1), "333222111", "TestTwo",
+                "PersonTwo", OFFICER_ASSIGNED_BUREAU_OFFICER,
                 ProcessingStatus.TODO, LocalDateTime.of(2023, 3, 8, 10, 0, 0));
 
-            validateData(records.get(2), "222222222", "415220502", "Test4Paper",
-                "Person4Paper", "CH1 2AN", "Chester", OFFICER_ASSIGNED_BUREAU_OFFICER,
+            validateData(records.get(2), "222222222", "Test4Paper",
+                "Person4Paper", OFFICER_ASSIGNED_BUREAU_OFFICER,
                 ProcessingStatus.CLOSED, LocalDateTime.of(2023, 3, 9, 0, 0, 0));
 
-            validateData(records.get(3), JUROR_NUMBER_555555555, "415220502", "Test5Paper",
-                "Person5Paper", "CH1 2AN", "Chester", "JDoe",
+            validateData(records.get(3), JUROR_NUMBER_555555555, "Test5Paper",
+                "Person5Paper", "JDoe",
                 ProcessingStatus.AWAITING_COURT_REPLY, LocalDateTime.of(2023, 3, 9, 10, 0, 0));
 
-            validateData(records.get(4), "352004504", "415220502", "Test3",
-                "Person3", "CH1 2AN", "Chester", OFFICER_ASSIGNED_BUREAU_OFFICER,
+            validateData(records.get(4), "352004504", "Test3",
+                "Person3", OFFICER_ASSIGNED_BUREAU_OFFICER,
                 ProcessingStatus.TODO, LocalDateTime.of(2024, 3, 15, 0, 0, 0));
         }
 
@@ -869,11 +869,6 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             httpHeaders = initialiseHeaders(user, userType, Set.of(role), owner);
         }
 
-        private BureauJwtPayload.Staff createStaff(String owner, String staffName, int userLevel) {
-            List<String> staffCourts = Collections.singletonList(owner);
-            return TestUtils.staffBuilder(staffName, userLevel, staffCourts);
-        }
-
         private ResponseEntity<JurorResponseRetrieveResponseDto> templateExchangeRetrieve(
             JurorResponseRetrieveRequestDto request, HttpStatus httpStatus) {
 
@@ -890,22 +885,22 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
         }
 
         private void validateData(JurorResponseRetrieveResponseDto.JurorResponseDetails actual,
-                                  String jurorNumber, String poolNumber, String firstName, String lastName,
-                                  String jurorPostcode, String courtName, String officerAssigned,
+                                  String jurorNumber, String firstName, String lastName,
+                                  String officerAssigned,
                                   ProcessingStatus processingStatus, LocalDateTime dateReceived) {
 
             assertThat(actual.getJurorNumber()).as("Juror number should be " + jurorNumber)
                 .isEqualTo(jurorNumber);
-            assertThat(actual.getPoolNumber()).as("Pool number should be " + poolNumber)
-                .isEqualTo(poolNumber);
+            assertThat(actual.getPoolNumber()).as("Pool number should be 415220502")
+                .isEqualTo("415220502");
             assertThat(actual.getFirstName()).as("First name should be " + firstName)
                 .isEqualTo(firstName);
             assertThat(actual.getLastName()).as("Last name should be " + lastName)
                 .isEqualTo(lastName);
-            assertThat(actual.getPostcode()).as("Postcode should be " + jurorPostcode)
-                .isEqualTo(jurorPostcode);
-            assertThat(actual.getCourtName()).as("Court name should be " + courtName)
-                .isEqualTo(courtName);
+            assertThat(actual.getPostcode()).as("Postcode should be CH1 2AN")
+                .isEqualTo("CH1 2AN");
+            assertThat(actual.getCourtName()).as("Court name should be Chester")
+                .isEqualTo("Chester");
             assertThat(actual.getOfficerAssigned()).as("Officer assigned should be " + officerAssigned)
                 .isEqualTo(officerAssigned);
             assertThat(actual.getReplyStatus()).as("Processing/reply status should be " + processingStatus)
@@ -920,7 +915,8 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
         final URI uri = URI.create(String.format(URI_PERSONAL_DETAILS, jurorNumber));
         httpHeaders =
             initialiseHeaders(userType,
-                (owner.equals("400") ? UserType.BUREAU : UserType.COURT), Set.of(Role.MANAGER), owner);
+                "400".equals(owner) ? UserType.BUREAU : UserType.COURT,
+                Set.of(Role.MANAGER), owner);
 
         RequestEntity<JurorPersonalDetailsDto> requestEntity = new RequestEntity<>(jurorPersonalDetailsDto,
             httpHeaders, HttpMethod.PATCH, uri);

@@ -7,12 +7,12 @@ import org.springframework.test.context.jdbc.Sql;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
 import java.time.LocalDate;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 @Sql({
@@ -21,7 +21,7 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/JuryListITest_typical.sql"
 })
-@SuppressWarnings({"PMD.LawOfDemeter", "PMD.JUnitTestsShouldIncludeAssert"})
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class JuryListReportITest extends AbstractStandardReportControllerITest {
     @Autowired
     public JuryListReportITest(TestRestTemplate template) {
@@ -101,7 +101,7 @@ class JuryListReportITest extends AbstractStandardReportControllerITest {
                     .value("CHESTER (415)")
                     .build()))
             .tableData(
-                StandardReportResponse.TableData.<List<LinkedHashMap<String, Object>>>builder()
+                StandardReportResponse.TableData.<StandardTableData>builder()
                     .headings(List.of(
                         StandardReportResponse.TableData.Heading.builder()
                             .id("juror_number")
@@ -127,7 +127,7 @@ class JuryListReportITest extends AbstractStandardReportControllerITest {
                             .dataType("String")
                             .headings(null)
                             .build()))
-                    .data(List.of(
+                    .data(StandardTableData.of(
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number", "415000001")
                             .add("first_name", "FNAME1")

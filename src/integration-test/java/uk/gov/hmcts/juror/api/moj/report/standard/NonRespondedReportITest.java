@@ -6,11 +6,11 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 
 @Sql({
@@ -19,7 +19,6 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/NonRespondedReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.LawOfDemeter")
 class NonRespondedReportITest extends AbstractStandardReportControllerITest {
     @Autowired
     public NonRespondedReportITest(TestRestTemplate template) {
@@ -106,7 +105,7 @@ class NonRespondedReportITest extends AbstractStandardReportControllerITest {
                     .value("CROWN COURT")
                     .build()))
             .tableData(
-                StandardReportResponse.TableData.<List<LinkedHashMap<String, Object>>>builder()
+                StandardReportResponse.TableData.<StandardTableData>builder()
                     .headings(List.of(
                         StandardReportResponse.TableData.Heading.builder()
                             .id("juror_number")
@@ -138,7 +137,7 @@ class NonRespondedReportITest extends AbstractStandardReportControllerITest {
                             .dataType("String")
                             .headings(null)
                             .build()))
-                    .data(List.of(
+                    .data(StandardTableData.of(
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number", "641500024")
                             .add("first_name", "John4")

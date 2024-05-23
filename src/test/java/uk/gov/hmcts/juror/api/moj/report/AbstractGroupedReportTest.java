@@ -10,11 +10,11 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResp
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupByResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +25,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
-@SuppressWarnings("PMD.LawOfDemeter")
 class AbstractGroupedReportTest {
 
     private PoolRequestRepository poolRequestRepository;
@@ -78,7 +77,7 @@ class AbstractGroupedReportTest {
     void positiveGetTableData() {
         final List<Tuple> data = List.of(mock(Tuple.class), mock(Tuple.class));
 
-        List<LinkedHashMap<String, Object>> tableData = new ArrayList<>();
+        StandardTableData tableData = new StandardTableData();
         tableData.add(new GroupedTableData()
             .setType(GroupedTableData.Type.DATA)
             .add(DataType.JUROR_NUMBER.getId(), "1231")

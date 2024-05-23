@@ -14,7 +14,8 @@ import lombok.Getter;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
-import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
@@ -27,6 +28,7 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
+import uk.gov.hmcts.juror.api.moj.service.report.IReport;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
@@ -46,13 +48,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import static uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts;
+
 @Getter
 @SuppressWarnings({
-    "PMD.LawOfDemeter",
     "PMD.TooManyMethods",
     "PMD.ExcessiveImports"
 })
-public abstract class AbstractReport<T> {
+public abstract class AbstractReport<T> implements IReport {
     static final Map<EntityPath<?>, Map<EntityPath<?>, Predicate[]>> CLASS_TO_JOIN;
 
 
@@ -61,14 +64,21 @@ public abstract class AbstractReport<T> {
         CLASS_TO_JOIN.put(QJuror.juror, Map.of(
             QJurorPool.jurorPool, new Predicate[]{QJuror.juror.eq(QJurorPool.jurorPool.juror)},
             QAppearance.appearance, new Predicate[]{QJuror.juror.jurorNumber.eq(QAppearance.appearance.jurorNumber)},
-            QPanel.panel, new Predicate[]{QPanel.panel.juror.eq(QJuror.juror)}
+            QPanel.panel, new Predicate[]{QPanel.panel.juror.eq(QJuror.juror)},
+            lowLevelFinancialAuditDetailsIncludingApprovedAmounts,
+            new Predicate[]{
+                lowLevelFinancialAuditDetailsIncludingApprovedAmounts
+                    .jurorNumber.eq(QJuror.juror.jurorNumber)
+            }
         ));
         CLASS_TO_JOIN.put(QJurorPool.jurorPool, Map.of(
             QJuror.juror, new Predicate[]{QJurorPool.jurorPool.juror.eq(QJuror.juror)}
         ));
         CLASS_TO_JOIN.put(QPoolRequest.poolRequest, Map.of(
             QJurorPool.jurorPool,
-            new Predicate[]{QPoolRequest.poolRequest.poolNumber.eq(QJurorPool.jurorPool.pool.poolNumber)}
+            new Predicate[]{QPoolRequest.poolRequest.poolNumber.eq(QJurorPool.jurorPool.pool.poolNumber)},
+            QAppearance.appearance,
+            new Predicate[]{QPoolRequest.poolRequest.poolNumber.eq(QAppearance.appearance.poolNumber)}
         ));
         CLASS_TO_JOIN.put(QAppearance.appearance, Map.of(
             QJuror.juror, new Predicate[]{QAppearance.appearance.jurorNumber.eq(QJuror.juror.jurorNumber)},
@@ -163,14 +173,13 @@ public abstract class AbstractReport<T> {
 
     public abstract Class<? extends Validators.AbstractRequestValidator> getRequestValidatorClass();
 
-    public final String getName() {
-        return getClass().getSimpleName();
-    }
 
     public AbstractReportResponse<T> getStandardReportResponse(StandardReportRequest request) {
         authenticationConsumers.forEach(consumer -> consumer.accept(request));
         List<Tuple> data = getData(request);
         AbstractReportResponse.TableData<T> tableData = tupleToTableData(data);
+
+        postProcessTableData(request, tableData);
 
         AbstractReportResponse<T> report = createBlankResponse();
         Map<String, AbstractReportResponse.DataTypeValue> headings =
@@ -184,11 +193,16 @@ public abstract class AbstractReport<T> {
         return report;
     }
 
+
+    protected void postProcessTableData(StandardReportRequest request, AbstractReportResponse.TableData<T> tableData) {
+        //This method does noting unless overridden
+    }
+
     protected abstract AbstractReportResponse<T> createBlankResponse();
 
     AbstractReportResponse.TableData<T> tupleToTableData(List<Tuple> data) {
-        StandardReportResponse.TableData<T> tableData =
-            new StandardReportResponse.TableData<>();
+        AbstractReportResponse.TableData<T> tableData =
+            new AbstractReportResponse.TableData<>();
         tableData.setHeadings(new ArrayList<>(dataTypes.stream()
             .map(this::getHeading).toList()));
         tableData.setData(getTableData(data));
@@ -198,8 +212,8 @@ public abstract class AbstractReport<T> {
     protected abstract T getTableData(List<Tuple> data);
 
 
-    StandardReportResponse.TableData.Heading getHeading(IDataType dataType) {
-        StandardReportResponse.TableData.Heading heading = StandardReportResponse.TableData.Heading.builder()
+    AbstractReportResponse.TableData.Heading getHeading(IDataType dataType) {
+        AbstractReportResponse.TableData.Heading heading = AbstractReportResponse.TableData.Heading.builder()
             .id(dataType.getId())
             .name(dataType.getDisplayName())
             .dataType(dataType.getDataType().getSimpleName())
@@ -346,7 +360,7 @@ public abstract class AbstractReport<T> {
 
     public abstract Map<String, AbstractReportResponse.DataTypeValue> getHeadings(
         StandardReportRequest request,
-        StandardReportResponse.TableData<T> tableData);
+        AbstractReportResponse.TableData<T> tableData);
 
     protected void checkOwnership(PoolRequest poolRequest, boolean allowBureau) {
         if (!poolRequest.getOwner().equals(SecurityUtil.getActiveOwner())
@@ -362,12 +376,12 @@ public abstract class AbstractReport<T> {
         }
     }
 
+
     public Map.Entry<String, AbstractReportResponse.DataTypeValue> getCourtNameHeader(CourtLocation courtLocation) {
         return new AbstractMap.SimpleEntry<>("court_name", AbstractReportResponse.DataTypeValue.builder()
             .displayName("Court Name")
             .dataType(String.class.getSimpleName())
-            .value(
-                courtLocation.getName() + " (" + courtLocation.getLocCode() + ")")
+            .value(courtLocation.getNameWithLocCode())
             .build());
     }
 
@@ -452,6 +466,12 @@ public abstract class AbstractReport<T> {
     }
 
 
+    public void addCourtNameHeader(Map<String, AbstractReportResponse.DataTypeValue> headings,
+                                   CourtLocation courtLocation) {
+        Map.Entry<String, GroupedReportResponse.DataTypeValue> entry = getCourtNameHeader(courtLocation);
+        headings.put(entry.getKey(), entry.getValue());
+    }
+
     protected String getCourtNameString(CourtLocationRepository courtLocationRepository, String locCode) {
         Optional<CourtLocation> courtLocation = courtLocationRepository.findByLocCode(locCode);
         if (courtLocation.isEmpty()) {
@@ -481,8 +501,9 @@ public abstract class AbstractReport<T> {
         return trial.get();
     }
 
-    protected List<LinkedHashMap<String, Object>> getTableDataAsList(List<Tuple> data) {
-        return data.stream()
+    protected StandardTableData getTableDataAsList(List<Tuple> data) {
+        StandardTableData tableData = new StandardTableData();
+        tableData.addAll(data.stream()
             .map(tuple -> dataTypes
                 .stream()
                 .map(dataType -> getDataFromReturnType(tuple, dataType))
@@ -491,7 +512,8 @@ public abstract class AbstractReport<T> {
                     return value != null && !(value instanceof Map && ((Map<?, ?>) value).isEmpty());
                 })
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> b, LinkedHashMap::new))
-            ).toList();
+            ).toList());
+        return tableData;
     }
 
     public static class Validators {
@@ -522,5 +544,7 @@ public abstract class AbstractReport<T> {
         public interface RequireIncludeSummoned {
         }
 
+        public interface RequiredJurorNumber {
+        }
     }
 }

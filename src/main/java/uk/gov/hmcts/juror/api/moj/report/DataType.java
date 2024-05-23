@@ -17,6 +17,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Locale;
 
@@ -78,8 +79,14 @@ public enum DataType implements IDataType {
     SERVICE_START_DATE("Service Start Date", LocalDate.class, QPoolRequest.poolRequest.returnDate,
         QPoolRequest.poolRequest),
     POOL_NUMBER("Pool Number", String.class, QPoolRequest.poolRequest.poolNumber, QPoolRequest.poolRequest),
+    POOL_NUMBER_AND_COURT_TYPE("Pool Number and Type",
+                               String.class, QPoolRequest.poolRequest.poolNumber.stringValue()
+                                   .concat(",").concat(QPoolRequest.poolRequest.poolType.description),
+                               QPoolRequest.poolRequest, QPoolRequest.poolRequest),
     POOL_NUMBER_BY_JP("Pool Number", String.class, QJurorPool.jurorPool.pool.poolNumber,
         QJurorPool.jurorPool),
+    POOL_NUMBER_BY_APPEARANCE("Pool Number", String.class, QAppearance.appearance.poolNumber,
+        QAppearance.appearance),
     NEXT_ATTENDANCE_DATE("Next attendance date", LocalDate.class, QJurorPool.jurorPool.nextDate, QJurorPool.jurorPool),
     LAST_ATTENDANCE_DATE("Last attended on", LocalDate.class, QAppearance.appearance.attendanceDate.max(),
         QAppearance.appearance),
@@ -143,8 +150,17 @@ public enum DataType implements IDataType {
             .otherwise(""), QAppearance.appearance),
 
     AUDIT_NUMBER("Audit number", String.class, QAppearance.appearance.attendanceAuditNumber, QAppearance.appearance),
+
     APPEARANCE_TRIAL_NUMBER("Trial Number", String.class, QAppearance.appearance.trialNumber, QAppearance.appearance),
     APPEARANCE_POOL_NUMBER("Pool Number", String.class, QAppearance.appearance.poolNumber, QAppearance.appearance),
+    APPEARANCE_CHECKED_IN("Checked In", LocalTime.class, QAppearance.appearance.timeIn, QAppearance.appearance),
+    APPEARANCE_CHECKED_OUT("Checked Out", LocalTime.class, QAppearance.appearance.timeOut, QAppearance.appearance),
+    APPEARANCE_DATE_AND_POOL_TYPE("Appearance Date And Pool Type", String.class,
+        QAppearance.appearance.attendanceDate.stringValue()
+            .concat(",").concat(QPoolRequest.poolRequest.poolType.description),
+        QAppearance.appearance, QPoolRequest.poolRequest),
+
+    DATE_OF_ABSENCE("Date of absence", LocalDate.class, QAppearance.appearance.attendanceDate, QAppearance.appearance),
 
     COURT_LOCATION_NAME_AND_CODE("Court Location Name And Code", String.class,
                                  QCourtLocation.courtLocation.name.concat(" (")

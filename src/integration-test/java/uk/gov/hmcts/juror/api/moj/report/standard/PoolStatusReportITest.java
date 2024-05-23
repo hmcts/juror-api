@@ -7,11 +7,11 @@ import org.springframework.test.context.jdbc.Sql;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 
 @Sql({
@@ -20,7 +20,6 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/reports/poolstatus.sql"
 })
-@SuppressWarnings({"PMD.LawOfDemeter"})
 class PoolStatusReportITest extends AbstractStandardReportControllerITest {
     @Autowired
     PoolStatusReportITest(TestRestTemplate template) {
@@ -90,7 +89,7 @@ class PoolStatusReportITest extends AbstractStandardReportControllerITest {
                     .displayName("Originally requested by court")
                     .build())
             )
-            .tableData(StandardReportResponse.TableData.<List<LinkedHashMap<String, Object>>>builder()
+            .tableData(StandardReportResponse.TableData.<StandardTableData>builder()
                 .headings(List.of(StandardReportResponse.TableData.Heading.builder()
                         .id("summons_total")
                         .name("Summoned")
@@ -142,7 +141,7 @@ class PoolStatusReportITest extends AbstractStandardReportControllerITest {
                         .dataType("Integer")
                         .build()))
                 .data(
-                    List.of(
+                    StandardTableData.of(
                         new ReportLinkedMap<String, Object>()
                             .add("summons_total", 1)
                             .add("responded_total", 2)

@@ -8,7 +8,6 @@ import uk.gov.hmcts.juror.api.moj.domain.messages.MessageType;
 import java.util.List;
 
 
-@SuppressWarnings("PMD.LawOfDemeter")
 class MessageSendRequestTest extends AbstractValidatorTest<MessageSendRequest> {
     @Override
     protected MessageSendRequest createValidObject() {

@@ -22,6 +22,7 @@ import java.util.Map;
 /**
  * Testing utility methods.
  */
+@SuppressWarnings("PMD.UseConcurrentHashMap")//False Positive -- Need to support null values
 public final class TestUtil {
 
     private TestUtil() {

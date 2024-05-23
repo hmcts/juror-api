@@ -22,7 +22,6 @@ import java.util.Comparator;
 import java.util.List;
 
 @NoArgsConstructor
-@SuppressWarnings("PMD.LawOfDemeter")
 public class UserRepositoryImpl implements IUserRepository {
     @PersistenceContext
     EntityManager entityManager;

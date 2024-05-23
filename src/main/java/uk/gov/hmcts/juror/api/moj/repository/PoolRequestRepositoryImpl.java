@@ -30,7 +30,6 @@ import static uk.gov.hmcts.juror.api.moj.domain.PoolRequestQueries.filterByPoolT
 /**
  * Custom Repository implementation for the PoolRequest entity.
  */
-@SuppressWarnings("PMD.LawOfDemeter")
 public class PoolRequestRepositoryImpl extends PoolRequestSearchQueries implements IPoolRequestRepository {
 
     @PersistenceContext

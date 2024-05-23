@@ -29,7 +29,10 @@ public class IFinancialAuditDetailsRepositoryImpl implements IFinancialAuditDeta
             .from(QFinancialAuditDetails.financialAuditDetails)
             .join(QFinancialAuditDetailsAppearances.financialAuditDetailsAppearances)
             .on(QFinancialAuditDetailsAppearances.financialAuditDetailsAppearances.financialAuditId
-                .eq(financialAuditDetails.getId()))
+                .eq(financialAuditDetails.getId())
+                .and(QFinancialAuditDetailsAppearances.financialAuditDetailsAppearances.locCode.eq(
+                    financialAuditDetails.getLocCode()))
+            )
             .where(QFinancialAuditDetails.financialAuditDetails.type.in(genericType.getTypes()))
             //If more then one type is passed, then get the very first one
             .orderBy(sortMethod.from(QFinancialAuditDetails.financialAuditDetails.createdOn));

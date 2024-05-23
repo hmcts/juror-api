@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 import static java.lang.String.format;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.LETTER_CANNOT_GENERATE_ON_WEEKEND;
 
-@SuppressWarnings("PMD.LawOfDemeter")
 @Slf4j
 public class LetterBase {
 

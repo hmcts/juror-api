@@ -52,7 +52,6 @@ import static org.mockito.Mockito.when;
  * Unit test of {@link JurorServiceImpl}.
  */
 @RunWith(MockitoJUnitRunner.StrictStubs.class)
-@SuppressWarnings("PMD.LawOfDemeter")
 public class JurorServiceImplTest {
 
     private static final String TEST_JUROR_NUMBER = "209092530";

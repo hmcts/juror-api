@@ -33,6 +33,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseTotal;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseType;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.GetEnteredExpenseRequest;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.UnpaidExpenseSummaryRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpense;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseApplyToAllDays;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseFinancialLoss;
@@ -49,13 +50,16 @@ import uk.gov.hmcts.juror.api.moj.controller.response.expense.GetEnteredExpenseR
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApproval;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApprovalList;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.SimplifiedExpenseDetailDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.expense.UnpaidExpenseSummaryResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.AppearanceId;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetailsAppearances;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PaymentData;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
+import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
@@ -72,7 +76,6 @@ import uk.gov.hmcts.juror.api.moj.repository.FinancialAuditDetailsAppearancesRep
 import uk.gov.hmcts.juror.api.moj.repository.FinancialAuditDetailsRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PaymentDataRepository;
-import uk.gov.hmcts.juror.api.utils.CustomPageImpl;
 
 import java.math.BigDecimal;
 import java.net.URI;
@@ -101,26 +104,18 @@ import static org.springframework.http.HttpMethod.PUT;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + JurorExpenseControllerITest.BASE_URL)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@SuppressWarnings({"PMD.LawOfDemeter", "PMD.ExcessiveImports"})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
     public static final String JUROR_NUMBER = "641500020";
     public static final String COURT_LOCATION = "415";
     public static final String JUROR_NUMBER_NO_APPEARANCES = "641500024";
     public static final String POOL_NUMBER = "415230101";
-
-    private static final String PAGINATION_PAGE_NO = "&page_number=0";
-    private static final String PAGINATION_SORT_BY = "&sort_by=totalUnapproved&sort_order=DESC";
-    private static final String MAX_DATE = "&max_date=";
     private static final String COURT_USER = "COURT_USER";
     private static final String BUREAU_USER = "BUREAU_USER";
-    private static final String MIN_DATE = "?min_date=";
 
     public static final String BASE_URL = "/api/v1/moj/expenses/{loc_code}";
     private static final String URL_UNPAID_SUMMARY = BASE_URL + "/unpaid-summary";
-    private static final String URL_DEFAULT_SUMMARY = "/api/v1/moj/expenses/default-summary/";
-
-    private static final String URL_SET_DEFAULT_EXPENSES = "/api/v1/moj/expenses/set-default-expenses";
 
 
     private final TestRestTemplate template;
@@ -172,18 +167,26 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         FinancialAuditDetailsAppearances financialAuditDetailsAppearance, long id,
         LocalDate attendanceDate,
         long appearanceVersion) {
+        assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearance, id, attendanceDate,
+            appearanceVersion, null);
+    }
+
+    private void assertFinancialAuditDetailsAppearances(
+        FinancialAuditDetailsAppearances financialAuditDetailsAppearance, long id,
+        LocalDate attendanceDate,
+        long appearanceVersion,
+        Long lastApprovedAuditNumber) {
         assertThat(financialAuditDetailsAppearance).isNotNull();
         assertThat(financialAuditDetailsAppearance.getFinancialAuditId()).isEqualTo(id);
         assertThat(financialAuditDetailsAppearance.getAttendanceDate()).isEqualTo(attendanceDate);
         assertThat(financialAuditDetailsAppearance.getAppearanceVersion()).isEqualTo(appearanceVersion);
+        assertThat(financialAuditDetailsAppearance.getLastApprovedFAudit()).isEqualTo(lastApprovedAuditNumber);
     }
 
     @Nested
-    @DisplayName("GET " + URL_UNPAID_SUMMARY)
+    @DisplayName("POST " + URL_UNPAID_SUMMARY)
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_setUp.sql"})
     class GetUnpaidExpenses {
-        private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
         public String toUrl(String courtLocation) {
             return URL_UNPAID_SUMMARY.replace("{loc_code}", courtLocation);
         }
@@ -193,24 +196,31 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         void happyPathNoDateRangeFirstPage() throws Exception {
             final String courtLocation = COURT_LOCATION;
             final String jwt = createJwt(COURT_USER, courtLocation);
-            final URI uri = URI.create(toUrl(courtLocation) + "?page_number=0&sort_by"
-                + "=totalUnapproved&sort_order=DESC");
+            final URI uri = URI.create(toUrl(courtLocation));
+
+            UnpaidExpenseSummaryRequestDto requestDto =
+                UnpaidExpenseSummaryRequestDto.builder()
+                    .pageNumber(1)
+                    .pageLimit(25)
+                    .sortField(UnpaidExpenseSummaryRequestDto.SortField.TOTAL_IN_DRAFT)
+                    .sortMethod(SortMethod.DESC)
+                    .build();
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
-            ResponseEntity<CustomPageImpl<Void>> response =
-                template.exchange(new RequestEntity<>(httpHeaders, GET, uri),
+            ResponseEntity<PaginatedList<UnpaidExpenseSummaryResponseDto>> response =
+                template.exchange(new RequestEntity<>(requestDto, httpHeaders, POST, uri),
                     new ParameterizedTypeReference<>() {
                     });
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-            CustomPageImpl<Void> responseBody = response.getBody();
+            PaginatedList<UnpaidExpenseSummaryResponseDto> responseBody = response.getBody();
             assertNotNull(responseBody, "Response must be present");
 
-            assertThat(responseBody.getTotalPages()).isEqualTo(1);
-            assertThat(responseBody.getTotalElements()).isEqualTo(25);
-            assertThat(responseBody.getContent().size()).isEqualTo(25);
+            assertThat(responseBody.getTotalPages()).isEqualTo(2);
+            assertThat(responseBody.getTotalItems()).isEqualTo(26);
+            assertThat(responseBody.getData().size()).isEqualTo(25);
         }
 
         @Test
@@ -218,23 +228,30 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         void happyPathNoDateRangeLastPage() {
             final String courtLocation = COURT_LOCATION;
             final String jwt = createJwt(COURT_USER, courtLocation);
-            final URI uri = URI.create(toUrl(courtLocation) + "?page_number=1&sort_by"
-                + "=totalUnapproved&sort_order=DESC");
+            final URI uri = URI.create(toUrl(courtLocation));
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
-            ResponseEntity<CustomPageImpl<Void>> response =
-                template.exchange(new RequestEntity<>(httpHeaders, GET, uri),
+            UnpaidExpenseSummaryRequestDto requestDto =
+                UnpaidExpenseSummaryRequestDto.builder()
+                    .pageNumber(2)
+                    .pageLimit(25)
+                    .sortField(UnpaidExpenseSummaryRequestDto.SortField.TOTAL_IN_DRAFT)
+                    .sortMethod(SortMethod.DESC)
+                    .build();
+
+            ResponseEntity<PaginatedList<UnpaidExpenseSummaryResponseDto>> response =
+                template.exchange(new RequestEntity<>(requestDto, httpHeaders, POST, uri),
                     new ParameterizedTypeReference<>() {
                     });
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-            CustomPageImpl<Void> responseBody = response.getBody();
+            PaginatedList<UnpaidExpenseSummaryResponseDto> responseBody = response.getBody();
             assertNotNull(responseBody, "Response must be present");
 
             assertThat(responseBody.getTotalPages()).isEqualTo(2);
-            assertThat(responseBody.getTotalElements()).isEqualTo(26);
-            assertThat(responseBody.getContent().size()).isEqualTo(1);
+            assertThat(responseBody.getTotalItems()).isEqualTo(26);
+            assertThat(responseBody.getData().size()).isEqualTo(1);
         }
 
         @Test
@@ -244,25 +261,32 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             final String jwt = createJwt(COURT_USER, courtLocation);
             final LocalDate minDate = LocalDate.of(2023, 1, 5);
             final LocalDate maxDate = LocalDate.of(2023, 1, 10);
-            final URI uri = URI.create(toUrl(courtLocation) + MIN_DATE
-                + dateFormatter.format(minDate) + MAX_DATE + dateFormatter.format(maxDate) + PAGINATION_PAGE_NO
-                + PAGINATION_SORT_BY);
+            final URI uri = URI.create(toUrl(courtLocation));
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
-            ResponseEntity<CustomPageImpl<Void>> response =
-                template.exchange(new RequestEntity<>(httpHeaders, GET, uri),
+            UnpaidExpenseSummaryRequestDto requestDto =
+                UnpaidExpenseSummaryRequestDto.builder()
+                    .pageNumber(1)
+                    .pageLimit(25)
+                    .from(minDate)
+                    .to(maxDate)
+                    .sortField(UnpaidExpenseSummaryRequestDto.SortField.TOTAL_IN_DRAFT)
+                    .sortMethod(SortMethod.DESC)
+                    .build();
+
+            ResponseEntity<PaginatedList<UnpaidExpenseSummaryResponseDto>> response =
+                template.exchange(new RequestEntity<>(requestDto, httpHeaders, POST, uri),
                     new ParameterizedTypeReference<>() {
                     });
-
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-            CustomPageImpl<Void> responseBody = response.getBody();
+            PaginatedList<UnpaidExpenseSummaryResponseDto> responseBody = response.getBody();
             assertNotNull(responseBody, "Response must be present");
 
             assertThat(responseBody.getTotalPages()).isEqualTo(1);
-            assertThat(responseBody.getTotalElements()).isEqualTo(10);
-            assertThat(responseBody.getContent().size()).isEqualTo(10);
+            assertThat(responseBody.getTotalItems()).isEqualTo(10);
+            assertThat(responseBody.getData().size()).isEqualTo(10);
         }
 
         @Test
@@ -271,36 +295,25 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             final String jwt = createJwtBureau(COURT_USER);
             final LocalDate minDate = LocalDate.of(2023, 1, 5);
             final LocalDate maxDate = LocalDate.of(2023, 1, 10);
-            final URI uri = URI.create(toUrl(COURT_LOCATION) + MIN_DATE
-                + dateFormatter.format(minDate) + MAX_DATE + dateFormatter.format(maxDate) + PAGINATION_PAGE_NO
-                + PAGINATION_SORT_BY);
+            final URI uri = URI.create(toUrl(COURT_LOCATION));
 
+            UnpaidExpenseSummaryRequestDto requestDto =
+                UnpaidExpenseSummaryRequestDto.builder()
+                    .pageNumber(1)
+                    .pageLimit(25)
+                    .from(minDate)
+                    .to(maxDate)
+                    .sortField(UnpaidExpenseSummaryRequestDto.SortField.TOTAL_IN_DRAFT)
+                    .sortMethod(SortMethod.DESC)
+                    .build();
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
-            RequestEntity<Void> request = new RequestEntity<>(httpHeaders, GET, uri);
+            RequestEntity<UnpaidExpenseSummaryRequestDto> request =
+                new RequestEntity<>(requestDto, httpHeaders, POST, uri);
             ResponseEntity<Object> response = template.exchange(request, Object.class);
 
             assertThat(response).isNotNull();
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
-        }
-
-        @Test
-        @DisplayName("400 Bad Request - Missing Parameter")
-        void missingParameter() {
-            final String jwt = createJwtBureau(COURT_USER);
-            final LocalDate minDate = LocalDate.of(2023, 1, 5);
-            final LocalDate maxDate = LocalDate.of(2023, 1, 10);
-            final URI uri = URI.create(toUrl(COURT_LOCATION) + MIN_DATE
-                + dateFormatter.format(minDate) + MAX_DATE + dateFormatter.format(maxDate)
-                + PAGINATION_SORT_BY);
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
-
-            RequestEntity<Void> request = new RequestEntity<>(httpHeaders, GET, uri);
-            ResponseEntity<Object> response = template.exchange(request, Object.class);
-
-            assertThat(response).isNotNull();
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -1211,7 +1224,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 GetEnteredExpenseRequest request = buildRequest(dateOfExpense);
 
                 ResponseEntity<List<GetEnteredExpenseResponse>> responseEntity = triggerValid(request);
-                assertThat(responseEntity).isNotNull();
+                assertThat(responseEntity).as("Response Entity").isNotNull();
                 assertThat(responseEntity.getBody()).isNotNull();
                 List<GetEnteredExpenseResponse> responseList = responseEntity.getBody();
                 assertThat(responseList).hasSize(1);
@@ -1592,24 +1605,29 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         }
 
         private void verifyExpenseSubmittedForApproval(Appearance appearance, long version) {
-            assertThat(appearance.getFinancialAuditDetails())
+            assertThat(appearance.getFinancialAudit())
                 .as("Financial Audit Details object should be created/associated")
                 .isNotNull();
-            assertThat(appearance.getFinancialAuditDetails().getCreatedOn())
+            FinancialAuditDetails financialAuditDetails =
+                transactionTemplate.execute(status -> financialAuditDetailsRepository.findById(
+                    new FinancialAuditDetails.IdClass(appearance.getFinancialAudit(), appearance.getLocCode())
+                ).orElseThrow());
+
+            assertThat(financialAuditDetails.getCreatedOn())
                 .as("Financial Audit Details object should be submitted today")
                 .isEqualToIgnoringHours(LocalDateTime.now(clock));
-            assertThat(appearance.getFinancialAuditDetails().getCreatedBy().getUsername())
+            assertThat(financialAuditDetails.getCreatedBy().getUsername())
                 .as("Financial Audit Details object should be submitted by the current user")
                 .isEqualToIgnoringCase("COURT_USER");
-            assertThat(appearance.getFinancialAuditDetails().getType())
+            assertThat(financialAuditDetails.getType())
                 .as("Financial Audit Details object should be to type FOR_APPROVAL")
                 .isEqualTo(FinancialAuditDetails.Type.FOR_APPROVAL);
 
-            assertThat(appearance.getFinancialAuditDetails().getCourtLocationRevision())
+            assertThat(financialAuditDetails.getCourtLocationRevision())
                 .as("Financial Audit Details object should have the correct court revision")
                 .isEqualTo(0);
 
-            assertThat(appearance.getFinancialAuditDetails().getJurorRevision())
+            assertThat(financialAuditDetails.getJurorRevision())
                 .as("Financial Audit Details object should have the correct juror revision")
                 .isEqualTo(1);
 
@@ -1628,21 +1646,21 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         }
 
         private void verifyExpenseStillInDraft(Appearance appearance) {
-            assertThat(appearance.getFinancialAuditDetails())
+            assertThat(appearance.getFinancialAudit())
                 .as("Financial Audit Details object should not be created/associated")
                 .isNull();
 
             assertThat(appearance.getAppearanceStage())
                 .as("Appearance stage should remain unchanged (still entered)")
                 .isEqualTo(AppearanceStage.EXPENSE_ENTERED);
-            if (!appearance.getAttendanceDate().equals(LocalDate.of(2024, 1, 5))) {
-                assertThat(appearance.isDraftExpense())
-                    .as("Is draft expense flag should remain unchanged (expense still in draft)")
-                    .isTrue();
-            } else {
+            if (appearance.getAttendanceDate().equals(LocalDate.of(2024, 1, 5))) {
                 assertThat(appearance.isDraftExpense())
                     .as("Is draft expense flag should remain unchanged")
                     .isFalse();
+            } else {
+                assertThat(appearance.isDraftExpense())
+                    .as("Is draft expense flag should remain unchanged (expense still in draft)")
+                    .isTrue();
             }
         }
     }
@@ -2364,7 +2382,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
     @Nested
     @DisplayName("POST " + ApproveExpenses.URL)
-    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_approveExpenseSetUp.sql",
+    @Sql({"/db/mod/truncate.sql",
+        "/db/truncate.sql",
+        "/db/JurorExpenseControllerITest_approveExpenseSetUp.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class ApproveExpenses {
         public static final String URL = BASE_URL + "/{payment_method}/approve";
@@ -2481,7 +2501,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
                                 .attendanceDate(LocalDate.of(2023, 2, 9))
-                                .version(2L)
+                                .version(1L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
                                 .attendanceDate(LocalDate.of(2023, 2, 10))
@@ -2506,7 +2526,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(0),
                     id, LocalDate.of(2023, 2, 8), 2);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(1),
-                    id, LocalDate.of(2023, 2, 9), 4);
+                    id, LocalDate.of(2023, 2, 9), 3);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(2),
                     id, LocalDate.of(2023, 2, 10), 3);
 
@@ -2523,6 +2543,14 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
+            @Sql({
+                "/db/mod/truncate.sql",
+                "/db/truncate.sql",
+                "/db/JurorExpenseControllerITest_approveExpenseSetUp.sql",
+                "/db/JurorExpenseControllerITest_expenseRates.sql",
+                "/db/JurorExpenseControllerITest_ApproveExpensesSupport.sql"
+            }
+            )
             void typicalReApproved() throws Exception {
                 ApproveExpenseDto approveExpenseDto = ApproveExpenseDto.builder()
                     .jurorNumber(JUROR_NUMBER)
@@ -2531,15 +2559,15 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         List.of(
                             ApproveExpenseDto.DateToRevision.builder()
                                 .attendanceDate(LocalDate.of(2023, 1, 14))
-                                .version(1L)
+                                .version(2L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
                                 .attendanceDate(LocalDate.of(2023, 1, 15))
-                                .version(1L)
+                                .version(2L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
                                 .attendanceDate(LocalDate.of(2023, 1, 16))
-                                .version(1L)
+                                .version(2L)
                                 .build()
                         )
                     )
@@ -2547,35 +2575,54 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 triggerValid(PaymentMethod.BACS, approveExpenseDto);
 
                 List<FinancialAuditDetails> financialAuditDetails = new ArrayList<>();
-                financialAuditDetailsRepository.findAll().forEach(financialAuditDetails::add);
+                financialAuditDetailsRepository.findAll().forEach(financialAuditDetails1 -> {
+                    if (financialAuditDetails1.getId() == 12_344
+                        || financialAuditDetails1.getId() == 12_345) {
+                        return;
+                    }
+                    financialAuditDetails.add(financialAuditDetails1);
+                });
                 assertThat(financialAuditDetails).hasSize(1);
 
 
                 List<FinancialAuditDetailsAppearances> financialAuditDetailsAppearances = new ArrayList<>();
-                financialAuditDetailsAppearancesRepository.findAll().forEach(financialAuditDetailsAppearances::add);
+                financialAuditDetailsAppearancesRepository.findAll()
+                    .forEach(financialAuditDetailsAppearances1 -> {
+                        if (financialAuditDetailsAppearances1.getFinancialAuditId() == 12_344
+                            || financialAuditDetailsAppearances1.getFinancialAuditId() == 12_345) {
+                            return;
+                        }
+                        financialAuditDetailsAppearances.add(financialAuditDetailsAppearances1);
+                    });
+
                 financialAuditDetailsAppearances.sort(
                     Comparator.comparing(FinancialAuditDetailsAppearances::getAttendanceDate));
                 assertThat(financialAuditDetailsAppearances).hasSize(3);
                 long id = assertFinancialAuditDetailsApproved(financialAuditDetails.get(0),
                     LocalDateTime.now(), FinancialAuditDetails.Type.REAPPROVED_BACS);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(0),
-                    id, LocalDate.of(2023, 1, 14), 2);
+                    id, LocalDate.of(2023, 1, 14), 4, 12_344L);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(1),
-                    id, LocalDate.of(2023, 1, 15), 3);
+                    id, LocalDate.of(2023, 1, 15), 4, 12_344L);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(2),
-                    id, LocalDate.of(2023, 1, 16), 3);
+                    id, LocalDate.of(2023, 1, 16), 4, 12_344L);
 
                 assertApproved(
-                    appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR_NUMBER, LocalDate.of(2023, 1, 14)));
+                    appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR_NUMBER,
+                        LocalDate.of(2023, 1, 14)));
                 assertApproved(
-                    appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR_NUMBER, LocalDate.of(2023, 1, 15)));
+                    appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR_NUMBER,
+                        LocalDate.of(2023, 1, 15)));
                 assertApproved(
-                    appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR_NUMBER, LocalDate.of(2023, 1, 16)));
+                    appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR_NUMBER,
+                        LocalDate.of(2023, 1, 16)));
 
-                assertJurorHistory(JUROR_NUMBER, HistoryCodeMod.ARAMIS_EXPENSES_FILE_CREATED, "COURT_USER", "£407.00",
+                assertJurorHistory(JUROR_NUMBER, HistoryCodeMod.ARAMIS_EXPENSES_FILE_CREATED, "COURT_USER",
+                    "£407.00",
                     null, LocalDate.of(2023, 1, 16), "F" + id);
                 assertPaymentData(JUROR_NUMBER, new BigDecimal("407.00"), new BigDecimal("260.00"),
                     new BigDecimal("57.00"), new BigDecimal("90.00"));
+
             }
 
             private void assertApproved(Optional<Appearance> appearanceOpt) {
@@ -2608,7 +2655,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                                             String paymentMethod,
                                                             ApproveExpenseDto... expenseDto) throws Exception {
                 return triggerInvalid(owner, locCode, paymentMethod,
-                    COURT_USER, owner.equals("400") ? UserType.BUREAU : UserType.COURT,
+                    COURT_USER, "400".equals(owner) ? UserType.BUREAU : UserType.COURT,
                     Set.of(Role.MANAGER), expenseDto);
             }
 
@@ -2705,10 +2752,10 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     "INSERT INTO juror_mod.financial_audit_details ("
                         + "id, juror_revision, court_location_revision, type, created_by, created_on, "
                         + "juror_number, loc_code) VALUES ("
-                        + "3, 1, 6, 'FOR_APPROVAL', 'COURT_USER', '2023-01-01 00:00:00','641500020','415')",
+                        + "12345, 1, 6, 'FOR_APPROVAL', 'COURT_USER', '2023-01-01 00:00:00','641500020','415')",
                     "INSERT INTO juror_mod.financial_audit_details_appearances ("
-                        + "financial_audit_id, attendance_date,appearance_version) VALUES "
-                        + "(3, '2023-01-14', 1)"
+                        + "financial_audit_id, attendance_date,appearance_version, loc_code) VALUES "
+                        + "(12345, '2023-01-14', 2,'415')"
                 })
             void negativeUserCanNotApprove() throws Exception {
                 assertBusinessRuleViolation(triggerInvalid(COURT_LOCATION,
@@ -2721,15 +2768,15 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                 List.of(
                                     ApproveExpenseDto.DateToRevision.builder()
                                         .attendanceDate(LocalDate.of(2023, 1, 14))
-                                        .version(1L)
+                                        .version(2L)
                                         .build(),
                                     ApproveExpenseDto.DateToRevision.builder()
                                         .attendanceDate(LocalDate.of(2023, 1, 15))
-                                        .version(1L)
+                                        .version(2L)
                                         .build(),
                                     ApproveExpenseDto.DateToRevision.builder()
                                         .attendanceDate(LocalDate.of(2023, 1, 16))
-                                        .version(1L)
+                                        .version(2L)
                                         .build()
                                 )
                             ).build()), "User cannot approve an expense they have edited",
@@ -2838,6 +2885,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             return toUrl(jurorNumber, type.name());
         }
 
+        @Override
         public String toUrl(String jurorNumber, String type) {
             return URL
                 .replace("{loc_code}", COURT_LOCATION)
@@ -3240,6 +3288,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             return toUrl(COURT_LOCATION, jurorNumber);
         }
 
+        @Override
         public String toUrl(String locCode, String jurorNumber) {
             return URL
                 .replace("{loc_code}", locCode)
@@ -3889,6 +3938,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
+            @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
             void typicalCash() throws Exception {
                 PendingApprovalList pendingApprovals = triggerValid(COURT_LOCATION, null, null, PaymentMethod.CASH);
                 assertThat(pendingApprovals.getTotalPendingCash()).isEqualTo(2L);
@@ -4053,6 +4103,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
+            @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
             void typicalToDateFilter() throws Exception {
                 PendingApprovalList pendingApprovals =
                     triggerValid(COURT_LOCATION, null, LocalDate.of(2023, 1, 9), PaymentMethod.BACS);
@@ -4109,6 +4160,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
+            @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
             void typicalBothFromAndToFilter() throws Exception {
                 PendingApprovalList pendingApprovals =
                     triggerValid(COURT_LOCATION, LocalDate.of(2023, 1, 9), LocalDate.of(2023, 1, 10), PaymentMethod
@@ -4116,7 +4168,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertThat(pendingApprovals.getTotalPendingCash()).isEqualTo(2L);
                 assertThat(pendingApprovals.getTotalPendingBacs()).isEqualTo(3L);
 
-                assertThat(pendingApprovals.getPendingApproval()).as("Verify pendingApprovals").containsExactly(
+                assertThat(pendingApprovals.getPendingApproval()).containsExactly(
                     PendingApproval.builder()
                         .jurorNumber("641500020")
                         .poolNumber("415230101")
@@ -4167,12 +4219,13 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
+            @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
             void canNotApprove() throws Exception {
                 PendingApprovalList pendingApprovals =
                     triggerValid("COURT_USER2", COURT_LOCATION, LocalDate.of(2023, 1, 9), LocalDate.of(2023, 1, 10),
                         PaymentMethod.BACS);
-                assertThat(pendingApprovals.getTotalPendingCash()).isEqualTo(2L);
-                assertThat(pendingApprovals.getTotalPendingBacs()).isEqualTo(3L);
+                assertThat(pendingApprovals.getTotalPendingCash()).as("Total Pending Cash").isEqualTo(2L);
+                assertThat(pendingApprovals.getTotalPendingBacs()).as("Total Pending Bacs").isEqualTo(3L);
 
                 assertThat(pendingApprovals.getPendingApproval()).containsExactly(
                     PendingApproval.builder()
@@ -4304,17 +4357,18 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
         private static final String JUROR_NUMBER = "641500020";
 
-        public String toUrl(String locCode, String jurorNumber) {
-            return URL
-                .replace("{loc_code}", locCode)
-                .replace("{juror_number}", jurorNumber);
-        }
 
         private static final List<LocalDate> ATTENDANCE_DATES = List.of(
             LocalDate.of(2023, 1, 5),
             LocalDate.of(2023, 1, 6),
             LocalDate.of(2023, 1, 7)
         );
+
+        public String toUrl(String locCode, String jurorNumber) {
+            return URL
+                .replace("{loc_code}", locCode)
+                .replace("{juror_number}", jurorNumber);
+        }
 
         protected ApportionSmartCardRequest getValidPayload(BigDecimal smartCardAmount) {
             return ApportionSmartCardRequest.builder()

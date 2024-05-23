@@ -46,6 +46,7 @@ public class PhoneLogRepositoryTest extends AbstractIntegrationTest {
     @Test
     @Sql("/db/truncate.sql")
     @Sql("/db/BureauLogRepository_findByLogKey.sql")
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False positive
     public void findByLogKey_WithValidCompositeKey_ReturnsBureauJurorLog() {
         List<PhoneLog> actualJurorLog = phoneLogRepository.findByJurorNumber(phoneLog.getJurorNumber());
         assertThat(actualJurorLog).hasSize(1);

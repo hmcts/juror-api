@@ -27,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @Sql({"/db/mod/truncate.sql"})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessivePublicCount"})
 public class PoolRequestSearchServiceITest extends ContainerTest {
 
     @Autowired
@@ -608,6 +609,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/PoolRequestSearchService_initAdvancedSearchRequests.sql"})
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") //False Positive
     public void test_searchForPoolRequest_advancedSearch_poolStatus_active() {
         String locCode = "416";
         PoolSearchRequestDto poolSearchRequestDto = new PoolSearchRequestDto();
@@ -622,7 +624,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
 
 
         for (PoolRequestSearchListDto.PoolRequestSearchDataDto data : results.getData()) {
-            assertThat(data.getPoolNumber()).isIn("416230101", "416230102");
+            assertThat(data.getPoolNumber()).as("Juror Number").isIn("416230101", "416230102");
         }
     }
 
@@ -676,6 +678,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/PoolRequestSearchService_initAdvancedSearchRequests.sql"})
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") //False Positive
     public void test_searchForPoolRequest_advancedSearch_poolStatus_completed() {
         String locCode = "416";
         PoolSearchRequestDto poolSearchRequestDto = new PoolSearchRequestDto();
@@ -689,7 +692,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
         assertThat(results.getData().size()).isEqualTo(2);
 
         for (PoolRequestSearchListDto.PoolRequestSearchDataDto data : results.getData()) {
-            assertThat(data.getPoolNumber()).isIn("416230103", "416230104");
+            assertThat(data.getPoolNumber()).as("Juror Number").isIn("416230103", "416230104");
         }
     }
 
@@ -769,6 +772,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
      */
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/PoolRequestSearchService_initAdvancedSearchRequests.sql"})
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") //False Positive
     public void test_searchForPoolRequest_advancedSearch_poolStatus_requestedAndActive2() {
         String locCode = "417";
         PoolSearchRequestDto poolSearchRequestDto = new PoolSearchRequestDto();
@@ -783,7 +787,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
         assertThat(results.getData().size()).isEqualTo(2);
 
         for (PoolRequestSearchListDto.PoolRequestSearchDataDto data : results.getData()) {
-            assertThat(data.getPoolNumber()).isIn("417230102", "417230104");
+            assertThat(data.getPoolNumber()).as("Juror Number").isIn("417230102", "417230104");
         }
     }
 
@@ -979,6 +983,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/PoolRequestSearchService_initAdvancedSearchRequests.sql"})
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") //False Positive
     public void test_searchForPoolRequest_advancedSearch_poolType_crownAndCivil() {
         LocalDate startDate = LocalDate.of(2023, 1, 16);
         PoolSearchRequestDto poolSearchRequestDto = new PoolSearchRequestDto();
@@ -992,12 +997,13 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
         assertThat(results.getData().size()).isEqualTo(2);
 
         for (PoolRequestSearchListDto.PoolRequestSearchDataDto data : results.getData()) {
-            assertThat(data.getPoolNumber()).isIn("415230101", "417230102");
+            assertThat(data.getPoolNumber()).as("Juror Number").isIn("415230101", "417230102");
         }
     }
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/PoolRequestSearchService_initAdvancedSearchRequests.sql"})
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") //False Positive
     public void test_searchForPoolRequest_advancedSearch_poolType_crownAndHigh() {
         LocalDate startDate = LocalDate.of(2023, 1, 16);
         PoolSearchRequestDto poolSearchRequestDto = new PoolSearchRequestDto();
@@ -1011,12 +1017,13 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
         assertThat(results.getData().size()).isEqualTo(2);
 
         for (PoolRequestSearchListDto.PoolRequestSearchDataDto data : results.getData()) {
-            assertThat(data.getPoolNumber()).isIn("415230101", "416230105");
+            assertThat(data.getPoolNumber()).as("Juror Number").isIn("415230101", "416230105");
         }
     }
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/PoolRequestSearchService_initAdvancedSearchRequests.sql"})
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") //False Positive
     public void test_searchForPoolRequest_advancedSearch_poolType_civilAndHigh() {
         LocalDate startDate = LocalDate.of(2023, 1, 16);
         PoolSearchRequestDto poolSearchRequestDto = new PoolSearchRequestDto();
@@ -1030,7 +1037,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
         assertThat(results.getData().size()).isEqualTo(2);
 
         for (PoolRequestSearchListDto.PoolRequestSearchDataDto data : results.getData()) {
-            assertThat(data.getPoolNumber()).isIn("417230102", "416230105");
+            assertThat(data.getPoolNumber()).as("Juror Number").isIn("417230102", "416230105");
         }
     }
 

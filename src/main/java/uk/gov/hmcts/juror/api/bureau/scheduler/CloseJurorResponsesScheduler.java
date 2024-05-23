@@ -11,6 +11,7 @@ import org.springframework.transaction.TransactionSystemException;
 import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetailQueries;
 import uk.gov.hmcts.juror.api.bureau.service.JurorResponsesSummonedService;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.moj.client.contracts.SchedulerServiceClient;
 import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.repository.JurorDetailRepositoryMod;
@@ -44,7 +45,7 @@ public class CloseJurorResponsesScheduler implements JurorResponsesSummonedServi
     }
 
     @Override
-    public void process() {
+    public SchedulerServiceClient.Result process() {
         SimpleDateFormat dateFormat = new SimpleDateFormat();
         log.info("Close Response Scheduler Starting time, is now {}", dateFormat.format(new Date()));
 
@@ -77,6 +78,8 @@ public class CloseJurorResponsesScheduler implements JurorResponsesSummonedServi
         log.info("Number of Juror response records found  : {}", JurorResponsesDetail.size());
         log.info("The Number of Juror response records closed {}", numberRecordsClosed);
         log.info("Close Response Scheduler: Finished, time is now {}", dateFormat.format(new Date()));
+        return new SchedulerServiceClient.Result(SchedulerServiceClient.Result.Status.SUCCESS,
+            "Closed: " + numberRecordsClosed + " records", null);
     }
 
     private void updateJurorResponse(DigitalResponse jurorResponseRecord) {

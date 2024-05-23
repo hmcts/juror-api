@@ -48,7 +48,6 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 @SuppressWarnings({
-    "PMD.LawOfDemeter",
     "PMD.GodClass",
     "PMD.ExcessiveImports",
     "PMD.TooManyMethods"

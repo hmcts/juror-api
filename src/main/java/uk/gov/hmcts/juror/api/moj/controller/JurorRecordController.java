@@ -75,7 +75,7 @@ import java.util.List;
 @RequestMapping(value = "/api/v1/moj/juror-record", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Juror Management")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.LawOfDemeter"})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
 public class JurorRecordController {
 
     @NonNull

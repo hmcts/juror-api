@@ -50,7 +50,6 @@ import java.util.stream.Stream;
 @Service
 @Slf4j
 @AllArgsConstructor(onConstructor = @__(@Autowired))
-@SuppressWarnings("PMD.LawOfDemeter")
 public class BureauServiceImpl implements BureauService {
     private static final String TODO = "todo";
     private static final String PENDING = "pending";
@@ -128,7 +127,9 @@ public class BureauServiceImpl implements BureauService {
 
     private Map<ProcessingStatus, Long> getJurorResponseCounts(String username) {
         return jurorCommonResponseRepositoryMod.getJurorResponseCounts(
-            QCombinedJurorResponse.combinedJurorResponse.staff.username.eq(username));
+            QCombinedJurorResponse.combinedJurorResponse.staff.username.eq(username),
+            QCombinedJurorResponse.combinedJurorResponse.processingStatus.ne(ProcessingStatus.CLOSED)
+        );
     }
 
     @Override

@@ -6,23 +6,20 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 @Sql({
     "/db/mod/truncate.sql",
     "/db/mod/reports/PersonAttendingSummaryReportITest_typical.sql"
 })
-@SuppressWarnings({
-    "PMD.LawOfDemeter",
-    "PMD.JUnitTestsShouldIncludeAssert"//False positive
-})
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
 class PersonAttendingSummaryReportITest extends AbstractStandardReportControllerITest {
     @Autowired
     public PersonAttendingSummaryReportITest(TestRestTemplate template) {
@@ -110,7 +107,7 @@ class PersonAttendingSummaryReportITest extends AbstractStandardReportController
                     .value("CHESTER (415)")
                     .build()))
             .tableData(
-                StandardReportResponse.TableData.<List<LinkedHashMap<String, Object>>>builder()
+                StandardReportResponse.TableData.<StandardTableData>builder()
                     .headings(List.of(
                         StandardReportResponse.TableData.Heading.builder()
                             .id("juror_number")
@@ -130,7 +127,7 @@ class PersonAttendingSummaryReportITest extends AbstractStandardReportController
                             .dataType("String")
                             .headings(null)
                             .build()))
-                    .data(List.of(
+                    .data(StandardTableData.of(
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number", "641500003")
                             .add("first_name", "FNAMETHREE")
@@ -166,7 +163,7 @@ class PersonAttendingSummaryReportITest extends AbstractStandardReportController
                               .value("CHESTER (415)")
                               .build()))
             .tableData(
-                StandardReportResponse.TableData.<List<LinkedHashMap<String, Object>>>builder()
+                StandardReportResponse.TableData.<StandardTableData>builder()
                     .headings(List.of(
                         StandardReportResponse.TableData.Heading.builder()
                             .id("juror_number")
@@ -186,7 +183,7 @@ class PersonAttendingSummaryReportITest extends AbstractStandardReportController
                             .dataType("String")
                             .headings(null)
                             .build()))
-                    .data(List.of(
+                    .data(StandardTableData.of(
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number", "641500004")
                             .add("first_name", "FNAMEFOUR")
@@ -218,7 +215,7 @@ class PersonAttendingSummaryReportITest extends AbstractStandardReportController
                     .value("CHESTER (415)")
                     .build()))
             .tableData(
-                StandardReportResponse.TableData.<List<LinkedHashMap<String, Object>>>builder()
+                StandardReportResponse.TableData.<StandardTableData>builder()
                     .headings(List.of(
                         StandardReportResponse.TableData.Heading.builder()
                             .id("juror_number")
@@ -238,7 +235,7 @@ class PersonAttendingSummaryReportITest extends AbstractStandardReportController
                             .dataType("String")
                             .headings(null)
                             .build()))
-                    .data(List.of())
+                    .data(StandardTableData.of())
                     .build())
             .build();
     }

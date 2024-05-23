@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
@@ -17,14 +18,11 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 
 @Component
-@SuppressWarnings("PMD.LawOfDemeter")
 public class PersonAttendingSummaryReport extends AbstractStandardReport {
     private final CourtLocationRepository courtLocationRepository;
 
@@ -47,22 +45,21 @@ public class PersonAttendingSummaryReport extends AbstractStandardReport {
         query.where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(SecurityUtil.getLocCode()));
         if (request.getIncludeSummoned()) {
             query.where(QJurorPool.jurorPool.status.status.in(IJurorStatus.SUMMONED,
-                                                              IJurorStatus.RESPONDED,
-                                                              IJurorStatus.PANEL,
-                                                              IJurorStatus.JUROR));
+                IJurorStatus.RESPONDED,
+                IJurorStatus.PANEL,
+                IJurorStatus.JUROR));
         } else {
             query.where(QJurorPool.jurorPool.status.status.in(IJurorStatus.RESPONDED,
-                                                              IJurorStatus.PANEL,
-                                                              IJurorStatus.JUROR));
+                IJurorStatus.PANEL,
+                IJurorStatus.JUROR));
         }
         query.orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
     }
 
     @Override
-    public Map<String, StandardReportResponse.DataTypeValue> getHeadings(StandardReportRequest request,
-                                                                         StandardReportResponse.TableData<
-                                                                             List<LinkedHashMap<String, Object>>>
-                                                                             tableData) {
+    public Map<String, StandardReportResponse.DataTypeValue> getHeadings(
+        StandardReportRequest request,
+        StandardReportResponse.TableData<StandardTableData> tableData) {
 
         Map<String, StandardReportResponse.DataTypeValue> map = new ConcurrentHashMap<>();
         map.put("total_due", StandardReportResponse.DataTypeValue.builder()

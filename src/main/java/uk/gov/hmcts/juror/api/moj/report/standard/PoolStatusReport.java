@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -15,13 +17,10 @@ import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
-@SuppressWarnings("PMD.LawOfDemeter")
 public class PoolStatusReport extends AbstractStandardReport {
     private final JurorPoolRepository jurorPoolRepository;
 
@@ -55,13 +54,15 @@ public class PoolStatusReport extends AbstractStandardReport {
     }
 
     @Override
-    public Map<String, AbstractReportResponse.DataTypeValue> getHeadings(StandardReportRequest request,
-                                 AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData) {
+    public Map<String, AbstractReportResponse.DataTypeValue> getHeadings(
+        StandardReportRequest request,
+        StandardReportResponse.TableData<StandardTableData> tableData) {
 
         PoolRequest poolRequest =
-            getPoolRequestRepository().findByPoolNumber(request.getPoolNumber()).orElseThrow(() ->
-                new MojException.NotFound("Cannot find pool number " + request.getPoolNumber(),
-                    null));
+            getPoolRequestRepository().findByPoolNumber(request.getPoolNumber())
+                .orElseThrow(() ->
+                    new MojException.NotFound("Cannot find pool number " + request.getPoolNumber(),
+                        null));
 
         Map<String, AbstractReportResponse.DataTypeValue> map = new ConcurrentHashMap<>();
         map.put("pool_number", AbstractReportResponse.DataTypeValue.builder()

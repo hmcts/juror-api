@@ -18,7 +18,6 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -31,14 +30,11 @@ public class UrgentSuperUrgentStatusSchedulerTest {
 
     private static final String NON_CLOSED_STATUS = ProcessingStatus.TODO.name();
 
-    private ModJurorDetail jurorBureauDetail;
-    private DigitalResponse jurorResponse;
     private JurorPool poolDetails;
 
     private Juror juror;
 
 
-    private LocalDateTime responseReceived;
     @Mock
     private JurorDigitalResponseRepositoryMod jurorResponseRepo;
 
@@ -59,18 +55,16 @@ public class UrgentSuperUrgentStatusSchedulerTest {
 
     @Before
     public void setUp() {
-        responseReceived = LocalDateTime.now();
+        LocalDateTime responseReceived = LocalDateTime.now();
 
         //set up some known static dates relative to a start point
-        final LocalDateTime hearingDateValid = LocalDateTime.now().plus(35, ChronoUnit.DAYS);
-
-        jurorBureauDetail = new ModJurorDetail();
+        ModJurorDetail jurorBureauDetail = new ModJurorDetail();
         jurorBureauDetail.setProcessingStatus(NON_CLOSED_STATUS);
         jurorBureauDetail.setDateReceived(responseReceived.toLocalDate());
 
         jurorBureauDetail.setHearingDate(responseReceived.toLocalDate());
 
-        jurorResponse = new DigitalResponse();
+        DigitalResponse jurorResponse = new DigitalResponse();
         jurorResponse.setProcessingStatus(uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus.TODO);
         jurorResponse.setDateReceived(responseReceived);
 
@@ -84,6 +78,8 @@ public class UrgentSuperUrgentStatusSchedulerTest {
         response.setJurorNumber("12345678");
         response.setDateReceived(LocalDateTime.from(now.minusHours(1)));
         response.setProcessingStatus(ProcessingStatus.TODO);
+        response.setUrgent(false);
+        response.setSuperUrgent(false);
         responseBacklog.add(response);
 
     }
@@ -99,11 +95,16 @@ public class UrgentSuperUrgentStatusSchedulerTest {
 
         final List<ProcessingStatus> pendingStatuses = List.of(ProcessingStatus.CLOSED);
 
-        given(jurorResponseRepo.findAll(JurorResponseQueries.byStatusNotClosed(pendingStatuses))).willReturn(
+        given(jurorResponseRepo.findAll(JurorResponseQueries.byStatusNotClosed(pendingStatuses)
+            .and(JurorResponseQueries.jurorIsNotTransferred()))).willReturn(
             responseBacklog);
 
         DigitalResponse jurorResponse = responseBacklog.get(0);
-        given(poolrepo.findByJurorJurorNumber(jurorResponse.getJurorNumber())).willReturn(poolDetails);
+        given(poolrepo.findByJurorJurorNumberAndIsActiveAndOwner(
+            jurorResponse.getJurorNumber(),
+            true,
+            "400"
+            )).willReturn(poolDetails);
         //given(poolrepo.findOne(jurorResponse.getJurorNumber())).willReturn(poolDetails);
 
         given(urgencyService.isSuperUrgent(jurorResponse, poolDetails)).willReturn(Boolean.TRUE);

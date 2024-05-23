@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("PMD.LawOfDemeter")
 class BureauJwtPayloadTest {
 
     private CourtLocation mockCourtLocation(String owner, String locCode, CourtType courtType) {

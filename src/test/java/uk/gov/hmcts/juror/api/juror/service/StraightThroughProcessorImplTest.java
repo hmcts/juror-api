@@ -99,8 +99,7 @@ public class StraightThroughProcessorImplTest {
     }
 
     @Test
-    public void processDeceasedExcusal_happyPath_jurorSuccessfullyExcused()
-        throws StraightThroughProcessingServiceException {
+    public void processDeceasedExcusal_happyPath_jurorSuccessfullyExcused() {
         JurorStatus excusedJurorStatus = mock(JurorStatus.class);
         when(jurorStatusRepository.findById(IJurorStatus.EXCUSED)).thenReturn(Optional.ofNullable(excusedJurorStatus));
         // configure jurorResponse status to get through Deceased-Excusal logic successfully
@@ -227,8 +226,7 @@ public class StraightThroughProcessorImplTest {
     }
 
     @Test
-    public void processAgeExcusal_happyPath_jurorSuccessfullyExcused_exactlyTooOld()
-        throws StraightThroughProcessingServiceException {
+    public void processAgeExcusal_happyPath_jurorSuccessfullyExcused_exactlyTooOld() {
         JurorStatus disquallifiedJurorStatus = mock(JurorStatus.class);
         when(jurorStatusRepository.findById(IJurorStatus.DISQUALIFIED))
             .thenReturn(Optional.ofNullable(disquallifiedJurorStatus));
@@ -275,8 +273,7 @@ public class StraightThroughProcessorImplTest {
     }
 
     @Test
-    public void processAgeExcusal_happyPath_jurorSuccessfullyExcused_exactlyTooYoung()
-        throws StraightThroughProcessingServiceException {
+    public void processAgeExcusal_happyPath_jurorSuccessfullyExcused_exactlyTooYoung() {
         JurorStatus disquallifiedJurorStatus = mock(JurorStatus.class);
         when(jurorStatusRepository.findById(IJurorStatus.DISQUALIFIED))
             .thenReturn(Optional.ofNullable(disquallifiedJurorStatus));
@@ -321,8 +318,7 @@ public class StraightThroughProcessorImplTest {
     }
 
     @Test
-    public void processAgeExcusal_unhappyPath_jurorExactlyMinimumAge()
-        throws StraightThroughProcessingServiceException {
+    public void processAgeExcusal_unhappyPath_jurorExactlyMinimumAge() {
 
         // configure jurorResponse
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
@@ -354,8 +350,7 @@ public class StraightThroughProcessorImplTest {
     }
 
     @Test
-    public void processAgeExcusal_unhappyPath_jurorOneDayUnderTooOld()
-        throws StraightThroughProcessingServiceException {
+    public void processAgeExcusal_unhappyPath_jurorOneDayUnderTooOld() {
 
         // configure jurorResponse
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
@@ -387,7 +382,7 @@ public class StraightThroughProcessorImplTest {
     }
 
     @Test
-    public void processAgeExcusal_unhappyPath_thirdParty() throws StraightThroughProcessingServiceException {
+    public void processAgeExcusal_unhappyPath_thirdParty() {
         // configure jurorResponse status to fail validation
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
         given(jurorResponse.getRelationship()).willReturn("BFFs");
@@ -407,7 +402,7 @@ public class StraightThroughProcessorImplTest {
     }
 
     @Test
-    public void processAgeExcusal_unhappyPath_isSuperUrgent() throws StraightThroughProcessingServiceException {
+    public void processAgeExcusal_unhappyPath_isSuperUrgent() {
         // configure jurorResponse status to fail validation
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
         given(jurorResponse.getRelationship()).willReturn(null);
@@ -431,7 +426,7 @@ public class StraightThroughProcessorImplTest {
     }
 
     @Test
-    public void processAgeExcusal_unhappyPath_statusNotSummoned() throws StraightThroughProcessingServiceException {
+    public void processAgeExcusal_unhappyPath_statusNotSummoned() {
         // configure jurorResponse status to fail validation
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
         given(jurorResponse.getRelationship()).willReturn(null);

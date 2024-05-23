@@ -39,7 +39,6 @@ import java.util.function.Function;
 /**
  * Custom Repository implementation for the JurorPool entity.
  */
-@SuppressWarnings("PMD.LawOfDemeter")
 public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
 
     @PersistenceContext
@@ -250,6 +249,15 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
         }
 
         throw new MojException.Forbidden("You do not have access to this pool", null);
+    }
+
+    @Override
+    public boolean hasPoolWithLocCode(String jurorNumber, List<String> locCode) {
+        JPAQueryFactory queryFactory = getQueryFactory();
+        return queryFactory.from(JUROR_POOL)
+            .where(JUROR_POOL.juror.jurorNumber.eq(jurorNumber))
+            .where(JUROR_POOL.pool.courtLocation.locCode.in(locCode))
+            .fetchFirst() != null;
     }
 
     @Override

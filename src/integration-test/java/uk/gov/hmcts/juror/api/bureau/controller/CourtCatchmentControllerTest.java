@@ -131,9 +131,6 @@ public class CourtCatchmentControllerTest extends AbstractIntegrationTest {
     @Sql("/db/standing_data.sql")
     @Sql("/db/BureauResponseCourtCatchmentController_Unhappy.sql")
     public void courtCatchment_Loc_Code_Not_Found_Unhappy() throws Exception {
-        final Integer validVersion = 555;
-
-
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .login("ncrawford")

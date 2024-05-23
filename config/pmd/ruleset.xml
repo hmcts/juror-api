@@ -41,15 +41,11 @@
     <exclude name="UseUtilityClass"/>
     <exclude name="LoosePackageCoupling"/>
     <exclude name="DataClass"/>
+    <exclude name="LawOfDemeter"/>
   </rule>
   <rule ref="category/java/design.xml/ExcessiveImports">
     <properties>
       <property name="minimum" value="35"/><!-- should be reduced -->
-    </properties>
-  </rule>
-  <rule ref="category/java/design.xml/LawOfDemeter">
-    <properties>
-      <property name="violationSuppressRegex" value="(.*method chain calls.*|.*object not created locally.*)"/>
     </properties>
   </rule>
   <rule ref="category/java/design.xml/SignatureDeclareThrowsException">

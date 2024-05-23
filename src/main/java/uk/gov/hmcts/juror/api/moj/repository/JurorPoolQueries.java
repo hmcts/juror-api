@@ -122,7 +122,6 @@ public class JurorPoolQueries {
         return courtDateWithin4Wks()
             .and(respondedStatus())
             .and(jurorRecordWithBureau())
-            .and(jurorRecordNotWithBureau())
             .and(infoCommsNotSent())
             .and(emailIsPresent())
             .and(isPoliceChecked());

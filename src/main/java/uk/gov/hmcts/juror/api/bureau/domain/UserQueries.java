@@ -5,11 +5,11 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.moj.domain.QUser;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 /**
  * QueryDSL queries for {@link uk.gov.hmcts.juror.api.moj.domain.User}.
  */
-@SuppressWarnings("PMD.LawOfDemeter")
 public class UserQueries {
 
     private static final QUser USER = QUser.user;
@@ -32,10 +32,13 @@ public class UserQueries {
 
     public static BooleanExpression active() {
         return USER.active.eq(true)
-            .and(USER.username.notEqualsIgnoreCase(JurorDigitalApplication.AUTO_USER));
+            .and(USER.userType.ne(UserType.SYSTEM));
     }
 
     public static BooleanExpression owner(String owner) {
+        if (SecurityUtil.BUREAU_OWNER.equals(owner)) {
+            return USER.userType.eq(UserType.BUREAU);
+        }
         return USER.owner.eq(owner);
     }
 

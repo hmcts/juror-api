@@ -14,7 +14,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SuppressWarnings("PMD.LawOfDemeter")
 public class ApproveExpenseDtoTest extends AbstractValidatorTest<ApproveExpenseDto> {
     @Override
     protected ApproveExpenseDto createValidObject() {

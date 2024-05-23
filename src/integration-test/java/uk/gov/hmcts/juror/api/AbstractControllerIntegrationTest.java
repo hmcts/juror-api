@@ -178,6 +178,7 @@ public abstract class AbstractControllerIntegrationTest<P, R> extends AbstractIn
             }
 
             @SneakyThrows
+            @SuppressWarnings("PMD.SystemPrintln")
             public ControllerTestResponse<T> printResponseBodyAsJson() {
                 System.out.println(new ObjectMapper().findAndRegisterModules().writeValueAsString(body));
                 return this;
