@@ -45,6 +45,8 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
     public static final String DAILY_UTILISATION_JURORS_URL = URL_BASE + "/daily-utilisation-jurors";
     public static final String GENERATE_MONTHLY_UTILISATION_REPORT_URL = URL_BASE + "/generate-monthly-utilisation";
     public static final String VIEW_MONTHLY_UTILISATION_REPORT_URL = URL_BASE + "/view-monthly-utilisation";
+    public static final String GET_MONTHLY_UTILISATION_REPORT_URL = URL_BASE + "/monthly-utilisation-reports";
+
     private HttpHeaders httpHeaders;
 
     @BeforeEach
@@ -429,7 +431,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
         }
 
         @Test
-        void viewMonthlyUtilisationJurorsInvalidUserType() {
+        void viewMonthlyUtilisationInvalidUserType() {
 
             final String bureauJwt = createBureauJwt();
 
@@ -444,6 +446,47 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
             assertThat(responseEntity.getStatusCode()).as("Expect HTTP FORBIDDEN response")
                 .isEqualTo(HttpStatus.FORBIDDEN);
 
+        }
+
+    }
+
+    @Nested
+    @DisplayName("Get Monthly Utilisation Report Integration Tests")
+    @Sql({
+        "/db/truncate.sql",
+        "/db/mod/truncate.sql",
+        "/db/mod/reports/MonthlyUtilisationReportsITest_typical.sql"
+    })
+    class GetMonthlyUtilisationReportTests {
+
+        @Test
+        void monthlyUtilisationReportsHappy() {
+
+            ResponseEntity<String> responseEntity =
+                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                        URI.create(GET_MONTHLY_UTILISATION_REPORT_URL + "/415")),
+                    String.class);
+
+            assertThat(responseEntity.getStatusCode()).as("Expect HTTP OK response").isEqualTo(HttpStatus.OK);
+            String responseBody = responseEntity.getBody();
+            assertThat(responseBody).isNotNull();
+
+        }
+
+        @Test
+        void monthlyUtilisationReportsInvalidUserType() {
+
+            final String bureauJwt = createBureauJwt();
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            ResponseEntity<MonthlyUtilisationReportResponse> responseEntity =
+                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                        URI.create(GET_MONTHLY_UTILISATION_REPORT_URL + "/415")),
+                    MonthlyUtilisationReportResponse.class);
+
+            assertThat(responseEntity.getStatusCode()).as("Expect HTTP FORBIDDEN response")
+                .isEqualTo(HttpStatus.FORBIDDEN);
         }
 
     }
