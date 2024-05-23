@@ -38,24 +38,23 @@ public class BureauBatchScheduler {
     public void processBatchJobServices(final String[] types, String jobKey, Long taskId) {
         try {
             SchedulerServiceClient.Result result = null;
-            String[] jobsToRun = types;
 
             SimpleDateFormat dateFormat = new SimpleDateFormat();
             log.info("BureauBatchScheduler: Starting - {}", dateFormat.format(new Date()));
-            for (String batchJob : jobsToRun) {
+            for (String batchJob : types) {
 
                 final ScheduledService scheduledService = bureauBatchProcessFactory.getBatchProcessService(batchJob);
 
                 if (scheduledService != null) {
-                    scheduledService.process();
+                    result = scheduledService.process();
                 } else {
                     result = new SchedulerServiceClient.Result(SchedulerServiceClient.Result.Status.FAILED,
-                        "Unknown job type: '" + batchJob + "'");
+                        "Unknown job type: '" + batchJob + "'", null);
                     log.info("BureauBatchScheduler: {} job does not exist.", batchJob);
                 }
             }
             if (result == null) {
-                result = new SchedulerServiceClient.Result(SchedulerServiceClient.Result.Status.SUCCESS, null);
+                result = new SchedulerServiceClient.Result(SchedulerServiceClient.Result.Status.SUCCESS, null, null);
             }
             this.schedulerServiceClient.updateStatus(jobKey, taskId, result);
             log.info("BureauBatchScheduler: Finished - {}", dateFormat.format(new Date()));
@@ -65,7 +64,7 @@ public class BureauBatchScheduler {
                 e.getMessage());
             this.schedulerServiceClient.updateStatus(jobKey, taskId, new SchedulerServiceClient.Result(
                 SchedulerServiceClient.Result.Status.FAILED_UNEXPECTED_EXCEPTION,
-                "An unexpected exception happened when running: " + Arrays.toString(types)));
+                "An unexpected exception happened when running: " + Arrays.toString(types), null));
             throw e;
         }
     }
