@@ -82,13 +82,17 @@ public enum DataType implements IDataType {
         QPoolRequest.poolRequest),
     POOL_NUMBER("Pool Number", String.class, QPoolRequest.poolRequest.poolNumber, QPoolRequest.poolRequest),
     POOL_NUMBER_AND_COURT_TYPE("Pool Number and Type",
-                               String.class, QPoolRequest.poolRequest.poolNumber.stringValue()
-                                   .concat(",").concat(QPoolRequest.poolRequest.poolType.description),
-                               QPoolRequest.poolRequest, QPoolRequest.poolRequest),
+        String.class, QPoolRequest.poolRequest.poolNumber.stringValue()
+        .concat(",").concat(QPoolRequest.poolRequest.poolType.description),
+        QPoolRequest.poolRequest, QPoolRequest.poolRequest),
     POOL_NUMBER_BY_JP("Pool Number", String.class, QJurorPool.jurorPool.pool.poolNumber,
         QJurorPool.jurorPool),
     POOL_NUMBER_BY_APPEARANCE("Pool Number", String.class, QAppearance.appearance.poolNumber,
         QAppearance.appearance),
+    IS_ACTIVE("Active", Boolean.class,
+        QJurorPool.jurorPool.isActive, QJurorPool.jurorPool),
+    JUROR_POOL_COUNT("Juror Pool Count", Long.class,
+        QJurorPool.jurorPool.count(), QJurorPool.jurorPool),
     NEXT_ATTENDANCE_DATE("Next attendance date", LocalDate.class, QJurorPool.jurorPool.nextDate, QJurorPool.jurorPool),
     LAST_ATTENDANCE_DATE("Last attended on", LocalDate.class, QAppearance.appearance.attendanceDate.max(),
         QAppearance.appearance),
@@ -165,8 +169,8 @@ public enum DataType implements IDataType {
     DATE_OF_ABSENCE("Date of absence", LocalDate.class, QAppearance.appearance.attendanceDate, QAppearance.appearance),
 
     COURT_LOCATION_NAME_AND_CODE("Court Location Name And Code", String.class,
-                                 QCourtLocation.courtLocation.name.concat(" (")
-        .concat(QCourtLocation.courtLocation.locCode).concat(")"), QPoolRequest.poolRequest);
+        QCourtLocation.courtLocation.name.concat(" (")
+            .concat(QCourtLocation.courtLocation.locCode).concat(")"), QPoolRequest.poolRequest);
 
     private final List<EntityPath<?>> requiredTables;
     private final String displayName;
