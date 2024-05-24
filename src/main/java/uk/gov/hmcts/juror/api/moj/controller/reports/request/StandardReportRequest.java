@@ -43,6 +43,7 @@ public class StandardReportRequest {
         "JuryListReport",
         "PoolStatusReport",
         "PersonAttendingSummaryReport",
+        "AvailableListByPoolReport",
         //Grouped
         "AbsencesReport",
         "PostponedListByDateReport",
@@ -53,7 +54,9 @@ public class StandardReportRequest {
         "JurorExpenditureReportLowLevelReport",
         "JurorExpenditureReportMidLevelReport",
         "JurorExpenditureReportHighLevelReport",
-        "UnconfirmedAttendanceReport"
+        "UnconfirmedAttendanceReport",
+        "AvailableListByDateReportBureau",
+        "AvailableListByDateReportCourt"
     })
     private String reportType;
 
@@ -88,4 +91,14 @@ public class StandardReportRequest {
 
     @NotNull(groups = AbstractReport.Validators.RequireIncludeSummoned.class)
     private Boolean includeSummoned;
+
+
+    @NotNull(groups = AbstractReport.Validators.RequireIncludeJurorsOnCall.class)
+    private Boolean includeJurorsOnCall;
+
+    @NotNull(groups = AbstractReport.Validators.RequireIncludePanelMembers.class)
+    private Boolean includePanelMembers;
+
+    @NotNull(groups = AbstractReport.Validators.RequireRespondedJurorsOnly.class)
+    private Boolean respondedJurorsOnly;
 }

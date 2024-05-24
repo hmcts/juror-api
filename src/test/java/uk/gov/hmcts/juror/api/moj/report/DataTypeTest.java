@@ -235,8 +235,8 @@ class DataTypeTest {
     void courtLocationNameAndCode() {
         assertMatchesStandard(DataType.COURT_LOCATION_NAME_AND_CODE, "court_location_name_and_code",
             "Court Location Name And Code", String.class,
-            QCourtLocation.courtLocation.name.concat(" (")
-                .concat(QCourtLocation.courtLocation.locCode).concat(")"), QPoolRequest.poolRequest);
+            QPoolRequest.poolRequest.courtLocation.name.concat(" (")
+                .concat(QPoolRequest.poolRequest.courtLocation.locCode).concat(")"), QPoolRequest.poolRequest);
     }
 
     @Test

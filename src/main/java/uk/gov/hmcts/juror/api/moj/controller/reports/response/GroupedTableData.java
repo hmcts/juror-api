@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import uk.gov.hmcts.juror.api.moj.report.support.HasSize;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,28 +18,29 @@ import java.util.List;
 @Setter
 @Data
 @ToString(callSuper = true)
-public class GroupedTableData extends LinkedHashMap<String, Object> {
+public class GroupedTableData extends LinkedHashMap<String, Object>
+    implements HasSize {
 
     @JsonIgnore
     private Type type;
 
     @JsonIgnore
-    public int getSize() {
+    public Long getSize() {
         if (Type.DATA.equals(type)) {
-            return this.size();
+            return (long) this.size();
         } else {
             return this.values()
                 .stream()
                 .map(o -> {
                     if (o instanceof Collection<?> collection) {
-                        return collection.size();
+                        return (long) collection.size();
                     }
                     if (o instanceof GroupedTableData) {
                         return ((GroupedTableData) o).getSize();
                     }
                     throw new IllegalArgumentException("Invalid type");
                 })
-                .reduce(0, Integer::sum);
+                .reduce(0L, Long::sum);
         }
     }
 

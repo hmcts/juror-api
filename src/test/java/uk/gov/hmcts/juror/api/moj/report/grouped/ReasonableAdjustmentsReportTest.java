@@ -121,7 +121,7 @@ class ReasonableAdjustmentsReportTest extends AbstractGroupedReportTestSupport<R
         securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(true);
         securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn("415");
 
-        when(data.getSize()).thenReturn(5);
+        when(data.getSize()).thenReturn(5L);
 
         CourtLocation courtLocation = mock(CourtLocation.class);
         when(courtLocationService.getCourtLocation(TestConstants.VALID_COURT_LOCATION)).thenReturn(courtLocation);
@@ -136,7 +136,7 @@ class ReasonableAdjustmentsReportTest extends AbstractGroupedReportTestSupport<R
                 StandardReportResponse.DataTypeValue.builder()
                     .displayName("Total jurors with reasonable adjustments")
                     .dataType(Long.class.getSimpleName())
-                    .value(5)
+                    .value(5L)
                     .build(),
                 "court_name",
                 StandardReportResponse.DataTypeValue.builder()
@@ -179,7 +179,7 @@ class ReasonableAdjustmentsReportTest extends AbstractGroupedReportTestSupport<R
         AbstractReportResponse.TableData<GroupedTableData> tableData = mock(AbstractReportResponse.TableData.class);
         GroupedTableData data = mock(GroupedTableData.class);
 
-        when(data.getSize()).thenReturn(5);
+        when(data.getSize()).thenReturn(5L);
         doReturn(data).when(tableData).getData();
 
         request.setFromDate(LocalDate.of(2024, 1, 1));
@@ -195,7 +195,7 @@ class ReasonableAdjustmentsReportTest extends AbstractGroupedReportTestSupport<R
                 StandardReportResponse.DataTypeValue.builder()
                     .displayName("Total jurors with reasonable adjustments")
                     .dataType(Long.class.getSimpleName())
-                    .value(5)
+                    .value(5L)
                     .build()
             )
         );

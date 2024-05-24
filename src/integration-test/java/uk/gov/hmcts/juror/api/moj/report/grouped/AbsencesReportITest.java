@@ -110,7 +110,7 @@ class AbsencesReportITest extends AbstractGroupedReportControllerITest {
                           .add("total_absences", StandardReportResponse.DataTypeValue.builder()
                               .displayName("Total absences")
                               .dataType("Integer")
-                              .value(data.getSize())
+                              .value(data.getSize().intValue())
                               .build())
                           .add("court_name", StandardReportResponse.DataTypeValue.builder()
                               .displayName("Court Name")

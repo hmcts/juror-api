@@ -4,7 +4,6 @@ import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import lombok.Getter;
-import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
@@ -80,9 +79,9 @@ public enum DataType implements IDataType {
         QPoolRequest.poolRequest),
     POOL_NUMBER("Pool Number", String.class, QPoolRequest.poolRequest.poolNumber, QPoolRequest.poolRequest),
     POOL_NUMBER_AND_COURT_TYPE("Pool Number and Type",
-                               String.class, QPoolRequest.poolRequest.poolNumber.stringValue()
-                                   .concat(",").concat(QPoolRequest.poolRequest.poolType.description),
-                               QPoolRequest.poolRequest, QPoolRequest.poolRequest),
+        String.class, QPoolRequest.poolRequest.poolNumber.stringValue()
+        .concat(",").concat(QPoolRequest.poolRequest.poolType.description),
+        QPoolRequest.poolRequest, QPoolRequest.poolRequest),
     POOL_NUMBER_BY_JP("Pool Number", String.class, QJurorPool.jurorPool.pool.poolNumber,
         QJurorPool.jurorPool),
     POOL_NUMBER_BY_APPEARANCE("Pool Number", String.class, QAppearance.appearance.poolNumber,
@@ -163,8 +162,8 @@ public enum DataType implements IDataType {
     DATE_OF_ABSENCE("Date of absence", LocalDate.class, QAppearance.appearance.attendanceDate, QAppearance.appearance),
 
     COURT_LOCATION_NAME_AND_CODE("Court Location Name And Code", String.class,
-                                 QCourtLocation.courtLocation.name.concat(" (")
-        .concat(QCourtLocation.courtLocation.locCode).concat(")"), QPoolRequest.poolRequest);
+        QPoolRequest.poolRequest.courtLocation.name.concat(" (")
+            .concat(QPoolRequest.poolRequest.courtLocation.locCode).concat(")"), QPoolRequest.poolRequest);
 
     private final List<EntityPath<?>> requiredTables;
     private final String displayName;

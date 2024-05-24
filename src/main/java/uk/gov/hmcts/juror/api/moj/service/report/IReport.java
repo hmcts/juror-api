@@ -5,7 +5,7 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResp
 
 public interface IReport {
 
-    Class<?> getRequestValidatorClass();
+    Class<?> getRequestValidatorClass(StandardReportRequest standardReportRequest);
 
     AbstractReportResponse<?> getStandardReportResponse(StandardReportRequest standardReportRequest);
 

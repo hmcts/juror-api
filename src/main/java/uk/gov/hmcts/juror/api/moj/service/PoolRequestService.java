@@ -7,6 +7,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestActiveListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolsAtCourtLocationListDto;
 import uk.gov.hmcts.juror.api.moj.domain.DayType;
+import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 
 import java.time.LocalDate;
 
@@ -35,4 +36,6 @@ public interface PoolRequestService {
      * @return pool attendance time, nullable
      */
     String getPoolAttendanceTime(String poolId);
+
+    PoolRequest getPoolRequest(String poolNumber);
 }
