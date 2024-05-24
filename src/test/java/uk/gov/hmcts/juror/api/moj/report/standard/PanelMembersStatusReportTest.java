@@ -77,11 +77,11 @@ class PanelMembersStatusReportTest extends AbstractStandardReportTestSupport<Pan
     public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         request.setTrialNumber("111111");
 
-        securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn(TestConstants.VALID_COURT_LOCATION);
+        securityUtilMockedStatic.when(SecurityUtil::getLocCode).thenReturn(TestConstants.VALID_COURT_LOCATION);
         report.preProcessQuery(query, request);
 
         verify(query).where(QPanel.panel.trial.trialNumber.eq(request.getTrialNumber()));
-        verify(query).where(QPanel.panel.trial.courtLocation.owner.eq(SecurityUtil.getActiveOwner()));
+        verify(query).where(QPanel.panel.trial.courtLocation.locCode.eq(SecurityUtil.getLocCode()));
         verify(query).orderBy(QPanel.panel.juror.jurorNumber.asc());
     }
 

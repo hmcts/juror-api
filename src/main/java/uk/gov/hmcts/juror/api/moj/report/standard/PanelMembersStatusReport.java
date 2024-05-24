@@ -36,7 +36,7 @@ public class PanelMembersStatusReport extends AbstractStandardReport {
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QPanel.panel.trial.trialNumber.eq(request.getTrialNumber()));
-        query.where(QPanel.panel.trial.courtLocation.owner.eq(SecurityUtil.getActiveOwner()));
+        query.where(QPanel.panel.trial.courtLocation.locCode.eq(SecurityUtil.getLocCode()));
         query.orderBy(QPanel.panel.juror.jurorNumber.asc());
     }
 
