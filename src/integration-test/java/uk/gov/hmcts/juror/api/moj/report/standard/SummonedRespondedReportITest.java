@@ -157,7 +157,9 @@ class SummonedRespondedReportITest extends AbstractStandardReportControllerITest
                             .add("last_name", "Smith0")
                             .add("juror_postal_address",
                                  new ReportLinkedMap<String, Object>()
-                                     .add("juror_address_line_1", "addressLine1"))
+                                     .add("juror_address_line_1", "addressLine1")
+                                     .add("juror_postcode", "A00 0AA"))
+                            .add("juror_postcode", "A00 0AA")
                             .add("summoned_responded", false),
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number", "641500021")
@@ -165,7 +167,9 @@ class SummonedRespondedReportITest extends AbstractStandardReportControllerITest
                             .add("last_name", "Smith1")
                             .add("juror_postal_address",
                                  new ReportLinkedMap<String, Object>()
-                                     .add("juror_address_line_1", "addressLine1"))
+                                     .add("juror_address_line_1", "addressLine1")
+                                     .add("juror_postcode", "A11 1AA"))
+                            .add("juror_postcode", "A11 1AA")
                             .add("summoned_responded", true)))
                     .build())
             .build();
