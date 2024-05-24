@@ -16,6 +16,7 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
+import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.List;
@@ -26,6 +27,8 @@ import static org.mockito.Mockito.*;
 class BallotPanelTrialReportTest extends AbstractStandardReportTestSupport<BallotPanelTrialReport> {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
+
+    private TrialRepository trialRepository;
 
     public BallotPanelTrialReportTest() {
         super(
@@ -41,7 +44,7 @@ class BallotPanelTrialReportTest extends AbstractStandardReportTestSupport<Ballo
 
     @Override
     public BallotPanelTrialReport createReport(PoolRequestRepository poolRequestRepository) {
-        return new BallotPanelTrialReport();
+        return new BallotPanelTrialReport(trialRepository);
     }
 
     @BeforeEach
@@ -49,6 +52,7 @@ class BallotPanelTrialReportTest extends AbstractStandardReportTestSupport<Ballo
     public void beforeEach() {
         super.beforeEach();
         securityUtilMockedStatic = mockStatic(SecurityUtil.class);
+        this.trialRepository =mock(TrialRepository.class);
     }
 
     @AfterEach

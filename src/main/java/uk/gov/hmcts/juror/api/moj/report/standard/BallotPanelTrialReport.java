@@ -8,8 +8,10 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportReque
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
+import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
+import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.HashMap;
@@ -18,9 +20,10 @@ import java.util.Map;
 
 @Component
 public class BallotPanelTrialReport extends AbstractStandardReport {
+    private final TrialRepository trialRepository;
 
     @Autowired
-    public BallotPanelTrialReport() {
+    public BallotPanelTrialReport(TrialRepository trialRepository) {
         super(
             QPanel.panel,
             DataType.JUROR_NUMBER,
@@ -28,6 +31,7 @@ public class BallotPanelTrialReport extends AbstractStandardReport {
             DataType.LAST_NAME,
             DataType.JUROR_POSTCODE
         );
+        this.trialRepository = trialRepository;
         isCourtUserOnly();
     }
 
@@ -42,6 +46,11 @@ public class BallotPanelTrialReport extends AbstractStandardReport {
     public Map<String, AbstractReportResponse.DataTypeValue> getHeadings(
         StandardReportRequest request,
         AbstractReportResponse.TableData<StandardTableData> tableData) {
+        Trial trial = getTrial(request.getTrialNumber(), this.trialRepository);
+
+        if (trial.getAnonymous() != null && trial.getAnonymous().equals(true)) {
+            tableData.removeData(DataType.FIRST_NAME, DataType.LAST_NAME, DataType.JUROR_POSTCODE);
+        }
         return new HashMap<>();
     }
 
