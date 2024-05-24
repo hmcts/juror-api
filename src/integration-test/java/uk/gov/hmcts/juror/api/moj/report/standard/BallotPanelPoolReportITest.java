@@ -17,7 +17,7 @@ import java.util.List;
     "/db/mod/truncate.sql",
     "/db/mod/reports/CurrentPoolStatusReportControllerITest_typical.sql"
 })
-public class BallotPanelPoolReportITest extends AbstractStandardReportControllerITest {
+class BallotPanelPoolReportITest extends AbstractStandardReportControllerITest {
     @Autowired
     public BallotPanelPoolReportITest(TestRestTemplate template) {
         super(template, BallotPanelPoolReport.class);
@@ -36,6 +36,7 @@ public class BallotPanelPoolReportITest extends AbstractStandardReportController
     }
 
     @Test
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void positiveTypicalCourt() {
         testBuilder()
             .triggerValid()
@@ -45,7 +46,7 @@ public class BallotPanelPoolReportITest extends AbstractStandardReportController
 
     @Test
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-//False positive
+    //False positive
     void negativeInvalidPayload() {
         StandardReportRequest request = getValidPayload();
         request.setPoolNumber(null);
@@ -57,7 +58,7 @@ public class BallotPanelPoolReportITest extends AbstractStandardReportController
 
     @Test
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-//False positive
+    //False positive
     void negativeUnauthorised() {
         testBuilder()
             .jwt(getBureauJwt())
