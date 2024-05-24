@@ -12,7 +12,7 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportReque
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
-import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
+import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
@@ -29,7 +29,7 @@ class BallotPanelTrialReportTest extends AbstractStandardReportTestSupport<Ballo
 
     public BallotPanelTrialReportTest() {
         super(
-            QTrial.trial,
+            QPanel.panel,
             BallotPanelTrialReport.RequestValidator.class,
             DataType.JUROR_NUMBER,
             DataType.FIRST_NAME,
@@ -73,9 +73,11 @@ class BallotPanelTrialReportTest extends AbstractStandardReportTestSupport<Ballo
         report.preProcessQuery(query, request);
 
         verify(query, times(1))
-            .where(QTrial.trial.trialNumber.eq(request.getTrialNumber()));
+            .where(QPanel.panel.trial.trialNumber.eq(request.getTrialNumber()));
         verify(query, times(1))
-            .where(QTrial.trial.courtLocation.locCode.in(SecurityUtil.getCourts()));
+            .where(QPanel.panel.trial.courtLocation.locCode.in(SecurityUtil.getCourts()));
+        verify(query, times(1))
+            .orderBy(QPanel.panel.juror.jurorNumber.asc());
     }
 
     @Override
