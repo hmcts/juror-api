@@ -98,19 +98,23 @@ class BallotPanelPoolReportITest extends AbstractStandardReportControllerITest {
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number", "641500023")
                             .add("first_name", "John3")
-                            .add("last_name", "Smith3"),
+                            .add("last_name", "Smith3")
+                            .add("juror_postcode", "A33 3AA"),
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number", "641500024")
                             .add("first_name", "John4")
-                            .add("last_name", "Smith4"),
+                            .add("last_name", "Smith4")
+                            .add("juror_postcode", "A44 4AA"),
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number", "641500025")
                             .add("first_name", "John5")
-                            .add("last_name", "Smith5"),
+                            .add("last_name", "Smith5")
+                            .add("juror_postcode", "A55 5AA"),
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number", "641500026")
                             .add("first_name", "John6")
                             .add("last_name", "Smith6")
+                            .add("juror_postcode", "A66 6AA")
                     ))
                     .build())
             .build();
