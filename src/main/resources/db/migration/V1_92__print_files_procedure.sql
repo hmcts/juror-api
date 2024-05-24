@@ -77,7 +77,7 @@ BEGIN
 		END IF;
 
 		-- Identify the next sequence number
-		SELECT  NEXTVAL('juror_mod.data_file_no') INTO v_revision;
+		SELECT  NEXTVAL('juror_mod.print_file_count') INTO v_revision;
 
 		-- Form the data column details first
 		SELECT 	form_details.id,

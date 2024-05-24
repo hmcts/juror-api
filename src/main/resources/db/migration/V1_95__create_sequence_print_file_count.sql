@@ -1,4 +1,4 @@
-create sequence juror_mod.data_file_no
+create sequence juror_mod.print_file_count
 
 	increment by 1
 	minvalue 1
