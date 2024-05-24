@@ -110,7 +110,7 @@ BEGIN
 
 		-- Create the record
 		INSERT INTO juror_mod.content_store(request_id,document_id,file_type,data)
-		VALUES (v_revision,v_filename,'PRINT',v_data);
+		VALUES (NEXTVAL('juror_mod.content_store_seq'),v_filename,'PRINT',v_data);
 
 		UPDATE juror_mod.bulk_print_data
 		SET  extracted_flag = 'Y'
