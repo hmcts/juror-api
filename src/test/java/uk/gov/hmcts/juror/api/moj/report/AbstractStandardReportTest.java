@@ -8,12 +8,12 @@ import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -56,7 +56,7 @@ class AbstractStandardReportTest {
     @Test
     void positiveGetTableData() {
         AbstractStandardReport report = createReport();
-        List<LinkedHashMap<String, Object>> tableData = new ArrayList<>();
+        StandardTableData tableData = new StandardTableData();
         doReturn(tableData).when(report).getTableDataAsList(new ArrayList<>());
 
         List<Tuple> tupleData = new ArrayList<>();
@@ -104,7 +104,7 @@ class AbstractStandardReportTest {
         @Override
         public Map<String, AbstractReportResponse.DataTypeValue> getHeadings(
             StandardReportRequest request,
-            AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData) {
+            AbstractReportResponse.TableData<StandardTableData> tableData) {
 
             throw new UnsupportedOperationException("Not implemented");
         }

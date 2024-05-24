@@ -163,8 +163,10 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         jurorPaperResponseDetailDto.setSecondaryPhone(jurorPaperResponse.getAltPhoneNumber());
         jurorPaperResponseDetailDto.setEmailAddress(jurorPaperResponse.getEmail());
 
-        // set the assignee
-        jurorPaperResponseDetailDto.setAssignedStaffMember(new UserDetailsDto(jurorPaperResponse.getStaff()));
+        if (jurorPaperResponse.getStaff() != null) {
+            // set the assignee if there is one
+            jurorPaperResponseDetailDto.setAssignedStaffMember(new UserDetailsDto(jurorPaperResponse.getStaff()));
+        }
 
         // set the contact log
         List<ContactLogListDto.ContactLogDataDto> contactLogList = new ArrayList<>();

@@ -12,6 +12,7 @@ import uk.gov.hmcts.juror.api.bureau.exception.JurorCommsNotificationServiceExce
 import uk.gov.hmcts.juror.api.bureau.service.BureauProcessService;
 import uk.gov.hmcts.juror.api.config.NotifyConfigurationProperties;
 import uk.gov.hmcts.juror.api.config.NotifyRegionsConfigurationProperties;
+import uk.gov.hmcts.juror.api.moj.client.contracts.SchedulerServiceClient;
 import uk.gov.hmcts.juror.api.moj.domain.CourtRegionMod;
 import uk.gov.hmcts.juror.api.moj.domain.RegionNotifyTemplateMod;
 import uk.gov.hmcts.juror.api.moj.domain.messages.Message;
@@ -65,7 +66,7 @@ public class MessagesServiceImpl implements BureauProcessService {
      */
     @Override
     @Transactional
-    public void process() {
+    public SchedulerServiceClient.Result process() {
         // Process court comms
         SimpleDateFormat dateFormat = new SimpleDateFormat();
         log.info("Court Comms Processing : STARTED- {}", dateFormat.format(new Date()));
@@ -78,7 +79,8 @@ public class MessagesServiceImpl implements BureauProcessService {
         // keys as values
 
         Map<String, String> myRegionMap = new HashMap<>();
-
+        @SuppressWarnings("PMD.VariableDeclarationUsageDistance")
+        int errorCount = 0;
 
         for (int i = 0;
              i < setUpNotifyRegionKeys().size();
@@ -238,13 +240,19 @@ public class MessagesServiceImpl implements BureauProcessService {
                 log.info("Unable to send notify: {}", e.getHttpResult());
                 messagesDetail.setMessageRead(MESSAGE_READ_APP_ERROR);
                 updateMessageFlag(messagesDetail);
+                errorCount++;
             } catch (Exception e) {
                 log.info("Unexpected exception: {}", e);
+                errorCount++;
             }
         }
 
         log.info("Court Comms Processing : Finished - {}", dateFormat.format(new Date()));
-
+        return new SchedulerServiceClient.Result(
+            errorCount == 0
+                ? SchedulerServiceClient.Result.Status.SUCCESS
+                : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS, null,
+            Map.of("ERROR_COUNT", "" + errorCount));
     }
 
 

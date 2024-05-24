@@ -141,7 +141,7 @@ pay_cash, parking_total_due, parking_total_paid, childcare_total_due, childcare_
 misc_total_due, misc_total_paid, loss_of_earnings_due, loss_of_earnings_paid, subsistence_due, subsistence_paid,
 smart_card_due, travel_time,  is_draft_expense, f_audit, sat_on_jury, pool_number,
 appearance_stage) values
-('2023-01-10', '641500025', '415', '09:30', '16:00', false, false, 2, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, '00:40',
+('2023-01-14', '641500025', '415', '09:30', '16:00', false, false, 2, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, '00:40',
 false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_EDITED'),
 ('2023-01-11', '641500025', '415', '09:30', '16:00', false, false, 0, 5, 4, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, '00:40',
 false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_EDITED'),

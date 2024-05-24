@@ -25,6 +25,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.PoolSummaryResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.SummoningProgressResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.AvailablePoolsInCourtLocationDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.ReassignPoolMembersResultDto;
+import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
@@ -34,11 +35,11 @@ import uk.gov.hmcts.juror.api.moj.domain.QPoolComment;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolHistory;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
-import uk.gov.hmcts.juror.api.moj.domain.letter.CertLetter;
 import uk.gov.hmcts.juror.api.moj.domain.letter.ConfirmationLetter;
 import uk.gov.hmcts.juror.api.moj.domain.letter.LetterId;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription;
+import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ConfirmationLetterRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
@@ -82,6 +83,11 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     private static final String POOL_NUMBER_415221001 = "415221001";
     private static final String EXPECT_HTTP_RESPONSE_SUCCESSFUL = "Expect the HTTP GET request to be successful";
     private static final QPoolComment POOL_COMMENTS = QPoolComment.poolComment;
+    public static final String EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR =
+        "Expect property to be copied from source juror";
+    public static final String EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE = "Expect property to be use a default value";
+    public static final String POOL_NUMBER_415220401 = "415220401";
+    public static final String POOL_NUMBER_416220502 = "416220502";
 
     @Autowired
     private TestRestTemplate restTemplate;
@@ -103,7 +109,8 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     private JurorHistoryRepository jurorHistoryRepository;
     @Autowired
     private CourtLocationRepository courtLocationRepository;
-
+    @Autowired
+    private BulkPrintDataRepository bulkPrintDataRepository;
     private HttpHeaders httpHeaders;
     @Autowired
     private ConfirmationLetterRepository confirmationLetterRepository;
@@ -1075,12 +1082,10 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         transferJurorPoolValidateNewlyCreatedJurorPool("111111111", sourcePoolNumber,
             "457230702", targetCourtLocation, targetServiceStartDate, COURT_USER);
 
-        long letterCount = certLetterRepository.count();
+        // verify no letters have been queued for bulk print
+        List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findAll();
+        assertThat(bulkPrintData.size()).isEqualTo(0);
 
-        assertThat(letterCount)
-            .as("Only a single Certificate of Attendance Letters should exist")
-            .isEqualTo(1);
-        validateCertificateOfAttendanceLetter(sourceCourtLocation, "111111111");
     }
 
     @Test
@@ -1159,13 +1164,6 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
             "415230702", targetCourtLocation, targetServiceStartDate, COURT_USER);
 
         transferJurorPoolValidateExistingTransferredJurorPool("111111111", "415230701");
-
-        long letterCount = certLetterRepository.count();
-
-        assertThat(letterCount)
-            .as("2 Certificate of Attendance Letters should exist")
-            .isEqualTo(2);
-        validateCertificateOfAttendanceLetter(targetCourtLocation, "111111111");
     }
 
     @Test
@@ -1450,7 +1448,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         availablePoolsList.sort(Comparator.comparing(AvailablePoolsInCourtLocationDto
             .AvailablePoolsDto::getPoolNumber));
 
-        verifyAvailablePool(availablePoolsList, LocalDate.now().plusDays(10), "416220502", 0,
+        verifyAvailablePool(availablePoolsList, LocalDate.now().plusDays(10), POOL_NUMBER_416220502, 0,
             PoolUtilisationDescription.CONFIRMED);
         verifyAvailablePool(availablePoolsList, LocalDate.now().plusDays(12), "416220503", 0,
             PoolUtilisationDescription.CONFIRMED);
@@ -1507,7 +1505,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         // database has service start date 10 days in the future
         LocalDate serviceStartDate = LocalDate.now().plusDays(10);
 
-        verifyAvailablePool(availablePoolsDtoList, serviceStartDate, "415220401", 2,
+        verifyAvailablePool(availablePoolsDtoList, serviceStartDate, POOL_NUMBER_415220401, 2,
             PoolUtilisationDescription.SURPLUS);
         verifyAvailablePool(availablePoolsDtoList, serviceStartDate, "415220502", 2,
             PoolUtilisationDescription.NEEDED);
@@ -1560,12 +1558,12 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     public void test_reassignJuror_BureauUser_happy() throws Exception {
 
         final String jurorNumber = "555555553";
-        final String targetPoolNumber = "416220502";
+        final String targetPoolNumber = POOL_NUMBER_416220502;
         List<String> jurorNumbers = List.of(jurorNumber);
 
         //create a reassign jurors request DTO
-        JurorManagementRequestDto requestDto = createJurorManagementRequestDto("415", "415220401",
-            "416", "416220502", jurorNumbers, LocalDate.now());
+        JurorManagementRequestDto requestDto = createJurorManagementRequestDto("415", POOL_NUMBER_415220401,
+            "416", POOL_NUMBER_416220502, jurorNumbers, LocalDate.now());
 
         RequestEntity<?> requestEntity = new RequestEntity<>(requestDto, httpHeaders,
             HttpMethod.PUT, URI.create("/api/v1/moj/manage-pool/reassign-jurors"));
@@ -1573,7 +1571,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        validateReassignedJuror(jurorNumber, "415220401", targetPoolNumber);
+        validateReassignedJuror(jurorNumber, POOL_NUMBER_415220401, targetPoolNumber);
 
         CourtLocation targetCourt = courtLocationRepository.findById("416").orElse(null);
         assertThat(targetCourt).isNotNull();
@@ -1585,6 +1583,10 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
         String expectedHistoryInfo = "To " + targetPoolNumber + " " + targetCourt.getName();
         assertThat(jurorHistory.getOtherInformation()).isEqualTo(expectedHistoryInfo);
+
+        // verify confirm letter has been queued for bulk print
+        List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findAll();
+        assertThat(bulkPrintData.size()).isEqualTo(1);
     }
 
     @Test
@@ -1595,8 +1597,8 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         List<String> jurorNumbers = List.of(jurorNumber);
 
         //create a reassign jurors request DTO
-        JurorManagementRequestDto requestDto = createJurorManagementRequestDto("415", "415220401",
-            "416", "416220502", jurorNumbers, LocalDate.now());
+        JurorManagementRequestDto requestDto = createJurorManagementRequestDto("415", POOL_NUMBER_415220401,
+            "416", POOL_NUMBER_416220502, jurorNumbers, LocalDate.now());
 
         RequestEntity<?> requestEntity = new RequestEntity<>(requestDto, httpHeaders,
             HttpMethod.PUT, URI.create("/api/v1/moj/manage-pool/reassign-jurors"));
@@ -1604,8 +1606,11 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        validateReassignedJuror(jurorNumber, "415220401", "416220502");
+        validateReassignedJuror(jurorNumber, POOL_NUMBER_415220401, POOL_NUMBER_416220502);
 
+        // verify confirm letter has been queued for bulk print
+        List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findAll();
+        assertThat(bulkPrintData.size()).isEqualTo(1);
     }
 
     @Test
@@ -1615,8 +1620,8 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         final List<String> jurorNumbers = Arrays.asList("555555551", "555555552", "555555553");
 
         //create a reassign jurors request DTO
-        JurorManagementRequestDto requestDto = createJurorManagementRequestDto("415", "415220401",
-            "416", "416220502", jurorNumbers, LocalDate.now());
+        JurorManagementRequestDto requestDto = createJurorManagementRequestDto("415", POOL_NUMBER_415220401,
+            "416", POOL_NUMBER_416220502, jurorNumbers, LocalDate.now());
 
         RequestEntity<?> requestEntity = new RequestEntity<>(requestDto, httpHeaders,
             HttpMethod.PUT, URI.create("/api/v1/moj/manage-pool/reassign-jurors"));
@@ -1631,9 +1636,12 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         assertThat(resultDto.getNumberReassigned()).isEqualTo(3);
 
         for (String jurorNumber : jurorNumbers) {
-            validateReassignedJuror(jurorNumber, "415220401", "416220502");
+            validateReassignedJuror(jurorNumber, POOL_NUMBER_415220401, POOL_NUMBER_416220502);
         }
 
+        // verify confirmation letters have been queued for bulk print
+        List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findAll();
+        assertThat(bulkPrintData.size()).isEqualTo(3);
     }
 
     @Test
@@ -1644,8 +1652,8 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         final List<String> goodJurorNumbers = Arrays.asList("555555551", "555555552");
 
         //create a reassign jurors request DTO
-        JurorManagementRequestDto requestDto = createJurorManagementRequestDto("415", "415220401",
-            "416", "416220502", jurorNumbers, LocalDate.now());
+        JurorManagementRequestDto requestDto = createJurorManagementRequestDto("415", POOL_NUMBER_415220401,
+            "416", POOL_NUMBER_416220502, jurorNumbers, LocalDate.now());
 
         RequestEntity<?> requestEntity = new RequestEntity<>(requestDto, httpHeaders,
             HttpMethod.PUT, URI.create("/api/v1/moj/manage-pool/reassign-jurors"));
@@ -1660,7 +1668,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         assertThat(resultDto.getNumberReassigned()).isEqualTo(2);
 
         for (String jurorNumber : goodJurorNumbers) {
-            validateReassignedJuror(jurorNumber, "415220401", "416220502");
+            validateReassignedJuror(jurorNumber, POOL_NUMBER_415220401, POOL_NUMBER_416220502);
         }
 
     }
@@ -1671,8 +1679,8 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         List<String> jurorNumbers = new ArrayList<>();
 
         //create a reassign jurors request DTO
-        JurorManagementRequestDto requestDto = createJurorManagementRequestDto("415", "415220401",
-            "416", "416220502", jurorNumbers, LocalDate.now());
+        JurorManagementRequestDto requestDto = createJurorManagementRequestDto("415", POOL_NUMBER_415220401,
+            "416", POOL_NUMBER_416220502, jurorNumbers, LocalDate.now());
 
         RequestEntity<?> requestEntity = new RequestEntity<>(requestDto, httpHeaders,
             HttpMethod.PUT, URI.create("/api/v1/moj/manage-pool/reassign-jurors"));
@@ -1689,7 +1697,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         final List<String> jurorNumbers = Arrays.asList("555555551", "555555552");
 
         //create a reassign jurors request DTO
-        JurorManagementRequestDto requestDto = createJurorManagementRequestDto("415", "415220401",
+        JurorManagementRequestDto requestDto = createJurorManagementRequestDto("415", POOL_NUMBER_415220401,
             "415", "415220503", jurorNumbers, LocalDate.now());
 
         RequestEntity<?> requestEntity = new RequestEntity<>(requestDto, httpHeaders,
@@ -1704,7 +1712,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         assertThat(resultDto.getNumberReassigned()).isEqualTo(2);
 
         for (String jurorNumber : jurorNumbers) {
-            validateReassignedJuror(jurorNumber, "415220401", "415220503");
+            validateReassignedJuror(jurorNumber, POOL_NUMBER_415220401, "415220503");
         }
     }
 
@@ -1717,7 +1725,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
         //create a reassign jurors request DTO
         JurorManagementRequestDto requestDto = createJurorManagementRequestDto("416", "416220503",
-            "416", "416220502", jurorNumbers, LocalDate.now());
+            "416", POOL_NUMBER_416220502, jurorNumbers, LocalDate.now());
 
         RequestEntity<?> requestEntity = new RequestEntity<>(requestDto, httpHeaders,
             HttpMethod.PUT, URI.create("/api/v1/moj/manage-pool/reassign-jurors"));
@@ -1725,7 +1733,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        validateReassignedJuror(jurorNumber, "416220503", "416220502");
+        validateReassignedJuror(jurorNumber, "416220503", POOL_NUMBER_416220502);
     }
 
     @Test
@@ -1737,7 +1745,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
         //create a reassign jurors request DTO
         JurorManagementRequestDto requestDto = createJurorManagementRequestDto("416", "416220503",
-            "416", "416220502", jurorNumbers, LocalDate.now());
+            "416", POOL_NUMBER_416220502, jurorNumbers, LocalDate.now());
 
         RequestEntity<?> requestEntity = new RequestEntity<>(requestDto, httpHeaders,
             HttpMethod.PUT, URI.create("/api/v1/moj/manage-pool/reassign-jurors"));
@@ -1745,10 +1753,10 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        validateReassignedJuror(jurorNumber, "416220503", "416220502");
+        validateReassignedJuror(jurorNumber, "416220503", POOL_NUMBER_416220502);
 
         //create a reassign jurors request DTO
-        JurorManagementRequestDto requestDto2 = createJurorManagementRequestDto("416", "416220502",
+        JurorManagementRequestDto requestDto2 = createJurorManagementRequestDto("416", POOL_NUMBER_416220502,
             "416", "416220503", jurorNumbers, LocalDate.now());
 
         RequestEntity<?> requestEntity2 = new RequestEntity<>(requestDto2, httpHeaders,
@@ -1757,7 +1765,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
         assertThat(response2.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        validateReassignedJuror(jurorNumber, "416220502", "416220503");
+        validateReassignedJuror(jurorNumber, POOL_NUMBER_416220502, "416220503");
     }
 
     private JSONObject getExceptionDetails(ResponseEntity<String> responseEntity) {
@@ -1895,13 +1903,6 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
     }
 
-    private void validateCertificateOfAttendanceLetter(String owner, String jurorNumber) {
-        CertLetter letter = certLetterRepository.findById(new LetterId(owner, jurorNumber)).orElse(null);
-        assertThat(letter)
-            .as("Certificate of attendance letter should exist for the given juror number and owner")
-            .isNotNull();
-    }
-
     private JurorManagementRequestDto createJurorManagementRequestDto(String sourceCourt, String sourcePool,
                                                                       String receivingCourt,
                                                                       String receivingPool, List<String> jurorNumbers,
@@ -2000,127 +2001,127 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         Juror targetJuror = targetJurorPool.getJuror();
         Juror sourceJuror = sourceJurorPool.getJuror();
         assertThat(targetJuror.getJurorNumber())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJurorPool.getJurorNumber());
         assertThat(targetJuror.getPollNumber())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getPollNumber());
         assertThat(targetJuror.getTitle())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getTitle());
         assertThat(targetJuror.getFirstName())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getFirstName());
         assertThat(targetJuror.getLastName())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getLastName());
         assertThat(targetJuror.getDateOfBirth().compareTo(sourceJuror.getDateOfBirth()))
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(0);
         assertThat(targetJuror.getAddressLine1())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getAddressLine1());
         assertThat(targetJuror.getAddressLine2())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getAddressLine2());
         assertThat(targetJuror.getAddressLine3())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getAddressLine3());
         assertThat(targetJuror.getAddressLine4())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getAddressLine4());
         assertThat(targetJuror.getAddressLine5())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getAddressLine5());
         assertThat(targetJuror.getPostcode())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getPostcode());
         assertThat(targetJuror.getPhoneNumber())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getPhoneNumber());
         assertThat(targetJuror.getAltPhoneNumber())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getAltPhoneNumber());
         assertThat(targetJuror.getWorkPhone())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getWorkPhone());
         assertThat(targetJuror.getWorkPhoneExtension())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getWorkPhoneExtension());
         assertThat(targetJurorPool.getDeferralDate())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(targetJurorPool.getDeferralDate());
         assertThat(targetJuror.isResponded())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.isResponded());
         assertThat(targetJuror.getExcusalDate())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getExcusalDate());
         assertThat(targetJuror.getExcusalCode())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getExcusalCode());
         assertThat(targetJuror.getExcusalRejected())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getExcusalRejected());
         assertThat(targetJuror.getDisqualifyDate())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getDisqualifyDate());
         assertThat(targetJuror.getDisqualifyCode())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getDisqualifyCode());
         assertThat(targetJuror.getNotes())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getNotes());
         assertThat(targetJurorPool.getNoAttendances())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJurorPool.getNoAttendances());
         assertThat(targetJurorPool.getIsActive())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJurorPool.getIsActive());
         assertThat(targetJuror.getNoDefPos())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getNoDefPos());
         assertThat(targetJuror.getPermanentlyDisqualify())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getPermanentlyDisqualify());
         assertThat(targetJuror.getReasonableAdjustmentCode())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getReasonableAdjustmentCode());
         assertThat(targetJuror.getReasonableAdjustmentMessage())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getReasonableAdjustmentMessage());
         assertThat(targetJuror.getSortCode())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getSortCode());
         assertThat(targetJuror.getBankAccountName())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getBankAccountName());
         assertThat(targetJuror.getBankAccountNumber())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getBankAccountNumber());
         assertThat(targetJuror.getBuildingSocietyRollNumber())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getBuildingSocietyRollNumber());
         assertThat(targetJurorPool.getWasDeferred())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJurorPool.getWasDeferred());
         assertThat(targetJurorPool.getIdChecked())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJurorPool.getIdChecked());
         assertThat(targetJurorPool.getPostpone())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJurorPool.getPostpone());
         assertThat(targetJuror.getWelsh())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getWelsh());
         assertThat(targetJuror.getPoliceCheck())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getPoliceCheck());
         assertThat(targetJuror.getEmail())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getEmail());
         assertThat(targetJuror.getContactPreference())
-            .as("Expect property to be copied from source juror")
+            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
             .isEqualTo(sourceJuror.getContactPreference());
 
         assertThat(targetJuror.getOpticRef())
@@ -2129,49 +2130,49 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
         // default/not copied properties
         assertThat(targetJurorPool.getTimesSelected())
-            .as("Expect property to be use a default value")
+            .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
             .isNull();
         assertThat(targetJurorPool.getLocation())
-            .as("Expect property to be use a default value")
+            .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
             .isNull();
         assertThat(targetJurorPool.getStatus().getStatus())
-            .as("Expect property to be use a default value")
+            .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
             .isEqualTo(2L);
         assertThat(targetJurorPool.getNoAttended())
-            .as("Expect property to be use a default value")
+            .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
             .isNull();
         assertThat(targetJurorPool.getFailedToAttendCount())
-            .as("Expect property to be use a default value")
+            .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
             .isNull();
         assertThat(targetJurorPool.getUnauthorisedAbsenceCount())
-            .as("Expect property to be use a default value")
+            .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
             .isNull();
         assertThat(targetJurorPool.getEditTag())
-            .as("Expect property to be use a default value")
+            .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
             .isNull();
         assertThat(targetJurorPool.getOnCall())
-            .as("Expect property to be use a default value")
+            .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
             .isFalse();
         assertThat(targetJurorPool.getSmartCard())
-            .as("Expect property to be use a default value")
+            .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
             .isNull();
         assertThat(targetJurorPool.getPaidCash())
-            .as("Expect property to be use a default value")
+            .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
             .isNull();
         assertThat(targetJurorPool.getScanCode())
-            .as("Expect property to be use a default value")
+            .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
             .isNull();
         assertThat(targetJuror.getSummonsFile())
-            .as("Expect property to be use a default value")
+            .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
             .isNull();
         assertThat(targetJurorPool.getReminderSent())
-            .as("Expect property to be use a default value")
+            .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
             .isNull();
         assertThat(targetJuror.getNotifications())
-            .as("Expect property to be use a default value")
+            .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
             .isEqualTo(0);
         assertThat(targetJurorPool.getTransferDate())
-            .as("Expect property to be use a default value")
+            .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
             .isNull();
     }
 

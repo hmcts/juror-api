@@ -118,4 +118,14 @@ public class ReportController {
             previousMonths));
     }
 
+    @GetMapping("/monthly-utilisation-reports/{locCode}")
+    @Operation(summary = "Get a list of generated monthly utilisation reports for last 12 months")
+    @ResponseStatus(HttpStatus.OK)
+    @IsCourtUser
+    public ResponseEntity<String> getMonthlyUtilisationReports(
+        @P("locCode") @PathVariable("locCode") @CourtLocationCode @Valid String locCode
+    ) {
+        return ResponseEntity.ok(utilisationReportService.getMonthlyUtilisationReports(locCode));
+    }
+
 }

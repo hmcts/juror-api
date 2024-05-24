@@ -128,7 +128,7 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
         }
 
         // check the difference between the report from and report to dates is less than or equal to 31 days
-        if (reportFromDate.plusDays(32).isBefore(reportToDate)) {
+        if (reportFromDate.plusDays(31).isBefore(reportToDate)) {
             throw new MojException.BadRequest("Report date range cannot be more than 31 days", null);
         }
     }
@@ -298,7 +298,6 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
         List<UtilisationStats> utilisationStats = utilisationStatsRepository
             .findByMonthStartBetweenAndLocCode(reportFromDate, reportToDate, locCode);
 
-        // The monthly utilisation report uses the exact same headers as the daily utilisation report
         Map<String, AbstractReportResponse.DataTypeValue> reportHeadings
             = getViewMonthlyUtilReportHeaders(courtLocation.getName());
 
@@ -337,6 +336,35 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
         }
 
         return response;
+    }
+
+    @Override
+    public String getMonthlyUtilisationReports(String locCode) {
+        log.info("Fetching monthly utilisation reports for location: {}", locCode);
+
+        // check the user has permission to view the location
+        CourtLocationUtils.validateAccessToCourtLocation(locCode,
+            SecurityUtil.getActiveOwner(),
+            courtLocationRepository);
+
+        List<UtilisationStats> utilisationStats = utilisationStatsRepository
+            .findTop12ByLocCodeOrderByMonthStartDesc(locCode);
+
+        StringBuilder response = new StringBuilder();
+
+        if (utilisationStats != null && !utilisationStats.isEmpty()) {
+            for (UtilisationStats stats : utilisationStats) {
+                response.append(stats.getMonthStart().getMonth().getDisplayName(TextStyle.FULL, Locale.UK))
+                    .append(' ')
+                    .append(stats.getMonthStart().getYear())
+                    .append(',');
+            }
+        }
+
+        log.info("Fetched monthly utilisation reports for location: {}", locCode);
+
+        return response.toString();
+
     }
 
     private void updateTotalStats(MonthlyUtilisationReportResponse.TableData tableData, UtilisationStats stats) {
