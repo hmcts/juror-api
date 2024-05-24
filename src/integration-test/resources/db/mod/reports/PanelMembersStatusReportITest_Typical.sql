@@ -100,7 +100,7 @@ VALUES ('415', '041500001', '111111', current_date, 'CD', true, current_date, NU
        ('415', '041500013', '111111', current_date, 'J', true, current_date, NULL),
        ('415', '041500014', '111111', current_date, 'J', true, current_date, NULL),
        ('415', '041500015', '111111', current_date, 'J', true, current_date, NULL),
-       ('415', '041500016', '111111', current_date, 'R', true, current_date, current_date),
+       ('415', '041500016', '111111', current_date, 'R', true, NULL, NULL),
        ('415', '041500017', '111111', current_date, 'J', true, current_date, NULL),
        ('415', '041500018', '111111', current_date, 'J', true, current_date, NULL),
        ('415', '041500019', '111111', current_date, 'NU', true, current_date, NULL),

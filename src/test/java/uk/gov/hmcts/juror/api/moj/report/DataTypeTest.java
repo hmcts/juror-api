@@ -281,7 +281,10 @@ class DataTypeTest {
                 .when(QPanel.panel.result.eq(PanelResult.NOT_USED)).then("Not Used")
                 .when(QPanel.panel.result.eq(PanelResult.CHALLENGED)).then("Challenged")
                 .when(QPanel.panel.result.eq(PanelResult.JUROR)).then("Juror")
-                .when(QPanel.panel.result.eq(PanelResult.RETURNED)).then("Returned")
+                .when(QPanel.panel.result.eq(PanelResult.RETURNED).and(QPanel.panel.empanelledDate.isNotNull()))
+                    .then("Returned Juror")
+                .when(QPanel.panel.result.eq(PanelResult.RETURNED).and(QPanel.panel.empanelledDate.isNull()))
+                    .then("Returned")
                 .otherwise(""),
             QPanel.panel);
     }

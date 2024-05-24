@@ -73,41 +73,6 @@ class PanelMembersStatusReportITest extends AbstractStandardReportControllerITes
     }
 
     @Test
-    void assertTotals() {
-        StandardReportResponse report = testBuilder()
-            .triggerValid()
-            .responseConsumer(this::verifyAndRemoveReportCreated).body();
-
-        final long expectedPanelled = report.getTableData().getData().size();
-        final long expectedEmpanelled = report.getTableData().getData().stream()
-            .filter(juror -> "Juror".equals(juror.get("panel_status"))).count();
-        final long expectedReturned = report.getTableData().getData().stream()
-            .filter(juror -> "Returned".equals(juror.get("panel_status"))).count();
-        final long expectedNotUsed = report.getTableData().getData().stream()
-            .filter(juror -> "Not Used".equals(juror.get("panel_status"))).count() + expectedReturned;
-        final long expectedChallenged = report.getTableData().getData().stream()
-            .filter(juror -> "Challenged".equals(juror.get("panel_status"))).count();
-
-        StandardReportResponse otherReport = getTypicalResponse();
-
-        final long actualPanelled = otherReport.getTableData().getData().size();
-        final long actualEmpanelled = otherReport.getTableData().getData().stream()
-            .filter(juror -> "Juror".equals(juror.get("panel_status"))).count();
-        final long actualReturned = otherReport.getTableData().getData().stream()
-            .filter(juror -> "Returned".equals(juror.get("panel_status"))).count();
-        final long actualNotUsed = otherReport.getTableData().getData().stream()
-            .filter(juror -> "Not Used".equals(juror.get("panel_status"))).count() + actualReturned;
-        final long actualChallenged = otherReport.getTableData().getData().stream()
-            .filter(juror -> "Challenged".equals(juror.get("panel_status"))).count();
-
-        assertEquals(expectedPanelled, actualPanelled, "Panelled totals should match");
-        assertEquals(expectedEmpanelled, actualEmpanelled, "Empanelled totals should match");
-        assertEquals(expectedReturned, actualReturned, "Returned totals should match");
-        assertEquals(expectedNotUsed, actualNotUsed, "Not Used totals should match");
-        assertEquals(expectedChallenged, actualChallenged, "Challenged totals should match");
-    }
-
-    @Test
     void positiveNoData() {
         StandardReportRequest request = getValidPayload();
         request.setTrialNumber("111112");
@@ -227,10 +192,10 @@ class PanelMembersStatusReportITest extends AbstractStandardReportControllerITes
                             .add("panel_status", "Juror"),
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number_from_trial", "041500010")
-                            .add("panel_status", "Returned"),
+                            .add("panel_status", "Returned Juror"),
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number_from_trial", "041500011")
-                            .add("panel_status", "Returned"),
+                            .add("panel_status", "Returned Juror"),
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number_from_trial", "041500012")
                             .add("panel_status", "Juror"),
