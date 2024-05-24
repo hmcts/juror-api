@@ -68,8 +68,18 @@ class TrialAttendanceReportITest extends AbstractGroupedReportControllerITest {
             .payload(request)
             .triggerInvalid()
             .assertInvalidPathParam("trialNumber: must not be blank");
+
     }
 
+    @Test
+    void negativeTrialNotOwned() {
+        StandardReportRequest request = getValidPayload();
+        request.setTrialNumber("T100000003");
+        testBuilder()
+            .payload(request)
+            .triggerInvalid()
+            .assertNotFound("Trial number not found");
+    }
 
     @Test
     void negativeUnauthorisedBureau() {

@@ -69,7 +69,7 @@ public class TrialAttendanceReport extends AbstractGroupedReport {
         Optional<Trial> optTrial = trialRepository.findByTrialNumberAndCourtLocationLocCode(request.getTrialNumber(),
                                                                                          SecurityUtil.getLocCode());
 
-        Trial trial = optTrial.orElseThrow(() -> new MojException.NotFound("", null));
+        Trial trial = optTrial.orElseThrow(() -> new MojException.NotFound("Trial number not found", null));
 
         Map<String, GroupedReportResponse.DataTypeValue> map = loadStandardTrailHeaders(request, trialRepository, true);
         map.put("trial_type", GroupedReportResponse.DataTypeValue.builder()
