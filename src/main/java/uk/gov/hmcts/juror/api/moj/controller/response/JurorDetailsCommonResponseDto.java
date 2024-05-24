@@ -113,7 +113,7 @@ public class JurorDetailsCommonResponseDto {
     @Enumerated(EnumType.STRING)
     @Schema(name = "Police Check Status")
     private PoliceCheck policeCheck;
-    
+
     @Length(max = 10)
     @Schema(description = "Pending Title")
     private String pendingTitle;
@@ -129,6 +129,8 @@ public class JurorDetailsCommonResponseDto {
     @Schema(description = "check for juror manually created")
     private boolean manuallyCreated;
 
+    private boolean hasSummonsResponse;
+
     /**
      * Initialise an instance of this DTO class using a JurorPool object to populate its properties.
      *
@@ -139,7 +141,6 @@ public class JurorDetailsCommonResponseDto {
                                          JurorStatusRepository jurorStatusRepository,
                                          PendingJurorRepository pendingJurorRepository) {
         Juror juror = jurorPool.getJuror();
-
         this.owner = jurorPool.getOwner();
         this.title = juror.getTitle();
         this.firstName = juror.getFirstName();
@@ -155,6 +156,7 @@ public class JurorDetailsCommonResponseDto {
         this.deferralCode = jurorPool.getDeferralCode();
         this.disqualifyCode = juror.getDisqualifyCode();
         this.courtName = jurorPool.getCourt().getLocCourtName();
+        this.hasSummonsResponse = juror.getJurorResponse() != null;
 
         if (this.excusalCode != null) {
             this.excusalDescription = ExcusalCodeEnum.fromCode(this.excusalCode).getDescription();

@@ -17,6 +17,8 @@ public interface UtilisationReportService {
     MonthlyUtilisationReportResponse viewMonthlyUtilisationReport(String locCode, LocalDate reportDate,
                                                                  boolean previousMonths);
 
+    String getMonthlyUtilisationReports(String locCode);
+
 
     enum TableHeading {
         DATE("Date", LocalDate.class.getSimpleName()),

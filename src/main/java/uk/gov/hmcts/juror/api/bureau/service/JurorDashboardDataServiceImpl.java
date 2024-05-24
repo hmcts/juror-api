@@ -99,7 +99,7 @@ public class JurorDashboardDataServiceImpl implements JurorDashboardDataService 
     public List<StatsNotResponded> getNotResponded(Date startDate, Date endDate) {
         log.debug("Called Service : JurorDashboardDataServiceImpl.getNotResponded()... ");
 
-        List<StatsNotResponded> notResponded = null;
+        List<StatsNotResponded> notResponded;
 
         notResponded = Lists.newLinkedList(
             statsNotRespondedRepository.findBySummonsMonthBetween(startDate, endDate));
@@ -115,9 +115,7 @@ public class JurorDashboardDataServiceImpl implements JurorDashboardDataService 
         log.debug("Called Service : JurorDashboardDataServiceImpl.getNotRespondedTotal()... ");
 
 
-        List<StatsNotRespondedTotals> notRespondedTotal = null;
-
-        notRespondedTotal = Lists.newLinkedList(
+        List<StatsNotRespondedTotals> notRespondedTotal = Lists.newLinkedList(
 
             statsNotRespondedTotalsRepsoitory.findAll());
         log.debug("getNotRespondedTotal Counts : {} ", notRespondedTotal.size());
@@ -130,9 +128,8 @@ public class JurorDashboardDataServiceImpl implements JurorDashboardDataService 
         log.debug("Called Service : JurorDashboardDataServiceImpl.getUnprocessedOnlineResponses()... ");
 
 
-        List<StatsUnprocessedResponse> unProcessedOnlineResponse = null;
-
-        unProcessedOnlineResponse = Lists.newLinkedList(statsUnprocessedResponseRepository.findAll());
+        List<StatsUnprocessedResponse> unProcessedOnlineResponse =
+            Lists.newLinkedList(statsUnprocessedResponseRepository.findAll());
         log.debug("unProcessedOnlineResponse Counts : {} ", unProcessedOnlineResponse.size());
 
         return unProcessedOnlineResponse;
@@ -143,9 +140,7 @@ public class JurorDashboardDataServiceImpl implements JurorDashboardDataService 
         log.debug("Called Service : JurorDashboardDataServiceImpl.getWelshOnlineResponses()... ");
 
 
-        List<StatsWelshOnlineResponse> welshResponses = null;
-
-        welshResponses = Lists.newLinkedList(
+        List<StatsWelshOnlineResponse> welshResponses = Lists.newLinkedList(
             statsWelshOnlineResponseRepository.findBySummonsMonthBetween(startDate, endDate));
         log.debug("welshResponses Counts : {} ", welshResponses.size());
 
@@ -157,9 +152,7 @@ public class JurorDashboardDataServiceImpl implements JurorDashboardDataService 
         log.debug("Called Service : JurorDashboardDataServiceImpl.getAutoOnlineResponses()... ");
 
 
-        List<StatsAutoProcessed> autoResponses = null;
-
-        autoResponses = Lists.newLinkedList(
+        List<StatsAutoProcessed> autoResponses = Lists.newLinkedList(
             statsAutoProcessedRepository.findByProcessedDateBetween(startDate, endDate));
         log.debug("autoResponses Counts : {} ", autoResponses.size());
 
@@ -171,9 +164,7 @@ public class JurorDashboardDataServiceImpl implements JurorDashboardDataService 
     public List<StatsThirdPartyOnlineResponse> getThirdPtyOnlineResponses(Date startDate, Date endDate) {
         log.debug("Called Service : JurorDashboardDataServiceImpl.getThirdPtyOnlineResponses()... ");
 
-        List<StatsThirdPartyOnlineResponse> thirdPtyResponses = null;
-
-        thirdPtyResponses = Lists.newLinkedList(
+        List<StatsThirdPartyOnlineResponse> thirdPtyResponses = Lists.newLinkedList(
             statsThirdPtyOnlnResponseRepository.findBySummonsMonthBetween(startDate, endDate));
         log.debug("thirdPtyResponses Counts : {} ", thirdPtyResponses.size());
 
@@ -185,9 +176,7 @@ public class JurorDashboardDataServiceImpl implements JurorDashboardDataService 
         log.debug("Called Service : JurorDashboardDataServiceImpl.getSurveyResponses()... ");
 
 
-        List<SurveyResponse> surveyResponses = null;
-
-        surveyResponses = Lists.newLinkedList(
+        List<SurveyResponse> surveyResponses = Lists.newLinkedList(
             surveyResponseRepository.findBySurveyResponseDateBetween(startDate, endDate));
         log.debug("surveyResponses Counts : ", surveyResponses.size());
 
@@ -200,9 +189,8 @@ public class JurorDashboardDataServiceImpl implements JurorDashboardDataService 
         log.debug("Called Service : JurorDashboardDataServiceImpl.getAllStatsResponseTimesTotals()....");
 
 
-        List<StatsResponseTimesTotals> allResponseTimesTotals = null;
-
-        allResponseTimesTotals = Lists.newLinkedList(statsResponseTimesTotalRepository.findAll());
+        List<StatsResponseTimesTotals> allResponseTimesTotals =
+            Lists.newLinkedList(statsResponseTimesTotalRepository.findAll());
         log.debug("All Responses Times Totals : {} ", allResponseTimesTotals.size());
 
         return allResponseTimesTotals;
@@ -213,9 +201,8 @@ public class JurorDashboardDataServiceImpl implements JurorDashboardDataService 
         log.debug("Called Service : JurorDashboardDataServiceImpl.getOnlineStatsResponseTimesTotals....");
 
 
-        List<StatsResponseTimesTotals> onlineResponseTimesTotals = null;
-
-        onlineResponseTimesTotals = Lists.newLinkedList(statsResponseTimesTotalRepository.findAll());
+        List<StatsResponseTimesTotals> onlineResponseTimesTotals =
+            Lists.newLinkedList(statsResponseTimesTotalRepository.findAll());
         log.debug("All Responses Times Totals : {} ", onlineResponseTimesTotals.size());
 
         return onlineResponseTimesTotals;

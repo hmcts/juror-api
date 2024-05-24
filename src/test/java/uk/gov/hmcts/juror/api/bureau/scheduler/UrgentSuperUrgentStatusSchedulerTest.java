@@ -78,6 +78,8 @@ public class UrgentSuperUrgentStatusSchedulerTest {
         response.setJurorNumber("12345678");
         response.setDateReceived(LocalDateTime.from(now.minusHours(1)));
         response.setProcessingStatus(ProcessingStatus.TODO);
+        response.setUrgent(false);
+        response.setSuperUrgent(false);
         responseBacklog.add(response);
 
     }
@@ -93,11 +95,16 @@ public class UrgentSuperUrgentStatusSchedulerTest {
 
         final List<ProcessingStatus> pendingStatuses = List.of(ProcessingStatus.CLOSED);
 
-        given(jurorResponseRepo.findAll(JurorResponseQueries.byStatusNotClosed(pendingStatuses))).willReturn(
+        given(jurorResponseRepo.findAll(JurorResponseQueries.byStatusNotClosed(pendingStatuses)
+            .and(JurorResponseQueries.jurorIsNotTransferred()))).willReturn(
             responseBacklog);
 
         DigitalResponse jurorResponse = responseBacklog.get(0);
-        given(poolrepo.findByJurorJurorNumber(jurorResponse.getJurorNumber())).willReturn(poolDetails);
+        given(poolrepo.findByJurorJurorNumberAndIsActiveAndOwner(
+            jurorResponse.getJurorNumber(),
+            true,
+            "400"
+            )).willReturn(poolDetails);
         //given(poolrepo.findOne(jurorResponse.getJurorNumber())).willReturn(poolDetails);
 
         given(urgencyService.isSuperUrgent(jurorResponse, poolDetails)).willReturn(Boolean.TRUE);

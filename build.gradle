@@ -144,14 +144,14 @@ dependencies {
     testImplementation('org.projectlombok:lombok')
     testAnnotationProcessor('org.projectlombok:lombok')
 
-    testImplementation('net.bytebuddy:byte-buddy:1.14.15')
+    testImplementation('net.bytebuddy:byte-buddy:1.14.16')
     testImplementation('junit:junit:4.13.2')
     testImplementation "org.testcontainers:testcontainers:1.19.8"
     testImplementation "org.testcontainers:junit-jupiter:1.19.8"
     testImplementation 'org.testcontainers:postgresql:1.19.8'
 
     // Validation
-    testImplementation 'org.wiremock:wiremock-standalone:3.5.4'
+    testImplementation 'org.wiremock:wiremock-standalone:3.6.0'
 }
 
 sonarqube {
@@ -271,7 +271,7 @@ sourceSets {
 }
 checkstyle {
     maxWarnings = 0
-    toolVersion = '10.15.0'
+    toolVersion = '10.16.0'
     getConfigDirectory().set(new File(rootDir, 'config/checkstyle'))
 }
 
@@ -279,7 +279,7 @@ pmdTest {
     maxFailures = 352
 }
 pmdMain {
-    maxFailures = 902
+    maxFailures = 886
 }
 pmd {
     maxFailures = 0

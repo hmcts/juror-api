@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.juror.domain;
 
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QDigitalResponse;
@@ -146,5 +147,9 @@ public class JurorResponseQueries {
     public static BooleanExpression byAssignedAll(User staffMember) {
         return assignedTo(staffMember)
             .and(notClosed());
+    }
+
+    public static Predicate jurorIsNotTransferred() {
+        return jurorResponse.juror.bureauTransferDate.isNull();
     }
 }
