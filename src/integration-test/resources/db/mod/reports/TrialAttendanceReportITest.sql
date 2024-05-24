@@ -17,11 +17,11 @@ values ('T100000002', '415', 'TEST DEFENDANT', 1, 'CIV', current_date, null, fal
 
 
 
-INSERT INTO juror_mod.users (username, "name", active, last_logged_in, "version", team_id, approval_limit, user_type,
-                             email, created_by, updated_by)
-VALUES ('COURT.USER.270.415', 'COURT USER.270.415', true, NULL, 1, NULL, 0.00, 'COURT',
-        'COURT.USER.270.415@justice.gov.uk', NULL, NULL),
-       ('COURT.415', 'COURT 415', true, NULL, 1, NULL, 100000.00, 'COURT', 'COURT.415@justice.gov.uk', NULL, NULL);
+INSERT INTO juror_mod.users (username, "name", active, "version", approval_limit, user_type,
+                             email)
+VALUES ('COURT.USER.270.415', 'COURT USER.270.415', true, 1, 0.00, 'COURT',
+        'COURT.USER.270.415@justice.gov.uk'),
+       ('COURT.415', 'COURT 415', true, 1, 100000.00, 'COURT', 'COURT.415@justice.gov.uk');
 
 INSERT INTO juror_mod.juror
 (juror_number, poll_number, title, last_name, first_name, dob, address_line_1, address_line_2, address_line_3,
@@ -64,9 +64,9 @@ INSERT INTO juror_mod.expense_rates(id, rate_per_mile_car_0_passengers, rate_per
                                     rate_per_mile_motorcycle_1_or_more_passengers, rate_per_mile_bike,
                                     limit_financial_loss_half_day, limit_financial_loss_full_day,
                                     limit_financial_loss_half_day_long_trial, limit_financial_loss_full_day_long_trial,
-                                    rate_subsistence_standard, rate_subsistence_long_day, rates_effective_from)
-values (999998, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, current_date - 1),
-       (999999, 0.314, 0.356, 0.398, 0.314, 0.324, 0.096, 32.47, 64.95, 64.95, 129.91, 5.71, 12.17, current_date);
+                                    rate_subsistence_standard, rate_subsistence_long_day)
+values (999998, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1),
+       (999999, 0.314, 0.356, 0.398, 0.314, 0.324, 0.096, 32.47, 64.95, 64.95, 129.91, 5.71, 12.17);
 
 
 INSERT INTO juror_mod.appearance (attendance_date, juror_number, loc_code, time_in, time_out, trial_number,

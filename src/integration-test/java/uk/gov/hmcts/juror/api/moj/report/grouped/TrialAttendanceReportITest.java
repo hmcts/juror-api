@@ -20,10 +20,6 @@ import java.util.List;
     "/db/mod/truncate.sql",
     "/db/mod/reports/TrialAttendanceReportITest.sql"
 })
-@SuppressWarnings({
-    "PMD.LawOfDemeter",
-    "PMD.JUnitTestsShouldIncludeAssert"//False positive
-})
 class TrialAttendanceReportITest extends AbstractGroupedReportControllerITest {
     @Autowired
     public TrialAttendanceReportITest(TestRestTemplate template) {
@@ -87,11 +83,11 @@ class TrialAttendanceReportITest extends AbstractGroupedReportControllerITest {
                          .build())
             .headings(new ReportHashMap<String, GroupedReportResponse.DataTypeValue>()
                           .add("trial_number", GroupedReportResponse.DataTypeValue.builder()
-                              .displayName("Trial number")
+                              .displayName("Trial Number")
                               .dataType("String")
                               .value(trialNumber)
                               .build())
-                          .add("trial_names", GroupedReportResponse.DataTypeValue.builder()
+                          .add("names", GroupedReportResponse.DataTypeValue.builder()
                               .displayName("Names")
                               .dataType("String")
                               .value("TEST DEFENDANT")
@@ -106,12 +102,12 @@ class TrialAttendanceReportITest extends AbstractGroupedReportControllerITest {
                               .dataType("LocalDate")
                               .value(DateTimeFormatter.ISO_DATE.format(LocalDate.now()))
                               .build())
-                          .add("trial_courtroom", GroupedReportResponse.DataTypeValue.builder()
-                              .displayName("Courtroom")
+                          .add("court_room", GroupedReportResponse.DataTypeValue.builder()
+                              .displayName("Court Room")
                               .dataType("String")
                               .value("large room fits 100 people")
                               .build())
-                          .add("trial_judge", GroupedReportResponse.DataTypeValue.builder()
+                          .add("judge", GroupedReportResponse.DataTypeValue.builder()
                               .displayName("Judge")
                               .dataType("String")
                               .value("Test judge")
@@ -200,7 +196,7 @@ class TrialAttendanceReportITest extends AbstractGroupedReportControllerITest {
                                          .add("checked_out", "16:30:00")
                                          .add("hours_attended", "08:00:00")
                                          .add("attendance_audit", "P10011777")
-                                         .add("payment_audit", "12")
+                                         .add("payment_audit", "F12")
                                          .add("total_due", 19.63)
                                          .add("total_paid", 19.63)))
                                  .add("2024-05-07", List.of(
@@ -212,7 +208,7 @@ class TrialAttendanceReportITest extends AbstractGroupedReportControllerITest {
                                          .add("checked_out", "16:30:00")
                                          .add("hours_attended", "08:00:00")
                                          .add("attendance_audit", "P10012682")
-                                         .add("payment_audit", "16")
+                                         .add("payment_audit", "F16")
                                          .add("total_due", 20.0)
                                          .add("total_paid", 20.0))),
                              trialNumber);

@@ -5,7 +5,6 @@ import com.querydsl.jpa.impl.JPAQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
-import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
@@ -14,25 +13,20 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReport;
 import uk.gov.hmcts.juror.api.moj.report.ReportGroupBy;
 import uk.gov.hmcts.juror.api.moj.report.datatypes.ReportsJurorPaymentsDataTypes;
-import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Component
-@SuppressWarnings("PMD.LawOfDemeter")
 public class TrialAttendanceReport extends AbstractGroupedReport {
 
-    private final CourtLocationRepository courtLocationRepository;
     private final TrialRepository trialRepository;
 
     @Autowired
-    public TrialAttendanceReport(CourtLocationRepository courtLocationRepository,
-                                 TrialRepository trialRepository) {
+    public TrialAttendanceReport(TrialRepository trialRepository) {
         super(QReportsJurorPayments.reportsJurorPayments,
             ReportGroupBy.builder()
                   .dataType(ReportsJurorPaymentsDataTypes.ATTENDANCE_DATE)
@@ -49,7 +43,6 @@ public class TrialAttendanceReport extends AbstractGroupedReport {
             ReportsJurorPaymentsDataTypes.TOTAL_DUE,
             ReportsJurorPaymentsDataTypes.TOTAL_PAID);
 
-        this.courtLocationRepository = courtLocationRepository;
         this.trialRepository = trialRepository;
 
         isCourtUserOnly();
@@ -77,17 +70,7 @@ public class TrialAttendanceReport extends AbstractGroupedReport {
         Trial trial = optTrial.orElse(null);
         assert trial != null;
 
-        Map<String, GroupedReportResponse.DataTypeValue> map = new ConcurrentHashMap<>();
-        map.put("trial_number", GroupedReportResponse.DataTypeValue.builder()
-            .displayName("Trial number")
-            .dataType("String")
-            .value(request.getTrialNumber())
-            .build());
-        map.put("trial_names", GroupedReportResponse.DataTypeValue.builder()
-            .displayName("Names")
-            .dataType("String")
-            .value(trial.getDescription())
-            .build());
+        Map<String, GroupedReportResponse.DataTypeValue> map = loadStandardTrailHeaders(request, trialRepository, true);
         map.put("trial_type", GroupedReportResponse.DataTypeValue.builder()
             .displayName("Trial type")
             .dataType("String")
@@ -97,21 +80,6 @@ public class TrialAttendanceReport extends AbstractGroupedReport {
             .displayName("Trial start date")
             .dataType("LocalDate")
             .value(DateTimeFormatter.ISO_DATE.format(trial.getTrialStartDate()))
-            .build());
-        map.put("trial_courtroom", GroupedReportResponse.DataTypeValue.builder()
-            .displayName("Courtroom")
-            .dataType("String")
-            .value(trial.getCourtroom().getDescription())
-            .build());
-        map.put("trial_judge", GroupedReportResponse.DataTypeValue.builder()
-            .displayName("Judge")
-            .dataType("String")
-            .value(trial.getJudge().getName())
-            .build());
-
-        map.put("court_name", AbstractReportResponse.DataTypeValue.builder().displayName("Court Name")
-            .dataType(String.class.getSimpleName())
-            .value(getCourtNameString(courtLocationRepository, SecurityUtil.getLocCode()))
             .build());
 
         return map;

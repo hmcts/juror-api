@@ -45,7 +45,7 @@ public enum ReportsJurorPaymentsDataTypes implements IDataType {
         QReportsJurorPayments.reportsJurorPayments),
 
     PAYMENT_AUDIT("Payment audit", String.class,
-        QReportsJurorPayments.reportsJurorPayments.latestPaymentFAuditId,
+        QReportsJurorPayments.reportsJurorPayments.latestPaymentFAuditId.prepend("F"),
         QReportsJurorPayments.reportsJurorPayments),
 
     CHECKED_IN("Checked in", LocalTime.class,

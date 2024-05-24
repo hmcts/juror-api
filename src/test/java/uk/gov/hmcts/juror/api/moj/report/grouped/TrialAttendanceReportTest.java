@@ -79,7 +79,7 @@ class TrialAttendanceReportTest extends AbstractGroupedReportTestSupport<TrialAt
 
     @Override
     public TrialAttendanceReport createReport(PoolRequestRepository poolRequestRepository) {
-        return new TrialAttendanceReport(this.courtLocationRepository, this.trialRepository);
+        return new TrialAttendanceReport(this.trialRepository);
     }
 
     @Override
@@ -107,11 +107,20 @@ class TrialAttendanceReportTest extends AbstractGroupedReportTestSupport<TrialAt
         StandardReportRequest request,
         GroupedReportResponse.TableData<GroupedTableData> tableData,
         GroupedTableData data) {
-        String locCode = "415";
-        TestUtils.mockSecurityUtil(BureauJwtPayload.builder().locCode(locCode).userType(UserType.COURT).build());
+        TestUtils.mockSecurityUtil(BureauJwtPayload.builder()
+                                       .locCode(TestConstants.VALID_COURT_LOCATION)
+                                       .owner(TestConstants.VALID_COURT_LOCATION)
+                                       .userType(UserType.COURT)
+                                       .build());
 
         String trialNumber = "TRIALNUMBER";
         when(request.getTrialNumber()).thenReturn(trialNumber);
+
+        CourtLocation courtLocation = new CourtLocation();
+        courtLocation.setLocCode(TestConstants.VALID_COURT_LOCATION);
+        courtLocation.setName("CHESTER");
+        when(courtLocationRepository.findByLocCode(TestConstants.VALID_COURT_LOCATION))
+            .thenReturn(Optional.of(courtLocation));
 
         Trial trial = Trial.builder()
             .description("TRIAL_DEFENDANTS")
@@ -122,25 +131,22 @@ class TrialAttendanceReportTest extends AbstractGroupedReportTestSupport<TrialAt
             .courtroom(Courtroom.builder()
                            .description("ROOM_NAME")
                            .build())
+            .courtLocation(courtLocation)
             .trialStartDate(LocalDate.now().minusDays(1))
             .build();
-        when(trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber, locCode))
+        when(trialRepository.findByTrialNumberAndCourtLocationLocCode(request.getTrialNumber(),
+                                                                      TestConstants.VALID_COURT_LOCATION))
             .thenReturn(Optional.of(trial));
 
-        CourtLocation courtLocation = new CourtLocation();
-        courtLocation.setLocCode(TestConstants.VALID_COURT_LOCATION);
-        courtLocation.setName("CHESTER");
-        when(courtLocationRepository.findByLocCode(TestConstants.VALID_COURT_LOCATION))
-            .thenReturn(Optional.of(courtLocation));
 
         Map<String, GroupedReportResponse.DataTypeValue> map = report.getHeadings(request, tableData);
         assertHeadingContains(map, request, false, Map.of(
             "trial_number", GroupedReportResponse.DataTypeValue.builder()
-                .displayName("Trial number")
+                .displayName("Trial Number")
                 .dataType("String")
                 .value(request.getTrialNumber())
                 .build(),
-            "trial_names", GroupedReportResponse.DataTypeValue.builder()
+            "names", GroupedReportResponse.DataTypeValue.builder()
                 .displayName("Names")
                 .dataType("String")
                 .value(trial.getDescription())
@@ -155,12 +161,12 @@ class TrialAttendanceReportTest extends AbstractGroupedReportTestSupport<TrialAt
                 .dataType("LocalDate")
                 .value(DateTimeFormatter.ISO_DATE.format(trial.getTrialStartDate()))
                 .build(),
-            "trial_courtroom", GroupedReportResponse.DataTypeValue.builder()
-                .displayName("Courtroom")
+            "court_room", GroupedReportResponse.DataTypeValue.builder()
+                .displayName("Court Room")
                 .dataType("String")
                 .value(trial.getCourtroom().getDescription())
                 .build(),
-            "trial_judge", GroupedReportResponse.DataTypeValue.builder()
+            "judge", GroupedReportResponse.DataTypeValue.builder()
                 .displayName("Judge")
                 .dataType("String")
                 .value(trial.getJudge().getName())
