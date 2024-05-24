@@ -21,7 +21,9 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import java.util.List;
 import java.util.Map;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 class BallotPanelPoolReportTest extends AbstractStandardReportTestSupport<BallotPanelPoolReport> {
 
