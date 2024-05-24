@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/PanelMembersStatusReportITest_Typical.sql"
 })
-@SuppressWarnings({"PMD.LawOfDemeter", "PMD.JUnitTestsShouldIncludeAssert"})
+@SuppressWarnings({"PMD.JUnitTestsShouldIncludeAssert"})
 class PanelMembersStatusReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired
@@ -73,32 +73,31 @@ class PanelMembersStatusReportITest extends AbstractStandardReportControllerITes
     }
 
     @Test
-    @SuppressWarnings({"CheckStyle.VariableDeclarationUsageDistance"})
     void assertTotals() {
         StandardReportResponse report = testBuilder()
             .triggerValid()
             .responseConsumer(this::verifyAndRemoveReportCreated).body();
 
-        long expectedPanelled = report.getTableData().getData().size();
-        long expectedEmpanelled = report.getTableData().getData().stream()
+        final long expectedPanelled = report.getTableData().getData().size();
+        final long expectedEmpanelled = report.getTableData().getData().stream()
             .filter(juror -> "Juror".equals(juror.get("panel_status"))).count();
-        long expectedReturned = report.getTableData().getData().stream()
+        final long expectedReturned = report.getTableData().getData().stream()
             .filter(juror -> "Returned".equals(juror.get("panel_status"))).count();
-        long expectedNotUsed = report.getTableData().getData().stream()
+        final long expectedNotUsed = report.getTableData().getData().stream()
             .filter(juror -> "Not Used".equals(juror.get("panel_status"))).count() + expectedReturned;
-        long expectedChallenged = report.getTableData().getData().stream()
+        final long expectedChallenged = report.getTableData().getData().stream()
             .filter(juror -> "Challenged".equals(juror.get("panel_status"))).count();
 
         StandardReportResponse otherReport = getTypicalResponse();
 
-        long actualPanelled = otherReport.getTableData().getData().size();
-        long actualEmpanelled = otherReport.getTableData().getData().stream()
+        final long actualPanelled = otherReport.getTableData().getData().size();
+        final long actualEmpanelled = otherReport.getTableData().getData().stream()
             .filter(juror -> "Juror".equals(juror.get("panel_status"))).count();
-        long actualReturned = otherReport.getTableData().getData().stream()
+        final long actualReturned = otherReport.getTableData().getData().stream()
             .filter(juror -> "Returned".equals(juror.get("panel_status"))).count();
-        long actualNotUsed = otherReport.getTableData().getData().stream()
+        final long actualNotUsed = otherReport.getTableData().getData().stream()
             .filter(juror -> "Not Used".equals(juror.get("panel_status"))).count() + actualReturned;
-        long actualChallenged = otherReport.getTableData().getData().stream()
+        final long actualChallenged = otherReport.getTableData().getData().stream()
             .filter(juror -> "Challenged".equals(juror.get("panel_status"))).count();
 
         assertEquals(expectedPanelled, actualPanelled, "Panelled totals should match");
