@@ -2378,6 +2378,19 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 assertThat(message.getMessageRead()).isEqualTo("NR");
             }
 
+            @Getter
+            @Setter
+            @Builder
+            private static class JurorData {
+                private String jurorPoolNumber;
+                private String jurorNumber;
+                private MessageType.SendType sendType;
+                private String englishMessage;
+                private String welshMessage;
+                private String englishOtherInfo;
+                private String welshOtherInfo;
+            }
+
             private void addTest(MessageType messageType, String englishMessage,
                                  String welshEnglishMessage, String welshMessage,
                                  Map<String, String> placeholders,
@@ -2533,18 +2546,6 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 }
             }
 
-            @Getter
-            @Setter
-            @Builder
-            private static class JurorData {
-                private String jurorPoolNumber;
-                private String jurorNumber;
-                private MessageType.SendType sendType;
-                private String englishMessage;
-                private String welshMessage;
-                private String englishOtherInfo;
-                private String welshOtherInfo;
-            }
 
             private void addTest(
                 MessageType messageType,

@@ -45,6 +45,8 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
     public static final String DAILY_UTILISATION_JURORS_URL = URL_BASE + "/daily-utilisation-jurors";
     public static final String GENERATE_MONTHLY_UTILISATION_REPORT_URL = URL_BASE + "/generate-monthly-utilisation";
     public static final String VIEW_MONTHLY_UTILISATION_REPORT_URL = URL_BASE + "/view-monthly-utilisation";
+    public static final String GET_MONTHLY_UTILISATION_REPORT_URL = URL_BASE + "/monthly-utilisation-reports";
+
     private HttpHeaders httpHeaders;
 
     @BeforeEach
@@ -303,6 +305,31 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
         }
 
         @Test
+        void generateMonthlyUtilisationEarlierReportIsOverwritten() {
+
+            LocalDate may2024 = LocalDate.parse("2024-05-01");
+
+            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                    URI.create(GENERATE_MONTHLY_UTILISATION_REPORT_URL
+                        + "/415?reportDate=2024-05-01")),
+                MonthlyUtilisationReportResponse.class);
+
+            // verify the report has been saved first time
+            assertThat(utilisationStatsRepository.findByMonthStartBetweenAndLocCode(may2024,
+                may2024, "415").size()).isEqualTo(1);
+
+            // generate the same report again
+            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                    URI.create(GENERATE_MONTHLY_UTILISATION_REPORT_URL
+                        + "/415?reportDate=2024-05-01")),
+                MonthlyUtilisationReportResponse.class);
+
+            // verify the report has been saved over the previous one
+            assertThat(utilisationStatsRepository.findByMonthStartBetweenAndLocCode(may2024,
+                may2024, "415").size()).isEqualTo(1);
+        }
+
+        @Test
         void generateMonthlyUtilisationJurorsInvalidUserType() {
 
             final String bureauJwt = createBureauJwt();
@@ -429,7 +456,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
         }
 
         @Test
-        void viewMonthlyUtilisationJurorsInvalidUserType() {
+        void viewMonthlyUtilisationInvalidUserType() {
 
             final String bureauJwt = createBureauJwt();
 
@@ -444,6 +471,50 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
             assertThat(responseEntity.getStatusCode()).as("Expect HTTP FORBIDDEN response")
                 .isEqualTo(HttpStatus.FORBIDDEN);
 
+        }
+
+    }
+
+    @Nested
+    @DisplayName("Get Monthly Utilisation Report Integration Tests")
+    @Sql({
+        "/db/truncate.sql",
+        "/db/mod/truncate.sql",
+        "/db/mod/reports/MonthlyUtilisationReportsITest_typical.sql"
+    })
+    class GetMonthlyUtilisationReportTests {
+
+        @Test
+        void monthlyUtilisationReportsHappy() {
+
+            ResponseEntity<String> responseEntity =
+                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                        URI.create(GET_MONTHLY_UTILISATION_REPORT_URL + "/415")),
+                    String.class);
+
+            assertThat(responseEntity.getStatusCode()).as("Expect HTTP OK response").isEqualTo(HttpStatus.OK);
+            String responseBody = responseEntity.getBody();
+            assertThat(responseBody).isNotNull();
+
+            assertThat(responseBody).isEqualTo("June 2024,May 2024,April 2024,March 2024,February 2024,"
+                + "January 2024,December 2023,November 2023,October 2023,September 2023,August 2023,July 2023,");
+
+        }
+
+        @Test
+        void monthlyUtilisationReportsInvalidUserType() {
+
+            final String bureauJwt = createBureauJwt();
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            ResponseEntity<MonthlyUtilisationReportResponse> responseEntity =
+                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                        URI.create(GET_MONTHLY_UTILISATION_REPORT_URL + "/415")),
+                    MonthlyUtilisationReportResponse.class);
+
+            assertThat(responseEntity.getStatusCode()).as("Expect HTTP FORBIDDEN response")
+                .isEqualTo(HttpStatus.FORBIDDEN);
         }
 
     }
