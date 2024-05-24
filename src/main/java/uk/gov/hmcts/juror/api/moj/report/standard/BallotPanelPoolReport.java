@@ -5,15 +5,14 @@ import com.querydsl.jpa.impl.JPAQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
-import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 
@@ -40,11 +39,12 @@ public class BallotPanelPoolReport extends AbstractStandardReport {
     }
 
     @Override
-    public Map<String, StandardReportResponse.DataTypeValue> getHeadings(
+    public Map<String, AbstractReportResponse.DataTypeValue> getHeadings(
         StandardReportRequest request,
-        StandardReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData) {
+        AbstractReportResponse.TableData<StandardTableData> tableData) {
         return new HashMap<>();
     }
+
 
     @Override
     public Class<BallotPanelPoolReport.RequestValidator> getRequestValidatorClass() {

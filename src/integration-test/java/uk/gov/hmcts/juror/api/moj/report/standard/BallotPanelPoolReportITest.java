@@ -6,17 +6,18 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 
 @Sql({
     "/db/mod/truncate.sql",
     "/db/mod/reports/CurrentPoolStatusReportControllerITest_typical.sql"
 })
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
 class BallotPanelPoolReportITest extends AbstractStandardReportControllerITest {
     @Autowired
     public BallotPanelPoolReportITest(TestRestTemplate template) {
@@ -36,7 +37,6 @@ class BallotPanelPoolReportITest extends AbstractStandardReportControllerITest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void positiveTypicalCourt() {
         testBuilder()
             .triggerValid()
@@ -45,8 +45,6 @@ class BallotPanelPoolReportITest extends AbstractStandardReportControllerITest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-    //False positive
     void negativeInvalidPayload() {
         StandardReportRequest request = getValidPayload();
         request.setPoolNumber(null);
@@ -57,8 +55,6 @@ class BallotPanelPoolReportITest extends AbstractStandardReportControllerITest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-    //False positive
     void negativeUnauthorised() {
         testBuilder()
             .jwt(getBureauJwt())
@@ -70,7 +66,7 @@ class BallotPanelPoolReportITest extends AbstractStandardReportControllerITest {
         return StandardReportResponse.builder()
             .headings(new ReportHashMap<>())
             .tableData(
-                StandardReportResponse.TableData.<List<LinkedHashMap<String, Object>>>builder()
+                StandardReportResponse.TableData.<StandardTableData>builder()
                     .headings(
                         List.of(
                             StandardReportResponse.TableData.Heading.builder()
@@ -98,7 +94,7 @@ class BallotPanelPoolReportITest extends AbstractStandardReportControllerITest {
                                 .headings(null)
                                 .build()
                         ))
-                    .data(List.of(
+                    .data(StandardTableData.of(
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number", "641500023")
                             .add("first_name", "John3")

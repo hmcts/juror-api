@@ -11,19 +11,17 @@ import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 class BallotPanelPoolReportTest extends AbstractStandardReportTestSupport<BallotPanelPoolReport> {
 
@@ -83,10 +81,10 @@ class BallotPanelPoolReportTest extends AbstractStandardReportTestSupport<Ballot
     }
 
     @Override
-    public Map<String, StandardReportResponse.DataTypeValue> positiveGetHeadingsTypical(
+    public Map<String, AbstractReportResponse.DataTypeValue> positiveGetHeadingsTypical(
         StandardReportRequest request,
-        AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData,
-        List<LinkedHashMap<String, Object>> data) {
+        AbstractReportResponse.TableData<StandardTableData> tableData,
+        StandardTableData data) {
 
         Map<String, StandardReportResponse.DataTypeValue> map = report.getHeadings(request, tableData);
         assertHeadingContains(map, request, false, Map.of());
