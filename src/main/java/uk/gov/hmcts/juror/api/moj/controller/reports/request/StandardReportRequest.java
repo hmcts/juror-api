@@ -43,6 +43,7 @@ public class StandardReportRequest {
         "JuryListReport",
         "PoolStatusReport",
         "PersonAttendingSummaryReport",
+        "ElectronicPoliceCheckReport",
         //Grouped
         "AbsencesReport",
         "PostponedListByDateReport",

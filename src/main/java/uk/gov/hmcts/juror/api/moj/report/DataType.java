@@ -81,10 +81,11 @@ public enum DataType implements IDataType {
     SERVICE_START_DATE("Service Start Date", LocalDate.class, QPoolRequest.poolRequest.returnDate,
         QPoolRequest.poolRequest),
     POOL_NUMBER("Pool Number", String.class, QPoolRequest.poolRequest.poolNumber, QPoolRequest.poolRequest),
+    POOL_NUMBER_JP("Pool Number", String.class, QJurorPool.jurorPool.pool.poolNumber, QJurorPool.jurorPool),
     POOL_NUMBER_AND_COURT_TYPE("Pool Number and Type",
-                               String.class, QPoolRequest.poolRequest.poolNumber.stringValue()
-                                   .concat(",").concat(QPoolRequest.poolRequest.poolType.description),
-                               QPoolRequest.poolRequest, QPoolRequest.poolRequest),
+        String.class, QPoolRequest.poolRequest.poolNumber.stringValue()
+        .concat(",").concat(QPoolRequest.poolRequest.poolType.description),
+        QPoolRequest.poolRequest, QPoolRequest.poolRequest),
     POOL_NUMBER_BY_JP("Pool Number", String.class, QJurorPool.jurorPool.pool.poolNumber,
         QJurorPool.jurorPool),
     POOL_NUMBER_BY_APPEARANCE("Pool Number", String.class, QAppearance.appearance.poolNumber,
@@ -165,8 +166,38 @@ public enum DataType implements IDataType {
     DATE_OF_ABSENCE("Date of absence", LocalDate.class, QAppearance.appearance.attendanceDate, QAppearance.appearance),
 
     COURT_LOCATION_NAME_AND_CODE("Court Location Name And Code", String.class,
-                                 QCourtLocation.courtLocation.name.concat(" (")
-        .concat(QCourtLocation.courtLocation.locCode).concat(")"), QPoolRequest.poolRequest);
+        QCourtLocation.courtLocation.name.concat(" (")
+            .concat(QCourtLocation.courtLocation.locCode).concat(")"), QPoolRequest.poolRequest),
+
+
+    POLICE_CHECK_RESPONDED("Responded jurors", Long.class,
+        QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED).count()),
+
+    POLICE_CHECK_SUBMITTED("Checks submitted", Long.class,
+        new CaseBuilder()
+            .when(QJuror.juror.policeCheck.notIn(PoliceCheck.NOT_CHECKED, PoliceCheck.INSUFFICIENT_INFORMATION))
+            .then(1L)
+            .otherwise(0L).sum()),
+
+    POLICE_CHECK_COMPLETE("Checks completed", Long.class,
+        new CaseBuilder()
+            .when(QJuror.juror.policeCheck.in(PoliceCheck.ELIGIBLE, PoliceCheck.INELIGIBLE,
+                PoliceCheck.UNCHECKED_MAX_RETRIES_EXCEEDED))
+            .then(1L)
+            .otherwise(0L).sum()),
+
+
+    POLICE_CHECK_TIMED_OUT("Checks completed", Long.class,
+        new CaseBuilder()
+            .when(QJuror.juror.policeCheck.in(PoliceCheck.UNCHECKED_MAX_RETRIES_EXCEEDED))
+            .then(1L)
+            .otherwise(0L).sum()),
+
+    POLICE_CHECK_DISQUALIFIED("Jurors disqualified", Long.class,
+        new CaseBuilder()
+            .when(QJuror.juror.policeCheck.in(PoliceCheck.INELIGIBLE))
+            .then(1L)
+            .otherwise(0L).sum());
 
     private final List<EntityPath<?>> requiredTables;
     private final String displayName;
