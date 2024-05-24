@@ -34,6 +34,9 @@ public class ReportsJurorPayments extends Address implements Serializable {
     @Column(name = "trial_number")
     private String trialNumber;
 
+    @Column(name = "loc_code")
+    private String locCode;
+
     @Column(name = "attendance_date")
     private LocalDate attendanceDate;
 

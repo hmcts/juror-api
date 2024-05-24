@@ -10,6 +10,7 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.QReportsJurorPayments;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReport;
 import uk.gov.hmcts.juror.api.moj.report.ReportGroupBy;
 import uk.gov.hmcts.juror.api.moj.report.datatypes.ReportsJurorPaymentsDataTypes;
@@ -56,6 +57,7 @@ public class TrialAttendanceReport extends AbstractGroupedReport {
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QReportsJurorPayments.reportsJurorPayments.trialNumber.eq(request.getTrialNumber()));
+        query.where(QReportsJurorPayments.reportsJurorPayments.locCode.eq(SecurityUtil.getLocCode()));
         query.orderBy(QReportsJurorPayments.reportsJurorPayments.jurorNumber.asc());
     }
 
@@ -67,8 +69,7 @@ public class TrialAttendanceReport extends AbstractGroupedReport {
         Optional<Trial> optTrial = trialRepository.findByTrialNumberAndCourtLocationLocCode(request.getTrialNumber(),
                                                                                          SecurityUtil.getLocCode());
 
-        Trial trial = optTrial.orElse(null);
-        assert trial != null;
+        Trial trial = optTrial.orElseThrow(() -> new MojException.NotFound("", null));
 
         Map<String, GroupedReportResponse.DataTypeValue> map = loadStandardTrailHeaders(request, trialRepository, true);
         map.put("trial_type", GroupedReportResponse.DataTypeValue.builder()

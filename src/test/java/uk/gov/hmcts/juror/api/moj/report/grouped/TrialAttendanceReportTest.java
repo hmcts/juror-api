@@ -98,6 +98,8 @@ class TrialAttendanceReportTest extends AbstractGroupedReportTestSupport<TrialAt
         report.preProcessQuery(query, request);
         verify(query, times(1))
             .where(QReportsJurorPayments.reportsJurorPayments.trialNumber.eq(request.getTrialNumber()));
+        verify(query, times(1))
+            .where(QReportsJurorPayments.reportsJurorPayments.locCode.eq(locCode));
         verify(query, times(1)).orderBy(
             QReportsJurorPayments.reportsJurorPayments.jurorNumber.asc());
     }

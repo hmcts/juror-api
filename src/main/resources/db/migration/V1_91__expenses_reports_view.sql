@@ -18,7 +18,8 @@ AS with payment_audits as (
 	group by 	juror_number, fada.loc_code, attendance_date
 	order by	juror_number
 )
-select			a.trial_number,
+select	a.trial_number,
+				a.loc_code,
 				a.attendance_date,
 				a.juror_number,
 				j.first_name,
