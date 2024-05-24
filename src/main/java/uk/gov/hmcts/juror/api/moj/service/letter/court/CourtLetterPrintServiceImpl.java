@@ -41,6 +41,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -312,6 +313,8 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
                 List<Appearance> appearanceList =
                     appearanceRepository.findAllByJurorNumberAndPoolNumber(data.get(JUROR_POOL.juror.jurorNumber),
                         data.get(POOL_REQUEST.poolNumber));
+
+                appearanceList.sort(Comparator.comparing(Appearance::getAttendanceDate));
 
                 //from appearance list create attendance data
                 for (Appearance appearance : appearanceList) {

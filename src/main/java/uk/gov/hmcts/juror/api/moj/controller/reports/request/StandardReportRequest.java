@@ -56,7 +56,8 @@ public class StandardReportRequest {
         "JurorExpenditureReportHighLevelReport",
         "UnconfirmedAttendanceReport",
         "AvailableListByDateReportBureau",
-        "AvailableListByDateReportCourt"
+        "AvailableListByDateReportCourt",
+        "SummonedRespondedReport"
     })
     private String reportType;
 

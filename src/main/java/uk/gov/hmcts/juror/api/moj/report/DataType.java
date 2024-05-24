@@ -27,6 +27,8 @@ public enum DataType implements IDataType {
     FIRST_NAME("First Name", String.class, QJuror.juror.firstName, QJuror.juror),
     LAST_NAME("Last Name", String.class, QJuror.juror.lastName, QJuror.juror),
     STATUS("Status", String.class, QJurorPool.jurorPool.status.statusDesc, QJurorPool.jurorPool),
+    SUMMONED_RESPONDED("Responded", Boolean.class, QJurorPool.jurorPool.status.status
+        .eq(IJurorStatus.RESPONDED)),
     DEFERRALS("Deferrals", String.class, QJuror.juror.noDefPos, QJuror.juror),
     ABSENCES("Absences", Long.class,
         QAppearance.appearance.attendanceType.eq(AttendanceType.ABSENT).count()),
