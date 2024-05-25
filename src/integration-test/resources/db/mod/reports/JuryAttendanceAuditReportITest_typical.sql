@@ -5,9 +5,9 @@ values ('415', '200000000', '2023-01-05', 5, 5, 'CRO', '415', 'N', '2023-01-05 0
 
 -- create juror records
 insert into juror_mod.juror (juror_number, first_name, last_name, responded, address_line_1)
-values ('100000000', 'FName 0', 'LName 1', true, 'addressLine1'),
-       ('100000001', 'FName 1', 'LName 2', true, 'addressLine1'),
-       ('100000002', 'FName 2', 'LName 3', true, 'addressLine1'),
+values ('100000000', 'FName 0', 'LName 0', true, 'addressLine1'),
+       ('100000001', 'FName 1', 'LName 1', true, 'addressLine1'),
+       ('100000002', 'FName 2', 'LName 2', true, 'addressLine1'),
        ('100000003', 'FName 3', 'LName 3', true, 'addressLine1'),
        ('100000004', 'FName 4', 'LName 4', true, 'addressLine1'),
        ('100000005', 'FName 5', 'LName 5', true, 'addressLine1'),

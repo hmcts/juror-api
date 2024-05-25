@@ -76,5 +76,6 @@ public interface AppearanceRepository extends IAppearanceRepository, JpaReposito
     List<Appearance> findAllByJurorNumberAndPoolNumber(String jurorNumber, String poolNumber);
 
 
-    Optional<Appearance> findFirstByAttendanceAuditNumberAndLocCodeIn(String auditNumber, Collection<String> locCode);
+    Optional<Appearance> findFirstByAttendanceAuditNumberEqualsAndLocCodeIn(String auditNumber,
+                                                                         Collection<String> locCode);
 }

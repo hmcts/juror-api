@@ -237,8 +237,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     }
 
     @Override
-    public Optional<Appearance> getFirstAppearanceWithAuditNumber(String juryAuditNumber, Collection<String> locCodes) {
-        return appearanceRepository.findFirstByAttendanceAuditNumberAndLocCodeIn(juryAuditNumber, locCodes);
+    public Optional<Appearance> getFirstAppearanceWithAuditNumber(String auditNumber, Collection<String> locCodes) {
+        return appearanceRepository.findFirstByAttendanceAuditNumberEqualsAndLocCodeIn(auditNumber, locCodes);
     }
 
     @Override

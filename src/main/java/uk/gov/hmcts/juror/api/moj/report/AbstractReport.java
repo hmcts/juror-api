@@ -549,5 +549,8 @@ public abstract class AbstractReport<T> implements IReport {
 
         public interface RequireJuryAuditNumber {
         }
+
+        public interface RequirePoolAuditNumber {
+        }
     }
 }

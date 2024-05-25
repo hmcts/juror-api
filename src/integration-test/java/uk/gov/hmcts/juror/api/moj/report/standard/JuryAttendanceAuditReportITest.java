@@ -109,19 +109,19 @@ class JuryAttendanceAuditReportITest extends AbstractStandardReportControllerITe
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number", "100000000")
                             .add("first_name", "FName 0")
-                            .add("last_name", "LName 1")
+                            .add("last_name", "LName 0")
                             .add("appearance_checked_in", "08:30:00")
                             .add("appearance_checked_out", "17:30:00"),
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number", "100000001")
                             .add("first_name", "FName 1")
-                            .add("last_name", "LName 2")
+                            .add("last_name", "LName 1")
                             .add("appearance_checked_in", "08:30:00")
                             .add("appearance_checked_out", "17:30:00"),
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number", "100000002")
                             .add("first_name", "FName 2")
-                            .add("last_name", "LName 3")
+                            .add("last_name", "LName 2")
                             .add("appearance_checked_in", "08:30:00")
                             .add("appearance_checked_out", "17:30:00"),
                         new ReportLinkedMap<String, Object>()

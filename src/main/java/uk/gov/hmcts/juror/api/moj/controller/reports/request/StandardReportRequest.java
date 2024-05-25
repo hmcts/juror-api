@@ -91,6 +91,10 @@ public class StandardReportRequest {
     @NotNull(groups = AbstractReport.Validators.RequireIncludeSummoned.class)
     private Boolean includeSummoned;
 
+    @NotNull(groups = AbstractReport.Validators.RequirePoolAuditNumber.class)
+    @Pattern(groups = AbstractReport.Validators.RequirePoolAuditNumber.class, regexp = "^P\\d*$")
+    private String poolAuditNumber;
+
     @NotNull(groups = AbstractReport.Validators.RequireJuryAuditNumber.class)
     @Pattern(groups = AbstractReport.Validators.RequireJuryAuditNumber.class, regexp = "^J\\d*$")
     private String juryAuditNumber;
