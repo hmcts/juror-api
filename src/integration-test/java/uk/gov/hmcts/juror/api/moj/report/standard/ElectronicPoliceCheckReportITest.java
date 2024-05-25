@@ -40,14 +40,6 @@ class ElectronicPoliceCheckReportITest extends AbstractStandardReportControllerI
             .build());
     }
 
-
-
-    //police_check_responded = All responded
-    //police_check_submitted = Error, Fail, Pass
-    //police_check_complete = Eligible, Failed, max retries
-    //police_check_timed_out = max retries
-    //police_check_disqualified = ineligible
-
     @Test
     void positiveTypical() {
         testBuilder()
