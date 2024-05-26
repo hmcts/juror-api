@@ -388,6 +388,7 @@ public abstract class AbstractReport<T> implements IReport {
 
     public ConcurrentHashMap<String, AbstractReportResponse.DataTypeValue> loadStandardPoolHeaders(
         StandardReportRequest request, boolean ownerMustMatch, boolean allowBureau) {
+
         PoolRequest poolRequest = getPoolRequest(request.getPoolNumber());
         if (ownerMustMatch) {
             checkOwnership(poolRequest, allowBureau);

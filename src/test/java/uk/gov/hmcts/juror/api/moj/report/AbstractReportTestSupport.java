@@ -54,6 +54,8 @@ public abstract class AbstractReportTestSupport<
     @Setter
     private boolean hasPoolRepository = true;
 
+    @Setter
+    private boolean allowBureau = true;
     private final Validator validator;
 
     public abstract R createReport(PoolRequestRepository poolRequestRepository);
@@ -138,7 +140,7 @@ public abstract class AbstractReportTestSupport<
         T data = spy(createData());
         doReturn(data).when(tableData).getData();
         Map<String, AbstractReportResponse.DataTypeValue> standardPoolMappings = getStandardPoolHeaders();
-        doReturn(standardPoolMappings).when(report).loadStandardPoolHeaders(request, true, true);
+        doReturn(standardPoolMappings).when(report).loadStandardPoolHeaders(request, true, allowBureau);
         Map<String, AbstractReportResponse.DataTypeValue> headings =
             positiveGetHeadingsTypical(request, tableData, data);
         //Is set via getStandardReportResponse so should not be set here
@@ -199,7 +201,7 @@ public abstract class AbstractReportTestSupport<
         assertThat(actualMap).hasSize(standardPoolMappings.size());
         assertThat(actualMap).containsExactlyInAnyOrderEntriesOf(standardPoolMappings);
         if (hasStandardPoolHeaders) {
-            verify(report, times(1)).loadStandardPoolHeaders(request, true, true);
+            verify(report, times(1)).loadStandardPoolHeaders(request, true, allowBureau);
         }
     }
 
