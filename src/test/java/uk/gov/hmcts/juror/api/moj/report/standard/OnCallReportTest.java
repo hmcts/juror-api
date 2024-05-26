@@ -13,6 +13,7 @@ import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.PoolType;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
@@ -109,8 +110,8 @@ public class OnCallReportTest extends AbstractStandardReportTestSupport<OnCallRe
     @Override
     public Map<String, AbstractReportResponse.DataTypeValue> positiveGetHeadingsTypical(
         StandardReportRequest request,
-        AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData,
-        List<LinkedHashMap<String, Object>> data) {
+        AbstractReportResponse.TableData<StandardTableData> tableData,
+        StandardTableData data) {
 
         when(data.size()).thenReturn(2);
 
