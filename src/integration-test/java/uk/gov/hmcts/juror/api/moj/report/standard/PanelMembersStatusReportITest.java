@@ -15,8 +15,6 @@ import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 @Sql({
     "/db/truncate.sql",
     "/db/mod/truncate.sql",
