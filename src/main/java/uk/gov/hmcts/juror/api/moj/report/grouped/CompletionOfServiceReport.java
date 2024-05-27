@@ -2,28 +2,20 @@ package uk.gov.hmcts.juror.api.moj.report.grouped;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.juror.api.juror.domain.QJurorResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
-import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
-import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
-import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReport;
 import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
-import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.report.ReportGroupBy;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
-import uk.gov.hmcts.juror.api.moj.service.CourtLocationService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -40,7 +32,7 @@ public class CompletionOfServiceReport extends AbstractGroupedReport {
             poolRequestRepository,
             QJurorPool.jurorPool,
                 ReportGroupBy.builder()
-                    .dataType(DataType.POOL_NUMBER)
+                    .dataType(DataType.POOL_NUMBER_AND_COURT_TYPE)
                     .removeGroupByFromResponse(true)
                     .build(),
             DataType.JUROR_NUMBER,
@@ -50,23 +42,18 @@ public class CompletionOfServiceReport extends AbstractGroupedReport {
             );
         this.courtLocationRepository = courtLocationRepository;
         isCourtUserOnly();
-
     }
-
 
     @Override
     public Class<? extends Validators.AbstractRequestValidator> getRequestValidatorClass() {
         return CompletionOfServiceReport.RequestValidator.class;
     }
 
-
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(SecurityUtil.getLocCode()));
         query.orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
-
     }
-
 
     @Override
     public Map<String, GroupedReportResponse.DataTypeValue> getHeadings(
@@ -96,13 +83,9 @@ public class CompletionOfServiceReport extends AbstractGroupedReport {
         return map;
     }
 
-
-
-
-public interface RequestValidator extends
+    public interface RequestValidator extends
         AbstractReport.Validators.AbstractRequestValidator,
         AbstractReport.Validators.RequireFromDate,
         AbstractReport.Validators.RequireToDate {
     }
-
 }
