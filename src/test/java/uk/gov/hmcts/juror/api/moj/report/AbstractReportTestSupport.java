@@ -53,7 +53,6 @@ public abstract class AbstractReportTestSupport<
     private PoolRequestRepository poolRequestRepository;
     @Setter
     private boolean hasPoolRepository = true;
-
     @Setter
     private boolean allowBureau = true;
     private final Validator validator;

@@ -16,10 +16,10 @@ import java.util.List;
 
 @Sql ({"/db/truncate.sql",
     "/db/mod/truncate.sql",
-    "/db/administration/createUsers.sql",
-    "/db/reports/oncall.sql"
+    "/db/mod/reports/OnCallReportITest_typical.sql"
 })
-public class OnCallReportITest extends AbstractStandardReportControllerITest {
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+class OnCallReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired
     OnCallReportITest(TestRestTemplate testRestTemplate) {
@@ -34,13 +34,11 @@ public class OnCallReportITest extends AbstractStandardReportControllerITest {
     @Override
     protected StandardReportRequest getValidPayload() {
         return addReportType(StandardReportRequest.builder()
-            .reportType("OnCallReport")
             .poolNumber("416220901")
             .build());
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void positiveTypicalCourt() {
         testBuilder()
             .triggerValid()
@@ -74,9 +72,7 @@ public class OnCallReportITest extends AbstractStandardReportControllerITest {
             .assertMojForbiddenResponse("User not allowed to access this pool");
     }
 
-
-
-    AbstractReportResponse getTypicalResponse() {
+    private AbstractReportResponse getTypicalResponse() {
         return StandardReportResponse.builder()
             .headings(new ReportHashMap<String, StandardReportResponse.DataTypeValue>()
                 .add("pool_number", AbstractReportResponse.DataTypeValue.builder()
@@ -97,7 +93,7 @@ public class OnCallReportITest extends AbstractStandardReportControllerITest {
                 .add("total_on_call", AbstractReportResponse.DataTypeValue.builder()
                     .displayName("Total on call")
                     .dataType("Long")
-                    .value(3L)
+                    .value(3)
                     .build())
                 .add("court_name", AbstractReportResponse.DataTypeValue.builder()
                     .displayName("Court Name")
