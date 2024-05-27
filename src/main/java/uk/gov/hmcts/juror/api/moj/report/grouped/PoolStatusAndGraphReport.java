@@ -14,7 +14,6 @@ import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.report.grouped.groupby.GroupByPoolStatusAndGraphReport;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
-import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -36,7 +35,6 @@ public class PoolStatusAndGraphReport extends AbstractGroupedReport {
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QJurorPool.jurorPool.pool.poolNumber.eq(request.getPoolNumber()));
-        query.where(QJurorPool.jurorPool.pool.owner.eq(SecurityUtil.BUREAU_OWNER));
         addGroupBy(query, DataType.IS_ACTIVE, DataType.STATUS);
     }
 

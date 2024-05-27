@@ -58,9 +58,6 @@ class PoolStatusAndGraphReportTest extends AbstractGroupedReportTestSupport<Pool
 
         verify(query, times(1))
             .where(QJurorPool.jurorPool.pool.poolNumber.eq(request.getPoolNumber()));
-        verify(query, times(1))
-            .where(QJurorPool.jurorPool.pool.owner.eq("400"));
-
         verify(report, times(1)).addGroupBy(
             query,
             DataType.IS_ACTIVE,
