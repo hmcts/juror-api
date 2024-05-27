@@ -72,6 +72,8 @@ class ExcusedAndDisqualifiedListReportTest extends AbstractGroupedReportTestSupp
 
         securityUtilMockedStatic.when(SecurityUtil::getActiveOwner)
             .thenReturn(TestConstants.VALID_COURT_LOCATION);
+        securityUtilMockedStatic.when(SecurityUtil::isCourt)
+            .thenReturn(true);
 
         report.preProcessQuery(query, request);
 
