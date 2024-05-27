@@ -49,8 +49,10 @@ public class PoolAttendanceAuditReport extends AbstractStandardReport {
     }
 
     @Override
-    public Map<String, AbstractReportResponse.DataTypeValue> getHeadings(StandardReportRequest request,
-                                                                         AbstractReportResponse.TableData<StandardTableData> tableData) {
+    public Map<String, AbstractReportResponse.DataTypeValue> getHeadings(
+        StandardReportRequest request,
+        AbstractReportResponse.TableData<StandardTableData> tableData) {
+
         Optional<Appearance> appearanceOpt =
             appearanceService.getFirstAppearanceWithAuditNumber(request.getPoolAuditNumber(),
                 SecurityUtil.getCourts());
