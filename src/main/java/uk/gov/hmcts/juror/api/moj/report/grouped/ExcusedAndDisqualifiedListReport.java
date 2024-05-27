@@ -44,7 +44,7 @@ public class ExcusedAndDisqualifiedListReport extends AbstractGroupedReport {
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QJurorPool.jurorPool.pool.poolNumber.eq(request.getPoolNumber()));
-        if(SecurityUtil.isCourt()) {
+        if (SecurityUtil.isCourt()) {
             query.where(QJurorPool.jurorPool.pool.owner.eq(SecurityUtil.getActiveOwner()));
         }
         query.where(QJurorPool.jurorPool.juror.disqualifyCode.isNotNull()
