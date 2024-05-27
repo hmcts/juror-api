@@ -288,6 +288,7 @@ public enum DataType implements IDataType {
     ;
 
 
+
     private final List<EntityPath<?>> requiredTables;
     private final String displayName;
     private final Class<?> dataType;
