@@ -29,20 +29,20 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class TrialStatisticsReportTest extends AbstractStandardReportTestSupport<TrialStatisticsReport> {
+class PanelResultReportTest extends AbstractStandardReportTestSupport<PanelResultReport> {
 
     private static final LocalDate FROM_DATE = LocalDate.of(2024, 1, 1);
     private static final LocalDate TO_DATE = LocalDate.of(2024, 1, 30);
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
-    public TrialStatisticsReportTest() {
+    public PanelResultReportTest() {
         super(QTrial.trial,
-            TrialStatisticsReport.RequestValidator.class,
-            DataType.TRIAL_JUDGE_NAME,
-            DataType.TRIAL_TYPE,
+            PanelResultReport.RequestValidator.class,
             DataType.TRIAL_NUMBER,
-            DataType.TRIAL_PANELLED_COUNT,
+            DataType.TRIAL_TYPE,
+            DataType.TRIAL_START_DATE,
             DataType.TRIAL_JURORS_COUNT,
+            DataType.TRIAL_JURORS_NOT_USED,
             DataType.TRIAL_START_DATE,
             DataType.TRIAL_END_DATE);
         setHasPoolRepository(false);
@@ -62,8 +62,8 @@ class TrialStatisticsReportTest extends AbstractStandardReportTestSupport<TrialS
     }
 
     @Override
-    public TrialStatisticsReport createReport(PoolRequestRepository poolRequestRepository) {
-        return new TrialStatisticsReport();
+    public PanelResultReport createReport(PoolRequestRepository poolRequestRepository) {
+        return new PanelResultReport();
     }
 
     @Override
@@ -94,9 +94,8 @@ class TrialStatisticsReportTest extends AbstractStandardReportTestSupport<TrialS
 
 
         verify(report, times(1)).addGroupBy(query,
-            DataType.TRIAL_JUDGE_NAME,
-            DataType.TRIAL_TYPE,
             DataType.TRIAL_NUMBER,
+            DataType.TRIAL_TYPE,
             DataType.TRIAL_START_DATE,
             DataType.TRIAL_END_DATE,
             DataType.TRIAL_COURT_LOCATION

@@ -178,8 +178,9 @@ public enum DataType implements IDataType {
 
     TRIAL_PANELLED_COUNT("Panelled", Long.class, QTrial.trial.panel.size(), QTrial.trial),
     TRIAL_JURORS_COUNT("Jurors", Long.class, QTrial.trial.jurors.size(), QTrial.trial),
-    TRIAL_NUMBER_START_DATE("Trial start date", LocalDate.class, QTrial.trial.trialStartDate, QTrial.trial),
-    TRIAL_NUMBER_END_DATE("Trial end date", LocalDate.class, QTrial.trial.trialEndDate, QTrial.trial),
+    TRIAL_JURORS_NOT_USED("Not used", Long.class, QTrial.trial.notUsedPanel.size(), QTrial.trial),
+    TRIAL_START_DATE("Trial start date", LocalDate.class, QTrial.trial.trialStartDate, QTrial.trial),
+    TRIAL_END_DATE("Trial end date", LocalDate.class, QTrial.trial.trialEndDate, QTrial.trial),
     ;
 
     private final List<EntityPath<?>> requiredTables;

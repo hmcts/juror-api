@@ -18,14 +18,15 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 @Component
-public class TrialStatisticsReport extends AbstractStandardReport {
-    public TrialStatisticsReport() {
+public class PanelResultReport extends AbstractStandardReport {
+
+    public PanelResultReport() {
         super(QTrial.trial,
-            DataType.TRIAL_JUDGE_NAME,
-            DataType.TRIAL_TYPE,
             DataType.TRIAL_NUMBER,
-            DataType.TRIAL_PANELLED_COUNT,
+            DataType.TRIAL_TYPE,
+            DataType.TRIAL_START_DATE,
             DataType.TRIAL_JURORS_COUNT,
+            DataType.TRIAL_JURORS_NOT_USED,
             DataType.TRIAL_START_DATE,
             DataType.TRIAL_END_DATE
         );
@@ -35,11 +36,11 @@ public class TrialStatisticsReport extends AbstractStandardReport {
     @Override
     protected void postProcessTableData(StandardReportRequest request,
                                         AbstractReportResponse.TableData<StandardTableData> tableData) {
-        final String id = "number_of_days";
+        final String id = "trial_length_in_days";
         tableData.getHeadings()
             .add(AbstractReportResponse.TableData.Heading.builder()
                 .id(id)
-                .name("Number of days")
+                .name("Trial length in days")
                 .dataType(Long.class.getSimpleName())
                 .build());
 
@@ -67,9 +68,8 @@ public class TrialStatisticsReport extends AbstractStandardReport {
 
         addGroupBy(
             query,
-            DataType.TRIAL_JUDGE_NAME,
-            DataType.TRIAL_TYPE,
             DataType.TRIAL_NUMBER,
+            DataType.TRIAL_TYPE,
             DataType.TRIAL_START_DATE,
             DataType.TRIAL_END_DATE,
             DataType.TRIAL_COURT_LOCATION
