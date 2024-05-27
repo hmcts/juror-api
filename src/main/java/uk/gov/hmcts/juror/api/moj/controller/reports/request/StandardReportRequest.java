@@ -73,7 +73,8 @@ public class StandardReportRequest {
         "SummonedRespondedReport",
         "UnconfirmedAttendanceReport",
         "PoolStatisticsReport",
-        "TrialAttendanceReport"
+        "TrialAttendanceReport",
+        "CompletionOfServiceReport"
     })
     private String reportType;
 

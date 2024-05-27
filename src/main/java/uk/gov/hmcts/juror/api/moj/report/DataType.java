@@ -111,6 +111,9 @@ public enum DataType implements IDataType {
     ON_CALL("On Call", Boolean.class, QJurorPool.jurorPool.onCall, QJurorPool.jurorPool),
     SERVICE_START_DATE("Service Start Date", LocalDate.class, QPoolRequest.poolRequest.returnDate,
         QPoolRequest.poolRequest),
+
+    COMPLETION_DATE("Completion date", LocalDate.class, QJurorPool.jurorPool.juror.completionDate),
+
     POOL_NUMBER("Pool Number", String.class, QPoolRequest.poolRequest.poolNumber, QPoolRequest.poolRequest),
     POOL_NUMBER_JP("Pool Number", String.class, QJurorPool.jurorPool.pool.poolNumber, QJurorPool.jurorPool),
     POOL_NUMBER_AND_COURT_TYPE("Pool Number and Type",
@@ -283,6 +286,7 @@ public enum DataType implements IDataType {
         QJurorPool.jurorPool
     ),
     ;
+
 
     private final List<EntityPath<?>> requiredTables;
     private final String displayName;
