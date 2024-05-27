@@ -35,8 +35,9 @@ public class AttendanceGraphReport extends AbstractStandardReport {
     }
 
     @Override
-    public Map<String, AbstractReportResponse.DataTypeValue> getHeadings(StandardReportRequest request,
-                                                                         AbstractReportResponse.TableData<StandardTableData> tableData) {
+    public Map<String, AbstractReportResponse.DataTypeValue> getHeadings(
+        StandardReportRequest request,
+        AbstractReportResponse.TableData<StandardTableData> tableData) {
         return Map.of();
     }
 

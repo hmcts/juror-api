@@ -88,9 +88,11 @@ public class AttendanceGraphReportTest extends AbstractStandardReportTestSupport
     }
 
     @Override
-    public Map<String, AbstractReportResponse.DataTypeValue> positiveGetHeadingsTypical(StandardReportRequest request,
-                                                                                        AbstractReportResponse.TableData<StandardTableData> tableData,
-                                                                                        StandardTableData data) {
+    public Map<String, AbstractReportResponse.DataTypeValue> positiveGetHeadingsTypical(
+        StandardReportRequest request,
+        AbstractReportResponse.TableData<StandardTableData> tableData,
+        StandardTableData data) {
+
         Map<String, AbstractReportResponse.DataTypeValue> headings = report.getHeadings(request, tableData);
         assertHeadingContains(headings,
             request,
