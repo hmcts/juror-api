@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import uk.gov.hmcts.juror.api.moj.report.IDataType;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -87,6 +88,14 @@ public class GroupedTableData extends LinkedHashMap<String, Object> {
             return groupedTableData.getAllDataItems();
         }
         return new ArrayList<>();
+    }
+
+    public void removeDataTypes(IDataType[] dataTypes) {
+        getAllDataItems().forEach(groupedTableData -> {
+            for (IDataType dataType : dataTypes) {
+                groupedTableData.remove(dataType.getId());
+            }
+        });
     }
 
     public enum Type {

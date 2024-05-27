@@ -55,32 +55,28 @@ class TrialStatisticsReportITest extends AbstractStandardReportControllerITest {
                     .add("trial_number", "T123")
                     .add("trial_panelled_count", 11)
                     .add("trial_jurors_count", 6)
-                    .add("trial_number_start_date", "2024-01-01")
-                    .add("trial_number_end_date", "2024-02-01"),
+                    .add("number_of_days", 24),
                 new ReportLinkedMap<String, Object>()
                     .add("trial_judge_name", "JUDGE1")
                     .add("trial_type", "CIV")
                     .add("trial_number", "T1235")
                     .add("trial_panelled_count", 5)
                     .add("trial_jurors_count", 4)
-                    .add("trial_number_start_date", "2024-01-01")
-                    .add("trial_number_end_date", "2024-01-30"),
+                    .add("number_of_days", 22),
                 new ReportLinkedMap<String, Object>()
                     .add("trial_judge_name", "JUDGE2")
                     .add("trial_type", "CIV")
                     .add("trial_number", "T1234")
                     .add("trial_panelled_count", 5)
                     .add("trial_jurors_count", 3)
-                    .add("trial_number_start_date", "2023-12-25")
-                    .add("trial_number_end_date", "2024-01-05"),
+                    .add("number_of_days", 10),
                 new ReportLinkedMap<String, Object>()
                     .add("trial_judge_name", "JUDGE3")
                     .add("trial_type", "CRI")
                     .add("trial_number", "T1236")
                     .add("trial_panelled_count", 3)
                     .add("trial_jurors_count", 2)
-                    .add("trial_number_start_date", "2024-01-20")
-                    .add("trial_number_end_date", "2024-02-11"))));
+                    .add("number_of_days", 15))));
     }
 
     @Test
@@ -148,15 +144,9 @@ class TrialStatisticsReportITest extends AbstractStandardReportControllerITest {
                             .headings(null)
                             .build(),
                         StandardReportResponse.TableData.Heading.builder()
-                            .id("trial_number_start_date")
-                            .name("Trial start date")
-                            .dataType("LocalDate")
-                            .headings(null)
-                            .build(),
-                        StandardReportResponse.TableData.Heading.builder()
-                            .id("trial_number_end_date")
-                            .name("Trial end date")
-                            .dataType("LocalDate")
+                            .id("number_of_days")
+                            .name("Number of days")
+                            .dataType("Long")
                             .headings(null)
                             .build()))
                     .data(tableData)

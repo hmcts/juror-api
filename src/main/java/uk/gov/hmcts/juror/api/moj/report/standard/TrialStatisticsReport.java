@@ -10,6 +10,7 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
 import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
+import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
@@ -31,6 +32,30 @@ public class TrialStatisticsReport extends AbstractStandardReport {
         isCourtUserOnly();
     }
 
+    @Override
+    protected void postProcessTableData(StandardReportRequest request,
+                                        AbstractReportResponse.TableData<StandardTableData> tableData) {
+        final String id = "number_of_days";
+        tableData.getHeadings()
+            .add(AbstractReportResponse.TableData.Heading.builder()
+                .id(id)
+                .name("Number of days")
+                .dataType(Long.class.getSimpleName())
+                .build());
+
+        tableData.getData()
+            .forEach(stringObjectLinkedHashMap -> {
+                Object trialStart = stringObjectLinkedHashMap.get(DataType.TRIAL_NUMBER_START_DATE.getId());
+                Object trialEnd = stringObjectLinkedHashMap.get(DataType.TRIAL_NUMBER_END_DATE.getId());
+                if (trialStart == null || trialEnd == null) {
+                    return;
+                }
+                LocalDate startDate = LocalDate.from(DateTimeFormatter.ISO_DATE.parse(trialStart.toString()));
+                LocalDate endDate = LocalDate.from(DateTimeFormatter.ISO_DATE.parse(trialEnd.toString()));
+                stringObjectLinkedHashMap.put(id, DateUtils.getWorkingDaysBetween(startDate, endDate));
+            });
+        tableData.removeData(DataType.TRIAL_NUMBER_START_DATE, DataType.TRIAL_NUMBER_END_DATE);
+    }
 
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
