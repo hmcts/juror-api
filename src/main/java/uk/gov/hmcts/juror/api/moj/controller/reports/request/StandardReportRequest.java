@@ -54,7 +54,8 @@ public class StandardReportRequest {
         "JurorExpenditureReportMidLevelReport",
         "JurorExpenditureReportHighLevelReport",
         "SummonedRespondedReport",
-        "UnconfirmedAttendanceReport"
+        "UnconfirmedAttendanceReport",
+        "PoolStatisticsReport"
     })
     private String reportType;
 

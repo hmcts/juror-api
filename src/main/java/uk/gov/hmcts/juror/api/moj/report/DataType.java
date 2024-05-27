@@ -28,6 +28,7 @@ public enum DataType implements IDataType {
     FIRST_NAME("First Name", String.class, QJuror.juror.firstName, QJuror.juror),
     LAST_NAME("Last Name", String.class, QJuror.juror.lastName, QJuror.juror),
     STATUS("Status", String.class, QJurorPool.jurorPool.status.statusDesc, QJurorPool.jurorPool),
+    JUROR_POOL_COUNT("Count", String.class, QJurorPool.jurorPool.count(), QJurorPool.jurorPool),
     SUMMONED_RESPONDED("Responded", Boolean.class, QJurorPool.jurorPool.status.status
         .eq(IJurorStatus.RESPONDED)),
     DEFERRALS("Deferrals", String.class, QJuror.juror.noDefPos, QJuror.juror),
@@ -86,6 +87,8 @@ public enum DataType implements IDataType {
                                    .concat(",").concat(QPoolRequest.poolRequest.poolType.description),
                                QPoolRequest.poolRequest, QPoolRequest.poolRequest),
     POOL_NUMBER_BY_JP("Pool Number", String.class, QJurorPool.jurorPool.pool.poolNumber,
+        QJurorPool.jurorPool),
+    POOL_RETURN_DATE_BY_JP("Pool Number", String.class, QJurorPool.jurorPool.pool.returnDate,
         QJurorPool.jurorPool),
     POOL_NUMBER_BY_APPEARANCE("Pool Number", String.class, QAppearance.appearance.poolNumber,
         QAppearance.appearance),
