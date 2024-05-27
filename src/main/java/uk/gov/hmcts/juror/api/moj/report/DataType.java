@@ -13,6 +13,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QReasonableAdjustments;
+import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 
@@ -82,9 +83,9 @@ public enum DataType implements IDataType {
         QPoolRequest.poolRequest),
     POOL_NUMBER("Pool Number", String.class, QPoolRequest.poolRequest.poolNumber, QPoolRequest.poolRequest),
     POOL_NUMBER_AND_COURT_TYPE("Pool Number and Type",
-                               String.class, QPoolRequest.poolRequest.poolNumber.stringValue()
-                                   .concat(",").concat(QPoolRequest.poolRequest.poolType.description),
-                               QPoolRequest.poolRequest, QPoolRequest.poolRequest),
+        String.class, QPoolRequest.poolRequest.poolNumber.stringValue()
+        .concat(",").concat(QPoolRequest.poolRequest.poolType.description),
+        QPoolRequest.poolRequest, QPoolRequest.poolRequest),
     POOL_NUMBER_BY_JP("Pool Number", String.class, QJurorPool.jurorPool.pool.poolNumber,
         QJurorPool.jurorPool),
     POOL_NUMBER_BY_APPEARANCE("Pool Number", String.class, QAppearance.appearance.poolNumber,
@@ -165,8 +166,21 @@ public enum DataType implements IDataType {
     DATE_OF_ABSENCE("Date of absence", LocalDate.class, QAppearance.appearance.attendanceDate, QAppearance.appearance),
 
     COURT_LOCATION_NAME_AND_CODE("Court Location Name And Code", String.class,
-                                 QCourtLocation.courtLocation.name.concat(" (")
-        .concat(QCourtLocation.courtLocation.locCode).concat(")"), QPoolRequest.poolRequest);
+        QCourtLocation.courtLocation.name.concat(" (")
+            .concat(QCourtLocation.courtLocation.locCode).concat(")"), QPoolRequest.poolRequest),
+
+
+    TRIAL_JUDGE_NAME("Judge", String.class, QTrial.trial.judge.name, QTrial.trial),
+    TRIAL_TYPE("Trial Type", String.class, QTrial.trial.trialType, QTrial.trial),
+    TRIAL_NUMBER("Trial number", String.class, QTrial.trial.trialNumber, QTrial.trial),
+    TRIAL_COURT_LOCATION("Trial court location", String.class, QTrial.trial.courtLocation, QTrial.trial),
+
+
+    TRIAL_PANELLED_COUNT("Panelled", Long.class, QTrial.trial.panel.size(), QTrial.trial),
+    TRIAL_JURORS_COUNT("Jurors", Long.class, QTrial.trial.jurors.size(), QTrial.trial),
+    TRIAL_NUMBER_START_DATE("Trial start date", LocalDate.class, QTrial.trial.trialStartDate, QTrial.trial),
+    TRIAL_NUMBER_END_DATE("Trial end date", LocalDate.class, QTrial.trial.trialEndDate, QTrial.trial),
+    ;
 
     private final List<EntityPath<?>> requiredTables;
     private final String displayName;
