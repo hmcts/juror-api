@@ -149,7 +149,7 @@ class PoolSearchControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        @Sql({"/db/mod/truncate.sql", "", ""})
+        @Sql({"/db/mod/truncate.sql", "/db/PoolRequestSearchService_initPoolRequests.sql"})
         void searchPoolRequestsBureauUserInvalidSearchCriteria() throws Exception {
             PoolSearchRequestDto request = createRequest(null, null);
 
