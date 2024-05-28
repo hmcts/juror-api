@@ -49,6 +49,7 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -233,6 +234,11 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     @Override
     public boolean hasAttendances(String jurorNumber) {
         return appearanceRepository.countByJurorNumberAndAppearanceStageNotNull(jurorNumber) > 0;
+    }
+
+    @Override
+    public Optional<Appearance> getFirstAppearanceWithAuditNumber(String auditNumber, Collection<String> locCodes) {
+        return appearanceRepository.findFirstByAttendanceAuditNumberEqualsAndLocCodeIn(auditNumber, locCodes);
     }
 
     @Override
