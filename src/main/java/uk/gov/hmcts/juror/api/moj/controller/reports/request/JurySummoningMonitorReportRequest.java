@@ -34,9 +34,11 @@ public class JurySummoningMonitorReportRequest {
     @NotBlank
     private String searchBy;
 
+    private String poolNumber;
+
     private List<String> courtLocCodes;
 
-    private String poolNumber;
+    private boolean allCourts;
 
     @ValidateIf(fields = {"poolNumber"},
         condition = ValidateIf.Condition.ANY_PRESENT,
@@ -44,7 +46,7 @@ public class JurySummoningMonitorReportRequest {
     @ValidateIf(fields = {"poolNumber"},
         condition = ValidateIf.Condition.NONE_PRESENT,
         type = ValidateIf.Type.REQUIRE)
-    @JsonFormat(pattern = ValidationConstants.DATE_FORMAT)
+    @JsonFormat(pattern = ValidationConstants.DATE_FORMAT, shape = JsonFormat.Shape.STRING)
     private LocalDate fromDate;
 
     @ValidateIf(fields = {"poolNumber"},
@@ -53,7 +55,7 @@ public class JurySummoningMonitorReportRequest {
     @ValidateIf(fields = {"poolNumber"},
         condition = ValidateIf.Condition.NONE_PRESENT,
         type = ValidateIf.Type.REQUIRE)
-    @JsonFormat(pattern = ValidationConstants.DATE_FORMAT)
+    @JsonFormat(pattern = ValidationConstants.DATE_FORMAT, shape = JsonFormat.Shape.STRING)
     private LocalDate toDate;
 
 }

@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.report.bespoke;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,17 +13,27 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractControllerIntegrationTest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.JurySummoningMonitorReportRequest;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.JurySummoningMonitorReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+
+import static org.assertj.core.api.BDDAssertions.within;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + JurySummoningMonitorReportsITest.URL)
 @Sql({
     "/db/truncate.sql",
-    "/db/mod/truncate.sql"
+    "/db/mod/truncate.sql",
+    "/db/mod/reports/JurySummoningMonitor_typical.sql",
 })
 @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert"//False positive
 )
@@ -61,15 +72,287 @@ class JurySummoningMonitorReportsITest extends AbstractControllerIntegrationTest
 
         JurySummoningMonitorReportRequest payload =  JurySummoningMonitorReportRequest.builder()
             .searchBy("POOL")
-            .poolNumber("123456789")
+            .poolNumber("415230701")
             .build();
 
         testBuilder()
             .payload(payload)
             .triggerValid()
+            .responseConsumer(this::verifyAndRemoveTimeCreated)
             .assertEquals(JurySummoningMonitorReportResponse.builder()
+                .headings(Map.of("court", AbstractReportResponse.DataTypeValue.builder()
+                        .displayName("Court")
+                        .dataType("String")
+                        .value("CHESTER (415)")
+                        .build(),
+                    "pool_number", AbstractReportResponse.DataTypeValue.builder()
+                        .displayName("Pool number")
+                        .dataType("String")
+                        .value("415230701")
+                        .build(),
+                    "pool_type", AbstractReportResponse.DataTypeValue.builder()
+                        .displayName("Pool type")
+                        .dataType("String")
+                        .value("CROWN COURT")
+                        .build(),
+                    "service_start_date", AbstractReportResponse.DataTypeValue.builder()
+                        .displayName("Service start date")
+                        .dataType("LocalDate")
+                        .value("2024-03-04")
+                        .build(),
+                    "report_created", AbstractReportResponse.DataTypeValue.builder()
+                        .displayName("Report created")
+                        .dataType("LocalDate")
+                        .value(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
+                        .build()))
                 .totalJurorsNeeded(0)
+                .bureauDeferralsIncluded(0)
+                .bureauToSupply(0)
+                .initiallySummoned(0)
+                .ratio(0.0)
+                .additionalSummonsIssued(0)
+                .reminderLettersIssued(0)
+                .totalConfirmedJurors(0)
+                .deferralsRefused(0)
+                .excusalsRefused(0)
+                .totalUnavailable(0)
+                .nonResponded(0)
+                .undeliverable(0)
+                .awaitingInformation(0)
+                .disqualifiedPoliceCheck(0)
+                .disqualifiedOther(0)
+                .deferred(0)
+                .postponed(0)
+                .excused(0)
+                .bereavement(0)
+                .carer(0)
+                .childcare(0)
+                .cjsEmployment(0)
+                .criminalRecord(0)
+                .deceased(0)
+                .deferredByCourt(0)
+                .excusedByBureau(0)
+                .financialHardship(0)
+                .forces(0)
+                .holiday(0)
+                .ill(0)
+                .languageDifficulties(0)
+                .medical(0)
+                .mentalHealth(0)
+                .movedFromArea(0)
+                .other(0)
+                .personalEngagement(0)
+                .recentlyServed(0)
+                .religiousReasons(0)
+                .student(0)
+                .travellingDifficulties(0)
+                .workRelated(0)
                 .build());
+    }
+
+    @Test
+    void viewByCourts() {
+
+        JurySummoningMonitorReportRequest payload =  JurySummoningMonitorReportRequest.builder()
+            .searchBy("COURT")
+            .allCourts(false)
+            .courtLocCodes(List.of("415"))
+            .fromDate(LocalDate.parse("2024-01-01"))
+            .toDate(LocalDate.parse("2024-05-01"))
+            .build();
+
+        testBuilder()
+            .payload(payload)
+            .triggerValid()
+            .responseConsumer(this::verifyAndRemoveTimeCreated)
+            .assertEquals(JurySummoningMonitorReportResponse.builder()
+                .headings(Map.of("courts", AbstractReportResponse.DataTypeValue.builder()
+                        .displayName("Courts")
+                        .dataType("String")
+                        .value("CHESTER (415)")
+                        .build(),
+                    "date_from", AbstractReportResponse.DataTypeValue.builder()
+                        .displayName("Date from")
+                        .dataType("LocalDate")
+                        .value("2024-01-01")
+                        .build(),
+                    "date_to", AbstractReportResponse.DataTypeValue.builder()
+                        .displayName("Date to")
+                        .dataType("LocalDate")
+                        .value("2024-05-01")
+                        .build(),
+                    "report_created", AbstractReportResponse.DataTypeValue.builder()
+                        .displayName("Report created")
+                        .dataType("LocalDate")
+                        .value(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
+                        .build()))
+                .totalJurorsNeeded(0)
+                .bureauDeferralsIncluded(0)
+                .bureauToSupply(0)
+                .initiallySummoned(0)
+                .ratio(0.0)
+                .additionalSummonsIssued(0)
+                .reminderLettersIssued(0)
+                .totalConfirmedJurors(0)
+                .deferralsRefused(0)
+                .excusalsRefused(0)
+                .totalUnavailable(0)
+                .nonResponded(0)
+                .undeliverable(0)
+                .awaitingInformation(0)
+                .disqualifiedPoliceCheck(0)
+                .disqualifiedOther(0)
+                .deferred(0)
+                .postponed(0)
+                .excused(0)
+                .bereavement(0)
+                .carer(0)
+                .childcare(0)
+                .cjsEmployment(0)
+                .criminalRecord(0)
+                .deceased(0)
+                .deferredByCourt(0)
+                .excusedByBureau(0)
+                .financialHardship(0)
+                .forces(0)
+                .holiday(0)
+                .ill(0)
+                .languageDifficulties(0)
+                .medical(0)
+                .mentalHealth(0)
+                .movedFromArea(0)
+                .other(0)
+                .personalEngagement(0)
+                .recentlyServed(0)
+                .religiousReasons(0)
+                .student(0)
+                .travellingDifficulties(0)
+                .workRelated(0)
+                .build());
+    }
+
+    @Test
+    void viewByAllCourts() {
+
+        JurySummoningMonitorReportRequest payload =  JurySummoningMonitorReportRequest.builder()
+            .searchBy("COURT")
+            .allCourts(true)
+            .fromDate(LocalDate.parse("2024-01-01"))
+            .toDate(LocalDate.parse("2024-05-01"))
+            .build();
+
+        testBuilder()
+            .payload(payload)
+            .triggerValid()
+            .responseConsumer(this::verifyAndRemoveTimeCreated)
+            .assertEquals(JurySummoningMonitorReportResponse.builder()
+                .headings(Map.of("courts", AbstractReportResponse.DataTypeValue.builder()
+                        .displayName("Courts")
+                        .dataType("String")
+                        .value("All courts")
+                        .build(),
+                    "date_from", AbstractReportResponse.DataTypeValue.builder()
+                        .displayName("Date from")
+                        .dataType("LocalDate")
+                        .value("2024-01-01")
+                        .build(),
+                    "date_to", AbstractReportResponse.DataTypeValue.builder()
+                        .displayName("Date to")
+                        .dataType("LocalDate")
+                        .value("2024-05-01")
+                        .build(),
+                    "report_created", AbstractReportResponse.DataTypeValue.builder()
+                        .displayName("Report created")
+                        .dataType("LocalDate")
+                        .value(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
+                        .build()))
+                .totalJurorsNeeded(0)
+                .bureauDeferralsIncluded(0)
+                .bureauToSupply(0)
+                .initiallySummoned(0)
+                .ratio(0.0)
+                .additionalSummonsIssued(0)
+                .reminderLettersIssued(0)
+                .totalConfirmedJurors(0)
+                .deferralsRefused(0)
+                .excusalsRefused(0)
+                .totalUnavailable(0)
+                .nonResponded(0)
+                .undeliverable(0)
+                .awaitingInformation(0)
+                .disqualifiedPoliceCheck(0)
+                .disqualifiedOther(0)
+                .deferred(0)
+                .postponed(0)
+                .excused(0)
+                .bereavement(0)
+                .carer(0)
+                .childcare(0)
+                .cjsEmployment(0)
+                .criminalRecord(0)
+                .deceased(0)
+                .deferredByCourt(0)
+                .excusedByBureau(0)
+                .financialHardship(0)
+                .forces(0)
+                .holiday(0)
+                .ill(0)
+                .languageDifficulties(0)
+                .medical(0)
+                .mentalHealth(0)
+                .movedFromArea(0)
+                .other(0)
+                .personalEngagement(0)
+                .recentlyServed(0)
+                .religiousReasons(0)
+                .student(0)
+                .travellingDifficulties(0)
+                .workRelated(0)
+                .build());
+    }
+
+    @Test
+    void unhappyCourtUser() {
+
+        JurySummoningMonitorReportRequest payload =  JurySummoningMonitorReportRequest.builder()
+            .searchBy("POOL")
+            .poolNumber("415230701")
+            .build();
+
+        testBuilder()
+            .payload(payload)
+            .jwt(getCourtJwt())
+            .triggerInvalid()
+            .assertForbiddenResponse();
+    }
+
+    private String getCourtJwt() {
+        return createJwt(
+            "test_court_standard",
+            "415",
+            UserType.COURT,
+            Set.of(),
+            "415","462"
+        );
+    }
+
+
+    public void verifyAndRemoveTimeCreated(JurySummoningMonitorReportResponse response) {
+        Assertions.assertThat(response).isNotNull();
+        Assertions.assertThat(response.getHeadings()).isNotNull();
+        Assertions.assertThat(response.getHeadings().containsKey("report_created")).isTrue();
+
+        AbstractReportResponse.DataTypeValue timeCreated =
+            response.getHeadings().get("time_created");
+        Assertions.assertThat(timeCreated).isNotNull();
+        Assertions.assertThat(timeCreated.getDisplayName()).isEqualTo("Time created");
+        Assertions.assertThat(timeCreated.getDataType()).isEqualTo("LocalDateTime");
+        Assertions.assertThat(timeCreated.getValue()).isNotNull();
+        LocalDateTime localDateTime = LocalDateTime.parse((String) timeCreated.getValue(),
+            DateTimeFormatter.ISO_DATE_TIME);
+        Assertions.assertThat(localDateTime).isCloseTo(LocalDateTime.now(),
+            within(10, ChronoUnit.SECONDS));
+        response.getHeadings().remove("time_created");
     }
 
 }

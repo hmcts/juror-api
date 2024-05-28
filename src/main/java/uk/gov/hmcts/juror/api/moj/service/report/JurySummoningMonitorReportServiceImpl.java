@@ -4,12 +4,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.JurySummoningMonitorReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.JurySummoningMonitorReportResponse;
+import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.PoolType;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
-import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
+import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
+import uk.gov.hmcts.juror.api.moj.utils.PoolRequestUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
@@ -23,35 +27,67 @@ import java.util.Map;
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonitorReportService {
     private final CourtLocationRepository courtLocationRepository;
-    private final JurorRepository jurorRepository;
+    private final PoolRequestRepository poolRequestRepository;
 
     @Override
     public JurySummoningMonitorReportResponse viewJurySummoningMonitorReport(
         JurySummoningMonitorReportRequest jurySummoningMonitorReportRequest) {
 
+        final boolean isSearchByPool = "POOL".equals(jurySummoningMonitorReportRequest.getSearchBy());
+
         JurySummoningMonitorReportResponse response = new JurySummoningMonitorReportResponse();
 
-        if ("POOL".equals(jurySummoningMonitorReportRequest.getSearchBy())) {
+        setupResponseHeaders(isSearchByPool, jurySummoningMonitorReportRequest, response);
+
+        // TODO implement the logic to get the report data
+
+        return response;
+    }
+
+    private void setupResponseHeaders(boolean isSearchByPool,
+                                      JurySummoningMonitorReportRequest jurySummoningMonitorReportRequest,
+                           JurySummoningMonitorReportResponse response) {
+        if (isSearchByPool) {
+
+            String poolNumber = jurySummoningMonitorReportRequest.getPoolNumber();
+
             log.info("User {} viewing jury summoning monitor report by pool for pool number: {}",
                 SecurityUtil.getActiveLogin(),
-                jurySummoningMonitorReportRequest.getPoolNumber());
+                poolNumber);
+
+            PoolRequest poolRequest = PoolRequestUtils.getActivePoolRecord(poolRequestRepository, poolNumber);
+
+            response.setHeadings(
+                getSearchByPoolHeaders(poolRequest.getCourtLocation(), poolNumber, poolRequest.getPoolType(),
+                    poolRequest.getReturnDate()));
 
         } else {
             log.info("User {} viewing jury summoning monitor report by court",
                 SecurityUtil.getActiveLogin());
-        }
 
-        return new JurySummoningMonitorReportResponse();
+            if (!jurySummoningMonitorReportRequest.isAllCourts()
+                && (jurySummoningMonitorReportRequest.getCourtLocCodes() == null
+                || jurySummoningMonitorReportRequest.getCourtLocCodes().isEmpty())) {
+                throw new MojException.BadRequest("No court locations provided", null);
+            }
+
+            response.setHeadings(getSearchByCourts(jurySummoningMonitorReportRequest.getCourtLocCodes(),
+                jurySummoningMonitorReportRequest.isAllCourts(),
+                jurySummoningMonitorReportRequest.getFromDate(),
+                jurySummoningMonitorReportRequest.getToDate()));
+        }
     }
 
     private Map<String, AbstractReportResponse.DataTypeValue>
-        getSearchByPoolHeaders(String court, String poolNumber, PoolType poolType,
+        getSearchByPoolHeaders(CourtLocation court, String poolNumber, PoolType poolType,
                            LocalDate serviceStartDate) {
+
+        String courtName = court.getName() + " (" + court.getLocCode() + ")";
         return Map.of(
-            "date", AbstractReportResponse.DataTypeValue.builder()
+            "court", AbstractReportResponse.DataTypeValue.builder()
                 .displayName(ReportHeading.COURT.getDisplayName())
                 .dataType(ReportHeading.COURT.getDataType())
-                .value(court)
+                .value(courtName)
                 .build(),
             "pool_number", AbstractReportResponse.DataTypeValue.builder()
                 .displayName(ReportHeading.POOL_NUMBER.getDisplayName())
@@ -82,38 +118,46 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
     }
 
     private Map<String, AbstractReportResponse.DataTypeValue>
-        getSearchByCourts(List<String> courtsList, LocalDate reportFrom, LocalDate reportTo) {
+        getSearchByCourts(List<String> courtsList, boolean allCourts, LocalDate reportFrom, LocalDate reportTo) {
 
-        StringBuilder courts = new StringBuilder();
-        for (String court : courtsList) {
-            courts.append(court).append(", ");
+        String courts = "All courts";
+        if (!allCourts) {
+
+            StringBuilder courtsBuilder = new StringBuilder();
+
+            courtLocationRepository.findByLocCodeIn(courtsList).stream().forEach(c -> {
+                courtsBuilder.append(c.getName()).append(" (").append(c.getLocCode()).append(')').append(", ");
+            });
+
+            // remove the trailing comma if we have any courts
+            if (courtsBuilder.length() > 2) {
+                courtsBuilder.deleteCharAt(courtsBuilder.length() - 2);
+            }
+            courts = courtsBuilder.toString().trim();
         }
-        // remove the trailing comma
-        courts.deleteCharAt(courts.length() - 2);
-        String courtsString = courts.toString().trim();
 
         return Map.of(
-                "courts", AbstractReportResponse.DataTypeValue.builder()
+            "courts", AbstractReportResponse.DataTypeValue.builder()
                 .displayName(ReportHeading.COURTS.getDisplayName())
                 .dataType(ReportHeading.COURTS.getDataType())
-                .value(courtsString)
+                .value(courts)
                 .build(),
-                "dateFrom", AbstractReportResponse.DataTypeValue.builder()
+            "date_from", AbstractReportResponse.DataTypeValue.builder()
                 .displayName(ReportHeading.DATE_FROM.getDisplayName())
                 .dataType(ReportHeading.DATE_FROM.getDataType())
                 .value(reportFrom.format(DateTimeFormatter.ISO_LOCAL_DATE))
                 .build(),
-                "dateTo", AbstractReportResponse.DataTypeValue.builder()
+            "date_to", AbstractReportResponse.DataTypeValue.builder()
                 .displayName(ReportHeading.DATE_TO.getDisplayName())
                 .dataType(ReportHeading.DATE_TO.getDataType())
                 .value(reportTo.format(DateTimeFormatter.ISO_LOCAL_DATE))
                 .build(),
-                "report_created", AbstractReportResponse.DataTypeValue.builder()
+            "report_created", AbstractReportResponse.DataTypeValue.builder()
                 .displayName(ReportHeading.REPORT_CREATED.getDisplayName())
                 .dataType(ReportHeading.REPORT_CREATED.getDataType())
                 .value(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
                 .build(),
-                "time_created", AbstractReportResponse.DataTypeValue.builder()
+            "time_created", AbstractReportResponse.DataTypeValue.builder()
                 .displayName(ReportHeading.TIME_CREATED.getDisplayName())
                 .dataType(ReportHeading.TIME_CREATED.getDataType())
                 .value(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
@@ -122,9 +166,8 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
     }
 
 
-
     public enum ReportHeading {
-        POOL_NUMBER("Pool number", LocalDate.class.getSimpleName()),
+        POOL_NUMBER("Pool number", String.class.getSimpleName()),
         DATE_FROM("Date from", LocalDate.class.getSimpleName()),
         DATE_TO("Date to", LocalDate.class.getSimpleName()),
         SERVICE_START_DATE("Service start date", LocalDate.class.getSimpleName()),
