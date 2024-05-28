@@ -72,7 +72,8 @@ public abstract class AbstractReport<T> implements IReport {
             }
         ));
         CLASS_TO_JOIN.put(QJurorPool.jurorPool, Map.of(
-            QJuror.juror, new Predicate[]{QJurorPool.jurorPool.juror.eq(QJuror.juror)}
+            QJuror.juror, new Predicate[]{QJurorPool.jurorPool.juror.eq(QJuror.juror)},
+            QPanel.panel, new Predicate[]{QPanel.panel.juror.eq(QJurorPool.jurorPool.juror)}
         ));
         CLASS_TO_JOIN.put(QPoolRequest.poolRequest, Map.of(
             QJurorPool.jurorPool,

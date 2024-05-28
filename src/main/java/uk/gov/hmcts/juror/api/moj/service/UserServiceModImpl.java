@@ -23,6 +23,7 @@ import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -107,7 +108,7 @@ public class UserServiceModImpl implements UserService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public JwtDto createJwt(String email, String locCode) {
         User user = findUserByEmail(email);
         if (!user.isActive()) {
@@ -132,6 +133,8 @@ public class UserServiceModImpl implements UserService {
         CourtLocation loggedInCourt = getCourtLocation(locCode);
         List<CourtLocation> courtLocations = getCourtsByOwner(loggedInCourt.getOwner());
         if (UserType.ADMINISTRATOR.equals(user.getUserType()) || user.hasCourtByOwner(loggedInCourt.getOwner())) {
+            user.setLastLoggedIn(LocalDateTime.now());
+            userRepository.save(user);
             return new JwtDto(
                 jwtService.generateBureauJwtToken(
                     user.getUsername(),

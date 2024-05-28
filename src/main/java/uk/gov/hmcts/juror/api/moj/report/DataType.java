@@ -13,8 +13,10 @@ import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QReasonableAdjustments;
+import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
+import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -163,6 +165,19 @@ public enum DataType implements IDataType {
         QAppearance.appearance, QPoolRequest.poolRequest),
 
     DATE_OF_ABSENCE("Date of absence", LocalDate.class, QAppearance.appearance.attendanceDate, QAppearance.appearance),
+
+    PANEL_STATUS("Panel Status", String.class,
+        new CaseBuilder()
+            .when(QPanel.panel.result.eq(PanelResult.NOT_USED)).then("Not Used")
+            .when(QPanel.panel.result.eq(PanelResult.CHALLENGED)).then("Challenged")
+            .when(QPanel.panel.result.eq(PanelResult.JUROR)).then("Juror")
+            .when(QPanel.panel.result.eq(PanelResult.RETURNED).and(QPanel.panel.empanelledDate.isNotNull()))
+                .then("Returned Juror")
+            .when(QPanel.panel.result.eq(PanelResult.RETURNED).and(QPanel.panel.empanelledDate.isNull()))
+                .then("Returned")
+            .otherwise(""),
+        QPanel.panel),
+    JUROR_NUMBER_FROM_TRIAL("Juror Number", String.class, QPanel.panel.juror.jurorNumber, QPanel.panel),
 
     COURT_LOCATION_NAME_AND_CODE("Court Location Name And Code", String.class,
                                  QCourtLocation.courtLocation.name.concat(" (")
