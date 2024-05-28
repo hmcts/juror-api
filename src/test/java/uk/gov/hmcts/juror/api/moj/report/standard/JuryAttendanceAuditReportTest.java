@@ -176,18 +176,14 @@ class JuryAttendanceAuditReportTest extends AbstractStandardReportTestSupport<Ju
     @Test
     void negativeNotFoundNull() {
         StandardReportRequest request = mock(StandardReportRequest.class);
-        AbstractReportResponse.TableData<StandardTableData> tableData = mock(AbstractReportResponse.TableData.class);
-        StandardTableData data = mock(StandardTableData.class);
-        when(tableData.getData()).thenReturn(data);
 
         List<String> courts = List.of("123", "456");
         securityUtilMockedStatic.when(SecurityUtil::getCourts).thenReturn(courts);
         when(request.getJuryAuditNumber()).thenReturn("J1234");
-        when(data.size()).thenReturn(5);
-        when(data.isEmpty()).thenReturn(false);
 
         when(appearanceService.getFirstAppearanceWithAuditNumber("J1234", courts))
             .thenReturn(Optional.empty());
+        AbstractReportResponse.TableData<StandardTableData> tableData = mock(AbstractReportResponse.TableData.class);
 
         MojException.NotFound exception = assertThrows(MojException.NotFound.class,
             () -> report.getHeadings(request, tableData),
