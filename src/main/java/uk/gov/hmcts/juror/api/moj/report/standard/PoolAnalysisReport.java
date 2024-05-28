@@ -14,6 +14,7 @@ import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
+import uk.gov.hmcts.juror.api.moj.utils.NumberUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
@@ -34,7 +35,7 @@ public class PoolAnalysisReport extends AbstractStandardReport {
             QJurorPool.jurorPool,
             DataType.POOL_NUMBER_BY_JP,
             DataType.SERVICE_START_DATE,
-            DataType.SUMMONS_TOTAL,
+            DataType.JURORS_SUMMONED_TOTAL,
             DataType.RESPONDED_TOTAL,
             DataType.ATTENDED_TOTAL,
             DataType.PANEL_TOTAL,
@@ -69,37 +70,42 @@ public class PoolAnalysisReport extends AbstractStandardReport {
                                         AbstractReportResponse.TableData<StandardTableData> tableData) {
 
         tableData.getData().forEach(pool -> {
-            Integer summonsTotal = (Integer) pool.getOrDefault(DataType.SUMMONS_TOTAL.getId(), 0);
-            Integer respondedTotal = (Integer) pool.getOrDefault(DataType.RESPONDED_TOTAL.getId(), 0);
-            // Integer attendedTotal = (Integer) pool.getOrDefault(DataType.ATTENDED_TOTAL, 0);
-            Integer attendedTotal = (Integer) pool.getOrDefault("Attended", 0);
-            Integer panelTotal = (Integer) pool.getOrDefault(DataType.PANEL_TOTAL.getId(), 0);
-            Integer jurorTotal = (Integer) pool.getOrDefault(DataType.JUROR_TOTAL.getId(), 0);
-            Integer excusedTotal = (Integer) pool.getOrDefault(DataType.EXCUSED_TOTAL.getId(), 0);
-            Integer disqualifiedTotal = (Integer) pool.getOrDefault(DataType.DISQUALIFIED_TOTAL.getId(), 0);
-            Integer deferredTotal = (Integer) pool.getOrDefault(DataType.DEFERRED_TOTAL.getId(), 0);
-            Integer reassignedTotal = (Integer) pool.getOrDefault(DataType.REASSIGNED_TOTAL.getId(), 0);
-            Integer undeliverableTotal = (Integer) pool.getOrDefault(DataType.UNDELIVERABLE_TOTAL.getId(), 0);
-            Integer transferredTotal = (Integer) pool.getOrDefault(DataType.TRANSFERRED_TOTAL.getId(), 0);
-            Integer failedToAttendTotal = (Integer) pool.getOrDefault(DataType.FAILED_TO_ATTEND_TOTAL.getId(), 0);
+            Long summonsTotal = (Long) pool.getOrDefault(DataType.JURORS_SUMMONED_TOTAL.getId(), 0L);
+            int respondedTotal = (Integer) pool.getOrDefault(DataType.RESPONDED_TOTAL.getId(), 0);
+            int attendedTotal = (Integer) pool.getOrDefault(DataType.ATTENDED_TOTAL.getId(), 0);
+            int panelTotal = (Integer) pool.getOrDefault(DataType.PANEL_TOTAL.getId(), 0);
+            int jurorTotal = (Integer) pool.getOrDefault(DataType.JUROR_TOTAL.getId(), 0);
+            int excusedTotal = (Integer) pool.getOrDefault(DataType.EXCUSED_TOTAL.getId(), 0);
+            int disqualifiedTotal = (Integer) pool.getOrDefault(DataType.DISQUALIFIED_TOTAL.getId(), 0);
+            int deferredTotal = (Integer) pool.getOrDefault(DataType.DEFERRED_TOTAL.getId(), 0);
+            int reassignedTotal = (Integer) pool.getOrDefault(DataType.REASSIGNED_TOTAL.getId(), 0);
+            int undeliverableTotal = (Integer) pool.getOrDefault(DataType.UNDELIVERABLE_TOTAL.getId(), 0);
+            int transferredTotal = (Integer) pool.getOrDefault(DataType.TRANSFERRED_TOTAL.getId(), 0);
+            int failedToAttendTotal = (Integer) pool.getOrDefault(DataType.FAILED_TO_ATTEND_TOTAL.getId(), 0);
 
-            pool.put(DataType.SUMMONS_TOTAL_PERCENTAGE.getId(), 100);
-            pool.put(DataType.RESPONDED_TOTAL_PERCENTAGE.getId(), calculatePercentage(summonsTotal, respondedTotal));
-            pool.put(DataType.ATTENDED_TOTAL_PERCENTAGE.getId(), calculatePercentage(summonsTotal, attendedTotal));
-            pool.put(DataType.PANEL_TOTAL_PERCENTAGE.getId(), calculatePercentage(summonsTotal, panelTotal));
-            pool.put(DataType.JUROR_TOTAL_PERCENTAGE.getId(), calculatePercentage(summonsTotal, jurorTotal));
-            pool.put(DataType.EXCUSED_TOTAL_PERCENTAGE.getId(), calculatePercentage(summonsTotal, excusedTotal));
-            pool.put(DataType.DISQUALIFIED_TOTAL_PERCENTAGE.getId(), calculatePercentage(summonsTotal, disqualifiedTotal));
-            pool.put(DataType.DEFERRED_TOTAL_PERCENTAGE.getId(), calculatePercentage(summonsTotal, deferredTotal));
-            pool.put(DataType.REASSIGNED_TOTAL_PERCENTAGE.getId(), calculatePercentage(summonsTotal, reassignedTotal));
-            pool.put(DataType.UNDELIVERABLE_TOTAL_PERCENTAGE.getId(), calculatePercentage(summonsTotal, undeliverableTotal));
-            pool.put(DataType.TRANSFERRED_TOTAL_PERCENTAGE.getId(), calculatePercentage(summonsTotal, transferredTotal));
-            pool.put(DataType.FAILED_TO_ATTEND_TOTAL_PERCENTAGE.getId(), calculatePercentage(summonsTotal, failedToAttendTotal));
+            pool.put(DataType.RESPONDED_TOTAL_PERCENTAGE.getId(),
+                NumberUtils.calculatePercentage(respondedTotal, summonsTotal));
+            pool.put(DataType.ATTENDED_TOTAL_PERCENTAGE.getId(),
+                NumberUtils.calculatePercentage(attendedTotal, summonsTotal));
+            pool.put(DataType.PANEL_TOTAL_PERCENTAGE.getId(),
+                NumberUtils.calculatePercentage(panelTotal, summonsTotal));
+            pool.put(DataType.JUROR_TOTAL_PERCENTAGE.getId(),
+                NumberUtils.calculatePercentage(jurorTotal, summonsTotal));
+            pool.put(DataType.EXCUSED_TOTAL_PERCENTAGE.getId(),
+                NumberUtils.calculatePercentage(excusedTotal, summonsTotal));
+            pool.put(DataType.DISQUALIFIED_TOTAL_PERCENTAGE.getId(),
+                NumberUtils.calculatePercentage(disqualifiedTotal, summonsTotal));
+            pool.put(DataType.DEFERRED_TOTAL_PERCENTAGE.getId(),
+                NumberUtils.calculatePercentage(deferredTotal, summonsTotal));
+            pool.put(DataType.REASSIGNED_TOTAL_PERCENTAGE.getId(),
+                NumberUtils.calculatePercentage(reassignedTotal, summonsTotal));
+            pool.put(DataType.UNDELIVERABLE_TOTAL_PERCENTAGE.getId(),
+                NumberUtils.calculatePercentage(undeliverableTotal, summonsTotal));
+            pool.put(DataType.TRANSFERRED_TOTAL_PERCENTAGE.getId(),
+                NumberUtils.calculatePercentage(transferredTotal, summonsTotal));
+            pool.put(DataType.FAILED_TO_ATTEND_TOTAL_PERCENTAGE.getId(),
+                NumberUtils.calculatePercentage(failedToAttendTotal, summonsTotal));
         });
-    }
-
-    private Integer calculatePercentage(Integer total, Integer value) {
-        return (int) Math.round((value * 100.0) / total);
     }
 
     @Override

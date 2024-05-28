@@ -19,4 +19,8 @@ public class NumberUtils {
             :
                 integer;
     }
+
+    public static int calculatePercentage(long numerator, long denominator) {
+        return denominator == 0 ? 0 : (int) Math.round((numerator * 100.0) / denominator);
+    }
 }

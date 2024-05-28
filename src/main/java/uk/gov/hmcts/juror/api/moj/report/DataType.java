@@ -173,18 +173,17 @@ public enum DataType implements IDataType {
         new CaseBuilder().when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.TRANSFERRED)).then(1).otherwise(0)
             .sum(),
         QJurorPool.jurorPool),
-    // TODO: update undeliverable to be attended
-    ATTENDED_TOTAL("Attended", Integer.class,
-        new CaseBuilder().when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.UNDELIVERABLE)).then(1).otherwise(0).sum(),
-        QJurorPool.jurorPool),
     FAILED_TO_ATTEND_TOTAL("FTA", Integer.class,
         new CaseBuilder()
             .when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.FAILED_TO_ATTEND)).then(1).otherwise(0)
             .sum(),
         QJurorPool.jurorPool),
 
+    JURORS_SUMMONED_TOTAL("Summoned", Long.class, QJurorPool.jurorPool.count(), QJurorPool.jurorPool),
+    ATTENDED_TOTAL("Attended", Integer.class, new CaseBuilder()
+        .when(QJurorPool.jurorPool.appearances.size().gt(0)).then(1).otherwise(0).sum(), QJurorPool.jurorPool),
+
     // PERCENTAGES
-    SUMMONS_TOTAL_PERCENTAGE("Summons Total Percentage", Integer.class),
     RESPONDED_TOTAL_PERCENTAGE("Responded Total Percentage", Integer.class),
     ATTENDED_TOTAL_PERCENTAGE("Attended Total Percentage", Integer.class),
     PANEL_TOTAL_PERCENTAGE("Panel Total Percentage", Integer.class),
