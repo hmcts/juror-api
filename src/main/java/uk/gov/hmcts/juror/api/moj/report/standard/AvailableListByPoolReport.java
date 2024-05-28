@@ -30,7 +30,8 @@ public class AvailableListByPoolReport extends AbstractStandardReport implements
             DataType.FIRST_NAME,
             DataType.LAST_NAME,
             DataType.STATUS,
-            DataType.JUROR_REASONABLE_ADJUSTMENT_WITH_MESSAGE);
+            DataType.JUROR_REASONABLE_ADJUSTMENT_WITH_MESSAGE,
+            DataType.ON_CALL);
 
         addJoinOverride(
             JoinOverrideDetails.builder()

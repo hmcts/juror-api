@@ -230,6 +230,12 @@ class AvailableListByDateReportBureauITest extends AbstractGroupedReportControll
                                     .dataType("String")
                                     .headings(null)
                                     .build()))
+                            .build(),
+                        StandardReportResponse.TableData.Heading.builder()
+                            .id("on_call")
+                            .name("On Call")
+                            .dataType("Boolean")
+                            .headings(null)
                             .build()))
                     .data(data)
                     .build())
