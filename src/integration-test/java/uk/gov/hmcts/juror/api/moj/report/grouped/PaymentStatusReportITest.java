@@ -14,6 +14,8 @@ import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Sql({
@@ -23,7 +25,7 @@ import java.util.List;
 @SuppressWarnings({
     "PMD.JUnitTestsShouldIncludeAssert"//False positive
 })
-public class PaymentStatusReportITest extends AbstractGroupedReportControllerITest {
+class PaymentStatusReportITest extends AbstractGroupedReportControllerITest {
 
     @Autowired
     public PaymentStatusReportITest(TestRestTemplate template) {
@@ -83,37 +85,44 @@ public class PaymentStatusReportITest extends AbstractGroupedReportControllerITe
                         .data(new GroupedTableData()
                             .add("Sent for payment", List.of(
                                 new ReportLinkedMap<String, Object>()
-                                    .add("creation_date", "2024-01-01")
+                                    .add("creation_date",
+                                        DateTimeFormatter.ISO_DATE.format(LocalDate.now().minusDays(10)))
                                     .add("total_amount", 11.17)
                                     .add("payments", 1)
                                     .add("consolidated_file_reference", "File Name 1"),
                                 new ReportLinkedMap<String, Object>()
-                                    .add("creation_date", "2024-01-01")
+                                    .add("creation_date",
+                                        DateTimeFormatter.ISO_DATE.format(LocalDate.now().minusDays(10)))
                                     .add("total_amount", 15.13)
                                     .add("payments", 1)
                                     .add("consolidated_file_reference", "File Name 2"),
                                 new ReportLinkedMap<String, Object>()
-                                    .add("creation_date", "2024-01-02")
+                                    .add("creation_date",
+                                        DateTimeFormatter.ISO_DATE.format(LocalDate.now().minusDays(9)))
                                     .add("total_amount", 13.15)
                                     .add("payments", 1)
                                     .add("consolidated_file_reference", "File Name 1"),
                                 new ReportLinkedMap<String, Object>()
-                                    .add("creation_date", "2024-01-03")
+                                    .add("creation_date",
+                                        DateTimeFormatter.ISO_DATE.format(LocalDate.now().minusDays(8)))
                                     .add("total_amount", 12.16)
                                     .add("payments", 1)
                                     .add("consolidated_file_reference", "File Name 1"),
                                 new ReportLinkedMap<String, Object>()
-                                    .add("creation_date", "2024-01-03")
+                                    .add("creation_date",
+                                        DateTimeFormatter.ISO_DATE.format(LocalDate.now().minusDays(8)))
                                     .add("total_amount", 14.14)
                                     .add("payments", 1)
                                     .add("consolidated_file_reference", "File Name 2")))
                             .add("Approved but not yet sent for payment", List.of(
                                 new ReportLinkedMap<String, Object>()
-                                    .add("creation_date", "2024-01-01")
+                                    .add("creation_date",
+                                        DateTimeFormatter.ISO_DATE.format(LocalDate.now().minusDays(10)))
                                     .add("total_amount", 39.36)
                                     .add("payments", 3),
                                 new ReportLinkedMap<String, Object>()
-                                    .add("creation_date", "2024-01-02")
+                                    .add("creation_date",
+                                        DateTimeFormatter.ISO_DATE.format(LocalDate.now().minusDays(9)))
                                     .add("total_amount", 48.49)
                                     .add("payments", 3))))
                         .build())

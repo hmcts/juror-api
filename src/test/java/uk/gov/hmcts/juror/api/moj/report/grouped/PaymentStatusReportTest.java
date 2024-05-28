@@ -19,6 +19,11 @@ import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.service.CourtLocationService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,6 +41,8 @@ class PaymentStatusReportTest extends AbstractGroupedReportTestSupport<PaymentSt
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
     private CourtLocationService courtLocationService;
 
+    private Clock clock;
+
     public PaymentStatusReportTest() {
         super(QPaymentData.paymentData,
             PaymentStatusReport.RequestValidator.class,
@@ -52,6 +59,10 @@ class PaymentStatusReportTest extends AbstractGroupedReportTestSupport<PaymentSt
     public void beforeEach() {
         this.courtLocationService = mock(CourtLocationService.class);
         this.securityUtilMockedStatic = mockStatic(SecurityUtil.class);
+        this.clock = Clock.fixed(
+            Instant.now().truncatedTo(ChronoUnit.SECONDS),
+            ZoneId.of("UCT")
+        );
         super.beforeEach();
     }
 
@@ -64,7 +75,7 @@ class PaymentStatusReportTest extends AbstractGroupedReportTestSupport<PaymentSt
 
     @Override
     public PaymentStatusReport createReport(PoolRequestRepository poolRequestRepository) {
-        return new PaymentStatusReport(courtLocationService);
+        return new PaymentStatusReport(courtLocationService, clock);
     }
 
     @Override
@@ -85,6 +96,8 @@ class PaymentStatusReportTest extends AbstractGroupedReportTestSupport<PaymentSt
         verify(query, times(1))
             .where(QPaymentData.paymentData.courtLocation.locCode.eq(TestConstants.VALID_COURT_LOCATION));
 
+        verify(query, times(1))
+            .where(QPaymentData.paymentData.creationDateTime.after(LocalDateTime.now(clock).minusDays(30)));
         verify(report, times(1)).addGroupBy(
             query,
             PaymentStatusDataTypes.CREATION_DATE,
@@ -95,9 +108,10 @@ class PaymentStatusReportTest extends AbstractGroupedReportTestSupport<PaymentSt
     }
 
     @Override
-    public Map<String, AbstractReportResponse.DataTypeValue> positiveGetHeadingsTypical(StandardReportRequest request,
-                                                                                        AbstractReportResponse.TableData<GroupedTableData> tableData,
-                                                                                        GroupedTableData data) {
+    public Map<String, AbstractReportResponse.DataTypeValue> positiveGetHeadingsTypical(
+        StandardReportRequest request,
+        AbstractReportResponse.TableData<GroupedTableData> tableData,
+        GroupedTableData data) {
         securityUtilMockedStatic.when(SecurityUtil::getLocCode).thenReturn(TestConstants.VALID_COURT_LOCATION);
         CourtLocation courtLocation = mock(CourtLocation.class);
 

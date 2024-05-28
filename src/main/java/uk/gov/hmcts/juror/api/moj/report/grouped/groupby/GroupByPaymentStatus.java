@@ -1,13 +1,10 @@
 package uk.gov.hmcts.juror.api.moj.report.grouped.groupby;
 
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupByResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.report.IDataType;
 import uk.gov.hmcts.juror.api.moj.report.IReportGroupBy;
-import uk.gov.hmcts.juror.api.moj.report.ReportGroupBy;
-import uk.gov.hmcts.juror.api.moj.report.datatypes.ExpenseDataTypes;
 import uk.gov.hmcts.juror.api.moj.report.datatypes.PaymentStatusDataTypes;
 
 import java.util.Collection;

@@ -58,6 +58,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     ApplicationBeans.class
 })
 @ActiveProfiles({"development", "test"})
+@SuppressWarnings("PMD.MutableStaticState")
 class SecurityConfigTest {
 
     @MockBean
