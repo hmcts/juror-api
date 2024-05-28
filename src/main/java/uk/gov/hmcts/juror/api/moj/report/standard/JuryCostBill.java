@@ -1,51 +1,39 @@
-package uk.gov.hmcts.juror.api.moj.report.grouped;
+package uk.gov.hmcts.juror.api.moj.report.standard;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedReportResponse;
-import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.domain.QReportsJurorPayments;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
-import uk.gov.hmcts.juror.api.moj.exception.MojException;
-import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReport;
-import uk.gov.hmcts.juror.api.moj.report.ReportGroupBy;
+import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.datatypes.ReportsJurorPaymentsDataTypes;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
-import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
-import java.util.Optional;
 
 @Component
-public class TrialAttendanceReport extends AbstractGroupedReport {
-
+public class JuryCostBill extends AbstractStandardReport {
     private final TrialRepository trialRepository;
 
     @Autowired
-    public TrialAttendanceReport(TrialRepository trialRepository) {
+    public JuryCostBill(TrialRepository trialRepository) {
         super(QReportsJurorPayments.reportsJurorPayments,
-            ReportGroupBy.builder()
-                  .dataType(ReportsJurorPaymentsDataTypes.ATTENDANCE_DATE)
-                  .removeGroupByFromResponse(true)
-                  .build(),
-            ReportsJurorPaymentsDataTypes.JUROR_NUMBER,
-            ReportsJurorPaymentsDataTypes.FIRST_NAME,
-            ReportsJurorPaymentsDataTypes.LAST_NAME,
-            ReportsJurorPaymentsDataTypes.CHECKED_IN,
-            ReportsJurorPaymentsDataTypes.CHECKED_OUT,
-            ReportsJurorPaymentsDataTypes.HOURS_ATTENDED,
-            ReportsJurorPaymentsDataTypes.ATTENDANCE_AUDIT,
-            ReportsJurorPaymentsDataTypes.PAYMENT_AUDIT,
-            ReportsJurorPaymentsDataTypes.TOTAL_DUE,
-            ReportsJurorPaymentsDataTypes.TOTAL_PAID);
+              ReportsJurorPaymentsDataTypes.ATTENDANCE_DATE,
+              ReportsJurorPaymentsDataTypes.FINANCIAL_LOSS_DUE_SUM,
+              ReportsJurorPaymentsDataTypes.TRAVEL_DUE_SUM,
+              ReportsJurorPaymentsDataTypes.SUBSISTENCE_DUE_SUM,
+              ReportsJurorPaymentsDataTypes.SMARTCARD_DUE_SUM,
+              ReportsJurorPaymentsDataTypes.TOTAL_DUE_SUM,
+              ReportsJurorPaymentsDataTypes.TOTAL_PAID_SUM);
 
         this.trialRepository = trialRepository;
-
         isCourtUserOnly();
     }
 
@@ -57,14 +45,13 @@ public class TrialAttendanceReport extends AbstractGroupedReport {
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QReportsJurorPayments.reportsJurorPayments.trialNumber.eq(request.getTrialNumber()));
-        query.where(QReportsJurorPayments.reportsJurorPayments.locCode.eq(SecurityUtil.getLocCode()));
-        query.orderBy(QReportsJurorPayments.reportsJurorPayments.jurorNumber.asc());
+        addGroupBy(query, ReportsJurorPaymentsDataTypes.ATTENDANCE_DATE);
     }
 
     @Override
-    public Map<String, GroupedReportResponse.DataTypeValue> getHeadings(
+    public Map<String, AbstractReportResponse.DataTypeValue> getHeadings(
         StandardReportRequest request,
-        StandardReportResponse.TableData<GroupedTableData> tableData) {
+        StandardReportResponse.TableData<StandardTableData> tableData) {
 
         Trial trial = getTrial(request.getTrialNumber(), trialRepository);
 

@@ -91,6 +91,25 @@ public enum ReportsJurorPaymentsDataTypes implements IDataType {
     TOTAL_PAID("Paid", BigDecimal.class,
         QReportsJurorPayments.reportsJurorPayments.totalPaid,
         QReportsJurorPayments.reportsJurorPayments),
+
+    FINANCIAL_LOSS_DUE_SUM("Financial loss", BigDecimal.class,
+                       QReportsJurorPayments.reportsJurorPayments.totalFinancialLossDue.sum(),
+                       QReportsJurorPayments.reportsJurorPayments),
+    TRAVEL_DUE_SUM("Travel", BigDecimal.class,
+                   QReportsJurorPayments.reportsJurorPayments.totalTravelDue.sum(),
+                   QReportsJurorPayments.reportsJurorPayments),
+    SUBSISTENCE_DUE_SUM("Food and drink", BigDecimal.class,
+                        QReportsJurorPayments.reportsJurorPayments.subsistenceDue.sum(),
+                        QReportsJurorPayments.reportsJurorPayments),
+    SMARTCARD_DUE_SUM("Smartcard", BigDecimal.class,
+                      QReportsJurorPayments.reportsJurorPayments.smartCardDue.sum(),
+                      QReportsJurorPayments.reportsJurorPayments),
+    TOTAL_DUE_SUM("Total due", BigDecimal.class,
+                  QReportsJurorPayments.reportsJurorPayments.totalDue.sum(),
+                  QReportsJurorPayments.reportsJurorPayments),
+    TOTAL_PAID_SUM("Paid", BigDecimal.class,
+                   QReportsJurorPayments.reportsJurorPayments.totalPaid.sum(),
+                   QReportsJurorPayments.reportsJurorPayments),
     ;
 
 
