@@ -354,9 +354,11 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         AppearanceId appearanceId = new AppearanceId(jurorNumber, commonData.getAttendanceDate(), courtLocation);
 
         AttendanceDetailsResponse.Summary summary;
-        Optional<Appearance> appearance = appearanceRepository.findById(appearanceId);
-        if (appearance.isPresent()) {
-            appearanceRepository.deleteById(appearanceId);
+        Optional<Appearance> appearanceOptional = appearanceRepository.findById(appearanceId);
+        if (appearanceOptional.isPresent()) {
+            Appearance appearance = appearanceOptional.get();
+            appearance.setAttendanceType(AttendanceType.ABSENT);
+            appearanceRepository.save(appearance);
             summary = AttendanceDetailsResponse.Summary.builder().deleted(1).build();
         } else {
             summary = AttendanceDetailsResponse.Summary.builder()
