@@ -6,7 +6,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
@@ -24,6 +23,7 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.juror.api.TestConstants.INVALID_POOL_NUMBER;
 import static uk.gov.hmcts.juror.api.TestConstants.VALID_COURT_LOCATION;
 import static uk.gov.hmcts.juror.api.TestConstants.VALID_POOL_NUMBER;
 
@@ -123,7 +123,7 @@ class OnCallReportTest extends AbstractStandardReportTestSupport<OnCallReport> {
     @Test
     void negativeInvalidPoolNumber() {
         StandardReportRequest request = getValidRequest();
-        request.setPoolNumber(TestConstants.INVALID_POOL_NUMBER);
+        request.setPoolNumber(INVALID_POOL_NUMBER);
         assertValidationFails(request, new ValidationFailure("poolNumber", "must match \"^\\d{9}$\""));
     }
 
