@@ -1,10 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.domain;
 
 import groovy.transform.Immutable;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
@@ -29,14 +26,17 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.POOL_NUMBER;
 @Getter
 @AllArgsConstructor
 @Immutable
+@IdClass(ReportsJurorPaymentsKey.class)
 public class ReportsJurorPayments extends Address implements Serializable {
 
     @Column(name = "trial_number")
     private String trialNumber;
 
+    @Id
     @Column(name = "loc_code")
     private String locCode;
 
+    @Id
     @Column(name = "attendance_date")
     private LocalDate attendanceDate;
 
