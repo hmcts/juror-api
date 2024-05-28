@@ -51,7 +51,8 @@ public class StandardReportRequest {
         "UnpaidAttendanceReportDetailedReport",
         "JurorExpenditureReportLowLevelReport",
         "JurorExpenditureReportMidLevelReport",
-        "JurorExpenditureReportHighLevelReport"
+        "JurorExpenditureReportHighLevelReport",
+        "DeferredListByCourtReport"
     })
     private String reportType;
 
