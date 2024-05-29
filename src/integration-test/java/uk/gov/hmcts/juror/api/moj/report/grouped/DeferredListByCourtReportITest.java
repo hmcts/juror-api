@@ -5,6 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupByResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReportControllerITest;
@@ -39,60 +42,50 @@ class DeferredListByCourtReportITest extends AbstractGroupedReportControllerITes
     }
 
     @Test
-    void positiveTypicalCourt() {
+    void positiveTypicalNotFound() {
         testBuilder()
             .triggerValid()
             .responseConsumer(this::verifyAndRemoveReportCreated)
-            .assertEquals(getTypicalResponseCourt());
+            .assertEquals(createResponse(0, new GroupedTableData()));
     }
 
     @Test
-    void positiveNotFound() {
+    void positiveTypical() {
         testBuilder()
-            .jwt(getCourtJwt("400"))
             .triggerValid()
             .responseConsumer(this::verifyAndRemoveReportCreated)
-            .assertEquals(StandardReportResponse.builder()
-                .headings(new ReportLinkedMap<String, StandardReportResponse.DataTypeValue>()
-                    .add("total_deferred", StandardReportResponse.DataTypeValue.builder()
-                        .displayName("Total deferred")
-                        .dataType("Long")
-                        .value(0)
-                        .build()))
-                .tableData(
-                    StandardReportResponse.TableData.<List<LinkedHashMap<String, Object>>>builder()
-                        .headings(List.of(
-                            StandardReportResponse.TableData.Heading.builder()
-                                .id("deferred_to")
-                                .name("Deferred to")
-                                .dataType("LocalDate")
-                                .headings(null)
-                                .build(),
-                            StandardReportResponse.TableData.Heading.builder()
-                                .id("number_deferred")
-                                .name("Number Deferred")
-                                .dataType("Long")
-                                .headings(null)
-                                .build()))
-                        .data(List.of())
-                        .build())
-                .build());
+            .assertEquals(getTypicalResponse());
     }
 
-    private StandardReportResponse getTypicalResponseCourt() {
-        return StandardReportResponse.builder()
+    private GroupedReportResponse getTypicalResponse() {
+        return createResponse(3,
+            new GroupedTableData()
+                .add("Chester (415)", List.of(
+                    new ReportLinkedMap<String, Object>()
+                        .add("deferred_to", "2023-01-06")
+                        .add("number_deferred", "1"),
+                    new ReportLinkedMap<String, Object>()
+                        .add("deferred_to", "2023-01-07")
+                        .add("number_deferred", "2"))));
+    }
+
+    private GroupedReportResponse createResponse(int count, GroupedTableData groupedTableData) {
+        return GroupedReportResponse.builder()
+            .groupBy(GroupByResponse.builder()
+                .name("COURT_LOCATION_NAME_AND_CODE")
+                .build())
             .headings(new ReportLinkedMap<String, StandardReportResponse.DataTypeValue>()
                 .add("total_deferred", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Total deferred")
                     .dataType("Long")
-                    .value(4)
+                    .value(count)
                     .build()))
             .tableData(
-                StandardReportResponse.TableData.<List<LinkedHashMap<String, Object>>>builder()
+                AbstractReportResponse.TableData.<GroupedTableData>builder()
                     .headings(List.of(
                         StandardReportResponse.TableData.Heading.builder()
                             .id("deferred_to")
-                            .name("Deferred to")
+                            .name("Deferred To")
                             .dataType("LocalDate")
                             .headings(null)
                             .build(),
@@ -102,33 +95,7 @@ class DeferredListByCourtReportITest extends AbstractGroupedReportControllerITes
                             .dataType("Long")
                             .headings(null)
                             .build()))
-                    .data(List.of(
-                        new GroupedTableData()
-                            .add("CHESTER (415)", List.of(
-                                new ReportLinkedMap<String, Object>()
-                                    .add("deferred_to", "Fri 4 Nov 2024")
-                                    .add("deferred_to", "Fri 4 Nov 2024")
-                                    .add("deferred_to", "Fri 4 Nov 2024")
-                                    .add("deferred_to", "Fri 4 Nov 2024")
-                                    .add("deferred_to", "Fri 4 Nov 2024")
-                            ))
-                            .add("MANCHESTER CROWN SQUARE (415)", List.of(
-                                new ReportLinkedMap<String, Object>()
-                                    .add("deferred_to", "Fri 4 Nov 2024")
-                                    .add("deferred_to", "Fri 4 Nov 2024")
-                                    .add("deferred_to", "Fri 4 Nov 2024")
-                                    .add("deferred_to", "Fri 4 Nov 2024")
-                                    .add("deferred_to", "Fri 4 Nov 2024")
-                            ))
-                            .add("MANCHESTER MINSHULL STREET (415)", List.of(
-                                new ReportLinkedMap<String, Object>()
-                                    .add("deferred_to", "Fri 4 Nov 2024")
-                                    .add("deferred_to", "Fri 4 Nov 2024")
-                                    .add("deferred_to", "Fri 4 Nov 2024")
-                                    .add("deferred_to", "Fri 4 Nov 2024")
-                                    .add("deferred_to", "Fri 4 Nov 2024")
-                            ))
-                    ))
+                    .data(groupedTableData)
                     .build())
             .build();
     }
