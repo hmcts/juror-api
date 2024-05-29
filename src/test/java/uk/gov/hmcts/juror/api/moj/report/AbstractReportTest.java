@@ -23,6 +23,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolType;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.QPendingJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
@@ -99,7 +100,7 @@ class AbstractReportTest {
         void sizeCheck() {
             assertThat(AbstractReport.CLASS_TO_JOIN).hasSize(6);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QPanel.panel)).hasSize(1);
-            assertThat(AbstractReport.CLASS_TO_JOIN.get(QJuror.juror)).hasSize(4);
+            assertThat(AbstractReport.CLASS_TO_JOIN.get(QJuror.juror)).hasSize(5);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QJurorPool.jurorPool)).hasSize(2);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QPoolRequest.poolRequest)).hasSize(2);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QAppearance.appearance)).hasSize(2);
@@ -116,6 +117,18 @@ class AbstractReportTest {
             assertThat(map.containsKey(QJurorPool.jurorPool)).isTrue();
             assertThat(map.get(QJurorPool.jurorPool)).isEqualTo(
                 new Predicate[]{QJuror.juror.eq(QJurorPool.jurorPool.juror)}
+            );
+        }
+
+        @Test
+        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+        void jurorToPendingJuror() {
+            assertThat(AbstractReport.CLASS_TO_JOIN.containsKey(QJuror.juror)).isTrue();
+            Map<EntityPath<?>, Predicate[]> map = AbstractReport.CLASS_TO_JOIN.get(QJuror.juror);
+
+            assertThat(map.containsKey(QPendingJuror.pendingJuror)).isTrue();
+            assertThat(map.get(QPendingJuror.pendingJuror)).isEqualTo(
+                new Predicate[]{QPendingJuror.pendingJuror.jurorNumber.eq(QJuror.juror.jurorNumber)}
             );
         }
 
