@@ -30,7 +30,7 @@ public enum DataType implements IDataType {
     FIRST_NAME("First Name", String.class, QJuror.juror.firstName, QJuror.juror),
     LAST_NAME("Last Name", String.class, QJuror.juror.lastName, QJuror.juror),
     STATUS("Status", String.class, QJurorPool.jurorPool.status.statusDesc, QJurorPool.jurorPool),
-    JUROR_POOL_COUNT("Count", String.class, QJurorPool.jurorPool.count(), QJurorPool.jurorPool),
+    JUROR_POOL_COUNT("Count", Long.class, QJurorPool.jurorPool.count(), QJurorPool.jurorPool),
     SUMMONED_RESPONDED("Responded", Boolean.class, QJurorPool.jurorPool.status.status
         .eq(IJurorStatus.RESPONDED)),
     DEFERRALS("Deferrals", String.class, QJuror.juror.noDefPos, QJuror.juror),
@@ -123,8 +123,6 @@ public enum DataType implements IDataType {
         QAppearance.appearance),
     IS_ACTIVE("Active", Boolean.class,
         QJurorPool.jurorPool.isActive, QJurorPool.jurorPool),
-    JUROR_POOL_COUNT("Juror Pool Count", Long.class,
-        QJurorPool.jurorPool.count(), QJurorPool.jurorPool),
     NEXT_ATTENDANCE_DATE("Next attendance date", LocalDate.class, QJurorPool.jurorPool.nextDate, QJurorPool.jurorPool),
     LAST_ATTENDANCE_DATE("Last attended on", LocalDate.class, QAppearance.appearance.attendanceDate.max(),
         QAppearance.appearance),

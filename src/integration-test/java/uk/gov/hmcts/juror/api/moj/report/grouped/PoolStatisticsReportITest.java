@@ -166,7 +166,7 @@ class PoolStatisticsReportITest extends AbstractGroupedReportControllerITest {
                         StandardReportResponse.TableData.Heading.builder()
                             .id("juror_pool_count")
                             .name("Count")
-                            .dataType("String")
+                            .dataType("Long")
                             .headings(null)
                             .build()))
                     .data(tableData)
