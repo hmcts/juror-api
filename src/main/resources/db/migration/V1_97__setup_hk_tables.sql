@@ -26,6 +26,13 @@ CREATE TABLE juror_mod.hk_params (
 	CONSTRAINT pk_hk_params_key PRIMARY KEY (key)
 );
 
+CREATE TABLE juror_mod.hk_owner_restrict (
+                                      id numeric(38) NOT NULL,
+                                      description varchar(60) NOT NULL,
+                                      value varchar(3) NOT NULL,
+                                      last_updated timestamp(0) NOT NULL
+);
+
 -- defaults taken from hk.hk_params
 INSERT INTO juror_mod.hk_params("key",value,description,last_updated)
 VALUES (1,2557,'Court data age threshold in days',NOW());

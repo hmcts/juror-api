@@ -79,7 +79,7 @@ BEGIN
 							AND
 							NOT EXISTS(
 										SELECT 1
-										FROM hk.hk_owner_restrict hor
+										FROM juror_mod.hk_owner_restrict hor
 										WHERE hor.id = jp.owner::INTEGER
 										AND hor.value = 'NO'
 									  )
