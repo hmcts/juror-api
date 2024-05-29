@@ -418,8 +418,9 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             appearance.getAttendanceDate());
 
         final AppearanceStage oldAppearanceStage = appearance.getAppearanceStage();
-        if (!Set.of(AppearanceStage.EXPENSE_ENTERED, AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT)
-            .contains(appearance.getAppearanceStage())) {
+        if (appearance.getAppearanceStage() != null &&
+            !Set.of(AppearanceStage.EXPENSE_ENTERED, AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT)
+                .contains(appearance.getAppearanceStage())) {
             throw new MojException.BusinessRuleViolation(
                 "Can only modify confirmed attendances that have no approved expenses",
                 MojException.BusinessRuleViolation.ErrorCode.APPEARANCE_MUST_HAVE_NO_APPROVED_EXPENSES);
