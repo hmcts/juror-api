@@ -9,6 +9,7 @@ import uk.gov.hmcts.juror.api.moj.domain.AppearanceId;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -73,4 +74,8 @@ public interface AppearanceRepository extends IAppearanceRepository, JpaReposito
 
 
     List<Appearance> findAllByJurorNumberAndPoolNumber(String jurorNumber, String poolNumber);
+
+
+    Optional<Appearance> findFirstByAttendanceAuditNumberEqualsAndLocCodeIn(String auditNumber,
+                                                                         Collection<String> locCode);
 }

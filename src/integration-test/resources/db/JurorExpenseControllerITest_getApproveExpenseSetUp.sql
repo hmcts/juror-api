@@ -6,10 +6,15 @@ VALUES ('PAYMENT_AUTH_CODE', 'testValue');
 delete
 from juror_mod.users
 where users.username in ('COURT_USER', 'COURT_USER2');
-INSERT INTO juror_mod.users (owner, username, email,name, active, team_id, version, approval_limit)
-VALUES ('415', 'COURT_USER', 'COURT_USER@email.gov.uk','Stephanie Mcintyre', true, 1, 1, 10000),
-       ('415', 'COURT_USER2', 'COURT_USER2@email.gov.uk', 'Stephanie Mcintyre',true, 1, 1, 500),
-       ('415', 'COURT_USER3', 'COURT_USER3@email.gov.uk', 'Stephanie Mcintyre', true, 1, 1, 100);
+INSERT INTO juror_mod.users (username, email, name, active, team_id, approval_limit)
+VALUES ('COURT_USER', 'COURT_USER@email.gov.uk', 'Stephanie Mcintyre', true, 1, 10000),
+       ('COURT_USER2', 'COURT_USER2@email.gov.uk', 'Stephanie Mcintyre', true, 1, 500),
+       ('COURT_USER3', 'COURT_USER3@email.gov.uk', 'Stephanie Mcintyre', true, 1, 100);
+
+insert into juror_mod.user_courts (username, loc_code)
+values ('COURT_USER', '415'),
+       ('COURT_USER2', '415'),
+       ('COURT_USER3', '415');
 
 INSERT INTO juror_mod.user_roles (username, role)
 VALUES ('COURT_USER', 'MANAGER'),
@@ -82,23 +87,32 @@ values ('415', '641500020', '415230101', 2, '415', true),
 
 
 
-INSERT INTO juror_mod.users (owner, username,email, name, active, team_id, version)
-VALUES ('415', 'smcintyre','smcintyre@email.gov.uk', 'Stephanie Mcintyre', true, 1, 1),
-       ('415', 'sbell','sbell@email.gov.uk', 'Sandra Bell', true, 2, 1),
-       ('415', 'alineweaver','alineweaver@email.gov.uk', 'Albert Lineweaver', true, 3, 1),
-       ('416', 'jbrown1','jbrown1@email.gov.uk', 'Jared Brown', true, 1, 1),
-       ('417', 'jwilliams','jwilliams@email.gov.uk', 'Jeremy Williams', true, 2, 1),
-       ('418', 'jbrown','jbrown@email.gov.uk', 'John Brown', true, 3, 1);
+INSERT INTO juror_mod.users (username, email, name, active, team_id)
+VALUES ('smcintyre', 'smcintyre@email.gov.uk', 'Stephanie Mcintyre', true, 1),
+       ('sbell', 'sbell@email.gov.uk', 'Sandra Bell', true, 2),
+       ('alineweaver', 'alineweaver@email.gov.uk', 'Albert Lineweaver', true, 3),
+       ('jbrown1', 'jbrown1@email.gov.uk', 'Jared Brown', true, 1),
+       ('jwilliams', 'jwilliams@email.gov.uk', 'Jeremy Williams', true, 2),
+       ('jbrown', 'jbrown@email.gov.uk', 'John Brown', true, 3);
 
-INSERT INTO juror_mod.financial_audit_details(id, juror_revision, court_location_revision, type, created_by, created_on, juror_number, loc_code)
-VALUES (1234, 1, 1, 'FOR_APPROVAL', 'COURT_USER2', '2023-01-11 09:31:01.000','641500021','415'),
-       (123, 1, 1, 'FOR_APPROVAL', 'smcintyre', '2023-01-11 09:31:01.000','641500021','415'),
-       (321, 1, 1, 'APPROVED_BACS', 'smcintyre', '2023-01-12 09:32:02.000','641500021','415'),
-       (3, 1, 1, 'APPROVED_BACS', 'smcintyre', '2023-01-13 09:33:03.000','641500021','415'),
-       (12345, 1, 1, 'APPROVED_EDIT', 'smcintyre', '2023-01-14 09:34:04.000','641500021','415');
+insert into juror_mod.user_courts (username, loc_code)
+values ('smcintyre', '415'),
+       ('sbell', '415'),
+       ('alineweaver', '415'),
+       ('jbrown1', '416'),
+       ('jwilliams', '417'),
+       ('jbrown', '418');
 
-INSERT INTO juror_mod.financial_audit_details_appearances (financial_audit_id,loc_code, attendance_date,  appearance_version)
-VALUES (1234,'415', '2023-01-08',  1);
+INSERT INTO juror_mod.financial_audit_details(id, juror_revision, court_location_revision, type, created_by, created_on,
+                                              juror_number, loc_code)
+VALUES (1234, 1, 1, 'FOR_APPROVAL', 'COURT_USER2', '2023-01-11 09:31:01.000', '641500021', '415'),
+       (123, 1, 1, 'FOR_APPROVAL', 'smcintyre', '2023-01-11 09:31:01.000', '641500021', '415'),
+       (321, 1, 1, 'APPROVED_BACS', 'smcintyre', '2023-01-12 09:32:02.000', '641500021', '415'),
+       (3, 1, 1, 'APPROVED_BACS', 'smcintyre', '2023-01-13 09:33:03.000', '641500021', '415'),
+       (12345, 1, 1, 'APPROVED_EDIT', 'smcintyre', '2023-01-14 09:34:04.000', '641500021', '415');
+
+INSERT INTO juror_mod.financial_audit_details_appearances (financial_audit_id, loc_code, attendance_date, appearance_version)
+VALUES (1234,'415', '2023-01-08', 1);
 --Approved edited
 
 INSERT INTO juror_mod.appearance
@@ -117,7 +131,7 @@ values
     -- expenses for 641500020
     --3 Draft
     (1, '2023-01-05', '641500020', '415', '09:30', '16:00', false, '00:40', true, '415230101',
-     false, 10, 0, 20, 0, 30, 0, 40, 0, 50, 0, 60, 0, 70, 0, 80, 0, 90, 0, 100, 0, 25, 0, 'FULL_DAY',true,
+     false, 10, 0, 20, 0, 30, 0, 40, 0, 50, 0, 60, 0, 70, 0, 80, 0, 90, 0, 100, 0, 25, 0, 'FULL_DAY', true,
      null, 'EXPENSE_ENTERED'),
     (1, '2023-01-06', '641500020', '415', '09:30', '16:00', false, '00:40', true, '415230101',
      true, 11, 0, 21, 0, 31, 0, 41, 0, 51, 0, 61, 0, 71, 0, 81, 0, 91, 0, 101, 0, 26, 0, 'FULL_DAY', true,
@@ -135,7 +149,7 @@ values
      true, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'HALF_DAY', true,
      null, 'EXPENSE_ENTERED'),
     (1, '2023-01-07', '641500021', '415', '09:30', '16:00', false, '00:40', true, '415230101',
-     false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'NON_ATTENDANCE',true,
+     false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'NON_ATTENDANCE', true,
      null, 'EXPENSE_ENTERED'),
 
     -- expenses for 641500022

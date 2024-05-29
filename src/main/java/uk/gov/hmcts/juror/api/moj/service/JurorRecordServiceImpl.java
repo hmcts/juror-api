@@ -173,6 +173,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     private final AppearanceRepository appearanceRepository;
     private final ReasonableAdjustmentsRepository reasonableAdjustmentsRepository;
     private final Clock clock;
+    private final UserServiceModImpl userServiceModImpl;
 
     @Override
     @Transactional
@@ -472,6 +473,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         JurorAddressDto jurorAddress = jurorCreateRequestDto.getAddress();
         PendingJuror pendingJuror = PendingJuror.builder()
+            .addedBy(userServiceModImpl.findUserByUsername(SecurityUtil.getUsername()))
             .jurorNumber(pendingJurorNumber)
             .poolNumber(poolNumber)
             .title(jurorCreateRequestDto.getTitle())

@@ -32,13 +32,21 @@ VALUES (1, EXTRACT(EPOCH FROM current_date)),--Appearance
        (4, EXTRACT(EPOCH FROM current_date));--juror;
 
 
-INSERT INTO juror_mod.users (owner, username,email, name, active, team_id, version)
-VALUES ('415', 'smcintyre','smcintyre@email.gov.uk', 'Stephanie Mcintyre', true, 1, 1),
-       ('415', 'sbell','sbell@email.gov.uk', 'Sandra Bell', true, 2, 1),
-       ('415', 'alineweaver','alineweaver@email.gov.uk', 'Albert Lineweaver', true, 3, 1),
-       ('416', 'jbrown1','jbrown1@email.gov.uk', 'Jared Brown', true, 1, 1),
-       ('417', 'jwilliams','jwilliams@email.gov.uk', 'Jeremy Williams', true, 2, 1),
-       ('418', 'jbrown','jbrown@email.gov.uk', 'John Brown', true, 3, 1);
+INSERT INTO juror_mod.users (username,email, name, active, team_id)
+VALUES ('smcintyre','smcintyre@email.gov.uk', 'Stephanie Mcintyre', true, 1),
+       ('sbell','sbell@email.gov.uk', 'Sandra Bell', true, 2),
+       ('alineweaver','alineweaver@email.gov.uk', 'Albert Lineweaver', true, 3),
+       ('jbrown1','jbrown1@email.gov.uk', 'Jared Brown', true, 1),
+       ('jwilliams','jwilliams@email.gov.uk', 'Jeremy Williams', true, 2),
+       ('jbrown','jbrown@email.gov.uk', 'John Brown', true, 3);
+
+insert into juror_mod.user_courts (username, loc_code)
+values ('smcintyre', '415'),
+       ('sbell', '415'),
+       ('alineweaver', '415'),
+       ('jbrown1', '416'),
+       ('jwilliams', '417'),
+       ('jbrown', '418');
 
 INSERT INTO juror_mod.financial_audit_details(id, submitted_on, submitted_by, approved_on, approved_by,
                                               juror_revision_when_approved)
