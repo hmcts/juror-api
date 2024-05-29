@@ -14,6 +14,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@SuppressWarnings("PMD.TooManyFields")
 public class JurySummoningMonitorReportResponse {
 
     private Map<String, AbstractReportResponse.DataTypeValue> headings;
