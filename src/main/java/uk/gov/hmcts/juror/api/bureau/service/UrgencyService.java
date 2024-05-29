@@ -4,7 +4,7 @@ package uk.gov.hmcts.juror.api.bureau.service;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -69,7 +69,7 @@ public interface UrgencyService {
      * @param response     response to set flags on
      * @param jurorDetails pool details the response relates to
      */
-    void setUrgencyFlags(DigitalResponse response, JurorPool jurorDetails);
+    void setUrgencyFlags(AbstractJurorResponse response, JurorPool jurorDetails);
 
     /**
      * get super urgent based on current date, added for scheduler.
@@ -77,7 +77,7 @@ public interface UrgencyService {
      
      
      */
-    boolean isUrgent(DigitalResponse response, JurorPool jurorDetails);
+    boolean isUrgent(AbstractJurorResponse response, JurorPool jurorDetails);
 
     /**
      * get super urgent based on current date, added for scheduler.
@@ -85,7 +85,7 @@ public interface UrgencyService {
      
      
      */
-    boolean isSuperUrgent(DigitalResponse response, JurorPool jurorDetails);
+    boolean isSuperUrgent(AbstractJurorResponse response, JurorPool jurorDetails);
 
 
 }
