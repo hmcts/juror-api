@@ -20,6 +20,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.QPendingJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
@@ -69,6 +70,9 @@ public abstract class AbstractReport<T> implements IReport {
             new Predicate[]{
                 lowLevelFinancialAuditDetailsIncludingApprovedAmounts
                     .jurorNumber.eq(QJuror.juror.jurorNumber)
+            },
+            QPendingJuror.pendingJuror, new Predicate[]{
+                QPendingJuror.pendingJuror.jurorNumber.eq(QJuror.juror.jurorNumber)
             }
         ));
         CLASS_TO_JOIN.put(QJurorPool.jurorPool, Map.of(
@@ -149,7 +153,7 @@ public abstract class AbstractReport<T> implements IReport {
         if (!classToJoinOverrides.containsKey(joinDetails.getFrom())) {
             classToJoinOverrides.put(joinDetails.getFrom(), new HashMap<>());
         }
-        classToJoinOverrides.get(from).put(joinDetails.getTo(), joinDetails);
+        classToJoinOverrides.get(joinDetails.getFrom()).put(joinDetails.getTo(), joinDetails);
     }
 
     public void addAuthenticationConsumer(Consumer<StandardReportRequest> consumer) {
