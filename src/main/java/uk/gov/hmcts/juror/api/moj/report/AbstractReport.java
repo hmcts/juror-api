@@ -486,7 +486,7 @@ public abstract class AbstractReport<T> implements IReport {
         return courtLocation.getName() + " (" + courtLocation.getLocCode() + ")";
     }
 
-    PoolRequest getPoolRequest(String poolNumber) {
+    public PoolRequest getPoolRequest(String poolNumber) {
         Optional<PoolRequest> poolRequest = poolRequestRepository.findByPoolNumber(poolNumber);
         if (poolRequest.isEmpty()) {
             throw new MojException.NotFound("Pool not found", null);

@@ -118,6 +118,10 @@ public enum DataType implements IDataType {
         QJurorPool.jurorPool),
     POOL_NUMBER_BY_APPEARANCE("Pool Number", String.class, QAppearance.appearance.poolNumber,
         QAppearance.appearance),
+    IS_ACTIVE("Active", Boolean.class,
+        QJurorPool.jurorPool.isActive, QJurorPool.jurorPool),
+    JUROR_POOL_COUNT("Juror Pool Count", Long.class,
+        QJurorPool.jurorPool.count(), QJurorPool.jurorPool),
     NEXT_ATTENDANCE_DATE("Next attendance date", LocalDate.class, QJurorPool.jurorPool.nextDate, QJurorPool.jurorPool),
     LAST_ATTENDANCE_DATE("Last attended on", LocalDate.class, QAppearance.appearance.attendanceDate.max(),
         QAppearance.appearance),
@@ -205,7 +209,6 @@ public enum DataType implements IDataType {
             .otherwise(""),
         QPanel.panel),
     JUROR_NUMBER_FROM_TRIAL("Juror Number", String.class, QPanel.panel.juror.jurorNumber, QPanel.panel),
-
     COURT_LOCATION_NAME_AND_CODE("Court Location Name And Code", String.class,
         QCourtLocation.courtLocation.name.concat(" (")
             .concat(QCourtLocation.courtLocation.locCode).concat(")"), QPoolRequest.poolRequest),
