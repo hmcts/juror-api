@@ -45,7 +45,7 @@ public class JurorCommsRequestInformationLetterServiceImplTest {
     List<BulkPrintDataNotifyComms> jurorCommsPrintFilesList = new LinkedList<>();
     List<BulkPrintData> printFileList = new LinkedList<>();
 
-    LocalDate currentDate = LocalDateTime.now().toLocalDate();
+    LocalDate currentDate = LocalDate.now();
 
     @Mock
     private BulkPrintDataNotifyCommsRepository jurorCommsPrintFilesRepository;

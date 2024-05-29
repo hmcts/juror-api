@@ -30,7 +30,10 @@ public class JurorPoolQueries {
 
 
     public static BooleanExpression respondedStatus() {
-        return jurorDetail.jurorPool.status.status.eq(IJurorStatus.RESPONDED);
+        return jurorDetail.status.status.eq(IJurorStatus.RESPONDED);
+    }
+    public static BooleanExpression completedStatus() {
+        return jurorDetail.status.status.eq(IJurorStatus.COMPLETED);
     }
 
     /**
@@ -79,8 +82,8 @@ public class JurorPoolQueries {
     public static BooleanExpression courtDateWithin4Wks() {
 
         //hearingDate(next_date) between now and now+28 days.
-        return jurorDetail.jurorPool.nextDate.between(
-            LocalDateTime.now().toLocalDate(),
+        return jurorDetail.nextDate.between(
+            LocalDate.now(),
             LocalDateTime.now().plusDays(28L).toLocalDate());
     }
 
@@ -95,7 +98,7 @@ public class JurorPoolQueries {
      * Identify all Pool Records for which a sent To Comms needs to be sent.
      */
     public static BooleanExpression awaitingSentToCourtComms() {
-        return jurorDetail.jurorPool.nextDate.after(LocalDateTime.now().toLocalDate())
+        return jurorDetail.nextDate.after(LocalDate.now())
             .and(respondedStatus())
             .and(jurorRecordWithBureau())
             .and(sentToCourtCommsNotSent())
@@ -129,7 +132,7 @@ public class JurorPoolQueries {
      * Query to match Excused PoolCourt instances.
      */
     public static BooleanExpression excusedStatus() {
-        return jurorDetail.jurorPool.status.status.eq(IJurorStatus.EXCUSED);
+        return jurorDetail.status.status.eq(IJurorStatus.EXCUSED);
     }
 
     /**
@@ -147,15 +150,15 @@ public class JurorPoolQueries {
 
         return jurorDetail.juror.excusalDate.between(
             LocalDateTime.now().minusDays(3L).toLocalDate(),
-            LocalDateTime.now().toLocalDate());
+            LocalDate.now());
     }
 
     /**
      * Query COMPLETION_DATE between now and now minus SERVICE COMPLETION PARAMETER.
      */
     public static BooleanExpression completionDateBetweenSysdateCompletionParameter() {
-        return jurorDetail.juror.completionDate.between(LocalDateTime.now().minusDays(2L).toLocalDate(),
-            LocalDateTime.now().toLocalDate());
+        return jurorDetail.juror.completionDate.between(LocalDate.now().minusDays(2L),
+            LocalDate.now());
     }
 
     /**
@@ -182,7 +185,7 @@ public class JurorPoolQueries {
 
     public static BooleanExpression recordsForServiceCompletedComms() {
         return completionDateBetweenSysdateCompletionParameter()
-            .and(respondedStatus())
+            .and(completedStatus())
             .and(serviceCompCommsStatus())
             .and(completionDateNotNull());
 
