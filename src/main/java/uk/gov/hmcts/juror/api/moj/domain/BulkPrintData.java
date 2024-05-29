@@ -63,6 +63,6 @@ public class BulkPrintData {
     private boolean extractedFlag = false;
 
     @Column(name = "digital_comms")
-    private Boolean digitalComms;
+    private boolean digitalComms;
 
 }
