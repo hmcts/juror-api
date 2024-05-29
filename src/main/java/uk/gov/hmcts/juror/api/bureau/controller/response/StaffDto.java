@@ -41,10 +41,6 @@ public class StaffDto implements Serializable {
     @Schema(description = "Is the staff member active?")
     private boolean isActive;
 
-    @JsonProperty("version")
-    @Schema(description = "Optimistic locking version", example = "5")
-    private Integer version;
-
     public StaffDto(final User user) {
         if (!Objects.isNull(user)) {
             this.login = user.getUsername();
@@ -52,7 +48,6 @@ public class StaffDto implements Serializable {
             this.team = !Objects.isNull(user.getTeam()) ? new TeamDto(user.getTeam()) : null;
             this.isTeamLeader = user.isTeamLeader();
             this.isActive = user.isActive();
-            this.version = user.getVersion();
         }
     }
 }

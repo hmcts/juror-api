@@ -22,6 +22,9 @@ INSERT INTO juror_mod.contact_log (juror_number,user_id,notes,last_update,start_
                                                                                                                                ('644892530','BUREAULADY9','Really, really long call','2024-03-12 14:55:31','2024-03-02 00:00:00',NULL,'IN',NULL);
 
 -- team member with login enabled
-INSERT INTO juror_mod.users (owner, username,email, name, active, version,team_id)
-VALUES ('400','testlogin','testlogin@email.gov.uk','Test Login',true,0,1);
+INSERT INTO juror_mod.users (username,email, name, active,team_id)
+VALUES ('testlogin','testlogin@email.gov.uk','Test Login',true,1);
+
+insert into juror_mod.user_courts (username, loc_code)
+values ('testlogin', '400');
 --
