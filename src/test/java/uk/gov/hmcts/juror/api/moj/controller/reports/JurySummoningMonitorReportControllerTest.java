@@ -124,6 +124,18 @@ class JurySummoningMonitorReportControllerTest {
         }
 
         @Test
+        void negativeSearchByInvalidValue() throws Exception {
+            JurySummoningMonitorReportRequest request = getValidPayload();
+            request.setSearchBy("INVALID");
+            mockMvc.perform(post(URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtils.asJsonString(request)))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest());
+            verifyNoInteractions(jurySummoningMonitorReportService);
+        }
+
+        @Test
         void negativeSearchByPoolButNoPoolNumber() throws Exception {
             JurySummoningMonitorReportRequest request = getValidPayload();
             request.setPoolNumber(null);
