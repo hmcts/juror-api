@@ -21,7 +21,6 @@ public class PanelRepositoryImpl implements IPanelRepository {
     private static final QPanel PANEL = QPanel.panel;
     private static final QTrial TRIAL = QTrial.trial;
     private static final QCourtLocation COURT_LOCATION = QCourtLocation.courtLocation;
-    private static final QJuror JUROR = QJuror.juror;
     private static final QJurorPool JUROR_POOL = QJurorPool.jurorPool;
 
     /**
