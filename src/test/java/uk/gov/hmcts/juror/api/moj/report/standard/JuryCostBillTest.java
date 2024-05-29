@@ -82,8 +82,15 @@ class JuryCostBillTest extends AbstractStandardReportTestSupport<JuryCostBill> {
 
     @Override
     public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+        TestUtils.mockSecurityUtil(BureauJwtPayload.builder()
+                                       .locCode(TestConstants.VALID_COURT_LOCATION)
+                                       .owner(TestConstants.VALID_COURT_LOCATION)
+                                       .userType(UserType.COURT)
+                                       .build());
+
         report.preProcessQuery(query, request);
         verify(query).where(QReportsJurorPayments.reportsJurorPayments.trialNumber.eq("TRIALNUMBER"));
+        verify(query).where(QReportsJurorPayments.reportsJurorPayments.locCode.eq(TestConstants.VALID_COURT_LOCATION));
         verify(report, times(1)).addGroupBy(query, ReportsJurorPaymentsDataTypes.ATTENDANCE_DATE);
     }
 

@@ -14,6 +14,7 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.datatypes.ReportsJurorPaymentsDataTypes;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -45,6 +46,7 @@ public class JuryCostBill extends AbstractStandardReport {
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QReportsJurorPayments.reportsJurorPayments.trialNumber.eq(request.getTrialNumber()));
+        query.where(QReportsJurorPayments.reportsJurorPayments.locCode.eq(SecurityUtil.getLocCode()));
         addGroupBy(query, ReportsJurorPaymentsDataTypes.ATTENDANCE_DATE);
     }
 
