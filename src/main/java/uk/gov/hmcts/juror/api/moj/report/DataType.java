@@ -50,7 +50,7 @@ public enum DataType implements IDataType {
             .then(QJuror.juror.excusalDate)
             .otherwise((LocalDate) null),
         QJuror.juror),
-    EXCUSAL_DISQUAL_TYPE("Reason for excusal or disqualification type", String.class,
+    EXCUSAL_DISQUAL_TYPE("Excused or disqualified", String.class,
         new CaseBuilder()
             .when(QJuror.juror.disqualifyCode.isNotNull())
             .then("Disqualified")
