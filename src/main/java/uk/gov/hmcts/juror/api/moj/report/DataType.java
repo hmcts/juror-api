@@ -35,6 +35,33 @@ public enum DataType implements IDataType {
     DEFERRALS("Deferrals", String.class, QJuror.juror.noDefPos, QJuror.juror),
     ABSENCES("Absences", Long.class,
         QAppearance.appearance.attendanceType.eq(AttendanceType.ABSENT).count()),
+
+    EXCUSAL_DISQUAL_CODE("Reason for excusal or disqualification", String.class,
+        new CaseBuilder()
+            .when(QJuror.juror.disqualifyCode.isNotNull())
+            .then(QJuror.juror.disqualifyCode)
+            .when(QJuror.juror.excusalCode.isNotNull())
+            .then(QJuror.juror.excusalCode)
+            .otherwise((String) null),
+        QJuror.juror),
+    EXCUSAL_DISQUAL_DECISION_DATE("Decision date", LocalDate.class,
+        new CaseBuilder()
+            .when(QJuror.juror.disqualifyDate.isNotNull())
+            .then(QJuror.juror.disqualifyDate)
+            .when(QJuror.juror.excusalDate.isNotNull())
+            .then(QJuror.juror.excusalDate)
+            .otherwise((LocalDate) null),
+        QJuror.juror),
+    EXCUSAL_DISQUAL_TYPE("Excused or disqualified", String.class,
+        new CaseBuilder()
+            .when(QJuror.juror.disqualifyCode.isNotNull())
+            .then("Disqualified")
+            .when(QJuror.juror.excusalCode.isNotNull())
+            .then("Excused")
+            .otherwise("N/A"),
+        QJuror.juror),
+
+
     MAIN_PHONE("Main Phone", String.class, QJuror.juror.phoneNumber, QJuror.juror),
     MOBILE_PHONE("Mobile Phone", String.class, QJuror.juror.altPhoneNumber, QJuror.juror),
     HOME_PHONE("Home Phone", String.class, QJuror.juror.phoneNumber, QJuror.juror),
@@ -84,9 +111,9 @@ public enum DataType implements IDataType {
         QPoolRequest.poolRequest),
     POOL_NUMBER("Pool Number", String.class, QPoolRequest.poolRequest.poolNumber, QPoolRequest.poolRequest),
     POOL_NUMBER_AND_COURT_TYPE("Pool Number and Type",
-                               String.class, QPoolRequest.poolRequest.poolNumber.stringValue()
-                                   .concat(",").concat(QPoolRequest.poolRequest.poolType.description),
-                               QPoolRequest.poolRequest, QPoolRequest.poolRequest),
+        String.class, QPoolRequest.poolRequest.poolNumber.stringValue()
+        .concat(",").concat(QPoolRequest.poolRequest.poolType.description),
+        QPoolRequest.poolRequest, QPoolRequest.poolRequest),
     POOL_NUMBER_BY_JP("Pool Number", String.class, QJurorPool.jurorPool.pool.poolNumber,
         QJurorPool.jurorPool),
     POOL_NUMBER_BY_APPEARANCE("Pool Number", String.class, QAppearance.appearance.poolNumber,
@@ -180,8 +207,8 @@ public enum DataType implements IDataType {
     JUROR_NUMBER_FROM_TRIAL("Juror Number", String.class, QPanel.panel.juror.jurorNumber, QPanel.panel),
 
     COURT_LOCATION_NAME_AND_CODE("Court Location Name And Code", String.class,
-                                 QCourtLocation.courtLocation.name.concat(" (")
-        .concat(QCourtLocation.courtLocation.locCode).concat(")"), QPoolRequest.poolRequest),
+        QCourtLocation.courtLocation.name.concat(" (")
+            .concat(QCourtLocation.courtLocation.locCode).concat(")"), QPoolRequest.poolRequest),
     ATTENDANCE_COUNT("Attendance count", Long.class, QAppearance.appearance.count(), QAppearance.appearance);
 
     private final List<EntityPath<?>> requiredTables;
