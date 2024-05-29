@@ -14,6 +14,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
+import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
@@ -215,6 +216,18 @@ public enum DataType implements IDataType {
         QCourtLocation.courtLocation.name.concat(" (")
             .concat(QCourtLocation.courtLocation.locCode).concat(")"), QPoolRequest.poolRequest),
 
+    TRIAL_JUDGE_NAME("Judge", String.class, QTrial.trial.judge.name, QTrial.trial),
+    TRIAL_TYPE("Trial Type", String.class, QTrial.trial.trialType, QTrial.trial),
+    TRIAL_NUMBER("Trial number", String.class, QTrial.trial.trialNumber, QTrial.trial),
+    TRIAL_COURT_LOCATION("Trial court location", String.class, QTrial.trial.courtLocation, QTrial.trial),
+
+    TRIAL_PANELLED_COUNT("Panelled", Long.class, QTrial.trial.panel.size(), QTrial.trial),
+    TRIAL_JURORS_COUNT("Jurors", Long.class, QTrial.trial.jurors.size(), QTrial.trial),
+    TRIAL_JURORS_NOT_USED("Not used", Long.class, QTrial.trial.notUsedPanel.size(), QTrial.trial),
+    TRIAL_START_DATE("Trial start date", LocalDate.class, QTrial.trial.trialStartDate, QTrial.trial),
+    TRIAL_END_DATE("Trial end date", LocalDate.class, QTrial.trial.trialEndDate, QTrial.trial),
+    ATTENDANCE_COUNT("Attendance count", Long.class, QAppearance.appearance.count(), QAppearance.appearance),
+
 
     POLICE_CHECK_RESPONDED("Responded jurors", Long.class,
         QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED).count()),
@@ -243,8 +256,7 @@ public enum DataType implements IDataType {
         new CaseBuilder()
             .when(QJuror.juror.policeCheck.in(PoliceCheck.INELIGIBLE))
             .then(1L)
-            .otherwise(0L).sum()),
-    ATTENDANCE_COUNT("Attendance count", Long.class, QAppearance.appearance.count(), QAppearance.appearance);
+            .otherwise(0L).sum());
 
     private final List<EntityPath<?>> requiredTables;
     private final String displayName;
