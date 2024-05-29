@@ -47,7 +47,7 @@ public class PaymentData {
 
     @NotNull
     @Column(name = "creation_date")
-    private LocalDateTime creationDate;
+    private LocalDateTime creationDateTime;
 
     @NotNull
     @Column(name = "expense_total")
