@@ -3215,7 +3215,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(bulkPrintData.getJurorNo()).isEqualTo("555555" + jurorNumberPostfix);
                 assertThat(bulkPrintData.getCreationDate()).isEqualTo(creationDate);
                 assertThat(bulkPrintData.isExtractedFlag()).isEqualTo(extractedFlag);
-                assertThat(bulkPrintData.getDigitalComms()).isNull();
+                assertThat(bulkPrintData.isDigitalComms()).isFalse();
 
                 verifyRecDate(bulkPrintData, reprintRecDate);
                 if (isWelsh) {
