@@ -32,6 +32,7 @@ public class JurorPoolQueries {
     public static BooleanExpression respondedStatus() {
         return jurorDetail.status.status.eq(IJurorStatus.RESPONDED);
     }
+
     public static BooleanExpression completedStatus() {
         return jurorDetail.status.status.eq(IJurorStatus.COMPLETED);
     }
