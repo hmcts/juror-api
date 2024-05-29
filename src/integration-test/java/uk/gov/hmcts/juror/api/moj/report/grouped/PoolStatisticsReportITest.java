@@ -52,70 +52,80 @@ class PoolStatisticsReportITest extends AbstractGroupedReportControllerITest {
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(buildGroupedReportResponse(
                 new GroupedTableData()
-                    .add("2023-01-01", List.of(
+                    .add("2023-01-01",
                         new ReportLinkedMap<String, Object>()
-                            .add("status", "Awaiting Info")
-                            .add("juror_pool_count", 2),
+                            .add("200000000", List.of(
+                                new ReportLinkedMap<String, Object>()
+                                    .add("status", "Awaiting Info")
+                                    .add("juror_pool_count", 2),
+                                new ReportLinkedMap<String, Object>()
+                                    .add("status", "Completed")
+                                    .add("juror_pool_count", 2),
+                                new ReportLinkedMap<String, Object>()
+                                    .add("status", "FailedToAttend")
+                                    .add("juror_pool_count", 2),
+                                new ReportLinkedMap<String, Object>()
+                                    .add("status", "Juror")
+                                    .add("juror_pool_count", 1),
+                                new ReportLinkedMap<String, Object>()
+                                    .add("status", "Panel")
+                                    .add("juror_pool_count", 3),
+                                new ReportLinkedMap<String, Object>()
+                                    .add("status", "Responded")
+                                    .add("juror_pool_count", 4),
+                                new ReportLinkedMap<String, Object>()
+                                    .add("status", "Summoned")
+                                    .add("juror_pool_count", 3),
+                                new ReportLinkedMap<String, Object>()
+                                    .add("status", "Transferred")
+                                    .add("juror_pool_count", 1),
+                                new ReportLinkedMap<String, Object>()
+                                    .add("status", "Undeliverable")
+                                    .add("juror_pool_count", 1))))
+                    .add("2023-01-07",
                         new ReportLinkedMap<String, Object>()
-                            .add("status", "Completed")
-                            .add("juror_pool_count", 2),
+                            .add("200000001", List.of(
+                                new ReportLinkedMap<String, Object>()
+                                    .add("status", "Deferred")
+                                    .add("juror_pool_count", 1),
+                                new ReportLinkedMap<String, Object>()
+                                    .add("status", "Disqualified")
+                                    .add("juror_pool_count", 1),
+                                new ReportLinkedMap<String, Object>()
+                                    .add("status", "Excused")
+                                    .add("juror_pool_count", 1),
+                                new ReportLinkedMap<String, Object>()
+                                    .add("status", "Juror")
+                                    .add("juror_pool_count", 1),
+                                new ReportLinkedMap<String, Object>()
+                                    .add("status", "Reassigned")
+                                    .add("juror_pool_count", 1)))
+                            .add("200000004", List.of(
+                                new ReportLinkedMap<String, Object>()
+                                    .add("status", "Responded")
+                                    .add("juror_pool_count", 2))))
+                    .add("2023-01-30",
                         new ReportLinkedMap<String, Object>()
-                            .add("status", "FailedToAttend")
-                            .add("juror_pool_count", 2),
-                        new ReportLinkedMap<String, Object>()
-                            .add("status", "Juror")
-                            .add("juror_pool_count", 1),
-                        new ReportLinkedMap<String, Object>()
-                            .add("status", "Panel")
-                            .add("juror_pool_count", 3),
-                        new ReportLinkedMap<String, Object>()
-                            .add("status", "Responded")
-                            .add("juror_pool_count", 4),
-                        new ReportLinkedMap<String, Object>()
-                            .add("status", "Summoned")
-                            .add("juror_pool_count", 3),
-                        new ReportLinkedMap<String, Object>()
-                            .add("status", "Transferred")
-                            .add("juror_pool_count", 1),
-                        new ReportLinkedMap<String, Object>()
-                            .add("status", "Undeliverable")
-                            .add("juror_pool_count", 1)))
-                    .add("2023-01-07", List.of(
-                        new ReportLinkedMap<String, Object>()
-                            .add("status", "Deferred")
-                            .add("juror_pool_count", 1),
-                        new ReportLinkedMap<String, Object>()
-                            .add("status", "Disqualified")
-                            .add("juror_pool_count", 1),
-                        new ReportLinkedMap<String, Object>()
-                            .add("status", "Excused")
-                            .add("juror_pool_count", 1),
-                        new ReportLinkedMap<String, Object>()
-                            .add("status", "Juror")
-                            .add("juror_pool_count", 1),
-                        new ReportLinkedMap<String, Object>()
-                            .add("status", "Reassigned")
-                            .add("juror_pool_count", 1)))
-                    .add("2023-01-30", List.of(
-                        new ReportLinkedMap<String, Object>()
-                            .add("status", "Deferred")
-                            .add("juror_pool_count", 1),
-                        new ReportLinkedMap<String, Object>()
-                            .add("status", "Disqualified")
-                            .add("juror_pool_count", 1),
-                        new ReportLinkedMap<String, Object>()
-                            .add("status", "Excused")
-                            .add("juror_pool_count", 1),
-                        new ReportLinkedMap<String, Object>()
-                            .add("status", "Reassigned")
-                            .add("juror_pool_count", 1),
-                        new ReportLinkedMap<String, Object>()
-                            .add("status", "Transferred")
-                            .add("juror_pool_count", 1),
-                        new ReportLinkedMap<String, Object>()
-                            .add("status", "Undeliverable")
-                            .add("juror_pool_count", 1)
-                    ))));
+                            .add("200000002", List.of(
+                                new ReportLinkedMap<String, Object>()
+                                    .add("status", "Deferred")
+                                    .add("juror_pool_count", 1),
+                                new ReportLinkedMap<String, Object>()
+                                    .add("status", "Disqualified")
+                                    .add("juror_pool_count", 1),
+                                new ReportLinkedMap<String, Object>()
+                                    .add("status", "Excused")
+                                    .add("juror_pool_count", 1),
+                                new ReportLinkedMap<String, Object>()
+                                    .add("status", "Reassigned")
+                                    .add("juror_pool_count", 1),
+                                new ReportLinkedMap<String, Object>()
+                                    .add("status", "Transferred")
+                                    .add("juror_pool_count", 1),
+                                new ReportLinkedMap<String, Object>()
+                                    .add("status", "Undeliverable")
+                                    .add("juror_pool_count", 1)
+                            )))));
     }
 
     @Test
@@ -140,7 +150,9 @@ class PoolStatisticsReportITest extends AbstractGroupedReportControllerITest {
 
     private GroupedReportResponse buildGroupedReportResponse(GroupedTableData tableData) {
         return GroupedReportResponse.builder()
-            .groupBy(GroupByResponse.builder().name("POOL_RETURN_DATE_BY_JP").nested(null).build())
+            .groupBy(GroupByResponse.builder().name("POOL_RETURN_DATE_BY_JP")
+                .nested(GroupByResponse.builder().name("POOL_NUMBER_BY_JP").build())
+                .build())
             .headings(new ReportHashMap<>())
             .tableData(
                 AbstractReportResponse.TableData.<GroupedTableData>builder()

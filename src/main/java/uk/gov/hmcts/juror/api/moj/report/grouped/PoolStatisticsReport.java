@@ -22,6 +22,10 @@ public class PoolStatisticsReport extends AbstractGroupedReport {
             ReportGroupBy.builder()
                 .dataType(DataType.POOL_RETURN_DATE_BY_JP)
                 .removeGroupByFromResponse(true)
+                .nested(ReportGroupBy.builder()
+                    .dataType(DataType.POOL_NUMBER_BY_JP)
+                    .removeGroupByFromResponse(true)
+                    .build())
                 .build(),
             DataType.STATUS,
             DataType.JUROR_POOL_COUNT);
@@ -35,6 +39,7 @@ public class PoolStatisticsReport extends AbstractGroupedReport {
 
         query.orderBy(QJurorPool.jurorPool.status.statusDesc.asc());
         addGroupBy(query,
+            DataType.POOL_NUMBER_BY_JP,
             DataType.POOL_RETURN_DATE_BY_JP,
             DataType.STATUS);
     }

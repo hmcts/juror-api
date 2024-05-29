@@ -4,7 +4,8 @@ insert into juror_mod.pool (owner, pool_no, return_date, total_no_required, no_r
 values ('400', '200000000', '2023-01-01', 5, 5, 'CRO', '415', 'N', '2023-01-05 09:30:00.000'),
        ('400', '200000001', '2023-01-07', 5, 5, 'CRO', '415', 'N', '2023-01-05 09:30:00.000'),
        ('400', '200000002', '2023-01-30', 5, 5, 'CRO', '415', 'N', '2023-01-05 09:30:00.000'),
-       ('400', '200000003', '2023-02-07', 5, 5, 'CRO', '415', 'N', '2023-01-05 09:30:00.000');
+       ('400', '200000003', '2023-02-07', 5, 5, 'CRO', '415', 'N', '2023-01-05 09:30:00.000'),
+       ('400', '200000004', '2023-01-07', 5, 5, 'CRO', '415', 'N', '2023-01-05 09:30:00.000');
 
 -- create juror records
 insert into juror_mod.juror (juror_number,
@@ -43,7 +44,11 @@ values ('100000000', 'FName', 'LName', true, 'addressLine1'),
        ('100000030', 'FName', 'LName', true, 'addressLine1'),
        ('100000031', 'FName', 'LName', true, 'addressLine1'),
        ('100000032', 'FName', 'LName', true, 'addressLine1'),
-       ('100000033', 'FName', 'LName', true, 'addressLine1')
+       ('100000033', 'FName', 'LName', true, 'addressLine1'),
+
+       ('100000034', 'FName', 'LName', true, 'addressLine1'),
+       ('100000035', 'FName', 'LName', true, 'addressLine1')
+
 ;
 
 -- create juror_pool associative records
@@ -84,4 +89,7 @@ values ('400', '100000000', '200000000', 1, true),
        ('400', '100000031', '200000003', 12, false),
        ('400', '100000032', '200000003', 13, false),
        ('400', '100000033', '200000003', 13, false)
+       ,
+       ('400', '100000034', '200000004', 2, false),
+       ('400', '100000035', '200000004', 2, false)
 ;

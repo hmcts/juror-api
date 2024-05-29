@@ -32,6 +32,10 @@ class PoolStatisticsReportTest extends AbstractGroupedReportTestSupport<PoolStat
             ReportGroupBy.builder()
                 .dataType(DataType.POOL_RETURN_DATE_BY_JP)
                 .removeGroupByFromResponse(true)
+                .nested(ReportGroupBy.builder()
+                    .dataType(DataType.POOL_NUMBER_BY_JP)
+                    .removeGroupByFromResponse(true)
+                    .build())
                 .build(),
             DataType.STATUS,
             DataType.JUROR_POOL_COUNT);
@@ -62,6 +66,7 @@ class PoolStatisticsReportTest extends AbstractGroupedReportTestSupport<PoolStat
         verify(query).orderBy(QJurorPool.jurorPool.status.statusDesc.asc());
 
         verify(report, times(1)).addGroupBy(query,
+            DataType.POOL_NUMBER_BY_JP,
             DataType.POOL_RETURN_DATE_BY_JP,
             DataType.STATUS
         );
