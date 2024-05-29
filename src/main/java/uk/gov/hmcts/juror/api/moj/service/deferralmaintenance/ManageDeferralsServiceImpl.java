@@ -203,7 +203,6 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                 PoolRequest request = poolRequest.get();
                 newJurorPool = addMemberToNewPool(request, jurorPool, auditorUsername,
                     poolMemberSequenceService.getPoolMemberSequenceNumber(poolRequest.get().getPoolNumber()));
-                updatePoolHistory(request, 1, auditorUsername);
             } else {
                 // cannot process this deferral as the new pool couldn't be found
                 throw new MojException.NotFound("Could not find supplied pool number",
@@ -258,7 +257,6 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                     auditorUsername,
                     poolMemberSequenceService.getPoolMemberSequenceNumber(poolRequest.get().getPoolNumber())
                 );
-                updatePoolHistory(request, 1, auditorUsername);
             }
 
             removeMemberFromOldPool(jurorPool);
@@ -483,7 +481,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         }
 
         String owner = payload.getOwner();
-        if (!owner.equalsIgnoreCase(JurorDigitalApplication.JUROR_OWNER)
+        if (!JurorDigitalApplication.JUROR_OWNER.equalsIgnoreCase(owner)
             && !payload.getStaff().getCourts().contains(locationCode)) {
             throw new MojException.Forbidden("User does not have access to this court location",
                 null);
@@ -629,7 +627,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         juror.setResponded(true);
         juror.setUserEdtq(auditorUsername);
 
-        if (reasonCode.equalsIgnoreCase(POSTPONE_REASON_CODE)) {
+        if (POSTPONE_REASON_CODE.equalsIgnoreCase(reasonCode)) {
             // don't want to increment this count for postponement as we can use it to determine if juror had
             // reached limit of 2 deferrals.
             jurorPool.setPostpone(true);
@@ -718,7 +716,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                 ), null);
         }
 
-        String otherInfo = deferralReasonDto.getExcusalReasonCode().equalsIgnoreCase(POSTPONE_REASON_CODE)
+        String otherInfo = POSTPONE_REASON_CODE.equalsIgnoreCase(deferralReasonDto.getExcusalReasonCode())
             ? POSTPONE_INFO
             : JurorHistory.ADDED;
         // this will update the juror history for deferred juror
@@ -797,7 +795,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                 updateJurorHistory(deferredJurorPool, newPool.getPoolNumber(), userId, JurorHistory.ADDED,
                     HistoryCodeMod.DEFERRED_POOL_MEMBER);
 
-                if (deferralRecord.getOwner().equals(JurorDigitalApplication.JUROR_OWNER)) {
+                if (JurorDigitalApplication.JUROR_OWNER.equals(deferralRecord.getOwner())) {
                     printDataService.printConfirmationLetter(newJurorPool);
                     jurorHistoryService.createConfirmationLetterHistory(newJurorPool, "Confirmation Letter");
                 }

@@ -28,7 +28,9 @@ import java.time.LocalDateTime;
 public class PoolHistory implements Serializable {
 
     public static final String NEW_POOL_REQUEST_SUFFIX = " (New Pool Request)";
+    public static final String ADD_POOL_REQUEST_SUFFIX = " (Add Pool Request)";
     public static final String ADD_POOL_MEMBERS_SUFFIX = " (Add Pool Members)";
+
 
     @Id
     @NotNull
