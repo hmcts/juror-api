@@ -4,16 +4,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
-import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.ConfirmLetter;
-import uk.gov.hmcts.juror.api.testsupport.DisableIfWeekend;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.Calendar;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 @ExtendWith(SpringExtension.class)
 class ConfirmLetterTest extends AbstractLetterTest {
@@ -85,23 +81,18 @@ class ConfirmLetterTest extends AbstractLetterTest {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         setupEnglishExpectedResult();
         ConfirmLetter confirmLetter = new ConfirmLetter(LetterTestUtils.testJurorPool(date),
-                                                        LetterTestUtils.testCourtLocation(),
-                                                        LetterTestUtils.testBureauLocation());
+            LetterTestUtils.testCourtLocation(),
+            LetterTestUtils.testBureauLocation());
 
-        int dayOfTheWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
-        if (dayOfTheWeek == Calendar.SATURDAY || dayOfTheWeek == Calendar.SUNDAY) {
-            assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
-                .isThrownBy(confirmLetter::getLetterString);
-        } else {
-            assertThat(confirmLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
-            assertThat(confirmLetter.getFormCode()).isEqualTo(FormCode.ENG_CONFIRMATION.getCode());
-            assertThat(confirmLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testJuror().getJurorNumber());
+        assertThat(confirmLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
+        assertThat(confirmLetter.getFormCode()).isEqualTo(FormCode.ENG_CONFIRMATION.getCode());
+        assertThat(confirmLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testJuror().getJurorNumber());
 
-            // Fax number is always empty
-            assertThat(confirmLetter.getData().get(12).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
-            // Juror address 6 is always empty
-            assertThat(confirmLetter.getData().get(23).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(35));
-        }
+        // Fax number is always empty
+        assertThat(confirmLetter.getData().get(12).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
+        // Juror address 6 is always empty
+        assertThat(confirmLetter.getData().get(23).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(35));
+
     }
 
     @Test
@@ -110,34 +101,28 @@ class ConfirmLetterTest extends AbstractLetterTest {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         setupWelshExpectedResult();
         ConfirmLetter confirmLetter = new ConfirmLetter(LetterTestUtils.testWelshJurorPool(date),
-                                                        LetterTestUtils.testCourtLocation(),
-                                                        LetterTestUtils.testBureauLocation(),
-                                                        LetterTestUtils.testWelshCourtLocation());
+            LetterTestUtils.testCourtLocation(),
+            LetterTestUtils.testBureauLocation(),
+            LetterTestUtils.testWelshCourtLocation());
 
-        int dayOfTheWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
-        if (dayOfTheWeek == Calendar.SATURDAY || dayOfTheWeek == Calendar.SUNDAY) {
-            assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
-                .isThrownBy(confirmLetter::getLetterString);
-        } else {
-            assertThat(confirmLetter.getLetterString()).isEqualTo(getExpectedWelshResult());
-            assertThat(confirmLetter.getFormCode()).isEqualTo(FormCode.BI_CONFIRMATION.getCode());
-            assertThat(confirmLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testWelshJuror().getJurorNumber());
+        assertThat(confirmLetter.getLetterString()).isEqualTo(getExpectedWelshResult());
+        assertThat(confirmLetter.getFormCode()).isEqualTo(FormCode.BI_CONFIRMATION.getCode());
+        assertThat(confirmLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testWelshJuror().getJurorNumber());
 
-            // Fax number is always empty
-            assertThat(confirmLetter.getData().get(12).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
-            // Juror address 6 is always empty
-            assertThat(confirmLetter.getData().get(23).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(35));
-        }
+        // Fax number is always empty
+        assertThat(confirmLetter.getData().get(12).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
+        // Juror address 6 is always empty
+        assertThat(confirmLetter.getData().get(23).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(35));
+
     }
 
     @Test
-    @DisableIfWeekend
     void confirmWelshWithoutWelshCourtProducesEnglishOutput() {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         setupEnglishExpectedResult();
         ConfirmLetter confirmLetter = new ConfirmLetter(LetterTestUtils.testWelshJurorPool(date),
-                                                        LetterTestUtils.testCourtLocation(),
-                                                        LetterTestUtils.testBureauLocation());
+            LetterTestUtils.testCourtLocation(),
+            LetterTestUtils.testBureauLocation());
         assertThat(confirmLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
     }
 }
