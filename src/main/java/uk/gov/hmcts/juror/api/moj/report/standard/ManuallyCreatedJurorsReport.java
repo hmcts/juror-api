@@ -36,6 +36,7 @@ public class ManuallyCreatedJurorsReport extends AbstractStandardReport {
             PendingJurorTypes.POOL_NUMBER,
             PendingJurorTypes.SERVICE_COMPLETED);
         isCourtUserOnly();
+        isSeniorJurorOfficerOnly();
         addJoinOverride(JoinOverrideDetails.builder()
             .from(QPendingJuror.pendingJuror)
             .joinType(JoinType.LEFTJOIN)

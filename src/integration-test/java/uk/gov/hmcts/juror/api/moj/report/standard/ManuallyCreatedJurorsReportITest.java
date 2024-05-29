@@ -8,12 +8,14 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportReque
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 @Sql({
     "/db/truncate.sql",
@@ -31,7 +33,7 @@ class ManuallyCreatedJurorsReportITest extends AbstractStandardReportControllerI
 
     @Override
     protected String getValidJwt() {
-        return getCourtJwt("415");
+        return getCourtJwt("415", Set.of(Role.SENIOR_JUROR_OFFICER));
     }
 
     @Override
@@ -128,9 +130,17 @@ class ManuallyCreatedJurorsReportITest extends AbstractStandardReportControllerI
     }
 
     @Test
-    void negativeUnauthorised() {
+    void negativeUnauthorisedBureau() {
         testBuilder()
             .jwt(getBureauJwt())
+            .triggerInvalid()
+            .assertMojForbiddenResponse("User not allowed to access this report");
+    }
+
+    @Test
+    void negativeUnauthorisedNoneSjo() {
+        testBuilder()
+            .jwt(getCourtJwt("415"))
             .triggerInvalid()
             .assertMojForbiddenResponse("User not allowed to access this report");
     }

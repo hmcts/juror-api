@@ -22,6 +22,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPendingJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
@@ -171,6 +172,14 @@ public abstract class AbstractReport<T> implements IReport {
     public void isBureauUserOnly() {
         addAuthenticationConsumer(request -> {
             if (!SecurityUtil.isBureau()) {
+                throw new MojException.Forbidden("User not allowed to access this report", null);
+            }
+        });
+    }
+
+    public void isSeniorJurorOfficerOnly() {
+        addAuthenticationConsumer(request -> {
+            if (!SecurityUtil.hasRole(Role.SENIOR_JUROR_OFFICER)) {
                 throw new MojException.Forbidden("User not allowed to access this report", null);
             }
         });
