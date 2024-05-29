@@ -16,6 +16,7 @@ import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 
 import java.time.LocalDateTime;
 import java.util.LinkedList;
@@ -37,6 +38,8 @@ public class UrgentSuperUrgentStatusSchedulerTest {
 
     @Mock
     private JurorDigitalResponseRepositoryMod jurorResponseRepo;
+    @Mock
+    private JurorPaperResponseRepositoryMod paperJurorResponseRepo;
 
     @Mock
     private UserService userService;
@@ -96,7 +99,8 @@ public class UrgentSuperUrgentStatusSchedulerTest {
         final List<ProcessingStatus> pendingStatuses = List.of(ProcessingStatus.CLOSED);
 
         given(jurorResponseRepo.findAll(JurorResponseQueries.byStatusNotClosed(pendingStatuses)
-            .and(JurorResponseQueries.jurorIsNotTransferred()))).willReturn(
+            .and(JurorResponseQueries.jurorIsNotTransferred())
+            .and(JurorResponseQueries.isDigital()))).willReturn(
             responseBacklog);
 
         DigitalResponse jurorResponse = responseBacklog.get(0);
@@ -104,7 +108,7 @@ public class UrgentSuperUrgentStatusSchedulerTest {
             jurorResponse.getJurorNumber(),
             true,
             "400"
-            )).willReturn(poolDetails);
+        )).willReturn(poolDetails);
         //given(poolrepo.findOne(jurorResponse.getJurorNumber())).willReturn(poolDetails);
 
         given(urgencyService.isSuperUrgent(jurorResponse, poolDetails)).willReturn(Boolean.TRUE);

@@ -185,7 +185,7 @@ public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateSe
         final List<DigitalResponse> allocation = new LinkedList<>();
 
         final Iterator<DigitalResponse> backlogItems = backlogData.iterator();
-        final LocalDate now = LocalDateTime.now().toLocalDate();
+        final LocalDate now = LocalDate.now();
 
         for (int j = 0;
              j < urgencyAllocateCount && backlogItems.hasNext();

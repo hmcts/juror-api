@@ -11,7 +11,7 @@ import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.AppSetting;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.repository.AppSettingRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -180,7 +180,7 @@ public class UrgencyServiceImpl implements UrgencyService {
     }
 
     @Override
-    public boolean isSuperUrgent(DigitalResponse response, JurorPool jurorDetails) {
+    public boolean isSuperUrgent(AbstractJurorResponse response, JurorPool jurorDetails) {
         try {
             if (!CLOSED.equalsIgnoreCase(response.getProcessingStatus().getDescription())
                 && !SecurityUtil.BUREAU_OWNER.equalsIgnoreCase(jurorDetails.getOwner())
@@ -234,7 +234,7 @@ public class UrgencyServiceImpl implements UrgencyService {
 
     @SuppressWarnings("Duplicates")
     @Override
-    public boolean isUrgent(DigitalResponse response, JurorPool jurorDetails) {
+    public boolean isUrgent(AbstractJurorResponse response, JurorPool jurorDetails) {
         //Responses not closed and received within this many <b>working days</b> are urgent.
 
         try {
@@ -271,7 +271,7 @@ public class UrgencyServiceImpl implements UrgencyService {
 
 
     @Override
-    public void setUrgencyFlags(DigitalResponse response, JurorPool jurorDetails) {
+    public void setUrgencyFlags(AbstractJurorResponse response, JurorPool jurorDetails) {
         response.setUrgent(isUrgent(response, jurorDetails));
         response.setSuperUrgent(isSuperUrgent(response, jurorDetails));
         if (log.isTraceEnabled()) {

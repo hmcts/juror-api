@@ -13,9 +13,12 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorAppearanceResponseDto
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsOnTrialResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsToDismissResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.AttendanceDetailsResponse;
+import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
 
 import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Optional;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public interface JurorAppearanceService {
@@ -29,6 +32,8 @@ public interface JurorAppearanceService {
                                                     JurorStatusGroup group);
 
     boolean hasAppearances(String jurorNumber);
+
+    Optional<Appearance> getFirstAppearanceWithAuditNumber(String juryAuditNumber, Collection<String> locCodes);
 
     AttendanceDetailsResponse retrieveAttendanceDetails(BureauJwtPayload payload, RetrieveAttendanceDetailsDto request);
 

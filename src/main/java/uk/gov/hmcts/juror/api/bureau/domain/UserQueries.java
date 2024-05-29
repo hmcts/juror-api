@@ -5,7 +5,6 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.moj.domain.QUser;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
-import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 /**
  * QueryDSL queries for {@link uk.gov.hmcts.juror.api.moj.domain.User}.
@@ -36,10 +35,7 @@ public class UserQueries {
     }
 
     public static BooleanExpression owner(String owner) {
-        if (SecurityUtil.BUREAU_OWNER.equals(owner)) {
-            return USER.userType.eq(UserType.BUREAU);
-        }
-        return USER.owner.eq(owner);
+        return USER.courts.any().owner.eq(owner);
     }
 
     public static BooleanExpression inactive() {

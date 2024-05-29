@@ -38,8 +38,12 @@ INSERT INTO juror_mod.juror_response (juror_number,date_received,title,first_nam
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           ('845814425','2024-03-02 00:00:00',NULL,NULL,NULL,'address',NULL,NULL,NULL,NULL,NULL,'AWAITING_TRANSLATION',NULL,NULL,NULL,NULL,false,NULL,false,NULL,NULL,false,NULL,false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,false,NULL,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,true,true,'ncrawford','2024-03-13 00:00:00',false,false,NULL,false,'Digital');
 
 
-INSERT INTO juror_mod.users (owner, username,email, name, active)
-VALUES ('400','ncrawford','ncrawford@email.gov.uk','Natasha Crawford',true),
-       ('400','lrees','lrees@email.gov.uk','Lewis Rees',true),
-       ('400','kfry','kfry@email.gov.uk','Katherine Fry',true);
+INSERT INTO juror_mod.users (username,email, name, active)
+VALUES ('ncrawford','ncrawford@email.gov.uk','Natasha Crawford',true),
+       ('lrees','lrees@email.gov.uk','Lewis Rees',true),
+       ('kfry','kfry@email.gov.uk','Katherine Fry',true);
 
+insert into juror_mod.user_courts (username, loc_code)
+values ('ncrawford', '400'),
+       ('lrees', '400'),
+       ('kfry', '400');

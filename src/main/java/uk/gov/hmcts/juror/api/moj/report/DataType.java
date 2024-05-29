@@ -13,8 +13,10 @@ import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QReasonableAdjustments;
+import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
+import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -28,11 +30,39 @@ public enum DataType implements IDataType {
     FIRST_NAME("First Name", String.class, QJuror.juror.firstName, QJuror.juror),
     LAST_NAME("Last Name", String.class, QJuror.juror.lastName, QJuror.juror),
     STATUS("Status", String.class, QJurorPool.jurorPool.status.statusDesc, QJurorPool.jurorPool),
+    JUROR_POOL_COUNT("Count", Long.class, QJurorPool.jurorPool.count(), QJurorPool.jurorPool),
     SUMMONED_RESPONDED("Responded", Boolean.class, QJurorPool.jurorPool.status.status
         .eq(IJurorStatus.RESPONDED)),
     DEFERRALS("Deferrals", String.class, QJuror.juror.noDefPos, QJuror.juror),
     ABSENCES("Absences", Long.class,
         QAppearance.appearance.attendanceType.eq(AttendanceType.ABSENT).count()),
+
+    EXCUSAL_DISQUAL_CODE("Reason for excusal or disqualification", String.class,
+        new CaseBuilder()
+            .when(QJuror.juror.disqualifyCode.isNotNull())
+            .then(QJuror.juror.disqualifyCode)
+            .when(QJuror.juror.excusalCode.isNotNull())
+            .then(QJuror.juror.excusalCode)
+            .otherwise((String) null),
+        QJuror.juror),
+    EXCUSAL_DISQUAL_DECISION_DATE("Decision date", LocalDate.class,
+        new CaseBuilder()
+            .when(QJuror.juror.disqualifyDate.isNotNull())
+            .then(QJuror.juror.disqualifyDate)
+            .when(QJuror.juror.excusalDate.isNotNull())
+            .then(QJuror.juror.excusalDate)
+            .otherwise((LocalDate) null),
+        QJuror.juror),
+    EXCUSAL_DISQUAL_TYPE("Excused or disqualified", String.class,
+        new CaseBuilder()
+            .when(QJuror.juror.disqualifyCode.isNotNull())
+            .then("Disqualified")
+            .when(QJuror.juror.excusalCode.isNotNull())
+            .then("Excused")
+            .otherwise("N/A"),
+        QJuror.juror),
+
+
     MAIN_PHONE("Main Phone", String.class, QJuror.juror.phoneNumber, QJuror.juror),
     MOBILE_PHONE("Mobile Phone", String.class, QJuror.juror.altPhoneNumber, QJuror.juror),
     HOME_PHONE("Home Phone", String.class, QJuror.juror.phoneNumber, QJuror.juror),
@@ -82,13 +112,17 @@ public enum DataType implements IDataType {
         QPoolRequest.poolRequest),
     POOL_NUMBER("Pool Number", String.class, QPoolRequest.poolRequest.poolNumber, QPoolRequest.poolRequest),
     POOL_NUMBER_AND_COURT_TYPE("Pool Number and Type",
-                               String.class, QPoolRequest.poolRequest.poolNumber.stringValue()
-                                   .concat(",").concat(QPoolRequest.poolRequest.poolType.description),
-                               QPoolRequest.poolRequest, QPoolRequest.poolRequest),
+        String.class, QPoolRequest.poolRequest.poolNumber.stringValue()
+        .concat(",").concat(QPoolRequest.poolRequest.poolType.description),
+        QPoolRequest.poolRequest, QPoolRequest.poolRequest),
     POOL_NUMBER_BY_JP("Pool Number", String.class, QJurorPool.jurorPool.pool.poolNumber,
+        QJurorPool.jurorPool),
+    POOL_RETURN_DATE_BY_JP("Pool Number", String.class, QJurorPool.jurorPool.pool.returnDate,
         QJurorPool.jurorPool),
     POOL_NUMBER_BY_APPEARANCE("Pool Number", String.class, QAppearance.appearance.poolNumber,
         QAppearance.appearance),
+    IS_ACTIVE("Active", Boolean.class,
+        QJurorPool.jurorPool.isActive, QJurorPool.jurorPool),
     NEXT_ATTENDANCE_DATE("Next attendance date", LocalDate.class, QJurorPool.jurorPool.nextDate, QJurorPool.jurorPool),
     LAST_ATTENDANCE_DATE("Last attended on", LocalDate.class, QAppearance.appearance.attendanceDate.max(),
         QAppearance.appearance),
@@ -164,9 +198,22 @@ public enum DataType implements IDataType {
 
     DATE_OF_ABSENCE("Date of absence", LocalDate.class, QAppearance.appearance.attendanceDate, QAppearance.appearance),
 
+    PANEL_STATUS("Panel Status", String.class,
+        new CaseBuilder()
+            .when(QPanel.panel.result.eq(PanelResult.NOT_USED)).then("Not Used")
+            .when(QPanel.panel.result.eq(PanelResult.CHALLENGED)).then("Challenged")
+            .when(QPanel.panel.result.eq(PanelResult.JUROR)).then("Juror")
+            .when(QPanel.panel.result.eq(PanelResult.RETURNED).and(QPanel.panel.empanelledDate.isNotNull()))
+                .then("Returned Juror")
+            .when(QPanel.panel.result.eq(PanelResult.RETURNED).and(QPanel.panel.empanelledDate.isNull()))
+                .then("Returned")
+            .otherwise(""),
+        QPanel.panel),
+    JUROR_NUMBER_FROM_TRIAL("Juror Number", String.class, QPanel.panel.juror.jurorNumber, QPanel.panel),
     COURT_LOCATION_NAME_AND_CODE("Court Location Name And Code", String.class,
-                                 QCourtLocation.courtLocation.name.concat(" (")
-        .concat(QCourtLocation.courtLocation.locCode).concat(")"), QPoolRequest.poolRequest);
+        QCourtLocation.courtLocation.name.concat(" (")
+            .concat(QCourtLocation.courtLocation.locCode).concat(")"), QPoolRequest.poolRequest),
+    ATTENDANCE_COUNT("Attendance count", Long.class, QAppearance.appearance.count(), QAppearance.appearance);
 
     private final List<EntityPath<?>> requiredTables;
     private final String displayName;
