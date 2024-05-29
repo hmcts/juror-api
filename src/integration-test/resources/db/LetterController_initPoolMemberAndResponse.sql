@@ -59,5 +59,8 @@ INSERT INTO juror_mod.juror_response
     NULL, NULL, '01111111110', '01234098765', 'new_email@address.com', NULL, NULL, NULL, NULL, NULL, NULL, 'N', 'N', NULL,
     'N', 'Digital');
 
-INSERT INTO juror_mod.users (owner, username, email, name, active)
-VALUES ('400','BUREAU_USER','BUREAU_USER@email.gov.uk','Test User',true);
+INSERT INTO juror_mod.users (username, email, name, active)
+VALUES ('BUREAU_USER','BUREAU_USER@email.gov.uk','Test User',true);
+
+insert into juror_mod.user_courts (username, loc_code)
+values ('BUREAU_USER', '400');

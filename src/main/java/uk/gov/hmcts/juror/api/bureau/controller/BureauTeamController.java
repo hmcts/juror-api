@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.bureau.controller.response.TeamDto;
-import uk.gov.hmcts.juror.api.bureau.service.BureauAuthenticationService;
 import uk.gov.hmcts.juror.api.bureau.service.TeamService;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
@@ -22,17 +21,14 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/bureau/team", produces = MediaType.APPLICATION_JSON_VALUE)
+@Deprecated(forRemoval = true)
 public class BureauTeamController {
 
-    private final BureauAuthenticationService bureauAuthService;
     private final TeamService teamService;
 
     @Autowired
-    public BureauTeamController(final BureauAuthenticationService bureauAuthService,
-                                final TeamService teamService) {
-        Assert.notNull(bureauAuthService, "BureauAuthenticationService cannot be null");
+    public BureauTeamController(final TeamService teamService) {
         Assert.notNull(teamService, "TeamService cannot be null");
-        this.bureauAuthService = bureauAuthService;
         this.teamService = teamService;
     }
 
