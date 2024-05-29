@@ -30,7 +30,7 @@ class GroupByPaymentTypeTest {
     void positiveGroupFunctionIsCashNull() {
         GroupByPaymentType groupByPaymentType = new GroupByPaymentType(false);
         assertThat(groupByPaymentType.getGroupFunction(mockGroupedTableData(null)))
-            .isEqualTo("Cash");
+            .isEqualTo("BACS and cheque approvals");
     }
 
     @Test

@@ -49,6 +49,7 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -236,6 +237,11 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     }
 
     @Override
+    public Optional<Appearance> getFirstAppearanceWithAuditNumber(String auditNumber, Collection<String> locCodes) {
+        return appearanceRepository.findFirstByAttendanceAuditNumberEqualsAndLocCodeIn(auditNumber, locCodes);
+    }
+
+    @Override
     public AttendanceDetailsResponse retrieveAttendanceDetails(BureauJwtPayload payload,
                                                                RetrieveAttendanceDetailsDto request) {
         final RetrieveAttendanceDetailsDto.CommonData commonData = request.getCommonData();
@@ -348,9 +354,11 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         AppearanceId appearanceId = new AppearanceId(jurorNumber, commonData.getAttendanceDate(), courtLocation);
 
         AttendanceDetailsResponse.Summary summary;
-        Optional<Appearance> appearance = appearanceRepository.findById(appearanceId);
-        if (appearance.isPresent()) {
-            appearanceRepository.deleteById(appearanceId);
+        Optional<Appearance> appearanceOptional = appearanceRepository.findById(appearanceId);
+        if (appearanceOptional.isPresent()) {
+            Appearance appearance = appearanceOptional.get();
+            appearance.setAttendanceType(AttendanceType.ABSENT);
+            appearanceRepository.save(appearance);
             summary = AttendanceDetailsResponse.Summary.builder().deleted(1).build();
         } else {
             summary = AttendanceDetailsResponse.Summary.builder()
@@ -410,7 +418,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             appearance.getAttendanceDate());
 
         final AppearanceStage oldAppearanceStage = appearance.getAppearanceStage();
-        if (!Set.of(AppearanceStage.EXPENSE_ENTERED, AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT)
+        if (appearance.getAppearanceStage() != null
+            && !Set.of(AppearanceStage.EXPENSE_ENTERED, AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT)
             .contains(appearance.getAppearanceStage())) {
             throw new MojException.BusinessRuleViolation(
                 "Can only modify confirmed attendances that have no approved expenses",
