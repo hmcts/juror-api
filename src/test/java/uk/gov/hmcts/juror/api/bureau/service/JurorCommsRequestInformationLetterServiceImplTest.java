@@ -19,7 +19,6 @@ import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -45,7 +44,7 @@ public class JurorCommsRequestInformationLetterServiceImplTest {
     List<BulkPrintDataNotifyComms> jurorCommsPrintFilesList = new LinkedList<>();
     List<BulkPrintData> printFileList = new LinkedList<>();
 
-    LocalDate currentDate = LocalDateTime.now().toLocalDate();
+    LocalDate currentDate = LocalDate.now();
 
     @Mock
     private BulkPrintDataNotifyCommsRepository jurorCommsPrintFilesRepository;

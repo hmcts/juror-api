@@ -161,7 +161,7 @@ public class JurorServiceImplTest {
     @Test
     public void convertJurorResponseDtoToEntityTest() throws Exception {
         final String jurorNumber = "546547731";
-        final LocalDate dob = LocalDateTime.now().toLocalDate();
+        final LocalDate dob = LocalDate.now();
         final String title = "Dr";
         final String firstName = "Namey";
         final String lastName = "McName";

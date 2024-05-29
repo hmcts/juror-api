@@ -33,6 +33,10 @@ public class JurorPoolQueries {
         return jurorDetail.status.status.eq(IJurorStatus.RESPONDED);
     }
 
+    public static BooleanExpression completedStatus() {
+        return jurorDetail.status.status.eq(IJurorStatus.COMPLETED);
+    }
+
     /**
      * ø
      * Matches Juror instances where notification flag indicates, sentToCourt comms has not been sent.
@@ -98,7 +102,7 @@ public class JurorPoolQueries {
      * Identify all Pool Records for which a sent To Comms needs to be sent.
      */
     public static BooleanExpression awaitingSentToCourtComms() {
-        return QJurorPool.jurorPool.nextDate.after(LocalDate.now())
+        return jurorDetail.nextDate.after(LocalDate.now())
             .and(respondedStatus())
             .and(jurorRecordNotWithBureau())
             .and(sentToCourtCommsNotSent())
@@ -150,15 +154,15 @@ public class JurorPoolQueries {
 
         return jurorDetail.juror.excusalDate.between(
             LocalDateTime.now().minusDays(3L).toLocalDate(),
-            LocalDateTime.now().toLocalDate());
+            LocalDate.now());
     }
 
     /**
      * Query COMPLETION_DATE between now and now minus SERVICE COMPLETION PARAMETER.
      */
     public static BooleanExpression completionDateBetweenSysdateCompletionParameter() {
-        return jurorDetail.juror.completionDate.between(LocalDateTime.now().minusDays(2L).toLocalDate(),
-            LocalDateTime.now().toLocalDate());
+        return jurorDetail.juror.completionDate.between(LocalDate.now().minusDays(2L),
+            LocalDate.now());
     }
 
     /**
@@ -185,7 +189,7 @@ public class JurorPoolQueries {
 
     public static BooleanExpression recordsForServiceCompletedComms() {
         return completionDateBetweenSysdateCompletionParameter()
-            .and(respondedStatus())
+            .and(completedStatus())
             .and(serviceCompCommsStatus())
             .and(completionDateNotNull());
 
