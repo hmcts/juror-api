@@ -11,4 +11,3 @@ values ('AACTIVE123', '400'),
        ('JINACTIVE1', '400'),
        ('MCBBOBBIE', '400'),
        ('ACTIVEX', '400');
-Ï
