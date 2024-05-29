@@ -5,11 +5,12 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResp
 
 public interface IReport {
 
-    Class<?> getRequestValidatorClass();
 
     AbstractReportResponse<?> getStandardReportResponse(StandardReportRequest standardReportRequest);
 
     default String getName() {
         return getClass().getSimpleName();
     }
+
+    Class<?> getRequestValidatorClass();
 }
