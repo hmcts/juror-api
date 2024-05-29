@@ -5,7 +5,6 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.moj.domain.QUser;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
-import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 /**
  * QueryDSL queries for {@link uk.gov.hmcts.juror.api.moj.domain.User}.
