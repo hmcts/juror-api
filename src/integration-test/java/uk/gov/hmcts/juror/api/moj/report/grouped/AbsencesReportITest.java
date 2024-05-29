@@ -22,7 +22,6 @@ import java.util.List;
     "/db/mod/reports/AbsencesReportITest.sql"
 })
 @SuppressWarnings({
-    "PMD.LawOfDemeter",
     "PMD.JUnitTestsShouldIncludeAssert"//False positive
 })
 class AbsencesReportITest extends AbstractGroupedReportControllerITest {

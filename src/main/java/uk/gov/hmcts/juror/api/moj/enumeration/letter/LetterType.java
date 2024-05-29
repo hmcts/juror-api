@@ -7,6 +7,7 @@ import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.service.ReissueLetterService;
 
 import java.util.List;
@@ -59,7 +60,9 @@ public enum LetterType {
         ReissueLetterService.DataType.DATE_PRINTED,
         ReissueLetterService.DataType.EXTRACTED_FLAG,
         ReissueLetterService.DataType.FORM_CODE),
-        tupleJPAQuery -> tupleJPAQuery.where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.DEFERRED))),
+        tupleJPAQuery -> tupleJPAQuery
+            .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.DEFERRED)
+                .and(QJurorPool.jurorPool.deferralCode.ne(ExcusalCodeEnum.P.getCode())))),
 
     DEFERRAL_REFUSED(List.of(FormCode.ENG_DEFERRALDENIED, FormCode.BI_DEFERRALDENIED), List.of(
         ReissueLetterService.DataType.JUROR_NUMBER,
@@ -72,7 +75,9 @@ public enum LetterType {
         ReissueLetterService.DataType.DATE_PRINTED,
         ReissueLetterService.DataType.EXTRACTED_FLAG,
         ReissueLetterService.DataType.FORM_CODE),
-        tupleJPAQuery -> tupleJPAQuery.where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED))),
+        tupleJPAQuery -> tupleJPAQuery
+            .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED)
+                .and(QJurorPool.jurorPool.deferralCode.ne(ExcusalCodeEnum.P.getCode())))),
 
     EXCUSAL_GRANTED(List.of(FormCode.ENG_EXCUSAL, FormCode.BI_EXCUSAL), List.of(
         ReissueLetterService.DataType.JUROR_NUMBER,

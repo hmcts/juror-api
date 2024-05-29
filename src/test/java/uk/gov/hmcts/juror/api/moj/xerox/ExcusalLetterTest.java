@@ -4,15 +4,12 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
-import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.ExcusalLetter;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.Calendar;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 @ExtendWith(SpringExtension.class)
 public class ExcusalLetterTest extends AbstractLetterTest {
@@ -83,22 +80,17 @@ public class ExcusalLetterTest extends AbstractLetterTest {
             LetterTestUtils.testCourtLocation(),
             LetterTestUtils.testBureauLocation());
 
-        int dayOfTheWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
-        if (dayOfTheWeek == Calendar.SATURDAY || dayOfTheWeek == Calendar.SUNDAY) {
-            assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
-                .isThrownBy(excusalLetter::getLetterString);
-        } else {
-            assertThat(excusalLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
-            assertThat(excusalLetter.getFormCode()).isEqualTo(FormCode.ENG_EXCUSAL.getCode());
-            assertThat(excusalLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testJuror().getJurorNumber());
+        assertThat(excusalLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
+        assertThat(excusalLetter.getFormCode()).isEqualTo(FormCode.ENG_EXCUSAL.getCode());
+        assertThat(excusalLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testJuror().getJurorNumber());
 
-            // Fax number is always empty
-            assertThat(excusalLetter.getData().get(11).getFormattedString())
-                .isEqualTo(LetterTestUtils.emptyField(12));
-            // Juror address 6 is always empty
-            assertThat(excusalLetter.getData().get(20).getFormattedString())
-                .isEqualTo(LetterTestUtils.emptyField(35));
-        }
+        // Fax number is always empty
+        assertThat(excusalLetter.getData().get(11).getFormattedString())
+            .isEqualTo(LetterTestUtils.emptyField(12));
+        // Juror address 6 is always empty
+        assertThat(excusalLetter.getData().get(20).getFormattedString())
+            .isEqualTo(LetterTestUtils.emptyField(35));
+
     }
 
     @Test
@@ -111,23 +103,19 @@ public class ExcusalLetterTest extends AbstractLetterTest {
             LetterTestUtils.testBureauLocation(),
             LetterTestUtils.testWelshCourtLocation());
 
-        int dayOfTheWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
-        if (dayOfTheWeek == Calendar.SATURDAY || dayOfTheWeek == Calendar.SUNDAY) {
-            assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
-                .isThrownBy(excusalLetter::getLetterString);
-        } else {
-            assertThat(excusalLetter.getLetterString()).isEqualTo(getExpectedWelshResult());
-            assertThat(excusalLetter.getFormCode()).isEqualTo(FormCode.BI_EXCUSAL.getCode());
-            assertThat(excusalLetter.getJurorNumber())
-                .isEqualTo(LetterTestUtils.testWelshJuror().getJurorNumber());
 
-            // Fax number is always empty
-            assertThat(excusalLetter.getData().get(11).getFormattedString())
-                .isEqualTo(LetterTestUtils.emptyField(12));
-            // Juror address 6 is always empty
-            assertThat(excusalLetter.getData().get(20).getFormattedString())
-                .isEqualTo(LetterTestUtils.emptyField(35));
-        }
+        assertThat(excusalLetter.getLetterString()).isEqualTo(getExpectedWelshResult());
+        assertThat(excusalLetter.getFormCode()).isEqualTo(FormCode.BI_EXCUSAL.getCode());
+        assertThat(excusalLetter.getJurorNumber())
+            .isEqualTo(LetterTestUtils.testWelshJuror().getJurorNumber());
+
+        // Fax number is always empty
+        assertThat(excusalLetter.getData().get(11).getFormattedString())
+            .isEqualTo(LetterTestUtils.emptyField(12));
+        // Juror address 6 is always empty
+        assertThat(excusalLetter.getData().get(20).getFormattedString())
+            .isEqualTo(LetterTestUtils.emptyField(35));
+
     }
 
 }

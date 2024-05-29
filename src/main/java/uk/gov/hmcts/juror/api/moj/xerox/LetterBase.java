@@ -26,7 +26,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
-import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.LETTER_CANNOT_GENERATE_ON_WEEKEND;
 
 @Slf4j
 public class LetterBase {
@@ -99,7 +98,7 @@ public class LetterBase {
         return format("%s %s %s, %s", welshDay, dateParts[1], welshMonth, dateParts[3]);
     }
 
-    protected static String getDateOfLetter() {
+    static String getDateOfLetter() {
         final int processDays = 2;
         final int processDaysOverWeekend = 4;
 
@@ -109,12 +108,11 @@ public class LetterBase {
             case Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY:
                 cal.add(Calendar.DAY_OF_MONTH, processDays);
                 break;
-            case Calendar.THURSDAY, Calendar.FRIDAY:
+            case Calendar.THURSDAY, Calendar.FRIDAY, Calendar.SATURDAY, Calendar.SUNDAY:
                 cal.add(Calendar.DAY_OF_MONTH, processDaysOverWeekend);
                 break;
             default:
-                throw new MojException.BusinessRuleViolation("cannot generate a letter on a weekend",
-                    LETTER_CANNOT_GENERATE_ON_WEEKEND);
+                throw new MojException.InternalServerError("Unknown day of week", null);
         }
 
         SimpleDateFormat formatter = new SimpleDateFormat("dd MMMM yyyy");
