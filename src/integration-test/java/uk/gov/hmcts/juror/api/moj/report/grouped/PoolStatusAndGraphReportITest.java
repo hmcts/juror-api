@@ -74,7 +74,7 @@ class PoolStatusAndGraphReportITest extends AbstractGroupedReportControllerITest
                                 .build(),
                             StandardReportResponse.TableData.Heading.builder()
                                 .id("juror_pool_count")
-                                .name("Juror Pool Count")
+                                .name("Count")
                                 .dataType("Long")
                                 .headings(null)
                                 .build()))
