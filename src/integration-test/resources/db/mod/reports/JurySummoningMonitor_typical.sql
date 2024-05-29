@@ -1,4 +1,6 @@
 
+-- TODO expand on this to include more data for testing and update the test to match
+
 INSERT INTO JUROR_MOD.POOL (OWNER, POOL_NO, RETURN_DATE, TOTAL_NO_REQUIRED, NO_REQUESTED, POOL_TYPE,LOC_CODE, NEW_REQUEST, LAST_UPDATE)
 VALUES ('400', '415230701', '2024-03-04', 2, 2, 'CRO','415', 'N', '2024-03-04');
 
