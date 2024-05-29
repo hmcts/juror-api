@@ -7,10 +7,8 @@ import org.springframework.test.context.jdbc.Sql;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
-import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportControllerITest;
-import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
+import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
-import uk.gov.hmcts.juror.api.moj.report.standard.DeferredListByDateReport;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -21,7 +19,8 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/DeferredListByCourtReportITest_typical.sql"
 })
-class DeferredListByCourtReportITest extends AbstractStandardReportControllerITest {
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
+class DeferredListByCourtReportITest extends AbstractGroupedReportControllerITest {
 
     @Autowired
     public DeferredListByCourtReportITest(TestRestTemplate template) {
@@ -40,8 +39,6 @@ class DeferredListByCourtReportITest extends AbstractStandardReportControllerITe
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-//False positive
     void positiveTypicalCourt() {
         testBuilder()
             .triggerValid()
@@ -50,8 +47,6 @@ class DeferredListByCourtReportITest extends AbstractStandardReportControllerITe
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-//False positive
     void positiveNotFound() {
         testBuilder()
             .jwt(getCourtJwt("400"))

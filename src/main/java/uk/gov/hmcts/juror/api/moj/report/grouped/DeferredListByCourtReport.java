@@ -29,12 +29,10 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class DeferredListByCourtReport extends AbstractGroupedReport {
 
-    private final CourtLocationService courtLocationService;
     private final PoolRequestRepository poolRequestRepository;
 
     @Autowired
-    public DeferredListByCourtReport(PoolRequestRepository poolRequestRepository,
-                                     CourtLocationService courtLocationService) {
+    public DeferredListByCourtReport(PoolRequestRepository poolRequestRepository) {
         super(poolRequestRepository,
             QJurorPool.jurorPool,
             ReportGroupBy.builder()
@@ -43,13 +41,12 @@ public class DeferredListByCourtReport extends AbstractGroupedReport {
                 .build(),
             DataType.DEFERRED_TO,
             DataType.NUMBER_DEFERRED);
-        this.courtLocationService = courtLocationService;
         this.poolRequestRepository = poolRequestRepository;
     }
 
 
     @Override
-    protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
+    public void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QJurorPool.jurorPool.deferralDate.isNotNull());
         if (SecurityUtil.isCourt()) {
             query.where(QJurorPool.jurorPool.owner.eq(SecurityUtil.getActiveOwner()));
