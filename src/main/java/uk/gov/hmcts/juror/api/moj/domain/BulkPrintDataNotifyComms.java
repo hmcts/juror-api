@@ -57,7 +57,7 @@ public class BulkPrintDataNotifyComms {
     private Boolean extractedFlag;
 
     @Column(name = "digital_comms")
-    private Boolean digitalComms;
+    private boolean digitalComms;
 
     @NotNull
     @Length(max = 50)
