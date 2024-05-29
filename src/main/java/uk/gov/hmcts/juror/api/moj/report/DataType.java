@@ -112,6 +112,7 @@ public enum DataType implements IDataType {
     SERVICE_START_DATE("Service Start Date", LocalDate.class, QPoolRequest.poolRequest.returnDate,
         QPoolRequest.poolRequest),
     POOL_NUMBER("Pool Number", String.class, QPoolRequest.poolRequest.poolNumber, QPoolRequest.poolRequest),
+    POOL_NUMBER_JP("Pool Number", String.class, QJurorPool.jurorPool.pool.poolNumber, QJurorPool.jurorPool),
     POOL_NUMBER_AND_COURT_TYPE("Pool Number and Type",
         String.class, QPoolRequest.poolRequest.poolNumber.stringValue()
         .concat(",").concat(QPoolRequest.poolRequest.poolType.description),
@@ -225,8 +226,37 @@ public enum DataType implements IDataType {
     TRIAL_JURORS_NOT_USED("Not used", Long.class, QTrial.trial.notUsedPanel.size(), QTrial.trial),
     TRIAL_START_DATE("Trial start date", LocalDate.class, QTrial.trial.trialStartDate, QTrial.trial),
     TRIAL_END_DATE("Trial end date", LocalDate.class, QTrial.trial.trialEndDate, QTrial.trial),
-    ATTENDANCE_COUNT("Attendance count", Long.class, QAppearance.appearance.count(), QAppearance.appearance)
-    ;
+    ATTENDANCE_COUNT("Attendance count", Long.class, QAppearance.appearance.count(), QAppearance.appearance),
+
+
+    POLICE_CHECK_RESPONDED("Responded jurors", Long.class,
+        QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED).count()),
+
+    POLICE_CHECK_SUBMITTED("Checks submitted", Long.class,
+        new CaseBuilder()
+            .when(QJuror.juror.policeCheck.notIn(PoliceCheck.NOT_CHECKED, PoliceCheck.INSUFFICIENT_INFORMATION))
+            .then(1L)
+            .otherwise(0L).sum()),
+
+    POLICE_CHECK_COMPLETE("Checks completed", Long.class,
+        new CaseBuilder()
+            .when(QJuror.juror.policeCheck.in(PoliceCheck.ELIGIBLE, PoliceCheck.INELIGIBLE,
+                PoliceCheck.UNCHECKED_MAX_RETRIES_EXCEEDED))
+            .then(1L)
+            .otherwise(0L).sum()),
+
+
+    POLICE_CHECK_TIMED_OUT("Checks completed", Long.class,
+        new CaseBuilder()
+            .when(QJuror.juror.policeCheck.in(PoliceCheck.UNCHECKED_MAX_RETRIES_EXCEEDED))
+            .then(1L)
+            .otherwise(0L).sum()),
+
+    POLICE_CHECK_DISQUALIFIED("Jurors disqualified", Long.class,
+        new CaseBuilder()
+            .when(QJuror.juror.policeCheck.in(PoliceCheck.INELIGIBLE))
+            .then(1L)
+            .otherwise(0L).sum());
 
     private final List<EntityPath<?>> requiredTables;
     private final String displayName;
