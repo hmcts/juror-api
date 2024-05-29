@@ -1,6 +1,8 @@
-INSERT INTO juror_mod.users (owner, username,email, name, active, user_type)
-VALUES ('448','STAFF1','STAFF1@email.gov.uk','Staff One',true, 'BUREAU');
+INSERT INTO juror_mod.users (username,email, name, active, user_type)
+VALUES ('STAFF1','STAFF1@email.gov.uk','Staff One',true, 'BUREAU');
 
+insert into juror_mod.user_courts (username, loc_code)
+values ('STAFF1', '448');
 INSERT INTO juror_mod.user_roles (username, role)
 VALUES ('STAFF1', 'MANAGER');
 

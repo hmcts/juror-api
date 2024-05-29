@@ -100,7 +100,7 @@ class AbstractReportTest {
             assertThat(AbstractReport.CLASS_TO_JOIN).hasSize(6);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QPanel.panel)).hasSize(1);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QJuror.juror)).hasSize(4);
-            assertThat(AbstractReport.CLASS_TO_JOIN.get(QJurorPool.jurorPool)).hasSize(1);
+            assertThat(AbstractReport.CLASS_TO_JOIN.get(QJurorPool.jurorPool)).hasSize(2);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QPoolRequest.poolRequest)).hasSize(2);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QAppearance.appearance)).hasSize(2);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QReasonableAdjustments.reasonableAdjustments))
@@ -241,6 +241,17 @@ class AbstractReportTest {
             assertThat(map.get(QJuror.juror)).isEqualTo(
                 new Predicate[]{QReasonableAdjustments.reasonableAdjustments.code.eq(
                     QJuror.juror.reasonableAdjustmentCode)}
+            );
+        }
+
+        @Test
+        void jurorPoolToPanel() {
+            assertThat(AbstractReport.CLASS_TO_JOIN.containsKey(QJurorPool.jurorPool)).isTrue();
+            Map<EntityPath<?>, Predicate[]> map = AbstractReport.CLASS_TO_JOIN.get(QJurorPool.jurorPool);
+
+            assertThat(map.containsKey(QPanel.panel)).isTrue();
+            assertThat(map.get(QPanel.panel)).isEqualTo(
+                new Predicate[]{QPanel.panel.juror.eq(QJurorPool.jurorPool.juror)}
             );
         }
     }
@@ -1090,7 +1101,7 @@ class AbstractReportTest {
             TrialRepository trialRepository = mock(TrialRepository.class);
             Trial trial = mock(Trial.class);
 
-            securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn(TestConstants.VALID_COURT_LOCATION);
+            securityUtilMockedStatic.when(SecurityUtil::getLocCode).thenReturn(TestConstants.VALID_COURT_LOCATION);
 
             doReturn(Optional.of(trial)).when(trialRepository)
                 .findByTrialNumberAndCourtLocationLocCode(TestConstants.VALID_TRIAL_NUMBER,

@@ -15,7 +15,6 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.Version;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -47,10 +46,6 @@ import java.util.Set;
 @EqualsAndHashCode(exclude = {"team", "courts"})
 public class User implements Serializable {
 
-    @Column(name = "owner")
-    @Deprecated(forRemoval = true)
-    private String owner;
-
     @Id
     @Column(name = "username", unique = true, length = 20)
     @NotEmpty
@@ -80,10 +75,6 @@ public class User implements Serializable {
     @ManyToOne
     @Deprecated(forRemoval = true)//TODO confirm
     private Team team;
-
-    @NotAudited
-    @Version
-    private Integer version;
 
     @Column(name = "approval_limit")
     private BigDecimal approvalLimit;
@@ -129,11 +120,6 @@ public class User implements Serializable {
 
     public boolean hasRole(Role role) {
         return getRoles().contains(role);
-    }
-
-    @Deprecated(forRemoval = true)
-    public String getOwner() {
-        return owner;
     }
 
     @Deprecated(forRemoval = true)

@@ -1230,7 +1230,7 @@ class JurorAppearanceServiceTest {
         request.getCommonData().setCheckOutTime(null);
         request.getCommonData().setSingleJuror(Boolean.TRUE);
 
-        deleteAttendanceMockSetup(false);
+        Appearance appearance = deleteAttendanceMockSetup(false);
 
         // invoke actual service method under test
         AttendanceDetailsResponse response =
@@ -1252,12 +1252,11 @@ class JurorAppearanceServiceTest {
         verify(courtLocationRepository, times(1)).findById(anyString());
         verify(appearanceRepository, never()).retrieveAttendanceDetails(any(RetrieveAttendanceDetailsDto.class));
         verify(appearanceRepository, times(1)).findById(any());
-        verify(appearanceRepository, times(1)).deleteById(any());
+        verify(appearanceRepository, times(1)).save(appearance);
         verify(appearanceRepository, never())
             .retrieveNonAttendanceDetails(any(RetrieveAttendanceDetailsDto.CommonData.class));
         verify(appearanceRepository, never()).findAllById(Collections.singleton(any(AppearanceId.class)));
-        verify(appearanceRepository, never()).saveAndFlush(any());
-        verify(appearanceRepository, never()).saveAllAndFlush(any());
+        assertThat(appearance.getAttendanceType()).isEqualTo(AttendanceType.ABSENT);
     }
 
     @Test
@@ -2481,7 +2480,7 @@ class JurorAppearanceServiceTest {
             Mockito.any());
     }
 
-    private void deleteAttendanceMockSetup(Boolean noAttendanceRecord) {
+    private Appearance deleteAttendanceMockSetup(Boolean noAttendanceRecord) {
         when(courtLocationRepository.findById(anyString())).thenReturn(Optional.of(getCourtLocation()));
 
         when(jurorRepository.findById(JUROR1)).thenReturn(Optional.of(createJuror(JUROR1, IJurorStatus.RESPONDED)));
@@ -2490,13 +2489,17 @@ class JurorAppearanceServiceTest {
         when(jurorPoolRepository.findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR1, true))
             .thenReturn(Collections.singletonList(jurorPool1));
 
+        Appearance appearance;
         if (noAttendanceRecord) {
             when(appearanceRepository.findById(any())).thenReturn(Optional.empty());
+            appearance = null;
         } else {
+            appearance = buildAppearance(JUROR1, null, null, CHECKED_IN);
             when(appearanceRepository.findById(any()))
-                .thenReturn(Optional.of(buildAppearance(JUROR1, null, null, CHECKED_IN)));
+                .thenReturn(Optional.of(appearance));
         }
         doNothing().when(appearanceRepository).deleteById(any(AppearanceId.class));
+        return appearance;
     }
 
 

@@ -72,7 +72,8 @@ public abstract class AbstractReport<T> implements IReport {
             }
         ));
         CLASS_TO_JOIN.put(QJurorPool.jurorPool, Map.of(
-            QJuror.juror, new Predicate[]{QJurorPool.jurorPool.juror.eq(QJuror.juror)}
+            QJuror.juror, new Predicate[]{QJurorPool.jurorPool.juror.eq(QJuror.juror)},
+            QPanel.panel, new Predicate[]{QPanel.panel.juror.eq(QJurorPool.jurorPool.juror)}
         ));
         CLASS_TO_JOIN.put(QPoolRequest.poolRequest, Map.of(
             QJurorPool.jurorPool,
@@ -388,6 +389,7 @@ public abstract class AbstractReport<T> implements IReport {
 
     public ConcurrentHashMap<String, AbstractReportResponse.DataTypeValue> loadStandardPoolHeaders(
         StandardReportRequest request, boolean ownerMustMatch, boolean allowBureau) {
+
         PoolRequest poolRequest = getPoolRequest(request.getPoolNumber());
         if (ownerMustMatch) {
             checkOwnership(poolRequest, allowBureau);
@@ -484,7 +486,7 @@ public abstract class AbstractReport<T> implements IReport {
         return courtLocation.getName() + " (" + courtLocation.getLocCode() + ")";
     }
 
-    PoolRequest getPoolRequest(String poolNumber) {
+    public PoolRequest getPoolRequest(String poolNumber) {
         Optional<PoolRequest> poolRequest = poolRequestRepository.findByPoolNumber(poolNumber);
         if (poolRequest.isEmpty()) {
             throw new MojException.NotFound("Pool not found", null);
@@ -494,7 +496,7 @@ public abstract class AbstractReport<T> implements IReport {
 
     public Trial getTrial(String trialNumber, TrialRepository trialRepository) {
         Optional<Trial> trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber,
-            SecurityUtil.getActiveOwner());
+            SecurityUtil.getLocCode());
         if (trial.isEmpty()) {
             throw new MojException.NotFound("Trial not found", null);
         }
@@ -545,6 +547,12 @@ public abstract class AbstractReport<T> implements IReport {
         }
 
         public interface RequiredJurorNumber {
+        }
+
+        public interface RequireJuryAuditNumber {
+        }
+
+        public interface RequirePoolAuditNumber {
         }
     }
 }

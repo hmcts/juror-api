@@ -16,11 +16,11 @@ VALUES (7344729, 1716296213630, 'COURT.469'),
        (7344743, 1716225704762, 'COURT.469'),
        (7344744, 1716571310787, 'COURT.469');
 
-INSERT INTO juror_mod.users (username, "name", active, last_logged_in, "version", team_id, approval_limit,
+INSERT INTO juror_mod.users (username, "name", active, last_logged_in, team_id, approval_limit,
                              user_type, email, created_by, updated_by)
-VALUES ('COURT.469', 'COURT 469', true, NULL, 1, NULL, 100000.00, 'COURT', 'COURT.469@justice.gov.uk', NULL,
+VALUES ('COURT.469', 'COURT 469', true, NULL, NULL, 100000.00, 'COURT', 'COURT.469@justice.gov.uk', NULL,
         NULL),
-       ('COURT.469.2', 'COURT 469 2', true, NULL, 1, NULL, 100000.00, 'COURT', 'COURT.469.2@justice.gov.uk', NULL,
+       ('COURT.469.2', 'COURT 469 2', true, NULL, NULL, 100000.00, 'COURT', 'COURT.469.2@justice.gov.uk', NULL,
         NULL);
 
 INSERT INTO juror_mod.pool (pool_no, "owner", return_date, no_requested, pool_type, loc_code, new_request, last_update,

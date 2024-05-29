@@ -10,9 +10,14 @@ SELECT setval('juror_mod.rev_info_seq', 5, true);
 
 SELECT setval('juror_mod.appearance_f_audit_seq', 1, true);
 
-INSERT INTO juror_mod.users (owner, username,email, name, active, team_id, version)
-VALUES ('415', 'COURT_USER','COURT_USER@email.gov.uk', 'Court User', true, 1, 1),
-       ('400', 'BUREAU_USER','BUREAU_USER@email.gov.uk', 'Bureau User', true, 1, 1);
+INSERT INTO juror_mod.users (username,email, name, active, team_id)
+VALUES ('COURT_USER','COURT_USER@email.gov.uk', 'Court User', true, 1),
+       ('BUREAU_USER','BUREAU_USER@email.gov.uk', 'Bureau User', true, 1);
+
+insert into juror_mod.user_courts (username, loc_code)
+values ('COURT_USER', '415'),
+       ('BUREAU_USER', '400');
+
 INSERT INTO juror_mod.court_location_audit (revision, rev_type, loc_code, public_transport_soft_limit, taxi_soft_limit)
 VALUES (0, 2, '415', 0.1, 0.2);
 
@@ -51,13 +56,21 @@ values ('415', '641500020', '415230101', 2, '415', true),
 
 
 
-INSERT INTO juror_mod.users (owner, username,email, name, active, team_id, version)
-VALUES ('415', 'smcintyre','smcintyre@email.gov.uk', 'Stephanie Mcintyre', true, 1, 1),
-       ('415', 'sbell','sbell@email.gov.uk', 'Sandra Bell', true, 2, 1),
-       ('415', 'alineweaver','alineweaver@email.gov.uk', 'Albert Lineweaver', true, 3, 1),
-       ('416', 'jbrown1','jbrown1@email.gov.uk', 'Jared Brown', true, 1, 1),
-       ('417', 'jwilliams','jwilliams@email.gov.uk', 'Jeremy Williams', true, 2, 1),
-       ('418', 'jbrown','jbrown@email.gov.uk', 'John Brown', true, 3, 1);
+INSERT INTO juror_mod.users (username,email, name, active, team_id)
+VALUES ('smcintyre','smcintyre@email.gov.uk', 'Stephanie Mcintyre', true, 1),
+       ('sbell','sbell@email.gov.uk', 'Sandra Bell', true, 2),
+       ('alineweaver','alineweaver@email.gov.uk', 'Albert Lineweaver', true, 3),
+       ('jbrown1','jbrown1@email.gov.uk', 'Jared Brown', true, 1),
+       ('jwilliams','jwilliams@email.gov.uk', 'Jeremy Williams', true, 2),
+       ('jbrown','jbrown@email.gov.uk', 'John Brown', true, 3);
+
+insert into juror_mod.user_courts (username, loc_code)
+values ('smcintyre', '415'),
+       ('sbell', '415'),
+       ('alineweaver', '415'),
+       ('jbrown1', '416'),
+       ('jwilliams', '417'),
+       ('jbrown', '418');
 
 --Approved edited
 

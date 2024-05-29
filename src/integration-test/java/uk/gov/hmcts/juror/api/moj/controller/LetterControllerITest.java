@@ -2848,13 +2848,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 httpHeaders, POST, uri);
             ResponseEntity<String> response = template.exchange(request, String.class);
 
-            // making sure the test passes on the weekend as letters cannot be sent via weekend
-            Calendar calendar = Calendar.getInstance();
-            if (calendar.get(Calendar.DAY_OF_WEEK) == SATURDAY || calendar.get(Calendar.DAY_OF_WEEK) == SUNDAY) {
-                assertBusinessRuleViolation(response, "Can not generate a letter on a weekend",
-                    MojException.BusinessRuleViolation.ErrorCode.LETTER_CANNOT_GENERATE_ON_WEEKEND);
-                return;
-            }
+
 
             assertThat(response).isNotNull();
             assertThat(response.getStatusCode())
@@ -2875,14 +2869,14 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(bulkPrintData.get().getFormAttribute().getFormType())
                 .as("Expect form attribute form code to be " + FormCode.ENG_POSTPONE.getCode());
 
-
+            Calendar calendar = Calendar.getInstance();
             switch (calendar.get(Calendar.DAY_OF_WEEK)) {
                 case MONDAY, TUESDAY, WEDNESDAY -> assertThat(bulkPrintData.get().getDetailRec()).contains(
                     LocalDate
                         .now()
                         .plusDays(2)
                         .format(DateTimeFormatter.ofPattern("dd MMMM yyyy")).toUpperCase());
-                case THURSDAY, FRIDAY -> assertThat(bulkPrintData.get().getDetailRec()).contains(
+                case THURSDAY, FRIDAY, SATURDAY, SUNDAY -> assertThat(bulkPrintData.get().getDetailRec()).contains(
                     LocalDate
                         .now()
                         .plusDays(4)
@@ -3221,7 +3215,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(bulkPrintData.getJurorNo()).isEqualTo("555555" + jurorNumberPostfix);
                 assertThat(bulkPrintData.getCreationDate()).isEqualTo(creationDate);
                 assertThat(bulkPrintData.isExtractedFlag()).isEqualTo(extractedFlag);
-                assertThat(bulkPrintData.getDigitalComms()).isNull();
+                assertThat(bulkPrintData.isDigitalComms()).isFalse();
 
                 verifyRecDate(bulkPrintData, reprintRecDate);
                 if (isWelsh) {
@@ -3256,7 +3250,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                                 .now()
                                 .plusDays(2)
                                 .format(DateTimeFormatter.ofPattern("dd MMMM yyyy")).toUpperCase());
-                        case THURSDAY, FRIDAY -> assertThat(bulkPrintData.getDetailRec()).contains(
+                        case THURSDAY, FRIDAY, SATURDAY, SUNDAY -> assertThat(bulkPrintData.getDetailRec()).contains(
                             LocalDate
                                 .now()
                                 .plusDays(4)
