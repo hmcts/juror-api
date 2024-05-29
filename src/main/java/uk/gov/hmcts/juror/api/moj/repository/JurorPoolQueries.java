@@ -58,6 +58,10 @@ public class JurorPoolQueries {
         return jurorDetail.owner.eq(OWNER_IS_BUREAU);
     }
 
+    public static BooleanExpression jurorRecordNotWithBureau() {
+        return jurorDetail.owner.ne(OWNER_IS_BUREAU);
+    }
+
     /**
      * Query to match instance where an email exists.
      */
@@ -70,12 +74,11 @@ public class JurorPoolQueries {
      */
 
     public static BooleanExpression bureauToCourtTransferDate() {
-
-        LocalDate currentDateAtSixPm = LocalDateTime.now().plusHours(18L).toLocalDate();
+        LocalDate currentDate = LocalDate.now();
         log.info("Bureau To Court Transfer Date {}", jurorDetail.juror.bureauTransferDate);
-        log.info("Current Date at 6pm {}", currentDateAtSixPm);
-        return jurorDetail.juror.bureauTransferDate.after(
-            LocalDateTime.now().plusHours(18L).toLocalDate());
+        log.info("Current Date at 6pm {}", currentDate);
+        return jurorDetail.juror.bureauTransferDate.after(currentDate)
+            .or(jurorDetail.juror.bureauTransferDate.eq(currentDate));
     }
 
 
@@ -84,7 +87,7 @@ public class JurorPoolQueries {
         //hearingDate(next_date) between now and now+28 days.
         return jurorDetail.nextDate.between(
             LocalDate.now(),
-            LocalDateTime.now().plusDays(28L).toLocalDate());
+            LocalDate.now().plusDays(28L));
     }
 
     /**
@@ -100,7 +103,7 @@ public class JurorPoolQueries {
     public static BooleanExpression awaitingSentToCourtComms() {
         return jurorDetail.nextDate.after(LocalDate.now())
             .and(respondedStatus())
-            .and(jurorRecordWithBureau())
+            .and(jurorRecordNotWithBureau())
             .and(sentToCourtCommsNotSent())
             .and(bureauToCourtTransferDate());
     }
