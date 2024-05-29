@@ -46,6 +46,14 @@ class BallotPanelTrialReportITest extends AbstractStandardReportControllerITest 
     }
 
     @Test
+    void positiveAnonymousCourt() {
+        testBuilder()
+            .triggerValid()
+            .responseConsumer(this::verifyAndRemoveReportCreated)
+            .assertEquals(getAnonymousResponse());
+    }
+
+    @Test
     void negativeInvalidPayload() {
         StandardReportRequest request = getValidPayload();
         request.setTrialNumber(null);
@@ -111,6 +119,32 @@ class BallotPanelTrialReportITest extends AbstractStandardReportControllerITest 
                             .add("first_name", "John3")
                             .add("last_name", "Smith3")
                             .add("juror_postcode", "AD3 2HP")
+                    ))
+                    .build())
+            .build();
+    }
+
+    private StandardReportResponse getAnonymousResponse() {
+        return StandardReportResponse.builder()
+            .headings(new ReportHashMap<>())
+            .tableData(
+                StandardReportResponse.TableData.<StandardTableData>builder()
+                    .headings(
+                        List.of(
+                            StandardReportResponse.TableData.Heading.builder()
+                                .id("juror_number")
+                                .name("Juror Number")
+                                .dataType("String")
+                                .headings(null)
+                                .build()
+                        ))
+                    .data(StandardTableData.of(
+                        new ReportLinkedMap<String, Object>()
+                            .add("juror_number", "200000004"),
+                        new ReportLinkedMap<String, Object>()
+                            .add("juror_number", "200000005"),
+                        new ReportLinkedMap<String, Object>()
+                            .add("juror_number", "200000006")
                     ))
                     .build())
             .build();
