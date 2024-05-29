@@ -10,7 +10,6 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.QReportsJurorPayments;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
-import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReport;
 import uk.gov.hmcts.juror.api.moj.report.ReportGroupBy;
 import uk.gov.hmcts.juror.api.moj.report.datatypes.ReportsJurorPaymentsDataTypes;
@@ -19,7 +18,6 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
-import java.util.Optional;
 
 @Component
 public class TrialAttendanceReport extends AbstractGroupedReport {
@@ -66,10 +64,7 @@ public class TrialAttendanceReport extends AbstractGroupedReport {
         StandardReportRequest request,
         StandardReportResponse.TableData<GroupedTableData> tableData) {
 
-        Optional<Trial> optTrial = trialRepository.findByTrialNumberAndCourtLocationLocCode(request.getTrialNumber(),
-                                                                                         SecurityUtil.getLocCode());
-
-        Trial trial = optTrial.orElseThrow(() -> new MojException.NotFound("Trial number not found", null));
+        Trial trial = getTrial(request.getTrialNumber(), trialRepository);
 
         Map<String, GroupedReportResponse.DataTypeValue> map = loadStandardTrailHeaders(request, trialRepository, true);
         map.put("trial_type", GroupedReportResponse.DataTypeValue.builder()

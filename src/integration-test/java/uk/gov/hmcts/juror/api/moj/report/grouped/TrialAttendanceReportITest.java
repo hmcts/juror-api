@@ -78,7 +78,7 @@ class TrialAttendanceReportITest extends AbstractGroupedReportControllerITest {
         testBuilder()
             .payload(request)
             .triggerInvalid()
-            .assertNotFound("Trial number not found");
+            .assertNotFound("Trial not found");
     }
 
     @Test

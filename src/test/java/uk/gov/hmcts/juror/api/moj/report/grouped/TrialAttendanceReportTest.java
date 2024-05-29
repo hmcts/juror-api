@@ -36,7 +36,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
-@SuppressWarnings("PMD.LawOfDemeter")
 class TrialAttendanceReportTest extends AbstractGroupedReportTestSupport<TrialAttendanceReport> {
 
     private CourtLocationRepository courtLocationRepository;

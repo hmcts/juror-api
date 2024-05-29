@@ -50,7 +50,7 @@ public abstract class AbstractReportTestSupport<
     private final IDataType[] dataTypes;
     private final Class<?> validatorClass;
     protected R report;
-    private PoolRequestRepository poolRequestRepository;
+    protected PoolRequestRepository poolRequestRepository;
     @Setter
     private boolean hasPoolRepository = true;
     @Setter

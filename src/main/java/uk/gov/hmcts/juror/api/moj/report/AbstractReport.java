@@ -499,7 +499,7 @@ public abstract class AbstractReport<T> implements IReport {
         return courtLocation.getName() + " (" + courtLocation.getLocCode() + ")";
     }
 
-    PoolRequest getPoolRequest(String poolNumber) {
+    public PoolRequest getPoolRequest(String poolNumber) {
         Optional<PoolRequest> poolRequest = poolRequestRepository.findByPoolNumber(poolNumber);
         if (poolRequest.isEmpty()) {
             throw new MojException.NotFound("Pool not found", null);
@@ -509,7 +509,7 @@ public abstract class AbstractReport<T> implements IReport {
 
     public Trial getTrial(String trialNumber, TrialRepository trialRepository) {
         Optional<Trial> trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber,
-            SecurityUtil.getActiveOwner());
+            SecurityUtil.getLocCode());
         if (trial.isEmpty()) {
             throw new MojException.NotFound("Trial not found", null);
         }

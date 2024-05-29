@@ -49,6 +49,7 @@ public class StandardReportRequest {
         "OnCallReport",
         "PanelMembersStatusReport",
         "ManualJurorReport",
+        "JuryCostBill",
         //Grouped
         "AbsencesReport",
         "PostponedListByDateReport",
@@ -60,8 +61,9 @@ public class StandardReportRequest {
         "JurorExpenditureReportMidLevelReport",
         "JurorExpenditureReportHighLevelReport",
         "SummonedRespondedReport",
-        "TrialAttendanceReport",
-        "UnconfirmedAttendanceReport"
+        "UnconfirmedAttendanceReport",
+        "PoolStatisticsReport",
+        "TrialAttendanceReport"
     })
     private String reportType;
 
