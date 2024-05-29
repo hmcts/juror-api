@@ -75,7 +75,8 @@ import java.util.Optional;
 @SuppressWarnings({"PMD.TooManyMethods",
     "PMD.PossibleGodClass",
     "PMD.ExcessiveImports",
-    "PMD.TooManyFields"})
+    "PMD.TooManyFields",
+    "PMD.CyclomaticComplexity"})
 public class PoolCreateServiceImpl implements PoolCreateService {
 
     private static final String AGE_DISQ_CODE = "A";
@@ -293,7 +294,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         updatePoolHistory(poolCreateRequestDto.getPoolNumber(), userId, numSelected,
             PoolHistory.NEW_POOL_REQUEST_SUFFIX, HistoryCode.PHSI);
 
-        updateJurorHistory(owner, userId, jurorPools);
+        updateJurorHistory(userId, jurorPools);
         processBureauDeferrals(poolCreateRequestDto, userId, true);
     }
 
@@ -317,7 +318,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
 
         updatePoolHistory(poolCreateRequestDto.getPoolNumber(), userId, numSelected,
             PoolHistory.ADD_POOL_MEMBERS_SUFFIX, HistoryCode.PHSI);
-        updateJurorHistory(owner, userId, jurorPools);
+        updateJurorHistory(userId, jurorPools);
         processBureauDeferrals(poolCreateRequestDto, userId, false);
     }
 
@@ -355,7 +356,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
             otherInformation));
     }
 
-    private void updateJurorHistory(String owner, String userId, List<JurorPool> jurorPools) {
+    private void updateJurorHistory(String userId, List<JurorPool> jurorPools) {
 
         List<JurorHistory> historyList = new ArrayList<>();
         jurorPools.forEach(jurorPool -> {
@@ -608,19 +609,15 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                 updatePoolHistory(poolCreateRequestDto.getPoolNumber(), userId, deferralsUsed,
                     isNewPool
                         ? PoolHistory.NEW_POOL_REQUEST_SUFFIX
-                        : PoolHistory.ADD_POOL_MEMBERS_SUFFIX,
-                    HistoryCode.PHSI);
+                        : PoolHistory.ADD_POOL_REQUEST_SUFFIX,
+                    HistoryCode.PHDI);
             }
         }
     }
 
     private void processCourtDeferrals(PoolRequest poolRequest, int courtDeferrals, String userId) {
         if (courtDeferrals > 0) {
-            int deferralsUsed = manageDeferralsService.useCourtDeferrals(poolRequest, courtDeferrals, userId);
-            if (deferralsUsed > 0) {
-                updatePoolHistory(poolRequest.getPoolNumber(), userId, deferralsUsed,
-                    PoolHistory.ADD_POOL_MEMBERS_SUFFIX, HistoryCode.PHSI);
-            }
+            manageDeferralsService.useCourtDeferrals(poolRequest, courtDeferrals, userId);
         }
     }
 
