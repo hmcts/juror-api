@@ -1,5 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.utils;
 
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
@@ -8,6 +10,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseR
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
@@ -99,5 +102,9 @@ public final class DataUtils {
             return null;
         }
         return localTime.format(DateTimeFormatter.ofPattern("HH:mm"));
+    }
+
+    public static Expression<?> asDate(DateTimePath<LocalDateTime> dateTimePath) {
+        return dateTimePath.stringValue().substring(0, 10);
     }
 }
