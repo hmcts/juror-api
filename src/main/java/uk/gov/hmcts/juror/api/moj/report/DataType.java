@@ -182,12 +182,9 @@ public enum DataType implements IDataType {
             .otherwise(""),
         QPanel.panel),
     JUROR_NUMBER_FROM_TRIAL("Juror Number", String.class, QPanel.panel.juror.jurorNumber, QPanel.panel),
-
     COURT_LOCATION_NAME_AND_CODE("Court Location Name And Code", String.class,
         QCourtLocation.courtLocation.name.concat(" (")
             .concat(QCourtLocation.courtLocation.locCode).concat(")"), QPoolRequest.poolRequest),
-                                 QCourtLocation.courtLocation.name.concat(" (")
-        .concat(QCourtLocation.courtLocation.locCode).concat(")"), QPoolRequest.poolRequest),
     ATTENDANCE_COUNT("Attendance count", Long.class, QAppearance.appearance.count(), QAppearance.appearance);
 
     private final List<EntityPath<?>> requiredTables;
