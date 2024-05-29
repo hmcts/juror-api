@@ -11,6 +11,7 @@ import org.springframework.transaction.TransactionSystemException;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.bureau.exception.JurorCommsNotificationServiceException;
 import uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType;
+import uk.gov.hmcts.juror.api.moj.client.contracts.SchedulerServiceClient;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolQueries;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -19,6 +20,7 @@ import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Implementation of {@link BureauProcessService}.
@@ -55,7 +57,7 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
      */
     @Override
     @Transactional
-    public void process() {
+    public SchedulerServiceClient.Result process() {
 
         SimpleDateFormat dateFormat = new SimpleDateFormat();
         log.info("Sent To Court Comms Processing : Started - {}", dateFormat.format(new Date()));
@@ -67,6 +69,7 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
         log.debug("pooldetailList {}", jurordetailList.size());
 
         Integer notificationsSent;
+        int errorCount = 0;
         for (JurorPool jurorDetail : jurordetailList) {
 
             notificationsSent = jurorDetail.getJuror().getNotifications();
@@ -123,15 +126,22 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
                     e.getMessage(),
                     e.getCause().toString()
                 );
+                errorCount++;
                 if (notificationsSent.equals(EMAIL_NOTIFICATION_SENT)) {
                     jurorDetail.getJuror().setNotifications(notificationsSent);
                     update(jurorDetail);
                 }
             } catch (Exception e) {
                 log.error("Sent To Court Comms Processing : Juror Comms failed : {}", e.getMessage());
+                errorCount++;
             }
         }
         log.info("Sent To Court Comms Processing : Finished - {}", dateFormat.format(new Date()));
+        return new SchedulerServiceClient.Result(
+            errorCount == 0
+                ? SchedulerServiceClient.Result.Status.SUCCESS
+                : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS, null,
+            Map.of("ERROR_COUNT", "" + errorCount));
     }
 
     /**

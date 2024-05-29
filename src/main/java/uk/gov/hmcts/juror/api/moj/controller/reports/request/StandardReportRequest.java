@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -43,16 +44,25 @@ public class StandardReportRequest {
         "JuryListReport",
         "PoolStatusReport",
         "PersonAttendingSummaryReport",
+        "JuryAttendanceAuditReport",
+        "PoolAttendanceAuditReport",
+        "OnCallReport",
+        "PanelMembersStatusReport",
+        "JuryCostBill",
         //Grouped
         "AbsencesReport",
         "PostponedListByDateReport",
+        "UnpaidAttendanceSummaryReport",
         "ReasonableAdjustmentsReport",
         "PersonAttendingDetailReport",
         "UnpaidAttendanceReportDetailedReport",
         "JurorExpenditureReportLowLevelReport",
         "JurorExpenditureReportMidLevelReport",
         "JurorExpenditureReportHighLevelReport",
-        "UnconfirmedAttendanceReport"
+        "SummonedRespondedReport",
+        "UnconfirmedAttendanceReport",
+        "PoolStatisticsReport",
+        "TrialAttendanceReport"
     })
     private String reportType;
 
@@ -87,4 +97,12 @@ public class StandardReportRequest {
 
     @NotNull(groups = AbstractReport.Validators.RequireIncludeSummoned.class)
     private Boolean includeSummoned;
+
+    @NotNull(groups = AbstractReport.Validators.RequirePoolAuditNumber.class)
+    @Pattern(groups = AbstractReport.Validators.RequirePoolAuditNumber.class, regexp = "^P\\d*$")
+    private String poolAuditNumber;
+
+    @NotNull(groups = AbstractReport.Validators.RequireJuryAuditNumber.class)
+    @Pattern(groups = AbstractReport.Validators.RequireJuryAuditNumber.class, regexp = "^J\\d*$")
+    private String juryAuditNumber;
 }

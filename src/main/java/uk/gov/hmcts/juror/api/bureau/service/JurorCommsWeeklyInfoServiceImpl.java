@@ -11,6 +11,7 @@ import org.springframework.transaction.TransactionSystemException;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.bureau.exception.JurorCommsNotificationServiceException;
 import uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType;
+import uk.gov.hmcts.juror.api.moj.client.contracts.SchedulerServiceClient;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolQueries;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -18,6 +19,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Implementation of {@link BureauProcessService}.
@@ -51,7 +53,7 @@ public class JurorCommsWeeklyInfoServiceImpl implements BureauProcessService {
      */
     @Override
     @Transactional
-    public void process() {
+    public SchedulerServiceClient.Result process() {
 
         SimpleDateFormat dateFormat = new SimpleDateFormat();
         log.info("Informational Comms Processing : Started - {}", dateFormat.format(new Date()));
@@ -101,6 +103,15 @@ public class JurorCommsWeeklyInfoServiceImpl implements BureauProcessService {
             jurordetailList.size(), infoCommsSent, infoCommsfailed, noEmailAddress
         );
         log.info("Informational Comms Processing : Finished - {}", dateFormat.format(new Date()));
+        return new SchedulerServiceClient.Result(
+            infoCommsfailed == 0
+                ? SchedulerServiceClient.Result.Status.SUCCESS
+                : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS, null,
+            Map.of(
+                "INFO_COMMS_SENT", "" + infoCommsSent,
+                "INFO_COMMS_FAILED", "" + infoCommsfailed,
+                "NO_EMAIL_ADDRESS", "" + noEmailAddress
+            ));
     }
 
     /**

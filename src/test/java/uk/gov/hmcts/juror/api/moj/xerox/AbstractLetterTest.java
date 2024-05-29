@@ -41,6 +41,8 @@ public abstract class AbstractLetterTest {
                 break;
             case Calendar.THURSDAY:
             case Calendar.FRIDAY:
+            case Calendar.SATURDAY:
+            case Calendar.SUNDAY:
                 cal.add(Calendar.DAY_OF_MONTH, 4);
                 break;
             default:
