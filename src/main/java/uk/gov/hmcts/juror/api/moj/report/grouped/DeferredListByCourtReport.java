@@ -5,6 +5,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
+import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedReportResponse;
@@ -52,7 +53,11 @@ public class DeferredListByCourtReport extends AbstractGroupedReport {
             query.where(QJurorPool.jurorPool.owner.eq(SecurityUtil.getActiveOwner()));
         }
         query.orderBy(QJurorPool.jurorPool.deferralDate.asc());
-        addGroupBy(query, DataType.COURT_LOCATION_NAME_AND_CODE);
+        query.groupBy(
+            QCourtLocation.courtLocation.name,
+            QCourtLocation.courtLocation.locCode,
+            QJurorPool.jurorPool.deferralDate
+        );
     }
 
     @Override
