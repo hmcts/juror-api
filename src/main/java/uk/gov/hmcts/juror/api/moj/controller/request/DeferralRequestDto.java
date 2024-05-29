@@ -52,4 +52,7 @@ public class DeferralRequestDto {
     @Schema(description = "Selected deferral date", requiredMode = Schema.RequiredMode.REQUIRED)
     public LocalDate deferralDate;
 
+    @JsonProperty("allow_multiple_deferral")
+    private boolean allowMultipleDeferrals;
+
 }
