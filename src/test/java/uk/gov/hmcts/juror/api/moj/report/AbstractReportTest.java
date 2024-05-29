@@ -1101,7 +1101,7 @@ class AbstractReportTest {
             TrialRepository trialRepository = mock(TrialRepository.class);
             Trial trial = mock(Trial.class);
 
-            securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn(TestConstants.VALID_COURT_LOCATION);
+            securityUtilMockedStatic.when(SecurityUtil::getLocCode).thenReturn(TestConstants.VALID_COURT_LOCATION);
 
             doReturn(Optional.of(trial)).when(trialRepository)
                 .findByTrialNumberAndCourtLocationLocCode(TestConstants.VALID_TRIAL_NUMBER,

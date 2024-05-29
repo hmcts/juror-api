@@ -496,7 +496,7 @@ public abstract class AbstractReport<T> implements IReport {
 
     public Trial getTrial(String trialNumber, TrialRepository trialRepository) {
         Optional<Trial> trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber,
-            SecurityUtil.getActiveOwner());
+            SecurityUtil.getLocCode());
         if (trial.isEmpty()) {
             throw new MojException.NotFound("Trial not found", null);
         }

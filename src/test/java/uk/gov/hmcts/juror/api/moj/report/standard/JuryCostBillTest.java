@@ -1,4 +1,4 @@
-package uk.gov.hmcts.juror.api.moj.report.grouped;
+package uk.gov.hmcts.juror.api.moj.report.standard;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -10,16 +10,16 @@ import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedReportResponse;
-import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.domain.QReportsJurorPayments;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Judge;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.TrialType;
-import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReportTestSupport;
-import uk.gov.hmcts.juror.api.moj.report.ReportGroupBy;
+import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.datatypes.ReportsJurorPaymentsDataTypes;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
@@ -35,30 +35,21 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-
-class TrialAttendanceReportTest extends AbstractGroupedReportTestSupport<TrialAttendanceReport> {
+class JuryCostBillTest extends AbstractStandardReportTestSupport<JuryCostBill> {
 
     private CourtLocationRepository courtLocationRepository;
     private TrialRepository trialRepository;
 
-    public TrialAttendanceReportTest() {
-        super(
-            QReportsJurorPayments.reportsJurorPayments,
-            TrialAttendanceReport.RequestValidator.class,
-            ReportGroupBy.builder()
-                .dataType(ReportsJurorPaymentsDataTypes.ATTENDANCE_DATE)
-                .removeGroupByFromResponse(true)
-                .build(),
-            ReportsJurorPaymentsDataTypes.JUROR_NUMBER,
-            ReportsJurorPaymentsDataTypes.FIRST_NAME,
-            ReportsJurorPaymentsDataTypes.LAST_NAME,
-            ReportsJurorPaymentsDataTypes.CHECKED_IN,
-            ReportsJurorPaymentsDataTypes.CHECKED_OUT,
-            ReportsJurorPaymentsDataTypes.HOURS_ATTENDED,
-            ReportsJurorPaymentsDataTypes.ATTENDANCE_AUDIT,
-            ReportsJurorPaymentsDataTypes.PAYMENT_AUDIT,
-            ReportsJurorPaymentsDataTypes.TOTAL_DUE,
-            ReportsJurorPaymentsDataTypes.TOTAL_PAID);
+    public JuryCostBillTest() {
+        super(QReportsJurorPayments.reportsJurorPayments,
+              JuryCostBill.RequestValidator.class,
+              ReportsJurorPaymentsDataTypes.ATTENDANCE_DATE,
+              ReportsJurorPaymentsDataTypes.FINANCIAL_LOSS_DUE_SUM,
+              ReportsJurorPaymentsDataTypes.TRAVEL_DUE_SUM,
+              ReportsJurorPaymentsDataTypes.SUBSISTENCE_DUE_SUM,
+              ReportsJurorPaymentsDataTypes.SMARTCARD_DUE_SUM,
+              ReportsJurorPaymentsDataTypes.TOTAL_DUE_SUM,
+              ReportsJurorPaymentsDataTypes.TOTAL_PAID_SUM);
 
         setHasPoolRepository(false);
     }
@@ -77,8 +68,8 @@ class TrialAttendanceReportTest extends AbstractGroupedReportTestSupport<TrialAt
     }
 
     @Override
-    public TrialAttendanceReport createReport(PoolRequestRepository poolRequestRepository) {
-        return new TrialAttendanceReport(this.trialRepository);
+    public JuryCostBill createReport(PoolRequestRepository poolRequestRepository) {
+        return new JuryCostBill(this.trialRepository);
     }
 
     @Override
@@ -91,23 +82,23 @@ class TrialAttendanceReportTest extends AbstractGroupedReportTestSupport<TrialAt
 
     @Override
     public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
-        String locCode = "415";
-        TestUtils.mockSecurityUtil(BureauJwtPayload.builder().locCode(locCode).userType(UserType.COURT).build());
+        TestUtils.mockSecurityUtil(BureauJwtPayload.builder()
+                                       .locCode(TestConstants.VALID_COURT_LOCATION)
+                                       .owner(TestConstants.VALID_COURT_LOCATION)
+                                       .userType(UserType.COURT)
+                                       .build());
 
         report.preProcessQuery(query, request);
-        verify(query, times(1))
-            .where(QReportsJurorPayments.reportsJurorPayments.trialNumber.eq("TRIALNUMBER"));
-        verify(query, times(1))
-            .where(QReportsJurorPayments.reportsJurorPayments.locCode.eq(locCode));
-        verify(query, times(1)).orderBy(
-            QReportsJurorPayments.reportsJurorPayments.jurorNumber.asc());
+        verify(query).where(QReportsJurorPayments.reportsJurorPayments.trialNumber.eq("TRIALNUMBER"));
+        verify(query).where(QReportsJurorPayments.reportsJurorPayments.locCode.eq(TestConstants.VALID_COURT_LOCATION));
+        verify(report, times(1)).addGroupBy(query, ReportsJurorPaymentsDataTypes.ATTENDANCE_DATE);
     }
 
     @Override
-    public Map<String, GroupedReportResponse.DataTypeValue> positiveGetHeadingsTypical(
+    public Map<String, AbstractReportResponse.DataTypeValue> positiveGetHeadingsTypical(
         StandardReportRequest request,
-        GroupedReportResponse.TableData<GroupedTableData> tableData,
-        GroupedTableData data) {
+        AbstractReportResponse.TableData<StandardTableData> tableData,
+        StandardTableData data) {
         TestUtils.mockSecurityUtil(BureauJwtPayload.builder()
                                        .locCode(TestConstants.VALID_COURT_LOCATION)
                                        .owner(TestConstants.VALID_COURT_LOCATION)

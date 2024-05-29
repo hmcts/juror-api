@@ -48,6 +48,7 @@ public class StandardReportRequest {
         "PoolAttendanceAuditReport",
         "OnCallReport",
         "PanelMembersStatusReport",
+        "JuryCostBill",
         //Grouped
         "AbsencesReport",
         "PostponedListByDateReport",
