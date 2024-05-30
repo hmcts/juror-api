@@ -33,8 +33,8 @@ class BallotPanelTrialReportITest extends AbstractStandardReportControllerITest 
     @Override
     protected StandardReportRequest getValidPayload() {
         return addReportType(StandardReportRequest.builder()
-                                 .trialNumber(TestConstants.VALID_TRIAL_NUMBER)
-                                 .build());
+            .trialNumber(TestConstants.VALID_TRIAL_NUMBER)
+            .build());
     }
 
     @Test

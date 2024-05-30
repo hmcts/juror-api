@@ -77,9 +77,9 @@ class BallotPanelTrialReportTest extends AbstractStandardReportTestSupport<Ballo
         report.preProcessQuery(query, request);
 
         verify(query, times(1))
-            .where(QPanel.panel.trial.trialNumber.eq(request.getTrialNumber()));
+            .where(QPanel.panel.trial.trialNumber.eq(TestConstants.VALID_TRIAL_NUMBER));
         verify(query, times(1))
-            .where(QPanel.panel.trial.courtLocation.locCode.in(SecurityUtil.getCourts()));
+            .where(QPanel.panel.trial.courtLocation.locCode.in(TestConstants.VALID_COURT_LOCATION));
         verify(query, times(1))
             .orderBy(QPanel.panel.juror.jurorNumber.asc());
     }
