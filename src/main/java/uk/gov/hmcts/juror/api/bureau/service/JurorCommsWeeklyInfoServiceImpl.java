@@ -95,7 +95,7 @@ public class JurorCommsWeeklyInfoServiceImpl implements BureauProcessService {
                 );
                 infoCommsfailed++;
             } catch (Exception e) {
-                log.error("Informational Comms Processing : Juror Comms failed : {}", e.getMessage());
+                log.error("Informational Comms Processing : Juror Comms failed : " + e.getMessage(), e);
                 infoCommsfailed++;
             }
         }

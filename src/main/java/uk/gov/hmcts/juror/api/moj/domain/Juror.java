@@ -39,6 +39,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Optional;
 import java.util.Set;
 
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.JUROR_NUMBER;
@@ -311,5 +312,9 @@ public class Juror extends Address implements Serializable {
     public void setPoliceCheck(PoliceCheck policeCheck) {
         this.policeCheck = policeCheck;
         this.policeCheckLastUpdate = LocalDateTime.now();
+    }
+
+    public boolean isWelsh() {
+        return Optional.ofNullable(this.welsh).orElse(false);
     }
 }
