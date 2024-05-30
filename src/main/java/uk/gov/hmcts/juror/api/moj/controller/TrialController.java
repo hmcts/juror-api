@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,13 +23,13 @@ import uk.gov.hmcts.juror.api.moj.controller.request.trial.EndTrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReturnJuryDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.PageDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialSearch;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialSummaryDto;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.trial.TrialService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
-import uk.gov.hmcts.juror.api.validation.TrialNumber;
 
 import java.util.List;
 
@@ -72,20 +71,12 @@ public class TrialController {
         return ResponseEntity.ok().body(trialSummaryDto);
     }
 
-    @GetMapping("/list")
+    @PostMapping("/list")
     @Operation(summary = "Get a list of all trials")
     @PreAuthorize(SecurityUtil.IS_COURT)
-    public ResponseEntity<PageDto<TrialListDto>> getTrials(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
-        @RequestParam("page_number") @PathVariable("pageNumber") @Valid int pageNumber,
-        @RequestParam("sort_by") @PathVariable("sortBy") @Valid String sortBy,
-        @RequestParam("sort_order") @PathVariable("sortOrder") @Valid String sortOrder,
-        @RequestParam(value = "trial_number", required = false)
-        @TrialNumber @Valid String trialNumber,
-        @RequestParam("is_active") @PathVariable("isActive") @Valid Boolean isActive) {
-        Page<TrialListDto> trials = trialService
-            .getTrials(payload, pageNumber, sortBy, sortOrder, isActive, trialNumber);
-        return ResponseEntity.ok().body(new PageDto<>(trials));
+    public ResponseEntity<PaginatedList<TrialListDto>> getTrials(
+        @Valid @RequestBody TrialSearch trialSearch) {
+        return ResponseEntity.ok().body(trialService.getTrials(trialSearch));
     }
 
     @GetMapping("/summary")
