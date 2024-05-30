@@ -22,6 +22,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.trial.EndTrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReturnJuryDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialSearch;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.CourtroomsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.JudgeDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialListDto;
@@ -29,6 +30,8 @@ import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialSummaryDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
+import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
@@ -42,7 +45,6 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.utils.PanelUtils;
-import uk.gov.hmcts.juror.api.utils.CustomPageImpl;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -303,20 +305,29 @@ class TrialControllerITest extends AbstractIntegrationTest {
     @Nested
     @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     class TrialList {
-        static final String URL = "/api/v1/moj/trial/list?";
-        static final String URL_TRIAL_LIST = URL + "page_number=0&sort_by=trialNumber&sort_order=desc&is_active=false";
+        static final String URL = "/api/v1/moj/trial/list";
+
+        private TrialSearch getValidPayload() {
+            return TrialSearch.builder()
+                .pageNumber(1)
+                .pageLimit(25)
+                .sortField(TrialSearch.SortField.TRIAL_NUMBER)
+                .sortMethod(SortMethod.DESC)
+                .isActive(false)
+                .build();
+        }
 
         @Test
         void testGetTrialsDescOrder() {
             initialiseHeader(singletonList("415"), "415", COURT_USER);
 
-            ResponseEntity<CustomPageImpl<TrialListDto>> responseEntity = invokeService();
+            ResponseEntity<PaginatedList<TrialListDto>> responseEntity = invokeService();
 
-            CustomPageImpl<TrialListDto> responseBody = responseEntity.getBody();
+            PaginatedList<TrialListDto> responseBody = responseEntity.getBody();
 
             verifyResponseBody(responseBody, 14);
 
-            assertThat(responseBody.getContent())
+            assertThat(responseBody.getData())
                 .as("Expect list of trials to be 14")
                 .extracting(TrialListDto::getTrialNumber)
                 .containsExactly("T100000027", "T100000025",
@@ -338,14 +349,14 @@ class TrialControllerITest extends AbstractIntegrationTest {
         void testGetTrialsDuplicateTrialNumberPrimaryCourt() {
             initialiseHeader(singletonList("415"), "415", COURT_USER);
 
-            ResponseEntity<CustomPageImpl<TrialListDto>> responseEntity = invokeService();
+            ResponseEntity<PaginatedList<TrialListDto>> responseEntity = invokeService();
 
-            CustomPageImpl<TrialListDto> responseBody = responseEntity.getBody();
+            PaginatedList<TrialListDto> responseBody = responseEntity.getBody();
             assertThat(responseBody).isNotNull();
 
             verifyResponseBody(responseBody, 14);
 
-            assertThat(responseBody.getContent())
+            assertThat(responseBody.getData())
                 .as("Expect list of trials to be 14")
                 .extracting(TrialListDto::getTrialNumber, TrialListDto::getDefendants)
                 .containsExactly(
@@ -369,14 +380,14 @@ class TrialControllerITest extends AbstractIntegrationTest {
         void testGetTrialsDuplicateTrialNumberSecondaryCourt() {
             initialiseHeader(singletonList("462"), "415", COURT_USER);
 
-            ResponseEntity<CustomPageImpl<TrialListDto>> responseEntity = invokeService();
+            ResponseEntity<PaginatedList<TrialListDto>> responseEntity = invokeService();
 
-            CustomPageImpl<TrialListDto> responseBody = responseEntity.getBody();
+            PaginatedList<TrialListDto> responseBody = responseEntity.getBody();
             assertThat(responseBody).isNotNull();
 
             verifyResponseBody(responseBody, 15);
 
-            assertThat(responseBody.getContent())
+            assertThat(responseBody.getData())
                 .as("Expect list of trials to be 15")
                 .extracting(TrialListDto::getTrialNumber, TrialListDto::getDefendants)
                 .containsExactly(
@@ -402,24 +413,24 @@ class TrialControllerITest extends AbstractIntegrationTest {
             initialiseHeader(singletonList("400"), "400", BUREAU_USER);
 
             ResponseEntity<TrialListDto> responseEntity = restTemplate.exchange(
-                new RequestEntity<>(httpHeaders, GET, URI.create(URL_TRIAL_LIST)), TrialListDto.class);
+                new RequestEntity<>(getValidPayload(), httpHeaders, POST, URI.create(URL)), TrialListDto.class);
 
             assertThat(responseEntity.getStatusCode())
                 .as("Expect the request to get a list of trials to fail for Bureau users.")
                 .isEqualTo(FORBIDDEN);
         }
 
-        private void verifyResponseBody(CustomPageImpl<TrialListDto> responseBody, int listCount) {
+        private void verifyResponseBody(PaginatedList<TrialListDto> responseBody, int listCount) {
             assertThat(responseBody).isNotNull();
 
-            assertThat(responseBody.stream().count())
+            assertThat((long) responseBody.getData().size())
                 .as("Expect the response to return a list of " + listCount + " trials")
                 .isEqualTo(listCount);
         }
 
-        private ResponseEntity<CustomPageImpl<TrialListDto>> invokeService() {
-            ResponseEntity<CustomPageImpl<TrialListDto>> responseEntity = restTemplate.exchange(
-                new RequestEntity<>(httpHeaders, GET, URI.create(URL_TRIAL_LIST)),
+        private ResponseEntity<PaginatedList<TrialListDto>> invokeService() {
+            ResponseEntity<PaginatedList<TrialListDto>> responseEntity = restTemplate.exchange(
+                new RequestEntity<>(getValidPayload(), httpHeaders, POST, URI.create(URL)),
                 new ParameterizedTypeReference<>() {
                 });
 

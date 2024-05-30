@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import uk.gov.hmcts.juror.api.moj.report.IDataType;
+import uk.gov.hmcts.juror.api.moj.report.support.HasSize;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -18,7 +19,7 @@ import java.util.List;
 @Data
 @ToString(callSuper = true)
 @NoArgsConstructor
-public class StandardTableData extends ArrayList<LinkedHashMap<String, Object>> {
+public class StandardTableData extends ArrayList<LinkedHashMap<String, Object>> implements HasSize {
 
 
     public StandardTableData(List<LinkedHashMap<String, Object>> data) {
@@ -36,5 +37,10 @@ public class StandardTableData extends ArrayList<LinkedHashMap<String, Object>> 
                 data.remove(dataType.getId());
             }
         }
+    }
+
+    @Override
+    public Long getSize() {
+        return (long) this.size();
     }
 }
