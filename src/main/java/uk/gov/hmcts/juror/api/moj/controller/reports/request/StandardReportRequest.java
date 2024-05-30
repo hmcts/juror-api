@@ -73,6 +73,7 @@ public class StandardReportRequest {
         "AvailableListByDateReportCourt",
         "SummonedRespondedReport",
         "UnconfirmedAttendanceReport",
+        "CompletionOfServiceReport",
         "PoolStatisticsReport",
         "TrialAttendanceReport",
         "CompletionOfServiceReport"
