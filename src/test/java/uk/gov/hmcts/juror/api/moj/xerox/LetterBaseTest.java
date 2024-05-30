@@ -4,10 +4,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import uk.gov.hmcts.juror.api.moj.exception.MojException;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -15,11 +16,12 @@ import java.util.Calendar;
 import java.util.Locale;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(SpringExtension.class)
 class LetterBaseTest {
@@ -30,7 +32,7 @@ class LetterBaseTest {
     @BeforeEach
     void mockCalendar() {
         mockStaticCalendar = mockStatic(Calendar.class);
-        mockStaticCalendar.when(() -> Calendar.getInstance((Locale)any())).thenReturn(mockCalendar);
+        mockStaticCalendar.when(() -> Calendar.getInstance((Locale) any())).thenReturn(mockCalendar);
         mockStaticCalendar.when(Calendar::getInstance).thenReturn(mockCalendar);
         // Mock for business logic
         doReturn(Calendar.MONDAY).when(mockCalendar).get(Calendar.DAY_OF_WEEK);
@@ -76,21 +78,33 @@ class LetterBaseTest {
         ));
     }
 
-    @Test
-    void dateOfLetterThrowsAtWeekend() {
-        doReturn(Calendar.SUNDAY).when(mockCalendar).get(Calendar.DAY_OF_WEEK);
+    @ParameterizedTest
+    @ValueSource(ints = {
+        Calendar.THURSDAY,
+        Calendar.FRIDAY,
+        Calendar.SATURDAY,
+        Calendar.SUNDAY
+    })
+    void dateOfLetterPlus4Days(int day) {
+        doReturn(day).when(mockCalendar).get(Calendar.DAY_OF_WEEK);
+        LetterBase.getDateOfLetter();
+        verify(mockCalendar, times(1))
+            .add(Calendar.DAY_OF_MONTH, 4);
+    }
 
-        LetterBase testLetter = new LetterBase(testContextBuilder().build());
-        testLetter.addData(LetterBase.LetterDataType.DATE_OF_LETTER, 18);
-        assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
-            .isThrownBy(testLetter::getLetterString);
+    @Test
+    void dateOfLetterPlus4AtWeekendSunday() {
+        doReturn(Calendar.SUNDAY).when(mockCalendar).get(Calendar.DAY_OF_WEEK);
+        LetterBase.getDateOfLetter();
+        verify(mockCalendar, times(1))
+            .add(Calendar.DAY_OF_MONTH, 4);
     }
 
     @Test
     void courtLocationCodeIsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .courtLocation(LetterTestUtils.testCourtLocation())
-                                                   .build());
+            .courtLocation(LetterTestUtils.testCourtLocation())
+            .build());
         testLetter.addData(LetterBase.LetterDataType.COURT_LOCATION_CODE, 3);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad(
             "457", 3
@@ -100,8 +114,8 @@ class LetterBaseTest {
     @Test
     void courtNameIsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .courtLocation(LetterTestUtils.testCourtLocation())
-                                                   .build());
+            .courtLocation(LetterTestUtils.testCourtLocation())
+            .build());
         testLetter.addData(LetterBase.LetterDataType.COURT_NAME, 15);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad(
             "SWANSEA CROWN COURT", 15
@@ -111,8 +125,8 @@ class LetterBaseTest {
     @Test
     void courtAddress1IsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .courtLocation(LetterTestUtils.testCourtLocation())
-                                                   .build());
+            .courtLocation(LetterTestUtils.testCourtLocation())
+            .build());
         testLetter.addData(LetterBase.LetterDataType.COURT_ADDRESS1, 15);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad(
             "THE LAW COURTS", 15
@@ -122,8 +136,8 @@ class LetterBaseTest {
     @Test
     void courAddress2IsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .courtLocation(LetterTestUtils.testCourtLocation())
-                                                   .build());
+            .courtLocation(LetterTestUtils.testCourtLocation())
+            .build());
         testLetter.addData(LetterBase.LetterDataType.COURT_ADDRESS2, 15);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad(
             "ST HELENS ROAD", 15
@@ -133,8 +147,8 @@ class LetterBaseTest {
     @Test
     void courtAddress3IsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .courtLocation(LetterTestUtils.testCourtLocation())
-                                                   .build());
+            .courtLocation(LetterTestUtils.testCourtLocation())
+            .build());
         testLetter.addData(LetterBase.LetterDataType.COURT_ADDRESS3, 15);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad(
             "SWANSEA", 15
@@ -144,8 +158,8 @@ class LetterBaseTest {
     @Test
     void courtAddress4IsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .courtLocation(LetterTestUtils.testCourtLocation())
-                                                   .build());
+            .courtLocation(LetterTestUtils.testCourtLocation())
+            .build());
         testLetter.addData(LetterBase.LetterDataType.COURT_ADDRESS4, 15);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad(
             "SHREWSBURY", 15
@@ -155,8 +169,8 @@ class LetterBaseTest {
     @Test
     void courtAddress5IsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .courtLocation(LetterTestUtils.testCourtLocation())
-                                                   .build());
+            .courtLocation(LetterTestUtils.testCourtLocation())
+            .build());
         testLetter.addData(LetterBase.LetterDataType.COURT_ADDRESS5, 15);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad(
             "COURT_ADDRESS_5", 15
@@ -166,8 +180,8 @@ class LetterBaseTest {
     @Test
     void courtAddress6IsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .courtLocation(LetterTestUtils.testCourtLocation())
-                                                   .build());
+            .courtLocation(LetterTestUtils.testCourtLocation())
+            .build());
         testLetter.addData(LetterBase.LetterDataType.COURT_ADDRESS6, 15);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad(
             "COURT_ADDRESS_6", 15
@@ -177,8 +191,8 @@ class LetterBaseTest {
     @Test
     void courtPostcodeIsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .courtLocation(LetterTestUtils.testCourtLocation())
-                                                   .build());
+            .courtLocation(LetterTestUtils.testCourtLocation())
+            .build());
         testLetter.addData(LetterBase.LetterDataType.COURT_POSTCODE, 15);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad(
             "SY2 6LU", 15
@@ -188,8 +202,8 @@ class LetterBaseTest {
     @Test
     void courtPhoneIsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .courtLocation(LetterTestUtils.testCourtLocation())
-                                                   .build());
+            .courtLocation(LetterTestUtils.testCourtLocation())
+            .build());
         testLetter.addData(LetterBase.LetterDataType.COURT_PHONE, 15);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad(
             "01792637000", 15
@@ -199,8 +213,8 @@ class LetterBaseTest {
     @Test
     void courtFaxIsEmpty() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .courtLocation(LetterTestUtils.testCourtLocation())
-                                                   .build());
+            .courtLocation(LetterTestUtils.testCourtLocation())
+            .build());
         testLetter.addData(LetterBase.LetterDataType.COURT_FAX, 15);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad(
             "", 15
@@ -210,8 +224,8 @@ class LetterBaseTest {
     @Test
     void courtInsertIsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .courtLocation(LetterTestUtils.testCourtLocation())
-                                                   .build());
+            .courtLocation(LetterTestUtils.testCourtLocation())
+            .build());
         testLetter.addData(LetterBase.LetterDataType.INSERT_INDICATORS, 15);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad(
             "TWO WEEKS", 15
@@ -221,8 +235,8 @@ class LetterBaseTest {
     @Test
     void courtSignatoryIsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .courtLocation(LetterTestUtils.testCourtLocation())
-                                                   .build());
+            .courtLocation(LetterTestUtils.testCourtLocation())
+            .build());
         testLetter.addData(LetterBase.LetterDataType.COURT_SIGNATORY, 15);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad(
             "JURY MANAGER", 15
@@ -232,8 +246,8 @@ class LetterBaseTest {
     @Test
     void bureauNameIsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .bureauLocation(LetterTestUtils.testBureauLocation())
-                                                   .build());
+            .bureauLocation(LetterTestUtils.testBureauLocation())
+            .build());
 
         testLetter.addData(LetterBase.LetterDataType.BUREAU_NAME, 40);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("JURY CENTRAL SUMMONING BUREAU", 40));
@@ -242,8 +256,8 @@ class LetterBaseTest {
     @Test
     void bureauAddress1IsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .bureauLocation(LetterTestUtils.testBureauLocation())
-                                                   .build());
+            .bureauLocation(LetterTestUtils.testBureauLocation())
+            .build());
 
         testLetter.addData(LetterBase.LetterDataType.BUREAU_ADDRESS1, 40);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("THE COURT SERVICE", 40));
@@ -252,8 +266,8 @@ class LetterBaseTest {
     @Test
     void bureauAddress2IsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .bureauLocation(LetterTestUtils.testBureauLocation())
-                                                   .build());
+            .bureauLocation(LetterTestUtils.testBureauLocation())
+            .build());
 
         testLetter.addData(LetterBase.LetterDataType.BUREAU_ADDRESS2, 40);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("FREEPOST LON 19669", 40));
@@ -262,8 +276,8 @@ class LetterBaseTest {
     @Test
     void bureauAddress3IsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .bureauLocation(LetterTestUtils.testBureauLocation())
-                                                   .build());
+            .bureauLocation(LetterTestUtils.testBureauLocation())
+            .build());
 
         testLetter.addData(LetterBase.LetterDataType.BUREAU_ADDRESS3, 40);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("POCOCK STREET", 40));
@@ -272,8 +286,8 @@ class LetterBaseTest {
     @Test
     void bureauAddress4IsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .bureauLocation(LetterTestUtils.testBureauLocation())
-                                                   .build());
+            .bureauLocation(LetterTestUtils.testBureauLocation())
+            .build());
 
         testLetter.addData(LetterBase.LetterDataType.BUREAU_ADDRESS4, 40);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("LONDON", 40));
@@ -282,8 +296,8 @@ class LetterBaseTest {
     @Test
     void bureauAddress5IsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .bureauLocation(LetterTestUtils.testBureauLocation())
-                                                   .build());
+            .bureauLocation(LetterTestUtils.testBureauLocation())
+            .build());
 
         testLetter.addData(LetterBase.LetterDataType.BUREAU_ADDRESS5, 40);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("BUREAU_ADDRESS_5", 40));
@@ -292,8 +306,8 @@ class LetterBaseTest {
     @Test
     void bureauAddress6IsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .bureauLocation(LetterTestUtils.testBureauLocation())
-                                                   .build());
+            .bureauLocation(LetterTestUtils.testBureauLocation())
+            .build());
 
         testLetter.addData(LetterBase.LetterDataType.BUREAU_ADDRESS6, 40);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("BUREAU_ADDRESS_6", 40));
@@ -302,8 +316,8 @@ class LetterBaseTest {
     @Test
     void bureauPostcodeIsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .bureauLocation(LetterTestUtils.testBureauLocation())
-                                                   .build());
+            .bureauLocation(LetterTestUtils.testBureauLocation())
+            .build());
 
         testLetter.addData(LetterBase.LetterDataType.BUREAU_POSTCODE, 40);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("SE1 0YG", 40));
@@ -312,8 +326,8 @@ class LetterBaseTest {
     @Test
     void bureauPhoneIsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .bureauLocation(LetterTestUtils.testBureauLocation())
-                                                   .build());
+            .bureauLocation(LetterTestUtils.testBureauLocation())
+            .build());
 
         testLetter.addData(LetterBase.LetterDataType.BUREAU_PHONE, 40);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("0845 3555567", 40));
@@ -322,8 +336,8 @@ class LetterBaseTest {
     @Test
     void bureauFaxIsBlank() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .bureauLocation(LetterTestUtils.testBureauLocation())
-                                                   .build());
+            .bureauLocation(LetterTestUtils.testBureauLocation())
+            .build());
 
         testLetter.addData(LetterBase.LetterDataType.BUREAU_FAX, 40);
         // Fax is deprecated and always empty
@@ -333,8 +347,8 @@ class LetterBaseTest {
     @Test
     void bureauSignatoryIsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .bureauLocation(LetterTestUtils.testBureauLocation())
-                                                   .build());
+            .bureauLocation(LetterTestUtils.testBureauLocation())
+            .build());
 
         testLetter.addData(LetterBase.LetterDataType.BUREAU_SIGNATORY, 40);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("JURY MANAGER", 40));
@@ -375,8 +389,8 @@ class LetterBaseTest {
     @Test
     void timeOfAttendanceIsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .courtLocation(LetterTestUtils.testCourtLocation())
-                                                   .build());
+            .courtLocation(LetterTestUtils.testCourtLocation())
+            .build());
 
         testLetter.addData(LetterBase.LetterDataType.TIME_OF_ATTENDANCE, 40);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("10:00", 40));
@@ -385,8 +399,8 @@ class LetterBaseTest {
     @Test
     void deferralTimeIsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .courtLocation(LetterTestUtils.testCourtLocation())
-                                                   .build());
+            .courtLocation(LetterTestUtils.testCourtLocation())
+            .build());
 
         testLetter.addData(LetterBase.LetterDataType.DEFERRAL_TIME, 40);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("10:00", 40));
@@ -494,7 +508,7 @@ class LetterBaseTest {
         final String additionalInformation =
             "This is the additional information for the request additional information letter";
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .additionalInformation(additionalInformation).build());
+            .additionalInformation(additionalInformation).build());
 
         testLetter.addData(LetterBase.LetterDataType.ADDITIONAL_INFORMATION, 210);
         assertThat(testLetter.getLetterString())
@@ -504,8 +518,8 @@ class LetterBaseTest {
     @Test
     void welshCourtNameIsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .welshCourtLocation(LetterTestUtils.testWelshCourtLocation())
-                                                   .build());
+            .welshCourtLocation(LetterTestUtils.testWelshCourtLocation())
+            .build());
 
         testLetter.addData(LetterBase.LetterDataType.WELSH_COURT_NAME, 40);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("ABERTAWE", 40));
@@ -514,8 +528,8 @@ class LetterBaseTest {
     @Test
     void welshCourtAddress1IsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .welshCourtLocation(LetterTestUtils.testWelshCourtLocation())
-                                                   .build());
+            .welshCourtLocation(LetterTestUtils.testWelshCourtLocation())
+            .build());
 
         testLetter.addData(LetterBase.LetterDataType.WELSH_COURT_ADDRESS1, 40);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("Y LLYSOEDD BARN", 40));
@@ -524,8 +538,8 @@ class LetterBaseTest {
     @Test
     void welshCourtAddress2IsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .welshCourtLocation(LetterTestUtils.testWelshCourtLocation())
-                                                   .build());
+            .welshCourtLocation(LetterTestUtils.testWelshCourtLocation())
+            .build());
 
         testLetter.addData(LetterBase.LetterDataType.WELSH_COURT_ADDRESS2, 40);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("LON SAN HELEN", 40));
@@ -534,8 +548,8 @@ class LetterBaseTest {
     @Test
     void welshCourtAddress3IsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .welshCourtLocation(LetterTestUtils.testWelshCourtLocation())
-                                                   .build());
+            .welshCourtLocation(LetterTestUtils.testWelshCourtLocation())
+            .build());
 
         testLetter.addData(LetterBase.LetterDataType.WELSH_COURT_ADDRESS3, 40);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("ABERTAWE", 40));
@@ -544,8 +558,8 @@ class LetterBaseTest {
     @Test
     void welshCourtAddress4IsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .welshCourtLocation(LetterTestUtils.testWelshCourtLocation())
-                                                   .build());
+            .welshCourtLocation(LetterTestUtils.testWelshCourtLocation())
+            .build());
 
         testLetter.addData(LetterBase.LetterDataType.WELSH_COURT_ADDRESS4, 40);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("WELSH_COURT_ADDRESS_4", 40));
@@ -554,8 +568,8 @@ class LetterBaseTest {
     @Test
     void welshCourtAddress5IsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .welshCourtLocation(LetterTestUtils.testWelshCourtLocation())
-                                                   .build());
+            .welshCourtLocation(LetterTestUtils.testWelshCourtLocation())
+            .build());
 
         testLetter.addData(LetterBase.LetterDataType.WELSH_COURT_ADDRESS5, 40);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("WELSH_COURT_ADDRESS_5", 40));
@@ -564,8 +578,8 @@ class LetterBaseTest {
     @Test
     void welshCourtAddress6IsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-                                                   .welshCourtLocation(LetterTestUtils.testWelshCourtLocation())
-                                                   .build());
+            .welshCourtLocation(LetterTestUtils.testWelshCourtLocation())
+            .build());
 
         testLetter.addData(LetterBase.LetterDataType.WELSH_COURT_ADDRESS6, 40);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("WELSH_COURT_ADDRESS_6", 40));

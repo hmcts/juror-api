@@ -1160,7 +1160,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
         return PaymentData.builder()
             .courtLocation(courtLocation)
-            .creationDate(LocalDateTime.now())
+            .creationDateTime(LocalDateTime.now())
             .expenseTotal(travelTotal
                 .add(substanceTotal)
                 .add(financialLossTotal))

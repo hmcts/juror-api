@@ -20,7 +20,9 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.QPendingJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
@@ -69,10 +71,14 @@ public abstract class AbstractReport<T> implements IReport {
             new Predicate[]{
                 lowLevelFinancialAuditDetailsIncludingApprovedAmounts
                     .jurorNumber.eq(QJuror.juror.jurorNumber)
+            },
+            QPendingJuror.pendingJuror, new Predicate[]{
+                QPendingJuror.pendingJuror.jurorNumber.eq(QJuror.juror.jurorNumber)
             }
         ));
         CLASS_TO_JOIN.put(QJurorPool.jurorPool, Map.of(
-            QJuror.juror, new Predicate[]{QJurorPool.jurorPool.juror.eq(QJuror.juror)}
+            QJuror.juror, new Predicate[]{QJurorPool.jurorPool.juror.eq(QJuror.juror)},
+            QPanel.panel, new Predicate[]{QPanel.panel.juror.eq(QJurorPool.jurorPool.juror)}
         ));
         CLASS_TO_JOIN.put(QPoolRequest.poolRequest, Map.of(
             QJurorPool.jurorPool,
@@ -148,7 +154,7 @@ public abstract class AbstractReport<T> implements IReport {
         if (!classToJoinOverrides.containsKey(joinDetails.getFrom())) {
             classToJoinOverrides.put(joinDetails.getFrom(), new HashMap<>());
         }
-        classToJoinOverrides.get(from).put(joinDetails.getTo(), joinDetails);
+        classToJoinOverrides.get(joinDetails.getFrom()).put(joinDetails.getTo(), joinDetails);
     }
 
     public void addAuthenticationConsumer(Consumer<StandardReportRequest> consumer) {
@@ -166,6 +172,14 @@ public abstract class AbstractReport<T> implements IReport {
     public void isBureauUserOnly() {
         addAuthenticationConsumer(request -> {
             if (!SecurityUtil.isBureau()) {
+                throw new MojException.Forbidden("User not allowed to access this report", null);
+            }
+        });
+    }
+
+    public void isSeniorJurorOfficerOnly() {
+        addAuthenticationConsumer(request -> {
+            if (!SecurityUtil.hasRole(Role.SENIOR_JUROR_OFFICER)) {
                 throw new MojException.Forbidden("User not allowed to access this report", null);
             }
         });
@@ -388,6 +402,7 @@ public abstract class AbstractReport<T> implements IReport {
 
     public ConcurrentHashMap<String, AbstractReportResponse.DataTypeValue> loadStandardPoolHeaders(
         StandardReportRequest request, boolean ownerMustMatch, boolean allowBureau) {
+
         PoolRequest poolRequest = getPoolRequest(request.getPoolNumber());
         if (ownerMustMatch) {
             checkOwnership(poolRequest, allowBureau);
@@ -484,7 +499,7 @@ public abstract class AbstractReport<T> implements IReport {
         return courtLocation.getName() + " (" + courtLocation.getLocCode() + ")";
     }
 
-    PoolRequest getPoolRequest(String poolNumber) {
+    public PoolRequest getPoolRequest(String poolNumber) {
         Optional<PoolRequest> poolRequest = poolRequestRepository.findByPoolNumber(poolNumber);
         if (poolRequest.isEmpty()) {
             throw new MojException.NotFound("Pool not found", null);
@@ -494,7 +509,7 @@ public abstract class AbstractReport<T> implements IReport {
 
     public Trial getTrial(String trialNumber, TrialRepository trialRepository) {
         Optional<Trial> trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber,
-            SecurityUtil.getActiveOwner());
+            SecurityUtil.getLocCode());
         if (trial.isEmpty()) {
             throw new MojException.NotFound("Trial not found", null);
         }
@@ -545,6 +560,12 @@ public abstract class AbstractReport<T> implements IReport {
         }
 
         public interface RequiredJurorNumber {
+        }
+
+        public interface RequireJuryAuditNumber {
+        }
+
+        public interface RequirePoolAuditNumber {
         }
     }
 }

@@ -2,7 +2,6 @@ package uk.gov.hmcts.juror.api.bureau.scheduler;
 
 
 import com.google.common.collect.Lists;
-import com.querydsl.core.types.dsl.BooleanExpression;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,9 +12,12 @@ import uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.client.contracts.SchedulerServiceClient;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.text.SimpleDateFormat;
@@ -31,8 +33,7 @@ public class UrgentSuperUrgentStatusScheduler implements ScheduledService {
     private final UrgencyService urgencyService;
 
     private final JurorDigitalResponseRepositoryMod jurorDigitalResponseRepositoryMod;
-
-
+    private final JurorPaperResponseRepositoryMod jurorPaperResponseRepositoryMod;
     private final JurorPoolRepository jurorRepository;
 
 
@@ -44,12 +45,18 @@ public class UrgentSuperUrgentStatusScheduler implements ScheduledService {
 
         final List<ProcessingStatus> pendingStatuses = List.of(ProcessingStatus.CLOSED);
 
-        BooleanExpression pendingFilter = JurorResponseQueries.byStatusNotClosed(pendingStatuses)
-            .and(JurorResponseQueries.jurorIsNotTransferred());
+        Iterable<DigitalResponse> digitalResponseList = jurorDigitalResponseRepositoryMod.findAll(
+            JurorResponseQueries.byStatusNotClosed(pendingStatuses)
+                .and(JurorResponseQueries.jurorIsNotTransferred())
+                .and(JurorResponseQueries.isDigital()));
 
-        Iterable<DigitalResponse> digitalResponseList = jurorDigitalResponseRepositoryMod.findAll(pendingFilter);
+        Iterable<PaperResponse> paperResponseList = jurorPaperResponseRepositoryMod.findAll(
+            JurorResponseQueries.byStatusNotClosedPaper(pendingStatuses)
+                .and(JurorResponseQueries.jurorIsNotTransferredPaper())
+                .and(JurorResponseQueries.isPaper()));
 
-        final List<DigitalResponse> jurorResponsesNotClosed = Lists.newLinkedList(digitalResponseList);
+        final List<AbstractJurorResponse> jurorResponsesNotClosed = Lists.newLinkedList(digitalResponseList);
+        jurorResponsesNotClosed.addAll(Lists.newLinkedList(paperResponseList));
 
         log.trace("jurorResponsesNotClosed {}", jurorResponsesNotClosed.size());
 
@@ -59,7 +66,7 @@ public class UrgentSuperUrgentStatusScheduler implements ScheduledService {
         int totalUrgentResponses = 0;
         if (!jurorResponsesNotClosed.isEmpty()) {
 
-            for (DigitalResponse backlogItem : jurorResponsesNotClosed) {
+            for (AbstractJurorResponse backlogItem : jurorResponsesNotClosed) {
                 JurorPool jurorDetails = jurorRepository.findByJurorJurorNumberAndIsActiveAndOwner(
                     backlogItem.getJurorNumber(),
                     true,
@@ -80,7 +87,11 @@ public class UrgentSuperUrgentStatusScheduler implements ScheduledService {
                     totalUrgentResponses++;
                     urgencyService.setUrgencyFlags(backlogItem, jurorDetails);
                     log.trace("saving response back");
-                    jurorDigitalResponseRepositoryMod.save(backlogItem);
+                    if (backlogItem instanceof DigitalResponse digitalResponse) {
+                        jurorDigitalResponseRepositoryMod.save(digitalResponse);
+                    } else if (backlogItem instanceof PaperResponse paperResponse) {
+                        jurorPaperResponseRepositoryMod.save(paperResponse);
+                    }
                     log.trace("responses saved juror {}", backlogItem.getJurorNumber());
                 }
             }

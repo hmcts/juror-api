@@ -140,7 +140,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
 
     private List<Tuple> createActivePools() {
         List<Tuple> activePools = new ArrayList<>();
-        com.querydsl.core.Tuple tuple = Mockito.mock(Tuple.class);
+        Tuple tuple = Mockito.mock(Tuple.class);
         setUpMockQueryResult(tuple, "111111111", LocalDate.of(2023, 6, 22), 5, 1);
         activePools.add(tuple);
 

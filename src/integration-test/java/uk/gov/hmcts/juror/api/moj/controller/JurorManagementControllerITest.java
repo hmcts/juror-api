@@ -35,6 +35,7 @@ import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
+import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
@@ -223,7 +224,6 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         assertThat(appearance.getTimeIn()).isEqualTo(requestDto.getCheckInTime());
         assertThat(appearance.getTimeOut()).isEqualTo(requestDto.getCheckOutTime());
     }
-
 
 
     @Test
@@ -1510,10 +1510,13 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(summary.getDeleted()).isEqualTo(1L);
             assertThat(summary.getAdditionalInformation()).isBlank();
 
-            // verify attendance record no longer exists
-            List<Tuple> tuples =
-                appearanceRepository.retrieveAttendanceDetails(buildRetrieveAttendanceDetailsDto(jurors));
-            assertThat(tuples).size().isEqualTo(0);
+            // verify attendance record has been updated to absent longer exists
+            List<Appearance> appearances = appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumber(
+                "415", JUROR7);
+
+            assertThat(appearances).size().isEqualTo(1);
+            assertThat(appearances.get(0).getAttendanceType()).isEqualTo(AttendanceType.ABSENT);
+
         }
 
         @Test

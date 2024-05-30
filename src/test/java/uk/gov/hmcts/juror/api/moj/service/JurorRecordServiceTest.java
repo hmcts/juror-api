@@ -204,6 +204,8 @@ class JurorRecordServiceTest {
     private AppearanceRepository appearanceRepository;
     @Mock
     private ReasonableAdjustmentsRepository reasonableAdjustmentsRepository;
+    @Mock
+    private UserServiceModImpl userServiceMod;
 
     @Mock
     private Clock clock;

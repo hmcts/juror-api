@@ -192,6 +192,10 @@ public class Juror extends Address implements Serializable {
     @Builder.Default
     private PoliceCheck policeCheck = PoliceCheck.NOT_CHECKED;
 
+    @Column(name = "police_check_last_update")
+    @NotAudited
+    private LocalDateTime policeCheckLastUpdate;
+
     @NotAudited
     @Length(max = 20)
     @Column(name = "summons_file")
@@ -302,5 +306,10 @@ public class Juror extends Address implements Serializable {
             buildName = title + " ";
         }
         return buildName + firstName + " " + lastName;
+    }
+
+    public void setPoliceCheck(PoliceCheck policeCheck) {
+        this.policeCheck = policeCheck;
+        this.policeCheckLastUpdate = LocalDateTime.now();
     }
 }

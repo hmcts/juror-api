@@ -1,6 +1,6 @@
-INSERT INTO juror_mod.users (owner, user_type, username, email, name, active, version)
-VALUES ('400', 'BUREAU', 'MODTESTBUREAU', 'MODTESTBUREAU@email.gov.uk', 'MODTESTBUREAU', true, 1),
-       ('415', 'COURT', 'MODTESTCOURT', 'MODTESTCOURT@email.gov.uk', 'MODTESTCOURT', true, 1);
+INSERT INTO juror_mod.users (user_type, username, email, name, active)
+VALUES ('BUREAU', 'MODTESTBUREAU', 'MODTESTBUREAU@email.gov.uk', 'MODTESTBUREAU', true),
+       ('COURT', 'MODTESTCOURT', 'MODTESTCOURT@email.gov.uk', 'MODTESTCOURT', true);
 
 INSERT INTO juror_mod.user_roles (username, role)
 VALUES ('MODTESTBUREAU', 'MANAGER');

@@ -26,9 +26,15 @@ insert into juror_mod.juror_pool (owner, juror_number, pool_number, status, is_a
 values ('415', '641500020', '415230101', 2, true);
 
 
-INSERT INTO juror_mod.users (owner, username, email, name, active, team_id, version)
-VALUES ('415', 'COURT_USER', 'COURT_USER@email.gov.uk', 'Court User', true, 1, 1),
-       ('400', 'BUREAU_USER', 'BUREAU_USER@email.gov.uk', 'Bureau User', true, 1, 1);
+INSERT INTO juror_mod.users (username, email, name, active, team_id)
+VALUES ('COURT_USER', 'COURT_USER@email.gov.uk', 'Court User', true, 1),
+       ('BUREAU_USER', 'BUREAU_USER@email.gov.uk', 'Bureau User', true, 1);
+
+insert into juror_mod.user_courts (username, loc_code)
+values ('COURT_USER', '415'),
+       ('BUREAU_USER', '400');
+
+-- create a court appearance record
 
 INSERT INTO juror_mod.appearance
 (version, attendance_date, juror_number, loc_code, time_in, time_out, non_attendance,

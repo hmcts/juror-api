@@ -138,13 +138,13 @@ dependencies {
     testImplementation 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
     //testImplementation 'org.apache.httpcomponents:httpclient:4.5.13'
     testImplementation 'net.javacrumbs.json-unit:json-unit-fluent:3.2.7'
-    testImplementation('org.assertj:assertj-core:3.25.3')
+    testImplementation('org.assertj:assertj-core:3.26.0')
     testImplementation 'org.mockito:mockito-core:5.12.0'
 
     testImplementation('org.projectlombok:lombok')
     testAnnotationProcessor('org.projectlombok:lombok')
 
-    testImplementation('net.bytebuddy:byte-buddy:1.14.16')
+    testImplementation('net.bytebuddy:byte-buddy:1.14.17')
     testImplementation('junit:junit:4.13.2')
     testImplementation "org.testcontainers:testcontainers:1.19.8"
     testImplementation "org.testcontainers:junit-jupiter:1.19.8"
@@ -271,7 +271,7 @@ sourceSets {
 }
 checkstyle {
     maxWarnings = 0
-    toolVersion = '10.16.0'
+    toolVersion = '10.17.0'
     getConfigDirectory().set(new File(rootDir, 'config/checkstyle'))
 }
 
