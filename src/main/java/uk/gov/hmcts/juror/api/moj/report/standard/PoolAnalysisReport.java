@@ -18,6 +18,7 @@ import uk.gov.hmcts.juror.api.moj.utils.NumberUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -60,7 +61,13 @@ public class PoolAnalysisReport extends AbstractStandardReport {
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QPoolRequest.poolRequest.returnDate.between(request.getFromDate(), request.getToDate()));
-        query.where(QPoolRequest.poolRequest.owner.eq(SecurityUtil.getActiveOwner()));
+
+        if (SecurityUtil.isSatellite()) {
+            query.where(QPoolRequest.poolRequest.courtLocation.locCode.eq(SecurityUtil.getLocCode()));
+        } else {
+            query.where(QPoolRequest.poolRequest.owner.eq(SecurityUtil.getActiveOwner()));
+        }
+
         query.groupBy(QJurorPool.jurorPool.pool.poolNumber, QPoolRequest.poolRequest.returnDate);
         query.orderBy(QJurorPool.jurorPool.pool.poolNumber.asc());
     }
@@ -117,11 +124,11 @@ public class PoolAnalysisReport extends AbstractStandardReport {
 
         map.put("date_from", AbstractReportResponse.DataTypeValue.builder().displayName("Date From")
             .dataType(LocalDate.class.getSimpleName())
-            .value(request.getFromDate())
+            .value(request.getFromDate().format(DateTimeFormatter.ISO_DATE))
             .build());
         map.put("date_to", AbstractReportResponse.DataTypeValue.builder().displayName("Date To")
             .dataType(LocalDate.class.getSimpleName())
-            .value(request.getToDate())
+            .value(request.getToDate().format(DateTimeFormatter.ISO_DATE))
             .build());
 
         if (SecurityUtil.isCourt()) {

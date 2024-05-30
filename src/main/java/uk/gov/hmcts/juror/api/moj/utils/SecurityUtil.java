@@ -106,6 +106,10 @@ public final class SecurityUtil {
         return UserType.COURT.equals(getUserType());
     }
 
+    public static boolean isSatellite() {
+        return isCourt() && !getActiveOwner().equals(getLocCode());
+    }
+
     public static void validateCanAccessOwner(String owner) {
         if (!getActiveOwner().equals(owner)) {
             throw new MojException.Forbidden("User does not have access", null);
