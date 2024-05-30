@@ -15,6 +15,7 @@ import java.util.Set;
 
 @Slf4j
 public class DateUtils {
+    public static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
 
     private DateUtils() {
         // empty private constructor
