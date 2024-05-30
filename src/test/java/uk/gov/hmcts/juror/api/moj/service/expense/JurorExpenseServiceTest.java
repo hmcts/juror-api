@@ -2404,7 +2404,6 @@ class JurorExpenseServiceTest {
                 .thenReturn(username);
             User user = mock(User.class);
             doReturn(user).when(userService).findByUsername(username);
-            doReturn(TestConstants.VALID_COURT_LOCATION).when(user).getOwner();
             return user;
         }
 
@@ -3110,7 +3109,7 @@ class JurorExpenseServiceTest {
             );
 
             assertThat(paymentData.getCourtLocation()).isEqualTo(courtLocation);
-            assertThat(paymentData.getCreationDate()).isEqualToIgnoringHours(LocalDateTime.now());
+            assertThat(paymentData.getCreationDateTime()).isEqualToIgnoringHours(LocalDateTime.now());
             assertThat(paymentData.getExpenseTotal()).isEqualTo(new BigDecimal("21.06"));
             assertThat(paymentData.getJurorNumber()).isEqualTo(TestConstants.VALID_JUROR_NUMBER);
             assertThat(paymentData.getBankSortCode()).isEqualTo("112233");

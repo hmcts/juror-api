@@ -29,7 +29,6 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.JurorResponseSearchResu
 import uk.gov.hmcts.juror.api.bureau.exception.AutoAssignException;
 import uk.gov.hmcts.juror.api.bureau.exception.ReassignException;
 import uk.gov.hmcts.juror.api.bureau.service.AutoAssignmentService;
-import uk.gov.hmcts.juror.api.bureau.service.BureauAuthenticationService;
 import uk.gov.hmcts.juror.api.bureau.service.BureauService;
 import uk.gov.hmcts.juror.api.bureau.service.JurorResponseSearchService;
 import uk.gov.hmcts.juror.api.bureau.service.UserService;
@@ -49,7 +48,6 @@ public class BureauResponsesController {
 
     private final BureauService bureauService;
     private final JurorResponseSearchService searchService;
-    private final BureauAuthenticationService authService;
     private final AutoAssignmentService autoAssignmentService;
     private final UserService userService;
 

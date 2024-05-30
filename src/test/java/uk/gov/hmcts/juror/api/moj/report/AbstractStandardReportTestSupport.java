@@ -9,7 +9,7 @@ public abstract class AbstractStandardReportTestSupport
 
 
     public AbstractStandardReportTestSupport(EntityPath<?> from,
-                                             Class<?> validatorClass, DataType... dataTypes) {
+                                             Class<?> validatorClass, IDataType... dataTypes) {
         super(from, validatorClass, dataTypes);
     }
 

@@ -2,7 +2,6 @@ package uk.gov.hmcts.juror.api.moj.report.standard;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
@@ -19,7 +18,6 @@ import java.util.Map;
 @Component
 public class BallotPanelPoolReport extends AbstractStandardReport {
 
-    @Autowired
     public BallotPanelPoolReport() {
         super(
             QJurorPool.jurorPool,

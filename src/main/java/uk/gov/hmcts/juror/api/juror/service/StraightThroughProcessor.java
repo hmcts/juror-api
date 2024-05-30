@@ -8,13 +8,9 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
  */
 public interface StraightThroughProcessor {
 
+    void processAcceptance(DigitalResponse digitalResponse);
 
-    void processAcceptance(DigitalResponse digitalResponse) throws StraightThroughProcessingServiceException;
+    void processDeceasedExcusal(DigitalResponse digitalResponse);
 
-
-    void processDeceasedExcusal(
-        DigitalResponse digitalResponse) throws StraightThroughProcessingServiceException.DeceasedExcusal;
-
-
-    void processAgeExcusal(DigitalResponse digitalResponse) throws StraightThroughProcessingServiceException.AgeExcusal;
+    void processAgeExcusal(DigitalResponse digitalResponse);
 }
