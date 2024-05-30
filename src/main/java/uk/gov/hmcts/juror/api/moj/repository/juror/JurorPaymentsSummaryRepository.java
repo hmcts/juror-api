@@ -6,7 +6,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.juror.api.moj.domain.QReportsJurorPayments;
-import uk.gov.hmcts.juror.api.moj.domain.ReportsJurorPayments;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.List;
