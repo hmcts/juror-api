@@ -13,9 +13,10 @@ import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReport;
 import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.report.ReportGroupBy;
-import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
+import uk.gov.hmcts.juror.api.moj.service.CourtLocationService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -24,10 +25,10 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class CompletionOfServiceReport extends AbstractGroupedReport {
 
-    private final CourtLocationRepository courtLocationRepository;
+    private final CourtLocationService courtLocationService;
 
     public CompletionOfServiceReport(PoolRequestRepository poolRequestRepository,
-                                     CourtLocationRepository courtLocationRepository) {
+                                     CourtLocationService courtLocationService) {
         super(
             poolRequestRepository,
             QJurorPool.jurorPool,
@@ -39,8 +40,8 @@ public class CompletionOfServiceReport extends AbstractGroupedReport {
             DataType.FIRST_NAME,
             DataType.LAST_NAME,
             DataType.COMPLETION_DATE
-            );
-        this.courtLocationRepository = courtLocationRepository;
+        );
+        this.courtLocationService = courtLocationService;
         isCourtUserOnly();
     }
 
@@ -50,8 +51,9 @@ public class CompletionOfServiceReport extends AbstractGroupedReport {
     }
 
     @Override
-    protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
-        query.where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(SecurityUtil.getLocCode()));
+    public void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
+        query.where(QJurorPool.jurorPool.juror.completionDate.between(request.getFromDate(), request.getToDate()));
+        query.where(QJurorPool.jurorPool.location.eq(SecurityUtil.getLocCode()));
         query.orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
     }
 
@@ -75,11 +77,10 @@ public class CompletionOfServiceReport extends AbstractGroupedReport {
             .dataType(Integer.class.getSimpleName())
             .value(tableData.getData().getSize())
             .build());
-        map.put("court_name", AbstractReportResponse.DataTypeValue.builder()
-            .displayName("Court name")
-            .dataType(String.class.getSimpleName())
-            .value(getCourtNameString(courtLocationRepository, SecurityUtil.getLocCode()))
-            .build());
+
+        Map.Entry<String, GroupedReportResponse.DataTypeValue> entry =
+            getCourtNameHeader(courtLocationService.getCourtLocation(SecurityUtil.getLocCode()));
+        map.put(entry.getKey(), entry.getValue());
         return map;
     }
 
