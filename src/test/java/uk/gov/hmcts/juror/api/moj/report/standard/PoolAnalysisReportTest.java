@@ -22,16 +22,15 @@ import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 @SuppressWarnings({
     "unchecked"
@@ -107,10 +106,11 @@ public class PoolAnalysisReportTest extends AbstractStandardReportTestSupport<Po
     @Test
     void positivePreProcessQueryTypicalCourtSatellite() {
         StandardReportRequest request = new StandardReportRequest();
-        JPAQuery<Tuple> query = mock(JPAQuery.class);
 
         request.setFromDate(LocalDate.of(2024, 1, 15));
         request.setToDate(LocalDate.of(2024, 1, 16));
+
+        JPAQuery<Tuple> query = mock(JPAQuery.class);
 
         securityUtilMockedStatic.when(SecurityUtil::isSatellite).thenReturn(true);
         securityUtilMockedStatic.when(SecurityUtil::getLocCode).thenReturn("767");
@@ -126,10 +126,11 @@ public class PoolAnalysisReportTest extends AbstractStandardReportTestSupport<Po
     @Test
     void positivePreProcessQueryTypicalBureau() {
         StandardReportRequest request = new StandardReportRequest();
-        JPAQuery<Tuple> query = mock(JPAQuery.class);
 
         request.setFromDate(LocalDate.of(2024, 1, 15));
         request.setToDate(LocalDate.of(2024, 1, 16));
+
+        JPAQuery<Tuple> query = mock(JPAQuery.class);
 
         securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn("400");
         report.preProcessQuery(query, request);

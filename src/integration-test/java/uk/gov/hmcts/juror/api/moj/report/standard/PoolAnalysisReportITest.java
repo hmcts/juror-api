@@ -20,7 +20,8 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/PoolAnalysisReportITest_Typical.sql"
 })
-public class PoolAnalysisReportITest extends AbstractStandardReportControllerITest {
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+class PoolAnalysisReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired
     public PoolAnalysisReportITest(TestRestTemplate template) {
