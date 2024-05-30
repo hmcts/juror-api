@@ -11,6 +11,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 public class DateUtils {
@@ -89,5 +90,12 @@ public class DateUtils {
 
     public static LocalDateTime fromEpochMilli(long timestamp) {
         return LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault());
+    }
+
+    public static long getWorkingDaysBetween(LocalDate startDate, LocalDate endDate) {
+        Set<DayOfWeek> disallowedDaysOfWeek = Set.of(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY);
+        return startDate.datesUntil(endDate.plusDays(1))
+            .filter(localDate -> !disallowedDaysOfWeek.contains(localDate.getDayOfWeek()))
+            .count();
     }
 }

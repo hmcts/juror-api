@@ -32,6 +32,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(SpringExtension.class)
 public class ExemptionCertificateServiceTest {
@@ -50,14 +51,14 @@ public class ExemptionCertificateServiceTest {
     void testRetrieveTrialExemptionListHappy() {
         TestUtils.setUpMockAuthentication("415", "TEST_COURT", "1", List.of("415"));
 
-        Mockito.doReturn(setupTrial()).when(trialRepository).getListOfActiveTrials(
+        doReturn(setupTrial()).when(trialRepository).getListOfActiveTrials(
             "415");
 
         List<TrialExemptionListDto> trials = exemptionCertificateService.getTrialExemptionList("415");
         assertThat(trials).isNotNull();
         assertThat(trials.size()).as("Expect size to be one").isEqualTo(1);
 
-        Mockito.verify(trialRepository, times(1))
+        verify(trialRepository, times(1))
             .getListOfActiveTrials("415");
 
         assertThat(trials.get(0).getTrialType())
@@ -92,7 +93,7 @@ public class ExemptionCertificateServiceTest {
         List<JurorForExemptionListDto> jurors = exemptionCertificateService.getJurorsForExemptionList(caseNumber,
             courtLocation);
 
-        Mockito.verify(panelRepository, times(1))
+        verify(panelRepository, times(1))
             .findByTrialTrialNumberAndTrialCourtLocationLocCode(caseNumber,courtLocation);
 
         assertThat(jurors).isNotNull();

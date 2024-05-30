@@ -4,16 +4,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
-import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.SummonsLetter;
-import uk.gov.hmcts.juror.api.testsupport.DisableIfWeekend;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.Calendar;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 @ExtendWith(SpringExtension.class)
 class SummonsLetterTest extends AbstractLetterTest {
@@ -122,21 +118,17 @@ class SummonsLetterTest extends AbstractLetterTest {
             LetterTestUtils.testCourtLocation(),
             LetterTestUtils.testBureauLocation());
 
-        int dayOfTheWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
-        if (dayOfTheWeek == Calendar.SATURDAY || dayOfTheWeek == Calendar.SUNDAY) {
-            assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
-                .isThrownBy(summonsLetter::getLetterString);
-        } else {
-            assertThat(summonsLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
-            assertThat(summonsLetter.getFormCode()).isEqualTo(FormCode.ENG_SUMMONS.getCode());
-            assertThat(summonsLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testJuror().getJurorNumber());
 
-            // Juror address 6 is always empty
-            assertThat(summonsLetter.getData().get(9).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(35));
-            // Fax number is always empty
-            assertThat(summonsLetter.getData().get(27).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
-            assertThat(summonsLetter.getData().get(38).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
-        }
+        assertThat(summonsLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
+        assertThat(summonsLetter.getFormCode()).isEqualTo(FormCode.ENG_SUMMONS.getCode());
+        assertThat(summonsLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testJuror().getJurorNumber());
+
+        // Juror address 6 is always empty
+        assertThat(summonsLetter.getData().get(9).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(35));
+        // Fax number is always empty
+        assertThat(summonsLetter.getData().get(27).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
+        assertThat(summonsLetter.getData().get(38).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
+
     }
 
     @Test
@@ -149,25 +141,19 @@ class SummonsLetterTest extends AbstractLetterTest {
             LetterTestUtils.testBureauLocation(),
             LetterTestUtils.testWelshCourtLocation());
 
-        int dayOfTheWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
-        if (dayOfTheWeek == Calendar.SATURDAY || dayOfTheWeek == Calendar.SUNDAY) {
-            assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
-                .isThrownBy(summonsLetter::getLetterString);
-        } else {
-            assertThat(summonsLetter.getLetterString()).isEqualTo(getExpectedWelshResult());
-            assertThat(summonsLetter.getFormCode()).isEqualTo(FormCode.BI_SUMMONS.getCode());
-            assertThat(summonsLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testWelshJuror().getJurorNumber());
+        assertThat(summonsLetter.getLetterString()).isEqualTo(getExpectedWelshResult());
+        assertThat(summonsLetter.getFormCode()).isEqualTo(FormCode.BI_SUMMONS.getCode());
+        assertThat(summonsLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testWelshJuror().getJurorNumber());
 
-            // Juror address 6 is always empty
-            assertThat(summonsLetter.getData().get(9).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(35));
-            // Fax number is always empty
-            assertThat(summonsLetter.getData().get(27).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
-            assertThat(summonsLetter.getData().get(38).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
-        }
+        // Juror address 6 is always empty
+        assertThat(summonsLetter.getData().get(9).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(35));
+        // Fax number is always empty
+        assertThat(summonsLetter.getData().get(27).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
+        assertThat(summonsLetter.getData().get(38).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
+
     }
 
     @Test
-    @DisableIfWeekend
     void confirmWelshWithoutWelshCourtProducesEnglishOutput() {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         setupEnglishExpectedResult();

@@ -1,11 +1,19 @@
 -- staff
-INSERT INTO juror_mod.users (username,email, name, active, team_id, version, owner)
-VALUES ('JPOWERS','JPOWERS@email.gov.uk','Joanna Powers', true, 1, 0,'446'),
-       ('TSANCHEZ','TSANCHEZ@email.gov.uk','Todd Sanchez', true, 2, 0,'446'),
-       ('GBECK','GBECK@email.gov.uk','Grant Beck', false, 3, 0,'446'),
-       ('RPRICE','RPRICE@email.gov.uk','Roxanne Price', true, 1, 0,'446'),
-       ('PBREWER','PBREWER@email.gov.uk','Preston Brewer', true, 2, 0,'626'),
-       ('ACOPELAND','ACOPELAND@email.gov.uk','Amelia Copeland', true, 3, 0,'400');
+INSERT INTO juror_mod.users (username,email, name, active, team_id)
+VALUES ('JPOWERS','JPOWERS@email.gov.uk','Joanna Powers', true, 1),
+       ('TSANCHEZ','TSANCHEZ@email.gov.uk','Todd Sanchez', true, 2),
+       ('GBECK','GBECK@email.gov.uk','Grant Beck', false, 3),
+       ('RPRICE','RPRICE@email.gov.uk','Roxanne Price', true, 1),
+       ('PBREWER','PBREWER@email.gov.uk','Preston Brewer', true, 2),
+       ('ACOPELAND','ACOPELAND@email.gov.uk','Amelia Copeland', true, 3);
+
+insert into juror_mod.user_courts (username, loc_code)
+values ('JPOWERS', '446'),
+       ('TSANCHEZ', '446'),
+       ('GBECK', '446'),
+       ('RPRICE', '446'),
+       ('PBREWER', '626'),
+       ('ACOPELAND', '400');
 
 INSERT INTO juror_mod.user_roles (username, role)
 VALUES ('RPRICE', 'MANAGER'),
