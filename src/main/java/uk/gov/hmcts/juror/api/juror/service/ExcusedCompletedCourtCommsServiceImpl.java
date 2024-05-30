@@ -324,7 +324,7 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
             try {
                 List<RegionNotifyTemplateMod> regionNotifyTriggeredExcusalTemplateList;
                 if (hasEmail) {
-                    if (jurorCourtDetailExcusalList.getJuror().getWelsh()) {
+                    if (jurorCourtDetailExcusalList.getJuror().isWelsh()) {
                         regionNotifyTriggeredExcusalTemplateList =
                             Lists.newLinkedList(
                                 regionNotifyTemplateRepositoryMod.findAll(
@@ -334,7 +334,7 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
                             regionNotifyTemplateRepositoryMod.findAll(regionNotifyTriggeredExcusalTemplateEmailFilter));
                     }
                 } else if (hasPhone) {
-                    if (jurorCourtDetailExcusalList.getJuror().getWelsh()) {
+                    if (jurorCourtDetailExcusalList.getJuror().isWelsh()) {
                         regionNotifyTriggeredExcusalTemplateList = Lists.newLinkedList(
                             regionNotifyTemplateRepositoryMod.findAll(
                                 welshRegionNotifyTriggeredExcusalTemplateSmsFilter));
@@ -479,7 +479,7 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
 
                 List<RegionNotifyTemplateMod> regionNotifyTriggeredCompletedTemplateList;
                 if (hasEmail) {
-                    if (jurorCourtDetailCompletedList.getJuror().getWelsh()) {
+                    if (jurorCourtDetailCompletedList.getJuror().isWelsh()) {
                         regionNotifyTriggeredCompletedTemplateList =
                             Lists.newLinkedList(
                                 regionNotifyTemplateRepositoryMod.findAll(
@@ -490,7 +490,7 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
                                 regionNotifyTriggeredCompleteTemplateEmailFilter));
                     }
                 } else if (hasPhone) {
-                    if (jurorCourtDetailCompletedList.getJuror().getWelsh()) {
+                    if (jurorCourtDetailCompletedList.getJuror().isWelsh()) {
                         regionNotifyTriggeredCompletedTemplateList =
                             Lists.newLinkedList(
                                 regionNotifyTemplateRepositoryMod.findAll(

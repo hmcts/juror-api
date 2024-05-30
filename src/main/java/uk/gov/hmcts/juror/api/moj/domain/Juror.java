@@ -312,4 +312,8 @@ public class Juror extends Address implements Serializable {
         this.policeCheck = policeCheck;
         this.policeCheckLastUpdate = LocalDateTime.now();
     }
+
+    public boolean isWelsh() {
+        return this.welsh != null && this.welsh;
+    }
 }
