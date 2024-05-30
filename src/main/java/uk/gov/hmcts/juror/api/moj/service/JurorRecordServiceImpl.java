@@ -48,6 +48,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorOverviewResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorRecordSearchDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorSummonsReplyResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PendingJurorsResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorHistoryResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorPaymentsResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.ContactCode;
@@ -1267,7 +1268,9 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     }
 
     @Override
-    public JurorPaymentsResponseDto getJurorPayments(String jurorNumber, BureauJwtPayload payload) {
+    public JurorPaymentsResponseDto getJurorPayments(String jurorNumber) {
+        JurorUtils.checkReadAccessForCurrentUser(jurorPoolRepository, jurorNumber, SecurityUtil.getActiveOwner());
+
         List<Tuple> data = jurorPaymentsSummaryRepository.fetchPaymentLogByJuror(jurorNumber);
 
         long nonAttendanceCount = data.stream().filter(
@@ -1311,6 +1314,13 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
                 return day.build();
             }).toList())
+            .build();
+    }
+
+    @Override
+    public JurorHistoryResponseDto getJurorHistory(String jurorNumber, BureauJwtPayload payload) {
+
+        return JurorHistoryResponseDto.builder()
             .build();
     }
 

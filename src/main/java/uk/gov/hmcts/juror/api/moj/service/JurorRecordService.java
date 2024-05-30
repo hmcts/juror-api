@@ -27,6 +27,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorOverviewResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorRecordSearchDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorSummonsReplyResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PendingJurorsResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorHistoryResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorPaymentsResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.FilterJurorRecord;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
@@ -86,7 +87,9 @@ public interface JurorRecordService {
                                                                 String jurorNumber,
                                                                 BureauJwtPayload payload);
 
-    JurorPaymentsResponseDto getJurorPayments(String jurorNumber, BureauJwtPayload payload);
+    JurorPaymentsResponseDto getJurorPayments(String jurorNumber);
+
+    JurorHistoryResponseDto getJurorHistory(String jurorNumber, BureauJwtPayload payload);
 
     PendingJurorsResponseDto getPendingJurors(String locCode, PendingJurorStatus status);
 

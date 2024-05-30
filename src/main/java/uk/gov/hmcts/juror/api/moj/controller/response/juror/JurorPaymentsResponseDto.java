@@ -76,7 +76,7 @@ public class JurorPaymentsResponseDto {
         private LocalDate datePaid;
 
         @JsonProperty("time_paid")
-        @JsonFormat(pattern = "HH:mm")
+        @JsonFormat(pattern = ValidationConstants.TIME_FORMAT)
         @Schema(description = "Time payment was made")
         private LocalTime timePaid;
 
