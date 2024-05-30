@@ -48,6 +48,7 @@ public class BallotPanelTrialReport extends AbstractStandardReport {
         AbstractReportResponse.TableData<StandardTableData> tableData) {
         return new HashMap<>();
     }
+
     @Override
     protected void postProcessTableData(
         StandardReportRequest request,
@@ -58,6 +59,7 @@ public class BallotPanelTrialReport extends AbstractStandardReport {
             tableData.removeData(DataType.FIRST_NAME, DataType.LAST_NAME, DataType.JUROR_POSTCODE);
         }
     }
+
     @Override
     public Class<BallotPanelTrialReport.RequestValidator> getRequestValidatorClass() {
         return BallotPanelTrialReport.RequestValidator.class;
