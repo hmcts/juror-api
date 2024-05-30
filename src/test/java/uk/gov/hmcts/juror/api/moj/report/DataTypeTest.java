@@ -11,9 +11,12 @@ import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QReasonableAdjustments;
+import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
+import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -236,6 +239,60 @@ class DataTypeTest {
             "Court Location Name And Code", String.class,
             QCourtLocation.courtLocation.name.concat(" (")
                 .concat(QCourtLocation.courtLocation.locCode).concat(")"), QPoolRequest.poolRequest);
+    }
+
+    @Test
+    void appearanceTrialNumber() {
+        assertMatchesStandard(DataType.APPEARANCE_TRIAL_NUMBER, "appearance_trial_number", "Trial Number",
+            String.class, QAppearance.appearance.trialNumber, QAppearance.appearance);
+    }
+
+    @Test
+    void appearancePoolNumber() {
+        assertMatchesStandard(DataType.APPEARANCE_POOL_NUMBER, "appearance_pool_number", "Pool Number",
+            String.class, QAppearance.appearance.poolNumber, QAppearance.appearance);
+    }
+
+    @Test
+    void appearanceCheckedIn() {
+        assertMatchesStandard(DataType.APPEARANCE_CHECKED_IN, "appearance_checked_in", "Checked In",
+            LocalTime.class, QAppearance.appearance.timeIn, QAppearance.appearance);
+    }
+
+    @Test
+    void appearanceCheckedOut() {
+        assertMatchesStandard(DataType.APPEARANCE_CHECKED_OUT, "appearance_checked_out", "Checked Out",
+            LocalTime.class, QAppearance.appearance.timeOut, QAppearance.appearance);
+    }
+
+    @Test
+    void appearanceDateAndPoolType() {
+        assertMatchesStandard(DataType.APPEARANCE_DATE_AND_POOL_TYPE, "appearance_date_and_pool_type",
+            "Appearance Date And Pool Type", String.class,
+            QAppearance.appearance.attendanceDate.stringValue()
+                .concat(",").concat(QPoolRequest.poolRequest.poolType.description),
+            QAppearance.appearance, QPoolRequest.poolRequest);
+    }
+
+    @Test
+    void panelStatus() {
+        assertMatchesStandard(DataType.PANEL_STATUS, "panel_status", "Panel Status", String.class,
+            new CaseBuilder()
+                .when(QPanel.panel.result.eq(PanelResult.NOT_USED)).then("Not Used")
+                .when(QPanel.panel.result.eq(PanelResult.CHALLENGED)).then("Challenged")
+                .when(QPanel.panel.result.eq(PanelResult.JUROR)).then("Juror")
+                .when(QPanel.panel.result.eq(PanelResult.RETURNED).and(QPanel.panel.empanelledDate.isNotNull()))
+                    .then("Returned Juror")
+                .when(QPanel.panel.result.eq(PanelResult.RETURNED).and(QPanel.panel.empanelledDate.isNull()))
+                    .then("Returned")
+                .otherwise(""),
+            QPanel.panel);
+    }
+
+    @Test
+    void jurorNumberFromTrial() {
+        assertMatchesStandard(DataType.JUROR_NUMBER_FROM_TRIAL, "juror_number_from_trial", "Juror Number",
+            String.class, QPanel.panel.juror.jurorNumber, QPanel.panel);
     }
 
     void assertMatchesStandard(DataType dataType,

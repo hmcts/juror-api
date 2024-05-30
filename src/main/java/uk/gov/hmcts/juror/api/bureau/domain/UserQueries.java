@@ -31,11 +31,11 @@ public class UserQueries {
 
     public static BooleanExpression active() {
         return USER.active.eq(true)
-            .and(USER.username.notEqualsIgnoreCase(JurorDigitalApplication.AUTO_USER));
+            .and(USER.userType.ne(UserType.SYSTEM));
     }
 
     public static BooleanExpression owner(String owner) {
-        return USER.owner.eq(owner);
+        return USER.courts.any().owner.eq(owner);
     }
 
     public static BooleanExpression inactive() {

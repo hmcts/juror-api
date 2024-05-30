@@ -12,4 +12,6 @@ public interface UtilisationStatsRepository extends CrudRepository<UtilisationSt
     UtilisationStats.UtilisationStatsID> {
     List<UtilisationStats> findByMonthStartBetweenAndLocCode(LocalDate reportDateFrom, LocalDate reportDateTo,
                                                              String locCode);
+
+    List<UtilisationStats> findTop12ByLocCodeOrderByMonthStartDesc(String locCode);
 }

@@ -2,7 +2,6 @@ package uk.gov.hmcts.juror.api.bureau.scheduler;
 
 
 import com.google.common.collect.Lists;
-import com.querydsl.core.types.dsl.BooleanExpression;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,14 +10,20 @@ import uk.gov.hmcts.juror.api.bureau.service.ScheduledService;
 import uk.gov.hmcts.juror.api.bureau.service.UrgencyService;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.moj.client.contracts.SchedulerServiceClient;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -28,48 +33,82 @@ public class UrgentSuperUrgentStatusScheduler implements ScheduledService {
     private final UrgencyService urgencyService;
 
     private final JurorDigitalResponseRepositoryMod jurorDigitalResponseRepositoryMod;
-
-
+    private final JurorPaperResponseRepositoryMod jurorPaperResponseRepositoryMod;
     private final JurorPoolRepository jurorRepository;
 
 
-
     @Override
-    public void process() {
+    public SchedulerServiceClient.Result process() {
 
         SimpleDateFormat dateFormat = new SimpleDateFormat();
         log.info("Scheduler Starting time, is now {}", dateFormat.format(new Date()));
 
         final List<ProcessingStatus> pendingStatuses = List.of(ProcessingStatus.CLOSED);
 
-        BooleanExpression pendingFilter = JurorResponseQueries.byStatusNotClosed(pendingStatuses);
+        Iterable<DigitalResponse> digitalResponseList = jurorDigitalResponseRepositoryMod.findAll(
+            JurorResponseQueries.byStatusNotClosed(pendingStatuses)
+                .and(JurorResponseQueries.jurorIsNotTransferred())
+                .and(JurorResponseQueries.isDigital()));
 
-        Iterable<DigitalResponse> digitalResponseList = jurorDigitalResponseRepositoryMod.findAll(pendingFilter);
+        Iterable<PaperResponse> paperResponseList = jurorPaperResponseRepositoryMod.findAll(
+            JurorResponseQueries.byStatusNotClosedPaper(pendingStatuses)
+                .and(JurorResponseQueries.jurorIsNotTransferredPaper())
+                .and(JurorResponseQueries.isPaper()));
 
-        final List<DigitalResponse> jurorResponsesNotClosed = Lists.newLinkedList(digitalResponseList);
+        final List<AbstractJurorResponse> jurorResponsesNotClosed = Lists.newLinkedList(digitalResponseList);
+        jurorResponsesNotClosed.addAll(Lists.newLinkedList(paperResponseList));
 
         log.trace("jurorResponsesNotClosed {}", jurorResponsesNotClosed.size());
 
 
+        int failedToFindJurorCount = 0;
+        int totalResponsesProcessed = 0;
+        int totalUrgentResponses = 0;
         if (!jurorResponsesNotClosed.isEmpty()) {
 
-            for (DigitalResponse backlogItem : jurorResponsesNotClosed) {
-                JurorPool jurorDetails = jurorRepository.findByJurorJurorNumber(backlogItem.getJurorNumber());
+            for (AbstractJurorResponse backlogItem : jurorResponsesNotClosed) {
+                JurorPool jurorDetails = jurorRepository.findByJurorJurorNumberAndIsActiveAndOwner(
+                    backlogItem.getJurorNumber(),
+                    true,
+                    SecurityUtil.BUREAU_OWNER);
+
+                if (jurorDetails == null) {
+                    log.error("Can not find active bureau owned juror pool for juror: " + backlogItem.getJurorNumber());
+                    failedToFindJurorCount++;
+                    continue;
+                }
+                totalResponsesProcessed++;
+
                 log.trace("processing  pool number {} ", jurorDetails.getJurorNumber());
 
-                if (urgencyService.isUrgent(backlogItem, jurorDetails)
-                    || urgencyService.isSuperUrgent(backlogItem, jurorDetails)) {
+                if ((!backlogItem.isUrgent() && urgencyService.isUrgent(backlogItem, jurorDetails))
+                    || (!backlogItem.isSuperUrgent() && urgencyService.isSuperUrgent(backlogItem, jurorDetails))) {
+
+                    totalUrgentResponses++;
                     urgencyService.setUrgencyFlags(backlogItem, jurorDetails);
                     log.trace("saving response back");
-                    jurorDigitalResponseRepositoryMod.save(backlogItem);
+                    if (backlogItem instanceof DigitalResponse digitalResponse) {
+                        jurorDigitalResponseRepositoryMod.save(digitalResponse);
+                    } else if (backlogItem instanceof PaperResponse paperResponse) {
+                        jurorPaperResponseRepositoryMod.save(paperResponse);
+                    }
                     log.trace("responses saved juror {}", backlogItem.getJurorNumber());
                 }
-
             }
             log.debug("Scheduler : Processing complete.");
         } else {
             log.trace("Scheduler: No pending Juror responses found.");
         }
         log.info("Scheduler: Finished, time is now {}", dateFormat.format(new Date()));
+        return new SchedulerServiceClient.Result(
+            failedToFindJurorCount == 0
+                ? SchedulerServiceClient.Result.Status.SUCCESS
+                : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS, null,
+            Map.of(
+                "TOTAL_PROCESSED", "" + totalResponsesProcessed,
+                "TOTAL_MARKED_URGENT", "" + totalUrgentResponses,
+                "TOTAL_FAILED_TO_FIND", "" + failedToFindJurorCount
+            ));
+
     }
 }

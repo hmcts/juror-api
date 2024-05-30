@@ -127,7 +127,9 @@ public class BureauServiceImpl implements BureauService {
 
     private Map<ProcessingStatus, Long> getJurorResponseCounts(String username) {
         return jurorCommonResponseRepositoryMod.getJurorResponseCounts(
-            QCombinedJurorResponse.combinedJurorResponse.staff.username.eq(username));
+            QCombinedJurorResponse.combinedJurorResponse.staff.username.eq(username),
+            QCombinedJurorResponse.combinedJurorResponse.processingStatus.ne(ProcessingStatus.CLOSED)
+        );
     }
 
     @Override

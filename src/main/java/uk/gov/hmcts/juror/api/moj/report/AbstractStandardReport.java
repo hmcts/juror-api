@@ -3,12 +3,12 @@ package uk.gov.hmcts.juror.api.moj.report;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.EntityPath;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 
-public abstract class AbstractStandardReport extends AbstractReport<List<LinkedHashMap<String, Object>>> {
+public abstract class AbstractStandardReport extends AbstractReport<StandardTableData> {
 
     public AbstractStandardReport(EntityPath<?> from,
                                   IDataType... dataType) {
@@ -21,7 +21,7 @@ public abstract class AbstractStandardReport extends AbstractReport<List<LinkedH
     }
 
     @Override
-    protected List<LinkedHashMap<String, Object>> getTableData(List<Tuple> data) {
+    protected StandardTableData getTableData(List<Tuple> data) {
         return getTableDataAsList(data);
     }
 

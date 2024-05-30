@@ -17,13 +17,10 @@ public class JurorPoolQueries {
     private static final String OWNER_IS_BUREAU = "400";
 
     private static final String deceased = "D";
-    private static final Boolean Y = true;
-    private static final Boolean N = false;
 
     private JurorPoolQueries() {
 
     }
-
 
     private static final QJurorPool jurorDetail = QJurorPool.jurorPool;
 
@@ -33,11 +30,15 @@ public class JurorPoolQueries {
 
 
     public static BooleanExpression respondedStatus() {
-        return jurorDetail.jurorPool.status.status.eq(IJurorStatus.RESPONDED);
+        return jurorDetail.status.status.eq(IJurorStatus.RESPONDED);
     }
 
+    public static BooleanExpression completedStatus() {
+        return jurorDetail.status.status.eq(IJurorStatus.COMPLETED);
+    }
 
-    /**ø
+    /**
+     * ø
      * Matches Juror instances where notification flag indicates, sentToCourt comms has not been sent.
      */
     public static BooleanExpression sentToCourtCommsNotSent() {
@@ -58,9 +59,6 @@ public class JurorPoolQueries {
         return jurorDetail.owner.eq(OWNER_IS_BUREAU);
     }
 
-    /**
-     * Matches on all records not with bureau.
-     */
     public static BooleanExpression jurorRecordNotWithBureau() {
         return jurorDetail.owner.ne(OWNER_IS_BUREAU);
     }
@@ -74,25 +72,23 @@ public class JurorPoolQueries {
 
     /**
      * Query to match all records where bureau_to_court_transfer date is between 6pm and midnight.
-     *
      */
 
     public static BooleanExpression bureauToCourtTransferDate() {
-
-        LocalDate currentDateAtSixPm = LocalDateTime.now().plusHours(18L).toLocalDate();
+        LocalDate currentDate = LocalDate.now();
         log.info("Bureau To Court Transfer Date {}", jurorDetail.juror.bureauTransferDate);
-        log.info("Current Date at 6pm {}", currentDateAtSixPm);
-        return jurorDetail.juror.bureauTransferDate.after(
-            LocalDateTime.now().plusHours(18L).toLocalDate());
+        log.info("Current Date at 6pm {}", currentDate);
+        return jurorDetail.juror.bureauTransferDate.after(currentDate)
+            .or(jurorDetail.juror.bureauTransferDate.eq(currentDate));
     }
 
 
     public static BooleanExpression courtDateWithin4Wks() {
 
         //hearingDate(next_date) between now and now+28 days.
-        return jurorDetail.jurorPool.nextDate.between(
-            LocalDateTime.now().toLocalDate(),
-            LocalDateTime.now().plusDays(28L).toLocalDate());
+        return jurorDetail.nextDate.between(
+            LocalDate.now(),
+            LocalDate.now().plusDays(28L));
     }
 
     /**
@@ -106,9 +102,9 @@ public class JurorPoolQueries {
      * Identify all Pool Records for which a sent To Comms needs to be sent.
      */
     public static BooleanExpression awaitingSentToCourtComms() {
-        return jurorDetail.jurorPool.nextDate.after(LocalDateTime.now().toLocalDate())
+        return jurorDetail.nextDate.after(LocalDate.now())
             .and(respondedStatus())
-            .and(jurorRecordWithBureau())
+            .and(jurorRecordNotWithBureau())
             .and(sentToCourtCommsNotSent())
             .and(bureauToCourtTransferDate());
     }
@@ -122,7 +118,6 @@ public class JurorPoolQueries {
         return courtDateWithin4Wks()
             .and(respondedStatus())
             .and(jurorRecordWithBureau())
-            .and(jurorRecordNotWithBureau())
             .and(infoCommsNotSent())
             .and(emailIsPresent())
             .and(isPoliceChecked());
@@ -131,7 +126,6 @@ public class JurorPoolQueries {
 
     /**
      * Query to match where SERVICE_COMP_COMMS_STATUS EQUALS NULL.
-     *
      */
     public static BooleanExpression serviceCompCommsStatus() {
         return jurorDetail.juror.serviceCompCommsStatus.isNull();
@@ -142,7 +136,7 @@ public class JurorPoolQueries {
      * Query to match Excused PoolCourt instances.
      */
     public static BooleanExpression excusedStatus() {
-        return jurorDetail.jurorPool.status.status.eq(IJurorStatus.EXCUSED);
+        return jurorDetail.status.status.eq(IJurorStatus.EXCUSED);
     }
 
     /**
@@ -153,21 +147,6 @@ public class JurorPoolQueries {
     }
 
     /**
-     * Query to match Responded Welsh Juror instances.
-     */
-    public static BooleanExpression respondedWelsh() {
-        return jurorDetail.juror.welsh.eq(Y);
-    }
-
-    /**
-     * Query to match not Responded Welsh PoolCourt instances.
-     */
-    public static BooleanExpression notRespondedWelsh() {
-        return jurorDetail.juror.welsh.eq(N).or(jurorDetail.juror.welsh.isNull());
-    }
-
-
-    /**
      * Query to match  Date_EXCUS between now and now minus excusal date parameter.
      */
 
@@ -175,15 +154,15 @@ public class JurorPoolQueries {
 
         return jurorDetail.juror.excusalDate.between(
             LocalDateTime.now().minusDays(3L).toLocalDate(),
-            LocalDateTime.now().toLocalDate());
+            LocalDate.now());
     }
 
     /**
      * Query COMPLETION_DATE between now and now minus SERVICE COMPLETION PARAMETER.
      */
     public static BooleanExpression completionDateBetweenSysdateCompletionParameter() {
-        return jurorDetail.juror.completionDate.between(LocalDateTime.now().minusDays(2L).toLocalDate(),
-            LocalDateTime.now().toLocalDate());
+        return jurorDetail.juror.completionDate.between(LocalDate.now().minusDays(2L),
+            LocalDate.now());
     }
 
     /**
@@ -198,9 +177,10 @@ public class JurorPoolQueries {
      */
 
     public static BooleanExpression recordsForExcusalComms() {
-        return excusalDateBetweenSysdateExcusalParameter().and(excusedStatus().and(serviceCompCommsStatus().and(
-            excusedCode()
-                .and(notRespondedWelsh()))));
+        return excusalDateBetweenSysdateExcusalParameter()
+            .and(excusedStatus())
+            .and(serviceCompCommsStatus())
+            .and(excusedCode());
     }
 
     /**
@@ -208,31 +188,13 @@ public class JurorPoolQueries {
      */
 
     public static BooleanExpression recordsForServiceCompletedComms() {
-        return completionDateBetweenSysdateCompletionParameter().and(respondedStatus().and(serviceCompCommsStatus().and(
-                completionDateNotNull())
-            .and(notRespondedWelsh())));
+        return completionDateBetweenSysdateCompletionParameter()
+            .and(completedStatus())
+            .and(serviceCompCommsStatus())
+            .and(completionDateNotNull());
 
 
     }
-
-    /**
-     * Identify all Juror Records for Excusal Comms in Welsh.
-     */
-    public static BooleanExpression welshRecordsForExcusalComms() {
-        return excusalDateBetweenSysdateExcusalParameter().and(excusedStatus().and(serviceCompCommsStatus()
-            .and(excusedCode().and(
-                respondedWelsh()))));
-    }
-
-    /**
-     * Identify all Juror Records for Service Completed Comms in Welsh.
-     */
-    public static BooleanExpression welshRecordsForServiceCompletedComms() {
-        return completionDateBetweenSysdateCompletionParameter().and(respondedStatus().and(serviceCompCommsStatus().and(
-            completionDateNotNull()).and(respondedWelsh())));
-    }
-
-
 }
 
 

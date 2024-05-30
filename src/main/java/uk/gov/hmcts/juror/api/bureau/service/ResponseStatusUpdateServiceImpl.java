@@ -320,10 +320,11 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
             // copy the actual details to pool. Avoid coping 3rd party details.
             if (!ObjectUtils.isEmpty(updatedDetails.getThirdPartyReason())) {
                 log.debug("Response is a third-party response");
-                BeanUtils.copyProperties(updatedDetails, jurorDetails, "phoneNumber", "altPhoneNumber", "email");
+                BeanUtils.copyProperties(updatedDetails, jurorDetails, "phoneNumber", "altPhoneNumber", "email",
+                    "juror");
                 mapDetailsToJuror(updatedDetails, jurorDetails.getJuror(), false, false);
             } else {
-                BeanUtils.copyProperties(updatedDetails, jurorDetails);
+                BeanUtils.copyProperties(updatedDetails, jurorDetails, "juror");
                 mapDetailsToJuror(updatedDetails, jurorDetails.getJuror(), true, true);
             }
 

@@ -28,7 +28,7 @@ public class GroupByPaymentType implements IReportGroupBy {
     @Override
     public String getGroupFunction(GroupedTableData groupedTableData) {
         Object isCash = groupedTableData.get(ExpenseDataTypes.IS_CASH.getId());
-        if (isCash == null || ((Boolean) isCash)) {
+        if (isCash != null && (Boolean) isCash) {
             return CASH_TEXT;
         }
         return BACS_OR_CHECK_TEXT;

@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
+import uk.gov.hmcts.juror.api.moj.report.IDataType;
 
 import java.util.List;
 import java.util.Map;
@@ -45,6 +46,17 @@ public class AbstractReportResponse<T> {
     public static class TableData<T> {
         private List<Heading> headings;
         private T data;
+
+        public void removeData(IDataType... dataTypes) {
+            for (IDataType dataType : dataTypes) {
+                headings.removeIf(heading -> dataType.getId().equals(heading.getId()));
+            }
+            if (data instanceof StandardTableData standardTableData) {
+                standardTableData.removeDataTypes(dataTypes);
+            } else if (data instanceof GroupedTableData groupedTableData) {
+                groupedTableData.removeDataTypes(dataTypes);
+            }
+        }
 
         @Data
         @Builder

@@ -1,8 +1,10 @@
 --staff
-INSERT INTO juror_mod.users (owner, username,email, name, active,team_id,version)
-VALUES ('400','jmcbob','jmcbob@email.gov.uk','Joe McBob',true,1,0),
-       ('400','smcbob','smcbob@email.gov.uk','Sarah McBob',true,2,0);
-
+INSERT INTO juror_mod.users (username,email, name, active,team_id)
+VALUES ('jmcbob','jmcbob@email.gov.uk','Joe McBob',true,1),
+       ('smcbob','smcbob@email.gov.uk','Sarah McBob',true,2);
+insert into juror_mod.user_courts (username, loc_code)
+values ('jmcbob','400'),
+       ('smcbob','400');
 INSERT INTO juror_mod.pool (pool_no,"owner",return_date,no_requested,pool_type,loc_code,new_request,last_update,additional_summons,attend_time,nil_pool,total_no_required,date_created) VALUES
     ('555','400','2022-05-03',5,'CRO','448','N',NULL,NULL,NULL,false,5,NULL);
 INSERT INTO juror_mod.juror (juror_number,poll_number,title,last_name,first_name,dob,address_line_1,address_line_2,address_line_3,address_line_4,address_line_5,postcode,h_phone,w_phone,w_ph_local,responded,date_excused,excusal_code,acc_exc,date_disq,disq_code,user_edtq,notes,no_def_pos,perm_disqual,reasonable_adj_code,reasonable_adj_msg,smart_card_number,completion_date,sort_code,bank_acct_name,bank_acct_no,bldg_soc_roll_no,welsh,police_check,last_update,summons_file,m_phone,h_email,contact_preference,notifications,date_created,optic_reference,pending_title,pending_first_name,pending_last_name,mileage,financial_loss,travel_time,bureau_transfer_date,claiming_subsistence_allowance,service_comp_comms_status,login_attempts,is_locked) VALUES

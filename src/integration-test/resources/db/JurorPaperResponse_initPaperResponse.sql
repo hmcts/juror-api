@@ -1,10 +1,10 @@
 -- users
-INSERT INTO juror_mod.users (owner, user_type, username, email, name, active, version)
-VALUES ('400', 'BUREAU', 'MODTESTBUREAU', 'MODTESTBUREAU@email.gov.uk', 'MODTESTBUREAU', true, 1),
-       ('415', 'COURT', 'MODTESTCOURT', 'MODTESTCOURT@email.gov.uk', 'MODTESTCOURT', true, 1);
+INSERT INTO juror_mod.users (user_type, username, email, name, active)
+VALUES ('BUREAU', 'MODTESTBUREAU', 'MODTESTBUREAU@email.gov.uk', 'MODTESTBUREAU', true),
+       ('COURT', 'MODTESTCOURT', 'MODTESTCOURT@email.gov.uk', 'MODTESTCOURT', true);
 
-INSERT INTO juror_mod.users ("owner", username, "name", active, last_logged_in, "version", team_id, approval_limit, user_type, email) VALUES
-('471', 'court-southwark', 'Court Southwark', true, NULL, 1, NULL, 0.00, 'COURT', 'court-southwark@email.gov.uk');
+INSERT INTO juror_mod.users (username, "name", active, last_logged_in, team_id, approval_limit, user_type, email) VALUES
+('court-southwark', 'Court Southwark', true, NULL, NULL, 0.00, 'COURT', 'court-southwark@email.gov.uk');
 
 -- user_roles
 INSERT INTO juror_mod.user_roles (username, role)
@@ -13,7 +13,8 @@ VALUES ('MODTESTBUREAU', 'MANAGER');
 -- user_courts
 INSERT INTO juror_mod.user_courts (username, loc_code)
 VALUES ('MODTESTBUREAU', '400'),
-       ('MODTESTCOURT', '415');
+       ('MODTESTCOURT', '415'),
+       ('MODTESTCOURT', '471');
 
 INSERT INTO juror_mod.user_courts (username, loc_code) VALUES ('court-southwark', '471');
 

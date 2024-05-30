@@ -16,6 +16,7 @@ import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 
 import java.time.LocalDateTime;
 import java.util.LinkedList;
@@ -37,6 +38,8 @@ public class UrgentSuperUrgentStatusSchedulerTest {
 
     @Mock
     private JurorDigitalResponseRepositoryMod jurorResponseRepo;
+    @Mock
+    private JurorPaperResponseRepositoryMod paperJurorResponseRepo;
 
     @Mock
     private UserService userService;
@@ -78,6 +81,8 @@ public class UrgentSuperUrgentStatusSchedulerTest {
         response.setJurorNumber("12345678");
         response.setDateReceived(LocalDateTime.from(now.minusHours(1)));
         response.setProcessingStatus(ProcessingStatus.TODO);
+        response.setUrgent(false);
+        response.setSuperUrgent(false);
         responseBacklog.add(response);
 
     }
@@ -93,11 +98,17 @@ public class UrgentSuperUrgentStatusSchedulerTest {
 
         final List<ProcessingStatus> pendingStatuses = List.of(ProcessingStatus.CLOSED);
 
-        given(jurorResponseRepo.findAll(JurorResponseQueries.byStatusNotClosed(pendingStatuses))).willReturn(
+        given(jurorResponseRepo.findAll(JurorResponseQueries.byStatusNotClosed(pendingStatuses)
+            .and(JurorResponseQueries.jurorIsNotTransferred())
+            .and(JurorResponseQueries.isDigital()))).willReturn(
             responseBacklog);
 
         DigitalResponse jurorResponse = responseBacklog.get(0);
-        given(poolrepo.findByJurorJurorNumber(jurorResponse.getJurorNumber())).willReturn(poolDetails);
+        given(poolrepo.findByJurorJurorNumberAndIsActiveAndOwner(
+            jurorResponse.getJurorNumber(),
+            true,
+            "400"
+        )).willReturn(poolDetails);
         //given(poolrepo.findOne(jurorResponse.getJurorNumber())).willReturn(poolDetails);
 
         given(urgencyService.isSuperUrgent(jurorResponse, poolDetails)).willReturn(Boolean.TRUE);
