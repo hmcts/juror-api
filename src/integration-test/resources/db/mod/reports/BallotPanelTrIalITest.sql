@@ -11,17 +11,22 @@ VALUES ('200000001', 'John1', 'Smith1', 'AD1 2HP', 'House', true),
        ('200000005', 'Jane5', 'Smith5', 'AD5 2HP', 'House', true),
        ('200000006', 'Jane6', 'Smith6', 'AD6 2HP', 'House', true);
 
-INSERT INTO juror_mod.judge (owner, code, description)
-VALUES ('415', '0001', 'judge dredd'),
-       ('415', '0002', 'judge jose');
+INSERT INTO juror_mod.judge (id, owner, code, description)
+VALUES (1, '415', '0001', 'judge dredd'),
+       (2, '415', '0002', 'judge jose');
 
-INSERT INTO juror_mod.courtroom (loc_code, room_number, description)
-VALUES ('415', '1', 'big room'),
-       ('415', '2', 'small room');
+INSERT INTO juror_mod.courtroom (id, loc_code, room_number, description)
+VALUES (1, '415', '1', 'big room'),
+       (2, '415', '2', 'small room');
 
 INSERT INTO juror_mod.trial (trial_number,loc_code,description,courtroom,judge,trial_type,trial_start_date,trial_end_date,anonymous,juror_requested,jurors_sent)
 VALUES ('T000000001','415','test trial',1,1,'CIV','2024-05-08',NULL,false,NULL,NULL),
        ('T000000002','415','test trial',2,2,'CIV','2024-04-25',NULL,true,NULL,NULL);
 
 INSERT INTO juror_mod.juror_trial (loc_code,juror_number,trial_number,rand_number,date_selected,"result",completed,empanelled_date,return_date)
-VALUES ('415','200000001','T000000001',10,'2024-05-08 00:00:00','J',true,'2024-05-08',NULL);
+VALUES ('415','200000001','T000000001',10,'2024-05-08 00:00:00','J',true,'2024-05-08',NULL),
+ ('415','200000002','T000000001',10,'2024-05-08 00:00:00','J',true,'2024-05-08',NULL),
+ ('415','200000003','T000000001',10,'2024-05-08 00:00:00','J',true,'2024-05-08',NULL),
+ ('415','200000004','T000000002',10,'2024-05-08 00:00:00','J',true,'2024-05-08',NULL),
+ ('415','200000005','T000000002',10,'2024-05-08 00:00:00','J',true,'2024-05-08',NULL),
+ ('415','200000006','T000000002',10,'2024-05-08 00:00:00','J',true,'2024-05-08',NULL);

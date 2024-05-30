@@ -47,7 +47,10 @@ class BallotPanelTrialReportITest extends AbstractStandardReportControllerITest 
 
     @Test
     void positiveAnonymousCourt() {
+        StandardReportRequest request = getValidPayload();
+        request.setTrialNumber("T000000002");
         testBuilder()
+            .payload(request)
             .triggerValid()
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(getAnonymousResponse());
@@ -58,7 +61,7 @@ class BallotPanelTrialReportITest extends AbstractStandardReportControllerITest 
         StandardReportRequest request = getValidPayload();
         request.setTrialNumber(null);
         testBuilder()
-            .payload(addReportType(request))
+            .payload(request)
             .triggerInvalid()
             .assertInvalidPathParam("trialNumber: must not be blank");
     }
