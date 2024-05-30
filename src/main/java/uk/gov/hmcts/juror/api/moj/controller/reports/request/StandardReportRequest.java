@@ -68,7 +68,6 @@ public class StandardReportRequest {
         "UnconfirmedAttendanceReport",
         "AvailableListByDateReportBureau",
         "AvailableListByDateReportCourt",
-        "SummonedRespondedReport"
         "SummonedRespondedReport",
         "UnconfirmedAttendanceReport",
         "PoolStatisticsReport",

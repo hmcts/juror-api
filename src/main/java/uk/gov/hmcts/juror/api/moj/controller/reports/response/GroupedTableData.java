@@ -6,8 +6,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import uk.gov.hmcts.juror.api.moj.report.support.HasSize;
 import uk.gov.hmcts.juror.api.moj.report.IDataType;
+import uk.gov.hmcts.juror.api.moj.report.support.HasSize;
 
 import java.util.ArrayList;
 import java.util.Collection;

@@ -26,7 +26,7 @@ public interface UserService {
      * @throws StaffAssignmentException Failed to assign the staff member to the response.
      */
     StaffAssignmentResponseDto changeAssignment(StaffAssignmentRequestDto staffAssignmentRequestDto,
-                                                String currentUser) throws StaffAssignmentException;
+                                                String currentUser);
 
     /**
      * Return a complete list of active staff.
@@ -72,7 +72,7 @@ public interface UserService {
      * @param currentUser     The user carrying out this operation.
      */
     AssignmentsListDto getStaffAssignments(AssignmentsMultiRequestDto responseListDto,
-                                           String currentUser) throws JurorResponseNotFoundException;
+                                           String currentUser);
 
     /**
      * Change multiple staff assignments.
@@ -82,7 +82,7 @@ public interface UserService {
      * @throws StaffAssignmentException Failed to assign the staff member to the response.
      */
     OperationFailureListDto multipleChangeAssignment(MultipleStaffAssignmentDto multipleStaffAssignmentDto,
-                                                     String currentUser) throws StaffAssignmentException;
+                                                     String currentUser);
 
     /**
      * Reassign multiple responses depending on type, then deactivate staff member.
