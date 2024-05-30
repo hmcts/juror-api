@@ -123,7 +123,7 @@ class UnpaidAttendanceSummaryReportTest extends AbstractGroupedReportTestSupport
         when(request.getFromDate()).thenReturn(LocalDate.of(2023, 3, 1));
         when(request.getToDate()).thenReturn(LocalDate.of(2023, 3, 2));
         when(request.getLocCode()).thenReturn("415");
-        when(data.getSize()).thenReturn(2);
+        when(data.getSize()).thenReturn(2L);
         securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(true);
         securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn(TestConstants.VALID_COURT_LOCATION);
 
@@ -152,7 +152,7 @@ class UnpaidAttendanceSummaryReportTest extends AbstractGroupedReportTestSupport
                 StandardReportResponse.DataTypeValue.builder()
                     .displayName("Total Unpaid Attendances")
                     .dataType(Long.class.getSimpleName())
-                    .value(2)
+                    .value(2L)
                     .build(),
                 "court_name",
                 StandardReportResponse.DataTypeValue.builder()

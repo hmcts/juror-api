@@ -108,7 +108,7 @@ class UnpaidAttendanceReportDetailedReportTest
 
         when(request.getFromDate()).thenReturn(LocalDate.of(2023, 3, 1));
         when(request.getToDate()).thenReturn(LocalDate.of(2023, 3, 2));
-        when(data.getSize()).thenReturn(3);
+        when(data.getSize()).thenReturn(3L);
         securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(true);
         securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn(TestConstants.VALID_COURT_LOCATION);
 
@@ -137,7 +137,7 @@ class UnpaidAttendanceReportDetailedReportTest
                 StandardReportResponse.DataTypeValue.builder()
                     .displayName("Total unpaid attendances")
                     .dataType(Long.class.getSimpleName())
-                    .value(3)
+                    .value(3L)
                     .build(),
                 "court_name",
                 StandardReportResponse.DataTypeValue.builder()

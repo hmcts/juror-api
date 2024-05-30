@@ -630,6 +630,12 @@ public class PoolRequestServiceImpl implements PoolRequestService {
         return attendanceTime.toString();
     }
 
+    @Override
+    public PoolRequest getPoolRequest(String poolNumber) {
+        return poolRequestRepository.findById(poolNumber)
+            .orElseThrow(() -> new MojException.NotFound("Pool Number not found", null));
+    }
+
     public static <T> Page<T> convertListToPage(List<T> objectList, Pageable pageable) {
         int start = (int) pageable.getOffset();
         int end = Math.min(start + pageable.getPageSize(), objectList.size());
