@@ -48,14 +48,14 @@ public class AbstractReportResponse<T> {
         private T data;
 
         public void removeData(IDataType... dataTypes) {
-            if (data instanceof StandardTableData standardTableData) {
-                for (IDataType dataType : dataTypes) {
-                    headings.removeIf(heading -> dataType.getId().equals(heading.getId()));
-                }
-                standardTableData.removeDataTypes(dataTypes);
+            for (IDataType dataType : dataTypes) {
+                headings.removeIf(heading -> dataType.getId().equals(heading.getId()));
             }
-            throw new UnsupportedOperationException("This operation curretnly only supports StandardTableData");
-
+            if (data instanceof StandardTableData standardTableData) {
+                standardTableData.removeDataTypes(dataTypes);
+            } else if (data instanceof GroupedTableData groupedTableData) {
+                groupedTableData.removeDataTypes(dataTypes);
+            }
         }
 
         @Data
