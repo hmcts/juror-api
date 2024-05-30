@@ -105,7 +105,7 @@ class CompletionOfServiceReportITest extends AbstractGroupedReportControllerITes
             .headings(new ReportHashMap<String, AbstractReportResponse.DataTypeValue>()
                 .add("total_pool_members_completed", AbstractReportResponse.DataTypeValue.builder()
                     .displayName("Total pool members completed")
-                    .dataType("Integer")
+                    .dataType("Long")
                     .value(totalPoolMembersCompleted)
                     .build())
                 .add(DATE_TO_KEY, StandardReportResponse.DataTypeValue.builder()

@@ -74,7 +74,7 @@ public class CompletionOfServiceReport extends AbstractGroupedReport {
             .build());
         map.put("total_pool_members_completed", AbstractReportResponse.DataTypeValue.builder()
             .displayName("Total pool members completed")
-            .dataType(Integer.class.getSimpleName())
+            .dataType(Long.class.getSimpleName())
             .value(tableData.getData().getSize())
             .build());
 
