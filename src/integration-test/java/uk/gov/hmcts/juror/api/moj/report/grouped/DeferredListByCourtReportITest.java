@@ -43,6 +43,7 @@ class DeferredListByCourtReportITest extends AbstractGroupedReportControllerITes
     @Test
     void positiveTypicalNotFound() {
         testBuilder()
+            .jwt(getCourtJwt("475"))
             .triggerValid()
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(createResponse(0, new GroupedTableData()));
@@ -59,7 +60,7 @@ class DeferredListByCourtReportITest extends AbstractGroupedReportControllerITes
     private GroupedReportResponse getTypicalResponse() {
         return createResponse(3,
             new GroupedTableData()
-                .add("Chester (415)", List.of(
+                .add("CHESTER (415)", List.of(
                     new ReportLinkedMap<String, Object>()
                         .add("deferred_to", "2023-01-06")
                         .add("number_deferred", 1),
@@ -87,7 +88,7 @@ class DeferredListByCourtReportITest extends AbstractGroupedReportControllerITes
                     .headings(List.of(
                         StandardReportResponse.TableData.Heading.builder()
                             .id("deferred_to")
-                            .name("Deferred To")
+                            .name("Deferred to")
                             .dataType("LocalDate")
                             .headings(null)
                             .build(),
