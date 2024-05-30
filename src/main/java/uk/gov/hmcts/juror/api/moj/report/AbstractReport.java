@@ -232,7 +232,7 @@ public abstract class AbstractReport<T> implements IReport {
     protected abstract T getTableData(List<Tuple> data);
 
 
-    AbstractReportResponse.TableData.Heading getHeading(IDataType dataType) {
+    protected AbstractReportResponse.TableData.Heading getHeading(IDataType dataType) {
         AbstractReportResponse.TableData.Heading heading = AbstractReportResponse.TableData.Heading.builder()
             .id(dataType.getId())
             .name(dataType.getDisplayName())
@@ -584,6 +584,9 @@ public abstract class AbstractReport<T> implements IReport {
         }
 
         public interface RequirePoolAuditNumber {
+        }
+
+        public interface RequireCourts {
         }
     }
 }
