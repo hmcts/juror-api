@@ -36,7 +36,7 @@ public class ITrialRepositoryImpl implements ITrialRepository {
             .select(TRIAL)
             .from(TRIAL)
             .where(TRIAL.courtLocation.locCode.in(SecurityUtil.getCourts()));
-
+        trialSearch.apply(query);
         return PaginationUtil.toPaginatedList(query, trialSearch,
             TrialSearch.SortField.TRIAL_NUMBER,
             SortMethod.DESC,
