@@ -13,7 +13,6 @@ import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
-import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.utils.NumberUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -28,11 +27,8 @@ public class PoolAnalysisReport extends AbstractStandardReport {
     private final CourtLocationRepository courtLocationRepository;
 
     @Autowired
-    public PoolAnalysisReport(PoolRequestRepository poolRequestRepository,
-        CourtLocationRepository courtLocationRepository) {
-
+    public PoolAnalysisReport(CourtLocationRepository courtLocationRepository) {
         super(
-            poolRequestRepository,
             QJurorPool.jurorPool,
             DataType.POOL_NUMBER_BY_JP,
             DataType.SERVICE_START_DATE,

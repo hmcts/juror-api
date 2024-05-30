@@ -20,7 +20,6 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/PoolAnalysisReportITest_Typical.sql"
 })
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class PoolAnalysisReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired
@@ -42,6 +41,7 @@ class PoolAnalysisReportITest extends AbstractStandardReportControllerITest {
     }
 
     @Test
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void positiveNoDataCourtOwner() {
         StandardReportRequest request = getValidPayload();
         request.setFromDate(LocalDate.of(2024, 1, 17));
@@ -60,6 +60,7 @@ class PoolAnalysisReportITest extends AbstractStandardReportControllerITest {
     }
 
     @Test
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void positiveTypicalCourtOwner() {
         testBuilder()
             .triggerValid()
@@ -73,6 +74,7 @@ class PoolAnalysisReportITest extends AbstractStandardReportControllerITest {
     }
 
     @Test
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void positiveTypicalCourtSatellite() {
         testBuilder()
             .jwt(getSatelliteCourtJwt("415", "767"))
@@ -89,6 +91,7 @@ class PoolAnalysisReportITest extends AbstractStandardReportControllerITest {
     }
 
     @Test
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void positiveTypicalBureau() {
         testBuilder()
             .jwt(getBureauJwt())

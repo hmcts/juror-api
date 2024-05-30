@@ -32,13 +32,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings({
-    "unchecked"
-})
-public class PoolAnalysisReportTest extends AbstractStandardReportTestSupport<PoolAnalysisReport> {
+class PoolAnalysisReportTest extends AbstractStandardReportTestSupport<PoolAnalysisReport> {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
     private CourtLocationRepository courtLocationRepository;
+
+    private final LocalDate jan15th = LocalDate.of(2024, 1, 15);
+    private final LocalDate jan16th = LocalDate.of(2024, 1, 16);
 
     public PoolAnalysisReportTest() {
         super(
@@ -59,6 +59,8 @@ public class PoolAnalysisReportTest extends AbstractStandardReportTestSupport<Po
             DataType.TRANSFERRED_TOTAL,
             DataType.FAILED_TO_ATTEND_TOTAL
         );
+
+        setHasPoolRepository(false);
     }
 
     @BeforeEach
@@ -76,7 +78,7 @@ public class PoolAnalysisReportTest extends AbstractStandardReportTestSupport<Po
 
     @Override
     public PoolAnalysisReport createReport(PoolRequestRepository poolRequestRepository) {
-        return new PoolAnalysisReport(poolRequestRepository, this.courtLocationRepository);
+        return new PoolAnalysisReport(this.courtLocationRepository);
     }
 
     @Override
@@ -91,24 +93,19 @@ public class PoolAnalysisReportTest extends AbstractStandardReportTestSupport<Po
     @Override
     @DisplayName("positivePreProcessQueryTypicalCourtOwner")
     public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
-        request.setFromDate(LocalDate.of(2024, 1, 15));
-        request.setToDate(LocalDate.of(2024, 1, 16));
-
         securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn(TestConstants.VALID_COURT_LOCATION);
         report.preProcessQuery(query, request);
 
-        verify(query).where(QPoolRequest.poolRequest.returnDate.between(request.getFromDate(), request.getToDate()));
+        verify(query).where(QPoolRequest.poolRequest.returnDate.between(jan15th, jan16th));
         verify(query).where(QPoolRequest.poolRequest.owner.eq(SecurityUtil.getActiveOwner()));
         verify(query).groupBy(QJurorPool.jurorPool.pool.poolNumber, QPoolRequest.poolRequest.returnDate);
         verify(query).orderBy(QJurorPool.jurorPool.pool.poolNumber.asc());
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void positivePreProcessQueryTypicalCourtSatellite() {
-        StandardReportRequest request = new StandardReportRequest();
-
-        request.setFromDate(LocalDate.of(2024, 1, 15));
-        request.setToDate(LocalDate.of(2024, 1, 16));
+        StandardReportRequest request = getValidRequest();
 
         JPAQuery<Tuple> query = mock(JPAQuery.class);
 
@@ -116,7 +113,7 @@ public class PoolAnalysisReportTest extends AbstractStandardReportTestSupport<Po
         securityUtilMockedStatic.when(SecurityUtil::getLocCode).thenReturn("767");
         report.preProcessQuery(query, request);
 
-        verify(query).where(QPoolRequest.poolRequest.returnDate.between(request.getFromDate(), request.getToDate()));
+        verify(query).where(QPoolRequest.poolRequest.returnDate.between(jan15th, jan16th));
         verify(query).where(QPoolRequest.poolRequest.courtLocation.locCode.eq(SecurityUtil.getLocCode()));
         verify(query).groupBy(QJurorPool.jurorPool.pool.poolNumber, QPoolRequest.poolRequest.returnDate);
         verify(query).orderBy(QJurorPool.jurorPool.pool.poolNumber.asc());
@@ -124,18 +121,17 @@ public class PoolAnalysisReportTest extends AbstractStandardReportTestSupport<Po
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void positivePreProcessQueryTypicalBureau() {
-        StandardReportRequest request = new StandardReportRequest();
-
-        request.setFromDate(LocalDate.of(2024, 1, 15));
-        request.setToDate(LocalDate.of(2024, 1, 16));
+        StandardReportRequest request = getValidRequest();
 
         JPAQuery<Tuple> query = mock(JPAQuery.class);
 
+        securityUtilMockedStatic.when(SecurityUtil::isSatellite).thenReturn(false);
         securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn("400");
         report.preProcessQuery(query, request);
 
-        verify(query).where(QPoolRequest.poolRequest.returnDate.between(request.getFromDate(), request.getToDate()));
+        verify(query).where(QPoolRequest.poolRequest.returnDate.between(jan15th, jan16th));
         verify(query).where(QPoolRequest.poolRequest.owner.eq(SecurityUtil.getActiveOwner()));
         verify(query).groupBy(QJurorPool.jurorPool.pool.poolNumber, QPoolRequest.poolRequest.returnDate);
         verify(query).orderBy(QJurorPool.jurorPool.pool.poolNumber.asc());
@@ -149,14 +145,8 @@ public class PoolAnalysisReportTest extends AbstractStandardReportTestSupport<Po
         StandardReportResponse.TableData<StandardTableData> tableData,
         StandardTableData data) {
 
-        request.setFromDate(LocalDate.of(2024, 1, 15));
-        request.setToDate(LocalDate.of(2024, 1, 16));
-
         securityUtilMockedStatic.when(SecurityUtil::getLocCode).thenReturn(TestConstants.VALID_COURT_LOCATION);
         securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(true);
-
-        when(request.getFromDate()).thenReturn(LocalDate.of(2024, 1, 15));
-        when(request.getToDate()).thenReturn(LocalDate.of(2024, 1, 16));
 
         CourtLocation courtLocation = new CourtLocation();
         courtLocation.setLocCode(TestConstants.VALID_COURT_LOCATION);
@@ -189,16 +179,15 @@ public class PoolAnalysisReportTest extends AbstractStandardReportTestSupport<Po
     }
 
     @Test
-    void positiveGetHeadingsTypicalBureau() {
-        StandardReportRequest request = mock(StandardReportRequest.class);
+    void positiveGetHeadingsTypicalCourtSatellite() {
+        securityUtilMockedStatic.when(SecurityUtil::getLocCode).thenReturn("767");
+        securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(true);
 
-        request.setFromDate(LocalDate.of(2024, 1, 15));
-        request.setToDate(LocalDate.of(2024, 1, 16));
-
-        securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(false);
-
-        when(request.getFromDate()).thenReturn(LocalDate.of(2024, 1, 15));
-        when(request.getToDate()).thenReturn(LocalDate.of(2024, 1, 16));
+        CourtLocation courtLocation = new CourtLocation();
+        courtLocation.setLocCode("767");
+        courtLocation.setName("KNUTSFORD");
+        when(courtLocationRepository.findByLocCode("767"))
+            .thenReturn(Optional.of(courtLocation));
 
         Map<String, StandardReportResponse.DataTypeValue> expected = new ConcurrentHashMap<>();
         expected.put("date_from", AbstractReportResponse.DataTypeValue.builder()
@@ -211,6 +200,36 @@ public class PoolAnalysisReportTest extends AbstractStandardReportTestSupport<Po
             .dataType(LocalDate.class.getSimpleName())
             .value("2024-01-16")
             .build());
+        expected.put("court_name", AbstractReportResponse.DataTypeValue.builder()
+            .displayName("Court Name")
+            .dataType(String.class.getSimpleName())
+            .value("KNUTSFORD (767)")
+            .build());
+
+        StandardReportRequest request = getValidRequest();
+
+        AbstractReportResponse.TableData<StandardTableData> tableData = new AbstractReportResponse.TableData<>();
+        Map<String, StandardReportResponse.DataTypeValue> map = report.getHeadings(request, tableData);
+        assertHeadingContains(map, request, false, expected);
+    }
+
+    @Test
+    void positiveGetHeadingsTypicalBureau() {
+        securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(false);
+
+        Map<String, StandardReportResponse.DataTypeValue> expected = new ConcurrentHashMap<>();
+        expected.put("date_from", AbstractReportResponse.DataTypeValue.builder()
+            .displayName("Date From")
+            .dataType(LocalDate.class.getSimpleName())
+            .value("2024-01-15")
+            .build());
+        expected.put("date_to", AbstractReportResponse.DataTypeValue.builder()
+            .displayName("Date To")
+            .dataType(LocalDate.class.getSimpleName())
+            .value("2024-01-16")
+            .build());
+
+        StandardReportRequest request = getValidRequest();
 
         AbstractReportResponse.TableData<StandardTableData> tableData = new AbstractReportResponse.TableData<>();
         Map<String, StandardReportResponse.DataTypeValue> map = report.getHeadings(request, tableData);
