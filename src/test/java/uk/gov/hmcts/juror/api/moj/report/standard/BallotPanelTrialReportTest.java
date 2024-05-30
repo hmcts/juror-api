@@ -6,6 +6,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
@@ -21,8 +22,6 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.List;
 import java.util.Map;
-
-import static org.mockito.Mockito.*;
 
 class BallotPanelTrialReportTest extends AbstractStandardReportTestSupport<BallotPanelTrialReport> {
 
@@ -50,8 +49,8 @@ class BallotPanelTrialReportTest extends AbstractStandardReportTestSupport<Ballo
     @BeforeEach
     @Override
     public void beforeEach() {
-        securityUtilMockedStatic = mockStatic(SecurityUtil.class);
-        this.trialRepository = mock(TrialRepository.class);
+        securityUtilMockedStatic = Mockito.mockStatic(SecurityUtil.class);
+        this.trialRepository = Mockito.mock(TrialRepository.class);
         super.beforeEach();
     }
 
@@ -76,11 +75,11 @@ class BallotPanelTrialReportTest extends AbstractStandardReportTestSupport<Ballo
         securityUtilMockedStatic.when(SecurityUtil::getCourts).thenReturn(List.of(TestConstants.VALID_COURT_LOCATION));
         report.preProcessQuery(query, request);
 
-        verify(query, times(1))
+        Mockito.verify(query, Mockito.times(1))
             .where(QPanel.panel.trial.trialNumber.eq(TestConstants.VALID_TRIAL_NUMBER));
-        verify(query, times(1))
+        Mockito.verify(query, Mockito.times(1))
             .where(QPanel.panel.trial.courtLocation.locCode.in(List.of(TestConstants.VALID_COURT_LOCATION)));
-        verify(query, times(1))
+        Mockito.verify(query, Mockito.times(1))
             .orderBy(QPanel.panel.juror.jurorNumber.asc());
     }
 
