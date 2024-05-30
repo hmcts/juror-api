@@ -50,9 +50,9 @@ class BallotPanelTrialReportTest extends AbstractStandardReportTestSupport<Ballo
     @BeforeEach
     @Override
     public void beforeEach() {
-        super.beforeEach();
         securityUtilMockedStatic = mockStatic(SecurityUtil.class);
-        this.trialRepository =mock(TrialRepository.class);
+        this.trialRepository = mock(TrialRepository.class);
+        super.beforeEach();
     }
 
     @AfterEach

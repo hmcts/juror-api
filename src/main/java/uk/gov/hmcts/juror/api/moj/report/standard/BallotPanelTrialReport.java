@@ -46,14 +46,18 @@ public class BallotPanelTrialReport extends AbstractStandardReport {
     public Map<String, AbstractReportResponse.DataTypeValue> getHeadings(
         StandardReportRequest request,
         AbstractReportResponse.TableData<StandardTableData> tableData) {
-        Trial trial = getTrial(request.getTrialNumber(), this.trialRepository);
-
-        if (trial.getAnonymous() != null && trial.getAnonymous().equals(true)) {
-            tableData.removeData(DataType.FIRST_NAME, DataType.LAST_NAME, DataType.JUROR_POSTCODE);
-        }
         return new HashMap<>();
     }
+    @Override
+    protected void postProcessTableData(
+        StandardReportRequest request,
+        AbstractReportResponse.TableData<StandardTableData> tableData) {
+        Trial trial = getTrial(request.getTrialNumber(), this.trialRepository);
 
+        if (trial.getAnonymous() != null && trial.getAnonymous()) {
+            tableData.removeData(DataType.FIRST_NAME, DataType.LAST_NAME, DataType.JUROR_POSTCODE);
+        }
+    }
     @Override
     public Class<BallotPanelTrialReport.RequestValidator> getRequestValidatorClass() {
         return BallotPanelTrialReport.RequestValidator.class;
