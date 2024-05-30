@@ -38,7 +38,6 @@ class CompletionOfServiceReportTest extends AbstractGroupedReportTestSupport<Com
 
     private static final LocalDate DATE_FROM_TEST_VALUE = LocalDate.of(2023, 3, 1);
     private static final LocalDate DATE_UNTIL_TEST_VALUE = LocalDate.of(2023, 3, 2);
-    private static final int DATASET_SIZE = 3;
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
     private CourtLocationService courtLocationService;
@@ -105,7 +104,7 @@ class CompletionOfServiceReportTest extends AbstractGroupedReportTestSupport<Com
 
         when(request.getFromDate()).thenReturn(DATE_FROM_TEST_VALUE);
         when(request.getToDate()).thenReturn(DATE_UNTIL_TEST_VALUE);
-        when(data.getSize()).thenReturn(DATASET_SIZE);
+        when(tableData.getData().getSize()).thenReturn(3L);
         securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(true);
         securityUtilMockedStatic.when(SecurityUtil::getLocCode).thenReturn(VALID_COURT_LOCATION);
 
@@ -127,8 +126,8 @@ class CompletionOfServiceReportTest extends AbstractGroupedReportTestSupport<Com
                     .build(),
                 "total_pool_members_completed", AbstractReportResponse.DataTypeValue.builder()
                     .displayName("Total pool members completed")
-                    .dataType(Integer.class.getSimpleName())
-                    .value(DATASET_SIZE)
+                    .dataType(Long.class.getSimpleName())
+                    .value(3L)
                     .build(),
                 COURT_NAME_KEY, AbstractReportResponse.DataTypeValue.builder()
                     .displayName(COURT_NAME_DISPLAY_NAME)
