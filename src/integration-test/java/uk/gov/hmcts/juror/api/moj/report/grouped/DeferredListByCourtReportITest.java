@@ -13,7 +13,6 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResp
 import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 
 @Sql({
@@ -63,10 +62,13 @@ class DeferredListByCourtReportITest extends AbstractGroupedReportControllerITes
                 .add("Chester (415)", List.of(
                     new ReportLinkedMap<String, Object>()
                         .add("deferred_to", "2023-01-06")
-                        .add("number_deferred", "1"),
+                        .add("number_deferred", 1),
                     new ReportLinkedMap<String, Object>()
                         .add("deferred_to", "2023-01-07")
-                        .add("number_deferred", "2"))));
+                        .add("number_deferred", 2),
+                    new ReportLinkedMap<String, Object>()
+                        .add("deferred_to", "2023-01-08")
+                        .add("number_deferred", 1))));
     }
 
     private GroupedReportResponse createResponse(int count, GroupedTableData groupedTableData) {
