@@ -1,5 +1,9 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
+import com.querydsl.core.Tuple;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -44,26 +48,8 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorOverviewResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorRecordSearchDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorSummonsReplyResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PendingJurorsResponseDto;
-import uk.gov.hmcts.juror.api.moj.domain.Appearance;
-import uk.gov.hmcts.juror.api.moj.domain.ContactCode;
-import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryType;
-import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
-import uk.gov.hmcts.juror.api.moj.domain.FilterJurorRecord;
-import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
-import uk.gov.hmcts.juror.api.moj.domain.IContactCode;
-import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
-import uk.gov.hmcts.juror.api.moj.domain.Juror;
-import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
-import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
-import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
-import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
-import uk.gov.hmcts.juror.api.moj.domain.PendingJuror;
-import uk.gov.hmcts.juror.api.moj.domain.PendingJurorStatus;
-import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
-import uk.gov.hmcts.juror.api.moj.domain.PoolHistory;
-import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
-import uk.gov.hmcts.juror.api.moj.domain.QJuror;
-import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorPaymentsResponseDto;
+import uk.gov.hmcts.juror.api.moj.domain.*;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
@@ -91,6 +77,7 @@ import uk.gov.hmcts.juror.api.moj.repository.PendingJurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolTypeRepository;
+import uk.gov.hmcts.juror.api.moj.repository.juror.JurorPaymentsSummaryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
@@ -99,22 +86,13 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.ReasonableAdjustments
 import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAuditChangeService;
-import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
-import uk.gov.hmcts.juror.api.moj.utils.JurorResponseUtils;
-import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
-import uk.gov.hmcts.juror.api.moj.utils.PaginationUtil;
-import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
-import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
+import uk.gov.hmcts.juror.api.moj.utils.*;
 
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.springframework.transaction.annotation.Propagation.REQUIRED;
@@ -153,6 +131,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     private final JurorHistoryRepository jurorHistoryRepository;
     private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
     private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
+    private final JurorPaymentsSummaryRepository jurorPaymentsSummaryRepository;
 
     private final JurorResponseCommonRepositoryMod jurorResponseCommonRepositoryMod;
 
@@ -1234,6 +1213,73 @@ public class JurorRecordServiceImpl implements JurorRecordService {
                 AppearanceStage.CHECKED_OUT).contains(appearance.getAppearanceStage()))
             .map(JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData::new)
             .collect(Collectors.toList());
+    }
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
+    private static class PaymentSummaryData {
+        BigDecimal financialLoss = BigDecimal.ZERO;
+        BigDecimal travel = BigDecimal.ZERO;
+        BigDecimal subsistence = BigDecimal.ZERO;
+        BigDecimal paid = BigDecimal.ZERO;
+
+        PaymentSummaryData add(PaymentSummaryData target) {
+            financialLoss = financialLoss.add(target.getFinancialLoss());
+            travel = travel.add(target.getTravel());
+            subsistence = subsistence.add(target.getSubsistence());
+            paid = paid.add(target.getPaid());
+
+            return this;
+        }
+    }
+
+    @Override
+    public JurorPaymentsResponseDto getJurorPayments(String jurorNumber, BureauJwtPayload payload) {
+        List<Tuple> data = jurorPaymentsSummaryRepository.fetchPaymentLogByJuror(jurorNumber);
+
+        long nonAttendanceCount = data.stream().filter(
+            item -> Optional.ofNullable(item.get(QReportsJurorPayments.reportsJurorPayments.nonAttendance))
+                .orElse(false)
+        ).count();
+
+        PaymentSummaryData summaryData = data.stream().reduce(
+            new PaymentSummaryData(),
+            (total, item) -> total.add(new PaymentSummaryData(
+                BigDecimalUtils.getOrZero(item.get(QReportsJurorPayments.reportsJurorPayments.totalFinancialLossDue)),
+                BigDecimalUtils.getOrZero(item.get(QReportsJurorPayments.reportsJurorPayments.totalTravelDue)),
+                BigDecimalUtils.getOrZero(item.get(QReportsJurorPayments.reportsJurorPayments.subsistenceDue)),
+                BigDecimalUtils.getOrZero(item.get(QReportsJurorPayments.reportsJurorPayments.totalPaid)))),
+            PaymentSummaryData::add);
+
+        return JurorPaymentsResponseDto.builder()
+            .attendances(data.size() - nonAttendanceCount)
+            .nonAttendances(nonAttendanceCount)
+            .financialLoss(summaryData.getFinancialLoss())
+            .travel(summaryData.getTravel())
+            .subsistence(summaryData.getSubsistence())
+            .totalPaid(summaryData.getPaid())
+            .data(data.stream().map(item -> {
+                JurorPaymentsResponseDto.PaymentDayDto.PaymentDayDtoBuilder day =
+                    JurorPaymentsResponseDto.PaymentDayDto.builder()
+                        .attendanceDate(item.get(QReportsJurorPayments.reportsJurorPayments.attendanceDate))
+                        .attendanceAudit(item.get(QReportsJurorPayments.reportsJurorPayments.attendanceAudit))
+                        .paymentAudit(item.get(QReportsJurorPayments.reportsJurorPayments.latestPaymentFAuditId))
+                        .travel(item.get(QReportsJurorPayments.reportsJurorPayments.totalTravelDue))
+                        .financialLoss(item.get(QReportsJurorPayments.reportsJurorPayments.totalFinancialLossDue))
+                        .subsistence(item.get(QReportsJurorPayments.reportsJurorPayments.subsistenceDue))
+                        .smartcard(item.get(QReportsJurorPayments.reportsJurorPayments.smartCardDue))
+                        .totalDue(item.get(QReportsJurorPayments.reportsJurorPayments.totalDue))
+                        .totalPaid(item.get(QReportsJurorPayments.reportsJurorPayments.totalPaid));
+
+                if (Optional.ofNullable(item.get(QReportsJurorPayments.reportsJurorPayments.paymentDate)).isPresent()) {
+                    day.datePaid((item.get(QReportsJurorPayments.reportsJurorPayments.paymentDate).toLocalDate()))
+                        .timePaid(item.get(QReportsJurorPayments.reportsJurorPayments.paymentDate).toLocalTime());
+                }
+
+                return day.build();
+            }).toList())
+            .build();
     }
 
     @Override

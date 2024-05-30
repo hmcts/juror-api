@@ -57,6 +57,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorOverviewResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorRecordSearchDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorSummonsReplyResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PendingJurorsResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorPaymentsResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.FilterJurorRecord;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PendingJurorStatus;
@@ -431,6 +432,25 @@ public class JurorRecordController {
         @Valid @PathVariable("locCode") @CourtLocationCode String locCode) {
         final JurorAttendanceDetailsResponseDto details =
             jurorRecordService.getJurorAttendanceDetails(locCode, jurorNumber, payload);
+        return ResponseEntity.ok().body(details);
+    }
+
+
+    /**
+     * Get the attendance and payments log details for a given Juror.
+     *
+     * @param jurorNumber Unique Juror number of the juror
+     * @return Fully populated DTO of a juror's attendance and payments log
+     */
+    @GetMapping(path = "/{jurorNumber}/payments")
+    @Operation(summary = "Get attendance and payments log for a given juror")
+    public ResponseEntity<JurorPaymentsResponseDto> getJurorPaymentsHistory(
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
+        @PathVariable("jurorNumber") @Valid @JurorNumber
+        @Parameter(description = "Valid juror number", required = true) String jurorNumber) {
+        final JurorPaymentsResponseDto details =
+            jurorRecordService.getJurorPayments(jurorNumber, payload);
+
         return ResponseEntity.ok().body(details);
     }
 
