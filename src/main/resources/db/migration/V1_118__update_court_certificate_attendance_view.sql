@@ -1,3 +1,4 @@
+create or replace view juror_mod.court_certificate_attendance as
 SELECT jp.owner,
     jp.pool_number,
     j.juror_number,
