@@ -2,7 +2,6 @@ package uk.gov.hmcts.juror.api.bureau.service;
 
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseExcusalController;
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseExcusalController.ExcusalCodeDto;
-import uk.gov.hmcts.juror.api.bureau.exception.ExcusalException;
 
 import java.util.List;
 
@@ -16,21 +15,20 @@ public interface ResponseExcusalService {
      *
      * @return ExcusalReasonsDto dto
      */
-    List<ResponseExcusalController.ExcusalCodeDto> getExcusalReasons()
-        throws ExcusalException.UnableToRetrieveExcusalCodeList;
+    List<ResponseExcusalController.ExcusalCodeDto> getExcusalReasons();
 
     /**
      * Excuse Juror with specified code.
      *
      * @return Boolean representing whether excusal was successful
      */
-    boolean excuseJuror(String jurorId, ExcusalCodeDto excusalCodeDto, String login) throws ExcusalException;
+    boolean excuseJuror(String jurorId, ExcusalCodeDto excusalCodeDto, String login);
 
     /**
      * Reject Jurors excusal request with specified code.
      *
      * @return Boolean representing whether rejection was successful
      */
-    boolean rejectExcusalRequest(String jurorId, ExcusalCodeDto excusalCodeDto, String login) throws ExcusalException;
+    boolean rejectExcusalRequest(String jurorId, ExcusalCodeDto excusalCodeDto, String login);
 
 }
