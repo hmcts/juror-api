@@ -210,7 +210,7 @@ public abstract class AbstractReportTestSupport<
         assertThat(violations.stream()
             .map(ValidationFailure::new)
             .toList())
-            .isEqualTo(List.of(validationFailures));
+            .containsExactlyInAnyOrder(validationFailures);
     }
 
     @Data

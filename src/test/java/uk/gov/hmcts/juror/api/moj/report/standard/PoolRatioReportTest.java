@@ -124,8 +124,8 @@ public class PoolRatioReportTest extends AbstractStandardReportTestSupport<PoolR
         StandardReportRequest request = getValidRequest();
         request.setCourts(null);
         assertValidationFails(request,
-            new ValidationFailure("courts", "must not be null"),
-            new ValidationFailure("courts", "must not be empty"));
+            new ValidationFailure("courts", "must not be empty"),
+            new ValidationFailure("courts", "must not be null"));
     }
 
     @Test

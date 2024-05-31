@@ -21,7 +21,7 @@ import java.util.List;
     "/db/mod/reports/PoolRatioReportITest_typical.sql"
 })
 @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-public class PoolRatioReportITest extends AbstractStandardReportControllerITest {
+class PoolRatioReportITest extends AbstractStandardReportControllerITest {
     protected static final LocalDate DEFAULT_FROM_DATE = LocalDate.of(2024, 1, 1);
     protected static final LocalDate DEFAULT_TO_DATE = LocalDate.of(2024, 1, 30);
     protected static final List<String> DEFAULT_COURTS = List.of("415", "414", "413");
@@ -46,6 +46,7 @@ public class PoolRatioReportITest extends AbstractStandardReportControllerITest 
     }
 
     @Test
+    @SuppressWarnings("PMD.UseUnderscoresInNumericLiterals")
     void positiveTypicalBureau() {
         testBuilder()
             .triggerValid()

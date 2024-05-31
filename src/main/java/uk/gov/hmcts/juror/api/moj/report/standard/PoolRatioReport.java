@@ -15,7 +15,6 @@ import uk.gov.hmcts.juror.api.moj.report.DataType;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,8 +23,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class PoolRatioReport extends AbstractStandardReport {
 
-    private final static String RATIO_1_ID = "ratio_1";
-    private final static String RATIO_2_ID = "ratio_2";
+    private static final String RATIO_1_ID = "ratio_1";
+    private static final String RATIO_2_ID = "ratio_2";
 
     public PoolRatioReport() {
         super(QJurorPool.jurorPool,
@@ -48,7 +47,7 @@ public class PoolRatioReport extends AbstractStandardReport {
     private StandardTableData getCombinedTableData(AbstractReportResponse.TableData<StandardTableData> tableData) {
         @Setter
         @Getter
-        class Data {
+        class TableData {
             private long requested;
             private long deferred;
             private long summoned;
@@ -71,31 +70,31 @@ public class PoolRatioReport extends AbstractStandardReport {
             }
 
             public double getRatio1() {
-                double left = summoned - deferred;
                 double right = requested - deferred;
                 if (right == 0.0) {
                     return 0.0;
                 }
+                double left = summoned - deferred;
                 return left / right;
             }
 
             public double getRatio2() {
-                double left = summoned - deferred;
                 double right = supplied - deferred;
                 if (right == 0.0) {
                     return 0.0;
                 }
+                double left = summoned - deferred;
                 return left / right;
             }
         }
 
-        Map<String, Data> combinedData = new HashMap<>();
+        Map<String, TableData> combinedData = new ConcurrentHashMap<>();
 
         tableData.getData().forEach(stringObjectLinkedHashMap -> {
             String key = (String) stringObjectLinkedHashMap.get(DataType.COURT_LOCATION_NAME_AND_CODE_JP.getId());
-            Data data = combinedData.get(key);
+            TableData data = combinedData.get(key);
             if (data == null) {
-                data = new Data();
+                data = new TableData();
                 combinedData.put(key, data);
             }
             data.addRequested(
@@ -109,7 +108,7 @@ public class PoolRatioReport extends AbstractStandardReport {
             combinedData.entrySet().stream()
                 .map((entry) -> {
                     String key = entry.getKey();
-                    Data value = entry.getValue();
+                    TableData value = entry.getValue();
                     LinkedHashMap<String, Object> map = new LinkedHashMap<>();
                     map.put(DataType.COURT_LOCATION_NAME_AND_CODE.getId(), key);
                     map.put(DataType.TOTAL_REQUESTED.getId(), value.getRequested());
@@ -158,8 +157,10 @@ public class PoolRatioReport extends AbstractStandardReport {
     }
 
     @Override
-    public Map<String, AbstractReportResponse.DataTypeValue> getHeadings(StandardReportRequest request,
-                                                                         AbstractReportResponse.TableData<StandardTableData> tableData) {
+    public Map<String, AbstractReportResponse.DataTypeValue> getHeadings(
+        StandardReportRequest request,
+        AbstractReportResponse.TableData<StandardTableData> tableData) {
+
         Map<String, AbstractReportResponse.DataTypeValue> map = new ConcurrentHashMap<>();
         map.put("date_from", AbstractReportResponse.DataTypeValue.builder()
             .displayName("Date from")
