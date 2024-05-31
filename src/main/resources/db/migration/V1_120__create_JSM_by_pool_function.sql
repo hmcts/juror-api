@@ -1,3 +1,4 @@
+
 -- Function to return jury summoning monitor stats for a pool
 create or replace function  juror_mod.jsm_report_by_pool(p_pool_number text)
  returns table(
@@ -44,20 +45,20 @@ begin
 return query
 
 with current_data as (select p.no_requested,
-coalesce((select sum(cast(substring(ph.other_information,1,length(ph.other_information)-19) as integer))
+coalesce((select sum(substring(ph.other_information,1,length(ph.other_information)-19)::integer)
                 from juror_mod.pool_history ph
                 where ph.pool_no = jp.pool_number
                 and ph.history_code  = 'PHDI'
                 and position('New' in ph.other_information) > 0
                 and ph.pool_no = p_pool_number),0) as deferrals_used,
 sum(case when coalesce(jp.status,0)::text || coalesce(j.disq_code,'*') = '6A' then case when summons_file = 'disq. on selection' then 1 else 0 end else 0 end) as disq_on_selection,
-coalesce((select count(cast(substring(ph.other_information,1,length(ph.other_information)-19) as integer))
+coalesce((select sum(substring(ph.other_information,1,length(ph.other_information)-19)::integer)
                 from juror_mod.pool_history ph
                 where ph.pool_no = jp.pool_number
                 and ph.history_code = 'PHSI'
                 and position('New' in ph.other_information) > 0
                 and ph.pool_no = p_pool_number),0) as summoned,
-coalesce((select sum(cast(substring(ph.other_information,1,length(ph.other_information)-19) as integer))
+coalesce((select sum(substring(ph.other_information,1,length(ph.other_information)-19)::integer)
                 from juror_mod.pool_history ph
                 where ph.pool_no = jp.pool_number
                 and ph.history_code = 'PHSI'
@@ -97,7 +98,7 @@ sum(case when coalesce(jp.status,0)::text || coalesce(j.excusal_code,'*') = '7P'
 from juror_mod.juror_pool jp
 join juror_mod.pool p on jp.pool_number = p.pool_no and jp.owner = p.owner
 join juror_mod.juror j on jp.juror_number = j.juror_number
-join juror_mod.juror_response jr on jp.juror_number = jr.juror_number
+left join juror_mod.juror_response jr on jp.juror_number = jr.juror_number
 where jp.owner = '400'
 and jp.pool_number = p_pool_number
 group by jp.pool_number, p.no_requested),
@@ -113,42 +114,42 @@ join juror_mod.pool p on bs.pool_number = p.pool_no
 where bs.pool_number = p_pool_number
 group by bs.pool_number, p.no_requested)
 
-select coalesce ((select no_requested from snapshot_data),coalesce(c.no_requested,0),0) as no_requested,
-		c.deferrals_used,
-		c.disq_on_selection,
-		c.summoned,
-		c.additional_summons,
-		c.reminder + coalesce((select reminder from snapshot_data), 0) as reminder,
-		c.supplied + coalesce((select supplied from snapshot_data), 0) as supplied,
-		c.refused_excusal + coalesce((select refused_excusal from snapshot_data),0) as refused_excusal,
-		c.refused_deferral + coalesce((select refused_deferral from snapshot_data),0) as refused_deferral,
-		c.pnc_failed,
-		c.disq_others,
-		c.by_right,
-		c.child_care,
-		c.work_related,
-		c.medical,
-		c.travel,
-		c.student,
-		c.moved_out,
-		c.language,
-		c.other_excused,
-		c.deferred_out,
-		c.postponed,
-		c.non_responded + coalesce((select refused_deferral from snapshot_data),0) as non_responded,
-		c.undelivered,
-		c.unavailable,
-		c.mental,
-		c.toomany,
-		c.religion,
-		c.carer,
-		c.deceased,
-		c.holiday,
-		c.postponed_excused,
-		c.old_or_new,
-		c.awaiting_info,
-		c.all_deferrals,
-		c.all_postponements
+select coalesce ((select s.no_requested from snapshot_data s),coalesce(c.no_requested,0),0) as no_requested,
+		c.deferrals_used::integer,
+		c.disq_on_selection::integer,
+		c.summoned::integer,
+		c.additional_summons::integer,
+		(c.reminder + coalesce((select s.reminder from snapshot_data s), 0))::integer as reminder,
+		(c.supplied + coalesce((select s.supplied from snapshot_data s), 0))::integer as supplied,
+		(c.refused_excusal + coalesce((select s.refused_excusal from snapshot_data s),0))::integer as refused_excusal,
+		(c.refused_deferral + coalesce((select s.refused_deferral from snapshot_data s),0))::integer as refused_deferral,
+		c.pnc_failed::integer,
+		c.disq_others::integer,
+		c.by_right::integer,
+		c.child_care::integer,
+		c.work_related::integer,
+		c.medical::integer,
+		c.travel::integer,
+		c.student::integer,
+		c.moved_out::integer,
+		c.language::integer,
+		c.other_excused::integer,
+		c.deferred_out::integer,
+		c.postponed::integer,
+		(c.non_responded + coalesce((select s.refused_deferral from snapshot_data s),0))::integer as non_responded,
+		c.undelivered::integer,
+		c.unavailable::integer,
+		c.mental::integer,
+		c.toomany::integer,
+		c.religion::integer,
+		c.carer::integer,
+		c.deceased::integer,
+		c.holiday::integer,
+		c.postponed_excused::integer,
+		c.old_or_new::integer,
+		c.awaiting_info::integer,
+		c.all_deferrals::integer,
+		c.all_postponements::integer
 	from current_data c;
 
 END;
