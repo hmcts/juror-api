@@ -57,6 +57,15 @@ class DeferredListByCourtReportITest extends AbstractGroupedReportControllerITes
             .assertEquals(getTypicalResponse());
     }
 
+    @Test
+    void positiveTypicalBureau() {
+        testBuilder()
+            .jwt(getBureauJwt())
+            .triggerValid()
+            .responseConsumer(this::verifyAndRemoveReportCreated)
+            .assertEquals(getTypicalResponseBureau());
+    }
+
     private GroupedReportResponse getTypicalResponse() {
         return createResponse(3,
             new GroupedTableData()
@@ -70,6 +79,25 @@ class DeferredListByCourtReportITest extends AbstractGroupedReportControllerITes
                     new ReportLinkedMap<String, Object>()
                         .add("deferred_to", "2023-01-08")
                         .add("number_deferred", 1))));
+    }
+
+    private GroupedReportResponse getTypicalResponseBureau() {
+        return createResponse(4,
+            new GroupedTableData()
+                .add("CHESTER (415)", List.of(
+                    new ReportLinkedMap<String, Object>()
+                        .add("deferred_to", "2023-01-05")
+                        .add("number_deferred", 2),
+                    new ReportLinkedMap<String, Object>()
+                        .add("deferred_to", "2023-01-06")
+                        .add("number_deferred", 2),
+                    new ReportLinkedMap<String, Object>()
+                        .add("deferred_to", "2023-01-07")
+                        .add("number_deferred", 2),
+                    new ReportLinkedMap<String, Object>()
+                        .add("deferred_to", "2023-01-08")
+                        .add("number_deferred", 1)
+                )));
     }
 
     private GroupedReportResponse createResponse(int count, GroupedTableData groupedTableData) {
