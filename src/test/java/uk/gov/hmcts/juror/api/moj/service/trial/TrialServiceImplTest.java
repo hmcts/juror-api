@@ -8,7 +8,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -19,6 +18,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.trial.EndTrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReturnJuryDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialSearch;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialSummaryDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
@@ -26,6 +26,7 @@ import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Judge;
@@ -58,6 +59,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -149,36 +151,21 @@ class TrialServiceImplTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
+    @SuppressWarnings({
+        "PMD.JUnitAssertionsShouldIncludeMessage",
+        "unchecked"
+    })
     void testGetTrials() {
-        when(trialRepository.getListOfTrialsForCourtLocations(createCourtList(), Boolean.TRUE, null, createPageable()))
-            .thenReturn(createTrialList());
+        TrialSearch trialSearch = mock(TrialSearch.class);
+        PaginatedList<TrialListDto> result = mock(PaginatedList.class);
 
-        Page<TrialListDto> trials = trialService.getTrials(createJwtPayload("415", "COURT_USER"),
-            0, "trialNumber", "desc", Boolean.TRUE, null);
+        doReturn(result).when(trialRepository).getListOfTrials(any(), any());
 
-        assertThat(trials)
-            .as("List of trials should be in desc order based on trial number")
-            .hasSize(2)
-            .extracting(TrialListDto::getTrialNumber)
-            .containsExactly("T100000025", "T100000024");
-    }
+        PaginatedList<TrialListDto> trials = trialService.getTrials(trialSearch);
 
-    @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
-    void testGetTrialsWithJurorNumber() {
-        when(
-            trialRepository.getListOfTrialsForCourtLocations(createCourtList(), Boolean.TRUE, "1234", createPageable()))
-            .thenReturn(createTrialList());
-
-        Page<TrialListDto> trials = trialService.getTrials(createJwtPayload("415", "COURT_USER"),
-            0, "trialNumber", "desc", Boolean.TRUE, "1234");
-
-        assertThat(trials)
-            .as("List of trials should be in desc order based on trial number")
-            .hasSize(2)
-            .extracting(TrialListDto::getTrialNumber)
-            .containsExactly("T100000025", "T100000024");
+        assertThat(trials).isEqualTo(result);
+        verify(trialRepository, times(1))
+            .getListOfTrials(eq(trialSearch), any());
     }
 
     @Test

@@ -105,7 +105,7 @@ class PersonAttendingDetailReportITest extends AbstractGroupedReportControllerIT
                           .add("total_due", StandardReportResponse.DataTypeValue.builder()
                               .displayName("Total due to attend")
                               .dataType("Integer")
-                              .value(data.getSize())
+                              .value(data.getSize().intValue())
                               .build())
                           .add("court_name", StandardReportResponse.DataTypeValue.builder()
                               .displayName("Court Name")

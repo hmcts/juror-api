@@ -4,7 +4,6 @@ import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import lombok.Getter;
-import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
@@ -213,8 +212,8 @@ public enum DataType implements IDataType {
         QPanel.panel),
     JUROR_NUMBER_FROM_TRIAL("Juror Number", String.class, QPanel.panel.juror.jurorNumber, QPanel.panel),
     COURT_LOCATION_NAME_AND_CODE("Court Location Name And Code", String.class,
-        QCourtLocation.courtLocation.name.concat(" (")
-            .concat(QCourtLocation.courtLocation.locCode).concat(")"), QPoolRequest.poolRequest),
+        QPoolRequest.poolRequest.courtLocation.name.concat(" (")
+            .concat(QPoolRequest.poolRequest.courtLocation.locCode).concat(")"), QPoolRequest.poolRequest),
 
     TRIAL_JUDGE_NAME("Judge", String.class, QTrial.trial.judge.name, QTrial.trial),
     TRIAL_TYPE("Trial Type", String.class, QTrial.trial.trialType, QTrial.trial),

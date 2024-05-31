@@ -54,6 +54,7 @@ public class StandardReportRequest {
         "PanelMembersStatusReport",
         "ManualJurorReport",
         "JuryCostBill",
+        "AvailableListByPoolReport",
         //Grouped
         "AbsencesReport",
         "PostponedListByDateReport",
@@ -65,6 +66,9 @@ public class StandardReportRequest {
         "JurorExpenditureReportMidLevelReport",
         "JurorExpenditureReportHighLevelReport",
         "DeferredListByCourtReport",
+        "UnconfirmedAttendanceReport",
+        "AvailableListByDateReportBureau",
+        "AvailableListByDateReportCourt",
         "SummonedRespondedReport",
         "UnconfirmedAttendanceReport",
         "PoolStatisticsReport",
@@ -111,4 +115,14 @@ public class StandardReportRequest {
     @NotNull(groups = AbstractReport.Validators.RequireJuryAuditNumber.class)
     @Pattern(groups = AbstractReport.Validators.RequireJuryAuditNumber.class, regexp = "^J\\d*$")
     private String juryAuditNumber;
+
+
+    @NotNull(groups = AbstractReport.Validators.RequireIncludeJurorsOnCall.class)
+    private Boolean includeJurorsOnCall;
+
+    @NotNull(groups = AbstractReport.Validators.RequireIncludePanelMembers.class)
+    private Boolean includePanelMembers;
+
+    @NotNull(groups = AbstractReport.Validators.RequireRespondedJurorsOnly.class)
+    private Boolean respondedJurorsOnly;
 }
