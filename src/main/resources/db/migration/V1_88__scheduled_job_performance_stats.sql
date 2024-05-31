@@ -218,8 +218,7 @@ begin
 
 	l_job_type := 'refresh_stats_data.welsh_online_responses';
 
-    merge into juror_dashboard.stats_welsh_online_responses t
-    using (
+    insert into juror_dashboard.stats_welsh_online_responses
         select		date_trunc('month', h.date_created) as summons_month
         			,count(1) as welsh_response_count
         from 		juror_mod.juror_response r
@@ -229,14 +228,9 @@ begin
 			        and h.date_created > (current_date - (no_of_months || ' month')::interval) -- exclude jurors summoned more than n months ago
 			        and r.welsh = true
 			        and r.reply_type = 'Digital'
-        group by 	date_trunc('month', h.date_created)) as m
-    on
-    	t.summons_month = m.summons_month
-  	when matched then
-		update set welsh_response_count = m.welsh_response_count
-  	when not matched then
-   		insert values (m.summons_month, m.welsh_response_count);
-
+        group by 	date_trunc('month', h.date_created)
+	ON CONFLICT(summons_month)
+    	DO update set welsh_response_count = welsh_response_count;
 exception
 	when others then
     	get stacked diagnostics	v_text_var1 = message_text,
@@ -277,8 +271,7 @@ begin
 
 	l_job_type := 'refresh_stats_data.thirdparty_online';
 
-    merge into juror_dashboard.stats_thirdparty_online t
-    using (
+    insert into juror_dashboard.stats_thirdparty_online
         select 		date_trunc('month', h.date_created) summons_month, count(1) thirdparty_response_count
         from 		juror_mod.juror_response r
         join 		juror_mod.juror_history h
@@ -287,13 +280,9 @@ begin
         			and h.date_created > current_date - (no_of_months || ' month')::interval  -- exclude jurors summoned more than n months ago
         			and r.relationship is not null
         			and r.reply_type = 'Digital'
-        group by 	date_trunc('month', h.date_created)) m
-    on
-    	t.summons_month = m.summons_month
-	when matched then
-		update set thirdparty_response_count = m.thirdparty_response_count
-	when not matched then
-		insert values (m.summons_month,m.thirdparty_response_count);
+        group by 	date_trunc('month', h.date_created)
+	ON CONFLICT(summons_month)
+        DO UPDATE set thirdparty_response_count = m.thirdparty_response_count;
 
 exception
 	when others then
@@ -438,8 +427,7 @@ begin
 
 	l_job_type := 'refresh_stats_data.stats_response_times';
 
-	merge into juror_dashboard.stats_response_times t
-  	using (
+	insert into juror_dashboard.stats_response_times
 		select 		date_trunc('month', s.summons_date) as summons_month,
 	   				date_trunc('month', coalesce(response_date, processed_date)) as response_month,
 	 				case
@@ -501,16 +489,9 @@ begin
 			    		else 'Over 21 days'
 			    	 end,
        				s.loc_code, s."method"
-        ) m
-	on (
-		t.summons_month = m.summons_month and t.response_month = m.response_month
-    	and t.response_period = m.response_period
-     	and t.loc_code = m.loc_code and t.response_method = m.response_method)
-	when matched then
-		update set response_count = m.response_count
-	when not matched then
-		insert values (m.summons_month, m.response_month, m.response_period, m.loc_code, m.response_method, m.response_count);
-
+    ON CONFLICT(summons_month, response_month, response_period, loc_code, response_method)
+        DO update set response_count = m.response_count;
+        
 exception
 
 	when others then
