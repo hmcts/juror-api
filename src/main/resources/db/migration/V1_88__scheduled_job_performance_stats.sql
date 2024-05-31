@@ -282,7 +282,7 @@ begin
         			and r.reply_type = 'Digital'
         group by 	date_trunc('month', h.date_created)
 	ON CONFLICT(summons_month)
-        DO UPDATE set thirdparty_response_count = m.thirdparty_response_count;
+        DO UPDATE set thirdparty_response_count = thirdparty_response_count;
 
 exception
 	when others then
@@ -490,7 +490,7 @@ begin
 			    	 end,
        				s.loc_code, s."method"
     ON CONFLICT(summons_month, response_month, response_period, loc_code, response_method)
-        DO update set response_count = m.response_count;
+        DO update set response_count = response_count;
         
 exception
 
