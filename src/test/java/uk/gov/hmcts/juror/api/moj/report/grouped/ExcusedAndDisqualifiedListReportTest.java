@@ -92,7 +92,7 @@ class ExcusedAndDisqualifiedListReportTest extends AbstractGroupedReportTestSupp
         AbstractReportResponse.TableData<GroupedTableData> tableData,
         GroupedTableData data) {
 
-        when(data.getSize()).thenReturn(5);
+        when(data.getSize()).thenReturn(5L);
 
         Map<String, AbstractReportResponse.DataTypeValue> headings = report.getHeadings(request, tableData);
         assertHeadingContains(headings,
@@ -102,7 +102,7 @@ class ExcusedAndDisqualifiedListReportTest extends AbstractGroupedReportTestSupp
                 AbstractReportResponse.DataTypeValue.builder()
                     .displayName("Total excused and disqualified")
                     .dataType("Long")
-                    .value(5)
+                    .value(5L)
                     .build())
         );
 

@@ -7,8 +7,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -22,10 +20,12 @@ import uk.gov.hmcts.juror.api.moj.controller.request.trial.EndTrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReturnJuryDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialSearch;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.CourtroomsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.JudgeDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialSummaryDto;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.TrialType;
 import uk.gov.hmcts.juror.api.moj.service.trial.PanelService;
@@ -37,15 +37,8 @@ import java.util.List;
 
 import static java.lang.String.valueOf;
 import static java.time.LocalDate.now;
-import static org.hamcrest.Matchers.containsInRelativeOrder;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -148,48 +141,28 @@ class TrialControllerTest {
 
     @Test
     void testGetTrials() throws Exception {
-        final String methodUrl = "/list?page_number=0&sort_by=trialNumber&sort_order=desc&is_active=false";
+        final String methodUrl = "/list";
+
+        TrialSearch trialSearch = TrialSearch.builder()
+            .pageNumber(1)
+            .pageLimit(25)
+            .build();
 
         jwtPayload = createJwt("415", "COURT_USER");
-        BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
-        when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
+        PaginatedList<TrialListDto> result = new PaginatedList<>();
+        result.setTotalItems(10L);
 
-        when(trialService.getTrials(jwtPayload, 0, "trialNumber", "desc", Boolean.FALSE, null))
-            .thenReturn(createTrialList());
+        when(trialService.getTrials(trialSearch)).thenReturn(result);
 
-        mockMvc.perform(get(BASE_URL + methodUrl).principal(mockPrincipal))
+        mockMvc.perform(post(BASE_URL + methodUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(trialSearch)))
             .andExpect(status().isOk())
             .andDo(MockMvcResultHandlers.print())
-            .andExpect(jsonPath("$").value(notNullValue()))
-            .andExpect(jsonPath("$.content.length()", is(2)))
-            .andExpect(jsonPath("$.content.[*].trial_number").value(containsInRelativeOrder(
-                "T100000025", "T100000021")));
+            .andExpect(content().json(asJsonString(result)));
 
         verify(trialService, times(1))
-            .getTrials(any(BureauJwtPayload.class), anyInt(), anyString(), anyString(), anyBoolean(), isNull());
-    }
-
-    @Test
-    void testGetTrialsWithTrialNumberFilter() throws Exception {
-        final String methodUrl = "/list?page_number=0&sort_by=trialNumber&sort_order=desc&is_active=false"
-            + "&trial_number=1234";
-
-        jwtPayload = createJwt("415", "COURT_USER");
-        BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
-        when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
-
-        when(trialService.getTrials(jwtPayload, 0, "trialNumber", "desc", Boolean.FALSE, "1234"))
-            .thenReturn(createTrialList());
-
-        mockMvc.perform(get(BASE_URL + methodUrl).principal(mockPrincipal))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$").value(notNullValue()))
-            .andExpect(jsonPath("$.content.length()", is(2)))
-            .andExpect(jsonPath("$.content.[*].trial_number").value(containsInRelativeOrder(
-                "T100000025", "T100000021")));
-
-        verify(trialService, times(1))
-            .getTrials(any(BureauJwtPayload.class), eq(0), eq("trialNumber"), eq("desc"), eq(false), eq("1234"));
+            .getTrials(trialSearch);
     }
 
     @Test
@@ -269,7 +242,7 @@ class TrialControllerTest {
     @SuppressWarnings({
         "PMD.JUnitTestsShouldIncludeAssert"//False positive
     })
-    void testReturnPanel() throws Exception {
+    void testReturnPanel() {
         final String methodUrl = "/return-panel?trial_number=T10000000&location_code=415";
 
         jwtPayload = createJwt("415", "COURT_USER");
@@ -283,7 +256,7 @@ class TrialControllerTest {
     }
 
     @Test
-    void testEndTrial() throws Exception {
+    void testEndTrial() {
         final String methodUrl = "/end-trial";
 
         jwtPayload = createJwt("415", "COURT_USER");
@@ -295,35 +268,6 @@ class TrialControllerTest {
                 .content(asJsonString(createEndTrialDto()))
                 .principal(mockPrincipal))
             .andExpect(status().isOk()));
-    }
-
-
-    private Page<TrialListDto> createTrialList() {
-        TrialListDto trial1 = new TrialListDto();
-        trial1.setTrialNumber("T100000025");
-        trial1.setDefendants("TEST DEFENDANT");
-        trial1.setTrialType("CRI");
-        trial1.setJudge("Test Judge");
-        trial1.setCourtroom("RM1");
-        trial1.setCourtLocationName("CHESTER");
-        trial1.setStartDate(now().plusMonths(1));
-        trial1.setIsActive(Boolean.FALSE);
-
-        TrialListDto trial2 = new TrialListDto();
-        trial2.setTrialNumber("T100000021");
-        trial2.setDefendants("TEST DEFENDANT");
-        trial2.setTrialType("CRI");
-        trial2.setJudge("Test Judge");
-        trial2.setCourtroom("RM2");
-        trial2.setCourtLocationName("CHESTER");
-        trial2.setStartDate(now().plusMonths(1));
-        trial2.setIsActive(Boolean.FALSE);
-
-        List<TrialListDto> trials = new ArrayList<>();
-        trials.add(trial1);
-        trials.add(trial2);
-
-        return new PageImpl<>(trials);
     }
 
     private TrialSummaryDto createTrialSummaryDto() {

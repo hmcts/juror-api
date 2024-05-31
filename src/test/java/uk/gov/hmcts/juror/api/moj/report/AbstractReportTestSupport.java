@@ -134,7 +134,7 @@ public abstract class AbstractReportTestSupport<
     @Test
     @SuppressWarnings("unchecked")
     final void positiveGetHeadingsTypical() {
-        StandardReportRequest request = mock(StandardReportRequest.class);
+        StandardReportRequest request = spy(getValidRequest());
         AbstractReportResponse.TableData<T> tableData = mock(AbstractReportResponse.TableData.class);
         T data = spy(createData());
         doReturn(data).when(tableData).getData();

@@ -127,7 +127,7 @@ class AbsencesReportTest extends AbstractGroupedReportTestSupport<AbsencesReport
             "total_absences", GroupedReportResponse.DataTypeValue.builder()
                 .displayName("Total absences")
                 .dataType("Integer")
-                .value(0)
+                .value(0L)
                 .build(),
             "court_name", GroupedReportResponse.DataTypeValue.builder()
                 .displayName("Court Name")

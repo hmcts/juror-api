@@ -157,7 +157,7 @@ class PersonAttendingDetailReportTest extends AbstractGroupedReportTestSupport<P
             "total_due", StandardReportResponse.DataTypeValue.builder()
                 .displayName("Total due to attend")
                 .dataType("Integer")
-                .value(0)
+                .value(0L)
                 .build(),
             "court_name", StandardReportResponse.DataTypeValue.builder()
                 .displayName("Court Name")

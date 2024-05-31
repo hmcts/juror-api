@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import uk.gov.hmcts.juror.api.moj.audit.dto.JurorAudit;
+import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.service.JurorServiceMod;
@@ -98,13 +99,13 @@ public abstract class AbstractJurorAmendmentReport implements IReport {
 
     }
 
-    protected AbstractReportResponse.TableData<List<JurorAmendmentReportRow>>
-        getTableDataAudits(List<JurorAudit> jurorAudits) {
+    protected AbstractReportResponse.TableData<List<JurorAmendmentReportRow>> getTableDataAudits(
+        List<JurorAudit> jurorAudits) {
         return getTableDataAudits(false, jurorAudits);
     }
 
-    protected AbstractReportResponse.TableData<List<JurorAmendmentReportRow>>
-        getTableDataAudits(boolean includeOneAuditEitherSide, List<JurorAudit> jurorAudits) {
+    protected AbstractReportResponse.TableData<List<JurorAmendmentReportRow>> getTableDataAudits(
+        boolean includeOneAuditEitherSide, List<JurorAudit> jurorAudits) {
         Map<String, List<JurorAudit>> jurorNumberToJurorMap = jurorAudits
             .stream()
             .collect(Collectors.groupingBy(JurorAudit::getJurorNumber));
@@ -186,6 +187,13 @@ public abstract class AbstractJurorAmendmentReport implements IReport {
         }
         return changes;
     }
+
+    @Override
+    public final Class<?> getRequestValidatorClass(StandardReportRequest standardReportRequest) {
+        return getRequestValidatorClass();
+    }
+
+    public abstract Class<?> getRequestValidatorClass();
 
 
     @Data
