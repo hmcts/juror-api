@@ -93,7 +93,7 @@ class CompletionOfServiceReportTest extends AbstractGroupedReportTestSupport<Com
 
         verify(query).where(QJurorPool.jurorPool.juror.completionDate.between(DATE_FROM_TEST_VALUE,
             DATE_TO_TEST_VALUE));
-        verify(query).where(QJurorPool.jurorPool.location.eq(SecurityUtil.getLocCode()));
+        verify(query).where(QJurorPool.jurorPool.location.eq(VALID_COURT_LOCATION));
         verify(query).orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
     }
 
