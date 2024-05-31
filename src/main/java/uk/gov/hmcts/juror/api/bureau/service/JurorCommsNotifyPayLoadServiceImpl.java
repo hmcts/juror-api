@@ -248,7 +248,7 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
             }
 
         } catch (Exception e) {
-            log.error("Failed to generate the template field map." + e);
+            log.error("Failed to generate the template field map.", e);
             throw new JurorCommsNotificationServiceException(e.getMessage(), e);
         }
 
@@ -257,7 +257,7 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
 
     @Override
     public Boolean isWelshCourtAndComms(Boolean welsh, WelshCourtLocation welshCourtLocation) {
-        log.info("inside isWelshComms");
+        log.debug("inside isWelshComms");
         if (welshCourtLocation == null || welsh == null) {
             log.trace("not welsh court");
             return false;
