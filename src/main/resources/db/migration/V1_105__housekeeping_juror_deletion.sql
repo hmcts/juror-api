@@ -259,9 +259,9 @@ BEGIN
 	) then
 			-- clean up the financial audit details
 			DELETE
-			FROM juror_mod.financial_audit_details_appearances fada
+			FROM juror_mod.financial_audit_details fda
 			USING deleted_financial_audit dfa
-			WHERE fada.financial_audit_id = dfa.financial_audit_id;
+			WHERE fda.id = dfa.financial_audit_id;
 
 			drop table deleted_financial_audit;
 	end if;
