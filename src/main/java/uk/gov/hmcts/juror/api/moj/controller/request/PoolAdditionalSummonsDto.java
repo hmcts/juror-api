@@ -44,4 +44,9 @@ public class PoolAdditionalSummonsDto implements Serializable {
     @Schema(name = "Postcodes", description = "Pool create - Postcodes to include in catchment area")
     private List<String> postcodes;
 
+    @JsonProperty("previous_juror_count")
+    @Schema(name = "previous_juror_count",
+        description = "The number of jurors associated to this pool when it was viewed")
+    private int previousJurorCount;
+
 }

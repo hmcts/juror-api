@@ -90,6 +90,7 @@ public class MojException extends RuntimeException {
             CANNOT_EDIT_COMPLETED_TRIAL,
             JUROR_DATE_OF_BIRTH_REQUIRED,
             INVALID_APPEARANCES_STATUS,
+            DATA_IS_OUT_OF_DATE,
             JUROR_HAS_BEEN_DEFERRED_BEFORE
         }
     }

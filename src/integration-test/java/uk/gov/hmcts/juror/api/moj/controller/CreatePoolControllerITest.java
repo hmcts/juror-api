@@ -346,7 +346,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
         PoolAdditionalSummonsDto poolAdditionalSummons = setUpPoolAdditionalSummonsDto();
         poolAdditionalSummons.setBureauDeferrals(0);
-
+        poolAdditionalSummons.setPreviousJurorCount(9);
         final URI uri2 = URI.create("/api/v1/moj/pool-create/additional-summons");
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -424,7 +424,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
         PoolAdditionalSummonsDto poolAdditionalSummons = setUpPoolAdditionalSummonsDto();
-
+        poolAdditionalSummons.setPreviousJurorCount(8);
         final URI uri2 = URI.create("/api/v1/moj/pool-create/additional-summons");
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -452,6 +452,42 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         ResponseEntity<String> response3 = template.exchange(requestEntity3, String.class);
         assertThat(response3.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 
+    }
+
+    @Test
+    @Sql(statements = "DELETE FROM JUROR_MOD.BULK_PRINT_DATA")
+    @Sql(statements = "UPDATE JUROR.COURT_LOCATION SET VOTERS_LOCK = 0")
+    @Sql({"/db/mod/truncate.sql",
+        "/db/CreatePoolController_loadVoters.sql",
+        "/db/CreatePoolController_createPoolWithDeferral.sql"})
+    public void summonAdditionalCitizens_data_outdatedData() throws Exception {
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
+            .userType(UserType.BUREAU)
+            .roles(Set.of(Role.MANAGER))
+            .login("BUREAU_USER")
+            .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).build())
+            .owner("400")
+            .build());
+
+        PoolCreateRequestDto poolCreateRequest = setUpPoolCreateRequestDto();
+
+        final URI uri = URI.create("/api/v1/moj/pool-create/create-pool");
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        RequestEntity<PoolCreateRequestDto> requestEntity = new RequestEntity<>(poolCreateRequest, httpHeaders,
+            HttpMethod.POST, uri);
+        ResponseEntity<String> response = template.exchange(requestEntity, String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+
+        PoolAdditionalSummonsDto poolAdditionalSummons = setUpPoolAdditionalSummonsDto();
+        poolAdditionalSummons.setPreviousJurorCount(2);
+        final URI uri2 = URI.create("/api/v1/moj/pool-create/additional-summons");
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        RequestEntity<PoolAdditionalSummonsDto> requestEntity2 = new RequestEntity<>(poolAdditionalSummons, httpHeaders,
+            HttpMethod.POST, uri2);
+        ResponseEntity<String> response2 = template.exchange(requestEntity2, String.class);
+        assertThat(response2.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     private PoolAdditionalSummonsDto setUpPoolAdditionalSummonsDto() {
