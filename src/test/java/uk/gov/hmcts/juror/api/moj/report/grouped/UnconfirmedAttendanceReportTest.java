@@ -114,7 +114,7 @@ class UnconfirmedAttendanceReportTest extends AbstractGroupedReportTestSupport<U
         request.setToDate(LocalDate.of(2024, 1, 2));
         securityUtilMockedStatic.when(SecurityUtil::getLocCode).thenReturn(TestConstants.VALID_COURT_LOCATION);
 
-        when(data.getSize()).thenReturn(50);
+        when(data.getSize()).thenReturn(50L);
 
         CourtLocation courtLocation = mock(CourtLocation.class);
         when(courtLocationService.getCourtLocation(TestConstants.VALID_COURT_LOCATION)).thenReturn(courtLocation);
@@ -124,7 +124,7 @@ class UnconfirmedAttendanceReportTest extends AbstractGroupedReportTestSupport<U
         expected.put("total_unconfirmed_attendances", GroupedReportResponse.DataTypeValue.builder()
              .displayName("Total unconfirmed attendances")
              .dataType(Long.class.getSimpleName())
-             .value(50)
+             .value(50L)
              .build());
         expected.put("court_name", getCourtNameEntry().getValue());
 

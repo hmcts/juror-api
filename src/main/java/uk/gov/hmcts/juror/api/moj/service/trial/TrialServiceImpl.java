@@ -3,11 +3,6 @@ package uk.gov.hmcts.juror.api.moj.service.trial;
 import io.micrometer.common.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
@@ -17,6 +12,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.trial.EndTrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReturnJuryDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialSearch;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.CourtroomsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.JudgeDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialListDto;
@@ -25,6 +21,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Judge;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
@@ -119,6 +116,7 @@ public class TrialServiceImpl implements TrialService {
         return createTrialSummary(trial, courtroom, judge, false);
     }
 
+
     @Override
     @Transactional
     public TrialSummaryDto editTrial(TrialDto trialDto) {
@@ -173,25 +171,8 @@ public class TrialServiceImpl implements TrialService {
     }
 
     @Override
-    public Page<TrialListDto> getTrials(BureauJwtPayload payload, int pageNumber, String sortBy, String sortOrder,
-                                        boolean isActive, String trialNumber) {
-        Sort sort = "desc".equals(sortOrder)
-            ? Sort.by(sortBy).descending()
-            : Sort.by(sortBy).ascending();
-        Pageable pageable = PageRequest.of(pageNumber, PAGE_SIZE, sort);
-
-        List<TrialListDto> dtoList = new ArrayList<>();
-
-        Long totalTrials = trialRepository.getTotalTrialsForCourtLocations(payload.getStaff().getCourts(), isActive);
-
-        List<Trial> trials = trialRepository.getListOfTrialsForCourtLocations(payload.getStaff().getCourts(), isActive,
-            trialNumber, pageable);
-
-        for (Trial trial : trials) {
-            dtoList.add(createTrailListDto(trial));
-        }
-
-        return new PageImpl<>(dtoList, pageable, totalTrials);
+    public PaginatedList<TrialListDto> getTrials(TrialSearch trialSearch) {
+        return trialRepository.getListOfTrials(trialSearch, this::createTrailListDto);
     }
 
     @Override

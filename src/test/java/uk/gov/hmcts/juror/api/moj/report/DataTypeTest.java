@@ -4,7 +4,6 @@ import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import org.junit.jupiter.api.Test;
-import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
@@ -237,8 +236,8 @@ class DataTypeTest {
     void courtLocationNameAndCode() {
         assertMatchesStandard(DataType.COURT_LOCATION_NAME_AND_CODE, "court_location_name_and_code",
             "Court Location Name And Code", String.class,
-            QCourtLocation.courtLocation.name.concat(" (")
-                .concat(QCourtLocation.courtLocation.locCode).concat(")"), QPoolRequest.poolRequest);
+            QPoolRequest.poolRequest.courtLocation.name.concat(" (")
+                .concat(QPoolRequest.poolRequest.courtLocation.locCode).concat(")"), QPoolRequest.poolRequest);
     }
 
     @Test

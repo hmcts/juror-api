@@ -39,7 +39,7 @@ public class ReportServiceImpl implements ReportService {
         if (abstractReport == null) {
             throw new MojException.NotFound("Report not found", null);
         }
-        validateService.validate(standardReportRequest, abstractReport.getRequestValidatorClass());
+        validateService.validate(standardReportRequest, abstractReport.getRequestValidatorClass(standardReportRequest));
         AbstractReportResponse<?> res = abstractReport.getStandardReportResponse(standardReportRequest);
         log.info("User {} successfully fetched Report: {}",
             SecurityUtil.getActiveLogin(),

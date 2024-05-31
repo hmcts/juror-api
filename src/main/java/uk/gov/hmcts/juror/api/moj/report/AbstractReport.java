@@ -11,6 +11,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
@@ -20,7 +21,9 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.QPendingJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
@@ -51,6 +54,7 @@ import java.util.stream.Collectors;
 import static uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts;
 
 @Getter
+@Slf4j
 @SuppressWarnings({
     "PMD.TooManyMethods",
     "PMD.ExcessiveImports"
@@ -69,6 +73,9 @@ public abstract class AbstractReport<T> implements IReport {
             new Predicate[]{
                 lowLevelFinancialAuditDetailsIncludingApprovedAmounts
                     .jurorNumber.eq(QJuror.juror.jurorNumber)
+            },
+            QPendingJuror.pendingJuror, new Predicate[]{
+                QPendingJuror.pendingJuror.jurorNumber.eq(QJuror.juror.jurorNumber)
             }
         ));
         CLASS_TO_JOIN.put(QJurorPool.jurorPool, Map.of(
@@ -149,7 +156,7 @@ public abstract class AbstractReport<T> implements IReport {
         if (!classToJoinOverrides.containsKey(joinDetails.getFrom())) {
             classToJoinOverrides.put(joinDetails.getFrom(), new HashMap<>());
         }
-        classToJoinOverrides.get(from).put(joinDetails.getTo(), joinDetails);
+        classToJoinOverrides.get(joinDetails.getFrom()).put(joinDetails.getTo(), joinDetails);
     }
 
     public void addAuthenticationConsumer(Consumer<StandardReportRequest> consumer) {
@@ -172,8 +179,20 @@ public abstract class AbstractReport<T> implements IReport {
         });
     }
 
+    public void isSeniorJurorOfficerOnly() {
+        addAuthenticationConsumer(request -> {
+            if (!SecurityUtil.hasRole(Role.SENIOR_JUROR_OFFICER)) {
+                throw new MojException.Forbidden("User not allowed to access this report", null);
+            }
+        });
+    }
+
     public abstract Class<? extends Validators.AbstractRequestValidator> getRequestValidatorClass();
 
+    @Override
+    public final Class<?> getRequestValidatorClass(StandardReportRequest standardReportRequest) {
+        return getRequestValidatorClass();
+    }
 
     public AbstractReportResponse<T> getStandardReportResponse(StandardReportRequest request) {
         authenticationConsumers.forEach(consumer -> consumer.accept(request));
@@ -291,9 +310,10 @@ public abstract class AbstractReport<T> implements IReport {
             if (joinOptions.containsKey(from)) {
                 JoinOverrideDetails joinOverrideDetails = JoinOverrideDetails.builder().joinType(JoinType.DEFAULT)
                     .build();
-
+                log.info("Searching for join overrides from: {} to {}", from, requiredTable);
                 if (classToJoinOverrides.containsKey(from) && classToJoinOverrides.get(from)
                     .containsKey(requiredTable)) {
+                    log.info("Join override found");
                     joinOverrideDetails = classToJoinOverrides.get(from).get(requiredTable);
                 }
 
@@ -308,6 +328,7 @@ public abstract class AbstractReport<T> implements IReport {
                     predicates.addAll(joinOverrideDetails.getPredicatesToAdd());
                 }
 
+                log.info("Joining {} using {} on {}", requiredTable, joinOverrideDetails.getJoinType(), predicates);
                 switch (joinOverrideDetails.getJoinType()) {
                     case DEFAULT:
                     case FULLJOIN:
@@ -518,6 +539,7 @@ public abstract class AbstractReport<T> implements IReport {
         return tableData;
     }
 
+
     public static class Validators {
         public interface AbstractRequestValidator {
 
@@ -547,6 +569,15 @@ public abstract class AbstractReport<T> implements IReport {
         }
 
         public interface RequiredJurorNumber {
+        }
+
+        public interface RequireRespondedJurorsOnly {
+        }
+
+        public interface RequireIncludePanelMembers {
+        }
+
+        public interface RequireIncludeJurorsOnCall {
         }
 
         public interface RequireJuryAuditNumber {

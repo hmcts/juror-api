@@ -31,6 +31,7 @@ public class JurorAmendmentByJurorReport extends AbstractJurorAmendmentReport {
         super(jurorAuditService, jurorService, userService);
     }
 
+
     @Override
     @Transactional(readOnly = true)
     public JurorAmendmentReportResponse getStandardReportResponse(

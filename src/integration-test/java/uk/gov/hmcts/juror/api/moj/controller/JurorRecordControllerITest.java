@@ -4518,7 +4518,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        @Sql({"/db/mod/truncate.sql"})
+        @Sql(scripts = {"/db/mod/truncate.sql"},
+            statements = "insert into juror_mod.users(username, name, email)"
+                + "values ('COURT_USER', 'COURT_USER', 'COURT_USER@hmcts.net')")
         void createJurorRecordNewPoolHappyPath() throws Exception {
             JurorCreateRequestDto requestDto = createJurorRequestDto(null, "415");
 
