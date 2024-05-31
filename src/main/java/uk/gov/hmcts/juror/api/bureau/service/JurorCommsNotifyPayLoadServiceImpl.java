@@ -16,15 +16,13 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.repository.NotifyTemplateFieldRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.PoolRequestService;
-import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
+import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.text.DateFormat;
 import java.text.DateFormatSymbols;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -49,18 +47,9 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
     private static final String SERVICE_START_DATE = "SERVICESTARTDATE";
     private static final String SERVICE_START_TIME = "SERVICESTARTTIME";
     private static final String DATE_FORMAT = "EEEE dd MMMM, yyyy";
-    private static final String TIME_FORMAT = "HH:mm";
 
     Locale langLocale = new Locale("en", "GB");
-
-    DateFormat formatter = new SimpleDateFormat(DATE_FORMAT);
-
     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(DATE_FORMAT);
-
-    LocalDateTime dateNow = LocalDateTime.now();
-
-    DateFormat timeformatter = new SimpleDateFormat(TIME_FORMAT);
-    DateFormat timeformatterunique = new SimpleDateFormat(TIME_FORMAT);
     DateTimeFormatter formatterWelsh = DateTimeFormatter.ofPattern(DATE_FORMAT, langLocale);
 
 
@@ -150,20 +139,19 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
                     log.trace("is other fields : {} ", field.getJdClassProperty());
                     fieldValue = invokeGetterJurorPool(juror, field);
                     map.put(field.getTemplateField(), fieldValue.toString());
-                    log.info("fieldValue: {} ", fieldValue);
+                    log.debug("fieldValue: {} ", fieldValue);
                 }
             }
 
         } catch (StringIndexOutOfBoundsException stre) {
             log.error(
                 "Failed to establish data needed for notify template fields to send comms (missing template fields "
-                    + "data) : "
-                    + stre);
+                    + "data)", stre);
             throw new StringIndexOutOfBoundsException();
         } catch (Exception e) {
             log.error(
                 "Failed to establish data needed for notify template fields to send comms (missing template fields "
-                    + "data)  : " + e);
+                    + "data)", e);
             throw new JurorCommsNotificationServiceException(e.getMessage(), e);
         }
         return map;
@@ -223,7 +211,7 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
                         map.put(field.getTemplateField(), formattedDate);
 
                     } else if (field.getDatabaseField().equalsIgnoreCase("pool.loc_code")) {
-                        log.info("is other fields : {} ", field.getJdClassProperty());
+                        log.trace("is other fields : {} ", field.getJdClassProperty());
                         fieldValue = invokeGetterJurorPool(jurorPool, field);
                         map.put(field.getTemplateField(), fieldValue.toString().substring(22, 25));
                     } else {
@@ -237,7 +225,6 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
                         value = value.replace(",", "\r\n");
                     }
                     log.trace("court. fieldvalue is : {} {} ", field.getJdClassProperty(), value);
-                    log.info("court. fieldvalue is : {} {} ", field.getJdClassProperty(), value);
                     map.put(field.getTemplateField(), value);
                 } else if (field.getJdClassName().equals("jurorResponse")) {
                     fieldValue = invokeGetter(digitalResponse, field.getJdClassProperty());
@@ -408,21 +395,16 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
      * @param jurorDetails juror details to transform, not null
      * @return attendance time, nullable
      */
-    private String getAttendTime(JurorPool jurorDetails) throws ParseException {
-
-        String poolAttendTime = poolRequestService.getPoolAttendanceTime(jurorDetails.getPoolNumber());
-
+    private String getAttendTime(JurorPool jurorDetails) {
+        LocalDateTime poolAttendTime = poolRequestService.getPoolAttendanceTime(jurorDetails.getPoolNumber());
         if (poolAttendTime != null) {
             if (log.isTraceEnabled()) {
                 log.trace("Attend time is set in unique pool, using pool attend time of {}", poolAttendTime);
             }
+            return DateUtils.TIME_FORMAT.format(poolAttendTime);
 
-            Date attendTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S").parse(poolAttendTime);
-            poolAttendTime = timeformatterunique.format(attendTime);
-
-            return poolAttendTime;
         } else {
-            final String courtAttendTime = DataUtils.asStringHHmm(jurorDetails.getCourt().getCourtAttendTime());
+            final String courtAttendTime = DateUtils.TIME_FORMAT.format(jurorDetails.getCourt().getCourtAttendTime());
             if (log.isTraceEnabled()) {
                 log.trace("Attend time is not set in pool, using court attend time of {}", courtAttendTime);
             }
