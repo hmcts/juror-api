@@ -35,7 +35,6 @@ import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
-import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
@@ -61,7 +60,6 @@ import java.util.Optional;
 import static java.time.LocalDate.now;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
-import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.PATCH;
 import static org.springframework.http.HttpMethod.POST;
@@ -1487,89 +1485,6 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                 .attendanceDate(ATTENDANCE_DATE)
                 .poolNumber(POOL_NUMBER_415230101)
                 .build();
-        }
-    }
-
-    @Nested
-    @DisplayName("DELETE Delete attendance")
-    class DeleteAttendance {
-        @Test
-        @DisplayName("DELETE delete attendance - delete attendance record okay")
-        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql"})
-        void deleteAttendance() {
-            List<String> jurors = new ArrayList<>();
-            jurors.add(JUROR7);
-
-            ResponseEntity<AttendanceDetailsResponse> response =
-                restTemplate.exchange(new RequestEntity<>(buildUpdateAttendanceDtoDelete(jurors), httpHeaders, DELETE,
-                    URI.create(URL_ATTENDANCE)), AttendanceDetailsResponse.class);
-
-            assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
-
-            AttendanceDetailsResponse.Summary summary = response.getBody().getSummary();
-            assertThat(summary.getDeleted()).isEqualTo(1L);
-            assertThat(summary.getAdditionalInformation()).isBlank();
-
-            // verify attendance record has been updated to absent longer exists
-            List<Appearance> appearances = appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumber(
-                "415", JUROR7);
-
-            assertThat(appearances).size().isEqualTo(1);
-            assertThat(appearances.get(0).getAttendanceType()).isEqualTo(AttendanceType.ABSENT);
-
-        }
-
-        @Test
-        @DisplayName("DELETE delete attendance - attendance record does not exist")
-        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql"})
-        void deleteAttendanceRecordDoesNotExist() {
-            List<String> jurors = new ArrayList<>();
-            jurors.add(JUROR8);
-
-            ResponseEntity<AttendanceDetailsResponse> response =
-                restTemplate.exchange(new RequestEntity<>(buildUpdateAttendanceDtoDelete(jurors), httpHeaders, DELETE,
-                    URI.create(URL_ATTENDANCE)), AttendanceDetailsResponse.class);
-
-            assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
-
-            AttendanceDetailsResponse.Summary summary = response.getBody().getSummary();
-            assertThat(summary.getDeleted()).isEqualTo(0L);
-            assertThat(summary.getAdditionalInformation())
-                .isEqualTo("No attendance record found for juror number 888888888");
-        }
-
-        @Test
-        @DisplayName("DELETE delete attendance - Exception multiple jurors being deleted")
-        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql"})
-        void deleteAttendanceRecordMultipleJurors() {
-            List<String> jurors = new ArrayList<>();
-            jurors.add(JUROR8);
-            jurors.add(JUROR2);
-
-            ResponseEntity<String> response =
-                restTemplate.exchange(new RequestEntity<>(buildUpdateAttendanceDtoDelete(jurors), httpHeaders, DELETE,
-                    URI.create(URL_ATTENDANCE)), String.class);
-
-            assertThat(response.getStatusCode()).as(HTTP_STATUS_BAD_REQUEST_MESSAGE).isEqualTo(BAD_REQUEST);
-
-            JSONObject exceptionDetails = getExceptionDetails(response);
-            assertThat(exceptionDetails.getString("error")).isEqualTo("Bad Request");
-            assertThat(exceptionDetails.getString("message"))
-                .isEqualTo("Cannot delete multiple juror attendance records");
-        }
-
-        private UpdateAttendanceDto buildUpdateAttendanceDtoDelete(List<String> jurors) {
-            UpdateAttendanceDto.CommonData commonData = new UpdateAttendanceDto.CommonData();
-            commonData.setStatus(UpdateAttendanceStatus.DELETE);
-            commonData.setAttendanceDate(now().minusDays(2));
-            commonData.setLocationCode("415");
-            commonData.setSingleJuror(Boolean.TRUE);
-
-            UpdateAttendanceDto request = new UpdateAttendanceDto();
-            request.setCommonData(commonData);
-            request.setJuror(jurors);
-
-            return request;
         }
     }
 

@@ -337,45 +337,6 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
     @Override
     @Transactional
-    public AttendanceDetailsResponse deleteAttendance(BureauJwtPayload payload, UpdateAttendanceDto request) {
-        final UpdateAttendanceDto.CommonData commonData = validateDeleteRequest(request);
-
-        // ensure only a single attendance record is deleted per api call
-        validateTheNumberOfJurorsToUpdate(request);
-
-        CourtLocation courtLocation = CourtLocationUtils.validateAccessToCourtLocation(commonData.getLocationCode(),
-            payload.getOwner(), courtLocationRepository);
-
-        // validate the juror record exists and user has ownership of the record
-        String jurorNumber = request.getJuror().get(0);
-        validateJuror(payload.getOwner(), jurorNumber);
-
-        // build the juror id
-        AppearanceId appearanceId = new AppearanceId(jurorNumber, commonData.getAttendanceDate(), courtLocation);
-
-        AttendanceDetailsResponse.Summary summary;
-        Optional<Appearance> appearanceOptional = appearanceRepository.findById(appearanceId);
-        if (appearanceOptional.isPresent()) {
-            Appearance appearance = appearanceOptional.get();
-            appearance.setAttendanceType(AttendanceType.ABSENT);
-            appearanceRepository.save(appearance);
-            summary = AttendanceDetailsResponse.Summary.builder().deleted(1).build();
-        } else {
-            summary = AttendanceDetailsResponse.Summary.builder()
-                .deleted(0)
-                .additionalInformation("No attendance record found for juror number " + jurorNumber)
-                .build();
-        }
-
-        // build and return a summary
-        AttendanceDetailsResponse response = new AttendanceDetailsResponse();
-        response.setSummary(summary);
-
-        return response;
-    }
-
-    @Override
-    @Transactional
     public void modifyConfirmedAttendance(ModifyConfirmedAttendanceDto request) {
 
         final LocalDate attendanceDate = request.getAttendanceDate();
