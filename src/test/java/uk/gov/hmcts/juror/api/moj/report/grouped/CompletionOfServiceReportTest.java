@@ -37,7 +37,7 @@ import static uk.gov.hmcts.juror.api.TestConstants.VALID_COURT_LOCATION;
 class CompletionOfServiceReportTest extends AbstractGroupedReportTestSupport<CompletionOfServiceReport> {
 
     private static final LocalDate DATE_FROM_TEST_VALUE = LocalDate.of(2023, 3, 1);
-    private static final LocalDate DATE_UNTIL_TEST_VALUE = LocalDate.of(2023, 3, 2);
+    private static final LocalDate DATE_TO_TEST_VALUE = LocalDate.of(2023, 3, 2);
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
     private CourtLocationService courtLocationService;
@@ -81,7 +81,7 @@ class CompletionOfServiceReportTest extends AbstractGroupedReportTestSupport<Com
         return StandardReportRequest.builder()
             .reportType(report.getName())
             .fromDate(DATE_FROM_TEST_VALUE)
-            .toDate(DATE_UNTIL_TEST_VALUE)
+            .toDate(DATE_TO_TEST_VALUE)
             .build();
     }
 
@@ -91,8 +91,8 @@ class CompletionOfServiceReportTest extends AbstractGroupedReportTestSupport<Com
         securityUtilMockedStatic.when(SecurityUtil::getLocCode).thenReturn(VALID_COURT_LOCATION);
         report.preProcessQuery(query,request);
 
-        verify(query).where(QJurorPool.jurorPool.juror.completionDate.between(request.getFromDate(),
-            request.getToDate()));
+        verify(query).where(QJurorPool.jurorPool.juror.completionDate.between(DATE_FROM_TEST_VALUE,
+            DATE_TO_TEST_VALUE));
         verify(query).where(QJurorPool.jurorPool.location.eq(SecurityUtil.getLocCode()));
         verify(query).orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
     }
@@ -103,7 +103,7 @@ class CompletionOfServiceReportTest extends AbstractGroupedReportTestSupport<Com
         GroupedTableData data) {
 
         when(request.getFromDate()).thenReturn(DATE_FROM_TEST_VALUE);
-        when(request.getToDate()).thenReturn(DATE_UNTIL_TEST_VALUE);
+        when(request.getToDate()).thenReturn(DATE_TO_TEST_VALUE);
         when(tableData.getData().getSize()).thenReturn(3L);
         securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(true);
         securityUtilMockedStatic.when(SecurityUtil::getLocCode).thenReturn(VALID_COURT_LOCATION);
@@ -122,7 +122,7 @@ class CompletionOfServiceReportTest extends AbstractGroupedReportTestSupport<Com
                 DATE_TO_KEY, AbstractReportResponse.DataTypeValue.builder()
                     .displayName(DATE_TO_DISPLAY_NAME)
                     .dataType(LocalDate.class.getSimpleName())
-                    .value(String.valueOf(DATE_UNTIL_TEST_VALUE))
+                    .value(String.valueOf(DATE_TO_TEST_VALUE))
                     .build(),
                 "total_pool_members_completed", AbstractReportResponse.DataTypeValue.builder()
                     .displayName("Total pool members completed")
