@@ -100,7 +100,7 @@ public class JurorResponseSearchServiceImpl implements JurorResponseSearchServic
                 ?
                 configuredValue
                 :
-                    250;
+                    100;
         }
         final Integer configuredValue = appSettingService.getBureauOfficerSearchResultLimit();
         return configuredValue != null && configuredValue > 0
