@@ -14,12 +14,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cglib.core.Local;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
+import org.testcontainers.shaded.org.checkerframework.checker.units.qual.C;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.moj.controller.request.CompleteServiceJurorNumberListDto;
@@ -30,7 +32,10 @@ import uk.gov.hmcts.juror.api.moj.controller.response.CompleteJurorResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.CompleteServiceValidationResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorStatusValidationResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
+import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.service.BulkService;
@@ -42,6 +47,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -254,6 +260,7 @@ class CompleteServiceControllerTest {
             assertJurorStatusValidationResponseDto(resultActions, "$.invalid_not_responded[2]",
                 jurorStatusValidationResponseDto3);
         }
+
 
         @Test
         void positiveAllMixValidAndInvalidResponse() throws Exception {

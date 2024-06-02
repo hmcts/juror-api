@@ -181,12 +181,11 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
                     response.getBody(), false);
 
             JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber("641500005", "415220901");
-            assertEquals(IJurorStatus.RESPONDED, jurorPool.getStatus().getStatus(),
-                "Juror pool status should not change as transaction should rollback");
-
+            assertEquals(IJurorStatus.COMPLETED, jurorPool.getStatus().getStatus(),
+                "Juror pool status should update to completed");
             Juror juror = jurorPool.getJuror();
-            assertNull(juror.getCompletionDate(),
-                "Completion date should not change as transaction should rollback");
+            assertNotNull(juror.getCompletionDate(),
+                "Completion date should update to provided completion date");
         }
 
         @Test
@@ -211,24 +210,24 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
 
             JSONAssert.assertEquals("Json Should match",
                 "{"
-                    + "\"message\":\"Juror number 641500003 is not in a valid state to complete service\","
+                    + "\"message\":\"Unable to complete the service for the following juror number(s) due to invalid "
+                    + "state: 641500003\","
                     + "\"code\":\"COMPLETE_SERVICE_JUROR_IN_INVALID_STATE\"}",
-                response.getBody(), false);
+            response.getBody(), false);
 
             JurorPool jurorPool1 = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber("641500005",
                 "415220901");
-            assertEquals(IJurorStatus.RESPONDED, jurorPool1.getStatus().getStatus(),
+            assertEquals(IJurorStatus.COMPLETED, jurorPool1.getStatus().getStatus(),
                 "Juror pool status should not change as transaction should rollback");
-
             Juror juror1 = jurorPool1.getJuror();
-            assertNull(juror1.getCompletionDate(),
-                "Completion date should not change as transaction should rollback");
+            assertNotNull(juror1.getCompletionDate(),
+                "Completion date should not be null.");
+            assertEquals(completionTime, juror1.getCompletionDate());
 
             JurorPool jurorPool2 = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber("641500003",
                 "415220901");
             assertEquals(IJurorStatus.FAILED_TO_ATTEND, jurorPool2.getStatus().getStatus(),
-                "Juror pool status should not change as transaction should rollback");
-
+                "Juror pool status should not change as juror is in invalid state for completion");
             Juror juror2 = jurorPool2.getJuror();
             assertNull(juror2.getCompletionDate(),
                 "Completion date should not change as transaction should rollback");

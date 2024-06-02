@@ -23,7 +23,10 @@ import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
@@ -63,7 +66,6 @@ public class CompleteServiceServiceImpl implements CompleteServiceService {
         return completeJurorResponses;
     }
 
-
     @Override
     public void uncompleteJurorsService(String jurorNumber, String poolNumber) {
         JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndStatus(jurorNumber,
@@ -81,30 +83,43 @@ public class CompleteServiceServiceImpl implements CompleteServiceService {
     }
 
     @Override
-    @Transactional
     public void completeService(String poolNumber,
                                 CompleteServiceJurorNumberListDto completeServiceJurorNumberListDto) {
+        List<String> ineligibleJurorNumbers = new ArrayList<>();
         for (String jurorNumber : completeServiceJurorNumberListDto.getJurorNumbers()) {
-            completeService(poolNumber, jurorNumber, completeServiceJurorNumberListDto.getCompletionDate());
+             JurorPool jurorPool = getJurorPool(poolNumber, jurorNumber);
+            if(!isJurorValidForCompletion(jurorPool)) {
+                completeService(jurorPool, completeServiceJurorNumberListDto.getCompletionDate());
+            } else {
+                ineligibleJurorNumbers.add(jurorNumber);
+            }
+        }
+        if(!ineligibleJurorNumbers.isEmpty()) {
+            createErrorMessageForJurorsIneligibleForCompletion(ineligibleJurorNumbers);
         }
     }
 
-    private void completeService(String poolNumber, String jurorNumber, LocalDate completionDate) {
-        JurorPool jurorPool = getJurorPool(poolNumber, jurorNumber);
-        if (!isJurorValidForCompletion(jurorPool)) {
-            throw new MojException.BusinessRuleViolation(
-                "Juror number " + jurorNumber + " is not in a valid state to complete "
-                    + "service", MojException.BusinessRuleViolation.ErrorCode.COMPLETE_SERVICE_JUROR_IN_INVALID_STATE);
-        }
-
+    private void completeService(JurorPool jurorPool, LocalDate completionDate) {
         jurorPool.setStatus(RepositoryUtils.retrieveFromDatabase(IJurorStatus.COMPLETED, jurorStatusRepository));
-
         Juror juror = jurorPool.getJuror();
         juror.setCompletionDate(completionDate);
 
         jurorHistoryService.createCompleteServiceHistory(jurorPool);
         jurorRepository.save(juror);
         jurorPoolRepository.save(jurorPool);
+    }
+
+    private void createErrorMessageForJurorsIneligibleForCompletion(List<String> ineligibleJurorNumbers) {
+        if(!ineligibleJurorNumbers.isEmpty()) {
+            String jurorNumbers = ineligibleJurorNumbers.stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(", "));
+
+            throw new MojException.BusinessRuleViolation(
+                "Unable to complete the service for the following juror number(s) due "
+                    + "to invalid state: " + jurorNumbers,
+                MojException.BusinessRuleViolation.ErrorCode.COMPLETE_SERVICE_JUROR_IN_INVALID_STATE);
+        }
     }
 
     @Override
