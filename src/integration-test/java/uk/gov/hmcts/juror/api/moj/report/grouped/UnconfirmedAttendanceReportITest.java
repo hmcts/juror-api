@@ -45,7 +45,7 @@ class UnconfirmedAttendanceReportITest extends AbstractGroupedReportControllerIT
     protected StandardReportRequest getValidPayload() {
         return addReportType(StandardReportRequest.builder()
             .fromDate(LocalDate.of(2024, 5, 1))
-            .toDate(LocalDate.of(2024, 5, 31))
+            .toDate(LocalDate.of(2024, 7, 31))
             .build());
     }
 
