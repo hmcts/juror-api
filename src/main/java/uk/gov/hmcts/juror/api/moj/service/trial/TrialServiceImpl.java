@@ -42,7 +42,6 @@ import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.service.CompleteServiceService;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
-import uk.gov.hmcts.juror.api.moj.service.JurorHistoryServiceImpl;
 import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorHistoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.PanelUtils;
@@ -424,7 +423,9 @@ public class TrialServiceImpl implements TrialService {
         Optional<Appearance> appearanceOpt = appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber,
             attendanceDate);
         log.debug(String.format("Appearance record for Juror: %s on %s %s", jurorNumber,
-            attendanceDate, appearanceOpt.isPresent() ? "already exists" : "could not be found"));
+            attendanceDate, appearanceOpt.isPresent()
+                ? "already exists"
+                : "could not be found"));
 
         return appearanceOpt.orElse(
             Appearance.builder()
@@ -453,15 +454,18 @@ public class TrialServiceImpl implements TrialService {
                 AttendanceType.NON_ATTENDANCE_LONG_TRIAL)
             .contains(appearance.getAttendanceType())) {
             appearance.setAttendanceType(isLongTrialDay
-                ? AttendanceType.NON_ATTENDANCE_LONG_TRIAL : AttendanceType.NON_ATTENDANCE
+                ? AttendanceType.NON_ATTENDANCE_LONG_TRIAL
+                : AttendanceType.NON_ATTENDANCE
             );
         } else if (appearance.isFullDay()) {
             appearance.setAttendanceType(isLongTrialDay
-                ? AttendanceType.FULL_DAY_LONG_TRIAL : AttendanceType.FULL_DAY
+                ? AttendanceType.FULL_DAY_LONG_TRIAL
+                : AttendanceType.FULL_DAY
             );
         } else {
             appearance.setAttendanceType(isLongTrialDay
-                ? AttendanceType.HALF_DAY_LONG_TRIAL : AttendanceType.HALF_DAY);
+                ? AttendanceType.HALF_DAY_LONG_TRIAL
+                : AttendanceType.HALF_DAY);
         }
     }
 
