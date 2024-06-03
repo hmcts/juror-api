@@ -25,6 +25,22 @@ public final class TestConstants {
     public static final String JWT = "GeneratedJwtFromSecret";
     public static final String VALID_TITLE = "Dr";
 
+
+    //Headers
+    public static final String DATE_FROM_KEY = "date_from";
+    public static final String DATE_FROM_DISPLAY_NAME = "Date from";
+    public static final String DATE_TO_KEY = "date_to";
+    public static final String DATE_TO_DISPLAY_NAME = "Date to";
+    public static final String COURT_NAME_KEY = "court_name";
+    public static final String COURT_NAME_DISPLAY_NAME = "Court Name";
+    public static final String JUROR_NUMBER_KEY = "juror_number";
+    public static final String FIRST_NAME_KEY = "first_name";
+    public static final String FIRST_NAME_DISPLAY_NAME = "First Name";
+    public static final String LAST_NAME_KEY = "last_name";
+    public static final String LAST_NAME_DISPLAY_NAME = "Last Name";
+
+
+
     private TestConstants() {
 
     }
