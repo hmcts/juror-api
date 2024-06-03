@@ -24,6 +24,7 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/UnpaidAttendanceSummaryReportITest_typical.sql"
 })
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportControllerITest {
     @Autowired
     public UnpaidAttendanceSummaryReportITest(TestRestTemplate template) {
@@ -44,7 +45,6 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void positiveTypical() {
         testBuilder()
             .triggerValid()
@@ -53,7 +53,6 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void positiveTypicalWiderDateRange() {
         StandardReportRequest request = getValidPayload();
         request.setFromDate(LocalDate.of(2024, 1, 1));
@@ -66,7 +65,6 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void positiveTypicalNoData() {
         StandardReportRequest request = getValidPayload();
         request.setFromDate(LocalDate.of(2024, 12, 9));
@@ -79,7 +77,6 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void negativeUnauthorised() {
         testBuilder()
             .jwt(getBureauJwt())
@@ -88,7 +85,6 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void negativeInvalidPayloadMissingDate() {
         StandardReportRequest request = getValidPayload();
         request.setToDate(null);
