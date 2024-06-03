@@ -56,10 +56,18 @@ public class JurySummoningMonitorReportResponse {
     private int movedFromArea;
     private int other;
     private int personalEngagement;
+    private int postponementOfService;
     private int recentlyServed;
     private int religiousReasons;
     private int student;
     private int travellingDifficulties;
     private int workRelated;
+
+    public int getTotalExcused() {
+        return bereavement + carer + childcare + cjsEmployment + criminalRecord + deceased + deferredByCourt
+            + excusedByBureau + financialHardship + forces + holiday + ill + languageDifficulties + medical
+            + mentalHealth + movedFromArea + other + personalEngagement + postponementOfService + recentlyServed
+            + religiousReasons + student + travellingDifficulties + workRelated;
+    }
 
 }

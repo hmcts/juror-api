@@ -49,9 +49,8 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
                 List<String> result =
                     jurorPoolRepository.getJSMReportByPool(jurySummoningMonitorReportRequest.getPoolNumber());
 
-                response.setTotalJurorsNeeded(Integer.parseInt(result.get(0)));
-                response.setBureauDeferralsIncluded(Integer.parseInt(result.get(1)));
-                // continue with this mapping of values...
+                setupByPoolFields(response, result);
+
             } catch (Exception e) {
                 log.error("Error getting jury summoning monitor report by pool", e);
                 throw new MojException.InternalServerError("Error getting jury summoning monitor report by pool", e);
@@ -61,6 +60,72 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
 
         }
         return response;
+    }
+
+    private static void setupByPoolFields(JurySummoningMonitorReportResponse response, List<String> result) {
+        response.setTotalJurorsNeeded(Integer.parseInt(result.get(0)));
+        response.setBureauDeferralsIncluded(Integer.parseInt(result.get(1)));
+        // result.get(2) is not used (disqualified on selection)
+        response.setInitiallySummoned(Integer.parseInt(result.get(3)));
+        response.setAdditionalSummonsIssued(Integer.parseInt(result.get(4)));
+        response.setReminderLettersIssued(Integer.parseInt(result.get(5)));
+        response.setBureauToSupply(Integer.parseInt(result.get(6)));
+        response.setExcusalsRefused(Integer.parseInt(result.get(7)));
+        response.setDeferralsRefused(Integer.parseInt(result.get(8)));
+        response.setDisqualifiedPoliceCheck(Integer.parseInt(result.get(9)));
+
+        // includes disqualified on selection
+        response.setDisqualifiedOther(Integer.parseInt(result.get(10)));
+
+        // result.get(11) is not used - count of currently deferred jurors (active)
+        // result.get(12) is not used - count of currently postponed jurors (active)
+        response.setNonResponded(Integer.parseInt(result.get(13)));
+        response.setUndeliverable(Integer.parseInt(result.get(14)));
+        response.setTotalUnavailable(Integer.parseInt(result.get(15)));
+
+        // set all the excusal reasons
+        response.setMovedFromArea(Integer.parseInt(result.get(16)));
+        response.setStudent(Integer.parseInt(result.get(17)));
+        response.setChildcare(Integer.parseInt(result.get(18)));
+        response.setDeceased(Integer.parseInt(result.get(19)));
+        response.setForces(Integer.parseInt(result.get(20)));
+        response.setFinancialHardship(Integer.parseInt(result.get(21)));
+        response.setIll(Integer.parseInt(result.get(22)));
+        response.setExcusedByBureau(Integer.parseInt(result.get(23)));
+        response.setCriminalRecord(Integer.parseInt(result.get(24)));
+        response.setLanguageDifficulties(Integer.parseInt(result.get(25)));
+        response.setMedical(Integer.parseInt(result.get(26)));
+        response.setMentalHealth(Integer.parseInt(result.get(27)));
+        response.setOther(Integer.parseInt(result.get(28)));
+        response.setPostponementOfService(Integer.parseInt(result.get(29)));
+        response.setReligiousReasons(Integer.parseInt(result.get(30)));
+        response.setRecentlyServed(Integer.parseInt(result.get(31)));
+        response.setTravellingDifficulties(Integer.parseInt(result.get(32)));
+        response.setWorkRelated(Integer.parseInt(result.get(33)));
+        response.setCarer(Integer.parseInt(result.get(34)));
+        response.setHoliday(Integer.parseInt(result.get(35)));
+        response.setBereavement(Integer.parseInt(result.get(36)));
+        response.setCjsEmployment(Integer.parseInt(result.get(37)));
+        response.setDeferredByCourt(Integer.parseInt(result.get(38)));
+        response.setPersonalEngagement(Integer.parseInt(result.get(39)));
+        // result.get(40) is not used - not listed above
+        // end of excusal reasons
+
+        response.setExcused(response.getTotalExcused());
+
+        response.setAwaitingInformation(Integer.parseInt(result.get(41)));
+
+        // all deferrals regardless of current juror status
+        response.setDeferred(Integer.parseInt(result.get(42)));
+        // all postponements regardless of current juror status
+        response.setPostponed(Integer.parseInt(result.get(43)));
+
+        if (response.getTotalJurorsNeeded() - response.getBureauDeferralsIncluded() > 0) {
+            response.setRatio(
+                (double) response.getInitiallySummoned() / (response.getTotalJurorsNeeded() - response.getBureauDeferralsIncluded()));
+        } else {
+            response.setRatio(0.0);
+        }
     }
 
     private void setupResponseHeaders(boolean isSearchByPool,
