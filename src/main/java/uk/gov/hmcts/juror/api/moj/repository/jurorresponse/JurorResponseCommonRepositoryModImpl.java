@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.repository.jurorresponse;
 
+import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -37,8 +38,8 @@ public class JurorResponseCommonRepositoryModImpl implements JurorResponseCommon
     EntityManager entityManager;
 
     @Override
-    public List<Tuple> retrieveJurorResponseDetails(JurorResponseRetrieveRequestDto request,
-                                                    boolean isTeamLeader, int resultsLimit) {
+    public QueryResults<Tuple> retrieveJurorResponseDetails(JurorResponseRetrieveRequestDto request,
+                                                            boolean isTeamLeader, int resultsLimit) {
         // build sql query
         JPAQuery<Tuple> query = sqlRetrieveJurorResponseDetails(request, isTeamLeader);
 
@@ -68,11 +69,11 @@ public class JurorResponseCommonRepositoryModImpl implements JurorResponseCommon
             .fetch();
     }
 
-    private List<Tuple> fetchQueryResults(JPAQuery<Tuple> query, int resultsLimit) {
+    private QueryResults<Tuple> fetchQueryResults(JPAQuery<Tuple> query, int resultsLimit) {
         return query
             .orderBy(JUROR_RESPONSE_COMMON.dateReceived.asc())
             .limit(resultsLimit)
-            .fetch();
+            .fetchResults();
     }
 
     private JPAQuery<Tuple> sqlRetrieveJurorResponseDetails(JurorResponseRetrieveRequestDto request,
