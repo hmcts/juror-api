@@ -109,7 +109,7 @@ class DeferredListByCourtReportTest extends AbstractGroupedReportTestSupport<Def
         AbstractReportResponse.TableData<GroupedTableData> tableData,
         GroupedTableData data) {
 
-        when(data.getSize()).thenReturn(3);
+        when(data.getSize()).thenReturn(3L);
 
         securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn(TestConstants.VALID_COURT_LOCATION);
 
