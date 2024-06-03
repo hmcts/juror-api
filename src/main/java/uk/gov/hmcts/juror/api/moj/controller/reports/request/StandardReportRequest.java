@@ -67,6 +67,7 @@ public class StandardReportRequest {
         "JurorExpenditureReportLowLevelReport",
         "JurorExpenditureReportMidLevelReport",
         "JurorExpenditureReportHighLevelReport",
+        "DeferredListByCourtReport",
         "UnconfirmedAttendanceReport",
         "AvailableListByDateReportBureau",
         "AvailableListByDateReportCourt",
