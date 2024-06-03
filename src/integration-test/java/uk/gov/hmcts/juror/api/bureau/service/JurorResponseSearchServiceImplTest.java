@@ -104,7 +104,7 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
             searchService.searchForResponses(JurorResponseSearchRequest.builder().lastName("a").build(), false);
         assertThat(dto).isNotNull();
         assertThat(dto.getResponses()).isNotNull().hasSize(0);
-        assertThat(dto.getMeta().getMax()).isEqualTo(100);
+        assertThat(dto.getMeta().getMax()).isEqualTo(1000);
         assertThat(dto.getMeta().getTotal()).isEqualTo(0);
 
         assertResponsesSortedCorrectly(dto);
