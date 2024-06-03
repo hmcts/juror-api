@@ -55,8 +55,8 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
     @Test
     void positiveTypicalWiderDateRange() {
         StandardReportRequest request = getValidPayload();
-        request.setFromDate(LocalDate.of(2024, 1, 1));
-        request.setToDate(LocalDate.of(2024, 12, 31));
+        request.setFromDate(LocalDate.of(2024, 10, 9));
+        request.setToDate(LocalDate.of(2024, 11, 12));
         testBuilder()
             .payload(request)
             .triggerValid()
@@ -183,12 +183,12 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
                 .add("date_to", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Date To")
                     .dataType("LocalDate")
-                    .value("2024-12-31")
+                    .value("2024-11-12")
                     .build())
                 .add("date_from", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Date From")
                     .dataType("LocalDate")
-                    .value("2024-01-01")
+                    .value("2024-10-09")
                     .build())
                 .add("court_name", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Court Name")
