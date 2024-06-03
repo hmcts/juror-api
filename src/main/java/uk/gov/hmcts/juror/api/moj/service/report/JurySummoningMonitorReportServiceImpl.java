@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.moj.service.report;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
@@ -12,6 +13,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.PoolType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.utils.PoolRequestUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
@@ -26,6 +28,7 @@ import java.util.Map;
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonitorReportService {
+    private final JurorPoolRepository jurorPoolRepository;
     private final CourtLocationRepository courtLocationRepository;
     private final PoolRequestRepository poolRequestRepository;
 
@@ -40,13 +43,29 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
         setupResponseHeaders(isSearchByPool, jurySummoningMonitorReportRequest, response);
 
         // TODO implement the logic to get the report data
+        if (isSearchByPool) {
+            // get the report data by pool
+            try {
+                List<String> result =
+                    jurorPoolRepository.getJSMReportByPool(jurySummoningMonitorReportRequest.getPoolNumber());
 
+                response.setTotalJurorsNeeded(Integer.parseInt(result.get(0)));
+                response.setBureauDeferralsIncluded(Integer.parseInt(result.get(1)));
+                // continue with this mapping of values...
+            } catch (Exception e) {
+                log.error("Error getting jury summoning monitor report by pool", e);
+                throw new MojException.InternalServerError("Error getting jury summoning monitor report by pool", e);
+            }
+        } else {
+            // get the report data by court
+
+        }
         return response;
     }
 
     private void setupResponseHeaders(boolean isSearchByPool,
                                       JurySummoningMonitorReportRequest jurySummoningMonitorReportRequest,
-                           JurySummoningMonitorReportResponse response) {
+                                      JurySummoningMonitorReportResponse response) {
         if (isSearchByPool) {
 
             String poolNumber = jurySummoningMonitorReportRequest.getPoolNumber();
@@ -79,7 +98,7 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
     }
 
     private Map<String, AbstractReportResponse.DataTypeValue>
-        getSearchByPoolHeaders(CourtLocation court, String poolNumber, PoolType poolType,
+    getSearchByPoolHeaders(CourtLocation court, String poolNumber, PoolType poolType,
                            LocalDate serviceStartDate) {
 
         String courtName = court.getName() + " (" + court.getLocCode() + ")";
@@ -118,7 +137,7 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
     }
 
     private Map<String, AbstractReportResponse.DataTypeValue>
-        getSearchByCourts(List<String> courtsList, boolean allCourts, LocalDate reportFrom, LocalDate reportTo) {
+    getSearchByCourts(List<String> courtsList, boolean allCourts, LocalDate reportFrom, LocalDate reportTo) {
 
         String courts = "All courts";
         if (!allCourts) {
