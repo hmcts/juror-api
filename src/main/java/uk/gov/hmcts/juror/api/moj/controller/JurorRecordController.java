@@ -431,7 +431,6 @@ public class JurorRecordController {
         @Valid @PathVariable("locCode") @CourtLocationCode String locCode) {
         final JurorAttendanceDetailsResponseDto details =
             jurorRecordService.getJurorAttendanceDetails(locCode, jurorNumber, payload);
-
         return ResponseEntity.ok().body(details);
     }
 

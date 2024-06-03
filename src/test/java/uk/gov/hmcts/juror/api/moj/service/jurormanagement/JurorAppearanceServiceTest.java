@@ -2555,7 +2555,6 @@ class JurorAppearanceServiceTest {
             jurorAppearanceService.addNonAttendance(request);
 
             verify(courtLocationRepository, times(1)).findByLocCode(courtLocationCode);
-            verify(courtLocationRepository, times(1)).findById(courtLocationCode);
             verify(jurorPoolRepository, times(1))
                 .findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, poolNumber);
             verify(appearanceRepository, times(1)).findByJurorNumberAndPoolNumberAndAttendanceDate(jurorNumber,
@@ -2610,7 +2609,6 @@ class JurorAppearanceServiceTest {
 
             ArgumentCaptor<Appearance> savedAppearanceCaptor = ArgumentCaptor.forClass(Appearance.class);
             verify(courtLocationRepository, times(1)).findByLocCode(courtLocationCode);
-            verify(courtLocationRepository, times(1)).findById(courtLocationCode);
             verify(jurorPoolRepository, times(1))
                 .findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, poolNumber);
             verify(appearanceRepository, times(1))
@@ -2712,11 +2710,10 @@ class JurorAppearanceServiceTest {
 
             assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
                     jurorAppearanceService.addNonAttendance(request))
-                .withMessage("Cannot access court details for this location "
-                    + "416");
+                .withMessage("User does not have access");
 
-            verify(courtLocationRepository, times(1)).findByLocCode("416");
-            verify(courtLocationRepository, times(1)).findById("416");
+            verify(courtLocationRepository, times(0)).findByLocCode("416");
+            verify(courtLocationRepository, times(0)).findById("416");
             verify(jurorPoolRepository, times(0))
                 .findByJurorJurorNumberAndPoolPoolNumber(Mockito.anyString(), Mockito.anyString());
             verify(appearanceRepository, times(0)).findByJurorNumberAndPoolNumberAndAttendanceDate(Mockito.anyString(),
@@ -2749,7 +2746,6 @@ class JurorAppearanceServiceTest {
                 .withMessage("Juror not found in Pool " + request.getPoolNumber());
 
             verify(courtLocationRepository, times(1)).findByLocCode(courtLocationCode);
-            verify(courtLocationRepository, times(1)).findById(courtLocationCode);
             verify(jurorPoolRepository, times(1))
                 .findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, poolNumber);
             verify(appearanceRepository, times(0)).findByJurorNumberAndPoolNumberAndAttendanceDate(Mockito.anyString(),
@@ -2809,7 +2805,6 @@ class JurorAppearanceServiceTest {
             assertThat(exception.getErrorCode()).isEqualTo(ATTENDANCE_RECORD_ALREADY_EXISTS);
 
             verify(courtLocationRepository, times(1)).findByLocCode(courtLocationCode);
-            verify(courtLocationRepository, times(1)).findById(courtLocationCode);
             verify(jurorPoolRepository, times(1))
                 .findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, poolNumber);
             verify(appearanceRepository, times(1)).findByJurorNumberAndPoolNumberAndAttendanceDate(jurorNumber,

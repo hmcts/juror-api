@@ -90,6 +90,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         if (jurorPool == null) {
             throw new MojException.NotFound("No valid juror pool found", null);
         }
+        SecurityUtil.validateIsLocCode(dto.getLocationCode());
 
         if (!jurorPool.getOwner().equals(payload.getOwner())) {
             throw new MojException.Forbidden("Invalid access to juror pool", null);
@@ -412,6 +413,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                                            LocalTime checkInTime,
                                            LocalTime checkOutTime
     ) {
+        SecurityUtil.validateIsLocCode(appearance.getLocCode());
+
         boolean isLongTrial = jurorExpenseService.isLongTrialDay(
             appearance.getCourtLocation().getLocCode(),
             appearance.getJurorNumber(),
@@ -549,7 +552,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         BureauJwtPayload payload = SecurityUtil.getActiveUsersBureauPayload();
         final String locationCode = request.getLocationCode();
         final LocalDate nonAttendanceDate = request.getNonAttendanceDate();
-
+        SecurityUtil.validateIsLocCode(locationCode);
         //check that the appearance date is not in the future
         checkAttendanceDateIsNotAFutureDate(nonAttendanceDate);
 
@@ -559,8 +562,6 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         CourtLocation courtLocation = courtLocationRepository.findByLocCode(locationCode).orElseThrow(
             () -> new MojException.NotFound("Court location " + locationCode + " not found", null)
         );
-
-        CourtLocationUtils.validateAccessToCourtLocation(locationCode, payload.getOwner(), courtLocationRepository);
         JurorPool jurorPool = validateJurorPoolAndStartDate(request, nonAttendanceDate);
         checkExistingAttendance(request, nonAttendanceDate);
 

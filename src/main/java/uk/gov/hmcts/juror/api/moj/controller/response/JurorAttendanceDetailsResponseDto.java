@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -78,13 +79,17 @@ public class JurorAttendanceDetailsResponseDto {
         @Schema(description = "The type of attendance of the juror (includes non-attendance and absence)")
         private AttendanceType attendanceType;
 
+        @JsonProperty("editable")
+        @Schema(description = "Indicates if the current user can edit this record")
+        private boolean editable;
+
         public JurorAttendanceResponseData(Appearance appearance) {
             this.attendanceDate = appearance.getAttendanceDate();
             this.checkInTime = appearance.getTimeIn();
             this.checkOutTime = appearance.getTimeOut();
             this.travelTime = appearance.getTravelTime();
             this.attendanceType = appearance.getAttendanceType();
-
+            this.editable = SecurityUtil.getLocCode().equals(appearance.getLocCode());
             double hours = 0.0;
             if (this.checkOutTime != null && this.checkInTime != null) {
                 hours = (double) Duration.between(this.checkInTime, this.checkOutTime).toMinutes() / 60;
