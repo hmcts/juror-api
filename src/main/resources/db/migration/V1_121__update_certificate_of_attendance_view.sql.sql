@@ -19,7 +19,8 @@ SELECT jp.owner,
   WHERE jp.owner::text <> '400'::text AND jp.is_active = true AND (EXISTS ( SELECT DISTINCT a.juror_number
            FROM juror_mod.appearance a
           WHERE a.juror_number::text = jp.juror_number::text
-          AND a.loc_code::text = p.loc_code::text
-          AND a.attendance_type::text <> 'ABSENT'::text OR a.attendance_type IS NULL
-          AND a.no_show <> true OR (a.no_show IS null AND a.attendance_type::text <> 'ABSENT'::text OR a.attendance_type IS NULL )));
+          and ((a.attendance_type::text <> 'ABSENT'::text
+          	or a.attendance_type is null)
+          	and (a.no_show <> true)
+          	or a.no_show is null)));
           
