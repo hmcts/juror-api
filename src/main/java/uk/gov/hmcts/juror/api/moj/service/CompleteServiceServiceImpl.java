@@ -88,7 +88,7 @@ public class CompleteServiceServiceImpl implements CompleteServiceService {
         List<String> ineligibleJurorNumbers = new ArrayList<>();
         for (String jurorNumber : completeServiceJurorNumberListDto.getJurorNumbers()) {
              JurorPool jurorPool = getJurorPool(poolNumber, jurorNumber);
-            if(!isJurorValidForCompletion(jurorPool)) {
+            if(isJurorValidForCompletion(jurorPool)) {
                 completeService(jurorPool, completeServiceJurorNumberListDto.getCompletionDate());
             } else {
                 ineligibleJurorNumbers.add(jurorNumber);
