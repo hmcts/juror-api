@@ -94,6 +94,7 @@ spring:
       write-dates-as-timestamps: true
   # Flyway must align with build.gradle
   flyway:
+    locations: [ classpath:migrationv2 ]
     schemas: [ juror, juror_digital, juror_digital_user, hk, juror_dashboard, juror_mod ]
     default-schema: juror_mod
     table: schema_history
