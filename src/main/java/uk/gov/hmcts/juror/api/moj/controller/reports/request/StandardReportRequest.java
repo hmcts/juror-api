@@ -75,8 +75,7 @@ public class StandardReportRequest {
         "UnconfirmedAttendanceReport",
         "CompletionOfServiceReport",
         "PoolStatisticsReport",
-        "TrialAttendanceReport",
-        "CompletionOfServiceReport"
+        "TrialAttendanceReport"
     })
     private String reportType;
 
