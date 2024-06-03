@@ -2,16 +2,13 @@ package uk.gov.hmcts.juror.api.moj.report.grouped;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
-import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
-import uk.gov.hmcts.juror.api.moj.domain.QJuror;
-import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
+import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReport;
 import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
@@ -26,72 +23,64 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
-@SuppressWarnings("PMD.LawOfDemeter")
-public class UnpaidAttendanceSummaryReport extends AbstractGroupedReport {
+public class CompletionOfServiceReport extends AbstractGroupedReport {
 
     private final CourtLocationService courtLocationService;
 
-    @Autowired
-    public UnpaidAttendanceSummaryReport(PoolRequestRepository poolRequestRepository,
-                                         CourtLocationService courtLocationService) {
-        super(poolRequestRepository,
-            QAppearance.appearance,
-            ReportGroupBy.builder()
-                .dataType(DataType.POOL_NUMBER_BY_APPEARANCE)
-                .removeGroupByFromResponse(true)
-                .build(),
+    public CompletionOfServiceReport(PoolRequestRepository poolRequestRepository,
+                                     CourtLocationService courtLocationService) {
+        super(
+            poolRequestRepository,
+            QJurorPool.jurorPool,
+                ReportGroupBy.builder()
+                    .dataType(DataType.POOL_NUMBER_AND_COURT_TYPE)
+                    .removeGroupByFromResponse(true)
+                    .build(),
             DataType.JUROR_NUMBER,
             DataType.FIRST_NAME,
-            DataType.LAST_NAME);
+            DataType.LAST_NAME,
+            DataType.COMPLETION_DATE
+        );
         this.courtLocationService = courtLocationService;
-
         isCourtUserOnly();
     }
 
     @Override
     public Class<? extends Validators.AbstractRequestValidator> getRequestValidatorClass() {
-        return RequestValidator.class;
+        return CompletionOfServiceReport.RequestValidator.class;
     }
 
     @Override
-    protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
-        query.where(QAppearance.appearance.appearanceStage.in(
-            AppearanceStage.EXPENSE_ENTERED,
-            AppearanceStage.EXPENSE_EDITED
-        ));
-        query.where(QAppearance.appearance.locCode.eq(SecurityUtil.getLocCode()));
-        query.where(QAppearance.appearance.attendanceDate.between(request.getFromDate(), request.getToDate()));
-
-        query.orderBy(QAppearance.appearance.attendanceDate.asc(), QJuror.juror.jurorNumber.asc());
-        addGroupBy(query, DataType.JUROR_NUMBER, DataType.POOL_NUMBER_BY_APPEARANCE, DataType.ATTENDANCE_DATE);
-
+    public void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
+        query.where(QJurorPool.jurorPool.juror.completionDate.between(request.getFromDate(), request.getToDate()));
+        query.where(QJurorPool.jurorPool.location.eq(SecurityUtil.getLocCode()));
+        query.orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
     }
 
     @Override
     public Map<String, GroupedReportResponse.DataTypeValue> getHeadings(
-        StandardReportRequest request,
-        StandardReportResponse.TableData<GroupedTableData> tableData) {
+        StandardReportRequest request, GroupedReportResponse.TableData<GroupedTableData> tableData) {
 
-        Map<String, GroupedReportResponse.DataTypeValue> map = new ConcurrentHashMap<>();
-        map.put("date_from", AbstractReportResponse.DataTypeValue.builder()
-            .displayName("Date From")
+        Map<String, AbstractReportResponse.DataTypeValue> map = new ConcurrentHashMap<>();
+        map.put("date_from", StandardReportResponse.DataTypeValue.builder()
+            .displayName("Date from")
             .dataType(LocalDate.class.getSimpleName())
             .value(DateTimeFormatter.ISO_DATE.format(request.getFromDate()))
             .build());
-        map.put("date_to", GroupedReportResponse.DataTypeValue.builder()
-            .displayName("Date To")
+        map.put("date_to", AbstractReportResponse.DataTypeValue.builder()
+            .displayName("Date to")
             .dataType(LocalDate.class.getSimpleName())
             .value(DateTimeFormatter.ISO_DATE.format(request.getToDate()))
             .build());
-        map.put("total_unpaid_attendances", GroupedReportResponse.DataTypeValue.builder()
-            .displayName("Total Unpaid Attendances")
+        map.put("total_pool_members_completed", AbstractReportResponse.DataTypeValue.builder()
+            .displayName("Total pool members completed")
             .dataType(Long.class.getSimpleName())
             .value(tableData.getData().getSize())
             .build());
-        Map.Entry<String, GroupedReportResponse.DataTypeValue> entry =
-            getCourtNameHeader(courtLocationService.getCourtLocation(SecurityUtil.getActiveOwner()));
-        map.put(entry.getKey(), entry.getValue());
 
+        Map.Entry<String, GroupedReportResponse.DataTypeValue> entry =
+            getCourtNameHeader(courtLocationService.getCourtLocation(SecurityUtil.getLocCode()));
+        map.put(entry.getKey(), entry.getValue());
         return map;
     }
 
@@ -99,6 +88,5 @@ public class UnpaidAttendanceSummaryReport extends AbstractGroupedReport {
         AbstractReport.Validators.AbstractRequestValidator,
         AbstractReport.Validators.RequireFromDate,
         AbstractReport.Validators.RequireToDate {
-
     }
 }

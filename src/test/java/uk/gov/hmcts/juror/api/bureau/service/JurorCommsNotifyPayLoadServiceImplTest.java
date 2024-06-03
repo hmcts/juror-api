@@ -261,7 +261,7 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
 
 
     private CourtLocation getCourt(final boolean sentToCourt) {
-        if (sentToCourt == true) {
+        if (sentToCourt) {
             court.setLocCourtName(COURT_NAME);
         }
         court.setCourtAttendTime(LocalTime.parse(TIME));

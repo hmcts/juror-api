@@ -88,10 +88,10 @@ public class JurorCommsWeeklyInfoServiceImpl implements BureauProcessService {
 
             } catch (JurorCommsNotificationServiceException e) {
                 log.error(
-                    "Unable to send Informational comms for {} : {} {}",
-                    jurorDetail.getJurorNumber(),
-                    e.getMessage(),
-                    e.getCause().toString()
+                    "Unable to send Informational comms for "
+                        + jurorDetail.getJurorNumber()
+                        + " : " + e.getMessage()
+                        + " " + e.getCause().toString(), e
                 );
                 infoCommsfailed++;
             } catch (Exception e) {

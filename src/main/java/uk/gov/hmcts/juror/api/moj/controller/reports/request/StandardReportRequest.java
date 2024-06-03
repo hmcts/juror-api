@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
@@ -19,6 +20,7 @@ import uk.gov.hmcts.juror.api.validation.PoolNumber;
 import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @Builder
@@ -65,11 +67,13 @@ public class StandardReportRequest {
         "JurorExpenditureReportLowLevelReport",
         "JurorExpenditureReportMidLevelReport",
         "JurorExpenditureReportHighLevelReport",
+        "DeferredListByCourtReport",
         "UnconfirmedAttendanceReport",
         "AvailableListByDateReportBureau",
         "AvailableListByDateReportCourt",
         "SummonedRespondedReport",
         "UnconfirmedAttendanceReport",
+        "CompletionOfServiceReport",
         "PoolStatisticsReport",
         "TrialAttendanceReport"
     })
@@ -124,4 +128,8 @@ public class StandardReportRequest {
 
     @NotNull(groups = AbstractReport.Validators.RequireRespondedJurorsOnly.class)
     private Boolean respondedJurorsOnly;
+
+    @NotEmpty(groups = AbstractReport.Validators.RequireCourts.class)
+    @NotNull(groups = AbstractReport.Validators.RequireCourts.class)
+    private List<@CourtLocationCode(groups = AbstractReport.Validators.RequireCourts.class) String> courts;
 }

@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.report;
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.NumberExpression;
 import lombok.Getter;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
@@ -110,6 +111,9 @@ public enum DataType implements IDataType {
     ON_CALL("On Call", Boolean.class, QJurorPool.jurorPool.onCall, QJurorPool.jurorPool),
     SERVICE_START_DATE("Service Start Date", LocalDate.class, QPoolRequest.poolRequest.returnDate,
         QPoolRequest.poolRequest),
+
+    COMPLETION_DATE("Completion date", LocalDate.class, QJurorPool.jurorPool.juror.completionDate),
+
     POOL_NUMBER("Pool Number", String.class, QPoolRequest.poolRequest.poolNumber, QPoolRequest.poolRequest),
     POOL_NUMBER_JP("Pool Number", String.class, QJurorPool.jurorPool.pool.poolNumber, QJurorPool.jurorPool),
     POOL_NUMBER_AND_COURT_TYPE("Pool Number and Type",
@@ -205,15 +209,18 @@ public enum DataType implements IDataType {
             .when(QPanel.panel.result.eq(PanelResult.CHALLENGED)).then("Challenged")
             .when(QPanel.panel.result.eq(PanelResult.JUROR)).then("Juror")
             .when(QPanel.panel.result.eq(PanelResult.RETURNED).and(QPanel.panel.empanelledDate.isNotNull()))
-                .then("Returned Juror")
+            .then("Returned Juror")
             .when(QPanel.panel.result.eq(PanelResult.RETURNED).and(QPanel.panel.empanelledDate.isNull()))
-                .then("Returned")
+            .then("Returned")
             .otherwise(""),
         QPanel.panel),
     JUROR_NUMBER_FROM_TRIAL("Juror Number", String.class, QPanel.panel.juror.jurorNumber, QPanel.panel),
     COURT_LOCATION_NAME_AND_CODE("Court Location Name And Code", String.class,
         QPoolRequest.poolRequest.courtLocation.name.concat(" (")
             .concat(QPoolRequest.poolRequest.courtLocation.locCode).concat(")"), QPoolRequest.poolRequest),
+    COURT_LOCATION_NAME_AND_CODE_JP("Court Location Name And Code", String.class,
+        QJurorPool.jurorPool.pool.courtLocation.name.concat(" (")
+            .concat(QJurorPool.jurorPool.pool.courtLocation.locCode).concat(")"), QJurorPool.jurorPool),
 
     TRIAL_JUDGE_NAME("Judge", String.class, QTrial.trial.judge.name, QTrial.trial),
     TRIAL_TYPE("Trial Type", String.class, QTrial.trial.trialType, QTrial.trial),
@@ -255,7 +262,32 @@ public enum DataType implements IDataType {
         new CaseBuilder()
             .when(QJuror.juror.policeCheck.in(PoliceCheck.INELIGIBLE))
             .then(1L)
-            .otherwise(0L).sum());
+            .otherwise(0L).sum()),
+
+    TOTAL_REQUESTED("Requested", Long.class,
+        QJurorPool.jurorPool.pool.numberRequested
+    ),
+    TOTAL_DEFERRED("Deferred", Long.class,
+        new CaseBuilder()
+            .when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.DEFERRED))
+            .then(1L)
+            .otherwise(0L).sum(),
+        QJurorPool.jurorPool
+    ),
+    TOTAL_SUMMONED("Summoned", Long.class,
+        QJurorPool.jurorPool.count().subtract((NumberExpression<Long>) TOTAL_DEFERRED.getExpression()),
+        QJurorPool.jurorPool
+    ),
+    TOTAL_SUPPLIED("Supplied", Long.class,
+        new CaseBuilder()
+            .when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED))
+            .then(1L)
+            .otherwise(0L).sum(),
+        QJurorPool.jurorPool
+    ),
+    ;
+
+
 
     private final List<EntityPath<?>> requiredTables;
     private final String displayName;
