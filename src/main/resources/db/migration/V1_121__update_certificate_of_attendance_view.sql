@@ -23,4 +23,3 @@ SELECT jp.owner,
           	or a.attendance_type is null)
           	and (a.no_show <> true)
           	or a.no_show is null)));
-          
