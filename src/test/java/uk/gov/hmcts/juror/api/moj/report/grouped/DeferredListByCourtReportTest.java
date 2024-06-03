@@ -8,6 +8,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import uk.gov.hmcts.juror.api.TestConstants;
+import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
@@ -73,13 +74,15 @@ class DeferredListByCourtReportTest extends AbstractGroupedReportTestSupport<Def
 
         verify(query, times(1))
             .where(QJurorPool.jurorPool.deferralDate.isNotNull());
-        verify(report, times(1)).addGroupBy(query,
-            DataType.COURT_LOCATION_NAME_AND_CODE
-        );
         verify(query, times(1))
             .orderBy(QJurorPool.jurorPool.deferralDate.asc());
         verify(query, times(1))
             .where(QJurorPool.jurorPool.owner.eq(TestConstants.VALID_COURT_LOCATION));
+        verify(query, times(1)).groupBy(
+            QCourtLocation.courtLocation.name,
+            QCourtLocation.courtLocation.locCode,
+            QJurorPool.jurorPool.deferralDate
+        );
         verifyNoMoreInteractions(query);
     }
 
@@ -93,11 +96,12 @@ class DeferredListByCourtReportTest extends AbstractGroupedReportTestSupport<Def
 
         report.preProcessQuery(query, request);
 
-
         verify(query, times(1))
             .where(QJurorPool.jurorPool.deferralDate.isNotNull());
-        verify(report, times(1)).addGroupBy(query,
-            DataType.COURT_LOCATION_NAME_AND_CODE
+        verify(query, times(1)).groupBy(
+            QCourtLocation.courtLocation.name,
+            QCourtLocation.courtLocation.locCode,
+            QJurorPool.jurorPool.deferralDate
         );
         verify(query, times(1))
             .orderBy(QJurorPool.jurorPool.deferralDate.asc());
@@ -122,7 +126,7 @@ class DeferredListByCourtReportTest extends AbstractGroupedReportTestSupport<Def
                 StandardReportResponse.DataTypeValue.builder()
                     .displayName("Total deferred")
                     .dataType(Long.class.getSimpleName())
-                    .value(3)
+                    .value(3L)
                     .build()
             ));
         verify(tableData, times(1)).getData();

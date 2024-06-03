@@ -108,7 +108,8 @@ class UnpaidAttendanceSummaryReportTest extends AbstractGroupedReportTestSupport
 
         verify(report, times(1)).addGroupBy(query,
             DataType.JUROR_NUMBER,
-            DataType.POOL_NUMBER_BY_APPEARANCE);
+            DataType.POOL_NUMBER_BY_APPEARANCE,
+            DataType.ATTENDANCE_DATE);
 
     }
 
