@@ -101,8 +101,10 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
 
         @SuppressWarnings("PMD.VariableDeclarationUsageDistance")
         int errorCount = 0;
-        for (int i = 0; i < setUpNotifyRegionKeys().size(); i++) {
-            myRegionMap.put(setUpRegionIds().get(i), setUpNotifyRegionKeys().get(i));
+        List<String> regionIds = setUpRegionIds();
+        List<String> notifyRegionIds = setUpNotifyRegionKeys();
+        for (int i = 0; i < notifyRegionIds.size(); i++) {
+            myRegionMap.put(regionIds.get(i), notifyRegionIds.get(i));
         }
 
         log.debug("Display myRegionMap {}", myRegionMap);
@@ -227,9 +229,8 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
     }
 
     public int processExcusalList(Proxy gotProxy, Map<String, String> myRegionMap) {
-        BooleanExpression recordsForExcusalCommsFilter = JurorPoolQueries.recordsForExcusalComms();
         final List<JurorPool> jurorCourtDetailListExcusal = Lists.newLinkedList(jurorRepository.findAll(
-            recordsForExcusalCommsFilter));
+            JurorPoolQueries.recordsForExcusalComms()));
 
         log.info(
             "JurorCourtDetailListExcusal Number of Excusal Records to process {}",
@@ -343,6 +344,7 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
                             regionNotifyTemplateRepositoryMod.findAll(regionNotifyTriggeredExcusalTemplateSmsFilter));
                     }
                 } else {
+                    log.info("No Email or phone");
                     continue;
                 }
 
@@ -392,9 +394,8 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
 
     private int processCompleted(Proxy gotProxy, Map<String, String> myRegionMap) {
         int errorCount = 0;
-        BooleanExpression recordsForServiceCompletedCommsFilter = JurorPoolQueries.recordsForServiceCompletedComms();
         final List<JurorPool> jurorCourtDetailListCompleted = Lists.newLinkedList(jurorRepository.findAll(
-            recordsForServiceCompletedCommsFilter));
+            JurorPoolQueries.recordsForServiceCompletedComms()));
 
         log.info(
             "jurorCourtDetailListCompleted Number of Completed Records to process {}",
