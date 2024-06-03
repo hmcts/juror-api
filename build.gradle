@@ -208,7 +208,7 @@ flyway {
     url = "$dbUrl"
     user = "$dbUserName"
     password = "$dbPassword"
-    locations ="$flywayLocations"
+    locations = "$flywayLocations"
     schemas = ['juror', 'juror_digital', 'juror_digital_user', 'juror_dashboard', 'hk', 'juror_mod']
     defaultSchema = 'juror_mod'
     table = 'schema_history'
