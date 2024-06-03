@@ -203,10 +203,12 @@ flyway {
     def dbUrl = System.getenv("DB_URL") ?: "jdbc:postgresql://localhost:5432/juror"
     def dbUserName = System.getenv("DB_USERNAME") ?: "system"
     def dbPassword = System.getenv("DB_PASSWORD") ?: "postgres"
+    def flywayLocations = System.getenv("FLYWAY_LOC_OVERRIDE") ?: ['classpath:migrations','classpath:migrationsv2']
 
     url = "$dbUrl"
     user = "$dbUserName"
     password = "$dbPassword"
+    locations ="$flywayLocations"
     schemas = ['juror', 'juror_digital', 'juror_digital_user', 'juror_dashboard', 'hk', 'juror_mod']
     defaultSchema = 'juror_mod'
     table = 'schema_history'
