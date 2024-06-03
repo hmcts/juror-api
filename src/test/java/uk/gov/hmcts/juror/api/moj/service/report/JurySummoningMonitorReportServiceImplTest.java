@@ -15,6 +15,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.PoolType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 
 import java.time.LocalDate;
@@ -39,15 +40,20 @@ import static org.mockito.Mockito.when;
     "PMD.UnnecessaryFullyQualifiedName"
 })
 class JurySummoningMonitorReportServiceImplTest {
+
+    private final static String RESULT_DEFAULTS = "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"
+        + "0,0,0,0,0,0,0,0,0,0,0";
     private final CourtLocationRepository courtLocationRepository;
     private final PoolRequestRepository poolRequestRepository;
+    private final JurorPoolRepository jurorPoolRepository;
     private final JurySummoningMonitorReportService jurySummoningMonitorReportService;
 
     public JurySummoningMonitorReportServiceImplTest() {
         this.courtLocationRepository = mock(CourtLocationRepository.class);
         this.poolRequestRepository = mock(PoolRequestRepository.class);
-        this.jurySummoningMonitorReportService = new JurySummoningMonitorReportServiceImpl(courtLocationRepository,
-            poolRequestRepository);
+        this.jurorPoolRepository = mock(JurorPoolRepository.class);
+        this.jurySummoningMonitorReportService = new JurySummoningMonitorReportServiceImpl(jurorPoolRepository,
+            courtLocationRepository, poolRequestRepository);
 
     }
 
@@ -83,6 +89,7 @@ class JurySummoningMonitorReportServiceImplTest {
                 .build();
 
             when(poolRequestRepository.findByPoolNumber(poolNumber)).thenReturn(Optional.of(poolRequest));
+            when(jurorPoolRepository.getJsmReportByPool(poolNumber)).thenReturn(RESULT_DEFAULTS);
 
             JurySummoningMonitorReportResponse response =
                 jurySummoningMonitorReportService.viewJurySummoningMonitorReport(
@@ -102,7 +109,7 @@ class JurySummoningMonitorReportServiceImplTest {
                 .as("Creation time should be correct");
 
             verify(poolRequestRepository, times(1)).findByPoolNumber(poolNumber);
-
+            verify(jurorPoolRepository, times(1)).getJsmReportByPool(poolNumber);
         }
 
 
@@ -169,7 +176,6 @@ class JurySummoningMonitorReportServiceImplTest {
         void viewJurySummoningMonitorByCourtReportNoResultsAndValidHeadings() {
 
             final String locCode = "415";
-            final LocalDate reportDate = LocalDate.of(2024, 4, 20);
 
             CourtLocation court = setupCourt(locCode, "415");
 

@@ -2,7 +2,6 @@ package uk.gov.hmcts.juror.api.moj.service.report;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
@@ -42,21 +41,22 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
 
         setupResponseHeaders(isSearchByPool, jurySummoningMonitorReportRequest, response);
 
-        // TODO implement the logic to get the report data
         if (isSearchByPool) {
-            // get the report data by pool
             try {
-                List<String> result =
-                    jurorPoolRepository.getJSMReportByPool(jurySummoningMonitorReportRequest.getPoolNumber());
+                String result =
+                    jurorPoolRepository.getJsmReportByPool(jurySummoningMonitorReportRequest.getPoolNumber());
 
-                setupByPoolFields(response, result);
+                if (result != null && !result.isEmpty()) {
+                    List<String> values = List.of(result.split(","));
+                    setupByPoolFields(response, values);
+                }
 
             } catch (Exception e) {
                 log.error("Error getting jury summoning monitor report by pool", e);
                 throw new MojException.InternalServerError("Error getting jury summoning monitor report by pool", e);
             }
         } else {
-            // get the report data by court
+            // TODO implement the logic to get the report data by court once the function is available
 
         }
         return response;
@@ -65,11 +65,14 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
     private static void setupByPoolFields(JurySummoningMonitorReportResponse response, List<String> result) {
         response.setTotalJurorsNeeded(Integer.parseInt(result.get(0)));
         response.setBureauDeferralsIncluded(Integer.parseInt(result.get(1)));
+
+        response.setBureauToSupply(response.getTotalJurorsNeeded() - response.getBureauDeferralsIncluded());
+
         // result.get(2) is not used (disqualified on selection)
         response.setInitiallySummoned(Integer.parseInt(result.get(3)));
         response.setAdditionalSummonsIssued(Integer.parseInt(result.get(4)));
         response.setReminderLettersIssued(Integer.parseInt(result.get(5)));
-        response.setBureauToSupply(Integer.parseInt(result.get(6)));
+        response.setTotalConfirmedJurors(Integer.parseInt(result.get(6)));
         response.setExcusalsRefused(Integer.parseInt(result.get(7)));
         response.setDeferralsRefused(Integer.parseInt(result.get(8)));
         response.setDisqualifiedPoliceCheck(Integer.parseInt(result.get(9)));
@@ -122,7 +125,8 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
 
         if (response.getTotalJurorsNeeded() - response.getBureauDeferralsIncluded() > 0) {
             response.setRatio(
-                (double) response.getInitiallySummoned() / (response.getTotalJurorsNeeded() - response.getBureauDeferralsIncluded()));
+                (double) response.getInitiallySummoned()
+                    / (response.getTotalJurorsNeeded() - response.getBureauDeferralsIncluded()));
         } else {
             response.setRatio(0.0);
         }
@@ -163,7 +167,7 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
     }
 
     private Map<String, AbstractReportResponse.DataTypeValue>
-    getSearchByPoolHeaders(CourtLocation court, String poolNumber, PoolType poolType,
+        getSearchByPoolHeaders(CourtLocation court, String poolNumber, PoolType poolType,
                            LocalDate serviceStartDate) {
 
         String courtName = court.getName() + " (" + court.getLocCode() + ")";
@@ -202,7 +206,7 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
     }
 
     private Map<String, AbstractReportResponse.DataTypeValue>
-    getSearchByCourts(List<String> courtsList, boolean allCourts, LocalDate reportFrom, LocalDate reportTo) {
+        getSearchByCourts(List<String> courtsList, boolean allCourts, LocalDate reportFrom, LocalDate reportTo) {
 
         String courts = "All courts";
         if (!allCourts) {

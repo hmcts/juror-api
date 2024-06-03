@@ -73,7 +73,7 @@ coalesce((select sum(substring(ph.other_information,1,length(ph.other_informatio
                 and ph.history_code = 'PHSI'
                 and position('Add' in ph.other_information) > 0
                 and ph.pool_no  = p_pool_number),0) as additional_summons,
-sum(case when coalesce(reminder_sent,false) = true then 1 else 0 end) as reminder,
+sum(case when coalesce(jp.reminder_sent,false) = true then 1 else 0 end) as reminder,
 sum(case when coalesce(jp.status,0) = 2 then 1 else 0 end) as supplied,
 sum(case when coalesce(jp.is_active,false) = true then case when j.acc_exc = 'Y' then 1 else 0 end else 0 end) as refused_excusal,
 sum(case when coalesce(jp.is_active,false) = true then case when j.acc_exc = 'Z' then 1 else 0 end else 0 end) as refused_deferral,
@@ -108,7 +108,7 @@ sum(case when coalesce(jp.status,0)::text || coalesce(j.excusal_code,'*') = '5Z'
 sum(case when coalesce(jp.status,0)::text || coalesce(j.excusal_code,'*') = '5CE' then 1 else 0 end) as cjs_employee,
 sum(case when coalesce(jp.status,0)::text || coalesce(j.excusal_code,'*') = '5DC' then 1 else 0 end) as deferred_court,
 sum(case when coalesce(jp.status,0)::text || coalesce(j.excusal_code,'*') = '5PE' then 1 else 0 end) as personal_engagement,
-sum(case when coalesce(j.excusal_code,'*') not in ('A','B','C','D','F','G','I','J','K','L','M','N','O','P','R','S','T','W','X','Y','Z','CE','DC','PE') then 1 else 0 end) as not_listed,
+sum(case when coalesce(jp.status,0) = 5 and coalesce(j.excusal_code,'*') not in ('A','B','C','D','F','G','I','J','K','L','M','N','O','P','R','S','T','W','X','Y','Z','CE','DC','PE') then 1 else 0 end) as not_listed,
 sum(case when coalesce(jr.processing_status,'*') in ('AWAITING_CONTACT','AWAITING_COURT_REPLY','AWAITING_TRANSLATION') then 1 else 0 end) as awaiting_info,
 sum(case when coalesce(jp.status,0) = 7 then case when jp.deferral_code = 'P' then 0 else 1 end else 0 end) as all_deferrals,
 sum(case when coalesce(jp.status,0)::text || coalesce(jp.deferral_code,'*') = '7P' then 1 else 0 end) as all_postponements

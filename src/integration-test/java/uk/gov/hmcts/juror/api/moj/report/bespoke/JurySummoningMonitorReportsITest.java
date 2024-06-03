@@ -67,14 +67,12 @@ class JurySummoningMonitorReportsITest extends AbstractControllerIntegrationTest
         return null;
     }
 
-    // TODO - Update the following tests with more data
-
     @Test
     void viewByPool() {
 
         JurySummoningMonitorReportRequest payload =  JurySummoningMonitorReportRequest.builder()
             .searchBy("POOL")
-            .poolNumber("415230701")
+            .poolNumber("415240803")
             .build();
 
         testBuilder()
@@ -90,7 +88,7 @@ class JurySummoningMonitorReportsITest extends AbstractControllerIntegrationTest
                     "pool_number", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Pool number")
                         .dataType("String")
-                        .value("415230701")
+                        .value("415240801")
                         .build(),
                     "pool_type", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Pool type")
@@ -100,32 +98,32 @@ class JurySummoningMonitorReportsITest extends AbstractControllerIntegrationTest
                     "service_start_date", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Service start date")
                         .dataType("LocalDate")
-                        .value("2024-03-04")
+                        .value("2024-08-05")
                         .build(),
                     "report_created", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Report created")
                         .dataType("LocalDate")
                         .value(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
                         .build()))
-                .totalJurorsNeeded(0)
+                .totalJurorsNeeded(15)
                 .bureauDeferralsIncluded(0)
-                .bureauToSupply(0)
-                .initiallySummoned(0)
-                .ratio(0.0)
-                .additionalSummonsIssued(0)
+                .bureauToSupply(15)
+                .initiallySummoned(16)
+                .ratio(1.0666666666666667)
+                .additionalSummonsIssued(10)
                 .reminderLettersIssued(0)
-                .totalConfirmedJurors(0)
+                .totalConfirmedJurors(2)
                 .deferralsRefused(0)
-                .excusalsRefused(0)
-                .totalUnavailable(0)
-                .nonResponded(0)
+                .excusalsRefused(1)
+                .totalUnavailable(23)
+                .nonResponded(17)
                 .undeliverable(0)
-                .awaitingInformation(0)
+                .awaitingInformation(1)
                 .disqualifiedPoliceCheck(0)
-                .disqualifiedOther(0)
-                .deferred(0)
-                .postponed(0)
-                .excused(0)
+                .disqualifiedOther(3)
+                .deferred(2)
+                .postponed(1)
+                .excused(1)
                 .bereavement(0)
                 .carer(0)
                 .childcare(0)
@@ -140,7 +138,7 @@ class JurySummoningMonitorReportsITest extends AbstractControllerIntegrationTest
                 .ill(0)
                 .languageDifficulties(0)
                 .medical(0)
-                .mentalHealth(0)
+                .mentalHealth(1)
                 .movedFromArea(0)
                 .other(0)
                 .personalEngagement(0)
@@ -152,6 +150,7 @@ class JurySummoningMonitorReportsITest extends AbstractControllerIntegrationTest
                 .build());
     }
 
+    // TODO - Update the following tests with more data once service is created
     @Test
     void viewByCourts() {
 
