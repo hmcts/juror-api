@@ -151,11 +151,12 @@ public class JurorServiceImplTest {
      */
     @Test
     public void getJurorByJurorNumber_alternatePath_uniquePoolAttendTime() {
-        doReturn("8am").when(mockUniquePoolService).getPoolAttendanceTime("101");
+        doReturn(LocalDateTime.of(2024,1,1,8,0,0))
+            .when(mockUniquePoolService).getPoolAttendanceTime("101");
         doReturn(jurorPoolDetails).when(poolDetailsRepository).findByJurorJurorNumber(TEST_JUROR_NUMBER);
 
         final JurorDetailDto jurorDto = defaultService.getJurorByJurorNumber(TEST_JUROR_NUMBER);
-        assertThat(jurorDto.getCourtAttendTime()).isEqualTo("8am");
+        assertThat(jurorDto.getCourtAttendTime()).isEqualTo("08:00");
     }
 
     @Test
