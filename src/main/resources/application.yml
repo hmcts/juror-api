@@ -99,7 +99,7 @@ spring:
     table: schema_history
     user: ${spring.datasource.username}
     password: ${spring.datasource.password}
-    locations: ${FLYWAY_LOC_OVERRIDE:['classpath:migrations','classpath:migrationsv2']}
+    locations: ${FLYWAY_LOC_OVERRIDE:[classpath:migrations, classpath:migrationsv2]}
     # url: ${spring.datasource.url}
     out-of-order: false
 logging:
