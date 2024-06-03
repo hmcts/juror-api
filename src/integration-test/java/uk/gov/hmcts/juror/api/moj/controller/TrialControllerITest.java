@@ -36,6 +36,7 @@ import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
+import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.TrialType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -720,14 +721,16 @@ class TrialControllerITest extends AbstractIntegrationTest {
                 "Expect status to be Responded (Juror in waiting)").isEqualTo(IJurorStatus.RESPONDED);
             assertThat(
                 jurorHistoryRepository.findByJurorNumber(panel.getJurorNumber()).size())
-                .as("Expect one history item for juror " + panel.getJurorNumber())
-                .isEqualTo(1);
+                .as("Expect two history items for juror " + panel.getJurorNumber())
+                .isEqualTo(2);
             assertThat(panel.isCompleted()).as("Expected panel completed status to be true").isTrue();
 
             Appearance appearance =
                 appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
                     LocalDate.now()).orElseThrow(() ->
                     new MojException.NotFound("No appearance record found", null));
+
+            assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J")
 
             assertThat(appearance.getTimeIn()).as("Expect time in to not be null").isNotNull();
             assertThat(appearance.getTimeIn()).as("Expect time in to be 09:00").isEqualTo(LocalTime.parse(
@@ -741,6 +744,10 @@ class TrialControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getAppearanceStage())
                 .as("Expect appearance stage to be EXPENSE_ENTERED")
                 .isEqualTo(AppearanceStage.EXPENSE_ENTERED);
+
+            assertThat(appearance.getAttendanceType())
+                .as("Expect attendance type to be HALF_DAY")
+                .isEqualTo(AttendanceType.HALF_DAY);
         }
     }
 
