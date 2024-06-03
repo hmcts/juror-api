@@ -112,6 +112,12 @@ public final class SecurityUtil {
         }
     }
 
+    public static void validateIsLocCode(String locCode) {
+        if (!getLocCode().equals(locCode)) {
+            throw new MojException.Forbidden("User does not have access", null);
+        }
+    }
+
     public static void validateCanAccessRole(Role role) {
         if (!hasRole(role)) {
             throw new MojException.Forbidden("User does not have access", null);

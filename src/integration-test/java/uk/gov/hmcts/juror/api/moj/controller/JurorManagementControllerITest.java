@@ -128,6 +128,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             .login("COURT_USER")
             .userType(UserType.COURT)
             .owner("415")
+            .locCode("415")
             .staff(BureauJwtPayload.Staff.builder().courts(Collections.singletonList("415")).build())
             .build());
 
@@ -494,7 +495,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("GET Retrieve attendance details okay - for tag NOT_CHECKED_OUT")
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") //False positive
+        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False positive
         void retrieveAttendanceNotCheckedOutTag() {
             RetrieveAttendanceDetailsDto request = buildRetrieveAttendanceDetailsDto(null);
             request.getCommonData().setTag(RetrieveAttendanceDetailsTag.NOT_CHECKED_OUT);
@@ -1019,7 +1020,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         @DisplayName("PATCH Update attendance - confirm attendance (no shows)")
         @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql",
             "/db/JurorExpenseControllerITest_expenseRates.sql"})
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") //False positive
+        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False positive
         void updateAttendanceNoShow() {
             UpdateAttendanceDto request = buildUpdateAttendanceDto(new ArrayList<>());
             request.getCommonData().setCheckInTime(null);
@@ -1867,8 +1868,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                 restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
                     URI.create("/api/v1/moj/juror-management/non-attendance")), String.class);
 
-            assertNotFound(response, "/api/v1/moj/juror-management/non-attendance",
-                "Court location 999 not found");
+            assertMojForbiddenResponse(response, "/api/v1/moj/juror-management/non-attendance",
+                "User does not have access");
         }
 
         @Test
