@@ -12,6 +12,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.FilterableJurorDetailsResp
 import uk.gov.hmcts.juror.api.moj.controller.response.NameDetails;
 import uk.gov.hmcts.juror.api.moj.controller.response.PaymentDetails;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 
 import java.util.List;
 
@@ -19,6 +20,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 public class FilterableJurorDetailsRequestDtoTest extends AbstractValidatorTest<FilterableJurorDetailsRequestDto> {
 
@@ -50,10 +52,11 @@ public class FilterableJurorDetailsRequestDtoTest extends AbstractValidatorTest<
         @Test
         void positivePaymentDetails() {
             Juror juror = mock(Juror.class);
+            JurorPool jurorPool = mock(JurorPool.class);
             FilterableJurorDetailsResponseDto responseDto = mock(FilterableJurorDetailsResponseDto.class);
 
             FilterableJurorDetailsRequestDto.FilterContext filterContext =
-                new FilterableJurorDetailsRequestDto.FilterContext(juror);
+                new FilterableJurorDetailsRequestDto.FilterContext(juror, jurorPool);
 
             PaymentDetails paymentDetails = mock(PaymentDetails.class);
             paymentDetailsMockedStatic = Mockito.mockStatic(PaymentDetails.class);
@@ -70,10 +73,11 @@ public class FilterableJurorDetailsRequestDtoTest extends AbstractValidatorTest<
         @Test
         void positiveNameDetails() {
             Juror juror = mock(Juror.class);
+            JurorPool jurorPool = mock(JurorPool.class);
             FilterableJurorDetailsResponseDto responseDto = mock(FilterableJurorDetailsResponseDto.class);
 
             FilterableJurorDetailsRequestDto.FilterContext filterContext =
-                new FilterableJurorDetailsRequestDto.FilterContext(juror);
+                new FilterableJurorDetailsRequestDto.FilterContext(juror, jurorPool);
 
             NameDetails nameDetails = mock(NameDetails.class);
             nameDetailsMockedStatic = Mockito.mockStatic(NameDetails.class);
@@ -90,10 +94,11 @@ public class FilterableJurorDetailsRequestDtoTest extends AbstractValidatorTest<
         @Test
         void positiveAddressDetails() {
             Juror juror = mock(Juror.class);
+            JurorPool jurorPool = mock(JurorPool.class);
             FilterableJurorDetailsResponseDto responseDto = mock(FilterableJurorDetailsResponseDto.class);
 
             FilterableJurorDetailsRequestDto.FilterContext filterContext =
-                new FilterableJurorDetailsRequestDto.FilterContext(juror);
+                new FilterableJurorDetailsRequestDto.FilterContext(juror, jurorPool);
 
             JurorAddressDto addressDto = mock(JurorAddressDto.class);
             jurorAddressDtoMockedStatic = Mockito.mockStatic(JurorAddressDto.class);
@@ -105,6 +110,24 @@ public class FilterableJurorDetailsRequestDtoTest extends AbstractValidatorTest<
             verifyNoMoreInteractions(responseDto);
             jurorAddressDtoMockedStatic.verify(() -> JurorAddressDto.from(juror), times(1));
             jurorAddressDtoMockedStatic.verifyNoMoreInteractions();
+        }
+
+        @Test
+        void positiveActivePool() {
+            Juror juror = mock(Juror.class);
+            JurorPool jurorPool = mock(JurorPool.class);
+            when(jurorPool.getPoolNumber()).thenReturn(TestConstants.VALID_POOL_NUMBER);
+            FilterableJurorDetailsResponseDto responseDto = mock(FilterableJurorDetailsResponseDto.class);
+
+            FilterableJurorDetailsRequestDto.FilterContext filterContext =
+                new FilterableJurorDetailsRequestDto.FilterContext(juror, jurorPool);
+
+            FilterableJurorDetailsRequestDto.IncludeType.ACTIVE_POOL.apply(responseDto, filterContext);
+
+            verify(responseDto, times(1)).setActivePool(TestConstants.VALID_POOL_NUMBER);
+            verifyNoMoreInteractions(responseDto);
+
+            verify(jurorPool, times(1)).getPoolNumber();
         }
     }
 
