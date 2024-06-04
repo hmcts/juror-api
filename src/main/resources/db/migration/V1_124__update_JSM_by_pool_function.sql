@@ -112,7 +112,7 @@ sum(case when coalesce(jr.processing_status,'*') in ('AWAITING_CONTACT','AWAITIN
 sum(case when coalesce(jp.status,0) = 7 then case when jp.deferral_code = 'P' then 0 else 1 end else 0 end) as all_deferrals,
 sum(case when coalesce(jp.status,0)::text || coalesce(jp.deferral_code,'*') = '7P' then 1 else 0 end) as all_postponements
 from juror_mod.juror_pool jp
-join juror_mod.pool p on jp.pool_number = p.pool_no and jp.owner = p.owner
+join juror_mod.pool p on jp.pool_number = p.pool_no
 join juror_mod.juror j on jp.juror_number = j.juror_number
 left join juror_mod.juror_response jr on jp.juror_number = jr.juror_number
 where jp.owner = '400'
