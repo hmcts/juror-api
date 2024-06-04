@@ -9,6 +9,7 @@ import org.mockito.Mockito;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.moj.AbstractValidatorTest;
 import uk.gov.hmcts.juror.api.moj.controller.response.FilterableJurorDetailsResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorPoolDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.NameDetails;
 import uk.gov.hmcts.juror.api.moj.controller.response.PaymentDetails;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
@@ -35,6 +36,7 @@ public class FilterableJurorDetailsRequestDtoTest extends AbstractValidatorTest<
         private MockedStatic<PaymentDetails> paymentDetailsMockedStatic;
         private MockedStatic<NameDetails> nameDetailsMockedStatic;
         private MockedStatic<JurorAddressDto> jurorAddressDtoMockedStatic;
+        private MockedStatic<JurorPoolDetailsDto> jurorPoolDetailsDtoMockedStatic;
 
         @AfterEach
         void mockCurrentUser() {
@@ -46,6 +48,9 @@ public class FilterableJurorDetailsRequestDtoTest extends AbstractValidatorTest<
             }
             if (jurorAddressDtoMockedStatic != null) {
                 jurorAddressDtoMockedStatic.close();
+            }
+            if (jurorPoolDetailsDtoMockedStatic != null) {
+                jurorPoolDetailsDtoMockedStatic.close();
             }
         }
 
@@ -113,21 +118,24 @@ public class FilterableJurorDetailsRequestDtoTest extends AbstractValidatorTest<
         }
 
         @Test
-        void positiveActivePool() {
+        void positiveActivePoolDetails() {
             Juror juror = mock(Juror.class);
             JurorPool jurorPool = mock(JurorPool.class);
-            when(jurorPool.getPoolNumber()).thenReturn(TestConstants.VALID_POOL_NUMBER);
             FilterableJurorDetailsResponseDto responseDto = mock(FilterableJurorDetailsResponseDto.class);
 
             FilterableJurorDetailsRequestDto.FilterContext filterContext =
                 new FilterableJurorDetailsRequestDto.FilterContext(juror, jurorPool);
 
+            JurorPoolDetailsDto jurorPoolDetailsDto = mock(JurorPoolDetailsDto.class);
+            jurorPoolDetailsDtoMockedStatic = Mockito.mockStatic(JurorPoolDetailsDto.class);
+            jurorPoolDetailsDtoMockedStatic.when(() -> JurorPoolDetailsDto.from(jurorPool)).thenReturn(jurorPoolDetailsDto);
+
             FilterableJurorDetailsRequestDto.IncludeType.ACTIVE_POOL.apply(responseDto, filterContext);
 
-            verify(responseDto, times(1)).setActivePool(TestConstants.VALID_POOL_NUMBER);
+            verify(responseDto, times(1)).setActivePool(jurorPoolDetailsDto);
             verifyNoMoreInteractions(responseDto);
-
-            verify(jurorPool, times(1)).getPoolNumber();
+            jurorPoolDetailsDtoMockedStatic.verify(() -> JurorPoolDetailsDto.from(jurorPool), times(1));
+            jurorPoolDetailsDtoMockedStatic.verifyNoMoreInteractions();
         }
     }
 
