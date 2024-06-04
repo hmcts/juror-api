@@ -111,7 +111,7 @@ class JurySummoningMonitorReportsITest extends AbstractControllerIntegrationTest
                 .bureauDeferralsIncluded(0)
                 .bureauToSupply(15)
                 .initiallySummoned(16)
-                .ratio(1.0666666666666667)
+                .ratio(1.07)
                 .additionalSummonsIssued(10)
                 .reminderLettersIssued(0)
                 .totalConfirmedJurors(2)

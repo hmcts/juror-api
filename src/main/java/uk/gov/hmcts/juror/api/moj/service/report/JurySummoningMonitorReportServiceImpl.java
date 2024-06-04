@@ -23,6 +23,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
+import static org.codehaus.groovy.runtime.DefaultGroovyMethods.round;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
@@ -125,8 +127,8 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
 
         if (response.getTotalJurorsNeeded() - response.getBureauDeferralsIncluded() > 0) {
             response.setRatio(
-                (double) response.getInitiallySummoned()
-                    / (response.getTotalJurorsNeeded() - response.getBureauDeferralsIncluded()));
+                round((double) response.getInitiallySummoned()
+                    / (response.getTotalJurorsNeeded() - response.getBureauDeferralsIncluded()),2));
         } else {
             response.setRatio(0.0);
         }
