@@ -1,3 +1,4 @@
+
 -- Function to return jury summoning monitor stats for a pool
 create or replace function juror_mod.jsm_report_by_pool(p_pool_number text)
  returns table(
