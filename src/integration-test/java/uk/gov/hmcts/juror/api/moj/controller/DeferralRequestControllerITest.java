@@ -101,7 +101,7 @@ public class DeferralRequestControllerITest extends AbstractIntegrationTest {
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP PUT request to be OK")
-            .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+            .isEqualTo(HttpStatus.OK);
     }
 
     @Test
@@ -208,6 +208,23 @@ public class DeferralRequestControllerITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode())
             .as("Expect the HTTP PUT request to be OK")
             .isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/DeferralRequestController_createInitialPoolRecords.sql"})
+    public void grant_Deferral_unhappyPath_deferred_before() {
+        String jurorNumber = "987654321";
+        String deferralReason = "B";
+
+        DeferralRequestDto requestDto = createGrantDeferralDecisionDto(jurorNumber, deferralReason);
+        requestDto.setAllowMultipleDeferrals(false);
+        ResponseEntity<DeferralRequestDto> response =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PUT,
+                URI.create("/api/v1/moj/deferral-response/juror/" + jurorNumber)), DeferralRequestDto.class);
+
+        assertThat(response.getStatusCode())
+            .as("Expect the HTTP PUT request to be OK")
+            .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     @Test
