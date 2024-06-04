@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.juror.api.moj.controller.response.FilterableJurorDetailsResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorPoolDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.NameDetails;
 import uk.gov.hmcts.juror.api.moj.controller.response.PaymentDetails;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
@@ -46,7 +47,7 @@ public class FilterableJurorDetailsRequestDto {
         NAME_DETAILS((dto, context) -> dto.setNameDetails(NameDetails.from(context.juror()))),
         ADDRESS_DETAILS((dto, context) -> dto.setAddress(JurorAddressDto.from(context.juror()))),
         MILEAGE((dto, context) -> dto.setMileage(context.juror().getMileage())),
-        ACTIVE_POOL((dto, context) -> dto.setActivePool(context.jurorPool().getPoolNumber()));
+        ACTIVE_POOL((dto, context) -> dto.setActivePool(JurorPoolDetailsDto.from(context.jurorPool())));
 
         private final BiConsumer<FilterableJurorDetailsResponseDto, FilterContext> filter;
 
