@@ -148,6 +148,9 @@ public class PoolRatioReport extends AbstractStandardReport {
         query.where(QJurorPool.jurorPool.pool.returnDate.between(request.getFromDate(), request.getToDate()));
         query.where(QJurorPool.jurorPool.pool.courtLocation.locCode.in(request.getCourts()));
 
+        query.orderBy(QJurorPool.jurorPool.pool.courtLocation.name.asc(),
+            QJurorPool.jurorPool.pool.courtLocation.locCode.asc());
+
         query.groupBy(
             QJurorPool.jurorPool.pool.poolNumber,
             QJurorPool.jurorPool.pool.numberRequested,
