@@ -20,14 +20,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.hmcts.juror.api.config.security.IsBureauUser;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
+import uk.gov.hmcts.juror.api.moj.controller.reports.request.JurySummoningMonitorReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportJurorsResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.FinancialAuditReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.JurySummoningMonitorReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.MonthlyUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.service.report.FinancialAuditReportService;
+import uk.gov.hmcts.juror.api.moj.service.report.JurySummoningMonitorReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.ReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService;
 import uk.gov.hmcts.juror.api.validation.CourtLocationCode;
@@ -46,6 +50,7 @@ public class ReportController {
     private final ReportService reportService;
     private final FinancialAuditReportService financialAuditReportService;
     private final UtilisationReportService utilisationReportService;
+    private final JurySummoningMonitorReportService jurySummoningMonitorReportService;
 
     @PostMapping("/standard")
     @Operation(summary = "View a given report")
@@ -126,6 +131,18 @@ public class ReportController {
         @P("locCode") @PathVariable("locCode") @CourtLocationCode @Valid String locCode
     ) {
         return ResponseEntity.ok(utilisationReportService.getMonthlyUtilisationReports(locCode));
+    }
+
+    @PostMapping("/jury-summoning-monitor")
+    @Operation(summary = "View a jury summoning monitor report")
+    @ResponseStatus(HttpStatus.OK)
+    @IsBureauUser
+    public ResponseEntity<JurySummoningMonitorReportResponse> viewJurySummoningMonitorReport(
+        @RequestBody
+        @Valid JurySummoningMonitorReportRequest jurySummoningMonitorReportRequest
+    ) {
+        return ResponseEntity.ok(jurySummoningMonitorReportService
+            .viewJurySummoningMonitorReport(jurySummoningMonitorReportRequest));
     }
 
 }
