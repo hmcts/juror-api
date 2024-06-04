@@ -206,13 +206,13 @@ public class PoolCreateServiceTest {
         int citizensToSummon = 1;
         int noRequested = 1;
         final Map<String, String> jurorNumber = Collections.singletonMap(createValidVoter().getJurorNumber(), null);
-        CourtLocation courtLocation = createValidPoolRequest("415220110").getCourtLocation();
 
         final BureauJwtPayload payload = buildPayload(owner);
 
         PoolCreateRequestDto poolCreateRequestDto = createValidPoolCreateRequestDto();
         poolCreateRequestDto.setNoRequested(noRequested);
         poolCreateRequestDto.setCitizensToSummon(citizensToSummon);
+        poolCreateRequestDto.setPreviousJurorCount(0);
 
         //GET POOL MEMBER
         Mockito.when(votersServiceImpl.getVoters(Mockito.any(), Mockito.any())).thenReturn(jurorNumber);
@@ -227,7 +227,6 @@ public class PoolCreateServiceTest {
 
         //CREATE POOL MEMBER
         JurorPool jurorPool = createValidJurorPool();
-        List<JurorPool> jurorPoolList = List.of(jurorPool);
         List<Juror> jurorList = List.of(jurorPool.getJuror());
         Mockito.when(jurorRepository.saveAll(Mockito.any())).thenReturn(jurorList);
         Mockito.when(jurorPoolRepository.saveAll(Mockito.any())).thenReturn(List.of(jurorPool));
@@ -799,6 +798,7 @@ public class PoolCreateServiceTest {
         courtLocation.setYield(BigDecimal.valueOf(2));
         poolRequest.setCourtLocation(courtLocation);
         poolRequest.setLastUpdate(LocalDateTime.now());
+        poolRequest.setJurorPools(List.of());
         return poolRequest;
     }
 

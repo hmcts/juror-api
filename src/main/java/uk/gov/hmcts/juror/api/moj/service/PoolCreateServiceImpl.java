@@ -41,6 +41,7 @@ import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
 import uk.gov.hmcts.juror.api.moj.domain.Voters;
 import uk.gov.hmcts.juror.api.moj.domain.VotersLocPostcodeTotals;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.PoolCreateException;
 import uk.gov.hmcts.juror.api.moj.repository.CoronerPoolDetailRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CoronerPoolRepository;
@@ -340,6 +341,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         poolCreateRequestDto.setAttendTime(poolRequest.getAttendTime());
 
         poolCreateRequestDto.setBureauDeferrals(poolAdditionalSummonsDto.getBureauDeferrals());
+        poolCreateRequestDto.setPreviousJurorCount(poolAdditionalSummonsDto.getPreviousJurorCount());
 
         return poolCreateRequestDto;
     }
@@ -406,6 +408,12 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                 poolMemberSequenceService.getPoolMemberSequenceNumber(poolCreateRequestDto.getPoolNumber());
             PoolRequest poolRequest = RepositoryUtils.retrieveFromDatabase(poolNumber, poolRequestRepository);
 
+            if (poolRequest.getJurorPools().size() != poolCreateRequestDto.getPreviousJurorCount()) {
+                throw new MojException.BusinessRuleViolation(
+                    "Total number of jurors in this pool has been updated since you last viewed this record.",
+                    MojException.BusinessRuleViolation.ErrorCode.DATA_IS_OUT_OF_DATE);
+            }
+
             int jurorsFound = 0;
             for (String jurorNumber : jurorNumbers) {
                 Voters voter = votersRepository.findByJurorNumber(jurorNumber);
@@ -447,6 +455,8 @@ public class PoolCreateServiceImpl implements PoolCreateService {
             poolRequest.setNewRequest('N');
             poolRequestRepository.save(poolRequest);
 
+        } catch (MojException.BusinessRuleViolation businessRuleViolation) {
+            throw businessRuleViolation;
         } catch (Exception e) {
             log.error("Exception occurred when adding members to pool - {}", e.getMessage());
             throw new PoolCreateException.UnableToCreatePool();
