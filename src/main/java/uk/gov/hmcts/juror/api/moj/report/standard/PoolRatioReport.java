@@ -110,7 +110,7 @@ public class PoolRatioReport extends AbstractStandardReport {
                     String key = entry.getKey();
                     TableData value = entry.getValue();
                     LinkedHashMap<String, Object> map = new LinkedHashMap<>();
-                    map.put(DataType.COURT_LOCATION_NAME_AND_CODE.getId(), key);
+                    map.put(DataType.COURT_LOCATION_NAME_AND_CODE_JP.getId(), key);
                     map.put(DataType.TOTAL_REQUESTED.getId(), value.getRequested());
                     map.put(DataType.TOTAL_DEFERRED.getId(), value.getDeferred());
                     map.put(DataType.TOTAL_SUMMONED.getId(), value.getSummoned());

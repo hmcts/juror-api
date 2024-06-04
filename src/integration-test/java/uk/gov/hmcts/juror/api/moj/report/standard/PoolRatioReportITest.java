@@ -53,7 +53,7 @@ class PoolRatioReportITest extends AbstractStandardReportControllerITest {
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(buildStandardReportResponse(StandardTableData.of(
                 new ReportLinkedMap<String, Object>()
-                    .add("court_location_name_and_code", "CHESTER (415)")
+                    .add("court_location_name_and_code_jp", "CHESTER (415)")
                     .add("total_requested", 15)
                     .add("total_deferred", 4)
                     .add("total_summoned", 12)
@@ -61,7 +61,7 @@ class PoolRatioReportITest extends AbstractStandardReportControllerITest {
                     .add("ratio_1", 0.7272727272727273)
                     .add("ratio_2", 1.0),
                 new ReportLinkedMap<String, Object>()
-                    .add("court_location_name_and_code", "Chelmsford  (414)")
+                    .add("court_location_name_and_code_jp", "Chelmsford  (414)")
                     .add("total_requested", 15)
                     .add("total_deferred", 5)
                     .add("total_summoned", 10)
@@ -69,7 +69,7 @@ class PoolRatioReportITest extends AbstractStandardReportControllerITest {
                     .add("ratio_1", 0.5)
                     .add("ratio_2", 1.6666666666666667),
                 new ReportLinkedMap<String, Object>()
-                    .add("court_location_name_and_code", "The Central Criminal Court (413)")
+                    .add("court_location_name_and_code_jp", "The Central Criminal Court (413)")
                     .add("total_requested", 10)
                     .add("total_deferred", 1)
                     .add("total_summoned", 9)
