@@ -218,7 +218,7 @@ public enum DataType implements IDataType {
     COURT_LOCATION_NAME_AND_CODE("Court Location Name And Code", String.class,
         QPoolRequest.poolRequest.courtLocation.name.concat(" (")
             .concat(QPoolRequest.poolRequest.courtLocation.locCode).concat(")"), QPoolRequest.poolRequest),
-    COURT_LOCATION_NAME_AND_CODE_JP("Court Location Name And Code", String.class,
+    COURT_LOCATION_NAME_AND_CODE_JP("Court", String.class,
         QJurorPool.jurorPool.pool.courtLocation.name.concat(" (")
             .concat(QJurorPool.jurorPool.pool.courtLocation.locCode).concat(")"), QJurorPool.jurorPool),
 

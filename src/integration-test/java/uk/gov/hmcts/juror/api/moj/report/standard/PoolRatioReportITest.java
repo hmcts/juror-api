@@ -105,7 +105,7 @@ class PoolRatioReportITest extends AbstractStandardReportControllerITest {
                     .headings(List.of(
                         StandardReportResponse.TableData.Heading.builder()
                             .id("court_location_name_and_code_jp")
-                            .name("Court Location Name And Code")
+                            .name("Court")
                             .dataType("String")
                             .headings(null)
                             .build(),
