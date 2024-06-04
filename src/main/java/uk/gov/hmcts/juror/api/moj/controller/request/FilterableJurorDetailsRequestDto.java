@@ -14,6 +14,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.FilterableJurorDetailsResp
 import uk.gov.hmcts.juror.api.moj.controller.response.NameDetails;
 import uk.gov.hmcts.juror.api.moj.controller.response.PaymentDetails;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.validation.JurorNumber;
 
 import java.util.List;
@@ -44,7 +45,8 @@ public class FilterableJurorDetailsRequestDto {
         PAYMENT_DETAILS((dto, context) -> dto.setPaymentDetails(PaymentDetails.from(context.juror()))),
         NAME_DETAILS((dto, context) -> dto.setNameDetails(NameDetails.from(context.juror()))),
         ADDRESS_DETAILS((dto, context) -> dto.setAddress(JurorAddressDto.from(context.juror()))),
-        MILEAGE((dto, context) -> dto.setMileage(context.juror().getMileage()));
+        MILEAGE((dto, context) -> dto.setMileage(context.juror().getMileage())),
+        ACTIVE_POOL((dto, context) -> dto.setActivePool(context.jurorPool().getPoolNumber()));
 
         private final BiConsumer<FilterableJurorDetailsResponseDto, FilterContext> filter;
 
@@ -58,6 +60,6 @@ public class FilterableJurorDetailsRequestDto {
     }
 
 
-    public record FilterContext(Juror juror) {
+    public record FilterContext(Juror juror, JurorPool jurorPool) {
     }
 }

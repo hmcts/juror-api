@@ -46,4 +46,7 @@ public class FilterableJurorDetailsResponseDto {
 
     @JsonProperty("mileage")
     private Integer mileage;
+
+    @JsonProperty("active_pool")
+    private String activePool;
 }
