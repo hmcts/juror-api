@@ -40,6 +40,8 @@ import static org.assertj.core.api.BDDAssertions.within;
 class JurySummoningMonitorReportsITest extends AbstractControllerIntegrationTest<JurySummoningMonitorReportRequest,
     JurySummoningMonitorReportResponse> {
     public static final String URL = "/api/v1/moj/reports/jury-summoning-monitor";
+    public static final String LOCAL_DATE = "LocalDate";
+    public static final String STRING = "String";
 
     @Autowired
     public JurySummoningMonitorReportsITest(TestRestTemplate template) {
@@ -72,7 +74,7 @@ class JurySummoningMonitorReportsITest extends AbstractControllerIntegrationTest
 
         JurySummoningMonitorReportRequest payload =  JurySummoningMonitorReportRequest.builder()
             .searchBy("POOL")
-            .poolNumber("415240803")
+            .poolNumber("415240801")
             .build();
 
         testBuilder()
@@ -82,27 +84,27 @@ class JurySummoningMonitorReportsITest extends AbstractControllerIntegrationTest
             .assertEquals(JurySummoningMonitorReportResponse.builder()
                 .headings(Map.of("court", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Court")
-                        .dataType("String")
+                        .dataType(STRING)
                         .value("CHESTER (415)")
                         .build(),
                     "pool_number", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Pool number")
-                        .dataType("String")
+                        .dataType(STRING)
                         .value("415240801")
                         .build(),
                     "pool_type", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Pool type")
-                        .dataType("String")
+                        .dataType(STRING)
                         .value("CROWN COURT")
                         .build(),
                     "service_start_date", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Service start date")
-                        .dataType("LocalDate")
+                        .dataType(LOCAL_DATE)
                         .value("2024-08-05")
                         .build(),
                     "report_created", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Report created")
-                        .dataType("LocalDate")
+                        .dataType(LOCAL_DATE)
                         .value(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
                         .build()))
                 .totalJurorsNeeded(15)
@@ -169,22 +171,22 @@ class JurySummoningMonitorReportsITest extends AbstractControllerIntegrationTest
             .assertEquals(JurySummoningMonitorReportResponse.builder()
                 .headings(Map.of("courts", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Courts")
-                        .dataType("String")
+                        .dataType(STRING)
                         .value("CHESTER (415)")
                         .build(),
                     "date_from", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Date from")
-                        .dataType("LocalDate")
+                        .dataType(LOCAL_DATE)
                         .value("2024-01-01")
                         .build(),
                     "date_to", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Date to")
-                        .dataType("LocalDate")
+                        .dataType(LOCAL_DATE)
                         .value("2024-05-01")
                         .build(),
                     "report_created", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Report created")
-                        .dataType("LocalDate")
+                        .dataType(LOCAL_DATE)
                         .value(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
                         .build()))
                 .totalJurorsNeeded(0)
@@ -249,22 +251,22 @@ class JurySummoningMonitorReportsITest extends AbstractControllerIntegrationTest
             .assertEquals(JurySummoningMonitorReportResponse.builder()
                 .headings(Map.of("courts", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Courts")
-                        .dataType("String")
+                        .dataType(STRING)
                         .value("All courts")
                         .build(),
                     "date_from", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Date from")
-                        .dataType("LocalDate")
+                        .dataType(LOCAL_DATE)
                         .value("2024-01-01")
                         .build(),
                     "date_to", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Date to")
-                        .dataType("LocalDate")
+                        .dataType(LOCAL_DATE)
                         .value("2024-05-01")
                         .build(),
                     "report_created", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Report created")
-                        .dataType("LocalDate")
+                        .dataType(LOCAL_DATE)
                         .value(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
                         .build()))
                 .totalJurorsNeeded(0)

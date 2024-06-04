@@ -41,8 +41,6 @@ import static org.mockito.Mockito.when;
 })
 class JurySummoningMonitorReportServiceImplTest {
 
-    private final static String RESULT_DEFAULTS = "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"
-        + "0,0,0,0,0,0,0,0,0,0,0";
     private final CourtLocationRepository courtLocationRepository;
     private final PoolRequestRepository poolRequestRepository;
     private final JurorPoolRepository jurorPoolRepository;
@@ -89,7 +87,7 @@ class JurySummoningMonitorReportServiceImplTest {
                 .build();
 
             when(poolRequestRepository.findByPoolNumber(poolNumber)).thenReturn(Optional.of(poolRequest));
-            when(jurorPoolRepository.getJsmReportByPool(poolNumber)).thenReturn(RESULT_DEFAULTS);
+            when(jurorPoolRepository.getJsmReportByPool(poolNumber)).thenReturn(null);
 
             JurySummoningMonitorReportResponse response =
                 jurySummoningMonitorReportService.viewJurySummoningMonitorReport(
@@ -100,18 +98,23 @@ class JurySummoningMonitorReportServiceImplTest {
 
             validateReportHeadings(headings);
 
+            defaultResponse(response);
+
+
+            assertThat(response.getTotalExcused()).isZero();
+
             AbstractReportResponse.DataTypeValue timeCreated = headings.get("time_created");
             assertThat(timeCreated.getDisplayName()).isEqualTo("Time created");
             assertThat(timeCreated.getDataType()).isEqualTo("LocalDateTime");
             LocalDateTime createdTime = LocalDateTime.parse((String) timeCreated.getValue(),
                 DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-            assertThat(createdTime).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS))
-                .as("Creation time should be correct");
+            assertThat(createdTime).as("Creation time should be correct")
+                .isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS));
 
             verify(poolRequestRepository, times(1)).findByPoolNumber(poolNumber);
             verify(jurorPoolRepository, times(1)).getJsmReportByPool(poolNumber);
+            verifyNoInteractions(courtLocationRepository);
         }
-
 
         private void validateReportHeadings(Map<String, AbstractReportResponse.DataTypeValue> headings) {
 
@@ -254,6 +257,54 @@ class JurySummoningMonitorReportServiceImplTest {
         }
     }
 
+    private void defaultResponse(JurySummoningMonitorReportResponse response) {
+        assertThat(response.getInitiallySummoned()).isZero();
+        assertThat(response.getAdditionalSummonsIssued()).isZero();
+        assertThat(response.getBureauDeferralsIncluded()).isZero();
+        assertThat(response.getTotalJurorsNeeded()).isZero();
+        assertThat(response.getAwaitingInformation()).isZero();
+        assertThat(response.getBureauToSupply()).isZero();
+        assertThat(response.getDeferred()).isZero();
+        assertThat(response.getExcused()).isZero();
+        assertThat(response.getPostponed()).isZero();
+        assertThat(response.getNonResponded()).isZero();
+        assertThat(response.getTotalConfirmedJurors()).isZero();
+        assertThat(response.getRatio()).isEqualTo(0.0);
+        assertThat(response.getUndeliverable()).isZero();
+        assertThat(response.getExcusalsRefused()).isZero();
+        assertThat(response.getDeferralsRefused()).isZero();
+        assertThat(response.getReminderLettersIssued()).isZero();
+        assertThat(response.getDisqualifiedPoliceCheck()).isZero();
+        assertThat(response.getDisqualifiedOther()).isZero();
+        assertThat(response.getTotalUnavailable()).isZero();
+
+        assertThat(response.getBereavement()).isZero();
+        assertThat(response.getCarer()).isZero();
+        assertThat(response.getCriminalRecord()).isZero();
+        assertThat(response.getDeferredByCourt()).isZero();
+        assertThat(response.getCjsEmployment()).isZero();
+        assertThat(response.getChildcare()).isZero();
+        assertThat(response.getDeceased()).isZero();
+        assertThat(response.getMovedFromArea()).isZero();
+        assertThat(response.getFinancialHardship()).isZero();
+        assertThat(response.getForces()).isZero();
+        assertThat(response.getHoliday()).isZero();
+        assertThat(response.getIll()).isZero();
+        assertThat(response.getLanguageDifficulties()).isZero();
+        assertThat(response.getMedical()).isZero();
+        assertThat(response.getMentalHealth()).isZero();
+        assertThat(response.getOther()).isZero();
+        assertThat(response.getPersonalEngagement()).isZero();
+        assertThat(response.getPostponementOfService()).isZero();
+        assertThat(response.getRecentlyServed()).isZero();
+        assertThat(response.getExcusedByBureau()).isZero();
+        assertThat(response.getDeferredByCourt()).isZero();
+        assertThat(response.getReligiousReasons()).isZero();
+        assertThat(response.getTravellingDifficulties()).isZero();
+        assertThat(response.getWorkRelated()).isZero();
+
+        assertThat(response.getTotalExcused()).isZero();
+    }
 
     private CourtLocation setupCourt(String locCode, String owner) {
         CourtLocation courtLocation = new CourtLocation();
