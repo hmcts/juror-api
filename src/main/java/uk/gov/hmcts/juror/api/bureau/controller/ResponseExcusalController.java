@@ -51,7 +51,7 @@ public class ResponseExcusalController {
     @GetMapping
     @Operation(summary = "list of potential excusal reasons",
         description = "Retrieve list of potential excusal reasons")
-    public ResponseEntity<ExcusalReasonsDto> getExcusalReasons() throws ExcusalException {
+    public ResponseEntity<ExcusalReasonsDto> getExcusalReasons() {
         List<ExcusalCodeDto> excusalReasons = responseExcusalService.getExcusalReasons();
 
         return ResponseEntity.ok().body(new ExcusalReasonsDto(excusalReasons));
@@ -63,7 +63,7 @@ public class ResponseExcusalController {
     public ResponseEntity<Void> excuseJuror(
         @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,
         BureauJwtAuthentication jwt,
-        @Validated @RequestBody ExcusalCodeDto excusalCodeDto) throws ExcusalException {
+        @Validated @RequestBody ExcusalCodeDto excusalCodeDto) {
         assertJurorNumberPathVariable(jurorId);
         final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
         if (null == excusalCodeDto.getExcusalCode() || null == excusalCodeDto.getVersion()) {
@@ -86,7 +86,7 @@ public class ResponseExcusalController {
     public ResponseEntity<Void> rejectExcusalRequest(
         @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,
         BureauJwtAuthentication jwt,
-        @Validated @RequestBody ExcusalCodeDto excusalCodeDto) throws ExcusalException {
+        @Validated @RequestBody ExcusalCodeDto excusalCodeDto) {
         assertJurorNumberPathVariable(jurorId);
         final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
         if (null == excusalCodeDto.getExcusalCode() || null == excusalCodeDto.getVersion()) {

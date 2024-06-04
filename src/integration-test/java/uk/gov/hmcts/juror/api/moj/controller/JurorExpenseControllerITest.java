@@ -2618,10 +2618,10 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         LocalDate.of(2023, 1, 16)));
 
                 assertJurorHistory(JUROR_NUMBER, HistoryCodeMod.ARAMIS_EXPENSES_FILE_CREATED, "COURT_USER",
-                    "£407.00",
+                    "£409.00",
                     null, LocalDate.of(2023, 1, 16), "F" + id);
-                assertPaymentData(JUROR_NUMBER, new BigDecimal("407.00"), new BigDecimal("260.00"),
-                    new BigDecimal("57.00"), new BigDecimal("90.00"));
+                assertPaymentData(JUROR_NUMBER, new BigDecimal("409.00"), new BigDecimal("260.00"),
+                    new BigDecimal("59.00"), new BigDecimal("90.00"));
 
             }
 
@@ -2643,8 +2643,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertThat(paymentData.getFinancialLossTotal()).isEqualTo(financialLoss);
                 assertThat(paymentData.getTravelTotal()).isEqualTo(travel);
                 assertThat(paymentData.getSubsistenceTotal()).isEqualTo(subsistence);
-
-
             }
         }
 

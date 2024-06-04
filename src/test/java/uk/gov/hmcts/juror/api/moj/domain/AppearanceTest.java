@@ -367,9 +367,8 @@ class AppearanceTest {
     void positiveGetSubsistenceTotalDue() {
         Appearance appearance = spy(new Appearance());
         doReturn(new BigDecimal("10.00")).when(appearance).getSubsistenceDue();
-        doReturn(new BigDecimal("1.00")).when(appearance).getSmartCardAmountDue();
         assertThat(appearance.getSubsistenceTotalDue()).isEqualTo(
-            new BigDecimal("9.00"));
+            new BigDecimal("10.00"));
     }
 
     @Test
@@ -384,9 +383,8 @@ class AppearanceTest {
     void positiveGetSubsistenceTotalPaid() {
         Appearance appearance = spy(new Appearance());
         doReturn(new BigDecimal("10.00")).when(appearance).getSubsistencePaid();
-        doReturn(new BigDecimal("1.00")).when(appearance).getSmartCardAmountPaid();
         assertThat(appearance.getSubsistenceTotalPaid()).isEqualTo(
-            new BigDecimal("9.00"));
+            new BigDecimal("10.00"));
     }
 
     @Test
@@ -403,11 +401,30 @@ class AppearanceTest {
         doReturn(new BigDecimal("20.00")).when(appearance).getSubsistenceDue();
         doReturn(new BigDecimal("10.00")).when(appearance).getSubsistencePaid();
 
-        doReturn(new BigDecimal("3.00")).when(appearance).getSmartCardAmountDue();
-        doReturn(new BigDecimal("1.00")).when(appearance).getSmartCardAmountPaid();
+        assertThat(appearance.getSubsistenceTotalChanged())
+            .isEqualTo(new BigDecimal("10.00"));
+    }
 
-        assertThat(appearance.getTotalChanged())
-            .isEqualTo(new BigDecimal("8.00"));
+    @Test
+    void positiveGetSmartCardTotalChangedDraft() {
+        Appearance appearance = spy(new Appearance());
+        doReturn(AppearanceStage.EXPENSE_ENTERED).when(appearance).getAppearanceStage();
+        doReturn(new BigDecimal("20.00")).when(appearance).getSubsistenceDue();
+        doReturn(new BigDecimal("0.00")).when(appearance).getSubsistencePaid();
+
+        assertThat(appearance.getSmartCardTotalChanged())
+            .isEqualTo(new BigDecimal("20.00"));
+    }
+
+    @Test
+    void positiveGetSmartCardTotalChangedApproved() {
+        Appearance appearance = spy(new Appearance());
+        doReturn(AppearanceStage.EXPENSE_AUTHORISED).when(appearance).getAppearanceStage();
+        doReturn(new BigDecimal("10.00")).when(appearance).getSubsistenceDue();
+        doReturn(new BigDecimal("20.00")).when(appearance).getSubsistencePaid();
+
+        assertThat(appearance.getSmartCardTotalChanged())
+            .isEqualTo(new BigDecimal("10.00"));
     }
 
     @Nested
