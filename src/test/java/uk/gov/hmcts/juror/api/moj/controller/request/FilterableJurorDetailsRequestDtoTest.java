@@ -21,7 +21,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
 
 public class FilterableJurorDetailsRequestDtoTest extends AbstractValidatorTest<FilterableJurorDetailsRequestDto> {
 
@@ -128,7 +127,8 @@ public class FilterableJurorDetailsRequestDtoTest extends AbstractValidatorTest<
 
             JurorPoolDetailsDto jurorPoolDetailsDto = mock(JurorPoolDetailsDto.class);
             jurorPoolDetailsDtoMockedStatic = Mockito.mockStatic(JurorPoolDetailsDto.class);
-            jurorPoolDetailsDtoMockedStatic.when(() -> JurorPoolDetailsDto.from(jurorPool)).thenReturn(jurorPoolDetailsDto);
+            jurorPoolDetailsDtoMockedStatic.when(() -> JurorPoolDetailsDto.from(jurorPool))
+                .thenReturn(jurorPoolDetailsDto);
 
             FilterableJurorDetailsRequestDto.IncludeType.ACTIVE_POOL.apply(responseDto, filterContext);
 

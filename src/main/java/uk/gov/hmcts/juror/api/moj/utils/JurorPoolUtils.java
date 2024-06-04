@@ -107,8 +107,8 @@ public final class JurorPoolUtils {
      * @param jurorPoolRepository JPA interface to the database to generate and execute SQL queries
      * @param jurorNumber         9-digit numeric string to identify jurors
      * @return a collection (list) of juror pool association records. Although the juror number can uniquely identify
-     * an individual, sometimes one individual can have multiple, active, editable juror pool associative records,
-     * for example when they have been transferred.
+     *          an individual, sometimes one individual can have multiple, active, editable juror pool associative
+     *          records, for example when they have been transferred.
      */
     public static List<JurorPool> getActiveJurorPoolRecords(JurorPoolRepository jurorPoolRepository,
                                                             String jurorNumber) {
@@ -170,18 +170,6 @@ public final class JurorPoolUtils {
         }
 
         log.debug("retrieved juror pool record for juror number {} and location {}", jurorNumber, courtLocation);
-        return jurorPool;
-    }
-
-    public static JurorPool getActiveJurorPoolForUser(JurorPoolRepository jurorPoolRepository, String jurorNumber) {
-        JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndIsActiveAndOwner(
-            jurorNumber, true,
-            SecurityUtil.getActiveOwner());
-
-        if (jurorPool == null) {
-            throw new MojException.NotFound(String.format("Unable to find any Juror Pool associations for juror "
-                + "number %s at a court owned by %s", jurorNumber, SecurityUtil.getActiveOwner()), null);
-        }
         return jurorPool;
     }
 
@@ -295,6 +283,18 @@ public final class JurorPoolUtils {
         return jurorPools.stream().filter(jp -> jp.getOwner().equalsIgnoreCase(owner)).findFirst()
             .orElseThrow(() -> new MojException.Forbidden(String.format("Current user (%s) does not own any Juror "
                 + "Pool associations for Juror Number: %s", owner, jurorNumber), null));
+    }
+
+    public static JurorPool getActiveJurorPoolForUser(JurorPoolRepository jurorPoolRepository, String jurorNumber) {
+        JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndIsActiveAndOwner(
+            jurorNumber, true,
+            SecurityUtil.getActiveOwner());
+
+        if (jurorPool == null) {
+            throw new MojException.NotFound(String.format("Unable to find any Juror Pool associations for juror "
+                + "number %s at a court owned by %s", jurorNumber, SecurityUtil.getActiveOwner()), null);
+        }
+        return jurorPool;
     }
 
 }
