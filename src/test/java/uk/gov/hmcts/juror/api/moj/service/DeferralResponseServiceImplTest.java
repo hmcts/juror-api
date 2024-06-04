@@ -95,12 +95,13 @@ public class DeferralResponseServiceImplTest {
     }
 
     @Test
-    public void test_unhappyPath_multiple_deferals() {
+    public void test_unhappyPath_multiple_deferrals() {
         String jurorNumber = "987654321";
         BureauJwtPayload payload = TestUtils.createJwt("415", "SOME_USER");
 
         DeferralRequestDto deferralRequestDto = createTestDeferralRequestDto(jurorNumber);
         deferralRequestDto.setAllowMultipleDeferrals(false);
+        deferralRequestDto.setDeferralDecision(DeferralDecision.GRANT);
 
         MojException.BusinessRuleViolation exception = assertThrows(
             MojException.BusinessRuleViolation.class,
