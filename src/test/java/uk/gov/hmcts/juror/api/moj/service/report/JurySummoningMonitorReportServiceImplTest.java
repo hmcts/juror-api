@@ -201,6 +201,7 @@ class JurySummoningMonitorReportServiceImplTest {
             Map<String, AbstractReportResponse.DataTypeValue> headings = response.getHeadings();
 
             validateReportHeadings(headings);
+            defaultResponse(response);
 
             AbstractReportResponse.DataTypeValue timeCreated = headings.get("time_created");
             assertThat(timeCreated.getDisplayName()).isEqualTo("Time created");
