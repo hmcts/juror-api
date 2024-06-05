@@ -12,7 +12,11 @@ public enum DisqualifyCode {
     C("C", "Conviction"),
     N("N", "Mental Capacity Act"),
     O("O", "Mental Health Act"),
-    R("R", "Residency");
+    R("R", "Residency"),
+    M("M", "Suffering From a Mental Disorder"),
+    J("J", "Involved in Justice Administration or a Member of the Clergy"),
+    E("E", "Electronic Police Check Failure"),
+    D("D", "JUDICIAL DISQUALIFICATION");
 
     private final String code;
     private final String description;
