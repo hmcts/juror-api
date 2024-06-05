@@ -221,7 +221,8 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
             Juror juror1 = jurorPool1.getJuror();
             assertNotNull(juror1.getCompletionDate(),
                 "Completion date should not be null.");
-            assertEquals(completionTime, juror1.getCompletionDate());
+            assertEquals(completionTime, juror1.getCompletionDate(),
+                "Completion date should be equal to 2023-11-23");
 
             JurorPool jurorPool2 = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber("641500003",
                 "415220901");
