@@ -1,6 +1,4 @@
 
--- TODO expand on this to include more data for testing and update the test to match
-
 INSERT INTO juror_mod.pool (pool_no,"owner",return_date,no_requested,pool_type,loc_code,new_request,last_update,additional_summons,attend_time,nil_pool,total_no_required,date_created) VALUES
 	 ('415240801','400','2024-08-05',15,'CRO','415','N','2024-06-03 12:00:23',NULL,'2024-08-05 09:00:00',false,15,'2024-06-03 12:00:10.932656'),
 	 ('415240802','400','2024-08-05',2,'CRO','415','Y','2024-06-03 12:01:14',NULL,'2024-08-05 09:00:00',false,2,'2024-06-03 12:01:14.249361'),

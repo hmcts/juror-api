@@ -50,4 +50,14 @@ public class CourtQueriesRepositoryImpl implements CourtQueriesRepository {
                 null, tuple.get(COURT_LOCATION.owner)))
             .toList();
     }
+
+    @Override
+    public List<String> getAllCourtLocCodes() {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+
+        return queryFactory
+            .selectDistinct(COURT_LOCATION.locCode)
+            .from(COURT_LOCATION)
+            .fetch();
+    }
 }
