@@ -545,7 +545,7 @@ class PanelServiceImplTest {
             .findByTrialTrialNumberAndTrialCourtLocationLocCode(anyString(), anyString());
 
         List<PanelListDto> dtoList = panelService.getPanelSummary("T11111111", "415");
-        assertThat(dtoList.size()).as("Expected size to be 10").isEqualTo(10);
+        assertThat(dtoList.size()).as("Expected size to be 4").isEqualTo(4);//Only jurors/paneled should be returned
     }
 
     @Test
@@ -568,7 +568,7 @@ class PanelServiceImplTest {
     @Test
     void jurySummaryNoJury() {
         Panel panel = createSinglePanelData();
-
+        panel.setResult(null);
         JurorPool jurorPool = createJurorPool(panel.getJuror(), panel.getTrial().getCourtLocation());
         jurorPool.getStatus().setStatusDesc("Panelled");
         jurorPool.getStatus().setStatus(IJurorStatus.PANEL);
@@ -1225,7 +1225,6 @@ class PanelServiceImplTest {
             } else {
                 result = PanelResult.JUROR;
             }
-
             panelList.add(temp);
 
         }
