@@ -212,8 +212,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
                 "{"
                     + "\"message\":\"Unable to complete the service for the following juror number(s) due to invalid "
                     + "state: 641500003\","
-                    + "\"code\":\"COMPLETE_SERVICE_JUROR_IN_INVALID_STATE\"}",
-            response.getBody(), false);
+                    + "\"code\":\"COMPLETE_SERVICE_JUROR_IN_INVALID_STATE\"}", response.getBody(), false);
 
             JurorPool jurorPool1 = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber("641500005",
                 "415220901");

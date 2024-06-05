@@ -87,14 +87,14 @@ public class CompleteServiceServiceImpl implements CompleteServiceService {
                                 CompleteServiceJurorNumberListDto completeServiceJurorNumberListDto) {
         List<String> ineligibleJurorNumbers = new ArrayList<>();
         for (String jurorNumber : completeServiceJurorNumberListDto.getJurorNumbers()) {
-             JurorPool jurorPool = getJurorPool(poolNumber, jurorNumber);
-            if(isJurorValidForCompletion(jurorPool)) {
+            JurorPool jurorPool = getJurorPool(poolNumber, jurorNumber);
+            if (isJurorValidForCompletion(jurorPool)) {
                 completeService(jurorPool, completeServiceJurorNumberListDto.getCompletionDate());
             } else {
                 ineligibleJurorNumbers.add(jurorNumber);
             }
         }
-        if(!ineligibleJurorNumbers.isEmpty()) {
+        if (!ineligibleJurorNumbers.isEmpty()) {
             createErrorMessageForJurorsIneligibleForCompletion(ineligibleJurorNumbers);
         }
     }
@@ -110,7 +110,7 @@ public class CompleteServiceServiceImpl implements CompleteServiceService {
     }
 
     private void createErrorMessageForJurorsIneligibleForCompletion(List<String> ineligibleJurorNumbers) {
-        if(!ineligibleJurorNumbers.isEmpty()) {
+        if (!ineligibleJurorNumbers.isEmpty()) {
             String jurorNumbers = ineligibleJurorNumbers.stream()
                 .map(Object::toString)
                 .collect(Collectors.joining(", "));

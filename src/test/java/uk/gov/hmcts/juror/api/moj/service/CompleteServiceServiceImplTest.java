@@ -103,11 +103,10 @@ class CompleteServiceServiceImplTest {
                     .completeService(TestConstants.VALID_POOL_NUMBER, completeServiceJurorNumberListDto),
                         "Expected exception to be thrown when juror pool not in resolved status");
 
-            assertEquals("Juror number " + TestConstants.VALID_JUROR_NUMBER
-                    + " is not in a valid state to complete service",
-                exception.getMessage(),
-                "Expected exception message to be " + "Juror number " + TestConstants.VALID_JUROR_NUMBER
-                    + " is not in a valid state to complete service");
+            assertEquals("Unable to complete the service for the following juror number(s) due to "
+                    + "invalid state: " + TestConstants.VALID_JUROR_NUMBER, exception.getMessage(),
+                "Expected exception message to be " + "Unable to complete the service for the following "
+                    + "juror number(s) due to invalid state: " + TestConstants.VALID_JUROR_NUMBER);
 
 
             verify(jurorPoolRepository, times(1))
