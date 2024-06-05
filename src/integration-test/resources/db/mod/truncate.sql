@@ -54,3 +54,5 @@ DELETE FROM juror_mod.courtroom;
 DELETE FROM juror_mod.pending_juror;
 DELETE FROM juror_mod.welsh_court_location where loc_code in ('001', '002', '003');
 DELETE FROM juror_mod.court_location where loc_code in ('001', '002', '003');
+
+DELETE FROM juror_mod.bureau_snapshot;

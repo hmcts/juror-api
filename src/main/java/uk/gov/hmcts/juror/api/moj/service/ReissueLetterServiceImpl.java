@@ -280,6 +280,8 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
             JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository,
                 letter.getJurorNumber());
 
+            jurorPool.setReminderSent(true);
+
             // add additional switch-case statements for other letter types
             switch (letter.getFormCode()) {
                 case "5228", "5228C" -> jurorHistoryService.createSummonsReminderLetterHistory(jurorPool);
