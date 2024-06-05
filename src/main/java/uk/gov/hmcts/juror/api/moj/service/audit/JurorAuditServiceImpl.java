@@ -77,6 +77,7 @@ public class JurorAuditServiceImpl implements JurorAuditService {
             .where(QAppearance.appearance.attendanceDate.eq(date))
             .where(QAppearance.appearance.attendanceAuditNumber.isNotNull())
             .where(QAppearance.appearance.attendanceAuditNumber.startsWith("P"))
+            .orderBy(QAppearance.appearance.attendanceAuditNumber.asc())
             .fetch();
     }
 }

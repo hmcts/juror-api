@@ -27,11 +27,10 @@ import java.util.List;
 @RestController
 @Validated
 @RequestMapping(value = "/api/v1/moj/audit", produces = MediaType.APPLICATION_JSON_VALUE)
-@Tag(name = "Administration - Judges")
+@Tag(name = "Audit")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 @PreAuthorize(SecurityUtil.IS_COURT)
 public class AuditController {
-
 
     private final JurorAuditService jurorAuditService;
 
