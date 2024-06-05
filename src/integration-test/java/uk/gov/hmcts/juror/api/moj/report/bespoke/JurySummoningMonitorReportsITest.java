@@ -140,7 +140,7 @@ class JurySummoningMonitorReportsITest extends AbstractControllerIntegrationTest
                 .ill(0)
                 .languageDifficulties(0)
                 .medical(0)
-                .mentalHealth(1)
+                .mentalHealth(0)
                 .movedFromArea(0)
                 .other(0)
                 .personalEngagement(0)
