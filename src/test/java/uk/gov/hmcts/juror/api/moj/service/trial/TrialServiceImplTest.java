@@ -32,6 +32,7 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Judge;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
+import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.TrialType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -45,7 +46,9 @@ import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.service.CompleteServiceServiceImpl;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
+import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -94,6 +97,9 @@ class TrialServiceImplTest {
     private CompleteServiceServiceImpl completeService;
     @Mock
     private JurorAppearanceService jurorAppearanceService;
+
+    @Mock
+    private JurorExpenseService jurorExpenseService;
 
     @InjectMocks
     TrialServiceImpl trialService;
@@ -301,6 +307,7 @@ class TrialServiceImplTest {
         when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415"))
             .thenReturn(panelMembers);
 
+
         for (Panel panel : panelMembers) {
             Appearance appearance = createAppearance(panel.getJurorNumber());
 
@@ -312,6 +319,8 @@ class TrialServiceImplTest {
                 appearance.setTimeOut(LocalTime.parse(checkInTime));
             }
 
+            when(jurorExpenseService.isLongTrialDay("415", panel.getJurorNumber(), LocalDate.now()))
+                .thenReturn(false);
             when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
                 now())).thenReturn(Optional.of(appearance));
         }
@@ -326,7 +335,9 @@ class TrialServiceImplTest {
         verify(panelRepository, times(panelMembers.size())).saveAndFlush(any());
         verify(jurorHistoryRepository, times(panelMembers.size())).save(any());
         verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(appearanceArgumentCaptor.capture());
-        assertThat(appearanceArgumentCaptor.getValue().getSatOnJury()).as("Sat on Jury").isTrue();
+        Appearance appearance = appearanceArgumentCaptor.getValue();
+        assertThat(appearance.getSatOnJury()).as("Sat on Jury").isTrue();
+        assertThat(appearance.getAttendanceType()).as("Attendance type").isEqualTo(AttendanceType.HALF_DAY);
 
     }
 
