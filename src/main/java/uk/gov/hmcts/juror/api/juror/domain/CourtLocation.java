@@ -38,8 +38,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Audited
-@ToString(exclude = "assemblyRoom")
-@EqualsAndHashCode(exclude = {"courtRegion", "assemblyRoom"})
+@ToString(exclude = {"courtRegion", "assemblyRoom", "poolRequests"})
+@EqualsAndHashCode(exclude = {"courtRegion", "assemblyRoom", "poolRequests"})
 @Table(name = "court_location", schema = "juror_mod")
 @SuppressWarnings("PMD.TooManyFields")
 public class CourtLocation implements Serializable {

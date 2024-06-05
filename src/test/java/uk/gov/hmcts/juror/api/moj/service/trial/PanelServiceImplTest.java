@@ -568,7 +568,7 @@ class PanelServiceImplTest {
     @Test
     void jurySummaryNoJury() {
         Panel panel = createSinglePanelData();
-
+        panel.setResult(null);
         JurorPool jurorPool = createJurorPool(panel.getJuror(), panel.getTrial().getCourtLocation());
         jurorPool.getStatus().setStatusDesc("Panelled");
         jurorPool.getStatus().setStatus(IJurorStatus.PANEL);
