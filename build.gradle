@@ -203,7 +203,7 @@ flyway {
     def dbUrl = System.getenv("DB_URL") ?: "jdbc:postgresql://localhost:5432/juror"
     def dbUserName = System.getenv("DB_USERNAME") ?: "system"
     def dbPassword = System.getenv("DB_PASSWORD") ?: "postgres"
-    def flywayLocations = System.getenv("FLYWAY_LOC_OVERRIDE") ?: "db/migration,db/migrationv2"
+    def flywayLocations = System.getenv("FLYWAY_LOC_OVERRIDE") ?: "db/**/*.sql"
     
     url = "$dbUrl"
     user = "$dbUserName"
