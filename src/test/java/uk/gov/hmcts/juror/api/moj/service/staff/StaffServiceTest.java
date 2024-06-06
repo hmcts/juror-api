@@ -78,7 +78,6 @@ public class StaffServiceTest {
         .replyType(ReplyType.builder().type("Digital").build())
         .processingComplete(true)
         .urgent(false)
-        .superUrgent(false)
         .processingStatus(ProcessingStatus.CLOSED)
         .build();
 
@@ -116,7 +115,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         } else {
@@ -125,7 +123,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         }
@@ -189,7 +186,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         } else {
@@ -198,7 +194,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         }
@@ -250,7 +245,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         } else {
@@ -259,7 +253,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         }
@@ -311,7 +304,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         } else {
@@ -320,7 +312,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         }
@@ -347,7 +338,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         } else {
@@ -356,7 +346,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         }
@@ -378,7 +367,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         } else {
@@ -387,7 +375,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         }
@@ -426,7 +413,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(true)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         } else {
@@ -435,7 +421,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(true)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         }
@@ -458,50 +443,6 @@ public class StaffServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"Paper", "Digital"})
-    void unhappySuperUrgentJurorResponse(String replyType) {
-        doReturn(ASSIGNER_STAFF_ENTITY).when(mockuserRepository).findByUsername(ASSIGNING_LOGIN);
-        doReturn(TARGET_LOGIN_ENTITY).when(mockuserRepository).findByUsername(TARGET_LOGIN);
-
-        AbstractJurorResponse jurorResponse;
-        if ("Digital".equals(replyType)) {
-            jurorResponse = DigitalResponse.builder()
-                .jurorNumber(JUROR_NUMBER)
-                .replyType(ReplyType.builder().type(replyType).build())
-                .processingComplete(false)
-                .urgent(false)
-                .superUrgent(true)
-                .processingStatus(ProcessingStatus.TODO)
-                .build();
-        } else {
-            jurorResponse = PaperResponse.builder()
-                .jurorNumber(JUROR_NUMBER)
-                .replyType(ReplyType.builder().type(replyType).build())
-                .processingComplete(false)
-                .urgent(false)
-                .superUrgent(true)
-                .processingStatus(ProcessingStatus.TODO)
-                .build();
-        }
-
-        StaffAssignmentRequestDto dto = StaffAssignmentRequestDto.builder()
-            .assignTo(null)
-            .responseJurorNumber(JUROR_NUMBER)
-            .build();
-
-        doReturn(jurorResponse).when(jurorResponseCommonRepositoryMod).findByJurorNumber(JUROR_NUMBER);
-        MojException.BusinessRuleViolation exception = Assertions.assertThrows(MojException.BusinessRuleViolation.class,
-            () -> staffService.changeAssignment(dto,
-                ASSIGNING_LOGIN));
-        assertThat(exception.getMessage())
-            .as("Exception Message")
-            .isEqualTo("Unable to assign response for Juror 123456789 to backlog as it is super-urgent");
-
-        verify(mockJurorResponseRepository, times(0)).save(any());
-        verify(paperResponseRepositoryMod, times(0)).save(any());
-    }
-
-    @ParameterizedTest
     @MethodSource("generator")
     void unhappyIncorrectProcessingStatus(Map<String, ProcessingStatus> statusMap) {
         doReturn(ASSIGNER_STAFF_ENTITY).when(mockuserRepository).findByUsername(ASSIGNING_LOGIN);
@@ -515,7 +456,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(statusMap.get(replyType))
                 .build();
         } else {
@@ -524,7 +464,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(statusMap.get(replyType))
                 .build();
         }
@@ -560,7 +499,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(true)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         } else {
@@ -569,7 +507,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(true)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         }
@@ -605,7 +542,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.CLOSED)
                 .build();
         } else {
@@ -614,7 +550,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.CLOSED)
                 .build();
         }

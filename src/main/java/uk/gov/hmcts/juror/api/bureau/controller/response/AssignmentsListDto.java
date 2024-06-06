@@ -52,10 +52,6 @@ public class AssignmentsListDto {
         @Schema(description = "Urgent flag")
         private Boolean urgent;
 
-        @JsonProperty("superUrgent")
-        @Schema(description = "Super Urgent flag")
-        private Boolean superUrgent;
-
         @JsonProperty("jurorNameDisplay")
         @Schema(description = "Juror Name display format")
         private String jurorName;

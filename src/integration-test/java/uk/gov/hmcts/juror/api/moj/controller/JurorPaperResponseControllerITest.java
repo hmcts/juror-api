@@ -4,7 +4,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpHeaders;
@@ -17,7 +16,6 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.CjsEmploymentDetailsDto;
@@ -47,7 +45,6 @@ import uk.gov.hmcts.juror.api.moj.repository.SummonsSnapshotRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
-import uk.gov.hmcts.juror.api.moj.service.StraightThroughProcessorService;
 import uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 
@@ -77,9 +74,6 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
     private static final String POOL_415220502 = "415220502";
     private static final String POOL_411220502 = "411220502";
 
-    @Value("${jwt.secret.bureau}")
-    private String bureauSecret;
-
     @Autowired
     private TestRestTemplate template;
 
@@ -92,8 +86,6 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
     @Autowired
     private JurorPoolRepository jurorPoolRepository;
     @Autowired
-    private JurorResponseRepository jurorResponseRepository;
-    @Autowired
     private JurorHistoryRepository jurorHistoryRepository;
     @Autowired
     private DisqualifyLetterModRepository disqualifyLetterRepository;
@@ -101,8 +93,6 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
     private SummonsSnapshotRepository summonsSnapshotRepository;
     @Autowired
     private WelshCourtLocationRepository welshCourtLocationRepository;
-    @Autowired
-    private StraightThroughProcessorService straightThroughProcessorService;
 
     @Autowired
     private JurorRepository jurorRepository;
@@ -119,7 +109,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_initPoolMembers.sql"})
-    public void respondToSummons_bureauUser_happyPath_notStraightThroughAcceptance() throws Exception {
+    public void respondToSummons_bureauUser_happyPath_notStraightThroughAcceptance() {
         final String bureauJwt = createJwtBureau("BUREAU_USER");
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/response");
 
@@ -145,7 +135,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_initPoolMembers.sql"})
-    public void respondToSummons_bureauUser_happyPath_straightThroughAcceptance() throws Exception {
+    public void respondToSummons_bureauUser_happyPath_straightThroughAcceptance() {
         final String bureauJwt = createJwtBureau("BUREAU_USER");
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/response");
 
@@ -169,111 +159,6 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_initPoolMembers.sql"})
-    public void respondToSummons_courtUser_superUrgent_happyPath_notStraightThroughAcceptance() throws Exception {
-        final String bureauJwt = createJwt("MODTESTCOURT", "415");
-        final URI uri = URI.create("/api/v1/moj/juror-paper-response/response");
-
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-        JurorPaperResponseDto requestDto = buildJurorPaperResponseDto();
-        requestDto.setJurorNumber("123456791");
-
-        RequestEntity<JurorPaperResponseDto> requestEntity = new RequestEntity<>(requestDto, httpHeaders,
-            HttpMethod.POST, uri);
-        ResponseEntity<SaveJurorPaperReplyResponseDto> response = template.exchange(requestEntity,
-            SaveJurorPaperReplyResponseDto.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-
-        SaveJurorPaperReplyResponseDto responseDto = response.getBody();
-        assertThat(responseDto).isNotNull();
-
-        assertThat(responseDto.isStraightThroughAcceptance()).isFalse();
-
-        final URI uri2 = URI.create("/api/v1/moj/juror-paper-response/juror/123456791");
-
-        RequestEntity<Void> requestEntity2 = new RequestEntity<>(httpHeaders, HttpMethod.GET, uri2);
-        ResponseEntity<JurorPaperResponseDetailDto> responseDetailDto = template.exchange(requestEntity2,
-            JurorPaperResponseDetailDto.class);
-        assertThat(responseDetailDto.getStatusCode()).isEqualTo(HttpStatus.OK);
-
-        //get request for object and check super urgent set.
-        JurorPaperResponseDetailDto responseDetail = responseDetailDto.getBody();
-        assertThat(responseDetail).isNotNull();
-
-        assertThat(responseDetail.getSuperUrgent()).isEqualTo(true);
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_initPoolMembers.sql"})
-    public void respondToSummons_courtUser_superUrgent_happyPath_straightThroughAcceptance() throws Exception {
-        final String bureauJwt = createJwt("MODTESTCOURT", "415");
-        final URI uri = URI.create("/api/v1/moj/juror-paper-response/response");
-
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-        JurorPaperResponseDto requestDto = buildJurorPaperResponseDto();
-        requestDto.setJurorNumber("333333333");
-
-        RequestEntity<JurorPaperResponseDto> requestEntity = new RequestEntity<>(requestDto, httpHeaders,
-            HttpMethod.POST, uri);
-        ResponseEntity<SaveJurorPaperReplyResponseDto> response = template.exchange(requestEntity,
-            SaveJurorPaperReplyResponseDto.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-
-        SaveJurorPaperReplyResponseDto responseDto = response.getBody();
-        assertThat(responseDto).isNotNull();
-
-        assertThat(responseDto.isStraightThroughAcceptance()).isTrue();
-
-        final URI uri2 = URI.create("/api/v1/moj/juror-paper-response/juror/333333333");
-
-        RequestEntity<Void> requestEntity2 = new RequestEntity<>(httpHeaders, HttpMethod.GET, uri2);
-        ResponseEntity<JurorPaperResponseDetailDto> responseDetailDto = template.exchange(requestEntity2,
-            JurorPaperResponseDetailDto.class);
-        assertThat(responseDetailDto.getStatusCode()).isEqualTo(HttpStatus.OK);
-
-        //get request for object and check super urgent set.
-        JurorPaperResponseDetailDto responseDetail = responseDetailDto.getBody();
-        assertThat(responseDetail).isNotNull();
-
-        assertThat(responseDetail.getSuperUrgent()).isEqualTo(true);
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_initPoolMembers.sql"})
-    public void respondToSummons_courtUser_notSuperUrgent_happyPath() throws Exception {
-        final String bureauJwt = createJwt("MODTESTCOURT", "415");
-        final URI uri = URI.create("/api/v1/moj/juror-paper-response/response");
-
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-        JurorPaperResponseDto requestDto = buildJurorPaperResponseDto();
-        requestDto.setJurorNumber("123456711");
-
-        RequestEntity<JurorPaperResponseDto> requestEntity = new RequestEntity<>(requestDto, httpHeaders,
-            HttpMethod.POST, uri);
-        ResponseEntity<SaveJurorPaperReplyResponseDto> response = template.exchange(requestEntity,
-            SaveJurorPaperReplyResponseDto.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-
-        SaveJurorPaperReplyResponseDto responseDto = response.getBody();
-        assertThat(responseDto).isNotNull();
-
-        assertThat(responseDto.isStraightThroughAcceptance()).isFalse();
-
-        final URI uri2 = URI.create("/api/v1/moj/juror-paper-response/juror/123456711");
-
-        RequestEntity<Void> requestEntity2 = new RequestEntity<>(httpHeaders, HttpMethod.GET, uri2);
-        ResponseEntity<JurorPaperResponseDetailDto> responseDetailDto = template.exchange(requestEntity2,
-            JurorPaperResponseDetailDto.class);
-        assertThat(responseDetailDto.getStatusCode()).isEqualTo(HttpStatus.OK);
-
-        //get request for object and check super urgent set.
-        JurorPaperResponseDetailDto responseDetail = responseDetailDto.getBody();
-        assertThat(responseDetail).isNotNull();
-
-        assertThat(responseDetail.getSuperUrgent()).isEqualTo(false);
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_initPoolMembers.sql"})
     public void respondToSummons_courtUser_noAccess() throws Exception {
         final String bureauJwt = createJwt("COURT_USER", "416");
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/response");
@@ -291,7 +176,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_initPoolMembers.sql"})
-    public void respondToSummons_bureauUser_noJurorRecord() throws Exception {
+    public void respondToSummons_bureauUser_noJurorRecord() {
         final String bureauJwt = createJwtBureau("BUREAU_USER");
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/response");
 

@@ -181,7 +181,6 @@ public class BureauBacklogAllocateServiceImplTest {
             DigitalResponse response = new DigitalResponse();
             response.setJurorNumber(String.valueOf(i));
             response.setUrgent(urgent);
-            response.setSuperUrgent(superUrgent);
             response.setDateReceived(now.minusHours(i));
             responses.add(response);
         }

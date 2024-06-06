@@ -251,9 +251,6 @@ public class JurorPaperResponseDetailDto implements IJurorResponse {
     @JsonProperty("opticReference")
     @Schema(description = "Juror Optic Reference Number")
     private String opticReference;
-    @JsonProperty("superUrgent")
-    @Schema(description = "Is the Juror Paper Response Super Urgent?")
-    private Boolean superUrgent;
 
     @JsonProperty("assignedStaffMember")
     @Schema(description = "Assigned staff member")

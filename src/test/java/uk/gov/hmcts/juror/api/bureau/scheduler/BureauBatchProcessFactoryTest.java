@@ -42,7 +42,7 @@ class BureauBatchProcessFactoryTest {
     @Mock
     private JurorDashboardSmartSurveyImportImpl jurorDashboardSmartSurveyImport;
     @Mock
-    private UrgentSuperUrgentStatusScheduler urgentSuperUrgentStatusScheduler;
+    private UrgentStatusScheduler urgentStatusScheduler;
 
     @InjectMocks
     private BureauBatchProcessFactory bureauBatchProcessFactory;
@@ -63,7 +63,7 @@ class BureauBatchProcessFactoryTest {
             arguments("courtComms", MessagesServiceImpl.class),
             arguments("excusalCompletedServiceCourtComms", ExcusedCompletedCourtCommsServiceImpl.class),
             arguments("smartSurveyImport", JurorDashboardSmartSurveyImportImpl.class),
-            arguments("urgentSuperUrgentStatus", UrgentSuperUrgentStatusScheduler.class)
+            arguments("urgentSuperUrgentStatus", UrgentStatusScheduler.class)
         );
     }
 

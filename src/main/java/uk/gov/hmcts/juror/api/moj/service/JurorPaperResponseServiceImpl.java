@@ -48,7 +48,6 @@ import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -201,9 +200,6 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
         jurorPaperResponseDetailDto.setExcusalReason(juror.getExcusalCode());
 
-        // copy super urgent
-        jurorPaperResponseDetailDto.setSuperUrgent(jurorPaperResponse.isSuperUrgent());
-
         jurorPaperResponseDetailDto.setSigned(jurorPaperResponse.getSigned());
         jurorPaperResponseDetailDto.setProcessingStatus(jurorPaperResponse.getProcessingStatus().getDescription());
         jurorPaperResponseDetailDto.setWelsh(jurorPaperResponse.getWelsh());
@@ -331,8 +327,6 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
         jurorPaperResponse = createJurorPaperResponseEntity(paperResponseDto, jurorPool);
 
-        setSuperUrgent(jurorPool, jurorPaperResponse);
-
         User staff = userRepository.findByUsername(payload.getLogin());
         jurorPaperResponse.setStaff(staff);
 
@@ -408,23 +402,6 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         jurorPaperResponse.setSigned(paperResponseDto.getSigned());
 
         return jurorPaperResponse;
-
-    }
-
-    private void setSuperUrgent(JurorPool jurorPool, PaperResponse paperResponse) {
-        final long lessThanAWeek = 8;
-
-        long days = ChronoUnit.DAYS.between(LocalDate.now(), jurorPool.getReturnDate());
-        if (days < lessThanAWeek) {
-            log.info(String.format(
-                "Start Date is within the week set to super urgent for juror %s",
-                jurorPool.getJurorNumber()
-            ));
-            paperResponse.setSuperUrgent(true);
-        } else {
-            paperResponse.setSuperUrgent(false);
-            log.info(String.format("Start Date is over a week for juror %s", jurorPool.getJurorNumber()));
-        }
 
     }
 

@@ -116,64 +116,6 @@ public class UserServiceImplIntegrationTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject(
             "SELECT URGENT FROM juror_mod.JUROR_RESPONSE WHERE JUROR_NUMBER = '" + jurorNumber + "'",
             Boolean.class)).isEqualTo(true);
-        assertThat(jdbcTemplate.queryForObject(
-            "SELECT SUPER_URGENT FROM juror_mod.JUROR_RESPONSE WHERE JUROR_NUMBER = '" + jurorNumber + "'",
-            Boolean.class)).isEqualTo(false);
-
-        userService.assignUrgentResponse(jurorResponse);
-
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.JUROR_RESPONSE", Integer.class)).isEqualTo(
-            2);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.users", Integer.class)).isEqualTo(7);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.users WHERE active = true",
-            Integer.class)).isEqualTo(6);
-        assertThat(jdbcTemplate.queryForObject(
-            "SELECT STAFF_LOGIN FROM juror_mod.JUROR_RESPONSE WHERE JUROR_NUMBER = '" + jurorNumber + "'",
-            String.class)).describedAs("Eligible staff member has been assigned to response " + jurorNumber)
-            .isIn("TSANCHEZ", "JPOWERS", "RPRICE").describedAs("Inactive staff member").isNotEqualTo("GBECK")
-            .describedAs("Not assigned to court").isNotEqualTo("PBREWER").describedAs("Has no courts assigned")
-            .isNotEqualTo("ACOPELAND");
-        assertThat(jdbcTemplate.queryForObject(
-            "SELECT STAFF_ASSIGNMENT_DATE FROM juror_mod.JUROR_RESPONSE WHERE JUROR_NUMBER = '" + jurorNumber
-                + "'", Date.class)).describedAs("Is today").isToday();
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
-            Integer.class)).isEqualTo(1);
-    }
-
-    @Test
-    @Repeat(10)
-    @Sql("/db/truncate.sql")
-    @Sql("/db/mod/truncate.sql")
-    @Sql("/db/standing_data.sql")
-    @Sql("/db/StaffRepositoryTest_assignUrgentResponse_happy.sql")
-    public void assignSuperUrgentResponse_happy() {
-        final String jurorNumber = "209092530";//super urgent juror
-
-        // load existing juror response
-        final DigitalResponse jurorResponse = jurorDigitalResponseRepositoryMod.findByJurorNumber(jurorNumber);
-
-        //assert initial db state
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
-            Integer.class)).isEqualTo(0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.JUROR_RESPONSE", Integer.class)).isEqualTo(
-            2);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.users", Integer.class)).isEqualTo(7);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.users WHERE active = true",
-            Integer.class)).isEqualTo(6);
-        assertThat(jdbcTemplate.queryForObject(
-            "SELECT STAFF_LOGIN FROM juror_mod.JUROR_RESPONSE WHERE JUROR_NUMBER = '" + jurorNumber + "'",
-            String.class)).isNullOrEmpty();
-        assertThat(jdbcTemplate.queryForObject(
-            "SELECT STAFF_ASSIGNMENT_DATE FROM juror_mod.JUROR_RESPONSE WHERE JUROR_NUMBER = '" + jurorNumber
-                + "'", Date.class)).isNull();
-        assertThat(jdbcTemplate.queryForObject(
-            "SELECT URGENT FROM juror_mod.JUROR_RESPONSE WHERE JUROR_NUMBER = '" + jurorNumber + "'",
-            Boolean.class)).isEqualTo(false);
-        assertThat(jdbcTemplate.queryForObject(
-            "SELECT SUPER_URGENT FROM juror_mod.JUROR_RESPONSE WHERE JUROR_NUMBER = '" + jurorNumber + "'",
-            Boolean.class)).isEqualTo(true);
 
         userService.assignUrgentResponse(jurorResponse);
 

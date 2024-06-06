@@ -64,7 +64,7 @@ public class BureauOfficerAllocatedRepliesControllerTest extends AbstractIntegra
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/BureauOfficerAllocateRepliesService_BacklogData.sql")
-    public void bureauAllocationReplies_happy() throws Exception {
+    public void bureauAllocationReplies_happy() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userType(UserType.BUREAU)
             .roles(Set.of(Role.MANAGER))
@@ -79,14 +79,8 @@ public class BureauOfficerAllocatedRepliesControllerTest extends AbstractIntegra
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE where "
             + "PROCESSING_STATUS = 'TODO' and STAFF_LOGIN IS NULL ", Integer.class)).isEqualTo(7);
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE where "
-                + "PROCESSING_STATUS = 'TODO' and STAFF_LOGIN IS NULL and URGENT = 'Y' AND SUPER_URGENT='N' ",
-            Integer.class)).isEqualTo(2);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE where "
-                + "PROCESSING_STATUS = 'TODO' and STAFF_LOGIN IS NULL and (URGENT = 'Y' OR SUPER_URGENT='Y') ",
+                + "PROCESSING_STATUS = 'TODO' and STAFF_LOGIN IS NULL and URGENT = 'Y'",
             Integer.class)).isEqualTo(3);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE where "
-                + "PROCESSING_STATUS = 'TODO' and STAFF_LOGIN IS NULL and URGENT = 'N' and  SUPER_URGENT='Y' ",
-            Integer.class)).isEqualTo(1);
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE where "
             + "PROCESSING_STATUS != 'TODO' ", Integer.class)).isEqualTo(2);
 

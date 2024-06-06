@@ -23,10 +23,10 @@ public class JurorDigitalResponseRepositoryModImpl implements IJurorDigitalRespo
     public Tuple getAssignRepliesStatistics() {
         JPAQuery<Tuple> query = getJpaQueryFactory().select(
                 new CaseBuilder()
-                    .when(digitalResponse.urgent.isFalse().and(digitalResponse.superUrgent.isFalse()))
+                    .when(digitalResponse.urgent.isFalse())
                     .then(1L).otherwise(0L).sum().as("nonUrgent"),
                 new CaseBuilder()
-                    .when(digitalResponse.urgent.isTrue().or(digitalResponse.superUrgent.isTrue()))
+                    .when(digitalResponse.urgent.isTrue())
                     .then(1L).otherwise(0L).sum().as("urgent"),
                 digitalResponse.count().as("allReplies"))
             .from(digitalResponse)
@@ -41,10 +41,10 @@ public class JurorDigitalResponseRepositoryModImpl implements IJurorDigitalRespo
                 user.username.as("login"),
                 user.name.as("name"),
                 new CaseBuilder()
-                    .when(digitalResponse.urgent.isFalse().and(digitalResponse.superUrgent.isFalse()))
+                    .when(digitalResponse.urgent.isFalse())
                     .then(1L).otherwise(0L).sum().as("nonUrgent"),
                 new CaseBuilder()
-                    .when(digitalResponse.urgent.isTrue().or(digitalResponse.superUrgent.isTrue()))
+                    .when(digitalResponse.urgent.isTrue())
                     .then(1L).otherwise(0L).sum().as("urgent"),
                 digitalResponse.count().as("allReplies")
             ).from(user)
