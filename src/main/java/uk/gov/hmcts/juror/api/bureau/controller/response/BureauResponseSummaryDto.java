@@ -52,8 +52,6 @@ public class BureauResponseSummaryDto {
     private String poolNumber;
     @Schema(description = "Response flagged as urgent")
     private Boolean urgent;
-    @Schema(description = "Response flagged as super urgent")
-    private Boolean superUrgent;
     @Schema(description = "SLA is expired")
     private Boolean slaOverdue;
     @Schema(description = "Response received date")

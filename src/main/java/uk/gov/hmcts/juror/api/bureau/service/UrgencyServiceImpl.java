@@ -179,33 +179,6 @@ public class UrgencyServiceImpl implements UrgencyService {
         return modifiedDate;
     }
 
-    @Override
-    public boolean isSuperUrgent(AbstractJurorResponse response, JurorPool jurorDetails) {
-        try {
-            if (!CLOSED.equalsIgnoreCase(response.getProcessingStatus().getDescription())
-                && !SecurityUtil.BUREAU_OWNER.equalsIgnoreCase(jurorDetails.getOwner())
-            ) {
-                log.trace("isSuperUrgent: Super urgent");
-                return Boolean.TRUE;
-            } else {
-                log.trace("isSuperUrgent: Not super urgent");
-                return Boolean.FALSE;
-            }
-
-        } catch (NullPointerException npe) {
-            log.error(JUROR_RESPONSE_FOR_JUROR_NUMBER_HAS_INVALID_DATE_INFORMATION_ERROR);
-            if (log.isTraceEnabled()) {
-                log.trace(
-                    JUROR_RESPONSE_FOR_JUROR_NUMBER_HAS_INVALID_DATE_INFORMATION_TRACE,
-                    response.getJurorNumber(),
-                    npe
-                );
-            }
-            return Boolean.FALSE;
-        }
-
-    }
-
 
     @SuppressWarnings("Duplicates")
     private Integer getCutOffDays() {
@@ -273,17 +246,18 @@ public class UrgencyServiceImpl implements UrgencyService {
     @Override
     public void setUrgencyFlags(AbstractJurorResponse response, JurorPool jurorDetails) {
         response.setUrgent(isUrgent(response, jurorDetails));
-        response.setSuperUrgent(isSuperUrgent(response, jurorDetails));
         if (log.isTraceEnabled()) {
-            log.trace("Response {} Urgency flags updated: urgent={} super={}", response.getJurorNumber(),
-                response.isUrgent(), response.isSuperUrgent()
+            log.trace("Response {} Urgency flags updated: urgent={}",
+                response.getJurorNumber(),
+                response.isUrgent()
             );
         }
     }
 
 
     public static class AppSettingException extends RuntimeException {
-        public AppSettingException(String s) {
+        public AppSettingException(String message) {
+            super(message);
         }
     }
 }

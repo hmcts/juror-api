@@ -69,7 +69,6 @@ public class BureauTransformsServiceImpl implements BureauTransformsService {
             .poolNumber(detail.getPoolNumber())
             .replyMethod(detail.getReplyType())
             .urgent(detail.getUrgent())
-            .superUrgent(detail.getSuperUrgent())
             .slaOverdue(detail.getSlaOverdue())
             .dateReceived(detail.getDateReceived())
             .assignedStaffMember(detail.getAssignedStaffMember() != null
@@ -109,7 +108,6 @@ public class BureauTransformsServiceImpl implements BureauTransformsService {
             .poolNumber(pool.getPoolNumber())
             .replyMethod(jurorResponse.getReplyType().getType())
             .urgent(jurorResponse.isUrgent())
-            .superUrgent(jurorResponse.isSuperUrgent())
             .slaOverdue(slaOverdue)
             .dateReceived(jurorResponse.getDateReceived().toLocalDate())
             .assignedStaffMember(jurorResponse.getStaff() != null

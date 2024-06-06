@@ -98,8 +98,6 @@ public class BureauJurorDetailUrgencyTest {
             .isEqualToIgnoringGivenFields(testDetail, "urgent", "superUrgent", "slaOverdue")
         ;
         assertThat(urgency.isUrgent(jurorResponse, poolDetails)).describedAs(URGENT_RESPONSE_DESCRIPTION).isFalse();
-        assertThat(urgency.isSuperUrgent(jurorResponse, poolDetails))
-            .describedAs(SUPER_URGENT_RESPONSE_DESCRIPTION).isFalse();
         assertThat(flaggedResponse.getSlaOverdue()).describedAs(SLA_OVERDUE_DESCRIPTION).isFalse();
     }
 
@@ -122,33 +120,6 @@ public class BureauJurorDetailUrgencyTest {
             .isEqualToIgnoringGivenFields(testDetail, "urgent", "superUrgent", "slaOverdue")
         ;
         assertThat(urgency.isUrgent(jurorResponse, poolDetails)).describedAs(URGENT_RESPONSE_DESCRIPTION).isTrue();
-        assertThat(urgency.isSuperUrgent(jurorResponse, poolDetails)).describedAs(SUPER_URGENT_RESPONSE_DESCRIPTION)
-            .isFalse();
-        assertThat(flaggedResponse.getSlaOverdue()).describedAs(SLA_OVERDUE_DESCRIPTION).isFalse();
-    }
-
-    @Test
-    public void testUrgentFlagSuperUrgentThresholdJdb810() throws Exception {
-        //given
-        final LocalDateTime dateReceivedSuperUrgent = (hearingDateSuperUrgent.plusDays(1L));
-        testDetail.setDateReceived(
-            dateReceivedSuperUrgent.toLocalDate()
-        );
-        jurorResponse.setDateReceived(dateReceivedSuperUrgent);
-        poolDetails.setOwner(OWNER_IS_NOT_BUREAU);
-        //  poolDetails.setReadOnly(Boolean.TRUE);
-
-        //when
-        ModJurorDetail flaggedResponse = urgency.flagSlaOverdueForResponse(testDetail);
-
-        //then
-        assertThat(flaggedResponse)
-            .isNotNull()
-            .isEqualToIgnoringGivenFields(testDetail, "urgent", "superUrgent", "slaOverdue")
-        ;
-        assertThat(urgency.isUrgent(jurorResponse, poolDetails)).describedAs(URGENT_RESPONSE_DESCRIPTION).isFalse();
-        assertThat(urgency.isSuperUrgent(jurorResponse, poolDetails)).describedAs(SUPER_URGENT_RESPONSE_DESCRIPTION)
-            .isTrue();
         assertThat(flaggedResponse.getSlaOverdue()).describedAs(SLA_OVERDUE_DESCRIPTION).isFalse();
     }
 
@@ -169,8 +140,6 @@ public class BureauJurorDetailUrgencyTest {
             .isEqualToIgnoringGivenFields(testDetail, "urgent", "superUrgent", "slaOverdue")
         ;
         assertThat(urgency.isUrgent(jurorResponse, poolDetails)).describedAs(URGENT_RESPONSE_DESCRIPTION).isFalse();
-        assertThat(urgency.isSuperUrgent(jurorResponse, poolDetails)).describedAs(SUPER_URGENT_RESPONSE_DESCRIPTION)
-            .isTrue();
         assertThat(flaggedResponse.getSlaOverdue()).describedAs(SLA_OVERDUE_DESCRIPTION).isTrue();
     }
 
@@ -196,20 +165,5 @@ public class BureauJurorDetailUrgencyTest {
         poolDetails.setNextDate(hearingDateUrgent2);
 
         assertThat(urgency.isUrgent(jurorResponse, poolDetails)).isTrue();
-        assertThat(urgency.isSuperUrgent(jurorResponse, poolDetails)).isFalse();
-    }
-
-    @Test
-    public void testSchedulerFlag_super_urgent() throws Exception {
-        //given
-        LocalDateTime hearingDateValid = LocalDateTime.now().minusDays(10L);
-        hearingDateSuperUrgent = urgency.fridayCutOff(hearingDateValid);
-        poolDetails.setOwner(OWNER_IS_NOT_BUREAU);
-        final LocalDate dateReceivedSuperUrgent = (hearingDateSuperUrgent.plusDays(1L)).toLocalDate();
-
-        poolDetails.setNextDate(dateReceivedSuperUrgent);
-
-        assertThat(urgency.isUrgent(jurorResponse, poolDetails)).isFalse();
-        assertThat(urgency.isSuperUrgent(jurorResponse, poolDetails)).isTrue();
     }
 }

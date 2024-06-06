@@ -36,6 +36,7 @@ import java.util.Set;
 @Schema(description = "All Details available on a juror in the system ")
 @SuppressWarnings("PMD.TooManyFields")
 @EqualsAndHashCode(exclude = "changeLogs")
+@Deprecated(forRemoval = true)
 public class BureauJurorDetail implements Serializable {
     @Id
     @Column(name = "PART_NO")
@@ -411,13 +412,6 @@ public class BureauJurorDetail implements Serializable {
     @Column(name = "URGENT")
     @Convert(converter = org.hibernate.type.YesNoConverter.class)
     private Boolean urgent;
-
-    /**
-     * Flag this response as super urgent.
-     */
-    @Column(name = "SUPER_URGENT")
-    @Convert(converter = org.hibernate.type.YesNoConverter.class)
-    private Boolean superUrgent;
 
     /**
      * Flag this response as welsh language.

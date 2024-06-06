@@ -64,7 +64,7 @@ public interface UrgencyService {
     LocalDateTime subtractWorkingDays(LocalDateTime date, Integer workingDays);
 
     /**
-     * Set urgent / superUrgent flags on a juror response.
+     * Set urgent flags on a juror response.
      *
      * @param response     response to set flags on
      * @param jurorDetails pool details the response relates to
@@ -74,18 +74,7 @@ public interface UrgencyService {
     /**
      * get super urgent based on current date, added for scheduler.
      *
-     
-     
      */
     boolean isUrgent(AbstractJurorResponse response, JurorPool jurorDetails);
-
-    /**
-     * get super urgent based on current date, added for scheduler.
-     *
-     
-     
-     */
-    boolean isSuperUrgent(AbstractJurorResponse response, JurorPool jurorDetails);
-
 
 }

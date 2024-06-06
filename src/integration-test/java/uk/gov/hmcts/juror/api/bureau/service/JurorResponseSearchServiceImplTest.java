@@ -354,7 +354,7 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
         assertThat(dto).isNotNull();
         assertThat(dto.getResponses()).isNotNull().hasSize(179);
         assertThat(dto.getResponses()).allMatch(
-            summary -> Boolean.TRUE.equals(summary.getUrgent()) || Boolean.TRUE.equals(summary.getSuperUrgent()));
+            summary -> Boolean.TRUE.equals(summary.getUrgent()));
     }
 
     @Test
@@ -384,7 +384,7 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
         assertThat(dto.getResponses()).isNotNull().hasSize(60);
         assertThat(dto.getResponses()).extracting("assignedStaffMember").extracting("login").containsOnly("sgomez");
         assertThat(dto.getResponses()).allMatch(
-            summary -> Boolean.TRUE.equals(summary.getUrgent()) || Boolean.TRUE.equals(summary.getSuperUrgent()));
+            summary -> Boolean.TRUE.equals(summary.getUrgent()));
 
     }
 

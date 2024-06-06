@@ -200,7 +200,7 @@ public class BureauJurorDetailQueries {
      * @return QueryDSL filter.
      */
     public static BooleanExpression urgentsOnly() {
-        return bureauJurorDetail.urgent.isTrue().or(bureauJurorDetail.superUrgent.isTrue());
+        return bureauJurorDetail.urgent.isTrue();
     }
 
     /**
