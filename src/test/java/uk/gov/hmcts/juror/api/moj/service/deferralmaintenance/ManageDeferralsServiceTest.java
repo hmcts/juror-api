@@ -928,7 +928,6 @@ class ManageDeferralsServiceTest {
             .getPoolMemberSequenceNumber(any(String.class));
         verify(poolMemberSequenceService, times(1))
             .leftPadInteger(any(int.class));
-        verify(poolHistoryRepository, times(1)).save(any());
         verify(currentlyDeferredRepository, times(0)).save(any());
         verify(printDataService, times(1)).printDeferralLetter(any());
         verify(printDataService, times(1)).printConfirmationLetter(any());

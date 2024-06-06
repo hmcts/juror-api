@@ -15,6 +15,7 @@ import uk.gov.hmcts.juror.api.moj.domain.BulkPrintDataNotifyCommsRepository;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -76,7 +77,9 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
             for (BulkPrintDataNotifyComms printFile : bulkPrintDataNotifyCommsList) {
 
                 log.trace("LetterService :  jurorNumber {}", printFile.getJurorNo());
-                final JurorPool juror = jurorRepository.findByJurorJurorNumber(printFile.getJurorNo());
+                final JurorPool juror =
+                    jurorRepository.findByJurorJurorNumberAndIsActiveAndOwner(printFile.getJurorNo(), true,
+                        SecurityUtil.BUREAU_OWNER);
 
                 try {
 

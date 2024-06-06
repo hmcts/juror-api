@@ -255,6 +255,7 @@ class CompleteServiceControllerTest {
                 jurorStatusValidationResponseDto3);
         }
 
+
         @Test
         void positiveAllMixValidAndInvalidResponse() throws Exception {
             JurorNumberListDto payload = new JurorNumberListDto();

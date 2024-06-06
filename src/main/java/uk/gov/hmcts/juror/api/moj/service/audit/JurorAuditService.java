@@ -12,4 +12,6 @@ public interface JurorAuditService {
                                                            List<String> locCodes);
 
     JurorAudit getPreviousJurorAudit(JurorAudit juror);
+
+    List<String> getAllPoolAuditsForDay(LocalDate date);
 }
