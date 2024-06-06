@@ -59,7 +59,7 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
         } else {
 
             String courtLocCodes = jurySummoningMonitorReportRequest.isAllCourts()
-                ? String.join(",", courtQueriesRepository.getAllCourtLocCodes())
+                ? String.join(",", courtQueriesRepository.getAllCourtLocCodes(false))
                 : String.join(",", jurySummoningMonitorReportRequest.getCourtLocCodes());
             try {
                 String result =

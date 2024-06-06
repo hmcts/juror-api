@@ -10,5 +10,5 @@ import java.util.List;
 public interface CourtQueriesRepository {
     List<CourtLocationDataDto> getCourtDetailsFilteredByPostcode(String firstHalfOfPostcode);
 
-    List<String> getAllCourtLocCodes();
+    List<String> getAllCourtLocCodes(boolean includeBureau);
 }

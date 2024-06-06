@@ -1,5 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.repository;
 
+import com.querydsl.core.types.dsl.StringPath;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -52,13 +54,14 @@ public class CourtQueriesRepositoryImpl implements CourtQueriesRepository {
     }
 
     @Override
-    public List<String> getAllCourtLocCodes() {
+    public List<String> getAllCourtLocCodes(boolean includeBureau) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-
-        return queryFactory
+        JPAQuery<String> query =  queryFactory
             .selectDistinct(COURT_LOCATION.locCode)
-            .from(COURT_LOCATION)
-            .where(COURT_LOCATION.locCode.ne("400"))
-            .fetch();
+            .from(COURT_LOCATION);
+            if (!includeBureau) {
+                query.where(COURT_LOCATION.locCode.ne("400"));
+            }
+            return query.fetch();
     }
 }
