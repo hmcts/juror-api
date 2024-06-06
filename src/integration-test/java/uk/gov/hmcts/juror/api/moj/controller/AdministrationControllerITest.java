@@ -1,9 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -50,7 +48,6 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.PUT;
-import static org.springframework.test.util.AssertionErrors.fail;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -282,15 +279,9 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            void invalidCodeType() throws JsonProcessingException {
+            void invalidCodeType() {
                 assertInvalidPathParam(triggerInvalid("INVALID", "415"),
                     "INVALID is the incorrect data type or is not in the expected format (code_type)");
-            }
-
-            @Test
-            @Disabled("Pending new authentication rules for admin users")
-            void unauthorisedNotAdminUser() {
-                fail("TODO");
             }
         }
     }

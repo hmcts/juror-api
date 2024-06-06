@@ -24,7 +24,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class AbaccusReportTest extends AbstractStandardReportTestSupport<AbaccusReport> {
+class AbaccusReportTest extends AbstractStandardReportTestSupport<AbaccusReport> {
 
     public AbaccusReportTest() {
         super(
