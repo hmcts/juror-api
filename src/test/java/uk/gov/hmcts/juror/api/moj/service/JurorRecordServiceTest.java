@@ -139,6 +139,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.juror.api.moj.controller.request.FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS;
 
 @ExtendWith(SpringExtension.class)
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects",
@@ -3418,7 +3419,11 @@ class JurorRecordServiceTest {
                 assertAndTrigger(FilterableJurorDetailsRequestDto.builder()
                     .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
                     .jurorVersion(1L)
-                    .include(List.of(FilterableJurorDetailsRequestDto.IncludeType.values()))
+                    .include(List.of(
+                        FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS,
+                        FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS,
+                        FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS,
+                        FilterableJurorDetailsRequestDto.IncludeType.MILEAGE))
                     .build());
             }
 
@@ -3427,12 +3432,17 @@ class JurorRecordServiceTest {
                 assertAndTrigger(FilterableJurorDetailsRequestDto.builder()
                     .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
                     .jurorVersion(null)
-                    .include(List.of(FilterableJurorDetailsRequestDto.IncludeType.values()))
+                    .include(List.of(
+                        FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS,
+                        FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS,
+                        FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS,
+                        FilterableJurorDetailsRequestDto.IncludeType.MILEAGE))
                     .build());
             }
 
             private void assertAndTrigger(FilterableJurorDetailsRequestDto request) {
                 Juror juror = mock(Juror.class);
+                JurorPool jurorPool = mock(JurorPool.class);
 
                 PaymentDetails paymentDetails = mock(PaymentDetails.class);
                 paymentDetailsMockedStatic = mockStatic(PaymentDetails.class);
@@ -3468,7 +3478,7 @@ class JurorRecordServiceTest {
                 includeTypeValidator.accept(paymentDetails, response.getPaymentDetails(),
                     FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS);
                 includeTypeValidator.accept(nameDetails, response.getNameDetails(),
-                    FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS);
+                    NAME_DETAILS);
                 includeTypeValidator.accept(jurorAddressDto, response.getAddress(),
                     FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS);
 

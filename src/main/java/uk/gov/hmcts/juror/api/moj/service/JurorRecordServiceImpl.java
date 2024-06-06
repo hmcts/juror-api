@@ -258,9 +258,26 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     @Override
     @Transactional(readOnly = true)
     public FilterableJurorDetailsResponseDto getJurorDetails(FilterableJurorDetailsRequestDto request) {
+        boolean requiresJurorPool = request.getInclude()
+            .contains(FilterableJurorDetailsRequestDto.IncludeType.ACTIVE_POOL);
+
+        if (request.getJurorVersion() != null && requiresJurorPool) {
+            throw new MojException.BadRequest("Juror version can not be used along side and Active Pool include filter",
+                null);
+        }
+
+        Juror juror;
+        JurorPool jurorPool;
+        if (requiresJurorPool) {
+            jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, request.getJurorNumber());
+            juror = jurorPool.getJuror();
+        } else {
+            jurorPool = null;
+            juror = getJuror(request.getJurorNumber(), request.getJurorVersion());
+        }
         FilterableJurorDetailsRequestDto.FilterContext context = new FilterableJurorDetailsRequestDto.FilterContext(
-            getJuror(request.getJurorNumber(), request.getJurorVersion())
-        );
+            juror, jurorPool);
+
         FilterableJurorDetailsResponseDto filterableJurorDetailsResponseDto = new FilterableJurorDetailsResponseDto();
         filterableJurorDetailsResponseDto.setJurorNumber(request.getJurorNumber());
         filterableJurorDetailsResponseDto.setJurorVersion(request.getJurorVersion());
