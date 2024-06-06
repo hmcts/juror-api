@@ -208,6 +208,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             .userType(UserType.BUREAU)
             .login("BUREAU_USER")
             .owner("400")
+            .locCode("400")
             .staff(staff)
             .build());
 

@@ -107,7 +107,7 @@ public class JurorResponseSearchServiceImpl implements JurorResponseSearchServic
             ?
             configuredValue
             :
-                100;
+                1000;
     }
 
     /**

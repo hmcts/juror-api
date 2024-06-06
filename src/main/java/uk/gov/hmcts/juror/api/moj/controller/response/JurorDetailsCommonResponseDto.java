@@ -36,6 +36,10 @@ public class JurorDetailsCommonResponseDto {
     @Schema(name = "Owner", description = "Current owner")
     private String owner;
 
+    @Schema(name = "LocCode", description = "Current locCode")
+    @JsonProperty("loc_code")
+    private String locCode;
+
     @Length(max = 10)
     @Schema(description = "Juror title")
     private String title;// optional field
@@ -174,6 +178,7 @@ public class JurorDetailsCommonResponseDto {
 
         if (jurorPool.getCourt() != null) {
             this.courtName = jurorPool.getCourt().getLocCourtName();
+            this.locCode = jurorPool.getCourt().getLocCode();
         }
 
         Optional<JurorStatus> jurorStatusOpt = jurorStatusRepository.findById(jurorPool.getStatus().getStatus());

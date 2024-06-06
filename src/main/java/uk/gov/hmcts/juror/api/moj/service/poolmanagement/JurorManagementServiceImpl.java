@@ -601,6 +601,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         newTargetJurorPool.setNextDate(targetPool.getReturnDate());
         newTargetJurorPool.setUserEdtq(currentUser);
         newTargetJurorPool.setOnCall(false);
+        newTargetJurorPool.setReminderSent(null);
 
         newTargetJurorPool.setStatus(RepositoryUtils
             .retrieveFromDatabase(IJurorStatus.RESPONDED, jurorStatusRepository));

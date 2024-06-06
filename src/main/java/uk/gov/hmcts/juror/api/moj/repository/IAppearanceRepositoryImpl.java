@@ -372,7 +372,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             SortMethod.DESC,
             tuple -> UnpaidExpenseSummaryResponseDto.builder()
                 .jurorNumber(tuple.get(QAppearance.appearance.jurorNumber))
-                .poolNumber(tuple.get(QAppearance.appearance.jurorNumber))
+                .poolNumber(tuple.get(QAppearance.appearance.poolNumber))
                 .firstName(tuple.get(QJuror.juror.firstName))
                 .lastName(tuple.get(QJuror.juror.lastName))
                 .totalUnapproved(tuple.get(UnpaidExpenseSummaryRequestDto.TOTAL_OUTSTANDING_EXPRESSION))

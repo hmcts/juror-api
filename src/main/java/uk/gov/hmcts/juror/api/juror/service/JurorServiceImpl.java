@@ -31,10 +31,11 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjust
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.ReasonableAdjustmentsRepository;
 import uk.gov.hmcts.juror.api.moj.service.PoolRequestService;
-import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
+import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -81,7 +82,7 @@ public class JurorServiceImpl implements JurorService {
                     .hearingDate(jurorDetails.getNextDate())
                     .locCode(jurorDetails.getCourt().getLocCode())
                     .locCourtName(jurorDetails.getCourt().getLocCourtName())
-                    .courtAttendTime(getAttendTime(jurorDetails))
+                    .courtAttendTime(DateUtils.TIME_FORMAT.format(getAttendTime(jurorDetails)))
                     .courtAddress1(jurorDetails.getCourt().getAddress1())
                     .courtAddress2(jurorDetails.getCourt().getAddress2())
                     .courtAddress3(jurorDetails.getCourt().getAddress3())
@@ -107,16 +108,17 @@ public class JurorServiceImpl implements JurorService {
      * @return attendance time, nullable
      * @since JDB-2042
      */
-    private String getAttendTime(JurorPool jurorDetails) {
-        final String uniquePoolAttendTime = poolRequestService.getPoolAttendanceTime(jurorDetails.getPoolNumber());
+    private LocalTime getAttendTime(JurorPool jurorDetails) {
+        final LocalDateTime uniquePoolAttendTime =
+            poolRequestService.getPoolAttendanceTime(jurorDetails.getPoolNumber());
 
         if (uniquePoolAttendTime != null) {
             if (log.isTraceEnabled()) {
                 log.trace("Attend time is set in unique pool, using pool attend time of {}", uniquePoolAttendTime);
             }
-            return uniquePoolAttendTime;
+            return uniquePoolAttendTime.toLocalTime();
         } else {
-            final String courtAttendTime = DataUtils.asStringHHmm(jurorDetails.getCourt().getCourtAttendTime());
+            LocalTime courtAttendTime = jurorDetails.getCourt().getCourtAttendTime();
             if (log.isTraceEnabled()) {
                 log.trace("Attend time is not set in unique pool, using court attend time of {}", courtAttendTime);
             }

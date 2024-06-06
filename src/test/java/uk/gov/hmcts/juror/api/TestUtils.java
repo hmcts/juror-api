@@ -72,6 +72,7 @@ public final class TestUtils {
     public static BureauJwtPayload createJwt(String owner, String username, String userLevel, List<String> courts) {
         return BureauJwtPayload.builder()
             .owner(owner)
+            .locCode(owner)
             .login(username)
             .staff(staffBuilder(username, Integer.valueOf(userLevel), courts))
             .userLevel(userLevel)

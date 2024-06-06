@@ -36,10 +36,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings({
-    "PMD.LawOfDemeter",
-    "PMD.ExcessiveImports"
-})
+@SuppressWarnings("PMD.ExcessiveImports")
 class UnpaidAttendanceSummaryReportTest extends AbstractGroupedReportTestSupport<UnpaidAttendanceSummaryReport> {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
@@ -49,7 +46,7 @@ class UnpaidAttendanceSummaryReportTest extends AbstractGroupedReportTestSupport
         super(QAppearance.appearance,
             UnpaidAttendanceSummaryReport.RequestValidator.class,
             ReportGroupBy.builder()
-                .dataType(DataType.POOL_NUMBER_BY_APPEARANCE)
+                .dataType(DataType.ATTENDANCE_DATE)
                 .removeGroupByFromResponse(true)
                 .build(),
             DataType.JUROR_NUMBER,
@@ -104,11 +101,11 @@ class UnpaidAttendanceSummaryReportTest extends AbstractGroupedReportTestSupport
         verify(query, times(1)).where(
             QAppearance.appearance.attendanceDate.between(request.getFromDate(), request.getToDate()));
         verify(query)
-            .orderBy(QAppearance.appearance.poolNumber.asc(), QJuror.juror.jurorNumber.asc());
+            .orderBy(QAppearance.appearance.attendanceDate.asc(), QJuror.juror.jurorNumber.asc());
 
         verify(report, times(1)).addGroupBy(query,
             DataType.JUROR_NUMBER,
-            DataType.POOL_NUMBER_BY_APPEARANCE);
+            DataType.ATTENDANCE_DATE);
 
     }
 
