@@ -58,6 +58,7 @@ public class CourtQueriesRepositoryImpl implements CourtQueriesRepository {
         return queryFactory
             .selectDistinct(COURT_LOCATION.locCode)
             .from(COURT_LOCATION)
+            .where(COURT_LOCATION.locCode.ne("400"))
             .fetch();
     }
 }

@@ -90,7 +90,7 @@ class JurySummoningMonitorReportServiceImplTest {
                 .build();
 
             when(poolRequestRepository.findByPoolNumber(poolNumber)).thenReturn(Optional.of(poolRequest));
-            when(jurorPoolRepository.getJsmReportByPool(poolNumber)).thenReturn(null);
+            when(jurorPoolRepository.getJurySummoningMonitorReportByPool(poolNumber)).thenReturn(null);
 
             JurySummoningMonitorReportResponse response =
                 jurySummoningMonitorReportService.viewJurySummoningMonitorReport(
@@ -115,7 +115,7 @@ class JurySummoningMonitorReportServiceImplTest {
                 .isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS));
 
             verify(poolRequestRepository, times(1)).findByPoolNumber(poolNumber);
-            verify(jurorPoolRepository, times(1)).getJsmReportByPool(poolNumber);
+            verify(jurorPoolRepository, times(1)).getJurySummoningMonitorReportByPool(poolNumber);
             verifyNoInteractions(courtLocationRepository);
         }
 

@@ -57,10 +57,10 @@ public interface JurorPoolRepository extends IJurorPoolRepository, JpaRepository
     JurorPool findByJurorJurorNumberAndIsActiveAndOwner(String jurorNumber, boolean isActive, String owner);
 
     @Query(value = "SELECT * from juror_mod.jsm_report_by_pool(:poolNumber)", nativeQuery = true)
-    String getJsmReportByPool(@Param("poolNumber") String poolNumber) throws SQLException;
+    String getJurySummoningMonitorReportByPool(@Param("poolNumber") String poolNumber) throws SQLException;
 
     @Query(value = "SELECT * from juror_mod.jsm_report_by_court(:locCodes, :fromDate, :toDate)", nativeQuery = true)
-    String getJsmReportByCourt(@Param("locCodes") String poolNumber,
-                               @Param("fromDate") LocalDate fromDate,
-                               @Param("toDate") LocalDate toDate) throws SQLException;
+    String getJurySummoningMonitorReportByCourt(@Param("locCodes") String poolNumber,
+                                                @Param("fromDate") LocalDate fromDate,
+                                                @Param("toDate") LocalDate toDate) throws SQLException;
 }

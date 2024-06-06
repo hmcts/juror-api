@@ -48,12 +48,8 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
         if (isSearchByPool) {
             try {
                 String result =
-                    jurorPoolRepository.getJsmReportByPool(jurySummoningMonitorReportRequest.getPoolNumber());
-
-                if (result != null && !result.isEmpty()) {
-                    List<String> values = List.of(result.split(","));
-                    setupResponse(response, values);
-                }
+                    jurorPoolRepository.getJurySummoningMonitorReportByPool(jurySummoningMonitorReportRequest.getPoolNumber());
+                setupResponseDto(response, result);
 
             } catch (Exception e) {
                 log.error("Error getting jury summoning monitor report by pool", e);
@@ -62,19 +58,15 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
         } else {
 
             String courtLocCodes = jurySummoningMonitorReportRequest.isAllCourts()
-                ?
-                String.join(",", courtQueriesRepository.getAllCourtLocCodes())
+                ? String.join(",", courtQueriesRepository.getAllCourtLocCodes())
                 : String.join(",", jurySummoningMonitorReportRequest.getCourtLocCodes());
             try {
                 String result =
-                    jurorPoolRepository.getJsmReportByCourt(courtLocCodes,
+                    jurorPoolRepository.getJurySummoningMonitorReportByCourt(courtLocCodes,
                         jurySummoningMonitorReportRequest.getFromDate(),
                         jurySummoningMonitorReportRequest.getToDate());
+                setupResponseDto(response, result);
 
-                if (result != null && !result.isEmpty()) {
-                    List<String> values = List.of(result.split(","));
-                    setupResponse(response, values);
-                }
             } catch (Exception e) {
                 log.error("Error getting jury summoning monitor report by court", e);
                 throw new MojException.InternalServerError("Error getting jury summoning monitor report by court", e);
@@ -83,7 +75,14 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
         return response;
     }
 
-    private static void setupResponse(JurySummoningMonitorReportResponse response, List<String> result) {
+    private void setupResponseDto(JurySummoningMonitorReportResponse response, String result) {
+        if (result != null && !result.isEmpty()) {
+            List<String> values = List.of(result.split(","));
+            setupResponse(response, values);
+        }
+    }
+
+    private void setupResponse(JurySummoningMonitorReportResponse response, List<String> result) {
         response.setTotalJurorsNeeded(Integer.parseInt(result.get(0)));
         response.setBureauDeferralsIncluded(Integer.parseInt(result.get(1)));
 
