@@ -48,7 +48,8 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
         if (isSearchByPool) {
             try {
                 String result =
-                    jurorPoolRepository.getJurySummoningMonitorReportByPool(jurySummoningMonitorReportRequest.getPoolNumber());
+                    jurorPoolRepository
+                        .getJurySummoningMonitorReportByPool(jurySummoningMonitorReportRequest.getPoolNumber());
                 setupResponseDto(response, result);
 
             } catch (Exception e) {
