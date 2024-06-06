@@ -21,6 +21,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
+import uk.gov.hmcts.juror.api.moj.repository.THistoryCodeRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.math.BigDecimal;
@@ -48,12 +49,15 @@ class JurorHistoryServiceImplTest {
     private final JurorHistoryService jurorHistoryService;
     private final Clock clock;
     private final JurorHistoryRepository jurorHistoryRepository;
+    private final THistoryCodeRepository tHistoryCodeRepository;
+
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
     public JurorHistoryServiceImplTest() {
         this.clock = mock(Clock.class);
         this.jurorHistoryRepository = mock(JurorHistoryRepository.class);
-        this.jurorHistoryService = new JurorHistoryServiceImpl(jurorHistoryRepository, clock);
+        this.tHistoryCodeRepository = mock(THistoryCodeRepository.class);
+        this.jurorHistoryService = new JurorHistoryServiceImpl(jurorHistoryRepository, tHistoryCodeRepository, clock);
     }
 
     @BeforeEach

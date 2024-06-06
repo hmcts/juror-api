@@ -1319,8 +1319,20 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     @Override
     public JurorHistoryResponseDto getJurorHistory(String jurorNumber, BureauJwtPayload payload) {
+//        JurorUtils.checkReadAccessForCurrentUser(jurorPoolRepository, jurorNumber, SecurityUtil.getActiveOwner());
+
+        List<JurorHistory> data = jurorHistoryRepository.findByJurorNumber(jurorNumber);
 
         return JurorHistoryResponseDto.builder()
+            .data(data.stream().map(item -> JurorHistoryResponseDto.JurorHistoryEntryDto.builder()
+                .description(jurorHistoryService.getHistoryDescription(item.getHistoryCode().getCode()))
+                .dateCreated(item.getDateCreated())
+                .username(item.getCreatedBy())
+                .poolNumber(item.getPoolNumber())
+                .otherInfo(item.getOtherInformation())
+                .otherInfoDate(item.getOtherInformationDate())
+                .otherInfoRef(item.getOtherInformationRef())
+                .build()).toList())
             .build();
     }
 

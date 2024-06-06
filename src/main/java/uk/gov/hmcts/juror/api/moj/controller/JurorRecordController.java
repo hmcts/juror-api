@@ -458,8 +458,8 @@ public class JurorRecordController {
      * @param jurorNumber Unique Juror number of the juror
      * @return Fully populated DTO of the juror's history entries
      */
-    @GetMapping(path = "/{jurorNumber}/payments")
-    @Operation(summary = "Get attendance and payments log for a given juror")
+    @GetMapping(path = "/{jurorNumber}/history")
+    @Operation(summary = "Get history log for a given juror")
     public ResponseEntity<JurorHistoryResponseDto> getJurorHistory(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @PathVariable("jurorNumber") @Valid @JurorNumber

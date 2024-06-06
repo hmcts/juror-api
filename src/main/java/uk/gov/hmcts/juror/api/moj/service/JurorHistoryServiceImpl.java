@@ -16,6 +16,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
+import uk.gov.hmcts.juror.api.moj.repository.THistoryCodeRepository;
 import uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -24,6 +25,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 
 
 @Slf4j
@@ -32,8 +34,26 @@ import java.time.format.DateTimeFormatter;
 public class JurorHistoryServiceImpl implements JurorHistoryService {
     private static final String SYSTEM_USER_ID = "SYSTEM";
     private final JurorHistoryRepository jurorHistoryRepository;
+    private final THistoryCodeRepository tHistoryCodeRepository;
     private final Clock clock;
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static HashMap<String, String> mapper;
+
+    public HashMap<String, String> getHistoryCodeMap() {
+        if (null != mapper) {
+            return mapper;
+        }
+
+        mapper = new HashMap<>();
+        tHistoryCodeRepository.findAll().forEach((tHistoryCode ->
+            mapper.put(tHistoryCode.getHistoryCode(), tHistoryCode.getDescription())));
+
+        return mapper;
+    }
+
+    public String getHistoryDescription(String historyCode) {
+        return getHistoryCodeMap().get(historyCode);
+    }
 
     @Override
     public void createPoliceCheckDisqualifyHistory(JurorPool jurorPool) {

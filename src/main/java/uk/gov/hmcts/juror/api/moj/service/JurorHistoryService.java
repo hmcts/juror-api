@@ -6,9 +6,9 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashMap;
 
 public interface JurorHistoryService {
-
     void createPoliceCheckDisqualifyHistory(JurorPool jurorPool);
 
     void createPoliceCheckQualifyHistory(JurorPool jurorPool, boolean isChecked);
@@ -68,4 +68,6 @@ public interface JurorHistoryService {
     void createJuryAttendanceHistory(JurorPool jurorPool, String otherInfo);
 
     void createPoolAttendanceHistory(JurorPool jurorPool, String otherInfo);
+
+    public String getHistoryDescription(String historyCode);
 }

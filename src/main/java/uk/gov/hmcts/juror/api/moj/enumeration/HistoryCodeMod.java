@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.enumeration;
 
 import lombok.Getter;
+import uk.gov.hmcts.juror.api.config.ApplicationBeans;
 
 @Getter
 public enum HistoryCodeMod {
@@ -80,5 +81,4 @@ public enum HistoryCodeMod {
         this.code = code;
         this.description = description;
     }
-
 }
