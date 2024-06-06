@@ -35,7 +35,6 @@ public class UrgentStatusSchedulerTest {
 
     private Juror juror;
 
-
     @Mock
     private JurorDigitalResponseRepositoryMod jurorResponseRepo;
     @Mock
@@ -82,16 +81,12 @@ public class UrgentStatusSchedulerTest {
         response.setDateReceived(LocalDateTime.from(now.minusHours(1)));
         response.setProcessingStatus(ProcessingStatus.TODO);
         response.setUrgent(false);
-        response.setSuperUrgent(false);
         responseBacklog.add(response);
 
     }
 
     @Test
-    public void nonUrgentResponseTurnsSuperUrgent() throws Exception {
-
-        //poolDetails.setReadOnly(Boolean.TRUE);
-
+    public void nonUrgentResponseTurnsUrgent() {
         poolDetails.setJuror(juror);
         juror = poolDetails.getJuror();
         juror.setJurorNumber("12345678");
@@ -109,10 +104,8 @@ public class UrgentStatusSchedulerTest {
             true,
             "400"
         )).willReturn(poolDetails);
-        //given(poolrepo.findOne(jurorResponse.getJurorNumber())).willReturn(poolDetails);
 
-        given(urgencyService.isSuperUrgent(jurorResponse, poolDetails)).willReturn(Boolean.TRUE);
-        given(urgencyService.isUrgent(jurorResponse, poolDetails)).willReturn(Boolean.FALSE);
+        given(urgencyService.isUrgent(jurorResponse, poolDetails)).willReturn(Boolean.TRUE);
 
         urgentStatusScheduler.process();
 
@@ -122,9 +115,5 @@ public class UrgentStatusSchedulerTest {
         userService.assignUrgentResponse(jurorResponse);
 
         verify(jurorResponseRepo, times(1)).save(jurorResponse);
-
-
     }
-
-
 }

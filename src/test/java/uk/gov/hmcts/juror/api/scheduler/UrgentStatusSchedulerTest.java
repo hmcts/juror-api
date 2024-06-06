@@ -20,6 +20,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
@@ -64,12 +65,12 @@ public class UrgentStatusSchedulerTest {
         responseReceived = LocalDateTime.now();
 
         //set up some known static dates relative to a start point
-        final LocalDateTime hearingDateValid = LocalDateTime.now().plusDays(35);
+        final LocalDate hearingDateValid = LocalDate.now().plusDays(35);
 
         jurorBureauDetail = new ModJurorDetail();
         jurorBureauDetail.setProcessingStatus(NON_CLOSED_STATUS);
         jurorBureauDetail.setDateReceived(responseReceived.toLocalDate());
-        jurorBureauDetail.setHearingDate(hearingDateValid.toLocalDate());
+        jurorBureauDetail.setHearingDate(hearingDateValid);
 
         jurorResponse = new DigitalResponse();
         jurorResponse.setProcessingStatus(uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus.TODO);
@@ -78,11 +79,10 @@ public class UrgentStatusSchedulerTest {
         poolDetails = new JurorPool();
         Juror juror = new Juror();
         poolDetails.setJuror(juror);
-        poolDetails.setNextDate(hearingDateValid.toLocalDate());
+        poolDetails.setNextDate(hearingDateValid);
 
         responseBacklog = new LinkedList<>();
 
-        final LocalDateTime now = LocalDateTime.now();
         DigitalResponse response = new DigitalResponse();
         response.setJurorNumber("12345678");
 
@@ -93,9 +93,8 @@ public class UrgentStatusSchedulerTest {
     }
 
     @Test
-    public void nonUrgentResponseTurnsSuperUrgent() throws Exception {
+    public void nonUrgentResponseTurnsUrgent()  {
 
-        //  poolDetails.setReadOnly(Boolean.TRUE);
         poolDetails.getJuror().setJurorNumber("12345678");
 
         final List<ProcessingStatus> pendingStatuses = List.of(ProcessingStatus.CLOSED);
@@ -113,8 +112,7 @@ public class UrgentStatusSchedulerTest {
             "400"
         )).willReturn(poolDetails);
 
-        given(urgencyService.isSuperUrgent(jurorResponse, poolDetails)).willReturn(Boolean.TRUE);
-        given(urgencyService.isUrgent(jurorResponse, poolDetails)).willReturn(Boolean.FALSE);
+        given(urgencyService.isUrgent(jurorResponse, poolDetails)).willReturn(Boolean.TRUE);
 
         urgentStatusScheduler.process();
 
@@ -123,8 +121,5 @@ public class UrgentStatusSchedulerTest {
 
         verify(jurorResponseRepo, times(1)).save(jurorResponse);
 
-
     }
-
-
 }

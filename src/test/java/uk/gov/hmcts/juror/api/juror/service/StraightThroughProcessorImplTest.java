@@ -106,7 +106,6 @@ public class StraightThroughProcessorImplTest {
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
         given(jurorResponse.getRelationship()).willReturn("Relationship");
         given(jurorResponse.getThirdPartyReason()).willReturn("Deceased");
-        given(jurorResponse.isSuperUrgent()).willReturn(false);
         JurorStatus jurorStatus = mock(JurorStatus.class);
         when(jurorStatus.getStatus()).thenReturn(IJurorStatus.SUMMONED);
         given(jurorPool.getStatus()).willReturn(jurorStatus);
@@ -177,32 +176,6 @@ public class StraightThroughProcessorImplTest {
     }
 
     @Test
-    public void processDeceasedExcusal_unhappyPath_isSuperUrgent() {
-        // configure single jurorResponse property to fail processing
-        given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
-        given(jurorResponse.getRelationship()).willReturn("Relationship");
-        given(jurorResponse.getThirdPartyReason()).willReturn("Deceased");
-        JurorStatus jurorStatus = mock(JurorStatus.class);
-        when(jurorStatus.getStatus()).thenReturn(IJurorStatus.SUMMONED);
-        given(jurorPool.getStatus()).willReturn(jurorStatus);
-
-        when(jurorResponse.isSuperUrgent()).thenReturn(true);
-
-        try {
-            // process response
-            straightThroughProcessor.processDeceasedExcusal(jurorResponse);
-            fail("Expected StraightThroughProcessingServiceException.DeceasedExcusal not thrown.");
-        } catch (StraightThroughProcessingServiceException.DeceasedExcusal expectedException) {
-            // verify there was no interaction with the db etc
-            verify(jurorResponseRepository, times(0)).save(any(DigitalResponse.class));
-            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
-            verify(poolRepository, times(0)).save(any(JurorPool.class));
-            verify(partHistRepository, times(0)).save(any(JurorHistory.class));
-        }
-    }
-
-
-    @Test
     public void processDeceasedExcusal_unhappyPath_statusNotSummoned() {
         // configure single jurorResponse property to fail processing
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
@@ -233,7 +206,6 @@ public class StraightThroughProcessorImplTest {
         // configure jurorResponse status to get through Age-Excusal logic successfully
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
         given(jurorResponse.getRelationship()).willReturn(null);
-        given(jurorResponse.isSuperUrgent()).willReturn(false);
         JurorStatus jurorStatus = mock(JurorStatus.class);
         when(jurorStatus.getStatus()).thenReturn(IJurorStatus.SUMMONED);
         given(jurorPool.getStatus()).willReturn(jurorStatus);
@@ -281,7 +253,6 @@ public class StraightThroughProcessorImplTest {
         // configure jurorResponse status to get through Age-Excusal logic successfully
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
         given(jurorResponse.getRelationship()).willReturn(null);
-        given(jurorResponse.isSuperUrgent()).willReturn(false);
         JurorStatus jurorStatus = mock(JurorStatus.class);
         when(jurorStatus.getStatus()).thenReturn(IJurorStatus.SUMMONED);
         given(jurorPool.getStatus()).willReturn(jurorStatus);
@@ -323,7 +294,6 @@ public class StraightThroughProcessorImplTest {
         // configure jurorResponse
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
         given(jurorResponse.getRelationship()).willReturn(null);
-        given(jurorResponse.isSuperUrgent()).willReturn(false);
         JurorStatus jurorStatus = mock(JurorStatus.class);
         when(jurorStatus.getStatus()).thenReturn(IJurorStatus.SUMMONED);
         given(jurorPool.getStatus()).willReturn(jurorStatus);
@@ -355,7 +325,6 @@ public class StraightThroughProcessorImplTest {
         // configure jurorResponse
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
         given(jurorResponse.getRelationship()).willReturn(null);
-        given(jurorResponse.isSuperUrgent()).willReturn(false);
         JurorStatus jurorStatus = mock(JurorStatus.class);
         when(jurorStatus.getStatus()).thenReturn(IJurorStatus.SUMMONED);
         given(jurorPool.getStatus()).willReturn(jurorStatus);
@@ -386,30 +355,6 @@ public class StraightThroughProcessorImplTest {
         // configure jurorResponse status to fail validation
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
         given(jurorResponse.getRelationship()).willReturn("BFFs");
-
-        try {
-            // process response
-            straightThroughProcessor.processAgeExcusal(jurorResponse);
-            fail("Expected StraightThroughProcessingServiceException.AgeExcusal not thrown.");
-        } catch (StraightThroughProcessingServiceException.AgeExcusal expectedException) {
-            // check database was not updated
-            verify(jurorResponseRepository, times(0)).save(any(DigitalResponse.class));
-            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
-            verify(poolRepository, times(0)).save(any(JurorPool.class));
-            verify(partHistRepository, times(0)).save(any(JurorHistory.class));
-            verify(disqualificationLetterRepository, times(0)).save(any(DisqualificationLetterMod.class));
-        }
-    }
-
-    @Test
-    public void processAgeExcusal_unhappyPath_isSuperUrgent() {
-        // configure jurorResponse status to fail validation
-        given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
-        given(jurorResponse.getRelationship()).willReturn(null);
-        given(jurorResponse.isSuperUrgent()).willReturn(true);
-        JurorStatus jurorStatus = mock(JurorStatus.class);
-        when(jurorStatus.getStatus()).thenReturn(IJurorStatus.SUMMONED);
-        given(jurorPool.getStatus()).willReturn(jurorStatus);
 
         try {
             // process response
@@ -598,25 +543,6 @@ public class StraightThroughProcessorImplTest {
         // configure single jurorResponse property to fail processing
         setupMock_UrgentSuperUrgent();
         given(jurorResponse.isUrgent()).willReturn(true);
-
-        try {
-            // process response
-            straightThroughProcessor.processAcceptance(jurorResponse);
-            fail("Expected StraightThroughProcessingServiceException  is  thrown.");
-        } catch (StraightThroughProcessingServiceException expectedException) {
-            // verify there was no interaction with the db etc
-            verify(jurorResponseRepository, times(0)).save(any(DigitalResponse.class));
-            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
-            verify(poolRepository, times(0)).save(any(JurorPool.class));
-            verify(partHistRepository, times(0)).save(any(JurorHistory.class));
-        }
-    }
-
-    @Test
-    public void process_acceptance_response_isSuperUrgent() {
-        // configure single jurorResponse property to fail processing
-        setupMock_UrgentSuperUrgent();
-        given(jurorResponse.isSuperUrgent()).willReturn(true);
 
         try {
             // process response

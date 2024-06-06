@@ -102,7 +102,6 @@ public class UserServiceImplTest {
         .jurorNumber(JUROR_NUMBER)
         .processingComplete(false)
         .urgent(false)
-        .superUrgent(false)
         .replyType(ReplyType.builder().type(ReplyMethod.DIGITAL.getDescription()).build())
         .processingStatus(ProcessingStatus.TODO)
         .build();
@@ -110,7 +109,6 @@ public class UserServiceImplTest {
         .jurorNumber(JUROR_NUMBER_2)
         .processingComplete(false)
         .urgent(false)
-        .superUrgent(false)
         .replyType(ReplyType.builder().type(ReplyMethod.DIGITAL.getDescription()).build())
         .processingStatus(ProcessingStatus.TODO)
         .build();
@@ -118,14 +116,12 @@ public class UserServiceImplTest {
         .jurorNumber(JUROR_NUMBER_3)
         .processingComplete(false)
         .urgent(false)
-        .superUrgent(false)
         .processingStatus(ProcessingStatus.AWAITING_CONTACT)
         .build();
     private static final DigitalResponse JUROR_RESPONSE_INVALID_CLOSED = DigitalResponse.builder()
         .jurorNumber(JUROR_NUMBER)
         .processingComplete(true)
         .urgent(false)
-        .superUrgent(false)
         .processingStatus(ProcessingStatus.CLOSED)
         .build();
 
