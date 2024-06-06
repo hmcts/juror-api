@@ -409,8 +409,8 @@ class AppearanceTest {
     void positiveGetSmartCardTotalChangedDraft() {
         Appearance appearance = spy(new Appearance());
         doReturn(AppearanceStage.EXPENSE_ENTERED).when(appearance).getAppearanceStage();
-        doReturn(new BigDecimal("20.00")).when(appearance).getSubsistenceDue();
-        doReturn(new BigDecimal("0.00")).when(appearance).getSubsistencePaid();
+        doReturn(new BigDecimal("20.00")).when(appearance).getSmartCardAmountDue();
+        doReturn(new BigDecimal("0.00")).when(appearance).getSmartCardAmountPaid();
 
         assertThat(appearance.getSmartCardTotalChanged())
             .isEqualTo(new BigDecimal("20.00"));
@@ -420,11 +420,11 @@ class AppearanceTest {
     void positiveGetSmartCardTotalChangedApproved() {
         Appearance appearance = spy(new Appearance());
         doReturn(AppearanceStage.EXPENSE_AUTHORISED).when(appearance).getAppearanceStage();
-        doReturn(new BigDecimal("10.00")).when(appearance).getSubsistenceDue();
-        doReturn(new BigDecimal("20.00")).when(appearance).getSubsistencePaid();
+        doReturn(new BigDecimal("15.00")).when(appearance).getSmartCardAmountDue();
+        doReturn(new BigDecimal("20.00")).when(appearance).getSmartCardAmountPaid();
 
         assertThat(appearance.getSmartCardTotalChanged())
-            .isEqualTo(new BigDecimal("10.00"));
+            .isEqualTo(new BigDecimal("-5.00"));
     }
 
     @Nested
