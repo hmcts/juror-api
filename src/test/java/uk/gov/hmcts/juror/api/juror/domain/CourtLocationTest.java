@@ -6,7 +6,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.CourtType;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-public class CourtLocationTest {
+class CourtLocationTest {
 
 
     @Test
