@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.repository;
 
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -59,9 +58,9 @@ public class CourtQueriesRepositoryImpl implements CourtQueriesRepository {
         JPAQuery<String> query =  queryFactory
             .selectDistinct(COURT_LOCATION.locCode)
             .from(COURT_LOCATION);
-            if (!includeBureau) {
-                query.where(COURT_LOCATION.locCode.ne("400"));
-            }
-            return query.fetch();
+        if (!includeBureau) {
+            query.where(COURT_LOCATION.locCode.ne("400"));
+        }
+        return query.fetch();
     }
 }
