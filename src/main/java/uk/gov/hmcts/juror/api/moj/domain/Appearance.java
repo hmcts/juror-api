@@ -274,11 +274,6 @@ public class Appearance implements Serializable {
     @Column(name = "attendance_audit_number")
     private String attendanceAuditNumber;
 
-    public String getIdString() {
-        return "JurorNumber: " + this.jurorNumber + ", "
-            + "AttendanceDate: " + this.attendanceDate + ", "
-            + "CourtLocation: " + this.courtLocation;
-    }
 
     //Does not include smart card reduction
     public BigDecimal getTotalDue() {
