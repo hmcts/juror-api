@@ -48,7 +48,8 @@ public class AvailableListByPoolReport extends AbstractStandardReport implements
         addStandardFilters(query, request);
         query.where(QJurorPool.jurorPool.pool.poolNumber.eq(request.getPoolNumber()));
         query.orderBy(
-            QJurorPool.jurorPool.pool.poolNumber.asc()
+            QJurorPool.jurorPool.pool.poolNumber.asc(),
+            QJurorPool.jurorPool.juror.jurorNumber.asc()
         );
     }
 

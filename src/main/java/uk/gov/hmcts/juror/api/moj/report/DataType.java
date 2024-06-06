@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.report;
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import lombok.Getter;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -285,6 +286,10 @@ public enum DataType implements IDataType {
             .otherwise(0L).sum(),
         QJurorPool.jurorPool
     ),
+
+    //Due to new the updated system we no longer disqualify people on selection instead we simply do not select them
+    DISQUALIFIED_ON_SELECTION("Disqualified on selection", String.class,
+        Expressions.nullExpression(), QJuror.juror),
     ;
 
 
