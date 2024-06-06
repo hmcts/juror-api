@@ -3075,10 +3075,12 @@ class JurorExpenseServiceTest {
             doReturn(new BigDecimal("1.01")).when(appearance1).getTravelTotalChanged();
             doReturn(new BigDecimal("2.01")).when(appearance1).getSubsistenceTotalChanged();
             doReturn(new BigDecimal("3.01")).when(appearance1).getFinancialLossTotalChanged();
+            doReturn(new BigDecimal("0.01")).when(appearance1).getSmartCardTotalChanged();
             Appearance appearance2 = mock(Appearance.class);
             doReturn(new BigDecimal("4.01")).when(appearance2).getTravelTotalChanged();
             doReturn(new BigDecimal("5.01")).when(appearance2).getSubsistenceTotalChanged();
             doReturn(new BigDecimal("6.01")).when(appearance2).getFinancialLossTotalChanged();
+            doReturn(new BigDecimal("0.02")).when(appearance2).getSmartCardTotalChanged();
 
             Juror juror = mock(Juror.class);
             doReturn(juror).when(jurorExpenseService).getJuror(TestConstants.VALID_JUROR_NUMBER);
@@ -3110,7 +3112,7 @@ class JurorExpenseServiceTest {
 
             assertThat(paymentData.getCourtLocation()).isEqualTo(courtLocation);
             assertThat(paymentData.getCreationDateTime()).isEqualToIgnoringHours(LocalDateTime.now());
-            assertThat(paymentData.getExpenseTotal()).isEqualTo(new BigDecimal("21.06"));
+            assertThat(paymentData.getExpenseTotal()).isEqualTo(new BigDecimal("21.03"));
             assertThat(paymentData.getJurorNumber()).isEqualTo(TestConstants.VALID_JUROR_NUMBER);
             assertThat(paymentData.getBankSortCode()).isEqualTo("112233");
             assertThat(paymentData.getBankAccountName()).isEqualTo("bankAccountName");
@@ -3126,7 +3128,7 @@ class JurorExpenseServiceTest {
             assertThat(paymentData.getJurorName()).isEqualTo("Jurorname asd");
             assertThat(paymentData.getLocCostCentre()).isEqualTo("costCenter312");
             assertThat(paymentData.getTravelTotal()).isEqualTo(new BigDecimal("5.02"));
-            assertThat(paymentData.getSubsistenceTotal()).isEqualTo(new BigDecimal("7.02"));
+            assertThat(paymentData.getSubsistenceTotal()).isEqualTo(new BigDecimal("6.99"));
             assertThat(paymentData.getFinancialLossTotal()).isEqualTo(new BigDecimal("9.02"));
             assertThat(paymentData.getExpenseFileName()).isNull();
             assertThat(paymentData.isExtracted()).isFalse();
@@ -3138,6 +3140,7 @@ class JurorExpenseServiceTest {
             doReturn(new BigDecimal("1.01")).when(appearance1).getTravelTotalChanged();
             doReturn(new BigDecimal("2.01")).when(appearance1).getSubsistenceTotalChanged();
             doReturn(new BigDecimal("3.01")).when(appearance1).getFinancialLossTotalChanged();
+            doReturn(new BigDecimal("0.01")).when(appearance1).getSmartCardTotalChanged();
             Juror juror = mock(Juror.class);
             doReturn(juror).when(jurorExpenseService).getJuror(TestConstants.VALID_JUROR_NUMBER);
             CourtLocation courtLocation = mock(CourtLocation.class);
