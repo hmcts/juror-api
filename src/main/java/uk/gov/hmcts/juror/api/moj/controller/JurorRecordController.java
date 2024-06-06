@@ -461,11 +461,10 @@ public class JurorRecordController {
     @GetMapping(path = "/{jurorNumber}/history")
     @Operation(summary = "Get history log for a given juror")
     public ResponseEntity<JurorHistoryResponseDto> getJurorHistory(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @PathVariable("jurorNumber") @Valid @JurorNumber
         @Parameter(description = "Valid juror number", required = true) String jurorNumber) {
         final JurorHistoryResponseDto details =
-            jurorRecordService.getJurorHistory(jurorNumber, payload);
+            jurorRecordService.getJurorHistory(jurorNumber);
 
         return ResponseEntity.ok().body(details);
     }
