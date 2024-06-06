@@ -192,12 +192,6 @@ public class StaffServiceImpl implements StaffService {
                 + jurorResponse.getJurorNumber() + " to backlog as it is urgent", null);
         }
 
-        // JDB-2641 Super Urgent summons cannot be assigned to backlog
-        if (jurorResponse.isSuperUrgent()) {
-            throw new MojException.BusinessRuleViolation("Unable to assign response for Juror "
-                + jurorResponse.getJurorNumber() + " to backlog as it is super-urgent", null);
-        }
-
         // JDB-2488 AC18 - Only team leads can send to backlog
         if (!SecurityUtil.isBureauManager()) {
             throw new MojException.Forbidden(String.format("Unable to assign response for Juror %s to backlog "

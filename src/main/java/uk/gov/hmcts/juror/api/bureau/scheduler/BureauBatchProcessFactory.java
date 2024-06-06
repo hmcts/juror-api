@@ -24,7 +24,7 @@ public class BureauBatchProcessFactory {
     private final MessagesServiceImpl messagesService;
     private final ExcusedCompletedCourtCommsServiceImpl excusedCompletedCourtCommsService;
     private final JurorDashboardSmartSurveyImportImpl jurorDashboardSmartSurveyImport;
-    private final UrgentSuperUrgentStatusScheduler urgentSuperUrgentStatusScheduler;
+    private final UrgentStatusScheduler urgentStatusScheduler;
 
     /**
      * Retrieves the correct batch processer Instance based on a given string value.(job identifier)
@@ -40,7 +40,7 @@ public class BureauBatchProcessFactory {
             case "courtComms" -> messagesService;
             case "excusalCompletedServiceCourtComms" -> excusedCompletedCourtCommsService;
             case "smartSurveyImport" -> jurorDashboardSmartSurveyImport;
-            case "urgentSuperUrgentStatus" -> urgentSuperUrgentStatusScheduler;
+            case "urgentSuperUrgentStatus" -> urgentStatusScheduler;
             default -> null;
         };
     }

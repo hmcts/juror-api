@@ -52,30 +52,6 @@ public class StaffAssignmentException extends RuntimeException {
     }
 
     /**
-     * Exception type thrown when unable to assign to backlog as response is Super-Urgent.
-     */
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public static class StatusSuperUrgent extends StaffAssignmentException {
-        StatusSuperUrgent(final String jurorId, final String assignTo) {
-            super(String.format(
-                "Could not assign response %s to %s as the response status is Super-Urgent",
-                jurorId,
-                assignTo
-            ));
-        }
-
-        @Override
-        public String getLogMessage() {
-            return "StaffAssignment exception caught during assignment - status is super-urgent";
-        }
-
-        @Override
-        public String getReasonCode() {
-            return "SUPER_URGENT";
-        }
-    }
-
-    /**
      * Exception type thrown when unable to assign to backlog as response is Closed.
      */
     @ResponseStatus(HttpStatus.BAD_REQUEST)

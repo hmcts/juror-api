@@ -333,12 +333,6 @@ public class BureauJurorDetailDto implements Serializable, IJurorResponse {
     private Boolean urgent;
 
     /**
-     * Flag this response as super urgent.
-     */
-    @Schema(description = "Super-urgent status flag for response")
-    private Boolean superUrgent;
-
-    /**
      * Flag this response as overdue.
      */
     @Schema(description = "Overdue status flag for response")
@@ -447,7 +441,6 @@ public class BureauJurorDetailDto implements Serializable, IJurorResponse {
         this.specialNeeds =
             jurorDetails.getReasonableAdjustments().stream().map(SpecialNeedDto::new).collect(Collectors.toList());
         this.urgent = jurorDetails.getUrgent();
-        this.superUrgent = jurorDetails.getSuperUrgent();
         this.slaOverdue = jurorDetails.getSlaOverdue();
         this.welsh = jurorDetails.getWelsh();
         this.currentOwner = jurorDetails.getOwner();

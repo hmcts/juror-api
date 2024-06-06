@@ -155,18 +155,6 @@ public class UserServiceImpl implements UserService {
                 );
             }
 
-            // JDB-2641 Super Urgent summons cannot be assigned to backlog
-            if (jurorResponse.isSuperUrgent()) {
-                log.debug(
-                    "Unable to assign response for Juror {} to backlog as it is super-urgent",
-                    jurorResponse.getJurorNumber()
-                );
-                throw new StaffAssignmentException.StatusSuperUrgent(
-                    jurorResponse.getJurorNumber(),
-                    staffAssignmentRequestDto.getAssignTo()
-                );
-            }
-
             // JDB-2488 AC18 - Only team leads can send to backlog
             if (!assigningUser.isTeamLeader()) {
                 log.debug("Unable to assign response {} to backlog as user {} does not have rights",
@@ -306,9 +294,9 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void assignUrgentResponse(final DigitalResponse urgentJurorResponse) throws StaffAssignmentException {
-        if (!urgentJurorResponse.isSuperUrgent() && !urgentJurorResponse.isUrgent()) {
+        if (!urgentJurorResponse.isUrgent()) {
             // this state should be invalid
-            log.warn("Not urgent or super urgent: {}", urgentJurorResponse);
+            log.warn("Not urgent: {}", urgentJurorResponse);
             throw new StaffAssignmentException("Response not urgent: " + urgentJurorResponse);
         }
 
@@ -427,7 +415,6 @@ public class UserServiceImpl implements UserService {
                 assignedTo,
                 jurorResponse.getProcessingStatus(),
                 jurorResponse.isUrgent(),
-                jurorResponse.isSuperUrgent(),
                 jurorDisplayName.toString().trim()
             );
             assignmentListDataDtos.add(assignmentListDataDto);
@@ -464,8 +451,7 @@ public class UserServiceImpl implements UserService {
                 if (log.isTraceEnabled()) {
                     log.trace("Assignment updated: {}", responseDto);
                 }
-            } catch (StaffAssignmentException.StatusUrgent | StaffAssignmentException.StatusSuperUrgent
-                     | StaffAssignmentException.StatusClosed e) {
+            } catch (StaffAssignmentException.StatusUrgent | StaffAssignmentException.StatusClosed e) {
                 log.debug("StaffAssignment Status-related exception caught during multiple assignment", e);
                 OperationFailureDto failureReason = new OperationFailureDto(
                     responseMetadata.getResponseJurorNumber(),

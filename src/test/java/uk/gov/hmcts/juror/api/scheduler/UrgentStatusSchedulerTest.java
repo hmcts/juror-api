@@ -7,7 +7,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import uk.gov.hmcts.juror.api.bureau.scheduler.UrgentSuperUrgentStatusScheduler;
+import uk.gov.hmcts.juror.api.bureau.scheduler.UrgentStatusScheduler;
 import uk.gov.hmcts.juror.api.bureau.service.UrgencyService;
 import uk.gov.hmcts.juror.api.bureau.service.UserService;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries;
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
-public class UrgentSuperUrgentStatusSchedulerTest {
+public class UrgentStatusSchedulerTest {
 
     private static final String NON_CLOSED_STATUS = ProcessingStatus.TODO.name();
     private ModJurorDetail jurorBureauDetail;
@@ -53,7 +53,7 @@ public class UrgentSuperUrgentStatusSchedulerTest {
     private UrgencyService urgencyService;
 
     @InjectMocks
-    UrgentSuperUrgentStatusScheduler urgentSuperUrgentStatusScheduler;
+    UrgentStatusScheduler urgentStatusScheduler;
 
     private List<DigitalResponse> responseBacklog;
 
@@ -116,7 +116,7 @@ public class UrgentSuperUrgentStatusSchedulerTest {
         given(urgencyService.isSuperUrgent(jurorResponse, poolDetails)).willReturn(Boolean.TRUE);
         given(urgencyService.isUrgent(jurorResponse, poolDetails)).willReturn(Boolean.FALSE);
 
-        urgentSuperUrgentStatusScheduler.process();
+        urgentStatusScheduler.process();
 
         verify(jurorResponseRepo, times(1)).save(jurorResponse);
         verify(urgencyService, times(1)).setUrgencyFlags(responseBacklog.get(0), poolDetails);

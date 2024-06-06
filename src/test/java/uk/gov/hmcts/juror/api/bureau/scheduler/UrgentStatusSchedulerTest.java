@@ -27,7 +27,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
-public class UrgentSuperUrgentStatusSchedulerTest {
+public class UrgentStatusSchedulerTest {
 
     private static final String NON_CLOSED_STATUS = ProcessingStatus.TODO.name();
 
@@ -51,7 +51,7 @@ public class UrgentSuperUrgentStatusSchedulerTest {
     private UrgencyService urgencyService;
 
     @InjectMocks
-    UrgentSuperUrgentStatusScheduler urgentSuperUrgentStatusScheduler;
+    UrgentStatusScheduler urgentStatusScheduler;
 
     private List<DigitalResponse> responseBacklog;
 
@@ -114,7 +114,7 @@ public class UrgentSuperUrgentStatusSchedulerTest {
         given(urgencyService.isSuperUrgent(jurorResponse, poolDetails)).willReturn(Boolean.TRUE);
         given(urgencyService.isUrgent(jurorResponse, poolDetails)).willReturn(Boolean.FALSE);
 
-        urgentSuperUrgentStatusScheduler.process();
+        urgentStatusScheduler.process();
 
         verify(jurorResponseRepo, times(1)).save(jurorResponse);
         verify(urgencyService, times(1)).setUrgencyFlags(responseBacklog.get(0), poolDetails);
