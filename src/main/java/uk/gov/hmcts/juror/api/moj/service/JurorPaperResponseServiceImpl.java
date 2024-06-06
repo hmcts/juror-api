@@ -48,7 +48,6 @@ import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

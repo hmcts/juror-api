@@ -1031,7 +1031,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         assertThat(failureListDto.getFailureDtos().get(0).getJurorNumber()).isEqualTo("644892530");
         assertThat(failureListDto.getFailureDtos().get(0).getReason()).isEqualToIgnoringCase("URGENT");
         assertThat(failureListDto.getFailureDtos().get(1).getJurorNumber()).isEqualTo("586856851");
-        assertThat(failureListDto.getFailureDtos().get(1).getReason()).isEqualToIgnoringCase("SUPER_URGENT");
+        assertThat(failureListDto.getFailureDtos().get(1).getReason()).isEqualToIgnoringCase("URGENT");
 
         // assert that there were some changes to db
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(4);

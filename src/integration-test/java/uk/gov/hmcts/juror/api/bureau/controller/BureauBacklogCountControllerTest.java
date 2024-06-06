@@ -4,7 +4,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpHeaders;
@@ -33,9 +32,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class BureauBacklogCountControllerTest extends AbstractIntegrationTest {
 
-    @Value("${jwt.secret.bureau}")
-    private String bureauSecret;
-
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
@@ -57,9 +53,7 @@ public class BureauBacklogCountControllerTest extends AbstractIntegrationTest {
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/BureauBacklogCountService_BacklogCount.sql")
-    public void bureauBacklogCount_happy() throws Exception {
-
-
+    public void bureauBacklogCount_happy() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .login("ncrawford")
@@ -73,14 +67,8 @@ public class BureauBacklogCountControllerTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE where "
             + "PROCESSING_STATUS = 'TODO' and STAFF_LOGIN IS NULL ", Integer.class)).isEqualTo(7);
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE where "
-                + "PROCESSING_STATUS = 'TODO' and STAFF_LOGIN IS NULL and URGENT = 'Y' AND SUPER_URGENT='N' ",
-            Integer.class)).isEqualTo(2);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE where "
-                + "PROCESSING_STATUS = 'TODO' and STAFF_LOGIN IS NULL and (URGENT = 'Y' or SUPER_URGENT='Y') ",
+                + "PROCESSING_STATUS = 'TODO' and STAFF_LOGIN IS NULL and URGENT = 'Y'",
             Integer.class)).isEqualTo(3);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE where "
-                + "PROCESSING_STATUS = 'TODO' and STAFF_LOGIN IS NULL and URGENT = 'N' and  SUPER_URGENT='Y' ",
-            Integer.class)).isEqualTo(1);
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE where "
             + "PROCESSING_STATUS != 'TODO' ", Integer.class)).isEqualTo(1);
 
