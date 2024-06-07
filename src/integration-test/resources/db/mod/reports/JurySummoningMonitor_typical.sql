@@ -1,12 +1,15 @@
 
--- TODO expand on this to include more data for testing and update the test to match
 
 INSERT INTO juror_mod.pool (pool_no,"owner",return_date,no_requested,pool_type,loc_code,new_request,last_update,additional_summons,attend_time,nil_pool,total_no_required,date_created) VALUES
 	 ('415240801','400','2024-08-05',15,'CRO','415','N','2024-06-03 12:00:23',NULL,'2024-08-05 09:00:00',false,15,'2024-06-03 12:00:10.932656'),
 	 ('415240802','400','2024-08-05',2,'CRO','415','Y','2024-06-03 12:01:14',NULL,'2024-08-05 09:00:00',false,2,'2024-06-03 12:01:14.249361'),
 	 ('415240803','400','2024-08-27',5,'CRO','415','N','2024-06-03 12:02:08',NULL,'2024-08-27 09:00:00',false,5,'2024-06-03 12:01:56.739064'),
 	 ('415240804','400','2024-08-27',5,'CRO','415','N','2024-06-03 12:02:08',NULL,'2024-08-27 09:00:00',false,5,'2024-06-03 12:01:56.739064'),
-	 ('416240801','416','2024-08-06',10,'CRO','416','T','2024-06-04 11:42:42',NULL,'2024-08-06 09:00:00',false,10,'2024-06-04 11:42:31.266804');
+	 ('416240801','416','2024-08-06',10,'CRO','416','T','2024-06-04 11:42:42',NULL,'2024-08-06 09:00:00',false,10,'2024-06-04 11:42:31.266804'),
+	 ('755240801','400','2024-08-08',60,'CRO','755','Y','2024-06-06 12:01:46',NULL,'2024-08-08 09:30:00',false,60,'2024-06-06 12:01:45.526829'),
+	 ('774240801','400','2024-08-08',5,'CIV','774','Y','2024-06-06 12:04:41',NULL,'2024-08-08 09:30:00',false,5,'2024-06-06 12:04:41.388927'),
+	 ('774240802','400','2024-08-08',6,'CRO','774','N','2024-06-06 12:07:52',NULL,'2024-08-08 09:30:00',false,6,'2024-06-06 12:06:21.140107');
+
 
 INSERT INTO juror_mod.juror (juror_number,poll_number,title,last_name,first_name,dob,address_line_1,address_line_2,address_line_3,address_line_4,address_line_5,postcode,h_phone,w_phone,w_ph_local,responded,date_excused,excusal_code,acc_exc,date_disq,disq_code,user_edtq,notes,no_def_pos,perm_disqual,reasonable_adj_code,reasonable_adj_msg,smart_card_number,completion_date,sort_code,bank_acct_name,bank_acct_no,bldg_soc_roll_no,welsh,police_check,last_update,summons_file,m_phone,h_email,contact_preference,notifications,date_created,optic_reference,pending_title,pending_first_name,pending_last_name,mileage,financial_loss,travel_time,bureau_transfer_date,claiming_subsistence_allowance,service_comp_comms_status,login_attempts,is_locked,police_check_last_update) VALUES
 	 ('641500001','1',NULL,'LNAMEONE','FNAMEONE','1975-01-01 00:00:00','1 STREET NAME','ANYTOWN','','TOWN','','CH1 2AN',NULL,NULL,NULL,true,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'NOT_CHECKED','2024-06-03 12:03:06',NULL,NULL,'',NULL,0,'2024-06-03 12:00:23.045195',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,false,NULL,0,false,NULL),
@@ -49,6 +52,10 @@ INSERT INTO juror_mod.juror (juror_number,poll_number,title,last_name,first_name
 	 ('641600065','65',NULL,'LNAMESIXFIVE','FNAMESIXFIVE',NULL,'65 STREET NAME','ANYTOWN',NULL,NULL,NULL,'PO19 1SX',NULL,NULL,NULL,false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'NOT_CHECKED','2024-06-04 11:42:42.000',NULL,NULL,NULL,NULL,0,'2024-06-04 11:42:42.313',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2024-06-04',false,NULL,0,false,NULL),
 	 ('641600066','66',NULL,'LNAMESIXSIX','FNAMESIXSIX',NULL,'66 STREET NAME','ANYTOWN',NULL,NULL,NULL,'PO19 1SX',NULL,NULL,NULL,false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'NOT_CHECKED','2024-06-04 11:42:42.000',NULL,NULL,NULL,NULL,0,'2024-06-04 11:42:42.314',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2024-06-04',false,NULL,0,false,NULL),
 	 ('641600070','70',NULL,'LNAMESEVENZERO','FNAMESEVENZERO',NULL,'70 STREET NAME','ANYTOWN',NULL,NULL,NULL,'PO19 1SX',NULL,NULL,NULL,false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'NOT_CHECKED','2024-06-04 11:42:42.000',NULL,NULL,NULL,NULL,0,'2024-06-04 11:42:42.320',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2024-06-04',false,NULL,0,false,NULL);
+INSERT INTO juror_mod.juror (juror_number,poll_number,title,last_name,first_name,dob,address_line_1,address_line_2,address_line_3,address_line_4,address_line_5,postcode,h_phone,w_phone,w_ph_local,responded,date_excused,excusal_code,acc_exc,date_disq,disq_code,user_edtq,notes,no_def_pos,perm_disqual,reasonable_adj_code,reasonable_adj_msg,smart_card_number,completion_date,sort_code,bank_acct_name,bank_acct_no,bldg_soc_roll_no,welsh,police_check,last_update,summons_file,m_phone,h_email,contact_preference,notifications,date_created,optic_reference,pending_title,pending_first_name,pending_last_name,mileage,financial_loss,travel_time,bureau_transfer_date,claiming_subsistence_allowance,service_comp_comms_status,login_attempts,is_locked,police_check_last_update) VALUES
+	 ('677400941','941',NULL,'LNAMENINEFOURONE','FNAMENINEFOURONE',NULL,'941 STREET NAME','ANYTOWN',NULL,NULL,NULL,'SY2 7TQ',NULL,NULL,NULL,false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'NOT_CHECKED','2024-06-06 12:07:52',NULL,NULL,NULL,NULL,0,'2024-06-06 12:07:51.61618',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,false,NULL,0,false,NULL),
+	 ('677400928','928',NULL,'LNAMENINETWOEIGHT','FNAMENINETWOEIGHT',NULL,'928 STREET NAME','ANYTOWN',NULL,NULL,NULL,'SY2 7TQ',NULL,NULL,NULL,false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'NOT_CHECKED','2024-06-06 12:07:52',NULL,NULL,NULL,NULL,0,'2024-06-06 12:07:51.622288',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,false,NULL,0,false,NULL),
+	 ('677400923','923',NULL,'LNAMENINETWOTHREE','FNAMENINETWOTHREE','1975-01-01 00:00:00','923 STREET NAME','ANYTOWN','','NEQWTOWN','','SY2 7TQ',NULL,NULL,NULL,true,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'NOT_CHECKED','2024-06-06 12:08:33',NULL,NULL,'',NULL,0,'2024-06-06 12:07:51.607561',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,false,NULL,0,false,NULL);
 
 
 INSERT INTO juror_mod.juror_pool (juror_number,pool_number,"owner",user_edtq,is_active,status,times_sel,def_date,"location",no_attendances,no_attended,no_fta,no_awol,pool_seq,edit_tag,next_date,on_call,smart_card,was_deferred,deferral_code,id_checked,postpone,paid_cash,scan_code,last_update,reminder_sent,transfer_date,date_created) VALUES
@@ -95,6 +102,10 @@ INSERT INTO juror_mod.juror_pool (juror_number,pool_number,"owner",user_edtq,is_
 	 ('641600065','416240801','416','MODTESTBUREAU',true,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'0004',NULL,'2024-08-06',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2024-06-04 11:42:42.337',NULL,'2024-06-04','2024-06-04 11:42:42.337'),
 	 ('641600066','416240801','416','MODTESTBUREAU',true,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'0005',NULL,'2024-08-06',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2024-06-04 11:42:42.341',NULL,'2024-06-04','2024-06-04 11:42:42.341'),
 	 ('641600070','416240801','416','MODTESTBUREAU',true,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'0009',NULL,'2024-08-06',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2024-06-04 11:42:42.351',NULL,'2024-06-04','2024-06-04 11:42:42.351');
+INSERT INTO juror_mod.juror_pool (juror_number,pool_number,"owner",user_edtq,is_active,status,times_sel,def_date,"location",no_attendances,no_attended,no_fta,no_awol,pool_seq,edit_tag,next_date,on_call,smart_card,was_deferred,deferral_code,id_checked,postpone,paid_cash,scan_code,last_update,reminder_sent,transfer_date,date_created) VALUES
+	 ('677400941','774240802','400','ADMINUSER',true,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'0002',NULL,'2024-08-08',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2024-06-06 12:07:51.647878',NULL,NULL,'2024-06-06 12:07:51.647877'),
+	 ('677400928','774240802','400','ADMINUSER',true,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'0003',NULL,'2024-08-08',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2024-06-06 12:07:51.652351',NULL,NULL,'2024-06-06 12:07:51.65235'),
+	 ('677400923','774240802','400','ADMINUSER',true,2,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'0001',NULL,'2024-08-08',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2024-06-06 12:08:33.268403',NULL,NULL,'2024-06-06 12:07:51.640718');
 
 
 insert into juror_mod.bureau_snapshot (juror_number,pool_number,"owner",user_edtq,is_active,status,def_date,pool_seq,edit_tag,next_date,was_deferred,deferral_code,postpone,scan_code,last_update,reminder_sent,transfer_date,date_created,excusal_code,acc_exc,police_check) VALUES
@@ -124,7 +135,8 @@ INSERT INTO juror_mod.juror_response (juror_number,date_received,title,first_nam
 	 ('641600050','2024-06-04 11:44:39.946523',NULL,'FNAMEFIVEZERO','LNAMEFIVEZERO','50 STREET NAME','ANYTOWN','','CHESTER','','PO19 1SX','CLOSED','1967-10-10',NULL,NULL,'',true,NULL,false,false,NULL,false,NULL,false,NULL,false,NULL,NULL,NULL,true,NULL,true,true,1,NULL,NULL,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'MODTESTBUREAU',NULL,false,'2024-06-04 11:44:53.162433',false,'Paper'),
 	 ('641600054','2024-06-04 11:57:31.658235',NULL,'FNAMEFIVEFOUR','LNAMEFIVEFOUR','54 STREET NAME','ANYTOWN','','Chester','','PO19 1SX','CLOSED','1967-10-10',NULL,NULL,'',true,NULL,false,false,NULL,false,NULL,false,NULL,false,NULL,NULL,NULL,false,NULL,true,true,2,NULL,NULL,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'MODTESTBUREAU',NULL,false,'2024-06-04 11:57:37.171566',false,'Paper'),
 	 ('641600057','2024-06-04 11:58:07.92385',NULL,'FNAMEFIVESEVEN','LNAMEFIVESEVEN','57 STREET NAME','ANYTOWN','','Chester','','PO19 1SX','CLOSED','1975-01-01',NULL,NULL,'',true,NULL,false,false,NULL,false,NULL,false,NULL,false,NULL,NULL,NULL,true,NULL,true,true,1,NULL,NULL,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'MODTESTBUREAU',NULL,false,'2024-06-04 11:58:18.542362',false,'Paper'),
-	 ('641600058','2024-06-04 11:58:59.236875',NULL,'FNAMEFIVEEIGHT','LNAMEFIVEEIGHT','58 STREET NAME','ANYTOWN','','Chester','','PO19 1SX','CLOSED','1970-01-01',NULL,NULL,'',true,NULL,false,false,NULL,false,NULL,false,NULL,true,NULL,NULL,NULL,false,NULL,true,true,2,NULL,NULL,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'MODTESTBUREAU',NULL,false,'2024-06-04 11:59:20.170585',false,'Paper');
+	 ('641600058','2024-06-04 11:58:59.236875',NULL,'FNAMEFIVEEIGHT','LNAMEFIVEEIGHT','58 STREET NAME','ANYTOWN','','Chester','','PO19 1SX','CLOSED','1970-01-01',NULL,NULL,'',true,NULL,false,false,NULL,false,NULL,false,NULL,true,NULL,NULL,NULL,false,NULL,true,true,2,NULL,NULL,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'MODTESTBUREAU',NULL,false,'2024-06-04 11:59:20.170585',false,'Paper'),
+	 ('677400923','2024-06-06 12:08:27.678236',NULL,'FNAMENINETWOTHREE','LNAMENINETWOTHREE','923 STREET NAME','ANYTOWN','','NEQWTOWN','','SY2 7TQ','CLOSED','1975-01-01',NULL,NULL,'',true,NULL,false,false,NULL,false,NULL,false,NULL,false,NULL,NULL,NULL,false,NULL,true,true,2,NULL,NULL,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'ADMINUSER',NULL,false,'2024-06-06 12:08:33.291848',false,'Paper');
 
 
 INSERT INTO juror_mod.pool_history (history_code,pool_no,history_date,user_id,other_information) VALUES
@@ -136,4 +148,8 @@ INSERT INTO juror_mod.pool_history (history_code,pool_no,history_date,user_id,ot
  ('PHSI','415240803','2024-06-03 12:02:08.196404','ADMINUSER','1 (New Pool Request)'),
  ('PHSI','415240801','2024-06-03 15:33:11.436425','ADMINUSER','10 (Add Pool Members)'),
  ('PREQ','416240801','2024-06-04 11:42:31.260551','MODTESTBUREAU','Pool Requested for 10 Jurors'),
- ('PHSI','416240801','2024-06-04 11:42:42.414596','MODTESTBUREAU','10 (New Pool Request)');
+ ('PHSI','416240801','2024-06-04 11:42:42.414596','MODTESTBUREAU','10 (New Pool Request)'),
+ ('PREQ','755240801','2024-06-06 12:01:45.483945','ADMINUSER','Pool Requested for 60 Jurors'),
+ ('PREQ','774240801','2024-06-06 12:04:41.372744','ADMINUSER','Pool Requested for 5 Jurors'),
+ ('PREQ','774240802','2024-06-06 12:06:21.129623','ADMINUSER','Pool Requested for 6 Jurors'),
+ ('PHSI','774240802','2024-06-06 12:07:51.741126','ADMINUSER','3 (New Pool Request)');

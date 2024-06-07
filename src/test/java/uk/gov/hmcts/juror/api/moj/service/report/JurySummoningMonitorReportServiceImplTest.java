@@ -15,6 +15,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.PoolType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
+import uk.gov.hmcts.juror.api.moj.repository.CourtQueriesRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 
@@ -44,14 +45,16 @@ class JurySummoningMonitorReportServiceImplTest {
     private final CourtLocationRepository courtLocationRepository;
     private final PoolRequestRepository poolRequestRepository;
     private final JurorPoolRepository jurorPoolRepository;
+    private final CourtQueriesRepository courtQueriesRepository;
     private final JurySummoningMonitorReportService jurySummoningMonitorReportService;
 
     public JurySummoningMonitorReportServiceImplTest() {
         this.courtLocationRepository = mock(CourtLocationRepository.class);
         this.poolRequestRepository = mock(PoolRequestRepository.class);
         this.jurorPoolRepository = mock(JurorPoolRepository.class);
+        this.courtQueriesRepository = mock(CourtQueriesRepository.class);
         this.jurySummoningMonitorReportService = new JurySummoningMonitorReportServiceImpl(jurorPoolRepository,
-            courtLocationRepository, poolRequestRepository);
+            courtLocationRepository, poolRequestRepository, courtQueriesRepository);
 
     }
 
@@ -87,7 +90,7 @@ class JurySummoningMonitorReportServiceImplTest {
                 .build();
 
             when(poolRequestRepository.findByPoolNumber(poolNumber)).thenReturn(Optional.of(poolRequest));
-            when(jurorPoolRepository.getJsmReportByPool(poolNumber)).thenReturn(null);
+            when(jurorPoolRepository.getJurySummoningMonitorReportByPool(poolNumber)).thenReturn(null);
 
             JurySummoningMonitorReportResponse response =
                 jurySummoningMonitorReportService.viewJurySummoningMonitorReport(
@@ -112,7 +115,7 @@ class JurySummoningMonitorReportServiceImplTest {
                 .isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS));
 
             verify(poolRequestRepository, times(1)).findByPoolNumber(poolNumber);
-            verify(jurorPoolRepository, times(1)).getJsmReportByPool(poolNumber);
+            verify(jurorPoolRepository, times(1)).getJurySummoningMonitorReportByPool(poolNumber);
             verifyNoInteractions(courtLocationRepository);
         }
 
@@ -190,7 +193,7 @@ class JurySummoningMonitorReportServiceImplTest {
                     .toDate(LocalDate.of(2024, 5, 20))
                     .build();
 
-            when(courtLocationRepository.findByLocCodeIn(List.of(locCode)))
+            when(courtLocationRepository.findByLocCodeInOrderByName(List.of(locCode)))
                 .thenReturn(List.of(court));
 
             JurySummoningMonitorReportResponse response =
@@ -211,7 +214,7 @@ class JurySummoningMonitorReportServiceImplTest {
             assertThat(createdTime).as("Creation time should be correct")
                 .isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS));
 
-            verify(courtLocationRepository, times(1)).findByLocCodeIn(List.of(locCode));
+            verify(courtLocationRepository, times(1)).findByLocCodeInOrderByName(List.of(locCode));
 
         }
 
