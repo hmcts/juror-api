@@ -43,7 +43,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -204,39 +203,6 @@ class JurorManagementControllerTest {
             .andExpect(status().isBadRequest());
 
         verify(jurorAppearanceService, never()).updateAttendance(any(), any());
-    }
-
-    @Test
-    void deleteAttendanceDetailsIsOkay() throws Exception {
-        UpdateAttendanceDto request = buildUpdateAttendanceDto(null);
-
-        when(jurorAppearanceService.deleteAttendance(null, request))
-            .thenReturn(buildAttendanceDetailsResponse());
-
-        mockMvc.perform(delete(BASE_URL)
-                .principal(mock(BureauJwtAuthentication.class))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(request)))
-            .andExpect(status().isOk());
-
-        verify(jurorAppearanceService, times(1)).deleteAttendance(any(), any());
-    }
-
-    @Test
-    void deleteAttendanceDetailsMissingStatusValue() throws Exception {
-        UpdateAttendanceDto request = buildUpdateAttendanceDto(null);
-        request.getCommonData().setStatus(null);
-
-        when(jurorAppearanceService.deleteAttendance(null, request))
-            .thenReturn(buildAttendanceDetailsResponse());
-
-        mockMvc.perform(delete(BASE_URL)
-                .principal(mock(BureauJwtAuthentication.class))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(request)))
-            .andExpect(status().isBadRequest());
-
-        verify(jurorAppearanceService, never()).deleteAttendance(any(), any());
     }
 
     @Test
