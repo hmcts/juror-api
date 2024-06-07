@@ -22,7 +22,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
-public class JurorPoolServiceImplTest {
+class JurorPoolServiceImplTest {
 
     @Mock
     private PoolRequestRepository poolRequestRepository;

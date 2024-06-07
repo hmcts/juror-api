@@ -1,10 +1,10 @@
 buildscript {
     ext {
-        springBootVersion = '3.2.5'
+        springBootVersion = '3.3.0'
         notifyVersion = '5.1.0-RELEASE'
         springDocVersion = '2.5.0'
         queryDslVersion = '5.1.0'
-        flywayVersion = '10.13.0'
+        flywayVersion = '10.14.0'
         postgresVersion = '42.7.3'
     }
     dependencies {
@@ -105,7 +105,7 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
     implementation 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
 
-    implementation('com.google.guava:guava:33.2.0-jre')
+    implementation('com.google.guava:guava:33.2.1-jre')
 
     implementation('org.hibernate.orm:hibernate-core:6.3.0.CR1')
 
@@ -233,7 +233,7 @@ processResources.finalizedBy(copyDocs)
 
 
 wrapper {
-    gradleVersion = '8.7'
+    gradleVersion = '8.8'
 }
 
 sourceSets {

@@ -41,7 +41,7 @@ class JurorExpenditureReportLowLevelReportITest extends AbstractJurorExpenditure
             .triggerValid()
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(createResponse(
-                "£5.00", "£122.65", "£127.65", 6,
+                "£5.00", "£111.97", "£116.97", 6,
                 DEFAULT_FROM_DATE, DEFAULT_TO_DATE, "CHESTER (415)",
                 new GroupedTableData()
                     .add("BACS and cheque approvals",
@@ -75,9 +75,9 @@ class JurorExpenditureReportLowLevelReportITest extends AbstractJurorExpenditure
                                     .add("payment_audit", "F18")
                                     .add("total_loss_of_earnings_approved_sum", 9.0)
                                     .add("total_subsistence_approved_sum", 11.42)
-                                    .add("total_smartcard_approved_sum", 5.34)
+                                    .add("total_smartcard_approved_sum", -5.34)
                                     .add("total_travel_approved_sum", 0.0)
-                                    .add("total_approved_sum", 25.76),
+                                    .add("total_approved_sum", 15.08),
                                 new ReportLinkedMap<String, Object>()
                                     .add("juror_number", "200959864")
                                     .add("first_name", "Kristle")

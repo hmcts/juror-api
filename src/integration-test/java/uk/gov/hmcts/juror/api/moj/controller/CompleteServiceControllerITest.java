@@ -257,7 +257,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
                 .assertEquals("Json Should match",
                     "{\"status\":403,"
                         + "\"error\":\"Forbidden\","
-                        + "\"exception\":\"org.springframework.security.access.AccessDeniedException\","
+                        + "\"exception\":\"org.springframework.security.authorization.AuthorizationDeniedException\","
                         + "\"message\":\"Forbidden\","
                         + "\"path\":\"/api/v1/moj/complete-service/415220901/complete\"}",
                     response.getBody(), false);
@@ -432,7 +432,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
                 .assertEquals("Json Should match",
                     "{\"status\":403,"
                         + "\"error\":\"Forbidden\","
-                        + "\"exception\":\"org.springframework.security.access.AccessDeniedException\","
+                        + "\"exception\":\"org.springframework.security.authorization.AuthorizationDeniedException\","
                         + "\"message\":\"Forbidden\","
                         + "\"path\":\"/api/v1/moj/complete-service/415220901/validate\"}",
                     response.getBody(), false);
@@ -582,7 +582,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
                 .assertEquals("Json Should match",
                     "{\"status\":403,"
                         + "\"error\":\"Forbidden\","
-                        + "\"exception\":\"org.springframework.security.access.AccessDeniedException\","
+                        + "\"exception\":\"org.springframework.security.authorization.AuthorizationDeniedException\","
                         + "\"message\":\"Forbidden\","
                         + "\"path\":\"/api/v1/moj/complete-service/dismissal\"}",
                     response.getBody(), false);

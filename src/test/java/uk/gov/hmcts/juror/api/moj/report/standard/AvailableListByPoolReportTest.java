@@ -58,7 +58,8 @@ class AvailableListByPoolReportTest extends AbstractStandardReportTestSupport<Av
         verify(query, times(1))
             .where(QJurorPool.jurorPool.pool.poolNumber.eq(request.getPoolNumber()));
         verify(query, times(1))
-            .orderBy(QJurorPool.jurorPool.pool.poolNumber.asc());
+            .orderBy(QJurorPool.jurorPool.pool.poolNumber.asc(),
+                QJurorPool.jurorPool.juror.jurorNumber.asc());
         verify(report, times(1))
             .addStandardFilters(query, request);
     }
