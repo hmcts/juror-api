@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.utils;
 
-import java.math.BigDecimal;
 import java.text.DecimalFormat;
 
 public class NumberUtils {
