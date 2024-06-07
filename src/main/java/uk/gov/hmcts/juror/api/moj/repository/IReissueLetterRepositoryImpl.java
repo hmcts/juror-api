@@ -160,4 +160,20 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
 
         return Optional.ofNullable(query.fetchOne());
     }
+
+    @Override
+    public List<BulkPrintData> findByJurorNoAndFormTypeAndCreationDateAndExtractedFlag(String jurorNumber,
+                                                                                       String formType,
+                                                                                       LocalDate creationDate,
+                                                                                       boolean extractedFlag) {
+        JPAQueryFactory queryFactory = getQueryFactory();
+
+        JPAQuery<BulkPrintData> query = queryFactory.selectFrom(BULK_PRINT_DATA)
+            .where(BULK_PRINT_DATA.jurorNo.eq(jurorNumber))
+            .where(BULK_PRINT_DATA.formAttribute.formType.eq(formType))
+            .where(BULK_PRINT_DATA.creationDate.eq(creationDate))
+            .where(BULK_PRINT_DATA.extractedFlag.eq(extractedFlag));
+
+        return query.fetch();
+    }
 }
