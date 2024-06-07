@@ -56,12 +56,12 @@ public class PoolAnalysisReport extends AbstractStandardReport {
 
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
-        query.where(QPoolRequest.poolRequest.returnDate.between(request.getFromDate(), request.getToDate()));
+        query.where(QJurorPool.jurorPool.pool.returnDate.between(request.getFromDate(), request.getToDate()));
 
         if (SecurityUtil.isSatellite()) {
-            query.where(QPoolRequest.poolRequest.courtLocation.locCode.eq(SecurityUtil.getLocCode()));
+            query.where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(SecurityUtil.getLocCode()));
         } else {
-            query.where(QPoolRequest.poolRequest.owner.eq(SecurityUtil.getActiveOwner()));
+            query.where(QJurorPool.jurorPool.pool.owner.eq(SecurityUtil.getActiveOwner()));
         }
 
         query.groupBy(QJurorPool.jurorPool.pool.poolNumber, QPoolRequest.poolRequest.returnDate);

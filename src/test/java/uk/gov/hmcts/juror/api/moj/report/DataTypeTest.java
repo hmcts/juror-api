@@ -320,67 +320,67 @@ class DataTypeTest {
     @Test
     void respondedTotalPercentage() {
         assertMatchesCombined(DataType.RESPONDED_TOTAL_PERCENTAGE, "responded_total_percentage",
-            "Responded Total Percentage", Integer.class);
+            "Responded Total Percentage", Double.class);
     }
 
     @Test
     void attendedTotalPercentage() {
         assertMatchesCombined(DataType.ATTENDED_TOTAL_PERCENTAGE, "attended_total_percentage",
-            "Attended Total Percentage", Integer.class);
+            "Attended Total Percentage", Double.class);
     }
 
     @Test
     void panelTotalPercentage() {
         assertMatchesCombined(DataType.PANEL_TOTAL_PERCENTAGE, "panel_total_percentage",
-            "Panel Total Percentage", Integer.class);
+            "Panel Total Percentage", Double.class);
     }
 
     @Test
     void jurorTotalPercentage() {
         assertMatchesCombined(DataType.JUROR_TOTAL_PERCENTAGE, "juror_total_percentage",
-            "Juror Total Percentage", Integer.class);
+            "Juror Total Percentage", Double.class);
     }
 
     @Test
     void excusedTotalPercentage() {
         assertMatchesCombined(DataType.EXCUSED_TOTAL_PERCENTAGE, "excused_total_percentage",
-            "Excused Total Percentage", Integer.class);
+            "Excused Total Percentage", Double.class);
     }
 
     @Test
     void disqualifiedTotalPercentage() {
         assertMatchesCombined(DataType.DISQUALIFIED_TOTAL_PERCENTAGE, "disqualified_total_percentage",
-            "Disqualified Total Percentage", Integer.class);
+            "Disqualified Total Percentage", Double.class);
     }
 
     @Test
     void deferredTotalPercentage() {
         assertMatchesCombined(DataType.DEFERRED_TOTAL_PERCENTAGE, "deferred_total_percentage",
-            "Deferred Total Percentage", Integer.class);
+            "Deferred Total Percentage", Double.class);
     }
 
     @Test
     void reassignedTotalPercentage() {
         assertMatchesCombined(DataType.REASSIGNED_TOTAL_PERCENTAGE, "reassigned_total_percentage",
-            "Reassigned Total Percentage", Integer.class);
+            "Reassigned Total Percentage", Double.class);
     }
 
     @Test
     void undeliverableTotalPercentage() {
         assertMatchesCombined(DataType.UNDELIVERABLE_TOTAL_PERCENTAGE, "undeliverable_total_percentage",
-            "Undeliverable Total Percentage", Integer.class);
+            "Undeliverable Total Percentage", Double.class);
     }
 
     @Test
     void transferredTotalPercentage() {
         assertMatchesCombined(DataType.TRANSFERRED_TOTAL_PERCENTAGE, "transferred_total_percentage",
-            "Transferred Total Percentage", Integer.class);
+            "Transferred Total Percentage", Double.class);
     }
 
     @Test
     void failedToAttendTotalPercentage() {
         assertMatchesCombined(DataType.FAILED_TO_ATTEND_TOTAL_PERCENTAGE, "failed_to_attend_total_percentage",
-            "Failed To Attend Total Percentage", Integer.class);
+            "Failed To Attend Total Percentage", Double.class);
     }
 
     void assertMatchesStandard(DataType dataType,
