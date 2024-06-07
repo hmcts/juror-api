@@ -32,18 +32,18 @@ public class NumberUtilsTest {
 
     @Test
     public void calculatePercentage_positiveValues() {
-        int numerator = 5;
-        int denominator = 10;
-        int expectedPercentage = 50;
-        assertThat(NumberUtils.calculatePercentage(numerator, denominator)).isEqualTo(expectedPercentage);
+        double actual = 5;
+        double total = 10;
+        double expectedPercentage = 50.0;
+        assertThat(NumberUtils.calculatePercentage(actual, total)).isEqualTo(expectedPercentage);
     }
 
     @Test
     public void calculatePercentage_zeroDenominator() {
-        int numerator = 10;
-        int denominator = 0;
-        int expectedPercentage = 0;
-        assertThat(NumberUtils.calculatePercentage(numerator, denominator)).isEqualTo(expectedPercentage);
+        double actual = 10;
+        double total = 0;
+        double expectedPercentage = 0.0;
+        assertThat(NumberUtils.calculatePercentage(actual, total)).isEqualTo(expectedPercentage);
     }
 
 }
