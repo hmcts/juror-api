@@ -34,7 +34,7 @@ import java.util.HashMap;
 public class JurorHistoryServiceImpl implements JurorHistoryService {
     private static final String SYSTEM_USER_ID = "SYSTEM";
     private final JurorHistoryRepository jurorHistoryRepository;
-    private final THistoryCodeRepository tHistoryCodeRepository;
+    private final THistoryCodeRepository thistoryCodeRepository;
     private final Clock clock;
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static HashMap<String, String> mapper;
@@ -45,7 +45,7 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
         }
 
         mapper = new HashMap<>();
-        tHistoryCodeRepository.findAll().forEach((tHistoryCode ->
+        thistoryCodeRepository.findAll().forEach((tHistoryCode ->
             mapper.put(tHistoryCode.getHistoryCode(), tHistoryCode.getDescription())));
 
         return mapper;
