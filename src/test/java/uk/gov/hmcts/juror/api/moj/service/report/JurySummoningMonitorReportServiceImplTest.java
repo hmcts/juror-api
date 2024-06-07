@@ -193,7 +193,7 @@ class JurySummoningMonitorReportServiceImplTest {
                     .toDate(LocalDate.of(2024, 5, 20))
                     .build();
 
-            when(courtLocationRepository.findByLocCodeIn(List.of(locCode)))
+            when(courtLocationRepository.findByLocCodeInOrderByName(List.of(locCode)))
                 .thenReturn(List.of(court));
 
             JurySummoningMonitorReportResponse response =
@@ -214,7 +214,7 @@ class JurySummoningMonitorReportServiceImplTest {
             assertThat(createdTime).as("Creation time should be correct")
                 .isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS));
 
-            verify(courtLocationRepository, times(1)).findByLocCodeIn(List.of(locCode));
+            verify(courtLocationRepository, times(1)).findByLocCodeInOrderByName(List.of(locCode));
 
         }
 
