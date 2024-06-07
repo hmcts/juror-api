@@ -1299,13 +1299,18 @@ public class JurorRecordServiceImpl implements JurorRecordService {
                     JurorPaymentsResponseDto.PaymentDayDto.builder()
                         .attendanceDate(item.get(QReportsJurorPayments.reportsJurorPayments.attendanceDate))
                         .attendanceAudit(item.get(QReportsJurorPayments.reportsJurorPayments.attendanceAudit))
-                        .paymentAudit(item.get(QReportsJurorPayments.reportsJurorPayments.latestPaymentFAuditId))
                         .travel(item.get(QReportsJurorPayments.reportsJurorPayments.totalTravelDue))
                         .financialLoss(item.get(QReportsJurorPayments.reportsJurorPayments.totalFinancialLossDue))
                         .subsistence(item.get(QReportsJurorPayments.reportsJurorPayments.subsistenceDue))
                         .smartcard(item.get(QReportsJurorPayments.reportsJurorPayments.smartCardDue))
                         .totalDue(item.get(QReportsJurorPayments.reportsJurorPayments.totalDue))
                         .totalPaid(item.get(QReportsJurorPayments.reportsJurorPayments.totalPaid));
+
+                if (Optional.ofNullable(item.get(QReportsJurorPayments.reportsJurorPayments.latestPaymentFAuditId))
+                        .isPresent()) {
+                    day.paymentAudit("F".concat(item.get(
+                        QReportsJurorPayments.reportsJurorPayments.latestPaymentFAuditId)));
+                }
 
                 if (Optional.ofNullable(item.get(QReportsJurorPayments.reportsJurorPayments.paymentDate)).isPresent()) {
                     day.datePaid((item.get(QReportsJurorPayments.reportsJurorPayments.paymentDate).toLocalDate()))
