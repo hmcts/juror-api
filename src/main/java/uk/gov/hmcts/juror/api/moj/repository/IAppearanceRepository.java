@@ -36,8 +36,6 @@ public interface IAppearanceRepository {
 
     JPAQuery<JurorPool> buildJurorPoolsCheckedInTodayQuery(String locCode, LocalDate date);
 
-    Integer countJurorExpenseForApproval(String jurorNumber, String poolNumber);
-
     long countPendingApproval(String locCode, boolean isCash);
 
     Optional<Appearance> findByJurorNumberAndLocCodeAndAttendanceDateAndVersion(

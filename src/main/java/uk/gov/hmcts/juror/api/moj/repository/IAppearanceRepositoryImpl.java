@@ -254,26 +254,6 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
     }
 
     @Override
-    public Integer countJurorExpenseForApproval(String jurorNumber, String poolNumber) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-
-        NumberExpression<Integer> countAwaitingApproval = new CaseBuilder()
-            .when(APPEARANCE.isDraftExpense.eq(false)
-                .and(APPEARANCE.appearanceStage.eq(AppearanceStage.EXPENSE_ENTERED))).then(1)
-            .otherwise(0)
-            .sum();
-
-        return queryFactory
-            .select(countAwaitingApproval.as("forApproval"))
-            .from(APPEARANCE)
-            .where(APPEARANCE.jurorNumber.eq(jurorNumber))
-            .where(APPEARANCE.poolNumber.eq(poolNumber))
-            .groupBy(APPEARANCE.jurorNumber)
-            .groupBy(APPEARANCE.poolNumber)
-            .fetchOne();
-    }
-
-    @Override
     public long countPendingApproval(String locCode, boolean isCash) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         return queryFactory
