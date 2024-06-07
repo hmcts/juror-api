@@ -42,7 +42,7 @@ public class NumberUtilsTest {
     public void calculatePercentage_positiveRounded() {
         double actual = 1;
         double total = 6;
-        double expectedPercentage = 16.66667;
+        double expectedPercentage = 16.666_67;
         assertThat(NumberUtils.calculatePercentage(actual, total)).isEqualTo(expectedPercentage);
     }
 
