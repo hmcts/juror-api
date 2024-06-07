@@ -374,6 +374,14 @@ public class Appearance implements Serializable {
     }
 
 
+    private BigDecimal getTotalSmartCardAmountPaid() {
+        return getOrZero(this.getSmartCardAmountPaid());
+    }
+
+    private BigDecimal getTotalSmartCardAmountDue() {
+        return getOrZero(this.getSmartCardAmountDue());
+    }
+
     public BigDecimal getTotalChanged() {
         return getTotalDue().subtract(getTotalPaid());
     }
@@ -391,10 +399,10 @@ public class Appearance implements Serializable {
         if (AppearanceStage.EXPENSE_EDITED.equals(this.getAppearanceStage())
             || AppearanceStage.EXPENSE_AUTHORISED.equals(this.getAppearanceStage())) {
             //This will result in a negative as smart card for re-approval becomes a credit
-            return getSmartCardAmountDue()
-                .subtract(getSmartCardAmountPaid());
+            return getTotalSmartCardAmountDue()
+                .subtract(getTotalSmartCardAmountPaid());
         }
-        return getSmartCardAmountDue();
+        return getTotalSmartCardAmountDue();
     }
 
     public BigDecimal getTravelTotalChanged() {
