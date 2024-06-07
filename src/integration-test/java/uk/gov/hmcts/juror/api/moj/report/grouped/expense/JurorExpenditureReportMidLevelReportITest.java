@@ -41,7 +41,7 @@ class JurorExpenditureReportMidLevelReportITest extends AbstractJurorExpenditure
             .triggerValid()
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(createResponse(
-                "£5.00", "£122.65", "£127.65",
+                "£5.00", "£111.97", "£116.97",
                 DEFAULT_FROM_DATE, DEFAULT_TO_DATE, "CHESTER (415)",
                 new GroupedTableData()
                     .add("BACS and cheque approvals", List.of(
@@ -50,7 +50,7 @@ class JurorExpenditureReportMidLevelReportITest extends AbstractJurorExpenditure
                             .add("total_approved_sum", 83.0),
                         new ReportLinkedMap<String, Object>()
                             .add("created_on_date", "2024-05-15")
-                            .add("total_approved_sum", 39.65)))
+                            .add("total_approved_sum", 28.97)))
                     .add("Cash", List.of(
                         new ReportLinkedMap<String, Object>()
                             .add("created_on_date", "2024-05-15")

@@ -63,7 +63,6 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
             Long lastApprovedAuditNumber = null;
             if (Set.of(FinancialAuditDetails.Type.REAPPROVED_BACS, FinancialAuditDetails.Type.REAPPROVED_CASH)
                 .contains(financialAuditDetails.getType())) {
-                FinancialAuditDetails currentFAudit = findFromAppearance(appearance);
                 lastApprovedAuditNumber = getPreviousApprovedValue(
                     findFromAppearance(appearance),
                     appearance
