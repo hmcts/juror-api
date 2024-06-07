@@ -234,7 +234,7 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
 
             StringBuilder courtsBuilder = new StringBuilder();
 
-            courtLocationRepository.findByLocCodeIn(courtsList).stream().forEach(c ->
+            courtLocationRepository.findByLocCodeInOrderByName(courtsList).stream().forEach(c ->
                 courtsBuilder.append(c.getName()).append(" (").append(c.getLocCode()).append(')').append(", ")
             );
 

@@ -337,7 +337,7 @@ class JurySummoningMonitorReportsITest extends AbstractControllerIntegrationTest
                 .headings(Map.of("courts", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Courts")
                         .dataType(STRING)
-                        .value("WELSHPOOL (774), CHESTER (415)")
+                        .value("CHESTER (415), WELSHPOOL (774)")
                         .build(),
                     "date_from", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Date from")
