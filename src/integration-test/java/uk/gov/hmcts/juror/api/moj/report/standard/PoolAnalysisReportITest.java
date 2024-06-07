@@ -17,9 +17,9 @@ import java.util.List;
 @Sql({
     "/db/truncate.sql",
     "/db/mod/truncate.sql",
-    "/db/administration/createUsers.sql",
     "/db/mod/reports/PoolAnalysisReportITest_Typical.sql"
 })
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class PoolAnalysisReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired
@@ -41,7 +41,6 @@ class PoolAnalysisReportITest extends AbstractStandardReportControllerITest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void positiveNoDataCourtOwner() {
         StandardReportRequest request = getValidPayload();
         request.setFromDate(LocalDate.of(2024, 1, 17));
@@ -60,7 +59,6 @@ class PoolAnalysisReportITest extends AbstractStandardReportControllerITest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void positiveTypicalCourtOwner() {
         testBuilder()
             .triggerValid()
@@ -74,7 +72,6 @@ class PoolAnalysisReportITest extends AbstractStandardReportControllerITest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void positiveTypicalCourtSatellite() {
         testBuilder()
             .jwt(getSatelliteCourtJwt("415", "767"))
@@ -91,7 +88,6 @@ class PoolAnalysisReportITest extends AbstractStandardReportControllerITest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void positiveTypicalBureau() {
         testBuilder()
             .jwt(getBureauJwt())
@@ -227,17 +223,17 @@ class PoolAnalysisReportITest extends AbstractStandardReportControllerITest {
                     .add("undeliverable_total", 2)
                     .add("transferred_total", 4)
                     .add("failed_to_attend_total", 1)
-                    .add("responded_total_percentage", 28)
-                    .add("attended_total_percentage", 11)
-                    .add("panel_total_percentage", 0)
-                    .add("juror_total_percentage", 0)
-                    .add("excused_total_percentage", 6)
-                    .add("disqualified_total_percentage", 6)
-                    .add("deferred_total_percentage", 17)
-                    .add("reassigned_total_percentage", 6)
-                    .add("undeliverable_total_percentage", 11)
-                    .add("transferred_total_percentage", 22)
-                    .add("failed_to_attend_total_percentage", 6),
+                    .add("responded_total_percentage", 27.77778)
+                    .add("attended_total_percentage", 11.11111)
+                    .add("panel_total_percentage", 0.0)
+                    .add("juror_total_percentage", 0.0)
+                    .add("excused_total_percentage", 5.55556)
+                    .add("disqualified_total_percentage", 5.55556)
+                    .add("deferred_total_percentage", 16.66667)
+                    .add("reassigned_total_percentage", 5.55556)
+                    .add("undeliverable_total_percentage", 11.11111)
+                    .add("transferred_total_percentage", 22.22222)
+                    .add("failed_to_attend_total_percentage", 5.55556),
                 getCourtSatelliteTableData()
             )
         );
@@ -259,17 +255,17 @@ class PoolAnalysisReportITest extends AbstractStandardReportControllerITest {
             .add("undeliverable_total", 0)
             .add("transferred_total", 0)
             .add("failed_to_attend_total", 0)
-            .add("responded_total_percentage", 40)
-            .add("attended_total_percentage", 40)
-            .add("panel_total_percentage", 20)
-            .add("juror_total_percentage", 20)
-            .add("excused_total_percentage", 0)
-            .add("disqualified_total_percentage", 0)
-            .add("deferred_total_percentage", 0)
-            .add("reassigned_total_percentage", 0)
-            .add("undeliverable_total_percentage", 0)
-            .add("transferred_total_percentage", 0)
-            .add("failed_to_attend_total_percentage", 0);
+            .add("responded_total_percentage", 40.0)
+            .add("attended_total_percentage", 40.0)
+            .add("panel_total_percentage", 20.0)
+            .add("juror_total_percentage", 20.0)
+            .add("excused_total_percentage", 0.0)
+            .add("disqualified_total_percentage", 0.0)
+            .add("deferred_total_percentage", 0.0)
+            .add("reassigned_total_percentage", 0.0)
+            .add("undeliverable_total_percentage", 0.0)
+            .add("transferred_total_percentage", 0.0)
+            .add("failed_to_attend_total_percentage", 0.0);
     }
 
     private StandardTableData getBureauTableData() {
@@ -289,17 +285,17 @@ class PoolAnalysisReportITest extends AbstractStandardReportControllerITest {
                 .add("undeliverable_total", 2)
                 .add("transferred_total", 4)
                 .add("failed_to_attend_total", 1)
-                .add("responded_total_percentage", 28)
-                .add("attended_total_percentage", 0)
-                .add("panel_total_percentage", 0)
-                .add("juror_total_percentage", 0)
-                .add("excused_total_percentage", 6)
-                .add("disqualified_total_percentage", 6)
-                .add("deferred_total_percentage", 17)
-                .add("reassigned_total_percentage", 6)
-                .add("undeliverable_total_percentage", 11)
-                .add("transferred_total_percentage", 22)
-                .add("failed_to_attend_total_percentage", 6)
+                .add("responded_total_percentage", 27.77778)
+                .add("attended_total_percentage", 0.0)
+                .add("panel_total_percentage", 0.0)
+                .add("juror_total_percentage", 0.0)
+                .add("excused_total_percentage", 5.55556)
+                .add("disqualified_total_percentage", 5.55556)
+                .add("deferred_total_percentage", 16.66667)
+                .add("reassigned_total_percentage", 5.55556)
+                .add("undeliverable_total_percentage", 11.11111)
+                .add("transferred_total_percentage", 22.22222)
+                .add("failed_to_attend_total_percentage", 5.55556)
         ));
     }
 }

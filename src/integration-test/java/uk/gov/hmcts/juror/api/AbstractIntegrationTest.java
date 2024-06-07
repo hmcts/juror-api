@@ -354,7 +354,7 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
             UserType.COURT, roles, number);
     }
 
-    public String getSatelliteCourtJwt(String number, String... courts) {
-        return createJwt("test_court_standard", number, UserType.COURT, Set.of(), courts);
+    public String getSatelliteCourtJwt(String owner, String... courts) {
+        return createJwt("test_court_standard", owner, UserType.COURT, Set.of(), courts);
     }
 }

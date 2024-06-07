@@ -1,5 +1,8 @@
 package uk.gov.hmcts.juror.api.moj.utils;
 
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+
 public class NumberUtils {
 
     private NumberUtils() {
@@ -21,6 +24,9 @@ public class NumberUtils {
     }
 
     public static double calculatePercentage(double actual, double total) {
-        return total == 0 ? 0 : actual * 100 / total;
+        double percentage = total == 0 ? 0 : actual * 100 / total;
+        DecimalFormat decimalFormat = new DecimalFormat("#.#####");
+
+        return Double.parseDouble(decimalFormat.format(percentage));
     }
 }

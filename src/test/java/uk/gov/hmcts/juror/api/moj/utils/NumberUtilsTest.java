@@ -39,6 +39,14 @@ public class NumberUtilsTest {
     }
 
     @Test
+    public void calculatePercentage_positiveRounded() {
+        double actual = 1;
+        double total = 6;
+        double expectedPercentage = 16.66667;
+        assertThat(NumberUtils.calculatePercentage(actual, total)).isEqualTo(expectedPercentage);
+    }
+
+    @Test
     public void calculatePercentage_zeroDenominator() {
         double actual = 10;
         double total = 0;
