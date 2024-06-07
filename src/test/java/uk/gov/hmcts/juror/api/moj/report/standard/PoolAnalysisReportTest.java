@@ -96,8 +96,8 @@ class PoolAnalysisReportTest extends AbstractStandardReportTestSupport<PoolAnaly
         securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn(TestConstants.VALID_COURT_LOCATION);
         report.preProcessQuery(query, request);
 
-        verify(query).where(QPoolRequest.poolRequest.returnDate.between(jan15th, jan16th));
-        verify(query).where(QPoolRequest.poolRequest.owner.eq(SecurityUtil.getActiveOwner()));
+        verify(query).where(QJurorPool.jurorPool.pool.returnDate.between(jan15th, jan16th));
+        verify(query).where(QJurorPool.jurorPool.pool.owner.eq(SecurityUtil.getActiveOwner()));
         verify(query).groupBy(QJurorPool.jurorPool.pool.poolNumber, QPoolRequest.poolRequest.returnDate);
         verify(query).orderBy(QJurorPool.jurorPool.pool.poolNumber.asc());
     }
@@ -113,8 +113,8 @@ class PoolAnalysisReportTest extends AbstractStandardReportTestSupport<PoolAnaly
         securityUtilMockedStatic.when(SecurityUtil::getLocCode).thenReturn("767");
         report.preProcessQuery(query, request);
 
-        verify(query).where(QPoolRequest.poolRequest.returnDate.between(jan15th, jan16th));
-        verify(query).where(QPoolRequest.poolRequest.courtLocation.locCode.eq(SecurityUtil.getLocCode()));
+        verify(query).where(QJurorPool.jurorPool.pool.returnDate.between(jan15th, jan16th));
+        verify(query).where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(SecurityUtil.getLocCode()));
         verify(query).groupBy(QJurorPool.jurorPool.pool.poolNumber, QPoolRequest.poolRequest.returnDate);
         verify(query).orderBy(QJurorPool.jurorPool.pool.poolNumber.asc());
         verifyNoMoreInteractions(query);
@@ -131,8 +131,8 @@ class PoolAnalysisReportTest extends AbstractStandardReportTestSupport<PoolAnaly
         securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn("400");
         report.preProcessQuery(query, request);
 
-        verify(query).where(QPoolRequest.poolRequest.returnDate.between(jan15th, jan16th));
-        verify(query).where(QPoolRequest.poolRequest.owner.eq(SecurityUtil.getActiveOwner()));
+        verify(query).where(QJurorPool.jurorPool.pool.returnDate.between(jan15th, jan16th));
+        verify(query).where(QJurorPool.jurorPool.pool.owner.eq(SecurityUtil.getActiveOwner()));
         verify(query).groupBy(QJurorPool.jurorPool.pool.poolNumber, QPoolRequest.poolRequest.returnDate);
         verify(query).orderBy(QJurorPool.jurorPool.pool.poolNumber.asc());
         verifyNoMoreInteractions(query);
