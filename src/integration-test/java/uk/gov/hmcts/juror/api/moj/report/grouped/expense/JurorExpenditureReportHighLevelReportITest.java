@@ -48,11 +48,11 @@ class JurorExpenditureReportHighLevelReportITest extends AbstractJurorExpenditur
                             .add("total_loss_of_earnings_approved_count", 10)
                             .add("total_subsistence_approved_sum", 17.13)
                             .add("total_subsistence_approved_count", 3)
-                            .add("total_smartcard_approved_sum", 5.89)
+                            .add("total_smartcard_approved_sum", -4.79)
                             .add("total_smartcard_approved_count", 3)
                             .add("total_travel_approved_sum", 15.63)
                             .add("total_travel_approved_count", 5)
-                            .add("total_approved_sum", 122.65)))
+                            .add("total_approved_sum", 111.97)))
                     .add("Cash", List.of(
                         new ReportLinkedMap<String, Object>()
                             .add("total_loss_of_earnings_approved_sum", 2.0)
