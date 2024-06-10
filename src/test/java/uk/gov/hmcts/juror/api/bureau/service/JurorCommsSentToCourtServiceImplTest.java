@@ -78,7 +78,6 @@ public class JurorCommsSentToCourtServiceImplTest {
             .id(1L)
             .templateId(TEMPLATE_ID)
             .templateField("FIRSTNAME")
-            .databaseField("POOL.FNAME")
             .mapperObject(NotifyTemplateMapperMod.JUROR_FIRST_NAME)
             .build();
 
@@ -86,28 +85,24 @@ public class JurorCommsSentToCourtServiceImplTest {
             .id(2L)
             .templateId(TEMPLATE_ID)
             .templateField("LASTNAME")
-            .databaseField("POOL.LNAME")
             .mapperObject(NotifyTemplateMapperMod.JUROR_LAST_NAME)
             .build();
         NotifyTemplateFieldMod templateField3 = NotifyTemplateFieldMod.builder()
             .id(3L)
             .templateId(TEMPLATE_ID)
             .templateField("SERVICESTARTDATE")
-            .databaseField("POOL.NEXT_DATE")
             .mapperObject(NotifyTemplateMapperMod.JUROR_POOL_NEXT_DATE)
             .build();
         NotifyTemplateFieldMod templateField4 = NotifyTemplateFieldMod.builder()
             .id(4L)
             .templateId(TEMPLATE_ID)
             .templateField("SERVICESTARTTIME")
-            .databaseField("UNIQUE_POOL.ATTEND_TIME")
             .mapperObject(NotifyTemplateMapperMod.POOL_ATTEND_TIME)
             .build();
         NotifyTemplateFieldMod templateField5 = NotifyTemplateFieldMod.builder()
             .id(5L)
             .templateId(TEMPLATE_ID)
             .templateField("email address")
-            .databaseField("POOL.H_EMAIL")
             .mapperObject(NotifyTemplateMapperMod.JUROR_EMAIL)
             .build();
 

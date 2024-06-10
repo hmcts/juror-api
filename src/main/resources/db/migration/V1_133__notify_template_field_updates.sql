@@ -97,4 +97,8 @@ where database_field = 'bulk_print_data.detail_rec';
 
 alter table juror_mod.notify_template_field
     drop column jd_class_name,
-    drop column jd_class_property;
+    drop column jd_class_property,
+    drop column database_field,
+    drop column field_length,
+    drop column convert_to_date,
+    drop column version;

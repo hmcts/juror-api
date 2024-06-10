@@ -49,7 +49,6 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
     private static final String EMAIL_ADDRESS = "email address";
     private static final String SERVICE_START_TIME = "SERVICESTARTTIME";
     private static final String SERVICE_START_DATE = "SERVICESTARTDATE";
-    private static final String BULK_PRINT_DATA_DETAIL_REC = "bulk_print_data.detail_rec";
     private static final String Description_1 = "ServiceStartDate is present in the payLoad Map";
     private static final String Description_2 = "ServiceStartTime is present in the payLoad Map";
     private static final String Description_3 = "Email address is present in the payLoad Map";
@@ -160,7 +159,6 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
             .id(7L)
             .templateId(TEMPLATE_ID)
             .templateField(COURT_NAME_1)
-            .databaseField("COURT_LOCATION.COURT_LOC_NAME")
             .mapperObject(NotifyTemplateMapperMod.COURT_LOC_COURT_NAME)
             .build();
 
@@ -205,7 +203,6 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
             .id(8L)
             .templateId(TEMPLATE_ID)
             .templateField(EMAIL_ADDRESS)
-            .databaseField("JURUR_RESPONSE.EMAIL")
             .mapperObject(NotifyTemplateMapperMod.RESPONSE_EMAIL)
             .build();
 
@@ -262,7 +259,6 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
             .id(1L)
             .templateId(TEMPLATE_ID)
             .templateField("FIRSTNAME")
-            .databaseField(BULK_PRINT_DATA_DETAIL_REC)
             .mapperObject(NotifyTemplateMapperMod.BULK_PRINT_DATA)
             .positionFrom(5)
             .positionTo(14)
@@ -272,7 +268,6 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
             .id(2L)
             .templateId(TEMPLATE_ID)
             .templateField(LAST_NAME)
-            .databaseField(BULK_PRINT_DATA_DETAIL_REC)
             .mapperObject(NotifyTemplateMapperMod.BULK_PRINT_DATA)
             .positionFrom(15)
             .positionTo(24)
@@ -281,7 +276,6 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
             .id(3L)
             .templateId(TEMPLATE_ID)
             .templateField(JUROR_NUM)
-            .databaseField(BULK_PRINT_DATA_DETAIL_REC)
             .mapperObject(NotifyTemplateMapperMod.BULK_PRINT_DATA)
             .positionFrom(31)
             .positionTo(39)
@@ -291,21 +285,18 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
             .id(4L)
             .templateId(TEMPLATE_ID)
             .templateField(SERVICE_START_DATE)
-            .databaseField("jurorPool.next_date")
             .mapperObject(NotifyTemplateMapperMod.JUROR_POOL_NEXT_DATE)
             .build();
         NotifyTemplateFieldMod templateField5 = NotifyTemplateFieldMod.builder()
             .id(5L)
             .templateId(TEMPLATE_ID)
             .templateField(SERVICE_START_TIME)
-            .databaseField("pool.attend_time")
             .mapperObject(NotifyTemplateMapperMod.POOL_ATTEND_TIME)
             .build();
         NotifyTemplateFieldMod templateField6 = NotifyTemplateFieldMod.builder()
             .id(6L)
             .templateId(TEMPLATE_ID)
             .templateField(EMAIL_ADDRESS)
-            .databaseField("juror.h_email")
             .mapperObject(NotifyTemplateMapperMod.JUROR_EMAIL)
             .build();
 
