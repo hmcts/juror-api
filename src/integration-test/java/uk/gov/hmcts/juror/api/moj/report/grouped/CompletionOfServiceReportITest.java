@@ -183,17 +183,17 @@ class CompletionOfServiceReportITest extends AbstractGroupedReportControllerITes
                         .add(FIRST_NAME_KEY, "FIRSTNAMEFIVE")
                         .add(LAST_NAME_KEY, "LASTNAMEFIVE")
                         .add(COMPLETION_DATE_KEY, "2023-01-30")))
-            .add("416220902,CROWN COURT", List.of(
-                new ReportLinkedMap<String, Object>()
-                    .add(JUROR_NUMBER_KEY, "415000006")
-                    .add(FIRST_NAME_KEY, "FIRSTNAMESIX")
-                    .add(LAST_NAME_KEY, "LASTNAMESIX")
-                    .add(COMPLETION_DATE_KEY, "2023-02-01"),
-                new ReportLinkedMap<String, Object>()
-                    .add(JUROR_NUMBER_KEY, "415000007")
-                    .add(FIRST_NAME_KEY, "FIRSTNAMESEVEN")
-                    .add(LAST_NAME_KEY, "LASTNAMESEVEN")
-                    .add(COMPLETION_DATE_KEY, "2023-01-30")));
+                .add("416220902,CROWN COURT", List.of(
+                    new ReportLinkedMap<String, Object>()
+                        .add(JUROR_NUMBER_KEY, "415000006")
+                        .add(FIRST_NAME_KEY, "FIRSTNAMESIX")
+                        .add(LAST_NAME_KEY, "LASTNAMESIX")
+                        .add(COMPLETION_DATE_KEY, "2023-02-01"),
+                    new ReportLinkedMap<String, Object>()
+                        .add(JUROR_NUMBER_KEY, "415000007")
+                        .add(FIRST_NAME_KEY, "FIRSTNAMESEVEN")
+                        .add(LAST_NAME_KEY, "LASTNAMESEVEN")
+                        .add(COMPLETION_DATE_KEY, "2023-01-30")));
 
         } else {
             return new GroupedTableData();
