@@ -6,7 +6,9 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinColumns;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -23,6 +25,8 @@ import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "juror_pool", schema = "juror_mod")
@@ -131,6 +135,14 @@ public class JurorPool implements Serializable {
 
     @Column(name = "date_created")
     private LocalDateTime dateCreated;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumns({
+        @JoinColumn(name = "juror_number", referencedColumnName = "juror_number"),
+        @JoinColumn(name = "pool_number", referencedColumnName = "pool_number")
+
+    })
+    private List<Appearance> appearances = new ArrayList<>();
 
     /**
      * Get the unique juror number from the associated juror record.
