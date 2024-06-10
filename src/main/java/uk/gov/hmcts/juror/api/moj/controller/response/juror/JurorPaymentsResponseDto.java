@@ -21,6 +21,7 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
+@ToString
 @Schema(description = "Juror appearance and payments log DTO")
 public class JurorPaymentsResponseDto {
     @JsonProperty("payment_days")

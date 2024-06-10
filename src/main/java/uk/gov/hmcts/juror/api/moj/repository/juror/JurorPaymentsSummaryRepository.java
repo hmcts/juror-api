@@ -19,6 +19,7 @@ public class JurorPaymentsSummaryRepository {
 
     public List<Tuple> fetchPaymentLogByJuror(String jurorNumber) {
         JPAQueryFactory queryFactory = getQueryFactory();
+        String locCode = SecurityUtil.getLocCode();
 
         return queryFactory.from(PAYMENTS)
             .select(
@@ -34,7 +35,7 @@ public class JurorPaymentsSummaryRepository {
                 PAYMENTS.totalPaid
             ).where(
                 PAYMENTS.jurorNumber.eq(jurorNumber),
-                PAYMENTS.locCode.eq(SecurityUtil.getLocCode())
+                PAYMENTS.locCode.eq(locCode)
             ).fetch();
     }
 

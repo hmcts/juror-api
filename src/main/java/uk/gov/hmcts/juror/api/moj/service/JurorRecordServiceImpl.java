@@ -1269,6 +1269,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     @Override
     public JurorPaymentsResponseDto getJurorPayments(String jurorNumber) {
+        JurorUtils.checkOwnershipForCurrentUser(JurorPoolUtils.getActiveJurorRecord(jurorPoolRepository, jurorNumber),
+            SecurityUtil.getActiveOwner());
         JurorUtils.checkReadAccessForCurrentUser(jurorPoolRepository, jurorNumber, SecurityUtil.getActiveOwner());
 
         List<Tuple> data = jurorPaymentsSummaryRepository.fetchPaymentLogByJuror(jurorNumber);
@@ -1290,21 +1292,21 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         return JurorPaymentsResponseDto.builder()
             .attendances(data.size() - nonAttendanceCount)
             .nonAttendances(nonAttendanceCount)
-            .financialLoss(summaryData.getFinancialLoss())
-            .travel(summaryData.getTravel())
-            .subsistence(summaryData.getSubsistence())
-            .totalPaid(summaryData.getPaid())
+            .financialLoss(summaryData.getFinancialLoss().setScale(2))
+            .travel(summaryData.getTravel().setScale(2))
+            .subsistence(summaryData.getSubsistence().setScale(2))
+            .totalPaid(summaryData.getPaid().setScale(2))
             .data(data.stream().map(item -> {
                 JurorPaymentsResponseDto.PaymentDayDto.PaymentDayDtoBuilder day =
                     JurorPaymentsResponseDto.PaymentDayDto.builder()
                         .attendanceDate(item.get(QReportsJurorPayments.reportsJurorPayments.attendanceDate))
                         .attendanceAudit(item.get(QReportsJurorPayments.reportsJurorPayments.attendanceAudit))
-                        .travel(item.get(QReportsJurorPayments.reportsJurorPayments.totalTravelDue))
-                        .financialLoss(item.get(QReportsJurorPayments.reportsJurorPayments.totalFinancialLossDue))
-                        .subsistence(item.get(QReportsJurorPayments.reportsJurorPayments.subsistenceDue))
-                        .smartcard(item.get(QReportsJurorPayments.reportsJurorPayments.smartCardDue))
-                        .totalDue(item.get(QReportsJurorPayments.reportsJurorPayments.totalDue))
-                        .totalPaid(item.get(QReportsJurorPayments.reportsJurorPayments.totalPaid));
+                        .travel(item.get(QReportsJurorPayments.reportsJurorPayments.totalTravelDue).setScale(2))
+                        .financialLoss(item.get(QReportsJurorPayments.reportsJurorPayments.totalFinancialLossDue).setScale(2))
+                        .subsistence(item.get(QReportsJurorPayments.reportsJurorPayments.subsistenceDue).setScale(2))
+                        .smartcard(item.get(QReportsJurorPayments.reportsJurorPayments.smartCardDue).setScale(2))
+                        .totalDue(item.get(QReportsJurorPayments.reportsJurorPayments.totalDue).setScale(2))
+                        .totalPaid(item.get(QReportsJurorPayments.reportsJurorPayments.totalPaid).setScale(2));
 
                 if (Optional.ofNullable(item.get(QReportsJurorPayments.reportsJurorPayments.latestPaymentFAuditId))
                         .isPresent()) {

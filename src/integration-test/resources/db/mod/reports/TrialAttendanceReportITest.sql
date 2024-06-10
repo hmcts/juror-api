@@ -40,11 +40,18 @@ VALUES ('200956973', NULL, 'Rev', 'Almoney', 'Alyce', '1978-05-31 00:00:00.000',
         'Colchester', 'Bedfordshire', NULL, 'AD1 2ZP', NULL, NULL, NULL, true, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ELIGIBLE', '2024-05-09 17:44:53.000', NULL,
         NULL, NULL, NULL, 0, '2024-05-03 02:42:24.373', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, 0,
+        false),
+       ('200959899', NULL, 'Mr', 'Frank', 'Elbow', '1989-07-22 00:00:00.000', '3 Street Number', 'Suite Number 486',
+        'Colchester', 'Bedfordshire', NULL, 'AD1 2ZP', NULL, NULL, NULL, true, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ELIGIBLE', '2024-05-09 17:44:53.000', NULL,
+        NULL, NULL, NULL, 0, '2024-05-03 02:42:24.373', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, 0,
         false);
 
 INSERT INTO juror_mod.pool (pool_no, "owner", return_date, no_requested, pool_type, loc_code, new_request, last_update,
                             additional_summons, attend_time, nil_pool, total_no_required, date_created)
 VALUES ('415240504', '415', '2024-05-06', 60, 'CRO', '415', 'N', '2024-05-03 02:42:25.000', NULL,
+        '2024-05-06 08:30:00.000', false, 60, '2024-05-03 02:42:23.638'),
+      ('417240504', '417', '2024-05-06', 60, 'CRO', '415', 'N', '2024-05-03 02:42:25.000', NULL,
         '2024-05-06 08:30:00.000', false, 60, '2024-05-03 02:42:23.638');
 
 INSERT INTO juror_mod.juror_pool (juror_number, pool_number, "owner", user_edtq, is_active, status, times_sel, def_date,
@@ -55,6 +62,9 @@ VALUES ('200956973', '415240504', '415', 'BURAU.USER36', true, 2, 1, NULL, '767'
         NULL, '2024-05-13', false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2024-05-11 03:47:17.199', NULL, NULL,
         '2024-05-03 02:42:24.042'),
        ('200959864', '415240504', '415', 'BURAU.USER72', true, 2, 1, NULL, '415', NULL, NULL, NULL, NULL, '0048',
+        NULL, '2024-05-13', false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2024-05-11 21:56:05.096', NULL, NULL,
+        '2024-05-03 02:42:24.376'),
+       ('200959899', '417240504', '417', 'BURAU.USER72', true, 2, 1, NULL, '415', NULL, NULL, NULL, NULL, '0048',
         NULL, '2024-05-13', false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2024-05-11 21:56:05.096', NULL, NULL,
         '2024-05-03 02:42:24.376');
 
