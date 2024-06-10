@@ -22,8 +22,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class DeferredListByCourtReport extends AbstractGroupedReport {
 
-    private final PoolRequestRepository poolRequestRepository;
-
     @Autowired
     public DeferredListByCourtReport(PoolRequestRepository poolRequestRepository) {
         super(poolRequestRepository,
@@ -34,7 +32,6 @@ public class DeferredListByCourtReport extends AbstractGroupedReport {
                 .build(),
             DataType.DEFERRED_TO,
             DataType.NUMBER_DEFERRED);
-        this.poolRequestRepository = poolRequestRepository;
     }
 
 
@@ -62,7 +59,10 @@ public class DeferredListByCourtReport extends AbstractGroupedReport {
         headings.put("total_deferred", GroupedReportResponse.DataTypeValue.builder()
             .displayName("Total deferred")
             .dataType(Long.class.getSimpleName())
-            .value(tableData.getData().getSize())
+            .value(tableData.getData().getAllDataItems()
+                .stream()
+                .map(row -> (Long) row.get(DataType.NUMBER_DEFERRED.getId()))
+                .reduce(0L, Long::sum))
             .build());
 
         return headings;

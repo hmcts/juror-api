@@ -20,6 +20,7 @@ import uk.gov.hmcts.juror.api.moj.report.ReportGroupBy;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.mockito.Mockito.RETURNS_SELF;
@@ -112,8 +113,16 @@ class DeferredListByCourtReportTest extends AbstractGroupedReportTestSupport<Def
         StandardReportRequest request,
         AbstractReportResponse.TableData<GroupedTableData> tableData,
         GroupedTableData data) {
-
-        when(data.getSize()).thenReturn(3L);
+        when(data.getAllDataItems()).thenReturn(
+            List.of(
+                new GroupedTableData()
+                    .add("number_deferred", 2L),
+                new GroupedTableData()
+                    .add("number_deferred", 3L),
+                new GroupedTableData()
+                    .add("number_deferred", 4L)
+            )
+        );
 
         securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn(TestConstants.VALID_COURT_LOCATION);
 
@@ -126,7 +135,7 @@ class DeferredListByCourtReportTest extends AbstractGroupedReportTestSupport<Def
                 StandardReportResponse.DataTypeValue.builder()
                     .displayName("Total deferred")
                     .dataType(Long.class.getSimpleName())
-                    .value(3L)
+                    .value(9L)
                     .build()
             ));
         verify(tableData, times(1)).getData();

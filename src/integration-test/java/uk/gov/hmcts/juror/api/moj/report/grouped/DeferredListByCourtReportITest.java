@@ -67,7 +67,7 @@ class DeferredListByCourtReportITest extends AbstractGroupedReportControllerITes
     }
 
     private GroupedReportResponse getTypicalResponse() {
-        return createResponse(4,
+        return createResponse(5,
             new GroupedTableData()
                 .add("CHESTER (415)", List.of(
                     new ReportLinkedMap<String, Object>()
@@ -86,7 +86,7 @@ class DeferredListByCourtReportITest extends AbstractGroupedReportControllerITes
     }
 
     private GroupedReportResponse getTypicalResponseBureau() {
-        return createResponse(5,
+        return createResponse(8,
             new GroupedTableData()
                 .add("CHESTER (415)", List.of(
                     new ReportLinkedMap<String, Object>()
