@@ -68,7 +68,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
     }
 
     @Test
-    void viewByCourt() {
+    void viewByCourtNegativeBalance() {
 
         YieldPerformanceReportRequest payload =  YieldPerformanceReportRequest.builder()
             .allCourts(false)
@@ -80,8 +80,26 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
         testBuilder()
             .payload(payload)
             .triggerValid()
-            .responseConsumer(this::verifyHeadingsCourt)
-            .responseConsumer(this::verifyCourtPayload);
+            .responseConsumer(this::assertHeadingsCourt)
+            .responseConsumer(this::verifyCourtPayloadNegativeBalance);
+
+    }
+
+    @Test
+    void viewByCourtPositiveBalance() {
+
+        YieldPerformanceReportRequest payload =  YieldPerformanceReportRequest.builder()
+            .allCourts(false)
+            .courtLocCodes(List.of("417"))
+            .fromDate(LocalDate.parse("2024-08-01"))
+            .toDate(LocalDate.parse("2024-08-20"))
+            .build();
+
+        testBuilder()
+            .payload(payload)
+            .triggerValid()
+            .responseConsumer(this::assertHeadingsCourt)
+            .responseConsumer(this::verifyCourtPayloadPositiveBalance);
 
     }
 
@@ -98,7 +116,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
         testBuilder()
             .payload(payload)
             .triggerValid()
-            .responseConsumer(this::verifyHeadingsCourt)
+            .responseConsumer(this::assertHeadingsCourt)
             .responseConsumer(this::verifyCourtsPayload);
 
     }
@@ -148,7 +166,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
     }
 
 
-    public void verifyHeadingsCourt(YieldPerformanceReportResponse response) {
+    public void assertHeadingsCourt(YieldPerformanceReportResponse response) {
         Assertions.assertThat(response).isNotNull();
         Assertions.assertThat(response.getHeadings()).isNotNull();
 
@@ -253,7 +271,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
         Assertions.assertThat(dateTo.getValue()).isEqualTo("2024-08-07");
     }
 
-    public void verifyCourtPayload(YieldPerformanceReportResponse response) {
+    public void verifyCourtPayloadNegativeBalance(YieldPerformanceReportResponse response) {
         Assertions.assertThat(response).isNotNull();
 
         Assertions.assertThat(response.getTableData()).isNotNull();
@@ -266,9 +284,26 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
         Assertions.assertThat(data.getRequested()).isEqualTo(17);
         Assertions.assertThat(data.getConfirmed()).isEqualTo(4);
         Assertions.assertThat(data.getBalance()).isEqualTo(-13);
-        Assertions.assertThat(data.getDifference()).isEqualTo(-76.0);
-        Assertions.assertThat(data.getComments()).isEqualTo("415240801 - This is a test comment 1\r\n"
-                + "415240802 - This is a test comment 2");
+        Assertions.assertThat(data.getDifference()).isEqualTo(-76.47059);
+        Assertions.assertThat(data.getComments()).isEqualTo("415240801 - This is a test comment 1"
+            + System.lineSeparator() + "415240802 - This is a test comment 2");
+    }
+
+    public void verifyCourtPayloadPositiveBalance(YieldPerformanceReportResponse response) {
+        Assertions.assertThat(response).isNotNull();
+
+        Assertions.assertThat(response.getTableData()).isNotNull();
+        Assertions.assertThat(response.getTableData().getData()).isNotNull();
+        Assertions.assertThat(response.getTableData().getData().size()).isEqualTo(1);
+
+        YieldPerformanceReportResponse.TableData.YieldData data = response.getTableData().getData().get(0);
+        Assertions.assertThat(data).isNotNull();
+        Assertions.assertThat(data.getCourt()).isEqualTo("COVENTRY (417)");
+        Assertions.assertThat(data.getRequested()).isEqualTo(6);
+        Assertions.assertThat(data.getConfirmed()).isEqualTo(9);
+        Assertions.assertThat(data.getBalance()).isEqualTo(3);
+        Assertions.assertThat(data.getDifference()).isEqualTo(50.0);
+        Assertions.assertThat(data.getComments()).isEqualTo("");
     }
 
     public void verifyCourtsPayload(YieldPerformanceReportResponse response) {
@@ -284,9 +319,9 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
         Assertions.assertThat(data.getRequested()).isEqualTo(17);
         Assertions.assertThat(data.getConfirmed()).isEqualTo(4);
         Assertions.assertThat(data.getBalance()).isEqualTo(-13);
-        Assertions.assertThat(data.getDifference()).isEqualTo(-76.0);
-        Assertions.assertThat(data.getComments()).isEqualTo("415240801 - This is a test comment 1\r\n"
-            + "415240802 - This is a test comment 2");
+        Assertions.assertThat(data.getDifference()).isEqualTo(-76.47059);
+        Assertions.assertThat(data.getComments()).isEqualTo("415240801 - This is a test comment 1"
+            + System.lineSeparator() + "415240802 - This is a test comment 2");
 
         data = response.getTableData().getData().get(1);
         Assertions.assertThat(data).isNotNull();
@@ -294,7 +329,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
         Assertions.assertThat(data.getRequested()).isEqualTo(11);
         Assertions.assertThat(data.getConfirmed()).isEqualTo(1);
         Assertions.assertThat(data.getBalance()).isEqualTo(-10);
-        Assertions.assertThat(data.getDifference()).isEqualTo(-91.0);
+        Assertions.assertThat(data.getDifference()).isEqualTo(-90.90909);
         Assertions.assertThat(data.getComments()).isEqualTo("");
 
     }
@@ -312,9 +347,9 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
         Assertions.assertThat(data.getRequested()).isEqualTo(17);
         Assertions.assertThat(data.getConfirmed()).isEqualTo(4);
         Assertions.assertThat(data.getBalance()).isEqualTo(-13);
-        Assertions.assertThat(data.getDifference()).isEqualTo(-76.0);
-        Assertions.assertThat(data.getComments()).isEqualTo("415240801 - This is a test comment 1\r\n"
-            + "415240802 - This is a test comment 2");
+        Assertions.assertThat(data.getDifference()).isEqualTo(-76.47059);
+        Assertions.assertThat(data.getComments()).isEqualTo("415240801 - This is a test comment 1"
+            + System.lineSeparator() + "415240802 - This is a test comment 2");
 
         data = response.getTableData().getData().get(1);
         Assertions.assertThat(data).isNotNull();

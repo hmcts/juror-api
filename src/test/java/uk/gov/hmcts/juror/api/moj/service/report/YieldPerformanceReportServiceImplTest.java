@@ -25,6 +25,8 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.BDDAssertions.within;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -36,10 +38,6 @@ import static uk.gov.hmcts.juror.api.moj.controller.reports.response.YieldPerfor
 import static uk.gov.hmcts.juror.api.moj.controller.reports.response.YieldPerformanceReportResponse.TableHeading.DIFFERENCE;
 import static uk.gov.hmcts.juror.api.moj.controller.reports.response.YieldPerformanceReportResponse.TableHeading.REQUESTED;
 
-@SuppressWarnings({
-    "PMD.AssertionsShouldIncludeMessage",
-    "PMD.UnnecessaryFullyQualifiedName"
-})
 class YieldPerformanceReportServiceImplTest {
 
     private final JurorPoolRepository jurorPoolRepository;
@@ -83,10 +81,10 @@ class YieldPerformanceReportServiceImplTest {
 
             when(poolCommentRepository.findPoolCommentsForLocationsAndDates(List.of("415", "416"), reportFromDate,
                 reportToDate))
-                .thenReturn(List.of());
+                .thenReturn(null);
 
             when(jurorPoolRepository.getYieldPerformanceReportStats("415,416", reportFromDate, reportToDate))
-                .thenReturn(List.of());
+                .thenReturn(null);
 
             YieldPerformanceReportResponse response = yieldPerformanceReportService.viewYieldPerformanceReport(
                 yieldPerformanceReportRequest
@@ -95,7 +93,7 @@ class YieldPerformanceReportServiceImplTest {
             assertThat(response.getHeadings()).isNotNull();
             Map<String, AbstractReportResponse.DataTypeValue> headings = response.getHeadings();
 
-            validateReportHeadings(headings);
+            assertReportHeadings(headings);
 
             AbstractReportResponse.DataTypeValue timeCreated = headings.get("time_created");
             assertThat(timeCreated.getDisplayName()).isEqualTo("Time created");
@@ -110,7 +108,7 @@ class YieldPerformanceReportServiceImplTest {
             assertThat(tableData.getHeadings()).isNotNull();
             Assertions.assertThat(tableData.getHeadings()).hasSize(6);
 
-            validateTableHeadings(tableData);
+            assertTableHeadings(tableData);
 
             assertThat(tableData.getData()).isNotNull();
             assertThat(tableData.getData().size()).isZero();
@@ -123,7 +121,10 @@ class YieldPerformanceReportServiceImplTest {
 
         }
 
-        private void validateTableHeadings(YieldPerformanceReportResponse.TableData tableData) {
+        private void assertTableHeadings(YieldPerformanceReportResponse.TableData tableData) {
+            assertThat(tableData.getHeadings()).isNotNull();
+            assertThat(tableData.getHeadings().size()).isEqualTo(6);
+
             YieldPerformanceReportResponse.TableData.Heading tablHeading = tableData.getHeadings().get(0);
             assertThat(tablHeading.getId()).isEqualTo(COURT.getId());
             assertThat(tablHeading.getName()).isEqualTo("Court");
@@ -155,7 +156,7 @@ class YieldPerformanceReportServiceImplTest {
             assertThat(tablHeading5.getDataType()).isEqualTo("String");
         }
 
-        private void validateReportHeadings(Map<String, AbstractReportResponse.DataTypeValue> headings) {
+        private void assertReportHeadings(Map<String, AbstractReportResponse.DataTypeValue> headings) {
             Assertions.assertThat(headings.get("date_from")).isEqualTo(AbstractReportResponse.DataTypeValue.builder()
                 .displayName("Date from")
                 .dataType("LocalDate")
@@ -186,9 +187,13 @@ class YieldPerformanceReportServiceImplTest {
                 .courtLocCodes(List.of())
                 .build();
 
-            assertThatExceptionOfType(MojException.BadRequest.class)
-                .isThrownBy(() -> yieldPerformanceReportService.viewYieldPerformanceReport(
-                    yieldPerformanceReportRequest));
+            MojException.BadRequest exception =
+                assertThrows(MojException.BadRequest.class, () ->
+                        yieldPerformanceReportService.viewYieldPerformanceReport(
+                            yieldPerformanceReportRequest),
+                    "Should throw an exception");
+            assertEquals("No court locations provided", exception.getMessage(),
+                "Message should match");
 
         }
     }

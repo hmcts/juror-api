@@ -12,6 +12,7 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtQueriesRepository;
 import uk.gov.hmcts.juror.api.moj.repository.IPoolCommentRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.utils.NumberUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
@@ -20,8 +21,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static java.lang.Math.round;
 
 @Service
 @Slf4j
@@ -55,8 +54,10 @@ public class YieldPerformanceReportServiceImpl implements YieldPerformanceReport
                 yieldPerformanceReportRequest.getFromDate(),
                 yieldPerformanceReportRequest.getToDate());
 
-            Map<String, StringBuilder> poolCommentsMap = getPoolsCommentsMap(poolComments);
-
+            Map<String, StringBuilder> poolCommentsMap = new HashMap<>();
+            if (poolComments != null) {
+                poolCommentsMap = getPoolsCommentsMap(poolComments);
+            }
             setupResponseDto(response, yieldPerformanceReportStats, poolCommentsMap);
 
         } catch (Exception e) {
@@ -71,18 +72,23 @@ public class YieldPerformanceReportServiceImpl implements YieldPerformanceReport
         Map<String, StringBuilder> poolCommentsMap = new HashMap<>();
 
         for (Tuple poolComment : poolComments) {
-            poolCommentsMap.computeIfPresent(poolComment.get(0, String.class),
-                (key, val) -> val.append("\r\n").append(poolComment.get(1, String.class))
-                    .append(" - ").append(poolComment.get(2, String.class)));
-            poolCommentsMap.putIfAbsent(poolComment.get(0, String.class), new StringBuilder(poolComment.get(1,
-                String.class)).append(" - ").append(poolComment.get(2, String.class)));
+
+            String locCode = poolComment.get(0, String.class);
+            String poolNumber = poolComment.get(1, String.class);
+            String poolCommentText = poolComment.get(2, String.class);
+
+            poolCommentsMap.computeIfPresent(locCode,
+                (key, val) -> val.append(System.lineSeparator()).append(poolNumber)
+                    .append(" - ").append(poolCommentText));
+            poolCommentsMap.putIfAbsent(locCode, new StringBuilder(poolNumber)
+                .append(" - ").append(poolCommentText));
         }
         return poolCommentsMap;
     }
 
     private void setupResponseDto(YieldPerformanceReportResponse response, List<String> yieldPerformanceReportStats,
                                   Map<String, StringBuilder> poolCommentsMap) {
-        if (yieldPerformanceReportStats != null && !yieldPerformanceReportStats.isEmpty()) {
+        if (yieldPerformanceReportStats != null) {
             for (String result : yieldPerformanceReportStats) {
                 List<String> values = List.of(result.split(","));
                 setupResponse(response, values, poolCommentsMap);
@@ -93,17 +99,19 @@ public class YieldPerformanceReportServiceImpl implements YieldPerformanceReport
     private void setupResponse(YieldPerformanceReportResponse response, List<String> result,
                                Map<String, StringBuilder> poolCommentsMap) {
 
-        int requested = Integer.parseInt(result.get(2));
-        int confirmed = Integer.parseInt(result.get(3));
-        int balance = confirmed - requested;
-        double difference = requested == 0 ? 0 : round((double)balance / requested * 100);
+        final String locCode = result.get(0);
+        final String courtName = result.get(1);
+        final int requested = Integer.parseInt(result.get(2));
+        final int confirmed = Integer.parseInt(result.get(3));
+        final int balance = confirmed - requested;
+        final double difference = requested == 0 ? 0 : NumberUtils.calculatePercentage(balance, requested);
         response.getTableData().getData().add(
             YieldPerformanceReportResponse.TableData.YieldData.builder()
-            .court(result.get(1) + " (" + result.get(0) + ")")
+            .court(courtName + " (" + locCode + ")")
             .requested(requested)
             .confirmed(confirmed)
-            .comments(poolCommentsMap.get(result.get(0)) != null
-                ? poolCommentsMap.get(result.get(0)).toString()
+            .comments(poolCommentsMap.get(locCode) != null
+                ? poolCommentsMap.get(locCode).toString()
                 : "")
             .balance(balance)
             .difference(difference)

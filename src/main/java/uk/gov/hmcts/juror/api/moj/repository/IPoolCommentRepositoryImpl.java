@@ -30,7 +30,7 @@ public class IPoolCommentRepositoryImpl implements IPoolCommentRepository {
                                                     LocalDate dateFrom,
                                                     LocalDate dateTo) {
         JPAQuery<Tuple> queryFactory = new JPAQuery<>(entityManager);
-        queryFactory.select(
+        return queryFactory.select(
                 POOL_REQUEST.courtLocation.locCode.as("loc_code"),
                 POOL_COMMENT.pool.poolNumber.as("pool_no"),
                 POOL_COMMENT.poolComment.comment.as("comment"),
@@ -41,9 +41,8 @@ public class IPoolCommentRepositoryImpl implements IPoolCommentRepository {
             .on(POOL_REQUEST.poolNumber.eq(POOL_COMMENT.pool.poolNumber))
             .where(POOL_REQUEST.courtLocation.locCode.in(locCodes))
             .where(POOL_REQUEST.returnDate.between(dateFrom, dateTo))
-            .orderBy(POOL_REQUEST.courtLocation.locCode.asc(), POOL_REQUEST.poolNumber.asc());
-
-        return queryFactory.fetch();
+            .orderBy(POOL_REQUEST.courtLocation.locCode.asc(), POOL_REQUEST.poolNumber.asc())
+            .fetch();
     }
 }
 

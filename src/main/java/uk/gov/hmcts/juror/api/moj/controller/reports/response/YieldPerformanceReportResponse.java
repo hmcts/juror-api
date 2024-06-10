@@ -7,7 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +50,6 @@ public class YieldPerformanceReportResponse {
 
     @Data
     @NoArgsConstructor
-    @ToString
     @AllArgsConstructor
     public static class TableData {
         private List<YieldPerformanceReportResponse.TableData.Heading> headings;
@@ -65,7 +63,6 @@ public class YieldPerformanceReportResponse {
         @Data
         @Builder
         @NoArgsConstructor
-        @ToString
         @AllArgsConstructor
         public static class Heading {
             private String id;
@@ -75,7 +72,6 @@ public class YieldPerformanceReportResponse {
 
         @Data
         @NoArgsConstructor
-        @ToString
         @AllArgsConstructor
         @Builder
         public static class YieldData {
