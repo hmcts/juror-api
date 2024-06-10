@@ -53,6 +53,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.POSTCODE_REG
 @ThirdPartyOtherReason
 @ToString(exclude = {"specialNeeds", "cjsEmployments"})// lazy init fields
 @EqualsAndHashCode(exclude = {"workPhone", "cjsEmployments", "specialNeeds", "staff"})
+@Deprecated(forRemoval = true)
 public class JurorResponse implements Serializable {
     /*
      * Constants for field names. MUST match exactly!
@@ -405,13 +406,6 @@ public class JurorResponse implements Serializable {
     @Column(name = "URGENT")
     @Convert(converter = org.hibernate.type.YesNoConverter.class)
     private Boolean urgent;
-
-    /**
-     * Flag this response as super urgent.
-     */
-    @Column(name = "SUPER_URGENT")
-    @Convert(converter = org.hibernate.type.YesNoConverter.class)
-    private Boolean superUrgent;
 
     /**
      * Flag this response as welsh language.

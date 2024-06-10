@@ -164,12 +164,6 @@ public class CombinedJurorResponse extends Address implements Serializable {
     private boolean urgent;
 
     /**
-     * Flag this response as super urgent.
-     */
-    @Column(name = "super_urgent")
-    private boolean superUrgent;
-
-    /**
      * Flag this response as welsh language.
      */
     @Column(name = "welsh")

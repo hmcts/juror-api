@@ -189,8 +189,8 @@ class UnconfirmedAttendanceReportITest extends AbstractGroupedReportControllerIT
     }
 
     private GroupedTableData getTypicalResponseData() {
-        String today = DateTimeFormatter.ISO_DATE.format(LocalDate.now());
-        String yesterday = DateTimeFormatter.ISO_DATE.format(LocalDate.now().minusDays(1));
+        String today = DateTimeFormatter.ISO_DATE.format(LocalDate.of(2024, 5, 13));
+        String yesterday = DateTimeFormatter.ISO_DATE.format(LocalDate.of(2024, 5, 12));
 
         return new GroupedTableData()
             .add(today.concat(",").concat("CROWN COURT"), List.of(

@@ -212,7 +212,7 @@ public class UserServiceModImpl implements UserService {
 
     @Transactional(readOnly = true)
     User findUserByEmail(String email) {
-        return userRepository.findByEmail(email).orElseThrow(
+        return userRepository.findByEmailIgnoreCase(email).orElseThrow(
             () -> new MojException.NotFound("User not found", null)
         );
     }

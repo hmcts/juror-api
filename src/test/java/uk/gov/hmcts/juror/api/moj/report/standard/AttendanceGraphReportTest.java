@@ -83,6 +83,8 @@ public class AttendanceGraphReportTest extends AbstractStandardReportTestSupport
             AttendanceType.ABSENT,
             AttendanceType.NON_ATTENDANCE,
             AttendanceType.NON_ATTENDANCE_LONG_TRIAL));
+        verify(query, times(1))
+            .orderBy(QAppearance.appearance.attendanceDate.asc());
         verify(report, times(1))
             .addGroupBy(query, DataType.ATTENDANCE_DATE);
     }

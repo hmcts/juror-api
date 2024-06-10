@@ -41,8 +41,6 @@ public interface JurorAppearanceService {
 
     String updateAttendanceDate(UpdateAttendanceDateDto request);
 
-    AttendanceDetailsResponse deleteAttendance(BureauJwtPayload payload, UpdateAttendanceDto request);
-
     void markJurorAsAbsent(BureauJwtPayload payload, UpdateAttendanceDto.CommonData request);
 
     JurorsToDismissResponseDto retrieveJurorsToDismiss(JurorsToDismissRequestDto request);
@@ -56,4 +54,6 @@ public interface JurorAppearanceService {
     void modifyConfirmedAttendance(ModifyConfirmedAttendanceDto request);
 
     boolean hasAttendances(String jurorNumber);
+
+    void realignAttendanceType(Appearance appearance);
 }

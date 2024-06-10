@@ -1,10 +1,10 @@
 buildscript {
     ext {
-        springBootVersion = '3.2.5'
+        springBootVersion = '3.3.0'
         notifyVersion = '5.1.0-RELEASE'
         springDocVersion = '2.5.0'
         queryDslVersion = '5.1.0'
-        flywayVersion = '10.13.0'
+        flywayVersion = '10.14.0'
         postgresVersion = '42.7.3'
     }
     dependencies {
@@ -105,7 +105,7 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
     implementation 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
 
-    implementation('com.google.guava:guava:33.2.0-jre')
+    implementation('com.google.guava:guava:33.2.1-jre')
 
     implementation('org.hibernate.orm:hibernate-core:6.3.0.CR1')
 
@@ -127,7 +127,7 @@ dependencies {
     implementation('org.apache.commons:commons-text:1.12.0')
     implementation("uk.gov.service.notify:notifications-java-client:${notifyVersion}")
 
-    runtimeOnly(group: 'com.microsoft.azure', name: 'applicationinsights-core', version: '3.5.2')
+    runtimeOnly(group: 'com.microsoft.azure', name: 'applicationinsights-core', version: '3.5.3')
 
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springDocVersion}"
     implementation group: 'io.rest-assured', name: 'rest-assured'
@@ -203,10 +203,12 @@ flyway {
     def dbUrl = System.getenv("DB_URL") ?: "jdbc:postgresql://localhost:5432/juror"
     def dbUserName = System.getenv("DB_USERNAME") ?: "system"
     def dbPassword = System.getenv("DB_PASSWORD") ?: "postgres"
-
+    def flywayLocations = System.getenv("FLYWAY_LOC_OVERRIDE") ?: "db/**/*.sql"
+    
     url = "$dbUrl"
     user = "$dbUserName"
     password = "$dbPassword"
+    locations = [ "$flywayLocations" ]
     schemas = ['juror', 'juror_digital', 'juror_digital_user', 'juror_dashboard', 'hk', 'juror_mod']
     defaultSchema = 'juror_mod'
     table = 'schema_history'
@@ -231,7 +233,7 @@ processResources.finalizedBy(copyDocs)
 
 
 wrapper {
-    gradleVersion = '8.7'
+    gradleVersion = '8.8'
 }
 
 sourceSets {
@@ -276,10 +278,10 @@ checkstyle {
 }
 
 pmdTest {
-    maxFailures = 352
+    maxFailures = 350
 }
 pmdMain {
-    maxFailures = 886
+    maxFailures = 883
 }
 pmd {
     maxFailures = 0

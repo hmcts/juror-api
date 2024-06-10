@@ -872,6 +872,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         newJurorPool.setStatus(RepositoryUtils.retrieveFromDatabase(IJurorStatus.RESPONDED, jurorStatusRepository));
         newJurorPool.setUserEdtq(userId);
         newJurorPool.setDeferralCode(null);
+        newJurorPool.setReminderSent(null);
         newJurorPool.setPoolSequence(poolMemberSequenceService.leftPadInteger(sequenceNumber));
 
         jurorPoolRepository.save(newJurorPool);

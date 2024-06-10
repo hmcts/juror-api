@@ -16,7 +16,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
-import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.test.context.ActiveProfiles;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
@@ -201,7 +201,7 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
         assertErrorResponse(response,
             HttpStatus.FORBIDDEN,
             url,
-            AccessDeniedException.class,
+            AuthorizationDeniedException.class,
             "Forbidden");
     }
 
@@ -352,5 +352,9 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
     public String getCourtJwt(String number, Set<Role> roles) {
         return createJwt("test_court_standard", number,
             UserType.COURT, roles, number);
+    }
+
+    public String getSatelliteCourtJwt(String owner, String... courts) {
+        return createJwt("test_court_standard", owner, UserType.COURT, Set.of(), courts);
     }
 }

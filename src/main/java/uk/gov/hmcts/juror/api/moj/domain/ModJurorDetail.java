@@ -302,9 +302,6 @@ public class ModJurorDetail implements Serializable {
     @Column(name = "urgent")
     private Boolean urgent;
 
-    @Column(name = "super_urgent")
-    private Boolean superUrgent;
-
     @Column(name = "welsh")
     private Boolean welsh = Boolean.FALSE;
 

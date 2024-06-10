@@ -28,7 +28,7 @@ import java.util.Map;
 @Slf4j
 @Component
 @AllArgsConstructor(onConstructor = @__(@Autowired))
-public class UrgentSuperUrgentStatusScheduler implements ScheduledService {
+public class UrgentStatusScheduler implements ScheduledService {
 
     private final UrgencyService urgencyService;
 
@@ -81,8 +81,7 @@ public class UrgentSuperUrgentStatusScheduler implements ScheduledService {
 
                 log.trace("processing  pool number {} ", jurorDetails.getJurorNumber());
 
-                if ((!backlogItem.isUrgent() && urgencyService.isUrgent(backlogItem, jurorDetails))
-                    || (!backlogItem.isSuperUrgent() && urgencyService.isSuperUrgent(backlogItem, jurorDetails))) {
+                if ((!backlogItem.isUrgent() && urgencyService.isUrgent(backlogItem, jurorDetails))) {
 
                     totalUrgentResponses++;
                     urgencyService.setUrgencyFlags(backlogItem, jurorDetails);

@@ -63,16 +63,16 @@ INSERT INTO juror_mod.juror_response (juror_number, date_received, title, first_
                                       excusal, excusal_reason, processing_complete, signed, "version", thirdparty_fname,
                                       thirdparty_lname, relationship, main_phone, other_phone, email_address,
                                       thirdparty_reason, thirdparty_other_reason, juror_phone_details,
-                                      juror_email_details, staff_login, staff_assignment_date, urgent, super_urgent,
+                                      juror_email_details, staff_login, staff_assignment_date, urgent,
                                       completed_at, welsh, reply_type)
 VALUES ('123251234', '2024-03-13 00:00:00', 'Mr', 'Gypsey', 'Hoola', '27 Knutson Trail', 'Scotland', 'Aberdeen',
         'United Kingdom', NULL, 'AB21 3RY', 'TODO', '1984-07-24', '44(703)209-6991', '44(145)525-2391', 'jhoola@ed.gov',
         true, NULL, false, NULL, NULL, false, NULL, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, 0,
-        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, false, NULL, NULL, true, false, NULL, false, 'Digital'),
+        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, false, NULL, NULL, true, NULL, false, 'Digital'),
        ('209092530', '2024-03-13 00:00:00', 'Dr', 'Jane', 'Castillo', '4 Knutson Trail', 'Scotland', 'Aberdeen',
         'United Kingdom', NULL, 'AB21 3RY', 'TODO', '1984-07-24', '44(703)209-6993', '44(145)525-2390',
         'jcastillo0@ed.gov', true, NULL, false, NULL, NULL, false, NULL, false, NULL, NULL, NULL, NULL, NULL, NULL,
-        NULL, false, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, false, NULL, NULL, false, true,
+        NULL, false, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, false, NULL, NULL, false,
         NULL, false, 'Digital');
 UPDATE juror_mod.JUROR_RESPONSE
 SET TITLE             = 'Mr',
@@ -89,8 +89,7 @@ SET TITLE             = 'Mr',
     ALT_PHONE_NUMBER  = '44(145)525-2391',
     EMAIL             = 'jhoola@ed.gov',
     RESIDENCY='Y',
-    URGENT='Y',
-    SUPER_URGENT='N'
+    URGENT='Y'
 WHERE JUROR_NUMBER = '123251234';
 
 UPDATE juror_mod.JUROR_RESPONSE
@@ -108,7 +107,6 @@ SET TITLE             = 'Dr',
     ALT_PHONE_NUMBER  = '44(145)525-2390',
     EMAIL             = 'jcastillo0@ed.gov',
     RESIDENCY='Y',
-    URGENT='N',
-    SUPER_URGENT='Y'
+    URGENT='N'
 
 WHERE JUROR_NUMBER = '209092530';

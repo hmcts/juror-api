@@ -44,6 +44,7 @@ import uk.gov.hmcts.juror.api.moj.repository.trial.JudgeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.service.CompleteServiceServiceImpl;
+import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -91,6 +92,8 @@ class TrialServiceImplTest {
     private JurorPoolRepository jurorPoolRepository;
     @Mock
     private CompleteServiceServiceImpl completeService;
+    @Mock
+    private JurorAppearanceService jurorAppearanceService;
 
     @InjectMocks
     TrialServiceImpl trialService;

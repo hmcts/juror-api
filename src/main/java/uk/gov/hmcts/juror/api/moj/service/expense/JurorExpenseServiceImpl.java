@@ -1150,6 +1150,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         BigDecimal travelTotal = appearances.stream()
             .map(Appearance::getTravelTotalChanged)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
+
         BigDecimal substanceTotal = appearances.stream()
             .map(Appearance::getSubsistenceTotalChanged)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -1157,6 +1158,30 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         BigDecimal financialLossTotal = appearances.stream()
             .map(Appearance::getFinancialLossTotalChanged)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal smartCard = appearances.stream()
+            .map(Appearance::getSmartCardTotalChanged)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        if (BigDecimalUtils.isGreaterThan(smartCard, BigDecimal.ZERO)) {
+            BigDecimal difference = smartCard;
+            if (BigDecimalUtils.isGreaterThanOrEqualTo(substanceTotal, difference)) {
+                substanceTotal = substanceTotal.subtract(difference);
+            } else {
+                difference = difference.subtract(substanceTotal);
+                substanceTotal = BigDecimal.ZERO;
+
+                if (BigDecimalUtils.isGreaterThanOrEqualTo(travelTotal, difference)) {
+                    travelTotal = travelTotal.subtract(difference);
+                } else {
+                    difference = difference.subtract(travelTotal);
+                    travelTotal = BigDecimal.ZERO;
+                    financialLossTotal = financialLossTotal.subtract(difference);
+                }
+            }
+        } else {
+            substanceTotal = substanceTotal.add(smartCard.abs());
+        }
 
         return PaymentData.builder()
             .courtLocation(courtLocation)

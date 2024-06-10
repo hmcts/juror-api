@@ -39,6 +39,7 @@ import uk.gov.hmcts.juror.api.moj.repository.trial.JudgeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.service.CompleteServiceService;
+import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorHistoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.PanelUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
@@ -82,6 +83,9 @@ public class TrialServiceImpl implements TrialService {
     private JurorPoolRepository jurorPoolRepository;
     @Autowired
     private CompleteServiceService completeService;
+
+    @Autowired
+    private JurorAppearanceService jurorAppearanceService;
 
     private static final int PAGE_SIZE = 25;
     private static final String CANNOT_FIND_TRIAL_ERROR_MESSAGE = "Cannot find trial with number: %s for "
@@ -257,6 +261,7 @@ public class TrialServiceImpl implements TrialService {
                     appearance.setTimeOut(LocalTime.parse(returnJuryDto.getCheckOut()));
                     log.debug("setting time out for juror %s".formatted(jurorNumber));
                 }
+                jurorAppearanceService.realignAttendanceType(appearance);
 
                 appearance.setSatOnJury(true);
                 appearanceRepository.saveAndFlush(appearance);

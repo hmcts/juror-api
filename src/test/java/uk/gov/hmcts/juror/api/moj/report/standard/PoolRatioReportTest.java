@@ -64,6 +64,9 @@ public class PoolRatioReportTest extends AbstractStandardReportTestSupport<PoolR
                 .between(FROM_DATE, TO_DATE));
         verify(query, times(1))
             .where(QJurorPool.jurorPool.pool.courtLocation.locCode.in(COURTS));
+        verify(query, times(1))
+            .orderBy(QJurorPool.jurorPool.pool.courtLocation.name.asc(),
+                QJurorPool.jurorPool.pool.courtLocation.locCode.asc());
 
         verify(query, times(1))
             .groupBy(

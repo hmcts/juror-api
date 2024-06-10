@@ -19,6 +19,8 @@ public interface CourtLocationRepository extends CrudRepository<CourtLocation, S
 
     List<CourtLocation> findByLocCodeIn(List<String> locCode);
 
+    List<CourtLocation> findByLocCodeInOrderByName(List<String> locCode);
+
     Optional<CourtLocation> findByName(String locName);
 
     List<CourtLocation> findByOwner(String owner);

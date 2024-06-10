@@ -43,26 +43,22 @@ public class BureauBacklogCountServiceImplTest {
             response.setDateReceived(now.minusHours(i));
             response.setStaff(null);
             response.setUrgent(false);
-            response.setSuperUrgent(false);
             backlog.add(response);
         }
         DigitalResponse  response1 = new DigitalResponse();
         response1.setUrgent(true);
-        response1.setSuperUrgent(false);
         response1.setProcessingStatus(ProcessingStatus.TODO);
         response1.setStaff(null);
         backlog.add(response1);
 
         DigitalResponse  response2 = new DigitalResponse();
         response2.setUrgent(true);
-        response2.setSuperUrgent(false);
         response2.setProcessingStatus(ProcessingStatus.TODO);
         response2.setStaff(null);
         backlog.add(response2);
 
         DigitalResponse  response3 = new DigitalResponse();
         response3.setUrgent(false);
-        response3.setSuperUrgent(true);
         response3.setProcessingStatus(ProcessingStatus.TODO);
         response3.setStaff(null);
 
@@ -70,14 +66,12 @@ public class BureauBacklogCountServiceImplTest {
 
         DigitalResponse  response4 = new DigitalResponse();
         response4.setUrgent(false);
-        response4.setSuperUrgent(true);
         response4.setProcessingStatus(ProcessingStatus.TODO);
         response4.setStaff(null);
         backlog.add(response4);
 
         DigitalResponse  response5 = new DigitalResponse();
         response5.setUrgent(false);
-        response5.setSuperUrgent(true);
         response5.setProcessingStatus(ProcessingStatus.TODO);
         response5.setStaff(null);
         backlog.add(response5);
@@ -92,7 +86,6 @@ public class BureauBacklogCountServiceImplTest {
 
         assertThat(backlog.parallelStream().filter(r -> !r.isUrgent()).count()).isEqualTo(13);
 
-        assertThat(backlog.parallelStream().filter(DigitalResponse::isSuperUrgent).count()).isEqualTo(3);
         assertThat(backlog.parallelStream().filter(DigitalResponse::isUrgent).count()).isEqualTo(2);
 
 

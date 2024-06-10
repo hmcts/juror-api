@@ -39,7 +39,7 @@ public class JurorResponseQueries {
 
 
     private static BooleanExpression urgent() {
-        return jurorResponse.urgent.isTrue().or(jurorResponse.superUrgent.isTrue());
+        return jurorResponse.urgent.isTrue();
     }
 
 
@@ -80,8 +80,8 @@ public class JurorResponseQueries {
 
     public static BooleanExpression byAssignmentAndProcessingStatusAndUrgency(String staffLogin,
                                                                               List<ProcessingStatus> statuses,
-                                                                              boolean isUrgentOrSuperUrgent) {
-        if (isUrgentOrSuperUrgent) {
+                                                                              boolean isUrgent) {
+        if (isUrgent) {
             return byMemberOfStaffAssigned(staffLogin)
                 .and(byStatus(statuses))
                 .and(urgent());

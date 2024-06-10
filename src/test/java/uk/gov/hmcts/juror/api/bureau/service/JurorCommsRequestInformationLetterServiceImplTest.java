@@ -39,7 +39,6 @@ public class JurorCommsRequestInformationLetterServiceImplTest {
 
     private JurorPool pool;
 
-    private Juror jurorSet;
     List<NotifyTemplateFieldMod> templateFields = new LinkedList<>();
     List<BulkPrintDataNotifyComms> jurorCommsPrintFilesList = new LinkedList<>();
     List<BulkPrintData> printFileList = new LinkedList<>();
@@ -70,7 +69,7 @@ public class JurorCommsRequestInformationLetterServiceImplTest {
         juror.setEmail("a@b.com");
 
 
-        jurorSet = new Juror();
+        Juror jurorSet = new Juror();
         pool = new JurorPool();
         pool.setJuror(jurorSet);
         pool = new JurorPool();
@@ -153,7 +152,8 @@ public class JurorCommsRequestInformationLetterServiceImplTest {
     @Test
     public void process_HappyPath() {
         given(jurorCommsPrintFilesRepository.findAll()).willReturn(jurorCommsPrintFilesList);
-        given(poolRepository.findByJurorJurorNumber(anyString())).willReturn(pool);
+        given(poolRepository.findByJurorJurorNumberAndIsActiveAndOwner(anyString(),anyBoolean(),anyString()))
+            .willReturn(pool);
         given(printFileRepository.findByJurorNoAndIdAndCreationDate(anyString(), anyLong(),
                                                                     any(LocalDate.class))).willReturn(printFileList);
 

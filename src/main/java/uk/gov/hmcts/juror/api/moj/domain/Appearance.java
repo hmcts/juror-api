@@ -274,11 +274,6 @@ public class Appearance implements Serializable {
     @Column(name = "attendance_audit_number")
     private String attendanceAuditNumber;
 
-    public String getIdString() {
-        return "JurorNumber: " + this.jurorNumber + ", "
-            + "AttendanceDate: " + this.attendanceDate + ", "
-            + "CourtLocation: " + this.courtLocation;
-    }
 
     //Does not include smart card reduction
     public BigDecimal getTotalDue() {
@@ -371,15 +366,21 @@ public class Appearance implements Serializable {
     }
 
     public BigDecimal getSubsistenceTotalDue() {
-        return getOrZero(this.getSubsistenceDue())
-            .subtract(getOrZero(this.getSmartCardAmountDue()));
+        return getOrZero(this.getSubsistenceDue());
     }
 
     public BigDecimal getSubsistenceTotalPaid() {
-        return getOrZero(this.getSubsistencePaid())
-            .subtract(getOrZero(this.getSmartCardAmountPaid()));
+        return getOrZero(this.getSubsistencePaid());
     }
 
+
+    private BigDecimal getTotalSmartCardAmountPaid() {
+        return getOrZero(this.getSmartCardAmountPaid());
+    }
+
+    private BigDecimal getTotalSmartCardAmountDue() {
+        return getOrZero(this.getSmartCardAmountDue());
+    }
 
     public BigDecimal getTotalChanged() {
         return getTotalDue().subtract(getTotalPaid());
@@ -392,6 +393,16 @@ public class Appearance implements Serializable {
     public BigDecimal getSubsistenceTotalChanged() {
         return getSubsistenceTotalDue()
             .subtract(getSubsistenceTotalPaid());
+    }
+
+    public BigDecimal getSmartCardTotalChanged() {
+        if (AppearanceStage.EXPENSE_EDITED.equals(this.getAppearanceStage())
+            || AppearanceStage.EXPENSE_AUTHORISED.equals(this.getAppearanceStage())) {
+            //This will result in a negative as smart card for re-approval becomes a credit
+            return getTotalSmartCardAmountDue()
+                .subtract(getTotalSmartCardAmountPaid());
+        }
+        return getTotalSmartCardAmountDue();
     }
 
     public BigDecimal getTravelTotalChanged() {

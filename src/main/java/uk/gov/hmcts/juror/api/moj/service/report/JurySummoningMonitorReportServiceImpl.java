@@ -12,6 +12,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.PoolType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
+import uk.gov.hmcts.juror.api.moj.repository.CourtQueriesRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.utils.PoolRequestUtils;
@@ -32,6 +33,7 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
     private final JurorPoolRepository jurorPoolRepository;
     private final CourtLocationRepository courtLocationRepository;
     private final PoolRequestRepository poolRequestRepository;
+    private final CourtQueriesRepository courtQueriesRepository;
 
     @Override
     public JurySummoningMonitorReportResponse viewJurySummoningMonitorReport(
@@ -46,25 +48,42 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
         if (isSearchByPool) {
             try {
                 String result =
-                    jurorPoolRepository.getJsmReportByPool(jurySummoningMonitorReportRequest.getPoolNumber());
-
-                if (result != null && !result.isEmpty()) {
-                    List<String> values = List.of(result.split(","));
-                    setupByPoolFields(response, values);
-                }
+                    jurorPoolRepository
+                        .getJurySummoningMonitorReportByPool(jurySummoningMonitorReportRequest.getPoolNumber());
+                setupResponseDto(response, result);
 
             } catch (Exception e) {
                 log.error("Error getting jury summoning monitor report by pool", e);
                 throw new MojException.InternalServerError("Error getting jury summoning monitor report by pool", e);
             }
         } else {
-            // TODO implement the logic to get the report data by court once the function is available
 
+            String courtLocCodes = jurySummoningMonitorReportRequest.isAllCourts()
+                ? String.join(",", courtQueriesRepository.getAllCourtLocCodes(false))
+                : String.join(",", jurySummoningMonitorReportRequest.getCourtLocCodes());
+            try {
+                String result =
+                    jurorPoolRepository.getJurySummoningMonitorReportByCourt(courtLocCodes,
+                        jurySummoningMonitorReportRequest.getFromDate(),
+                        jurySummoningMonitorReportRequest.getToDate());
+                setupResponseDto(response, result);
+
+            } catch (Exception e) {
+                log.error("Error getting jury summoning monitor report by court", e);
+                throw new MojException.InternalServerError("Error getting jury summoning monitor report by court", e);
+            }
         }
         return response;
     }
 
-    private static void setupByPoolFields(JurySummoningMonitorReportResponse response, List<String> result) {
+    private void setupResponseDto(JurySummoningMonitorReportResponse response, String result) {
+        if (result != null && !result.isEmpty()) {
+            List<String> values = List.of(result.split(","));
+            setupResponse(response, values);
+        }
+    }
+
+    private void setupResponse(JurySummoningMonitorReportResponse response, List<String> result) {
         response.setTotalJurorsNeeded(Integer.parseInt(result.get(0)));
         response.setBureauDeferralsIncluded(Integer.parseInt(result.get(1)));
 
@@ -128,7 +147,7 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
         if (response.getTotalJurorsNeeded() - response.getBureauDeferralsIncluded() > 0) {
             response.setRatio(
                 round((double) response.getInitiallySummoned()
-                    / (response.getTotalJurorsNeeded() - response.getBureauDeferralsIncluded()),2));
+                    / (response.getTotalJurorsNeeded() - response.getBureauDeferralsIncluded()), 2));
         } else {
             response.setRatio(0.0);
         }
@@ -215,9 +234,9 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
 
             StringBuilder courtsBuilder = new StringBuilder();
 
-            courtLocationRepository.findByLocCodeIn(courtsList).stream().forEach(c -> {
-                courtsBuilder.append(c.getName()).append(" (").append(c.getLocCode()).append(')').append(", ");
-            });
+            courtLocationRepository.findByLocCodeInOrderByName(courtsList).stream().forEach(c ->
+                courtsBuilder.append(c.getName()).append(" (").append(c.getLocCode()).append(')').append(", ")
+            );
 
             // remove the trailing comma if we have any courts
             if (courtsBuilder.length() > 2) {

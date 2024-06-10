@@ -1,5 +1,4 @@
-package uk.gov.hmcts.juror.api.scheduler;
-
+package uk.gov.hmcts.juror.api.bureau.scheduler;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -7,7 +6,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import uk.gov.hmcts.juror.api.bureau.scheduler.UrgentSuperUrgentStatusScheduler;
 import uk.gov.hmcts.juror.api.bureau.service.UrgencyService;
 import uk.gov.hmcts.juror.api.bureau.service.UserService;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries;
@@ -29,14 +27,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
-public class UrgentSuperUrgentStatusSchedulerTest {
+public class UrgentStatusSchedulerTest {
 
     private static final String NON_CLOSED_STATUS = ProcessingStatus.TODO.name();
-    private ModJurorDetail jurorBureauDetail;
-    private DigitalResponse jurorResponse;
+
     private JurorPool poolDetails;
 
-    private LocalDateTime responseReceived;
+    private Juror juror;
 
     @Mock
     private JurorDigitalResponseRepositoryMod jurorResponseRepo;
@@ -53,50 +50,46 @@ public class UrgentSuperUrgentStatusSchedulerTest {
     private UrgencyService urgencyService;
 
     @InjectMocks
-    UrgentSuperUrgentStatusScheduler urgentSuperUrgentStatusScheduler;
+    UrgentStatusScheduler urgentStatusScheduler;
 
     private List<DigitalResponse> responseBacklog;
 
 
     @Before
     public void setUp() {
-
-        responseReceived = LocalDateTime.now();
+        LocalDateTime responseReceived = LocalDateTime.now();
 
         //set up some known static dates relative to a start point
-        final LocalDateTime hearingDateValid = LocalDateTime.now().plusDays(35);
-
-        jurorBureauDetail = new ModJurorDetail();
+        ModJurorDetail jurorBureauDetail = new ModJurorDetail();
         jurorBureauDetail.setProcessingStatus(NON_CLOSED_STATUS);
         jurorBureauDetail.setDateReceived(responseReceived.toLocalDate());
-        jurorBureauDetail.setHearingDate(hearingDateValid.toLocalDate());
 
-        jurorResponse = new DigitalResponse();
+        jurorBureauDetail.setHearingDate(responseReceived.toLocalDate());
+
+        DigitalResponse jurorResponse = new DigitalResponse();
         jurorResponse.setProcessingStatus(uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus.TODO);
         jurorResponse.setDateReceived(responseReceived);
 
         poolDetails = new JurorPool();
-        Juror juror = new Juror();
-        poolDetails.setJuror(juror);
-        poolDetails.setNextDate(hearingDateValid.toLocalDate());
-
+        juror = new Juror();
+        poolDetails.setNextDate(responseReceived.toLocalDate());
         responseBacklog = new LinkedList<>();
 
         final LocalDateTime now = LocalDateTime.now();
         DigitalResponse response = new DigitalResponse();
         response.setJurorNumber("12345678");
-
-        response.setDateReceived(LocalDateTime.now());
+        response.setDateReceived(LocalDateTime.from(now.minusHours(1)));
         response.setProcessingStatus(ProcessingStatus.TODO);
+        response.setUrgent(false);
         responseBacklog.add(response);
 
     }
 
     @Test
-    public void nonUrgentResponseTurnsSuperUrgent() throws Exception {
-
-        //  poolDetails.setReadOnly(Boolean.TRUE);
-        poolDetails.getJuror().setJurorNumber("12345678");
+    public void nonUrgentResponseTurnsUrgent() {
+        poolDetails.setJuror(juror);
+        juror = poolDetails.getJuror();
+        juror.setJurorNumber("12345678");
 
         final List<ProcessingStatus> pendingStatuses = List.of(ProcessingStatus.CLOSED);
 
@@ -106,25 +99,21 @@ public class UrgentSuperUrgentStatusSchedulerTest {
             responseBacklog);
 
         DigitalResponse jurorResponse = responseBacklog.get(0);
-
         given(poolrepo.findByJurorJurorNumberAndIsActiveAndOwner(
             jurorResponse.getJurorNumber(),
             true,
             "400"
         )).willReturn(poolDetails);
 
-        given(urgencyService.isSuperUrgent(jurorResponse, poolDetails)).willReturn(Boolean.TRUE);
-        given(urgencyService.isUrgent(jurorResponse, poolDetails)).willReturn(Boolean.FALSE);
+        given(urgencyService.isUrgent(jurorResponse, poolDetails)).willReturn(Boolean.TRUE);
 
-        urgentSuperUrgentStatusScheduler.process();
+        urgentStatusScheduler.process();
 
         verify(jurorResponseRepo, times(1)).save(jurorResponse);
         verify(urgencyService, times(1)).setUrgencyFlags(responseBacklog.get(0), poolDetails);
 
+        userService.assignUrgentResponse(jurorResponse);
+
         verify(jurorResponseRepo, times(1)).save(jurorResponse);
-
-
     }
-
-
 }

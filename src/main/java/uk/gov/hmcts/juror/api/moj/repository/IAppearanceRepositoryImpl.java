@@ -1,8 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.repository;
 
 import com.querydsl.core.Tuple;
-import com.querydsl.core.types.dsl.CaseBuilder;
-import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -251,26 +249,6 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .where(JUROR_POOL.pool.courtLocation.locCode.eq(locCode))
             .where(JUROR_POOL.status.status.eq(IJurorStatus.RESPONDED))
             .where(JUROR_POOL.isActive.isTrue());
-    }
-
-    @Override
-    public Integer countJurorExpenseForApproval(String jurorNumber, String poolNumber) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-
-        NumberExpression<Integer> countAwaitingApproval = new CaseBuilder()
-            .when(APPEARANCE.isDraftExpense.eq(false)
-                .and(APPEARANCE.appearanceStage.eq(AppearanceStage.EXPENSE_ENTERED))).then(1)
-            .otherwise(0)
-            .sum();
-
-        return queryFactory
-            .select(countAwaitingApproval.as("forApproval"))
-            .from(APPEARANCE)
-            .where(APPEARANCE.jurorNumber.eq(jurorNumber))
-            .where(APPEARANCE.poolNumber.eq(poolNumber))
-            .groupBy(APPEARANCE.jurorNumber)
-            .groupBy(APPEARANCE.poolNumber)
-            .fetchOne();
     }
 
     @Override

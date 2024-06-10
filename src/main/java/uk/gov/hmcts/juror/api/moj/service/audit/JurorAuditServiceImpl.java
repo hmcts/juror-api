@@ -8,8 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.moj.audit.dto.JurorAudit;
 import uk.gov.hmcts.juror.api.moj.audit.dto.QJurorAudit;
+import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
-import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -23,9 +23,6 @@ public class JurorAuditServiceImpl implements JurorAuditService {
 
     @PersistenceContext
     EntityManager entityManager;
-
-    private final JurorPoolService jurorPoolService;
-
 
     JPAQueryFactory getQueryFactory() {
         return new JPAQueryFactory(entityManager);
@@ -69,5 +66,18 @@ public class JurorAuditServiceImpl implements JurorAuditService {
             return null;
         }
         return data.get(0);
+    }
+
+    @Override
+    public List<String> getAllPoolAuditsForDay(LocalDate date) {
+        return getQueryFactory()
+            .selectDistinct(QAppearance.appearance.attendanceAuditNumber)
+            .from(QAppearance.appearance)
+            .where(QAppearance.appearance.locCode.eq(SecurityUtil.getLocCode()))
+            .where(QAppearance.appearance.attendanceDate.eq(date))
+            .where(QAppearance.appearance.attendanceAuditNumber.isNotNull())
+            .where(QAppearance.appearance.attendanceAuditNumber.startsWith("P"))
+            .orderBy(QAppearance.appearance.attendanceAuditNumber.asc())
+            .fetch();
     }
 }

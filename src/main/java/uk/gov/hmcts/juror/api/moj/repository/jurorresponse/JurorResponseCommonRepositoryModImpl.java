@@ -126,7 +126,6 @@ public class JurorResponseCommonRepositoryModImpl implements JurorResponseCommon
         if (request.getIsUrgent() != null && TRUE.equals(request.getIsUrgent())) {
             query
                 .where(JUROR_RESPONSE_COMMON.urgent.eq(TRUE)
-                    .or(JUROR_RESPONSE_COMMON.superUrgent.eq(TRUE))
                     .or(JUROR_POOL.pool.returnDate.lt(now())));
         }
 

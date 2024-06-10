@@ -14,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.parameters.P;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -127,16 +126,6 @@ public class JurorManagementController {
     public void modifyAttendance(
         @RequestBody @Valid ModifyConfirmedAttendanceDto request) {
         jurorAppearanceService.modifyConfirmedAttendance(request);
-    }
-
-    @DeleteMapping("/attendance")
-    @Operation(description = "Delete the attendance record for a juror")
-    public ResponseEntity<AttendanceDetailsResponse> deleteAttendance(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
-        @RequestBody @Valid UpdateAttendanceDto request) {
-        validateOwner(payload);
-
-        return ResponseEntity.ok(jurorAppearanceService.deleteAttendance(payload, request));
     }
 
     @PutMapping("/mark-as-absent")

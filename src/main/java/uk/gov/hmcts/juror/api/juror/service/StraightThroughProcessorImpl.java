@@ -177,13 +177,6 @@ public class StraightThroughProcessorImpl implements StraightThroughProcessor {
                 throw new StraightThroughProcessingServiceException(MESSAGE);
             }
 
-            // JDB-126 l. the submission of the response must not be so late as to be considered super urgent.
-            if (savedDigitalResponse.isSuperUrgent()) {
-                throw new StraightThroughProcessingServiceException(
-                    "Super urgent response does not qualify for straight-through");
-            }
-
-
             // JDB-126 c. the date of birth in the response must not indicate that the Juror is too old or too young.
             final int youngestJurorAgeAllowed = responseInspector.getYoungestJurorAgeAllowed();
             final int tooOldJurorAge = responseInspector.getTooOldJurorAge();
@@ -368,12 +361,6 @@ public class StraightThroughProcessorImpl implements StraightThroughProcessor {
                 throw new StraightThroughProcessingServiceException.DeceasedExcusal(MESSAGE);
             }
 
-            //JDB-73 d. the submission of the response must not be so late as to be considered super urgent.
-            if (savedDigitalResponse.isSuperUrgent()) {
-                throw new StraightThroughProcessingServiceException.DeceasedExcusal(
-                    "Super urgent response does not qualify for excusal straight-through");
-            }
-
             //update response
             savedDigitalResponse.setProcessingStatus(ProcessingStatus.CLOSED);
             savedDigitalResponse.setStaff(staffMember(AUTO_USER));
@@ -458,12 +445,6 @@ public class StraightThroughProcessorImpl implements StraightThroughProcessor {
             // JDB-3747  urgent responses will not be auto processed.
             if (savedDigitalResponse.isUrgent()) {
                 throw new StraightThroughProcessingServiceException(MESSAGE);
-            }
-
-            //JDB-91 d. the submission of the response must not be so late as to be considered super urgent.
-            if (savedDigitalResponse.isSuperUrgent()) {
-                throw new StraightThroughProcessingServiceException.AgeExcusal(
-                    "Super urgent response does not qualify for excusal straight-through");
             }
 
             // JDB-91 a. the date of birth they entered must mean they'll be <18 or >=76 on the day that their jury
