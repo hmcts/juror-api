@@ -99,7 +99,7 @@ public class YieldPerformanceReportServiceImpl implements YieldPerformanceReport
         double difference = requested == 0 ? 0 : round((double)balance / requested * 100);
         response.getTableData().getData().add(
             YieldPerformanceReportResponse.TableData.YieldData.builder()
-            .courtLocation(result.get(1) + " (" + result.get(0) + ")")
+            .court(result.get(1) + " (" + result.get(0) + ")")
             .requested(requested)
             .confirmed(confirmed)
             .comments(poolCommentsMap.get(result.get(0)) != null

@@ -199,32 +199,32 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
 
         // verify the table headings
         Assertions.assertThat(response.getTableData().getHeadings().get(0).getId()).isEqualTo(
-            YieldPerformanceReportResponse.TableHeading.COURT);
+            YieldPerformanceReportResponse.TableHeading.COURT.getId());
         Assertions.assertThat(response.getTableData().getHeadings().get(0).getName()).isEqualTo("Court");
         Assertions.assertThat(response.getTableData().getHeadings().get(0).getDataType()).isEqualTo("String");
 
         Assertions.assertThat(response.getTableData().getHeadings().get(1).getId()).isEqualTo(
-            YieldPerformanceReportResponse.TableHeading.REQUESTED);
+            YieldPerformanceReportResponse.TableHeading.REQUESTED.getId());
         Assertions.assertThat(response.getTableData().getHeadings().get(1).getName()).isEqualTo("Requested");
         Assertions.assertThat(response.getTableData().getHeadings().get(1).getDataType()).isEqualTo("Integer");
 
         Assertions.assertThat(response.getTableData().getHeadings().get(2).getId()).isEqualTo(
-            YieldPerformanceReportResponse.TableHeading.CONFIRMED);
+            YieldPerformanceReportResponse.TableHeading.CONFIRMED.getId());
         Assertions.assertThat(response.getTableData().getHeadings().get(2).getName()).isEqualTo("Confirmed");
         Assertions.assertThat(response.getTableData().getHeadings().get(2).getDataType()).isEqualTo("Integer");
 
         Assertions.assertThat(response.getTableData().getHeadings().get(3).getId()).isEqualTo(
-            YieldPerformanceReportResponse.TableHeading.BALANCE);
+            YieldPerformanceReportResponse.TableHeading.BALANCE.getId());
         Assertions.assertThat(response.getTableData().getHeadings().get(3).getName()).isEqualTo("Balance");
         Assertions.assertThat(response.getTableData().getHeadings().get(3).getDataType()).isEqualTo("Integer");
 
         Assertions.assertThat(response.getTableData().getHeadings().get(4).getId()).isEqualTo(
-            YieldPerformanceReportResponse.TableHeading.DIFFERENCE);
+            YieldPerformanceReportResponse.TableHeading.DIFFERENCE.getId());
         Assertions.assertThat(response.getTableData().getHeadings().get(4).getName()).isEqualTo("Difference");
         Assertions.assertThat(response.getTableData().getHeadings().get(4).getDataType()).isEqualTo("Double");
 
         Assertions.assertThat(response.getTableData().getHeadings().get(5).getId()).isEqualTo(
-            YieldPerformanceReportResponse.TableHeading.COMMENTS);
+            YieldPerformanceReportResponse.TableHeading.COMMENTS.getId());
         Assertions.assertThat(response.getTableData().getHeadings().get(5).getName()).isEqualTo("Comments");
         Assertions.assertThat(response.getTableData().getHeadings().get(5).getDataType()).isEqualTo("String");
 
@@ -262,7 +262,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
 
         YieldPerformanceReportResponse.TableData.YieldData data = response.getTableData().getData().get(0);
         Assertions.assertThat(data).isNotNull();
-        Assertions.assertThat(data.getCourtLocation()).isEqualTo("CHESTER (415)");
+        Assertions.assertThat(data.getCourt()).isEqualTo("CHESTER (415)");
         Assertions.assertThat(data.getRequested()).isEqualTo(17);
         Assertions.assertThat(data.getConfirmed()).isEqualTo(4);
         Assertions.assertThat(data.getBalance()).isEqualTo(-13);
@@ -280,7 +280,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
 
         YieldPerformanceReportResponse.TableData.YieldData data = response.getTableData().getData().get(0);
         Assertions.assertThat(data).isNotNull();
-        Assertions.assertThat(data.getCourtLocation()).isEqualTo("CHESTER (415)");
+        Assertions.assertThat(data.getCourt()).isEqualTo("CHESTER (415)");
         Assertions.assertThat(data.getRequested()).isEqualTo(17);
         Assertions.assertThat(data.getConfirmed()).isEqualTo(4);
         Assertions.assertThat(data.getBalance()).isEqualTo(-13);
@@ -290,7 +290,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
 
         data = response.getTableData().getData().get(1);
         Assertions.assertThat(data).isNotNull();
-        Assertions.assertThat(data.getCourtLocation()).isEqualTo("WELSHPOOL (774)");
+        Assertions.assertThat(data.getCourt()).isEqualTo("WELSHPOOL (774)");
         Assertions.assertThat(data.getRequested()).isEqualTo(11);
         Assertions.assertThat(data.getConfirmed()).isEqualTo(1);
         Assertions.assertThat(data.getBalance()).isEqualTo(-10);
@@ -308,7 +308,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
 
         YieldPerformanceReportResponse.TableData.YieldData data = response.getTableData().getData().get(0);
         Assertions.assertThat(data).isNotNull();
-        Assertions.assertThat(data.getCourtLocation()).isEqualTo("CHESTER (415)");
+        Assertions.assertThat(data.getCourt()).isEqualTo("CHESTER (415)");
         Assertions.assertThat(data.getRequested()).isEqualTo(17);
         Assertions.assertThat(data.getConfirmed()).isEqualTo(4);
         Assertions.assertThat(data.getBalance()).isEqualTo(-13);
@@ -318,7 +318,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
 
         data = response.getTableData().getData().get(1);
         Assertions.assertThat(data).isNotNull();
-        Assertions.assertThat(data.getCourtLocation()).isEqualTo("LEWES SITTING AT CHICHESTER (416)");
+        Assertions.assertThat(data.getCourt()).isEqualTo("LEWES SITTING AT CHICHESTER (416)");
         Assertions.assertThat(data.getRequested()).isEqualTo(10);
         Assertions.assertThat(data.getConfirmed()).isEqualTo(3);
         Assertions.assertThat(data.getBalance()).isEqualTo(-7);

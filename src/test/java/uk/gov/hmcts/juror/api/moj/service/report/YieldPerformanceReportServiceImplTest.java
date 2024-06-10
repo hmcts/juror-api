@@ -125,32 +125,32 @@ class YieldPerformanceReportServiceImplTest {
 
         private void validateTableHeadings(YieldPerformanceReportResponse.TableData tableData) {
             YieldPerformanceReportResponse.TableData.Heading tablHeading = tableData.getHeadings().get(0);
-            assertThat(tablHeading.getId()).isEqualTo(COURT);
+            assertThat(tablHeading.getId()).isEqualTo(COURT.getId());
             assertThat(tablHeading.getName()).isEqualTo("Court");
             assertThat(tablHeading.getDataType()).isEqualTo("String");
 
             YieldPerformanceReportResponse.TableData.Heading tablHeading1 = tableData.getHeadings().get(1);
-            assertThat(tablHeading1.getId()).isEqualTo(REQUESTED);
+            assertThat(tablHeading1.getId()).isEqualTo(REQUESTED.getId());
             assertThat(tablHeading1.getName()).isEqualTo("Requested");
             assertThat(tablHeading1.getDataType()).isEqualTo("Integer");
 
             YieldPerformanceReportResponse.TableData.Heading tablHeading2 = tableData.getHeadings().get(2);
-            assertThat(tablHeading2.getId()).isEqualTo(CONFIRMED);
+            assertThat(tablHeading2.getId()).isEqualTo(CONFIRMED.getId());
             assertThat(tablHeading2.getName()).isEqualTo("Confirmed");
             assertThat(tablHeading2.getDataType()).isEqualTo("Integer");
 
             YieldPerformanceReportResponse.TableData.Heading tablHeading3 = tableData.getHeadings().get(3);
-            assertThat(tablHeading3.getId()).isEqualTo(BALANCE);
+            assertThat(tablHeading3.getId()).isEqualTo(BALANCE.getId());
             assertThat(tablHeading3.getName()).isEqualTo("Balance");
             assertThat(tablHeading3.getDataType()).isEqualTo("Integer");
 
             YieldPerformanceReportResponse.TableData.Heading tablHeading4 = tableData.getHeadings().get(4);
-            assertThat(tablHeading4.getId()).isEqualTo(DIFFERENCE);
+            assertThat(tablHeading4.getId()).isEqualTo(DIFFERENCE.getId());
             assertThat(tablHeading4.getName()).isEqualTo("Difference");
             assertThat(tablHeading4.getDataType()).isEqualTo("Double");
 
             YieldPerformanceReportResponse.TableData.Heading tablHeading5 = tableData.getHeadings().get(5);
-            assertThat(tablHeading5.getId()).isEqualTo(COMMENTS);
+            assertThat(tablHeading5.getId()).isEqualTo(COMMENTS.getId());
             assertThat(tablHeading5.getName()).isEqualTo("Comments");
             assertThat(tablHeading5.getDataType()).isEqualTo("String");
         }

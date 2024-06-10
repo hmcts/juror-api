@@ -27,22 +27,22 @@ public class YieldPerformanceReportResponse {
     public YieldPerformanceReportResponse() {
 
         this.tableData = new YieldPerformanceReportResponse.TableData(List.of(
-            YieldPerformanceReportResponse.TableData.Heading.builder().id(TableHeading.COURT)
+            YieldPerformanceReportResponse.TableData.Heading.builder().id(TableHeading.COURT.getId())
                 .name(TableHeading.COURT.getDisplayName())
                 .dataType(TableHeading.COURT.getDataType()).build(),
-            YieldPerformanceReportResponse.TableData.Heading.builder().id(TableHeading.REQUESTED)
+            YieldPerformanceReportResponse.TableData.Heading.builder().id(TableHeading.REQUESTED.getId())
                 .name(TableHeading.REQUESTED.getDisplayName())
                 .dataType(TableHeading.REQUESTED.getDataType()).build(),
-            YieldPerformanceReportResponse.TableData.Heading.builder().id(TableHeading.CONFIRMED)
+            YieldPerformanceReportResponse.TableData.Heading.builder().id(TableHeading.CONFIRMED.getId())
                 .name(TableHeading.CONFIRMED.getDisplayName())
                 .dataType(TableHeading.CONFIRMED.getDataType()).build(),
-            YieldPerformanceReportResponse.TableData.Heading.builder().id(TableHeading.BALANCE)
+            YieldPerformanceReportResponse.TableData.Heading.builder().id(TableHeading.BALANCE.getId())
                 .name(TableHeading.BALANCE.getDisplayName())
                 .dataType(TableHeading.BALANCE.getDataType()).build(),
-            YieldPerformanceReportResponse.TableData.Heading.builder().id(TableHeading.DIFFERENCE)
+            YieldPerformanceReportResponse.TableData.Heading.builder().id(TableHeading.DIFFERENCE.getId())
                 .name(TableHeading.DIFFERENCE.getDisplayName())
                 .dataType(TableHeading.DIFFERENCE.getDataType()).build(),
-            YieldPerformanceReportResponse.TableData.Heading.builder().id(TableHeading.COMMENTS)
+            YieldPerformanceReportResponse.TableData.Heading.builder().id(TableHeading.COMMENTS.getId())
                 .name(TableHeading.COMMENTS.getDisplayName())
                 .dataType(TableHeading.COMMENTS.getDataType()).build()
         ));
@@ -68,7 +68,7 @@ public class YieldPerformanceReportResponse {
         @ToString
         @AllArgsConstructor
         public static class Heading {
-            private YieldPerformanceReportResponse.TableHeading id;
+            private String id;
             private String name;
             private String dataType;
         }
@@ -79,7 +79,7 @@ public class YieldPerformanceReportResponse {
         @AllArgsConstructor
         @Builder
         public static class YieldData {
-            private String courtLocation;
+            private String court;
             private int requested;
             private int confirmed;
             private int balance;
@@ -89,19 +89,25 @@ public class YieldPerformanceReportResponse {
     }
 
     public enum TableHeading {
-        COURT("Court", String.class.getSimpleName()),
-        REQUESTED("Requested", Integer.class.getSimpleName()),
-        CONFIRMED("Confirmed", Integer.class.getSimpleName()),
-        BALANCE("Balance", Integer.class.getSimpleName()),
-        DIFFERENCE("Difference", Double.class.getSimpleName()),
-        COMMENTS("Comments", String.class.getSimpleName());
+        COURT("court", "Court", String.class.getSimpleName()),
+        REQUESTED("requested", "Requested", Integer.class.getSimpleName()),
+        CONFIRMED("confirmed", "Confirmed", Integer.class.getSimpleName()),
+        BALANCE("balance", "Balance",Integer.class.getSimpleName()),
+        DIFFERENCE("difference", "Difference", Double.class.getSimpleName()),
+        COMMENTS("comments", "Comments", String.class.getSimpleName());
 
+        private String id;
         private String displayName;
         private String dataType;
 
-        TableHeading(String displayName, String dataType) {
+        TableHeading(String id, String displayName, String dataType) {
+            this.id = id;
             this.displayName = displayName;
             this.dataType = dataType;
+        }
+
+        public String getId() {
+            return id;
         }
 
         public String getDisplayName() {
