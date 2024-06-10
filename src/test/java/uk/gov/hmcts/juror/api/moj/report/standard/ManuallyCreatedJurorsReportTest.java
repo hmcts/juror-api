@@ -6,6 +6,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
+import uk.gov.hmcts.juror.api.TestConstants;
+import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
@@ -14,6 +16,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QPendingJuror;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.datatypes.PendingJurorTypes;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
+import uk.gov.hmcts.juror.api.moj.service.CourtLocationService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
@@ -21,6 +24,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyByte;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -31,6 +40,7 @@ class ManuallyCreatedJurorsReportTest extends AbstractStandardReportTestSupport<
     private static final LocalDate FROM_DATE = LocalDate.of(2024, 1, 1);
     private static final LocalDate TO_DATE = LocalDate.of(2024, 1, 30);
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
+    private CourtLocationService courtLocationService;
 
 
     public ManuallyCreatedJurorsReportTest() {
@@ -52,8 +62,9 @@ class ManuallyCreatedJurorsReportTest extends AbstractStandardReportTestSupport<
     @BeforeEach
     @Override
     public void beforeEach() {
+        this.securityUtilMockedStatic = mockStatic(SecurityUtil.class);
+        this.courtLocationService = mock(CourtLocationService.class);
         super.beforeEach();
-        securityUtilMockedStatic = mockStatic(SecurityUtil.class);
     }
 
     @AfterEach
@@ -63,7 +74,7 @@ class ManuallyCreatedJurorsReportTest extends AbstractStandardReportTestSupport<
 
     @Override
     public ManuallyCreatedJurorsReport createReport(PoolRequestRepository poolRequestRepository) {
-        return new ManuallyCreatedJurorsReport();
+        return new ManuallyCreatedJurorsReport(this.courtLocationService);
     }
 
     @Override
@@ -98,6 +109,12 @@ class ManuallyCreatedJurorsReportTest extends AbstractStandardReportTestSupport<
         when(request.getFromDate()).thenReturn(FROM_DATE);
         when(request.getToDate()).thenReturn(TO_DATE);
         when(data.size()).thenReturn(5);
+        doNothing().when(report).addCourtNameHeader(anyMap(), any());
+
+        CourtLocation courtLocation = mock(CourtLocation.class);
+        securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn(TestConstants.VALID_COURT_LOCATION);
+        doReturn(courtLocation).when(courtLocationService).getCourtLocation(TestConstants.VALID_COURT_LOCATION);
+
         Map<String, AbstractReportResponse.DataTypeValue> expected = new ConcurrentHashMap<>();
         expected.put("date_from", AbstractReportResponse.DataTypeValue.builder()
             .displayName("Date from")
@@ -120,6 +137,7 @@ class ManuallyCreatedJurorsReportTest extends AbstractStandardReportTestSupport<
             request,
             false,
             expected);
+        verify(report,times(1)).addCourtNameHeader(map, courtLocation);
         return map;
     }
 
