@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.Math.round;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
@@ -34,13 +36,14 @@ public class YieldPerformanceReportServiceImpl implements YieldPerformanceReport
     public YieldPerformanceReportResponse viewYieldPerformanceReport(
         YieldPerformanceReportRequest yieldPerformanceReportRequest){
 
-        YieldPerformanceReportResponse response = new YieldPerformanceReportResponse();
+        YieldPerformanceReportResponse response = setupResponseHeaders(yieldPerformanceReportRequest);
 
-        setupResponseHeaders(yieldPerformanceReportRequest, response);
+        List<String> courtLocCodesList = yieldPerformanceReportRequest.isAllCourts() ?
+            courtQueriesRepository.getAllCourtLocCodes(false)
+            : yieldPerformanceReportRequest.getCourtLocCodes();
 
-        String courtLocCodes = yieldPerformanceReportRequest.isAllCourts()
-            ? String.join(",", courtQueriesRepository.getAllCourtLocCodes(false))
-            : String.join(",", yieldPerformanceReportRequest.getCourtLocCodes());
+        String courtLocCodes = String.join(",", courtLocCodesList);
+
         try {
             List<String> yieldPerformanceReportStats =
                 jurorPoolRepository.getYieldPerformanceReportStats(courtLocCodes,
@@ -48,7 +51,7 @@ public class YieldPerformanceReportServiceImpl implements YieldPerformanceReport
                     yieldPerformanceReportRequest.getToDate());
 
             List<Tuple> poolComments = poolCommentRepository.findPoolCommentsForLocationsAndDates(
-                yieldPerformanceReportRequest.getCourtLocCodes(),
+                courtLocCodesList,
                 yieldPerformanceReportRequest.getFromDate(),
                 yieldPerformanceReportRequest.getToDate());
 
@@ -90,21 +93,25 @@ public class YieldPerformanceReportServiceImpl implements YieldPerformanceReport
     private void setupResponse(YieldPerformanceReportResponse response, List<String> result,
                                Map<String, StringBuilder> poolCommentsMap) {
 
-        response.getYieldPerformanceData().add(YieldPerformanceReportResponse.YieldPerformanceData.builder()
-            .courtLocation(result.get(0))
-            .requested(Integer.parseInt(result.get(1)))
-            .confirmed(Integer.parseInt(result.get(2)))
+        int requested = Integer.parseInt(result.get(2));
+        int confirmed = Integer.parseInt(result.get(3));
+        int balance = confirmed - requested;
+        double difference = requested == 0 ? 0 : round((double)balance/requested * 100);
+        response.getTableData().getData().add(
+            YieldPerformanceReportResponse.TableData.data.builder()
+            .courtLocation(result.get(1) + " (" + result.get(0) + ")")
+            .requested(requested)
+            .confirmed(confirmed)
             .comments(poolCommentsMap.get(result.get(0)) != null
                 ? poolCommentsMap.get(result.get(0)).toString()
                 : "")
-            .balance(0) // TODO: calculate balance
-            .difference(0) // TODO: calculate difference
+            .balance(balance)
+            .difference(difference)
             .build());
-
     }
 
-    private void setupResponseHeaders(YieldPerformanceReportRequest yieldPerformanceReportRequest,
-                                      YieldPerformanceReportResponse response) {
+    private YieldPerformanceReportResponse setupResponseHeaders(
+        YieldPerformanceReportRequest yieldPerformanceReportRequest) {
 
         log.info("User {} viewing yield performance report",
             SecurityUtil.getActiveLogin());
@@ -115,10 +122,13 @@ public class YieldPerformanceReportServiceImpl implements YieldPerformanceReport
             throw new MojException.BadRequest("No court locations provided", null);
         }
 
+        YieldPerformanceReportResponse response = new YieldPerformanceReportResponse();
+
         response.setHeadings(getSearchByCourts(
             yieldPerformanceReportRequest.getFromDate(),
             yieldPerformanceReportRequest.getToDate()));
 
+        return response;
     }
 
 
