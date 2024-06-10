@@ -31,7 +31,10 @@ begin
 		on		jp.juror_number = j.juror_number
 	where 		jp.juror_number = juror_pool_rec.juror_number
 				and jp.pool_number = juror_pool_rec.pool_number
-				and jp."owner" = '400';
+				and jp."owner" = '400'
+				-- status predicate required in case an agent is working whilst this procedure runs and updates a juror record, e.g. grants an excusal
+				-- only records with an expected status (1, 2, 11) should be processed - this is to verify the juror still has the correct status
+				and jp.status = juror_pool_rec.status;
 end;
 
 $procedure$;
@@ -56,9 +59,6 @@ declare
 		join juror_mod.pool p
 		        on
 			p.pool_no = jp.pool_number
-		join juror_mod.court_location cl
-		        on
-			p.loc_code = cl.loc_code
 		where
 			jp.status in (1, 2, 11)
 			and jp.owner = '400'
@@ -77,18 +77,21 @@ begin
 		call juror_mod.create_bureau_snapshot(rec);
 
 		update
-			juror_mod.juror_pool
+			juror_mod.juror_pool jp
 		set
-			"owner" = location_code,
+			"owner" = cl."owner",
 			status =	case
-							when status != 2 then 1
-							else 2
+							when status = 11 then 1
+							else status
 						end
+		from
+		    juror_mod.court_location cl
 		where
-			rec."owner" = "owner"
-			and rec.pool_number = pool_number
-			and rec.juror_number = juror_number
-			and rec.status = status;
+		    cl.loc_code = location_code
+			and rec."owner" = jp."owner"
+			and rec.pool_number = jp.pool_number
+			and rec.juror_number = jp.juror_number
+			and rec.status = jp.status;
 
 		update
 			juror_mod.juror
