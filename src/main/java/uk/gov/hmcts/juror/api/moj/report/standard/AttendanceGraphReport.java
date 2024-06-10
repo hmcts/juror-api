@@ -32,6 +32,7 @@ public class AttendanceGraphReport extends AbstractStandardReport {
         query.where(QAppearance.appearance.attendanceType.notIn(AttendanceType.ABSENT, AttendanceType.NON_ATTENDANCE,
             AttendanceType.NON_ATTENDANCE_LONG_TRIAL));
         addGroupBy(query, DataType.ATTENDANCE_DATE);
+        query.orderBy(QAppearance.appearance.attendanceDate.asc());
     }
 
     @Override
