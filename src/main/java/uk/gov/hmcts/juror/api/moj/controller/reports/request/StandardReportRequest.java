@@ -58,6 +58,7 @@ public class StandardReportRequest {
         "JuryCostBill",
         "AvailableListByPoolReport",
         "PoolSelectionListReport",
+        "PoolAnalysisReport",
         //Grouped
         "AbsencesReport",
         "PostponedListByDateReport",
