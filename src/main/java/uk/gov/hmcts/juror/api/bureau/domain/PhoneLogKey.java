@@ -9,6 +9,7 @@ import java.util.Date;
  * Composite key for {@link PhoneLog}.
  */
 @EqualsAndHashCode
+@Deprecated(forRemoval = true)
 public class PhoneLogKey implements Serializable {
     private String jurorNumber;
     private String owner;

@@ -18,6 +18,7 @@ import java.io.Serializable;
 @Entity
 @Table(name = "COURT_CATCHMENT_VIEW", schema = "JUROR_DIGITAL_USER")
 @Immutable
+@Deprecated(forRemoval = true)
 public class CourtCatchmentEntity implements Serializable {
     @Id
     @Column(name = "POSTCODE")

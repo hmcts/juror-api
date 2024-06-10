@@ -18,6 +18,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Deprecated(forRemoval = true)
 public class PoolExtend implements Serializable {
     @Id
     @Column(name = "PART_NO")

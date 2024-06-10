@@ -9,6 +9,7 @@ import java.util.Date;
  * Composite key for {@link PrintFile}.
  */
 @EqualsAndHashCode
+@Deprecated(forRemoval = true)
 public class PrintFileKey implements Serializable {
     private String partNo;
     private String printFileName;

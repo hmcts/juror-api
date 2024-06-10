@@ -5,5 +5,6 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@Deprecated(forRemoval = true)
 public interface DeferDbfRepository extends CrudRepository<DeferDbf, String>, QuerydslPredicateExecutor<DeferDbf> {
 }

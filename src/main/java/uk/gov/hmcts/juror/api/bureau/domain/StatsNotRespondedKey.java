@@ -9,6 +9,7 @@ import java.util.Date;
  * Composite key for {@link StatsNotResponded}.
  */
 @EqualsAndHashCode
+@Deprecated(forRemoval = true)
 public class StatsNotRespondedKey implements Serializable {
     private Date summonsMonth;
     private String locCode;

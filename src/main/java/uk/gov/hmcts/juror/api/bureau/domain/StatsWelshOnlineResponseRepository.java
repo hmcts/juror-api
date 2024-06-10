@@ -10,6 +10,7 @@ import java.util.List;
  * Repository for {@link StatsWelshOnlineResponse}.
  */
 @Repository
+@Deprecated(forRemoval = true)
 public interface StatsWelshOnlineResponseRepository extends CrudRepository<StatsWelshOnlineResponse, Date> {
 
     List<StatsWelshOnlineResponse> findBySummonsMonthBetween(

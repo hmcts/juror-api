@@ -10,6 +10,7 @@ import java.util.List;
  * Repository for {@link StatsNotResponded}.
  */
 @Repository
+@Deprecated(forRemoval = true)
 public interface StatsNotRespondedRepository extends CrudRepository<StatsNotResponded, StatsNotRespondedKey> {
 
     List<StatsNotResponded> findBySummonsMonthBetween(

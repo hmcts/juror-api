@@ -29,7 +29,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REG
 @AllArgsConstructor
 @Data
 @Slf4j
-
+@Deprecated(forRemoval = true)
 public class MessageStaging implements Serializable {
     /**
      * Default value for varchar fields if null.

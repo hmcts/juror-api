@@ -26,6 +26,7 @@ import java.util.Date;
 @IdClass(SurveyResponseKey.class)
 @Table(name = "survey_response", schema = "juror_dashboard")
 @Builder
+@Deprecated(forRemoval = true)
 public class SurveyResponse implements Serializable {
 
     @Id

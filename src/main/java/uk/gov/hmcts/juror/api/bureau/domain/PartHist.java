@@ -42,6 +42,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REG
 @NamedQueries({
     @NamedQuery(name = "PartHist.findAll", query = "select p from PartHist p")
 })
+@Deprecated(forRemoval = true)
 public class PartHist implements Serializable {
     private static final String SINGLE_SPACE_CHARACTER = " ";
 

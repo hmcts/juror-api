@@ -24,6 +24,7 @@ import java.util.Date;
 @Entity
 @IdClass(PrintFileKey.class)
 @Table(name = "PRINT_FILES", schema = "JUROR_DIGITAL_USER")
+@Deprecated(forRemoval = true)
 public class PrintFile {
     @Id
     @NotEmpty

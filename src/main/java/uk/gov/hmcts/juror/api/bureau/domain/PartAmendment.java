@@ -39,6 +39,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REG
 @IdClass(PartAmendmentKey.class)
 @Entity
 @Table(name = "PART_AMENDMENTS", schema = "JUROR_DIGITAL_USER")
+@Deprecated(forRemoval = true)
 public class PartAmendment implements Serializable {
     @Id
     @Column(name = "PART_NO")

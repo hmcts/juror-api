@@ -10,6 +10,7 @@ import java.util.List;
  * Repository for {@link BureauJurorSpecialNeed} entities.
  */
 @Repository
+@Deprecated(forRemoval = true)
 public interface BureauJurorSpecialNeedsRepository extends CrudRepository<BureauJurorSpecialNeed, Long>,
     QuerydslPredicateExecutor<BureauJurorSpecialNeed> {
     List<BureauJurorSpecialNeed> findByJurorNumber(String jurorNumber);

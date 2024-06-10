@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.bureau.domain;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QJurorReasonableAdjustment;
 
+@Deprecated(forRemoval = true)
 public abstract class ReasonableAdjustmentQueries {
 
     private ReasonableAdjustmentQueries() {

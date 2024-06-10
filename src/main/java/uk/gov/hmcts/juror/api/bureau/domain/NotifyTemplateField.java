@@ -27,6 +27,7 @@ import java.io.Serializable;
 @Entity
 @Table(name = "NOTIFY_TEMPLATE_FIELD", schema = "JUROR_DIGITAL")
 @EqualsAndHashCode
+@Deprecated(forRemoval = true)
 public class NotifyTemplateField implements Serializable {
 
     @Id

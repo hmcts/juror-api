@@ -31,6 +31,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REG
 @Entity
 @Table(name = "JUROR_RESPONSE_SPECIAL_NEEDS", schema = "JUROR_DIGITAL")
 @Builder
+@Deprecated(forRemoval = true)
 public class BureauJurorSpecialNeed implements Serializable {
     private static final String GENERATOR_NAME = "SPEC_NEED_SEQ_GENERATOR";
 
