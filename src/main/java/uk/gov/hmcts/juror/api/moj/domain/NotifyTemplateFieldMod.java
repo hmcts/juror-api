@@ -2,6 +2,8 @@ package uk.gov.hmcts.juror.api.moj.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
@@ -67,13 +69,9 @@ public class NotifyTemplateFieldMod implements Serializable {
     @Builder.Default
     private Boolean convertToDate = Boolean.FALSE;
 
-    @Size(max = 60)
-    @Column(name = "jd_class_name")
-    private String jdClassName;
-
-    @Size(max = 60)
-    @Column(name = "jd_class_property")
-    private String jdClassProperty;
+    @Column(name = "mapper_object")
+    @Enumerated(EnumType.STRING)
+    private NotifyTemplateMapperMod mapperObject;
 
     @Version
     private Integer version;
