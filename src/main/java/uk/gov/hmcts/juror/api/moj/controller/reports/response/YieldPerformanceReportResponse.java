@@ -55,7 +55,7 @@ public class YieldPerformanceReportResponse {
     @AllArgsConstructor
     public static class TableData {
         private List<YieldPerformanceReportResponse.TableData.Heading> headings;
-        private List<YieldPerformanceReportResponse.TableData.data> data;
+        private List<YieldData> data;
 
         public TableData(List<YieldPerformanceReportResponse.TableData.Heading> headings) {
             this.headings = headings;
@@ -78,7 +78,7 @@ public class YieldPerformanceReportResponse {
         @ToString
         @AllArgsConstructor
         @Builder
-        public static class data {
+        public static class YieldData {
             private String courtLocation;
             private int requested;
             private int confirmed;

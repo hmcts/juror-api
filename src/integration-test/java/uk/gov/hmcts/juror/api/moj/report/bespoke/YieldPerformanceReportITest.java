@@ -177,7 +177,8 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
         Assertions.assertThat(reportCreated.getDisplayName()).isEqualTo("Report created");
         Assertions.assertThat(reportCreated.getDataType()).isEqualTo(LOCAL_DATE);
         Assertions.assertThat(reportCreated.getValue()).isNotNull();
-        Assertions.assertThat(reportCreated.getValue()).isEqualTo(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+        Assertions.assertThat(reportCreated.getValue()).isEqualTo(LocalDate.now().format(
+            DateTimeFormatter.ISO_LOCAL_DATE));
 
         Assertions.assertThat(response.getHeadings().containsKey("time_created")).isTrue();
         AbstractReportResponse.DataTypeValue timeCreated =
@@ -259,7 +260,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
         Assertions.assertThat(response.getTableData().getData()).isNotNull();
         Assertions.assertThat(response.getTableData().getData().size()).isEqualTo(1);
 
-        YieldPerformanceReportResponse.TableData.data data = response.getTableData().getData().get(0);
+        YieldPerformanceReportResponse.TableData.YieldData data = response.getTableData().getData().get(0);
         Assertions.assertThat(data).isNotNull();
         Assertions.assertThat(data.getCourtLocation()).isEqualTo("CHESTER (415)");
         Assertions.assertThat(data.getRequested()).isEqualTo(17);
@@ -277,7 +278,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
         Assertions.assertThat(response.getTableData().getData()).isNotNull();
         Assertions.assertThat(response.getTableData().getData().size()).isEqualTo(2);
 
-        YieldPerformanceReportResponse.TableData.data data = response.getTableData().getData().get(0);
+        YieldPerformanceReportResponse.TableData.YieldData data = response.getTableData().getData().get(0);
         Assertions.assertThat(data).isNotNull();
         Assertions.assertThat(data.getCourtLocation()).isEqualTo("CHESTER (415)");
         Assertions.assertThat(data.getRequested()).isEqualTo(17);
@@ -305,7 +306,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
         Assertions.assertThat(response.getTableData().getData()).isNotNull();
         Assertions.assertThat(response.getTableData().getData().size()).isEqualTo(2);
 
-        YieldPerformanceReportResponse.TableData.data data = response.getTableData().getData().get(0);
+        YieldPerformanceReportResponse.TableData.YieldData data = response.getTableData().getData().get(0);
         Assertions.assertThat(data).isNotNull();
         Assertions.assertThat(data.getCourtLocation()).isEqualTo("CHESTER (415)");
         Assertions.assertThat(data.getRequested()).isEqualTo(17);

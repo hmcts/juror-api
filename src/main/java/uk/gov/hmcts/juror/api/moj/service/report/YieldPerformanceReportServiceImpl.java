@@ -34,12 +34,12 @@ public class YieldPerformanceReportServiceImpl implements YieldPerformanceReport
 
     @Override
     public YieldPerformanceReportResponse viewYieldPerformanceReport(
-        YieldPerformanceReportRequest yieldPerformanceReportRequest){
+        YieldPerformanceReportRequest yieldPerformanceReportRequest) {
 
         YieldPerformanceReportResponse response = setupResponseHeaders(yieldPerformanceReportRequest);
 
-        List<String> courtLocCodesList = yieldPerformanceReportRequest.isAllCourts() ?
-            courtQueriesRepository.getAllCourtLocCodes(false)
+        List<String> courtLocCodesList = yieldPerformanceReportRequest.isAllCourts()
+            ? courtQueriesRepository.getAllCourtLocCodes(false)
             : yieldPerformanceReportRequest.getCourtLocCodes();
 
         String courtLocCodes = String.join(",", courtLocCodesList);
@@ -96,9 +96,9 @@ public class YieldPerformanceReportServiceImpl implements YieldPerformanceReport
         int requested = Integer.parseInt(result.get(2));
         int confirmed = Integer.parseInt(result.get(3));
         int balance = confirmed - requested;
-        double difference = requested == 0 ? 0 : round((double)balance/requested * 100);
+        double difference = requested == 0 ? 0 : round((double)balance / requested * 100);
         response.getTableData().getData().add(
-            YieldPerformanceReportResponse.TableData.data.builder()
+            YieldPerformanceReportResponse.TableData.YieldData.builder()
             .courtLocation(result.get(1) + " (" + result.get(0) + ")")
             .requested(requested)
             .confirmed(confirmed)

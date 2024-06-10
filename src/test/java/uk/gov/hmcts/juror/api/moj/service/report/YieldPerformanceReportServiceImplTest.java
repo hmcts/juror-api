@@ -2,12 +2,10 @@ package uk.gov.hmcts.juror.api.moj.service.report;
 
 import lombok.SneakyThrows;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.YieldPerformanceReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
@@ -16,7 +14,6 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtQueriesRepository;
 import uk.gov.hmcts.juror.api.moj.repository.IPoolCommentRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
-import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -54,8 +51,8 @@ class YieldPerformanceReportServiceImplTest {
         this.jurorPoolRepository = mock(JurorPoolRepository.class);
         this.poolCommentRepository = mock(IPoolCommentRepository.class);
         this.courtQueriesRepository = mock(CourtQueriesRepository.class);
-        this.yieldPerformanceReportService = new YieldPerformanceReportServiceImpl(jurorPoolRepository, poolCommentRepository,
-            courtQueriesRepository);
+        this.yieldPerformanceReportService = new YieldPerformanceReportServiceImpl(jurorPoolRepository,
+            poolCommentRepository, courtQueriesRepository);
     }
 
     @BeforeEach
@@ -119,8 +116,8 @@ class YieldPerformanceReportServiceImplTest {
             assertThat(tableData.getData().size()).isZero();
 
             verify(courtQueriesRepository, times(1)).getAllCourtLocCodes(false);
-            verify(poolCommentRepository, times(1)).findPoolCommentsForLocationsAndDates(List.of("415", "416"), reportFromDate,
-                reportToDate);
+            verify(poolCommentRepository, times(1)).findPoolCommentsForLocationsAndDates(List.of("415", "416"),
+                reportFromDate, reportToDate);
             verify(jurorPoolRepository, times(1)).getYieldPerformanceReportStats("415,416",
                 reportFromDate, reportToDate);
 
@@ -190,7 +187,8 @@ class YieldPerformanceReportServiceImplTest {
                 .build();
 
             assertThatExceptionOfType(MojException.BadRequest.class)
-                .isThrownBy(() -> yieldPerformanceReportService.viewYieldPerformanceReport(yieldPerformanceReportRequest));
+                .isThrownBy(() -> yieldPerformanceReportService.viewYieldPerformanceReport(
+                    yieldPerformanceReportRequest));
 
         }
     }
