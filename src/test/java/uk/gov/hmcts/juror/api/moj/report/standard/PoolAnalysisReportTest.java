@@ -98,7 +98,7 @@ class PoolAnalysisReportTest extends AbstractStandardReportTestSupport<PoolAnaly
         report.preProcessQuery(query, request);
 
         verify(query).where(QJurorPool.jurorPool.pool.returnDate.between(jan15th, jan16th));
-        verify(query).where(QJurorPool.jurorPool.pool.owner.eq(SecurityUtil.getActiveOwner()));
+        verify(query).where(QJurorPool.jurorPool.pool.owner.eq(TestConstants.VALID_COURT_LOCATION));
         verify(query).groupBy(QJurorPool.jurorPool.pool.poolNumber, QPoolRequest.poolRequest.returnDate);
         verify(query).orderBy(QJurorPool.jurorPool.pool.poolNumber.asc());
     }
