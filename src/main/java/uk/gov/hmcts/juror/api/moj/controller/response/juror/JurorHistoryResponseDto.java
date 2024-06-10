@@ -14,7 +14,7 @@ import java.util.List;
 public class JurorHistoryResponseDto {
     @JsonProperty("data")
     @Schema(description = "History entries")
-    List<JurorHistoryEntryDto> data;
+    public List<JurorHistoryEntryDto> data;
 
     @Builder
     public static class JurorHistoryEntryDto {

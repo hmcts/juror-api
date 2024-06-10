@@ -49,15 +49,15 @@ class JurorHistoryServiceImplTest {
     private final JurorHistoryService jurorHistoryService;
     private final Clock clock;
     private final JurorHistoryRepository jurorHistoryRepository;
-    private final THistoryCodeRepository tHistoryCodeRepository;
+    private final THistoryCodeRepository thistoryCodeRepository;
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
     public JurorHistoryServiceImplTest() {
         this.clock = mock(Clock.class);
         this.jurorHistoryRepository = mock(JurorHistoryRepository.class);
-        this.tHistoryCodeRepository = mock(THistoryCodeRepository.class);
-        this.jurorHistoryService = new JurorHistoryServiceImpl(jurorHistoryRepository, tHistoryCodeRepository, clock);
+        this.thistoryCodeRepository = mock(THistoryCodeRepository.class);
+        this.jurorHistoryService = new JurorHistoryServiceImpl(jurorHistoryRepository, thistoryCodeRepository, clock);
     }
 
     @BeforeEach
