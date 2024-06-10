@@ -173,6 +173,28 @@ public enum DataType implements IDataType {
         new CaseBuilder().when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.TRANSFERRED)).then(1).otherwise(0)
             .sum(),
         QJurorPool.jurorPool),
+    FAILED_TO_ATTEND_TOTAL("FTA", Integer.class,
+        new CaseBuilder()
+            .when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.FAILED_TO_ATTEND)).then(1).otherwise(0)
+            .sum(),
+        QJurorPool.jurorPool),
+
+    JURORS_SUMMONED_TOTAL("Summoned", Long.class, QJurorPool.jurorPool.count(), QJurorPool.jurorPool),
+    ATTENDED_TOTAL("Attended", Integer.class, new CaseBuilder()
+        .when(QJurorPool.jurorPool.appearances.size().gt(0)).then(1).otherwise(0).sum(), QJurorPool.jurorPool),
+
+    // PERCENTAGES
+    RESPONDED_TOTAL_PERCENTAGE("Responded Total Percentage", Double.class),
+    ATTENDED_TOTAL_PERCENTAGE("Attended Total Percentage", Double.class),
+    PANEL_TOTAL_PERCENTAGE("Panel Total Percentage", Double.class),
+    JUROR_TOTAL_PERCENTAGE("Juror Total Percentage", Double.class),
+    EXCUSED_TOTAL_PERCENTAGE("Excused Total Percentage", Double.class),
+    DISQUALIFIED_TOTAL_PERCENTAGE("Disqualified Total Percentage", Double.class),
+    DEFERRED_TOTAL_PERCENTAGE("Deferred Total Percentage", Double.class),
+    REASSIGNED_TOTAL_PERCENTAGE("Reassigned Total Percentage", Double.class),
+    UNDELIVERABLE_TOTAL_PERCENTAGE("Undeliverable Total Percentage", Double.class),
+    TRANSFERRED_TOTAL_PERCENTAGE("Transferred Total Percentage", Double.class),
+    FAILED_TO_ATTEND_TOTAL_PERCENTAGE("Failed To Attend Total Percentage", Double.class),
 
     ATTENDANCE_DATE("Attendance Date", LocalDate.class, QAppearance.appearance.attendanceDate, QAppearance.appearance),
     ATTENDANCE_TYPE("Attendance Type", String.class, QAppearance.appearance.attendanceType, QAppearance.appearance),

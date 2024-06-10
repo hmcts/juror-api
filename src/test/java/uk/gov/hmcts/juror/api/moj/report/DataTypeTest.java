@@ -4,6 +4,7 @@ import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import org.junit.jupiter.api.Test;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
@@ -21,7 +22,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-@SuppressWarnings("PMD.TooManyMethods")
+@SuppressWarnings({ "PMD.TooManyMethods", "PMD.GodClass" })
 class DataTypeTest {
 
     @Test
@@ -292,6 +293,94 @@ class DataTypeTest {
     void jurorNumberFromTrial() {
         assertMatchesStandard(DataType.JUROR_NUMBER_FROM_TRIAL, "juror_number_from_trial", "Juror Number",
             String.class, QPanel.panel.juror.jurorNumber, QPanel.panel);
+    }
+
+    @Test
+    void failedToAttendTotal() {
+        assertMatchesStandard(DataType.FAILED_TO_ATTEND_TOTAL, "failed_to_attend_total", "FTA",
+            Integer.class, new CaseBuilder().when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.FAILED_TO_ATTEND))
+                .then(1).otherwise(0).sum(),
+            QJurorPool.jurorPool);
+    }
+
+    @Test
+    void jurorsSummonedTotal() {
+        assertMatchesStandard(DataType.JURORS_SUMMONED_TOTAL, "jurors_summoned_total", "Summoned",
+            Long.class, QJurorPool.jurorPool.count(), QJurorPool.jurorPool);
+    }
+
+    @Test
+    void attendedTotal() {
+        assertMatchesStandard(DataType.ATTENDED_TOTAL, "attended_total", "Attended", Integer.class,
+            new CaseBuilder()
+                .when(QJurorPool.jurorPool.appearances.size().gt(0)).then(1).otherwise(0).sum(),
+            QJurorPool.jurorPool);
+    }
+
+    @Test
+    void respondedTotalPercentage() {
+        assertMatchesCombined(DataType.RESPONDED_TOTAL_PERCENTAGE, "responded_total_percentage",
+            "Responded Total Percentage", Double.class);
+    }
+
+    @Test
+    void attendedTotalPercentage() {
+        assertMatchesCombined(DataType.ATTENDED_TOTAL_PERCENTAGE, "attended_total_percentage",
+            "Attended Total Percentage", Double.class);
+    }
+
+    @Test
+    void panelTotalPercentage() {
+        assertMatchesCombined(DataType.PANEL_TOTAL_PERCENTAGE, "panel_total_percentage",
+            "Panel Total Percentage", Double.class);
+    }
+
+    @Test
+    void jurorTotalPercentage() {
+        assertMatchesCombined(DataType.JUROR_TOTAL_PERCENTAGE, "juror_total_percentage",
+            "Juror Total Percentage", Double.class);
+    }
+
+    @Test
+    void excusedTotalPercentage() {
+        assertMatchesCombined(DataType.EXCUSED_TOTAL_PERCENTAGE, "excused_total_percentage",
+            "Excused Total Percentage", Double.class);
+    }
+
+    @Test
+    void disqualifiedTotalPercentage() {
+        assertMatchesCombined(DataType.DISQUALIFIED_TOTAL_PERCENTAGE, "disqualified_total_percentage",
+            "Disqualified Total Percentage", Double.class);
+    }
+
+    @Test
+    void deferredTotalPercentage() {
+        assertMatchesCombined(DataType.DEFERRED_TOTAL_PERCENTAGE, "deferred_total_percentage",
+            "Deferred Total Percentage", Double.class);
+    }
+
+    @Test
+    void reassignedTotalPercentage() {
+        assertMatchesCombined(DataType.REASSIGNED_TOTAL_PERCENTAGE, "reassigned_total_percentage",
+            "Reassigned Total Percentage", Double.class);
+    }
+
+    @Test
+    void undeliverableTotalPercentage() {
+        assertMatchesCombined(DataType.UNDELIVERABLE_TOTAL_PERCENTAGE, "undeliverable_total_percentage",
+            "Undeliverable Total Percentage", Double.class);
+    }
+
+    @Test
+    void transferredTotalPercentage() {
+        assertMatchesCombined(DataType.TRANSFERRED_TOTAL_PERCENTAGE, "transferred_total_percentage",
+            "Transferred Total Percentage", Double.class);
+    }
+
+    @Test
+    void failedToAttendTotalPercentage() {
+        assertMatchesCombined(DataType.FAILED_TO_ATTEND_TOTAL_PERCENTAGE, "failed_to_attend_total_percentage",
+            "Failed To Attend Total Percentage", Double.class);
     }
 
     void assertMatchesStandard(DataType dataType,
