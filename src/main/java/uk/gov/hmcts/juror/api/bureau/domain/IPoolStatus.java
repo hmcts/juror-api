@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.bureau.domain;
 /**
  * Constants for <code>JUROR.POOL_STATUS</code>.
  */
+@Deprecated(forRemoval = true)
 public abstract class IPoolStatus {
     public static final Long SUMMONED = 1L;
     public static final Long RESPONDED = 2L;

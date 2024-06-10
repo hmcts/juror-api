@@ -23,6 +23,7 @@ import java.io.Serializable;
 @Builder
 @Entity
 @Table(name = "NOTIFY_TEMPLATE_MAPPING", schema = "JUROR_DIGITAL")
+@Deprecated(forRemoval = true)
 public class NotifyTemplateMapping implements Serializable {
     @Id
     @Size(max = 50)

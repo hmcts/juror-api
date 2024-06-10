@@ -9,6 +9,7 @@ import uk.gov.hmcts.juror.api.moj.domain.UserType;
 /**
  * QueryDSL queries for {@link uk.gov.hmcts.juror.api.moj.domain.User}.
  */
+@Deprecated(forRemoval = true)
 public class UserQueries {
 
     private static final QUser USER = QUser.user;

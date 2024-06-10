@@ -28,6 +28,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REG
 @Entity
 @Table(name = "JUROR_RESPONSE_CJS_EMPLOYMENT", schema = "JUROR_DIGITAL")
 @Builder
+@Deprecated(forRemoval = true)
 public class BureauJurorCjs implements Serializable {
     private static final String GENERATOR_NAME = "CJS_EMPLOYMENT_SEQ_GENERATOR";
 

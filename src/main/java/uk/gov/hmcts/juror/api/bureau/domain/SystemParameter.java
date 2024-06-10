@@ -23,6 +23,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Data
 @Immutable
+@Deprecated(forRemoval = true)
 public class SystemParameter implements Serializable {
     @Id
     @Column(name = "sp_id")

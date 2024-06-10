@@ -24,6 +24,7 @@ import java.util.Date;
 @Entity
 @IdClass(JurorCommsPrintFilesKey.class)
 @Table(name = "PRINT_FILES_NOTIFY_COMMS", schema = "JUROR_DIGITAL_USER")
+@Deprecated(forRemoval = true)
 public class JurorCommsPrintFiles implements Serializable {
     @Id
     @Length(max = 12)
