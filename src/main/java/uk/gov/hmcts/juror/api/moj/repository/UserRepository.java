@@ -19,7 +19,7 @@ public interface UserRepository extends CrudRepository<User, String>, QuerydslPr
 
     User findByUsername(String username);
 
-    Optional<User> findByEmail(String email);
+    Optional<User> findByEmailIgnoreCase(String email);
 
     default Iterable<User> findUsersByCourt(EntityManager entityManager, String court) {
         QCourtLocation courtLocation = QCourtLocation.courtLocation;
