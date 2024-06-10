@@ -12,6 +12,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QPendingJuror;
 import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.datatypes.PendingJurorTypes;
+import uk.gov.hmcts.juror.api.moj.service.CourtLocationService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
@@ -23,7 +24,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class ManuallyCreatedJurorsReport extends AbstractStandardReport {
 
-    public ManuallyCreatedJurorsReport() {
+    private final CourtLocationService courtLocationService;
+
+    public ManuallyCreatedJurorsReport(CourtLocationService courtLocationService) {
         super(QPendingJuror.pendingJuror,
             PendingJurorTypes.JUROR_NUMBER,
             PendingJurorTypes.CREATED_ON,
@@ -43,6 +46,7 @@ public class ManuallyCreatedJurorsReport extends AbstractStandardReport {
             .to(QJuror.juror)
             .predicatesToAdd(List.of(QJuror.juror.jurorNumber.eq(QPendingJuror.pendingJuror.jurorNumber)))
             .build());
+        this.courtLocationService = courtLocationService;
     }
 
 
@@ -73,6 +77,7 @@ public class ManuallyCreatedJurorsReport extends AbstractStandardReport {
             .dataType(LocalDate.class.getSimpleName())
             .value(DateTimeFormatter.ISO_DATE.format(request.getToDate()))
             .build());
+        addCourtNameHeader(map, courtLocationService.getCourtLocation(SecurityUtil.getActiveOwner()));
         return map;
     }
 
