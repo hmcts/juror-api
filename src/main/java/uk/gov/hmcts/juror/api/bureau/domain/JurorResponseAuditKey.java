@@ -9,6 +9,7 @@ import java.util.Date;
  * Composite key for {@link JurorResponseAudit}.
  */
 @EqualsAndHashCode
+@Deprecated(forRemoval = true)
 public class JurorResponseAuditKey implements Serializable {
     private String jurorNumber;
     private Date changed;

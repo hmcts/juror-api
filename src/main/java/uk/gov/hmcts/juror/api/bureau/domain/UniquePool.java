@@ -25,6 +25,7 @@ import java.util.Date;
 @Entity
 @Immutable
 @Table(name = "UNIQUE_POOL", schema = "JUROR_DIGITAL_USER")
+@Deprecated(forRemoval = true)
 public class UniquePool {
 
     @Id

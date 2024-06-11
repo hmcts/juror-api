@@ -27,6 +27,7 @@ import java.util.Date;
 @Entity
 @IdClass(PhoneLogKey.class)
 @Table(name = "PHONE_LOG", schema = "JUROR_DIGITAL_USER")
+@Deprecated(forRemoval = true)
 public class PhoneLog implements Serializable {
     @Id
     @Column(name = "OWNER")

@@ -10,6 +10,7 @@ import java.util.List;
  * Repository for {@link StatsAutoProcessed}.
  */
 @Repository
+@Deprecated(forRemoval = true)
 public interface StatsAutoProcessedRepository extends CrudRepository<StatsAutoProcessed, Date> {
 
     List<StatsAutoProcessed> findByProcessedDateBetween(

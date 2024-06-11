@@ -8,5 +8,6 @@ import org.springframework.stereotype.Repository;
  * @since JDB-2042
  */
 @Repository
+@Deprecated(forRemoval = true)
 public interface UniquePoolRepository extends ReadOnlyRepository<UniquePool, String> {
 }

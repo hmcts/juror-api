@@ -9,6 +9,7 @@ import java.util.List;
  * Repository for {@link PartAmendment}.
  */
 @Repository
+@Deprecated(forRemoval = true)
 public interface PartAmendmentRepository extends CrudRepository<PartAmendment, PartAmendmentKey> {
 
     List<PartAmendment> findByJurorNumberAndOwner(String jurorNumber, String owner);
