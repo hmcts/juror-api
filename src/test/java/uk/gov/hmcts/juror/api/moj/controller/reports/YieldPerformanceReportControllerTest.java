@@ -70,13 +70,8 @@ class YieldPerformanceReportControllerTest {
     @DisplayName("POST (GET) " + ViewYieldReportHappy.URL)
     class ViewYieldReportHappy {
         public static final String URL = "/yield-performance";
+
         private YieldPerformanceReportRequest getValidPayload() {
-            return YieldPerformanceReportRequest.builder()
-
-                .build();
-        }
-
-        private YieldPerformanceReportRequest getValidCourtPayload() {
             return YieldPerformanceReportRequest.builder()
                 .courtLocCodes(List.of("415230701", "415230702"))
                 .toDate(LocalDate.now())
@@ -93,7 +88,7 @@ class YieldPerformanceReportControllerTest {
 
         @Test
         void validSearchByCourt() throws Exception {
-            YieldPerformanceReportRequest request = getValidCourtPayload();
+            YieldPerformanceReportRequest request = getValidPayload();
             YieldPerformanceReportResponse response = getValidResponse();
 
             doReturn(response).when(yieldPerformanceReportService).viewYieldPerformanceReport(request);
@@ -111,7 +106,7 @@ class YieldPerformanceReportControllerTest {
 
         @Test
         void negativeSearchByCourtButNoFromDate() throws Exception {
-            YieldPerformanceReportRequest request = getValidCourtPayload();
+            YieldPerformanceReportRequest request = getValidPayload();
             request.setFromDate(null);
             mockMvc.perform(post(BASE_URL + URL)
                     .contentType(MediaType.APPLICATION_JSON)
@@ -123,7 +118,7 @@ class YieldPerformanceReportControllerTest {
 
         @Test
         void negativeSearchByCourtButNoToDate() throws Exception {
-            YieldPerformanceReportRequest request = getValidCourtPayload();
+            YieldPerformanceReportRequest request = getValidPayload();
             request.setFromDate(null);
             mockMvc.perform(post(BASE_URL + URL)
                     .contentType(MediaType.APPLICATION_JSON)

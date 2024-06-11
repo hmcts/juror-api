@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 import uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService;
 
 import java.time.LocalDate;
