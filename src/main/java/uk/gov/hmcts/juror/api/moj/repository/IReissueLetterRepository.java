@@ -23,5 +23,5 @@ public interface IReissueLetterRepository {
                                                                   Boolean extracted);
 
     List<BulkPrintData> findByJurorNoAndFormTypeAndCreationDateAndExtractedFlag(
-        String jurorNo, String formType, LocalDate creationDate, boolean extractedFlag);
+        String jurorNumber, String formType, LocalDate creationDate, boolean extractedFlag);
 }
