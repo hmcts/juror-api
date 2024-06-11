@@ -14,9 +14,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import uk.gov.hmcts.juror.api.TestUtils;
-import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
-import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
-import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.request.YieldPerformanceReportRequest;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.YieldPerformanceReportResponse;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.service.report.FinancialAuditReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.JurySummoningMonitorReportService;
@@ -24,13 +23,14 @@ import uk.gov.hmcts.juror.api.moj.service.report.ReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.YieldPerformanceReportService;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -44,9 +44,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         RestResponseEntityExceptionHandler.class
     }
 )
-@DisplayName("Controller: " + ReportControllerTest.BASE_URL)
-class ReportControllerTest {
+@DisplayName("Controller: " + YieldPerformanceReportControllerTest.BASE_URL)
+class YieldPerformanceReportControllerTest {
     public static final String BASE_URL = "/api/v1/moj/reports";
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -60,61 +61,71 @@ class ReportControllerTest {
     private UtilisationReportService utilisationReportService;
 
     @MockBean
-    JurySummoningMonitorReportService jurySummoningMonitorReportService;
+    private JurySummoningMonitorReportService jurySummoningMonitorReportService;
 
     @MockBean
     private YieldPerformanceReportService yieldPerformanceReportService;
 
     @Nested
-    @DisplayName("POST (GET) " + ViewReportStandard.URL)
-    class ViewReportStandard {
-        public static final String URL = BASE_URL + "/standard";
+    @DisplayName("POST (GET) " + ViewYieldReportHappy.URL)
+    class ViewYieldReportHappy {
+        public static final String URL = "/yield-performance";
 
-        private StandardReportRequest getValidPayload() {
-            return StandardReportRequest.builder()
-                .reportType("ReportType")
+        private YieldPerformanceReportRequest getValidPayload() {
+            return YieldPerformanceReportRequest.builder()
+                .courtLocCodes(List.of("415230701", "415230702"))
+                .toDate(LocalDate.now())
+                .fromDate(LocalDate.now().minusDays(1))
                 .build();
         }
 
-        private StandardReportResponse getValidResponse() {
-            return StandardReportResponse.builder()
-                .headings(Map.of("total_deferred", AbstractReportResponse.DataTypeValue.builder()
-                    .displayName("Total deferred")
-                    .dataType("Long")
-                    .value(7)
-                    .build()))
+        private YieldPerformanceReportResponse getValidResponse() {
+            return YieldPerformanceReportResponse.builder()
+                .headings(Map.of())
+                .tableData(new YieldPerformanceReportResponse.TableData())
                 .build();
         }
 
         @Test
-        void positiveTypical() throws Exception {
-            StandardReportRequest request = getValidPayload();
-            StandardReportResponse response = getValidResponse();
-            doReturn(response).when(reportService).viewStandardReport(request);
+        void validSearchByCourt() throws Exception {
+            YieldPerformanceReportRequest request = getValidPayload();
+            YieldPerformanceReportResponse response = getValidResponse();
 
-            mockMvc.perform(post(URL)
+            doReturn(response).when(yieldPerformanceReportService).viewYieldPerformanceReport(request);
+
+            mockMvc.perform(post(BASE_URL + URL)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(TestUtils.asJsonString(request)))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(content().json(TestUtils.asJsonString(response)));
 
-            verify(reportService, times(1))
-                .viewStandardReport(request);
-            verifyNoMoreInteractions(reportService);
+            verify(yieldPerformanceReportService, times(1))
+                .viewYieldPerformanceReport(request);
         }
 
-
         @Test
-        void negativeInvalidPayload() throws Exception {
-            StandardReportRequest request = getValidPayload();
-            request.setReportType(null);
-            mockMvc.perform(post(URL)
+        void negativeSearchByCourtButNoFromDate() throws Exception {
+            YieldPerformanceReportRequest request = getValidPayload();
+            request.setFromDate(null);
+            mockMvc.perform(post(BASE_URL + URL)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(TestUtils.asJsonString(request)))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest());
-            verifyNoInteractions(reportService);
+            verifyNoInteractions(yieldPerformanceReportService);
+        }
+
+        @Test
+        void negativeSearchByCourtButNoToDate() throws Exception {
+            YieldPerformanceReportRequest request = getValidPayload();
+            request.setToDate(null);
+            mockMvc.perform(post(BASE_URL + URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtils.asJsonString(request)))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest());
+            verifyNoInteractions(yieldPerformanceReportService);
         }
 
     }

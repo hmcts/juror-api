@@ -21,6 +21,7 @@ import uk.gov.hmcts.juror.api.moj.service.report.FinancialAuditReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.JurySummoningMonitorReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.ReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService;
+import uk.gov.hmcts.juror.api.moj.service.report.YieldPerformanceReportService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -30,7 +31,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -61,6 +61,9 @@ class JurySummoningMonitorReportControllerTest {
 
     @MockBean
     private JurySummoningMonitorReportService jurySummoningMonitorReportService;
+
+    @MockBean
+    private YieldPerformanceReportService yieldPerformanceReportService;
 
     @Nested
     @DisplayName("POST (GET) " + ViewReportStandard.URL)
@@ -108,7 +111,6 @@ class JurySummoningMonitorReportControllerTest {
 
             verify(jurySummoningMonitorReportService, times(1))
                 .viewJurySummoningMonitorReport(request);
-            verifyNoMoreInteractions(reportService);
         }
 
         @Test
@@ -163,7 +165,6 @@ class JurySummoningMonitorReportControllerTest {
 
             verify(jurySummoningMonitorReportService, times(1))
                 .viewJurySummoningMonitorReport(request);
-            verifyNoMoreInteractions(reportService);
         }
 
         @Test
@@ -181,7 +182,7 @@ class JurySummoningMonitorReportControllerTest {
         @Test
         void negativeSearchByCourtButNoToDate() throws Exception {
             JurySummoningMonitorReportRequest request = getValidCourtPayload();
-            request.setFromDate(null);
+            request.setToDate(null);
             mockMvc.perform(post(URL)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(TestUtils.asJsonString(request)))

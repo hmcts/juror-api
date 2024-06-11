@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 import uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService;
 
 import java.time.LocalDate;
@@ -50,7 +49,6 @@ public class DailyUtilisationReportResponse {
 
     @Data
     @NoArgsConstructor
-    @ToString
     @AllArgsConstructor
     public static class TableData {
         private List<Heading> headings;
@@ -68,7 +66,6 @@ public class DailyUtilisationReportResponse {
         @Data
         @Builder
         @NoArgsConstructor
-        @ToString
         @AllArgsConstructor
         public static class Heading {
             private UtilisationReportService.TableHeading id;
@@ -78,7 +75,6 @@ public class DailyUtilisationReportResponse {
 
         @Data
         @NoArgsConstructor
-        @ToString
         @AllArgsConstructor
         public static class Week {
             /**
@@ -94,7 +90,6 @@ public class DailyUtilisationReportResponse {
             @Data
             @Builder
             @NoArgsConstructor
-            @ToString
             @AllArgsConstructor
             public static class Day {
                 private LocalDate date;

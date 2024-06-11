@@ -56,4 +56,6 @@ public interface IJurorPoolRepository {
     List<String> fetchThinPoolMembers(String poolNumber, String owner);
 
     boolean hasPoolWithLocCode(String jurorNumber, List<String> locCodes);
+
+
 }
