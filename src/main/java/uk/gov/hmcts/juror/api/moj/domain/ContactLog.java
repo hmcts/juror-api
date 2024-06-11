@@ -51,7 +51,7 @@ public class ContactLog implements Serializable {
     public long id;
 
     @NotEmpty
-    @Size(max = 20)
+    @Size(max = 30)
     @Column(name = "user_id")
     private String username;
 

@@ -47,9 +47,9 @@ import java.util.Set;
 public class User implements Serializable {
 
     @Id
-    @Column(name = "username", unique = true, length = 20)
+    @Column(name = "username", unique = true, length = 30)
     @NotEmpty
-    @Size(min = 1, max = 20)
+    @Size(min = 1, max = 30)
     private String username;
 
 

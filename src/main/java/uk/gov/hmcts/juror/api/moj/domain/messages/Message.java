@@ -49,7 +49,7 @@ public class Message implements Serializable {
 
     @Id
     @Column(name = "username")
-    @Length(max = 20)
+    @Length(max = 30)
     private String userName;
 
     @Id
