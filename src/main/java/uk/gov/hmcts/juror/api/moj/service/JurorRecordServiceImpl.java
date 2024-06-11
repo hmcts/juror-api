@@ -555,7 +555,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             pendingJuror.setNotes(notes + SJO_COMMENTS + "\n" + processPendingJurorRequestDto.getComments());
         }
 
-        PendingJurorStatus pendingJurorStatus = null;
+        PendingJurorStatus pendingJurorStatus;
         if (processPendingJurorRequestDto.getDecision().equals(ApprovalDecision.APPROVE)) {
             pendingJurorStatus = pendingJurorStatusRepository.findById(PendingJurorStatusEnum.AUTHORISED.getCode())
                 .orElseThrow(() -> new MojException.NotFound(PENDING_JUROR_STATUS_NOT_FOUND, null));
@@ -1271,7 +1271,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     public JurorPaymentsResponseDto getJurorPayments(String jurorNumber) {
         JurorUtils.checkOwnershipForCurrentUser(JurorPoolUtils.getActiveJurorRecord(jurorPoolRepository, jurorNumber),
             SecurityUtil.getActiveOwner());
-        JurorUtils.checkReadAccessForCurrentUser(jurorPoolRepository, jurorNumber, SecurityUtil.getActiveOwner());
+        checkReadAccessForCurrentUser(jurorPoolRepository, jurorNumber, SecurityUtil.getActiveOwner());
 
         List<Tuple> data = jurorPaymentsSummaryRepository.fetchPaymentLogByJuror(jurorNumber);
 
@@ -1316,7 +1316,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
                 }
 
                 if (Optional.ofNullable(item.get(QReportsJurorPayments.reportsJurorPayments.paymentDate)).isPresent()) {
-                    day.datePaid((item.get(QReportsJurorPayments.reportsJurorPayments.paymentDate).toLocalDate()))
+                    day.datePaid(item.get(QReportsJurorPayments.reportsJurorPayments.paymentDate).toLocalDate())
                         .timePaid(item.get(QReportsJurorPayments.reportsJurorPayments.paymentDate).toLocalTime());
                 }
 
@@ -1327,7 +1327,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     @Override
     public JurorHistoryResponseDto getJurorHistory(String jurorNumber) {
-        JurorUtils.checkReadAccessForCurrentUser(jurorPoolRepository, jurorNumber, SecurityUtil.getActiveOwner());
+        checkReadAccessForCurrentUser(jurorPoolRepository, jurorNumber, SecurityUtil.getActiveOwner());
 
         List<JurorHistory> data = jurorHistoryRepository.findByJurorNumber(jurorNumber);
 
