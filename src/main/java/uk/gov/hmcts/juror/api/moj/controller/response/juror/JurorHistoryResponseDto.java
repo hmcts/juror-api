@@ -3,13 +3,19 @@ package uk.gov.hmcts.juror.api.moj.controller.response.juror;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@AllArgsConstructor
+@NoArgsConstructor
+@ToString
 @Builder
 public class JurorHistoryResponseDto {
     @JsonProperty("data")
@@ -17,6 +23,7 @@ public class JurorHistoryResponseDto {
     public List<JurorHistoryEntryDto> data;
 
     @Builder
+    @ToString
     public static class JurorHistoryEntryDto {
         @JsonProperty("description")
         @Schema(description = "Entry description")
