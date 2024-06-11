@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.service.report;
 
-import com.querydsl.core.Tuple;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +10,9 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.YieldPerformanceRe
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtQueriesRepository;
 import uk.gov.hmcts.juror.api.moj.repository.IPoolCommentRepository;
+import uk.gov.hmcts.juror.api.moj.repository.IPoolCommentRepositoryImpl;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
-import uk.gov.hmcts.juror.api.moj.utils.NumberUtils;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepositoryImpl;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
@@ -21,6 +21,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepositoryImpl.getYieldPerformanceData;
 
 @Service
 @Slf4j
@@ -43,79 +45,59 @@ public class YieldPerformanceReportServiceImpl implements YieldPerformanceReport
 
         String courtLocCodes = String.join(",", courtLocCodesList);
 
-        try {
-            List<String> yieldPerformanceReportStats =
-                jurorPoolRepository.getYieldPerformanceReportStats(courtLocCodes,
-                    yieldPerformanceReportRequest.getFromDate(),
-                    yieldPerformanceReportRequest.getToDate());
+        List<JurorPoolRepositoryImpl.YieldPerformanceData>
+            yieldPerformanceReportStats = getYieldPerformanceData(jurorPoolRepository,courtLocCodes,
+            yieldPerformanceReportRequest.getFromDate(),
+            yieldPerformanceReportRequest.getToDate());
 
-            List<Tuple> poolComments = poolCommentRepository.findPoolCommentsForLocationsAndDates(
-                courtLocCodesList,
-                yieldPerformanceReportRequest.getFromDate(),
-                yieldPerformanceReportRequest.getToDate());
+        List<IPoolCommentRepositoryImpl.PoolComment> poolComments =
+            poolCommentRepository.findPoolCommentsForLocationsAndDates(
+            courtLocCodesList,
+            yieldPerformanceReportRequest.getFromDate(),
+            yieldPerformanceReportRequest.getToDate());
 
-            Map<String, StringBuilder> poolCommentsMap = new HashMap<>();
-            if (poolComments != null) {
-                poolCommentsMap = getPoolsCommentsMap(poolComments);
-            }
-            setupResponseDto(response, yieldPerformanceReportStats, poolCommentsMap);
-
-        } catch (Exception e) {
-            log.error("Error getting yield performance report by court", e);
-            throw new MojException.InternalServerError("Error getting yield performance report by court", e);
+        Map<String, StringBuilder> poolCommentsMap = new HashMap<>();
+        if (poolComments != null) {
+            poolCommentsMap = getPoolsCommentsMap(poolComments);
         }
+        setupResponseDto(response, yieldPerformanceReportStats, poolCommentsMap);
 
         return response;
     }
 
-    private static Map<String, StringBuilder> getPoolsCommentsMap(List<Tuple> poolComments) {
+    private static Map<String, StringBuilder> getPoolsCommentsMap(
+        List<IPoolCommentRepositoryImpl.PoolComment> poolComments) {
         Map<String, StringBuilder> poolCommentsMap = new HashMap<>();
 
-        for (Tuple poolComment : poolComments) {
-
-            String locCode = poolComment.get(0, String.class);
-            String poolNumber = poolComment.get(1, String.class);
-            String poolCommentText = poolComment.get(2, String.class);
-
-            poolCommentsMap.computeIfPresent(locCode,
-                (key, val) -> val.append(System.lineSeparator()).append(poolNumber)
-                    .append(" - ").append(poolCommentText));
-            poolCommentsMap.putIfAbsent(locCode, new StringBuilder(poolNumber)
-                .append(" - ").append(poolCommentText));
+        for (IPoolCommentRepositoryImpl.PoolComment poolComment : poolComments) {
+            poolCommentsMap.computeIfPresent(poolComment.getLocCode(),
+                (key, val) -> val.append(System.lineSeparator()).append(poolComment.getPoolNo())
+                    .append(" - ").append(poolComment.getComment()));
+            poolCommentsMap.putIfAbsent(poolComment.getLocCode(), new StringBuilder(poolComment.getPoolNo())
+                .append(" - ").append(poolComment.getComment()));
         }
         return poolCommentsMap;
     }
 
-    private void setupResponseDto(YieldPerformanceReportResponse response, List<String> yieldPerformanceReportStats,
+    private void setupResponseDto(YieldPerformanceReportResponse response,
+                                  List<JurorPoolRepositoryImpl.YieldPerformanceData> yieldPerformanceReportStats,
                                   Map<String, StringBuilder> poolCommentsMap) {
-        if (yieldPerformanceReportStats != null) {
-            for (String result : yieldPerformanceReportStats) {
-                List<String> values = List.of(result.split(","));
-                setupResponse(response, values, poolCommentsMap);
-            }
+
+        for (JurorPoolRepositoryImpl.YieldPerformanceData data : yieldPerformanceReportStats) {
+
+            response.getTableData().getData().add(
+                YieldPerformanceReportResponse.TableData.YieldData.builder()
+                    .court(data.getCourt() + " (" + data.getLocCode() + ")")
+                    .requested(data.getRequested())
+                    .confirmed(data.getConfirmed())
+                    .comments(poolCommentsMap.get(data.getLocCode()) != null
+                        ? poolCommentsMap.get(data.getLocCode()).toString()
+                        : "")
+                    .balance(data.getBalance())
+                    .difference(data.getDifference())
+                    .build());
         }
-    }
 
-    private void setupResponse(YieldPerformanceReportResponse response, List<String> result,
-                               Map<String, StringBuilder> poolCommentsMap) {
-
-        final String locCode = result.get(0);
-        final String courtName = result.get(1);
-        final int requested = Integer.parseInt(result.get(2));
-        final int confirmed = Integer.parseInt(result.get(3));
-        final int balance = confirmed - requested;
-        final double difference = requested == 0 ? 0 : NumberUtils.calculatePercentage(balance, requested);
-        response.getTableData().getData().add(
-            YieldPerformanceReportResponse.TableData.YieldData.builder()
-            .court(courtName + " (" + locCode + ")")
-            .requested(requested)
-            .confirmed(confirmed)
-            .comments(poolCommentsMap.get(locCode) != null
-                ? poolCommentsMap.get(locCode).toString()
-                : "")
-            .balance(balance)
-            .difference(difference)
-            .build());
     }
 
     private YieldPerformanceReportResponse setupResponseHeaders(
@@ -167,7 +149,6 @@ public class YieldPerformanceReportServiceImpl implements YieldPerformanceReport
         );
     }
 
-
     public enum ReportHeading {
         DATE_FROM("Date from", LocalDate.class.getSimpleName()),
         DATE_TO("Date to", LocalDate.class.getSimpleName()),
@@ -191,4 +172,5 @@ public class YieldPerformanceReportServiceImpl implements YieldPerformanceReport
             return dataType;
         }
     }
+
 }

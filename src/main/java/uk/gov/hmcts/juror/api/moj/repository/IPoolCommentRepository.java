@@ -1,7 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.repository;
 
-import com.querydsl.core.Tuple;
-
 import java.time.LocalDate;
 import java.util.List;
 
@@ -11,5 +9,6 @@ import java.util.List;
  */
 
 public interface IPoolCommentRepository {
-    List<Tuple> findPoolCommentsForLocationsAndDates(List<String> locCodes, LocalDate dateFrom, LocalDate dateTo);
+    List<IPoolCommentRepositoryImpl.PoolComment> findPoolCommentsForLocationsAndDates(
+        List<String> locCodes, LocalDate dateFrom, LocalDate dateTo);
 }

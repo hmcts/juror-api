@@ -182,7 +182,7 @@ class JurySummoningMonitorReportControllerTest {
         @Test
         void negativeSearchByCourtButNoToDate() throws Exception {
             JurySummoningMonitorReportRequest request = getValidCourtPayload();
-            request.setFromDate(null);
+            request.setToDate(null);
             mockMvc.perform(post(URL)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(TestUtils.asJsonString(request)))

@@ -4,6 +4,8 @@ import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import lombok.Builder;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolComment;
@@ -11,6 +13,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Custom Repository implementation for the PoolComment entity.
@@ -26,9 +29,9 @@ public class IPoolCommentRepositoryImpl implements IPoolCommentRepository {
     private static final QPoolComment POOL_COMMENT = QPoolComment.poolComment;
 
     @Override
-    public List<Tuple> findPoolCommentsForLocationsAndDates(List<String> locCodes,
-                                                    LocalDate dateFrom,
-                                                    LocalDate dateTo) {
+    public List<PoolComment> findPoolCommentsForLocationsAndDates(List<String> locCodes,
+                                                                  LocalDate dateFrom,
+                                                                  LocalDate dateTo) {
         JPAQuery<Tuple> queryFactory = new JPAQuery<>(entityManager);
         return queryFactory.select(
                 POOL_REQUEST.courtLocation.locCode.as("loc_code"),
@@ -42,7 +45,21 @@ public class IPoolCommentRepositoryImpl implements IPoolCommentRepository {
             .where(POOL_REQUEST.courtLocation.locCode.in(locCodes))
             .where(POOL_REQUEST.returnDate.between(dateFrom, dateTo))
             .orderBy(POOL_REQUEST.courtLocation.locCode.asc(), POOL_REQUEST.poolNumber.asc())
-            .fetch();
+            .fetch().stream().map(tuple -> PoolComment.builder()
+                .locCode(tuple.get(0, String.class))
+                .poolNo(tuple.get(1, String.class))
+                .comment(tuple.get(2, String.class))
+                .noRequested(tuple.get(3, Integer.class))
+                .build()).collect(Collectors.toList());
+    }
+
+    @Data
+    @Builder
+    public static class PoolComment {
+        private String locCode;
+        private String poolNo;
+        private String comment;
+        private int noRequested;
     }
 }
 

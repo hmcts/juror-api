@@ -119,7 +119,7 @@ class YieldPerformanceReportControllerTest {
         @Test
         void negativeSearchByCourtButNoToDate() throws Exception {
             YieldPerformanceReportRequest request = getValidPayload();
-            request.setFromDate(null);
+            request.setToDate(null);
             mockMvc.perform(post(BASE_URL + URL)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(TestUtils.asJsonString(request)))

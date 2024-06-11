@@ -76,15 +76,13 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
     @Test
     void viewByCourtNegativeBalance() {
 
-        YieldPerformanceReportRequest payload =  YieldPerformanceReportRequest.builder()
+        testBuilder()
+            .payload(YieldPerformanceReportRequest.builder()
             .allCourts(false)
             .courtLocCodes(List.of("415"))
             .fromDate(LocalDate.parse("2024-08-01"))
             .toDate(LocalDate.parse("2024-08-20"))
-            .build();
-
-        testBuilder()
-            .payload(payload)
+            .build())
             .triggerValid()
             .responseConsumer(this::assertHeadingsCourt)
             .responseConsumer(this::verifyCourtPayloadNegativeBalance);
@@ -94,15 +92,13 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
     @Test
     void viewByCourtPositiveBalance() {
 
-        YieldPerformanceReportRequest payload =  YieldPerformanceReportRequest.builder()
-            .allCourts(false)
-            .courtLocCodes(List.of("417"))
-            .fromDate(LocalDate.parse("2024-08-01"))
-            .toDate(LocalDate.parse("2024-08-20"))
-            .build();
-
         testBuilder()
-            .payload(payload)
+            .payload(YieldPerformanceReportRequest.builder()
+                .allCourts(false)
+                .courtLocCodes(List.of("417"))
+                .fromDate(LocalDate.parse("2024-08-01"))
+                .toDate(LocalDate.parse("2024-08-20"))
+                .build())
             .triggerValid()
             .responseConsumer(this::assertHeadingsCourt)
             .responseConsumer(this::verifyCourtPayloadPositiveBalance);
@@ -122,14 +118,12 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
     @Test
     void viewByAllCourts() {
 
-        YieldPerformanceReportRequest payload =  YieldPerformanceReportRequest.builder()
-            .allCourts(true)
-            .fromDate(LocalDate.parse("2024-07-21"))
-            .toDate(LocalDate.parse("2024-08-07"))
-            .build();
-
         testBuilder()
-            .payload(payload)
+            .payload(YieldPerformanceReportRequest.builder()
+                .allCourts(true)
+                .fromDate(LocalDate.parse("2024-07-21"))
+                .toDate(LocalDate.parse("2024-08-07"))
+                .build())
             .triggerValid()
             .responseConsumer(this::verifyHeadingsAllCourts)
             .responseConsumer(this::verifyAllCourtsPayload);
@@ -139,15 +133,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
     @Test
     void unhappyCourtUser() {
 
-        YieldPerformanceReportRequest payload =  YieldPerformanceReportRequest.builder()
-            .allCourts(false)
-            .courtLocCodes(List.of("415"))
-            .fromDate(LocalDate.parse("2024-08-01"))
-            .toDate(LocalDate.parse("2024-08-20"))
-            .build();
-
         testBuilder()
-            .payload(payload)
             .jwt(getCourtJwt())
             .triggerInvalid()
             .assertForbiddenResponse();
