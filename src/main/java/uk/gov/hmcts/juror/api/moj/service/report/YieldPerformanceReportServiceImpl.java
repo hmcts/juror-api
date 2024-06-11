@@ -137,14 +137,8 @@ public class YieldPerformanceReportServiceImpl implements YieldPerformanceReport
                 .value(reportTo.format(DateTimeFormatter.ISO_LOCAL_DATE))
                 .build(),
             "report_created", AbstractReportResponse.DataTypeValue.builder()
-                .displayName(ReportHeading.REPORT_CREATED.getDisplayName())
                 .dataType(ReportHeading.REPORT_CREATED.getDataType())
-                .value(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
-                .build(),
-            "time_created", AbstractReportResponse.DataTypeValue.builder()
-                .displayName(ReportHeading.TIME_CREATED.getDisplayName())
-                .dataType(ReportHeading.TIME_CREATED.getDataType())
-                .value(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+                .value(DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now()))
                 .build()
         );
     }
@@ -152,8 +146,7 @@ public class YieldPerformanceReportServiceImpl implements YieldPerformanceReport
     public enum ReportHeading {
         DATE_FROM("Date from", LocalDate.class.getSimpleName()),
         DATE_TO("Date to", LocalDate.class.getSimpleName()),
-        REPORT_CREATED("Report created", LocalDate.class.getSimpleName()),
-        TIME_CREATED("Time created", LocalDateTime.class.getSimpleName());
+        REPORT_CREATED("Report created", LocalDateTime.class.getSimpleName());
 
         private String displayName;
 

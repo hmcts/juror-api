@@ -173,20 +173,10 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
         Assertions.assertThat(dateTo.getValue()).isEqualTo("2024-08-20");
 
         Assertions.assertThat(response.getHeadings().containsKey("report_created")).isTrue();
-        AbstractReportResponse.DataTypeValue reportCreated =
-            response.getHeadings().get("report_created");
-        Assertions.assertThat(reportCreated).isNotNull();
-        Assertions.assertThat(reportCreated.getDisplayName()).isEqualTo("Report created");
-        Assertions.assertThat(reportCreated.getDataType()).isEqualTo(LOCAL_DATE);
-        Assertions.assertThat(reportCreated.getValue()).isNotNull();
-        Assertions.assertThat(reportCreated.getValue()).isEqualTo(LocalDate.now().format(
-            DateTimeFormatter.ISO_LOCAL_DATE));
-
-        Assertions.assertThat(response.getHeadings().containsKey("time_created")).isTrue();
         AbstractReportResponse.DataTypeValue timeCreated =
-            response.getHeadings().get("time_created");
+            response.getHeadings().get("report_created");
         Assertions.assertThat(timeCreated).isNotNull();
-        Assertions.assertThat(timeCreated.getDisplayName()).isEqualTo("Time created");
+        Assertions.assertThat(timeCreated.getDisplayName()).isNull();
         Assertions.assertThat(timeCreated.getDataType()).isEqualTo("LocalDateTime");
         Assertions.assertThat(timeCreated.getValue()).isNotNull();
         LocalDateTime localDateTime = LocalDateTime.parse((String) timeCreated.getValue(),

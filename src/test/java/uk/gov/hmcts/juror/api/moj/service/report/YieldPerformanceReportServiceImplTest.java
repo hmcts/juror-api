@@ -94,11 +94,11 @@ class YieldPerformanceReportServiceImplTest {
 
             assertReportHeadings(headings);
 
-            AbstractReportResponse.DataTypeValue timeCreated = headings.get("time_created");
-            assertThat(timeCreated.getDisplayName()).isEqualTo("Time created");
+            AbstractReportResponse.DataTypeValue timeCreated = headings.get("report_created");
+            assertThat(timeCreated.getDisplayName()).isNull();
             assertThat(timeCreated.getDataType()).isEqualTo("LocalDateTime");
             LocalDateTime createdTime = LocalDateTime.parse((String) timeCreated.getValue(),
-                DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                DateTimeFormatter.ISO_DATE_TIME);
             assertThat(createdTime).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS))
                 .as("Creation time should be correct");
 
@@ -165,11 +165,6 @@ class YieldPerformanceReportServiceImplTest {
                 .displayName("Date to")
                 .dataType("LocalDate")
                 .value("2024-05-13")
-                .build());
-            assertThat(headings.get("report_created")).isEqualTo(AbstractReportResponse.DataTypeValue.builder()
-                .displayName("Report created")
-                .dataType("LocalDate")
-                .value(LocalDate.now().toString())
                 .build());
         }
 
