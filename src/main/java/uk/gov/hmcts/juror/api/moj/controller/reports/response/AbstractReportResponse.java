@@ -18,7 +18,6 @@ import java.util.Map;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonSubTypes({
     @JsonSubTypes.Type(value = GroupedReportResponse.class, name = "Standard Response"),
@@ -41,7 +40,6 @@ public class AbstractReportResponse<T> {
     @Data
     @Builder
     @NoArgsConstructor
-    @ToString
     @AllArgsConstructor
     public static class TableData<T> {
         private List<Heading> headings;
@@ -61,7 +59,6 @@ public class AbstractReportResponse<T> {
         @Data
         @Builder
         @NoArgsConstructor
-        @ToString
         @AllArgsConstructor
         public static class Heading {
             private String id;

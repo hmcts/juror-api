@@ -15,7 +15,6 @@ import java.util.Map;
 @Data
 @Builder
 @AllArgsConstructor
-@Getter
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class YieldPerformanceReportResponse {
 

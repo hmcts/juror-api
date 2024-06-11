@@ -49,7 +49,6 @@ public class MonthlyUtilisationReportResponse {
 
     @Data
     @NoArgsConstructor
-    @ToString
     public static class TableData {
         private List<Heading> headings;
 
@@ -68,7 +67,6 @@ public class MonthlyUtilisationReportResponse {
         @Data
         @Builder
         @NoArgsConstructor
-        @ToString
         @AllArgsConstructor
         public static class Heading {
             private UtilisationReportService.TableHeading id;
@@ -79,7 +77,6 @@ public class MonthlyUtilisationReportResponse {
         @Data
         @Builder
         @NoArgsConstructor
-        @ToString
         @AllArgsConstructor
         public static class Month {
             private String month;

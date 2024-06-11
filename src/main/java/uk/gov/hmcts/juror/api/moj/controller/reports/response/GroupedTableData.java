@@ -15,8 +15,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
-@Getter
-@Setter
 @Data
 @ToString(callSuper = true)
 public class GroupedTableData extends LinkedHashMap<String, Object>
