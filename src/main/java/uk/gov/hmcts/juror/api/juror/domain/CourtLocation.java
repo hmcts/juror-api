@@ -19,6 +19,7 @@ import lombok.ToString;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 import uk.gov.hmcts.juror.api.moj.domain.CourtRegionMod;
+import uk.gov.hmcts.juror.api.moj.domain.ICourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
 import uk.gov.hmcts.juror.api.moj.enumeration.CourtType;
@@ -42,7 +43,7 @@ import java.util.List;
 @EqualsAndHashCode(exclude = {"courtRegion", "assemblyRoom", "poolRequests"})
 @Table(name = "court_location", schema = "juror_mod")
 @SuppressWarnings("PMD.TooManyFields")
-public class CourtLocation implements Serializable {
+public class CourtLocation implements Serializable, ICourtLocation {
 
     @Id
     @Column(name = "loc_code")
