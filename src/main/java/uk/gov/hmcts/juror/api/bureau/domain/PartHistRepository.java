@@ -10,6 +10,7 @@ import java.util.List;
  * Repository for {@link PartHist}.
  */
 @Repository
+@Deprecated(forRemoval = true)
 public interface PartHistRepository extends CrudRepository<PartHist, PartHistKey> {
 
     List<PartHist> findByJurorNumberAndOwnerAndDatePartGreaterThanEqual(String juroNumber, String owner, Date datePart);

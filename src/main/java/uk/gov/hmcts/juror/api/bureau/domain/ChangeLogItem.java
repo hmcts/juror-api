@@ -32,6 +32,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @EqualsAndHashCode(exclude = "changeLog")
 @ToString(exclude = "changeLog")
+@Deprecated(forRemoval = true)
 public class ChangeLogItem implements Serializable {
     private static final String GENERATOR_NAME = "CHANGE_LOG_ITEM_SEQ_GENERATOR";
 

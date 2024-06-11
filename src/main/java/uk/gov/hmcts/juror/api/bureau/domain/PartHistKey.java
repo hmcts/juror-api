@@ -9,6 +9,7 @@ import java.util.Date;
  * Composite key for {@link PartHist}.
  */
 @EqualsAndHashCode
+@Deprecated(forRemoval = true)
 public class PartHistKey implements Serializable {
     private String jurorNumber;
     private String owner;

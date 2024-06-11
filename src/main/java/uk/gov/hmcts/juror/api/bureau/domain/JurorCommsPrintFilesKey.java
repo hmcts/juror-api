@@ -9,6 +9,7 @@ import java.util.Date;
  * Composite key for {@link JurorCommsPrintFiles}.
  */
 @EqualsAndHashCode
+@Deprecated(forRemoval = true)
 public class JurorCommsPrintFilesKey implements Serializable {
     private String jurorNumber;
     private String printFileName;

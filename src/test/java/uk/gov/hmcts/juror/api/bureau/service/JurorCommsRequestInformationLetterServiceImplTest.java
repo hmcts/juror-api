@@ -109,7 +109,6 @@ public class JurorCommsRequestInformationLetterServiceImplTest {
             .id(1L)
             .templateId(TEMPLATE_ID)
             .templateField("FIRSTNAME")
-            .databaseField("PRINT_FILES.DETAIL_REC")
             .positionFrom(5)
             .positionTo(14)
             .build();
@@ -118,7 +117,6 @@ public class JurorCommsRequestInformationLetterServiceImplTest {
             .id(2L)
             .templateId(TEMPLATE_ID)
             .templateField("LASTNAME")
-            .databaseField("PRINT_FILES.DETAIL_REC")
             .positionFrom(15)
             .positionTo(24)
             .build();
@@ -126,7 +124,6 @@ public class JurorCommsRequestInformationLetterServiceImplTest {
             .id(3L)
             .templateId(TEMPLATE_ID)
             .templateField("JUROR NUMBER")
-            .databaseField("PRINT_FILES.DETAIL_REC")
             .positionFrom(31)
             .positionTo(39)
             .build();

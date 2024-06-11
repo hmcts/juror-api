@@ -10,6 +10,7 @@ import java.util.List;
  * Repository for {@link StatsResponseTime}.
  */
 @Repository
+@Deprecated(forRemoval = true)
 public interface StatsResponseTimeRepository extends CrudRepository<StatsResponseTime, StatsResponseTimeKey> {
 
 

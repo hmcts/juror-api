@@ -23,6 +23,7 @@ import java.io.Serializable;
 @Immutable
 @Table(name = "stats_unprocessed_responses", schema = "juror_dashboard")
 @Builder
+@Deprecated(forRemoval = true)
 public class StatsUnprocessedResponse implements Serializable {
 
     @NotNull

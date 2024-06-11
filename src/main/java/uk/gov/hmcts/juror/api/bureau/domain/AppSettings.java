@@ -23,6 +23,7 @@ import java.io.Serializable;
 @Table(name = "APP_SETTINGS", schema = "JUROR_DIGITAL")
 @Immutable
 @Builder
+@Deprecated(forRemoval = true)
 public class AppSettings implements Serializable {
     @Id
     @Length(max = 80)

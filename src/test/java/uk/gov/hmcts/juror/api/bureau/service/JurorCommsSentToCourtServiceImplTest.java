@@ -11,6 +11,7 @@ import uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.NotifyTemplateFieldMod;
+import uk.gov.hmcts.juror.api.moj.domain.NotifyTemplateMapperMod;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 
@@ -30,20 +31,8 @@ import static org.mockito.Mockito.verifyNoInteractions;
 public class JurorCommsSentToCourtServiceImplTest {
     private static final String TEMPLATE_ID = "123456789";
 
-    private static final String JUROR_TITLE = "JT";
-
-    private NotifyTemplateFieldMod templateField1;
-    private NotifyTemplateFieldMod templateField2;
-    private NotifyTemplateFieldMod templateField3;
-    private NotifyTemplateFieldMod templateField4;
-    private NotifyTemplateFieldMod templateField5;
-    private JurorPool pool1;
-    private JurorPool pool2;
     List<NotifyTemplateFieldMod> templateFields = new LinkedList<>();
     List<JurorPool> poolList = new LinkedList<>();
-
-    private Juror juror1;
-    private Juror juror2;
 
     @Mock
     private JurorPoolRepository poolRepository;
@@ -60,8 +49,8 @@ public class JurorCommsSentToCourtServiceImplTest {
     @Before
     public void setUp() throws Exception {
 
-        juror1 = new Juror();
-        pool1 = new JurorPool();
+        Juror juror1 = new Juror();
+        JurorPool pool1 = new JurorPool();
         pool1.setJuror(juror1);
         juror1.setJurorNumber("987654321");
         juror1.setFirstName("Farah");
@@ -71,8 +60,8 @@ public class JurorCommsSentToCourtServiceImplTest {
         juror1.setNotifications(0);
 
 
-        juror2 = new Juror();
-        pool2 = new JurorPool();
+        Juror juror2 = new Juror();
+        JurorPool pool2 = new JurorPool();
         pool2.setJuror(juror2);
         juror2.setJurorNumber("987654321");
         juror2.setFirstName("Farah");
@@ -85,46 +74,36 @@ public class JurorCommsSentToCourtServiceImplTest {
         poolList.add(pool2);
 
 
-        templateField1 = NotifyTemplateFieldMod.builder()
+        NotifyTemplateFieldMod templateField1 = NotifyTemplateFieldMod.builder()
             .id(1L)
             .templateId(TEMPLATE_ID)
             .templateField("FIRSTNAME")
-            .databaseField("POOL.FNAME")
-            .jdClassName("pool")
-            .jdClassProperty("firstName")
+            .mapperObject(NotifyTemplateMapperMod.JUROR_FIRST_NAME)
             .build();
 
-        templateField2 = NotifyTemplateFieldMod.builder()
+        NotifyTemplateFieldMod templateField2 = NotifyTemplateFieldMod.builder()
             .id(2L)
             .templateId(TEMPLATE_ID)
             .templateField("LASTNAME")
-            .databaseField("POOL.LNAME")
-            .jdClassName("pool")
-            .jdClassProperty("lastName")
+            .mapperObject(NotifyTemplateMapperMod.JUROR_LAST_NAME)
             .build();
-        templateField3 = NotifyTemplateFieldMod.builder()
+        NotifyTemplateFieldMod templateField3 = NotifyTemplateFieldMod.builder()
             .id(3L)
             .templateId(TEMPLATE_ID)
             .templateField("SERVICESTARTDATE")
-            .databaseField("POOL.NEXT_DATE")
-            .jdClassName("pool")
-            .jdClassProperty("hearingDate")
+            .mapperObject(NotifyTemplateMapperMod.JUROR_POOL_NEXT_DATE)
             .build();
-        templateField4 = NotifyTemplateFieldMod.builder()
+        NotifyTemplateFieldMod templateField4 = NotifyTemplateFieldMod.builder()
             .id(4L)
             .templateId(TEMPLATE_ID)
             .templateField("SERVICESTARTTIME")
-            .databaseField("UNIQUE_POOL.ATTEND_TIME")
-            .jdClassName("uniquePool")
-            .jdClassProperty("attendTime")
+            .mapperObject(NotifyTemplateMapperMod.POOL_ATTEND_TIME)
             .build();
-        templateField5 = NotifyTemplateFieldMod.builder()
+        NotifyTemplateFieldMod templateField5 = NotifyTemplateFieldMod.builder()
             .id(5L)
             .templateId(TEMPLATE_ID)
             .templateField("email address")
-            .databaseField("POOL.H_EMAIL")
-            .jdClassName("pool")
-            .jdClassProperty("email")
+            .mapperObject(NotifyTemplateMapperMod.JUROR_EMAIL)
             .build();
 
 

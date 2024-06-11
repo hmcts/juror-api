@@ -2,9 +2,10 @@ package uk.gov.hmcts.juror.api.moj.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.Version;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -45,12 +46,6 @@ public class NotifyTemplateFieldMod implements Serializable {
     @NotEmpty
     private String templateField;
 
-    @NotNull
-    @Size(max = 80)
-    @Column(name = "database_field")
-    @NotEmpty
-    private String databaseField;
-
     @Size(max = 4)
     @Column(name = "position_from")
     private Integer positionFrom;
@@ -59,23 +54,7 @@ public class NotifyTemplateFieldMod implements Serializable {
     @Column(name = "position_to")
     private Integer positionTo;
 
-    @Size(max = 4)
-    @Column(name = "field_length")
-    private Integer fieldLength;
-
-    @Column(name = "convert_to_date")
-    @Builder.Default
-    private Boolean convertToDate = Boolean.FALSE;
-
-    @Size(max = 60)
-    @Column(name = "jd_class_name")
-    private String jdClassName;
-
-    @Size(max = 60)
-    @Column(name = "jd_class_property")
-    private String jdClassProperty;
-
-    @Version
-    private Integer version;
-
+    @Column(name = "mapper_object")
+    @Enumerated(EnumType.STRING)
+    private NotifyTemplateMapperMod mapperObject;
 }

@@ -22,6 +22,7 @@ import static org.apache.commons.lang3.StringUtils.deleteWhitespace;
  * @since JDB-1971
  */
 @SuppressWarnings({"PMD.TooManyFields", "PMD.TooManyMethods"})
+@Deprecated(forRemoval = true)
 public class BureauJurorDetailQueries {
 
     private static final String INWARD_CODE_FRAGMENT = "^([0-9])([A-Z]{0,2})$";

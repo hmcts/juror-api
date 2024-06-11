@@ -17,6 +17,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@Deprecated(forRemoval = true)
 public class TSpecial implements Serializable {
     @Id
     @Column(name = "SPEC_NEED")

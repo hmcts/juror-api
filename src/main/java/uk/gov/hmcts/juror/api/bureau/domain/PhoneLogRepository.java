@@ -9,6 +9,7 @@ import java.util.List;
  * Repository for {@link PhoneLog}.
  */
 @Repository
+@Deprecated(forRemoval = true)
 public interface PhoneLogRepository extends CrudRepository<PhoneLog, PhoneLogKey> {
     List<PhoneLog> findByJurorNumber(String jurorNumber);
 }

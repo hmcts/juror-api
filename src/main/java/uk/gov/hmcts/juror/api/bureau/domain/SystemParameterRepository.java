@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
  * Repository for {@link SystemParameter} entities.
  */
 @Repository
+@Deprecated(forRemoval = true)
 public interface SystemParameterRepository extends ReadOnlyRepository<SystemParameter, Integer>,
     QuerydslPredicateExecutor<SystemParameter> {
 }

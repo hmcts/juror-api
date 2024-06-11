@@ -6,6 +6,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
  * QueryDSL queries for {@Link StatsExcusals}.
  */
 
+@Deprecated(forRemoval = true)
 public class StatsExcusalsQueries {
     private static final String bureauSelection = "Bureau";
     private static final String courtSelection = "Court";

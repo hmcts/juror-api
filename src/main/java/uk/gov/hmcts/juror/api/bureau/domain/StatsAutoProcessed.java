@@ -24,6 +24,7 @@ import java.util.Date;
 @Immutable
 @Table(name = "stats_auto_processed", schema = "juror_dashboard")
 @Builder
+@Deprecated(forRemoval = true)
 public class StatsAutoProcessed implements Serializable {
 
     @Id
