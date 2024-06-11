@@ -3366,10 +3366,11 @@ class JurorRecordServiceTest {
 
             assertEquals(3, payments.getAttendances(), "Incorrect number of attendances");
             assertEquals(1, payments.getNonAttendances(), "Incorrect number of non-attendances");
-            assertEquals(BigDecimal.valueOf(6), payments.getFinancialLoss(), "Incorrect financial loss total");
-            assertEquals(BigDecimal.valueOf(6), payments.getTravel(), "Incorrect travel total");
-            assertEquals(BigDecimal.valueOf(6), payments.getSubsistence(), "Incorrect subsistence total");
-            assertEquals(BigDecimal.valueOf(6), payments.getTotalPaid(), "Incorrect total paid");
+            assertEquals(BigDecimal.valueOf(6).setScale(2), payments.getFinancialLoss(),
+                         "Incorrect financial loss total");
+            assertEquals(BigDecimal.valueOf(6).setScale(2), payments.getTravel(), "Incorrect travel total");
+            assertEquals(BigDecimal.valueOf(6).setScale(2), payments.getSubsistence(), "Incorrect subsistence total");
+            assertEquals(BigDecimal.valueOf(6).setScale(2), payments.getTotalPaid(), "Incorrect total paid");
             assertEquals(4, payments.getData().size(), "Incorrect number of attendance entries");
         }
 

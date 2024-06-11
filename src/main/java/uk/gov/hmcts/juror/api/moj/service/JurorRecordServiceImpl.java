@@ -1266,7 +1266,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             return this;
         }
     }
-
+    
     @Override
     public JurorPaymentsResponseDto getJurorPayments(String jurorNumber) {
         JurorUtils.checkOwnershipForCurrentUser(JurorPoolUtils.getActiveJurorRecord(jurorPoolRepository, jurorNumber),
@@ -1301,13 +1301,18 @@ public class JurorRecordServiceImpl implements JurorRecordService {
                     JurorPaymentsResponseDto.PaymentDayDto.builder()
                         .attendanceDate(item.get(QReportsJurorPayments.reportsJurorPayments.attendanceDate))
                         .attendanceAudit(item.get(QReportsJurorPayments.reportsJurorPayments.attendanceAudit))
-                        .travel(item.get(QReportsJurorPayments.reportsJurorPayments.totalTravelDue).setScale(2))
-                        .financialLoss(item.get(QReportsJurorPayments.reportsJurorPayments.totalFinancialLossDue)
-                                           .setScale(2))
-                        .subsistence(item.get(QReportsJurorPayments.reportsJurorPayments.subsistenceDue).setScale(2))
-                        .smartcard(item.get(QReportsJurorPayments.reportsJurorPayments.smartCardDue).setScale(2))
-                        .totalDue(item.get(QReportsJurorPayments.reportsJurorPayments.totalDue).setScale(2))
-                        .totalPaid(item.get(QReportsJurorPayments.reportsJurorPayments.totalPaid).setScale(2));
+                        .travel(BigDecimalUtils.getOrZero(item
+                            .get(QReportsJurorPayments.reportsJurorPayments.totalTravelDue)).setScale(2))
+                        .financialLoss(BigDecimalUtils.getOrZero(item
+                            .get(QReportsJurorPayments.reportsJurorPayments.totalFinancialLossDue)).setScale(2))
+                        .subsistence(BigDecimalUtils.getOrZero(item
+                            .get(QReportsJurorPayments.reportsJurorPayments.subsistenceDue)).setScale(2))
+                        .smartcard(BigDecimalUtils.getOrZero(item
+                            .get(QReportsJurorPayments.reportsJurorPayments.smartCardDue)).setScale(2))
+                        .totalDue(BigDecimalUtils.getOrZero(item
+                            .get(QReportsJurorPayments.reportsJurorPayments.totalDue)).setScale(2))
+                        .totalPaid(BigDecimalUtils.getOrZero(item
+                            .get(QReportsJurorPayments.reportsJurorPayments.totalPaid)).setScale(2));
 
                 if (Optional.ofNullable(item.get(QReportsJurorPayments.reportsJurorPayments.latestPaymentFAuditId))
                         .isPresent()) {
