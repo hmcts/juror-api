@@ -10,6 +10,12 @@ alter table juror_mod.user_roles
 alter table juror_mod.user_roles_audit
     alter column username type varchar(30);
 
+alter table juror_mod.user_courts
+    alter column username type varchar(30);
+
+alter table juror_mod.user_courts_audit
+    alter column username type varchar(30);
+
 alter table juror_mod.juror_response
     alter column staff_login type varchar(30);
 
@@ -44,3 +50,6 @@ alter table juror_mod.pool_history
 
 alter table juror_mod.pool_history
     alter column user_id type varchar(30);
+
+alter table juror_mod.rev_info
+    alter column changed_by type varchar(30);
