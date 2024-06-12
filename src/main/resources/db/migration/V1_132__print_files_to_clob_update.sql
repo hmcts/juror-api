@@ -1,4 +1,4 @@
-DROP PROCEDURE juror_mod.printfiles_to_clob(int4);
+DROP PROCEDURE IF EXISTS juror_mod.printfiles_to_clob(integer);
 
 CREATE OR REPLACE PROCEDURE juror_mod.printfiles_to_clob(IN p_document_limit integer DEFAULT 1000000)
  LANGUAGE plpgsql
@@ -33,7 +33,7 @@ END;
 $procedure$
 ;
 
-DROP PROCEDURE juror_mod.write_printfiles(in varchar, in int4, in date, in int4, inout int4);
+DROP PROCEDURE IF EXISTS juror_mod.write_printfiles(in varchar, in int4, in date, in int4, inout int4);
 
 CREATE OR REPLACE PROCEDURE juror_mod.write_printfiles(IN p_form_type character varying, IN p_rec_len integer, IN p_ext_date date, IN p_document_limit integer)
  LANGUAGE plpgsql
@@ -50,6 +50,7 @@ DECLARE
 	v_total_remaining_records integer; -- total amount of remaining records to write
 	v_documents_to_write integer; -- total amount of documents to write to current file
 	v_records_count integer; -- total records to be extracted for printing
+	v_count integer;
 
 begin
 	select count(bpd.id)
@@ -65,9 +66,7 @@ begin
 	SELECT  NEXTVAL('juror_mod.print_file_count') INTO v_revision;
 	v_filename := 'JURY'||LPAD(v_revision::VARCHAR(22),4,'0')||'01.0001';
 
-	call juror_mod.get_form_type_page_length(p_form_type, v_page_size);
-
-	-- Calulate documents to write
+	-- Calculate documents to write
 	if v_total_remaining_records - p_document_limit < 0 then
 		v_documents_to_write := v_total_remaining_records;
 	else
@@ -92,7 +91,7 @@ begin
 			v_data := '' || v_header || chr(10);
 		END if;
 
-		IF p_count >= p_document_limit then
+		IF v_count >= p_document_limit then
 			-- Create the record
 			INSERT INTO juror_mod.content_store(request_id,document_id,file_type,data)
 			VALUES (NEXTVAL('juror_mod.content_store_seq'),v_filename,'PRINT',v_data);
@@ -103,7 +102,7 @@ begin
 			v_filename := 'JURY'||LPAD(v_revision::VARCHAR(22),4,'0')||'01.0001';
 
 
-			-- Calulate documents to write
+			-- Calculate documents to write
 			if v_total_remaining_records - p_document_limit < 0 then
 				v_documents_to_write := v_total_remaining_records;
 			else
@@ -117,7 +116,7 @@ begin
 
 			-- erasing data for new file
 			v_data := '' || v_header || chr(10);
-			p_count := 0;
+			v_count := 0;
 
 		END IF;
 
@@ -135,7 +134,7 @@ begin
 		WHERE id = v_row_id;
 
 		-- increment the loop counter so that the process can be stopped if it reaches the threshold
-		p_count := p_count + 1;
+		v_count := v_count + 1;
 
 	END LOOP;
 
@@ -182,35 +181,5 @@ BEGIN
 						)
 				);
 END;
-$procedure$
-;
-
--- return total pages for form type
-create or replace procedure juror_mod.get_form_type_page_length(in form_type varchar(6), inout page_size integer)
-language plpgsql
-as $procedure$
-begin
-	 select (CASE WHEN form_type = '5229A' then 1
-     WHEN form_type = '5229AC' then 1
-     WHEN form_type = '5225C' then 1
-     WHEN form_type = '5225' then 1
-     WHEN form_type = '5226A' then 1
-     WHEN form_type = '5226AC' then 1
-     WHEN form_type = '5226C' then 1
-     WHEN form_type = '5226' then 1
-     WHEN form_type = '5228' then 1
-     WHEN form_type = '5228C' then 2
-     WHEN form_type = '5229C' then 1
-     WHEN form_type = '5229' then 1
-     WHEN form_type = '5221' then 2
-     WHEN form_type = '5221C' then 4
-     WHEN form_type = '5227C' then 1
-     WHEN form_type = '5227' then 1
-     WHEN form_type = '5224' then 1
-     WHEN form_type = '5224C' then 1
-     WHEN form_type = '5224AC' then 4
-     WHEN form_type = '5224A' then 4 end)
-     into page_size;
-end;
 $procedure$
 ;
