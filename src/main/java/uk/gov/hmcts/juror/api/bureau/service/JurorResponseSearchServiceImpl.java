@@ -152,7 +152,7 @@ public class JurorResponseSearchServiceImpl implements JurorResponseSearchServic
             log.debug("Search request by team leader");
             filters.addAll(teamLeaderFilters(searchRequestDto));
         }
-
+        filters.add(BureauJurorDetailQueries.filterByActiveStatus());
         return filters;
     }
 

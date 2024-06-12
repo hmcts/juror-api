@@ -10,6 +10,7 @@ import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
+import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
@@ -91,10 +92,10 @@ class CompletionOfServiceReportTest extends AbstractGroupedReportTestSupport<Com
         securityUtilMockedStatic.when(SecurityUtil::getLocCode).thenReturn(VALID_COURT_LOCATION);
         report.preProcessQuery(query,request);
 
-        verify(query).where(QJurorPool.jurorPool.juror.completionDate.between(DATE_FROM_TEST_VALUE,
+        verify(query).where(QJuror.juror.completionDate.between(DATE_FROM_TEST_VALUE,
             DATE_TO_TEST_VALUE));
-        verify(query).where(QJurorPool.jurorPool.location.eq(VALID_COURT_LOCATION));
-        verify(query).orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
+        verify(query).where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(VALID_COURT_LOCATION));
+        verify(query).orderBy(QJuror.juror.jurorNumber.asc());
     }
 
     @Override

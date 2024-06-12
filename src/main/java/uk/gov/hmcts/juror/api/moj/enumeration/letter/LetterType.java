@@ -134,6 +134,17 @@ public enum LetterType {
         tupleJPAQuery -> tupleJPAQuery
             .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.DEFERRED)
                 .and(QJurorPool.jurorPool.deferralCode.eq("P")))
+    ),
+    INFORMATION(List.of(FormCode.ENG_REQUESTINFO, FormCode.BI_REQUESTINFO), List.of(
+        ReissueLetterService.DataType.JUROR_NUMBER,
+        ReissueLetterService.DataType.JUROR_FIRST_NAME,
+        ReissueLetterService.DataType.JUROR_LAST_NAME,
+        ReissueLetterService.DataType.JUROR_POSTCODE,
+        ReissueLetterService.DataType.DATE_PRINTED,
+        ReissueLetterService.DataType.EXTRACTED_FLAG,
+        ReissueLetterService.DataType.FORM_CODE),
+        tupleJPAQuery -> tupleJPAQuery
+            .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED))
     );
 
     List<FormCode> formCodes;

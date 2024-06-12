@@ -98,7 +98,7 @@ public class LetterBase {
         return format("%s %s %s, %s", welshDay, dateParts[1], welshMonth, dateParts[3]);
     }
 
-    static String getDateOfLetter() {
+    public static String getDateOfLetter() {
         final int processDays = 2;
         final int processDaysOverWeekend = 4;
 

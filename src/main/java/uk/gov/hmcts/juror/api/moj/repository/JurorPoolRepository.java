@@ -33,8 +33,6 @@ public interface JurorPoolRepository extends IJurorPoolRepository, JpaRepository
     Optional<JurorPool> findByOwnerAndJurorJurorNumberAndPoolPoolNumber(String owner, String jurorNumber,
                                                                         String poolNumber);
 
-    List<JurorPool> findByPoolPoolNumberAndOwnerAndIsActive(String poolNumber, String owner, boolean isActive);
-
     List<JurorPool> findByPoolPoolNumberAndWasDeferredAndIsActive(String poolNumber, boolean wasDeferred,
                                                                   boolean isActive);
 
@@ -60,7 +58,13 @@ public interface JurorPoolRepository extends IJurorPoolRepository, JpaRepository
     String getJurySummoningMonitorReportByPool(@Param("poolNumber") String poolNumber) throws SQLException;
 
     @Query(value = "SELECT * from juror_mod.jsm_report_by_court(:locCodes, :fromDate, :toDate)", nativeQuery = true)
-    String getJurySummoningMonitorReportByCourt(@Param("locCodes") String poolNumber,
+    String getJurySummoningMonitorReportByCourt(@Param("locCodes") String locCodes,
+                                                @Param("fromDate") LocalDate fromDate,
+                                                @Param("toDate") LocalDate toDate) throws SQLException;
+
+    @Query(value = "SELECT * from juror_mod.yield_performance_report(:locCodes, :fromDate, :toDate)",
+        nativeQuery = true)
+    List<String> getYieldPerformanceReportStats(@Param("locCodes") String locCodes,
                                                 @Param("fromDate") LocalDate fromDate,
                                                 @Param("toDate") LocalDate toDate) throws SQLException;
 }

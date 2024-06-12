@@ -2,9 +2,7 @@ package uk.gov.hmcts.juror.api.moj.controller.reports.response;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 import uk.gov.hmcts.juror.api.moj.report.IDataType;
 import uk.gov.hmcts.juror.api.moj.report.support.HasSize;
@@ -14,8 +12,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
-@Getter
-@Setter
 @Data
 @ToString(callSuper = true)
 @NoArgsConstructor
