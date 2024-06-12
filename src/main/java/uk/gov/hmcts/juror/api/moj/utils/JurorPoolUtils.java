@@ -31,7 +31,7 @@ public final class JurorPoolUtils {
         log.debug("Check current user's access (owner = {}) to read juror: {} in pool: {}",
             owner, jurorPool.getJuror().getJurorNumber(), jurorPool.getPoolNumber());
 
-        if (!owner.equals(JurorDigitalApplication.JUROR_OWNER)) {
+        if (!JurorDigitalApplication.JUROR_OWNER.equals(owner)) {
             // Current user is not a Bureau User, therefore check the user owns the record (to read or write to it)
             checkOwnershipForCurrentUser(jurorPool, owner);
         }
@@ -64,7 +64,7 @@ public final class JurorPoolUtils {
         log.trace("Enter checkMultipleRecordReadAccess");
         log.debug("Check current user's access (owner = {}) to read juror pool record(s)", owner);
 
-        if (!owner.equals(JurorDigitalApplication.JUROR_OWNER)) {
+        if (!JurorDigitalApplication.JUROR_OWNER.equals(owner)) {
 
             List<String> activeJurorPoolOwners = jurorPools.stream()
                 .map(JurorPool::getOwner)
