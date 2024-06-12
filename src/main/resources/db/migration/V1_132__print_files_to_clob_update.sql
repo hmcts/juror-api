@@ -13,7 +13,7 @@ DECLARE
 BEGIN
 	v_ext_date :=	CASE
 						WHEN TO_CHAR(NOW(),'SSSSS')::INTEGER < 64800
-              				THEN NOW()::date - 1
+              				THEN NOW()::date - 1 -- cast is needed as you can't do arrhythmic with a timestamp as 1 becomes ambiguous
                				ELSE NOW()
               		END;
 
@@ -22,11 +22,11 @@ BEGIN
 
 	FOR forms IN
 		SELECT	fr.form_type,
-				fr.max_rec_len::integer
+				fr.max_rec_len::integer as rec_len
 		FROM juror_mod.t_form_attr fr
 
 		loop
-			CALL juror_mod.write_printfiles(forms.form_type, forms.max_rec_len, v_ext_date, p_document_limit);
+			CALL juror_mod.write_printfiles(forms.form_type, forms.rec_len, v_ext_date, p_document_limit);
 		END LOOP;
 
 END;
@@ -35,7 +35,7 @@ $procedure$
 
 DROP PROCEDURE juror_mod.write_printfiles(in varchar, in int4, in date, in int4, inout int4);
 
-CREATE OR REPLACE PROCEDURE juror_mod.write_printfiles(IN p_form_type character varying, IN p_max_rec_len integer, IN p_ext_date date, IN p_document_limit integer)
+CREATE OR REPLACE PROCEDURE juror_mod.write_printfiles(IN p_form_type character varying, IN p_rec_len integer, IN p_ext_date date, IN p_document_limit integer)
  LANGUAGE plpgsql
 AS $procedure$
 DECLARE
@@ -47,18 +47,19 @@ DECLARE
 	v_detail_rec text; -- row of data from bulk print data
 	v_revision int8; -- sequence number for file name
 	v_page_size integer; -- total pages for form type
-	v_total_documents_size integer; -- total amount of remaining records to write
+	v_total_remaining_records integer; -- total amount of remaining records to write
 	v_documents_to_write integer; -- total amount of documents to write to current file
+	v_records_count integer; -- total records to be extracted for printing
 
 begin
 	select count(bpd.id)
 	from juror_mod.bulk_print_data bpd
 	WHERE bpd.form_type = p_form_type
-	AND COALESCE(bpd.extracted_flag,'N') = 'N'
+	AND bpd.extracted_flag = false
 	AND DATE(bpd.creation_date) <= p_ext_date
-	into v_total_documents_size;
+	into v_total_remaining_records;
 
-	raise notice 'total_docs_size %', v_total_documents_size;
+	v_records_count := v_total_remaining_records;
 
 	-- Identify the next sequence number
 	SELECT  NEXTVAL('juror_mod.print_file_count') INTO v_revision;
@@ -66,12 +67,11 @@ begin
 
 	call juror_mod.get_form_type_page_length(p_form_type, v_page_size);
 
-
 	-- Calulate documents to write
-	if v_total_documents_size - p_document_limit < 0 then
-		v_documents_to_write := v_total_documents_size;
+	if v_total_remaining_records - p_document_limit < 0 then
+		v_documents_to_write := v_total_remaining_records;
 	else
-		v_total_documents_size := v_total_documents_size - p_document_limit;
+		v_total_remaining_records := v_total_remaining_records - p_document_limit;
 		v_documents_to_write := p_document_limit;
 	end if;
 
@@ -81,13 +81,13 @@ begin
 				REPLACE(REPLACE(bpd.detail_rec,CHR(10),' '),CHR(13),' ') detail_rec
 		FROM juror_mod.bulk_print_data bpd
 		WHERE bpd.form_type = p_form_type
-		AND COALESCE(bpd.extracted_flag,'N') = 'N'
+		AND bpd.extracted_flag = false
 		AND DATE(bpd.creation_date) <= p_ext_date
 	loop
 
 		-- setting header for file first time only
 		IF v_header IS null or v_header = '' THEN
-			SELECT RPAD('   ' ||RPAD(p_form_type,16)||LPAD(v_documents_to_write::VARCHAR(20),6,'0')||LPAD(v_page_size::VARCHAR(20),6,'0')||'50'||LPAD(p_max_rec_len::VARCHAR(20),8,'0'),256,' ')
+			SELECT RPAD('   ' ||RPAD(p_form_type,16)||LPAD(v_records_count::VARCHAR(20),6,'0')||LPAD(v_records_count::VARCHAR(20),6,'0')||'50'||LPAD(p_rec_len::VARCHAR(20),8,'0'),256,' ')
 			INTO v_header;
 			v_data := '' || v_header || chr(10);
 		END if;
@@ -104,15 +104,15 @@ begin
 
 
 			-- Calulate documents to write
-			if v_total_documents_size - p_document_limit < 0 then
-				v_documents_to_write := v_total_documents_size;
+			if v_total_remaining_records - p_document_limit < 0 then
+				v_documents_to_write := v_total_remaining_records;
 			else
-				v_total_documents_size := v_total_documents_size - p_document_limit;
+				v_total_remaining_records := v_total_remaining_records - p_document_limit;
 				v_documents_to_write := p_document_limit;
 			end if;
 
 			-- create new header for new file
-			SELECT RPAD('   ' ||RPAD(p_form_type,16)||LPAD(v_documents_to_write::VARCHAR(20),6,'0')||LPAD(v_page_size::VARCHAR(20),6,'0')||'50'||LPAD(p_max_rec_len::VARCHAR(20),8,'0'),256,' ')
+			SELECT RPAD('   ' ||RPAD(p_form_type,16)||LPAD(v_records_count::VARCHAR(20),6,'0')||LPAD(v_records_count::VARCHAR(20),6,'0')||'50'||LPAD(p_rec_len::VARCHAR(20),8,'0'),256,' ')
 			INTO v_header;
 
 			-- erasing data for new file
