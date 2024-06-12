@@ -111,7 +111,7 @@ begin
 			end if;
 
 			-- create new header for new file
-			SELECT RPAD('   ' ||RPAD(p_form_type,16)||LPAD(v_records_count::VARCHAR(20),6,'0')||LPAD(v_records_count::VARCHAR(20),6,'0')||'50'||LPAD(p_rec_len::VARCHAR(20),8,'0'),256,' ')
+			SELECT RPAD('   ' ||RPAD(p_form_type,16)||LPAD(v_records_count::VARCHAR(6),6,'0')||LPAD(v_records_count::VARCHAR(6),6,'0')||'50'||LPAD(p_rec_len::VARCHAR(20),8,'0'),256,' ')
 			INTO v_header;
 
 			-- erasing data for new file
