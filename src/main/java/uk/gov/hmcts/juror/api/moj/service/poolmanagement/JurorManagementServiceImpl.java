@@ -219,7 +219,8 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         newTargetJurorPool.setNextDate(targetPool.getReturnDate());
         newTargetJurorPool.setUserEdtq(currentUser);
 
-        newTargetJurorPool.setStatus(sourceJurorPool.getStatus()); // keep the status of the juror the same
+        newTargetJurorPool.setStatus(sourceJurorPool.getStatus());
+        // keep the status of the juror the same
 
         // some default values
         Juror newTargetJuror = newTargetJurorPool.getJuror();

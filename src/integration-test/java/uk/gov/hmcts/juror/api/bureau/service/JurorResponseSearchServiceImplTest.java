@@ -55,7 +55,6 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
                 false);
         assertThat(dto).isNotNull();
         assertThat(dto.getResponses()).isNotNull().hasSize(1).extracting("lastName").containsOnly("Cabrera");
-
         assertResponsesSortedCorrectly(dto);
     }
 
