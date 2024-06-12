@@ -40,14 +40,15 @@ public class UserServiceModImpl implements UserService {
     @Override
     @Transactional
     public UsernameDto createUser(CreateUserDto createUserDto) {
-        if (doesUserExistWithEmail(createUserDto.getEmail())) {
+        String email = createUserDto.getEmail().trim().toLowerCase();
+        if (doesUserExistWithEmail(email)) {
             throw new MojException.BusinessRuleViolation("Email is already in use",
                 MojException.BusinessRuleViolation.ErrorCode.EMAIL_IN_USE);
         }
 
         User user = User.builder()
             .userType(createUserDto.getUserType())
-            .email(createUserDto.getEmail())
+            .email(email)
             .name(createUserDto.getName())
             .roles(createUserDto.getRoles())
             .active(true)
@@ -72,7 +73,12 @@ public class UserServiceModImpl implements UserService {
             throw new MojException.Forbidden("User not part of court", null);
         }
         if (SecurityUtil.isAdministration()) {
-            user.setEmail(updateUserDto.getEmail());
+            String email = updateUserDto.getEmail().trim().toLowerCase();
+            if (!email.equalsIgnoreCase(user.getEmail()) && doesUserExistWithEmail(email)) {
+                throw new MojException.BusinessRuleViolation("Email is already in use",
+                    MojException.BusinessRuleViolation.ErrorCode.EMAIL_IN_USE);
+            }
+            user.setEmail(email);
             user.setName(updateUserDto.getName());
             user.setApprovalLimit(BigDecimalUtils.getOrZero(updateUserDto.getApprovalLimit()));
         }
@@ -212,7 +218,7 @@ public class UserServiceModImpl implements UserService {
 
     @Transactional(readOnly = true)
     User findUserByEmail(String email) {
-        return userRepository.findByEmailIgnoreCase(email).orElseThrow(
+        return userRepository.findByEmailIgnoreCase(email.trim()).orElseThrow(
             () -> new MojException.NotFound("User not found", null)
         );
     }
@@ -249,6 +255,6 @@ public class UserServiceModImpl implements UserService {
     }
 
     boolean doesUserExistWithEmail(String email) {
-        return userRepository.existsByEmail(email);
+        return userRepository.existsByEmail(email.trim());
     }
 }
