@@ -95,6 +95,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseR
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.ReasonableAdjustmentsRepository;
+import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAuditChangeService;
 
@@ -157,6 +158,8 @@ class JurorRecordServiceTest {
     private PoolHistoryRepository poolHistoryRepository;
     @Mock
     private JurorAppearanceService jurorAppearanceService;
+    @Mock
+    private PanelRepository panelRepository;
     @Mock
     private JurorRepository jurorRepository;
     @Mock

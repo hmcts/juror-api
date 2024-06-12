@@ -8,16 +8,21 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.factory.annotation.Autowired;
-import uk.gov.hmcts.juror.api.bureau.service.ResponseExcusalService;
+import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.IdCheckCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurorresponse.ReasonableAdjustmentsEnum;
+import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PendingJurorRepository;
+import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Response DTO for Juror overview on the Juror record.
@@ -59,6 +64,10 @@ public class JurorOverviewResponseDto {
     @Schema(description = "Common details for every Juror record")
     private JurorDetailsCommonResponseDto commonDetails;
 
+    private long absences;
+    private long trials;
+    private long attendances;
+
     @Schema(description = "Welsh flag")
     private Boolean welshLanguageRequired;
 
@@ -74,12 +83,25 @@ public class JurorOverviewResponseDto {
     @Autowired
     public JurorOverviewResponseDto(JurorPool jurorPool,
                                     JurorStatusRepository jurorStatusRepository,
-                                    ResponseExcusalService responseExcusalService,
+                                    PanelRepository panelRepository,
+                                    AppearanceRepository appearanceRepository,
                                     PendingJurorRepository pendingJurorRepository) {
         this.commonDetails = new JurorDetailsCommonResponseDto(jurorPool, jurorStatusRepository,
             pendingJurorRepository);
 
+        List<Appearance> appearanceList = appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumber(
+            SecurityUtil.getLocCode(),
+            jurorPool.getJurorNumber()
+        );
+        this.attendances = appearanceList.size();
+        this.absences = appearanceList.stream()
+            .filter(appearance -> AttendanceType.ABSENT.equals(appearance.getAttendanceType()))
+            .count();
+        this.trials = panelRepository.countByJurorJurorNumberAndTrialCourtLocationLocCode(
+            jurorPool.getJurorNumber(),
+            SecurityUtil.getLocCode());
         Juror juror = jurorPool.getJuror();
+
         this.opticReference = juror.getOpticRef();
         this.welshLanguageRequired = juror.getWelsh();
         this.idCheckCode = IdCheckCodeEnum.getIdCheckCodeEnum(jurorPool.getIdChecked());

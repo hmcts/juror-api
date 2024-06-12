@@ -32,4 +32,6 @@ public interface PanelRepository extends IPanelRepository, JpaRepository<Panel, 
         nativeQuery = true
     )
     Panel findActivePanel(String locCode, String jurorNumber);
+
+    long countByJurorJurorNumberAndTrialCourtLocationLocCode(String jurorNumber, String locCode);
 }
