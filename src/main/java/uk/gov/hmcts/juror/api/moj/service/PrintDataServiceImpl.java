@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.moj.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
@@ -27,6 +28,9 @@ import uk.gov.hmcts.juror.api.moj.xerox.letters.WithdrawalLetter;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+
+import static uk.gov.hmcts.juror.api.moj.xerox.LetterBase.getDateOfLetter;
 
 @Service
 @Slf4j
@@ -165,6 +169,34 @@ public class PrintDataServiceImpl implements PrintDataService {
             courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
             welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
         ));
+    }
+
+    @Override
+    public void reprintRequestInfoLetter(JurorPool jurorPool) {
+        // need to look up the current record in bulk print data and update the detailRec field
+        List<BulkPrintData> bulkPrintDataList =
+            bulkPrintDataRepository.findByJurorNoAndFormAttributeFormTypeInOrderByCreationDateDesc(
+            jurorPool.getJuror().getJurorNumber(),
+            List.of("5227", "5227C")
+        );
+
+        if (bulkPrintDataList.isEmpty()) {
+            throw new MojException.InternalServerError(
+                "Attempted to reprint request info letter for juror with no existing request info letter", null);
+        }
+
+        BulkPrintData bulkPrintData = bulkPrintDataList.get(0);
+        BulkPrintData newBulkPrintData = BulkPrintData.builder()
+            .creationDate(LocalDate.now())
+            .formAttribute(bulkPrintData.getFormAttribute())
+            .jurorNo(bulkPrintData.getJurorNo())
+            .extractedFlag(false)
+            .build();
+        StringBuilder detailRec = new StringBuilder(bulkPrintData.getDetailRec());
+        detailRec.replace(0, 18, StringUtils.rightPad(getDateOfLetter(), 18, ""));
+        newBulkPrintData.setDetailRec(detailRec.toString());
+        bulkPrintDataRepository.save(newBulkPrintData);
+
     }
 
     @Override

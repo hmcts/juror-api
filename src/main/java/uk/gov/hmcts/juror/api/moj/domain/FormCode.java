@@ -24,17 +24,14 @@ public enum FormCode {
     BI_DEFERRALDENIED("5226AC", PrintDataService::printDeferralDeniedLetter, IJurorStatus.RESPONDED),
     ENG_POSTPONE("5229", PrintDataService::printPostponeLetter, IJurorStatus.DEFERRED),
     BI_POSTPONE("5229C", PrintDataService::printPostponeLetter, IJurorStatus.DEFERRED),
-
-    // We currently are not anticipating a resend function for request info letters.
-    // If we do need one, we will need to write a print function in PrintDataService that only takes a jurorNumber
-    // and looks up the previous letter in the bulk_print_data table to retrieve the requested information.
-    ENG_REQUESTINFO("5227", null, IJurorStatus.ADDITIONAL_INFO),
-    BI_REQUESTINFO("5227C", null, IJurorStatus.ADDITIONAL_INFO),
+    // The additional information status on juror is not used in modernisation code
+    ENG_REQUESTINFO("5227", PrintDataService::reprintRequestInfoLetter, IJurorStatus.SUMMONED),
+    BI_REQUESTINFO("5227C", PrintDataService::reprintRequestInfoLetter, IJurorStatus.SUMMONED),
     ENG_WITHDRAWAL("5224", PrintDataService::printWithdrawalLetter, IJurorStatus.DISQUALIFIED),
     BI_WITHDRAWAL("5224C", PrintDataService::printWithdrawalLetter, IJurorStatus.DISQUALIFIED);
     private final String code;
 
-    private int jurorStatus;  // Todo: this may need to be a list of statuses
+    private int jurorStatus;
 
     private final BiConsumer<PrintDataService, JurorPool> letterPrinter;
 

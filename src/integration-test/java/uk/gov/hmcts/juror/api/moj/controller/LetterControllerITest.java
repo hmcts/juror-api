@@ -2393,6 +2393,188 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(pendingCount).as("Expect there to be 3 pending rows").isEqualTo(1);
         }
 
+        @Test
+        @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initInformationRequestLetter.sql"})
+        void reissueInformationRequestListByJurorNumber() throws Exception {
+            final String jurorNumber = "641500017";
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
+            final URI uri = URI.create("/api/v1/moj/letter/reissue-letter-list");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            ReissueLetterListRequestDto reissueLetterListRequestDto = ReissueLetterListRequestDto.builder()
+                .jurorNumber(jurorNumber)
+                .letterType(LetterType.INFORMATION)
+                .build();
+
+            RequestEntity<ReissueLetterListRequestDto> request = new RequestEntity<>(reissueLetterListRequestDto,
+                httpHeaders, POST, uri);
+            ResponseEntity<String> response = template.exchange(request, String.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK")
+                .isEqualTo(OK);
+
+            assertThat(response.getBody()).isNotNull();
+            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+                ReissueLetterListResponseDto.class);
+
+            verifyHeadingsAndTypesInformationRequest(reissueLetterListResponseDto);
+
+            List<List<Object>> data = reissueLetterListResponseDto.getData();
+            assertThat(data).isNotNull();
+            assertThat(data.size()).isEqualTo(1);
+            assertThat(data.get(0).size()).isEqualTo(7);
+            assertThat(data.get(0).get(0)).isEqualTo("641500017");
+            assertThat(data.get(0).get(1)).isEqualTo("FNAMEONESEVEN");
+            assertThat(data.get(0).get(2)).isEqualTo("LNAMEONESEVEN");
+            assertThat(data.get(0).get(3)).isEqualTo("CH3 2AR");
+            assertThat(data.get(0).get(4)).isEqualTo(LocalDate.now().minusDays(1).toString());
+            assertThat(data.get(0).get(5)).isEqualTo(false);
+            assertThat(data.get(0).get(6)).isEqualTo(FormCode.ENG_REQUESTINFO.getCode());
+        }
+
+        @Test
+        @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initInformationRequestLetter.sql"})
+        void reissueInformationRequestListByJurorNumberWelsh() throws Exception {
+            final String jurorNumber = "641500211";
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
+            final URI uri = URI.create("/api/v1/moj/letter/reissue-letter-list");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            ReissueLetterListRequestDto reissueLetterListRequestDto = ReissueLetterListRequestDto.builder()
+                .jurorNumber(jurorNumber)
+                .letterType(LetterType.INFORMATION)
+                .build();
+
+            RequestEntity<ReissueLetterListRequestDto> request = new RequestEntity<>(reissueLetterListRequestDto,
+                httpHeaders, POST, uri);
+            ResponseEntity<String> response = template.exchange(request, String.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK")
+                .isEqualTo(OK);
+
+            assertThat(response.getBody()).isNotNull();
+            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+                ReissueLetterListResponseDto.class);
+
+            verifyHeadingsAndTypesInformationRequest(reissueLetterListResponseDto);
+
+            List<List<Object>> data = reissueLetterListResponseDto.getData();
+            assertThat(data).isNotNull();
+            assertThat(data.size()).isEqualTo(1);
+            assertThat(data.get(0).size()).isEqualTo(7);
+            assertThat(data.get(0).get(0)).isEqualTo("641500211");
+            assertThat(data.get(0).get(1)).isEqualTo("FNAMEONEONE");
+            assertThat(data.get(0).get(2)).isEqualTo("LNAMEONEONET");
+            assertThat(data.get(0).get(3)).isEqualTo("CH2 2AB");
+            assertThat(data.get(0).get(4)).isEqualTo(LocalDate.now().minusDays(2).toString());
+            assertThat(data.get(0).get(5)).isEqualTo(false);
+            assertThat(data.get(0).get(6)).isEqualTo(FormCode.BI_REQUESTINFO.getCode());
+        }
+
+
+        @Test
+        @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initInformationRequestLetter.sql"})
+        void reissueInformationRequestListByPoolNumber() throws Exception {
+            final String poolNumber = "415240801";
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
+            final URI uri = URI.create("/api/v1/moj/letter/reissue-letter-list");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            ReissueLetterListRequestDto reissueLetterListRequestDto = ReissueLetterListRequestDto.builder()
+                .poolNumber(poolNumber)
+                .letterType(LetterType.INFORMATION)
+                .build();
+
+            RequestEntity<ReissueLetterListRequestDto> request = new RequestEntity<>(reissueLetterListRequestDto,
+                httpHeaders, POST, uri);
+            ResponseEntity<String> response = template.exchange(request, String.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK")
+                .isEqualTo(OK);
+
+            assertThat(response.getBody()).isNotNull();
+            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+                ReissueLetterListResponseDto.class);
+
+            verifyHeadingsAndTypesInformationRequest(reissueLetterListResponseDto);
+
+            List<List<Object>> data = reissueLetterListResponseDto.getData();
+            assertThat(data).isNotNull();
+            assertThat(data.size()).isEqualTo(4);
+
+        }
+
+        @Test
+        @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initInformationRequestLetter.sql"})
+        void reissueInformationRequestListShowAllPending() throws Exception {
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
+            final URI uri = URI.create("/api/v1/moj/letter/reissue-letter-list");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            ReissueLetterListRequestDto reissueLetterListRequestDto = ReissueLetterListRequestDto.builder()
+                .showAllQueued(true)
+                .letterType(LetterType.INFORMATION)
+                .build();
+
+            RequestEntity<ReissueLetterListRequestDto> request = new RequestEntity<>(reissueLetterListRequestDto,
+                httpHeaders, POST, uri);
+            ResponseEntity<String> response = template.exchange(request, String.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK")
+                .isEqualTo(OK);
+
+            assertThat(response.getBody()).isNotNull();
+            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+                ReissueLetterListResponseDto.class);
+
+            verifyHeadingsAndTypesInformationRequest(reissueLetterListResponseDto);
+
+            List<List<Object>> data = reissueLetterListResponseDto.getData();
+            assertThat(data).isNotNull();
+            assertThat(data.size()).isEqualTo(2);
+
+            int pendingCount = data.stream().map(row -> row.get(5)).filter(flag -> flag.equals(false))
+                .toArray().length;
+            assertThat(pendingCount).as("Expect there to be 2 pending rows").isEqualTo(2);
+        }
+
+        private void verifyHeadingsAndTypesInformationRequest(ReissueLetterListResponseDto reissueLetterListResponseDto) {
+            assertThat(reissueLetterListResponseDto).isNotNull();
+            List<String> headings = reissueLetterListResponseDto.getHeadings();
+            assertThat(headings).isNotNull();
+            assertThat(headings.size()).as("Expect there to be 7 headings").isEqualTo(7);
+            assertThat(headings.get(0)).isEqualTo("Juror number");
+            assertThat(headings.get(1)).isEqualTo("First name");
+            assertThat(headings.get(2)).isEqualTo("Last name");
+            assertThat(headings.get(3)).isEqualTo("Postcode");
+            assertThat(headings.get(4)).isEqualTo("Date printed");
+            assertThat(headings.get(5)).isEqualTo("hidden_extracted_flag");
+            assertThat(headings.get(6)).isEqualTo("hidden_form_code");
+
+            List<String> dataTypes = reissueLetterListResponseDto.getDataTypes();
+            assertThat(dataTypes).isNotNull();
+            assertThat(dataTypes.size()).as("Expect there to be 7 data types").isEqualTo(7);
+            assertThat(dataTypes.get(0)).isEqualTo("string");
+            assertThat(dataTypes.get(1)).isEqualTo("string");
+            assertThat(dataTypes.get(2)).isEqualTo("string");
+            assertThat(dataTypes.get(3)).isEqualTo("string");
+            assertThat(dataTypes.get(4)).isEqualTo("date");
+            assertThat(dataTypes.get(5)).isEqualTo("boolean");
+            assertThat(dataTypes.get(6)).isEqualTo("string");
+        }
+
         private void verifyHeadingsAndTypesDeferrals(ReissueLetterListResponseDto reissueLetterListResponseDto) {
             assertThat(reissueLetterListResponseDto).isNotNull();
             List<String> headings = reissueLetterListResponseDto.getHeadings();
@@ -2848,8 +3030,6 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 httpHeaders, POST, uri);
             ResponseEntity<String> response = template.exchange(request, String.class);
 
-
-
             assertThat(response).isNotNull();
             assertThat(response.getStatusCode())
                 .as("Expect HTTP Response to be OK")
@@ -2883,6 +3063,33 @@ class LetterControllerITest extends AbstractIntegrationTest {
                         .format(DateTimeFormatter.ofPattern("dd MMMM yyyy")).toUpperCase());
                 default -> fail("Unexpected day of the week");
             }
+        }
+
+        @Test
+        @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initInformationRequestLetter.sql"})
+        void reissueInformationRequestLetterHappy() {
+            final URI uri = URI.create("/api/v1/moj/letter/reissue-letter");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData =
+                ReissueLetterRequestDto.ReissueLetterRequestData.builder()
+                    .jurorNumber("641500216")
+                    .formCode(FormCode.ENG_REQUESTINFO.getCode())
+                    .datePrinted(LocalDate.now().minusDays(1))
+                    .build();
+
+            ReissueLetterRequestDto reissueLetterRequestDto = ReissueLetterRequestDto.builder()
+                .letters(List.of(reissueLetterRequestData))
+                .build();
+
+            RequestEntity<ReissueLetterRequestDto> request = new RequestEntity<>(reissueLetterRequestDto,
+                httpHeaders, POST, uri);
+            ResponseEntity<String> response = template.exchange(request, String.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode()).as("Expect HTTP Response to be OK").isEqualTo(OK);
         }
 
         @Nested
@@ -3304,9 +3511,11 @@ class LetterControllerITest extends AbstractIntegrationTest {
             "5226A",
             "5226AC",
             "5225",
-            "5225C"})
+            "5225C",
+            "5227",
+            "5227C"})
         @Sql({"/db/mod/truncate.sql", "/db/LetterController_deletePendingBureauLetter.sql"})
-        void deleteLetterHappy(String formCode) {
+        void deletePendingBureauLetterHappy(String formCode) {
             final URI uri = URI.create("/api/v1/moj/letter/delete-pending-letter");
             final String bureauJwt = createJwtBureau("BUREAU_USER");
 
