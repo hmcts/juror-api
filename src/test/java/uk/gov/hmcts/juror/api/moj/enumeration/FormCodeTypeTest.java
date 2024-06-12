@@ -84,12 +84,12 @@ class FormCodeTypeTest {
 
     @Test
     void englishRequestInfo() {
-        assertEquals(FormCode.ENG_REQUESTINFO, "5227", IJurorStatus.ADDITIONAL_INFO);
+        assertEquals(FormCode.ENG_REQUESTINFO, "5227", IJurorStatus.SUMMONED);
     }
 
     @Test
     void welshRequestInfo() {
-        assertEquals(FormCode.BI_REQUESTINFO, "5227C", IJurorStatus.ADDITIONAL_INFO);
+        assertEquals(FormCode.BI_REQUESTINFO, "5227C", IJurorStatus.SUMMONED);
     }
 
     @Test

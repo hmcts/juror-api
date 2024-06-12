@@ -29,6 +29,8 @@ public interface PrintDataService {
 
     void printRequestInfoLetter(JurorPool jurorPool, String additionalInfo);
 
+    void reprintRequestInfoLetter(JurorPool jurorPool);
+
     void printWithdrawalLetter(JurorPool jurorPool);
 
 }
