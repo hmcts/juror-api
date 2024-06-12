@@ -8,6 +8,7 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResp
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReport;
 import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
@@ -52,9 +53,9 @@ public class CompletionOfServiceReport extends AbstractGroupedReport {
 
     @Override
     public void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
-        query.where(QJurorPool.jurorPool.juror.completionDate.between(request.getFromDate(), request.getToDate()));
-        query.where(QJurorPool.jurorPool.location.eq(SecurityUtil.getLocCode()));
-        query.orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
+        query.where(QJuror.juror.completionDate.between(request.getFromDate(), request.getToDate()));
+        query.where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(SecurityUtil.getLocCode()));
+        query.orderBy(QJuror.juror.jurorNumber.asc());
     }
 
     @Override

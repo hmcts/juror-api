@@ -64,7 +64,6 @@ public class DailyUtilisationReportJurorsResponse {
         @Data
         @Builder
         @NoArgsConstructor
-        @ToString
         @AllArgsConstructor
         public static class Heading {
             private UtilisationReportService.TableHeading id;
@@ -76,7 +75,6 @@ public class DailyUtilisationReportJurorsResponse {
         @Data
         @Builder
         @NoArgsConstructor
-        @ToString
         @AllArgsConstructor
         public static class Juror {
             private String juror;

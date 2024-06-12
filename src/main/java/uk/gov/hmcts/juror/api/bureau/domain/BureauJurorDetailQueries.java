@@ -31,9 +31,8 @@ public class BureauJurorDetailQueries {
     private static final String YES = "Y";
     private static final String OWNER_IS_BUREAU = "400";
 
-
-    //  private static final QBureauJurorDetail bureauJurorDetail = QBureauJurorDetail.bureauJurorDetail;
     private static final QModJurorDetail bureauJurorDetail = QModJurorDetail.modJurorDetail;
+
 
     private BureauJurorDetailQueries() {
     }
@@ -120,6 +119,10 @@ public class BureauJurorDetailQueries {
         return byMemberOfStaffAssigned(staffLogin)
             .and(byStatus(Collections.singletonList(ProcessingStatus.CLOSED.name())))
             .and(bureauJurorDetail.completedAt.between(startOfSearchPeriod, endOfSearchPeriod));
+    }
+
+    public static BooleanExpression filterByActiveStatus() {
+        return bureauJurorDetail.isActive.isTrue();
     }
 
     /**

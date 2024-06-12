@@ -24,16 +24,19 @@ import uk.gov.hmcts.juror.api.config.security.IsBureauUser;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.JurySummoningMonitorReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
+import uk.gov.hmcts.juror.api.moj.controller.reports.request.YieldPerformanceReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportJurorsResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.FinancialAuditReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.JurySummoningMonitorReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.MonthlyUtilisationReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.YieldPerformanceReportResponse;
 import uk.gov.hmcts.juror.api.moj.service.report.FinancialAuditReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.JurySummoningMonitorReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.ReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService;
+import uk.gov.hmcts.juror.api.moj.service.report.YieldPerformanceReportService;
 import uk.gov.hmcts.juror.api.validation.CourtLocationCode;
 
 import java.time.LocalDate;
@@ -51,6 +54,7 @@ public class ReportController {
     private final FinancialAuditReportService financialAuditReportService;
     private final UtilisationReportService utilisationReportService;
     private final JurySummoningMonitorReportService jurySummoningMonitorReportService;
+    private final YieldPerformanceReportService yieldPerformanceReportService;
 
     @PostMapping("/standard")
     @Operation(summary = "View a given report")
@@ -143,6 +147,18 @@ public class ReportController {
     ) {
         return ResponseEntity.ok(jurySummoningMonitorReportService
             .viewJurySummoningMonitorReport(jurySummoningMonitorReportRequest));
+    }
+
+    @PostMapping("/yield-performance")
+    @Operation(summary = "View a yield performance report")
+    @ResponseStatus(HttpStatus.OK)
+    @IsBureauUser
+    public ResponseEntity<YieldPerformanceReportResponse> viewYieldPerformanceReport(
+        @RequestBody
+        @Valid YieldPerformanceReportRequest yieldPerformanceReportRequest
+    ) {
+        return ResponseEntity.ok(yieldPerformanceReportService
+            .viewYieldPerformanceReport(yieldPerformanceReportRequest));
     }
 
 }

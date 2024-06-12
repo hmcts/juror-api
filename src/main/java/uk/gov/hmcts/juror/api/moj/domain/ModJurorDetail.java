@@ -314,8 +314,10 @@ public class ModJurorDetail implements Serializable {
     @OneToMany(mappedBy = "jurorNumber")
     private Set<ChangeLog> changeLogs = new HashSet<>();
 
+    @Column(name = "is_active")
+    private Boolean isActive;
+
     public boolean isWelshCourt() {
         return this.welshCourt;
     }
-
 }

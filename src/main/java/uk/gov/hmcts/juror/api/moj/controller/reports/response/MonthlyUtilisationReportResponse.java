@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 import uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService;
 
 import java.util.ArrayList;
@@ -49,7 +48,6 @@ public class MonthlyUtilisationReportResponse {
 
     @Data
     @NoArgsConstructor
-    @ToString
     public static class TableData {
         private List<Heading> headings;
 
@@ -68,7 +66,6 @@ public class MonthlyUtilisationReportResponse {
         @Data
         @Builder
         @NoArgsConstructor
-        @ToString
         @AllArgsConstructor
         public static class Heading {
             private UtilisationReportService.TableHeading id;
@@ -79,7 +76,6 @@ public class MonthlyUtilisationReportResponse {
         @Data
         @Builder
         @NoArgsConstructor
-        @ToString
         @AllArgsConstructor
         public static class Month {
             private String month;
