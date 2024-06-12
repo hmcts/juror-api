@@ -23,6 +23,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Entity
 @Table(name = "TEAM", schema = "JUROR_DIGITAL")
+@Deprecated(forRemoval = true)
 public class Team implements Serializable {
     @Id
     @Column(name = "ID", nullable = false, unique = true)

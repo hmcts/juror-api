@@ -4,19 +4,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
-import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.DeferralDeniedLetter;
-import uk.gov.hmcts.juror.api.testsupport.DisableIfWeekend;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.Calendar;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 @ExtendWith(SpringExtension.class)
-@SuppressWarnings("PMD.LawOfDemeter")
 class DeferralDeniedLetterTest extends AbstractLetterTest {
     @Override
     protected void setupEnglishExpectedResult() {
@@ -98,22 +93,17 @@ class DeferralDeniedLetterTest extends AbstractLetterTest {
             LetterTestUtils.testCourtLocation(),
             LetterTestUtils.testBureauLocation());
 
-        int dayOfTheWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
-        if (dayOfTheWeek == Calendar.SATURDAY || dayOfTheWeek == Calendar.SUNDAY) {
-            assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
-                .isThrownBy(deferralDeniedLetter::getLetterString);
-        } else {
-            assertThat(deferralDeniedLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
-            assertThat(deferralDeniedLetter.getFormCode()).isEqualTo(FormCode.ENG_DEFERRALDENIED.getCode());
-            assertThat(deferralDeniedLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testJuror().getJurorNumber());
+        assertThat(deferralDeniedLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
+        assertThat(deferralDeniedLetter.getFormCode()).isEqualTo(FormCode.ENG_DEFERRALDENIED.getCode());
+        assertThat(deferralDeniedLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testJuror().getJurorNumber());
 
-            // Fax number is always empty
-            assertThat(deferralDeniedLetter.getData().get(11).getFormattedString())
-                .isEqualTo(LetterTestUtils.emptyField(12));
-            // Juror address 6 is always empty
-            assertThat(deferralDeniedLetter.getData().get(27).getFormattedString())
-                .isEqualTo(LetterTestUtils.emptyField(35));
-        }
+        // Fax number is always empty
+        assertThat(deferralDeniedLetter.getData().get(11).getFormattedString())
+            .isEqualTo(LetterTestUtils.emptyField(12));
+        // Juror address 6 is always empty
+        assertThat(deferralDeniedLetter.getData().get(27).getFormattedString())
+            .isEqualTo(LetterTestUtils.emptyField(35));
+
     }
 
     @Test
@@ -126,27 +116,21 @@ class DeferralDeniedLetterTest extends AbstractLetterTest {
             LetterTestUtils.testBureauLocation(),
             LetterTestUtils.testWelshCourtLocation());
 
-        int dayOfTheWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
-        if (dayOfTheWeek == Calendar.SATURDAY || dayOfTheWeek == Calendar.SUNDAY) {
-            assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
-                .isThrownBy(deferralDeniedLetter::getLetterString);
-        } else {
-            assertThat(deferralDeniedLetter.getLetterString()).isEqualTo(getExpectedWelshResult());
-            assertThat(deferralDeniedLetter.getFormCode()).isEqualTo(FormCode.BI_DEFERRALDENIED.getCode());
-            assertThat(deferralDeniedLetter.getJurorNumber())
-                .isEqualTo(LetterTestUtils.testWelshJuror().getJurorNumber());
+        assertThat(deferralDeniedLetter.getLetterString()).isEqualTo(getExpectedWelshResult());
+        assertThat(deferralDeniedLetter.getFormCode()).isEqualTo(FormCode.BI_DEFERRALDENIED.getCode());
+        assertThat(deferralDeniedLetter.getJurorNumber())
+            .isEqualTo(LetterTestUtils.testWelshJuror().getJurorNumber());
 
-            // Fax number is always empty
-            assertThat(deferralDeniedLetter.getData().get(11).getFormattedString())
-                .isEqualTo(LetterTestUtils.emptyField(12));
-            // Juror address 6 is always empty
-            assertThat(deferralDeniedLetter.getData().get(27).getFormattedString())
-                .isEqualTo(LetterTestUtils.emptyField(35));
-        }
+        // Fax number is always empty
+        assertThat(deferralDeniedLetter.getData().get(11).getFormattedString())
+            .isEqualTo(LetterTestUtils.emptyField(12));
+        // Juror address 6 is always empty
+        assertThat(deferralDeniedLetter.getData().get(27).getFormattedString())
+            .isEqualTo(LetterTestUtils.emptyField(35));
+
     }
 
     @Test
-    @DisableIfWeekend
     void confirmWelshWithoutWelshCourtProducesEnglishOutput() {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         setupEnglishExpectedResult();

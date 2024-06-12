@@ -50,11 +50,6 @@ public class EditPoolServiceImpl implements EditPoolService {
         String poolNumber = poolEditRequestDto.getPoolNumber();
         log.trace(String.format("Enter editPoolJurorsRequested for Pool Number: %s", poolNumber));
 
-        // check if Pool Request is in an editable state - with the Bureau
-        if (!poolRequestRepository.isActive(poolNumber)) {
-            throw new PoolEditException.CannotEditPoolRequest(payload.getLogin(), poolNumber);
-        }
-
         Optional<PoolRequest> poolRequestOpt = poolRequestRepository.findByPoolNumber(poolNumber);
 
         if (poolRequestOpt.isPresent()) {

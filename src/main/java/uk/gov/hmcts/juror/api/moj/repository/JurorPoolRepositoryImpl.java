@@ -11,6 +11,8 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import lombok.Builder;
+import lombok.Data;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
@@ -28,18 +30,20 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.utils.NumberUtils;
 import uk.gov.hmcts.juror.api.moj.utils.PaginationUtil;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+
 /**
  * Custom Repository implementation for the JurorPool entity.
  */
-@SuppressWarnings("PMD.LawOfDemeter")
 public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
 
     @PersistenceContext
@@ -253,6 +257,15 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
     }
 
     @Override
+    public boolean hasPoolWithLocCode(String jurorNumber, List<String> locCode) {
+        JPAQueryFactory queryFactory = getQueryFactory();
+        return queryFactory.from(JUROR_POOL)
+            .where(JUROR_POOL.juror.jurorNumber.eq(jurorNumber))
+            .where(JUROR_POOL.pool.courtLocation.locCode.in(locCode))
+            .fetchFirst() != null;
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public JPAQuery<Tuple> fetchFilteredPoolMembers(PoolMemberFilterRequestQuery search, String owner) {
         JPAQueryFactory queryFactory = getQueryFactory();
@@ -376,5 +389,55 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
             APPEARANCE.appearanceStage.eq(AppearanceStage.CHECKED_IN),
             APPEARANCE.attendanceDate.eq(LocalDate.now())
         );
+    }
+
+
+    public static List<YieldPerformanceData> getYieldPerformanceData(JurorPoolRepository jurorPoolRepository,
+                                                                     String courtLocCodes, LocalDate fromDate,
+                                                                     LocalDate toDate) {
+        List<YieldPerformanceData> yieldPerformanceReportStats = new ArrayList<>();
+
+        try {
+            List<String> yieldPerformanceReportResults =
+                jurorPoolRepository.getYieldPerformanceReportStats(courtLocCodes,
+                    fromDate, toDate);
+
+            if (yieldPerformanceReportResults != null) {
+
+                for (String result : yieldPerformanceReportResults) {
+                    List<String> values = List.of(result.split(","));
+
+                    final int requested = Integer.parseInt(values.get(2));
+                    final int confirmed = Integer.parseInt(values.get(3));
+                    final int balance = confirmed - requested;
+
+                    YieldPerformanceData yieldPerformanceData =
+                        YieldPerformanceData.builder()
+                            .locCode(values.get(0))
+                            .court(values.get(1))
+                            .requested(requested)
+                            .confirmed(confirmed)
+                            .balance(confirmed - requested)
+                            .difference(NumberUtils.calculatePercentage(balance, requested))
+                            .build();
+                    yieldPerformanceReportStats.add(yieldPerformanceData);
+                }
+            }
+
+        } catch (Exception e) {
+            throw new MojException.InternalServerError("Error getting yield performance report by court", e);
+        }
+        return yieldPerformanceReportStats;
+    }
+
+    @Builder
+    @Data
+    public static class YieldPerformanceData {
+        private String court;
+        private String locCode;
+        private int requested;
+        private int confirmed;
+        private int balance;
+        private double difference;
     }
 }

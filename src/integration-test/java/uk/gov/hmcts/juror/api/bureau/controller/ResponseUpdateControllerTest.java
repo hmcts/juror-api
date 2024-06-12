@@ -43,6 +43,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
 public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
     @Value("${jwt.secret.bureau}")
     private String bureauSecret;
@@ -301,42 +302,43 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void validateJurorNumberPathVariable_happy_validationPass() throws Exception {
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
+    public void assertJurorNumberPathVariable_happy_validationPass() throws Exception {
         final String validJurorNumber = "123456789";
-        ResponseUpdateController.validateJurorNumberPathVariable(validJurorNumber);
+        ResponseUpdateController.assertJurorNumberPathVariable(validJurorNumber);
         // no exception = pass
     }
 
     @Test
-    public void validateJurorNumberPathVariable_unhappy_validationFail() throws Exception {
+    public void assertJurorNumberPathVariable_unhappy_validationFail() throws Exception {
         final String invalidJurorNumberLong = "1234567890";// too long
         final String invalidJurorNumberShort = "12345678";// too short
         final String invalidJurorNumberAlpha = "1234S6789";// alpha char
         final String invalidJurorNumberSpecial = "!23456789";// special char
 
         try {
-            ResponseUpdateController.validateJurorNumberPathVariable(invalidJurorNumberLong);
+            ResponseUpdateController.assertJurorNumberPathVariable(invalidJurorNumberLong);
             Assert.fail("Did not throw validation exception");
         } catch (ValidationException ve) {
             assertThat(ve.getMessage()).contains("Juror number must be exactly 9 digits");
         }
 
         try {
-            ResponseUpdateController.validateJurorNumberPathVariable(invalidJurorNumberShort);
+            ResponseUpdateController.assertJurorNumberPathVariable(invalidJurorNumberShort);
             Assert.fail("Did not throw validation exception");
         } catch (ValidationException ve) {
             assertThat(ve.getMessage()).contains("Juror number must be exactly 9 digits");
         }
 
         try {
-            ResponseUpdateController.validateJurorNumberPathVariable(invalidJurorNumberAlpha);
+            ResponseUpdateController.assertJurorNumberPathVariable(invalidJurorNumberAlpha);
             Assert.fail("Did not throw validation exception");
         } catch (ValidationException ve) {
             assertThat(ve.getMessage()).contains("Juror number must be exactly 9 digits");
         }
 
         try {
-            ResponseUpdateController.validateJurorNumberPathVariable(invalidJurorNumberSpecial);
+            ResponseUpdateController.assertJurorNumberPathVariable(invalidJurorNumberSpecial);
             Assert.fail("Did not throw validation exception");
         } catch (ValidationException ve) {
             assertThat(ve.getMessage()).contains("Juror number must be exactly 9 digits");
@@ -348,6 +350,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/ResponseUpdateControllerTest_jurorResponse_firstPerson.sql")
+    @SuppressWarnings("PMD.NcssCount")
     public void updateJurorDetailsFirstPerson_happy() throws Exception {
         final String loginName = "BUREAULADY9";
         final String staffBureauLady = "Bureau Lady";
@@ -669,7 +672,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
     @Sql("/db/ResponseUpdateControllerTest_jurorResponse_firstPerson.sql")
     public void updateJurorDetailsFirstPerson_unhappy_optimisticLocking() throws Exception {
         final String loginName = "BUREAULADY9";
-        final String staffBureauLady = "Bureau Lady";
         final String jurorNumber = "352004504";
         final String changeLogNotes = "Some change log notes.";
 
@@ -1595,6 +1597,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/ResponseUpdateControllerTest_jurorResponse_eligibility.sql")
+    @SuppressWarnings("PMD.NcssCount")
     public void updateJurorEligibility_happy() throws Exception {
         final String loginName = "BUREAULADY9";
         final String staffBureauLady = "Bureau Lady";

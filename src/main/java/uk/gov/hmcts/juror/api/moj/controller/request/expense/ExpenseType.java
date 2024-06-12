@@ -29,8 +29,7 @@ public enum ExpenseType {
 
     public FinancialAuditDetails.Type toEditType() {
         return switch (this) {
-            case FOR_APPROVAL -> FinancialAuditDetails.Type.FOR_APPROVAL_EDIT;
-            case FOR_REAPPROVAL -> FinancialAuditDetails.Type.REAPPROVED_EDIT;
+            case FOR_APPROVAL, FOR_REAPPROVAL -> FinancialAuditDetails.Type.FOR_APPROVAL_EDIT;
             case APPROVED -> FinancialAuditDetails.Type.APPROVED_EDIT;
             case DRAFT -> throw new IllegalArgumentException("Cannot convert DRAFT to edit type");
         };

@@ -28,6 +28,8 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.doReturn;
@@ -59,7 +61,7 @@ public class DeferralResponseServiceImplTest {
 
     @Before
     public void setUpMocks() {
-        ExcusalCode excusalCodeEntity = new ExcusalCode("B", "Description of B",false,true,false,false);
+        ExcusalCode excusalCodeEntity = new ExcusalCode("B", "Description of B", false, true, false, false);
         when(excusalCodeRepository.findAll()).thenReturn(Collections.singletonList(excusalCodeEntity));
 
         doReturn(Collections.singletonList(createTestJurorPool("400", "123456789"))).when(jurorPoolRepository)
@@ -90,6 +92,28 @@ public class DeferralResponseServiceImplTest {
         verify(jurorHistoryRepository, times(1)).save(any());
         verify(printDataService, never()).printDeferralDeniedLetter(any());
 
+    }
+
+    @Test
+    public void test_unhappyPath_multiple_deferrals() {
+        String jurorNumber = "987654321";
+        BureauJwtPayload payload = TestUtils.createJwt("415", "SOME_USER");
+
+        DeferralRequestDto deferralRequestDto = createTestDeferralRequestDto(jurorNumber);
+        deferralRequestDto.setAllowMultipleDeferrals(false);
+        deferralRequestDto.setDeferralDecision(DeferralDecision.GRANT);
+
+        MojException.BusinessRuleViolation exception = assertThrows(
+            MojException.BusinessRuleViolation.class,
+            () -> deferralResponseService.respondToDeferralRequest(payload, deferralRequestDto)
+        );
+        assertThat(exception).isNotNull();
+        assertThat(exception.getCause()).isNull();
+        assertThat(exception.getMessage())
+            .isEqualTo("Juror has been deferred before. Please use "
+                + "allow_multiple_deferrals to bypass this error.");
+        assertThat(exception.getErrorCode())
+            .isEqualTo(MojException.BusinessRuleViolation.ErrorCode.JUROR_HAS_BEEN_DEFERRED_BEFORE);
     }
 
     @Test
@@ -173,6 +197,7 @@ public class DeferralResponseServiceImplTest {
         DeferralRequestDto deferralRequestDto = new DeferralRequestDto();
         deferralRequestDto.setJurorNumber(jurorNumber);
         deferralRequestDto.setDeferralReason("B");
+        deferralRequestDto.setAllowMultipleDeferrals(true);
         deferralRequestDto.setDeferralDecision(DeferralDecision.REFUSE);
         return deferralRequestDto;
     }

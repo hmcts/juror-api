@@ -10,7 +10,7 @@ import java.util.List;
  * Repository for {@link StatsExcusals}.
  **/
 @Repository
-
+@Deprecated(forRemoval = true)
 public interface StatsExcusalsRepository extends CrudRepository<StatsExcusals, StatsExcusalsKey>,
     QuerydslPredicateExecutor<StatsExcusals> {
 

@@ -75,7 +75,7 @@ import java.util.List;
 @RequestMapping(value = "/api/v1/moj/juror-record", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Juror Management")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.LawOfDemeter"})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
 public class JurorRecordController {
 
     @NonNull
@@ -377,7 +377,7 @@ public class JurorRecordController {
     @PatchMapping("/pnc/{jurorNumber}")
     @Operation(summary = "Updates the juror police national computer check status",
         description = "Updates the juror police national computer check status")
-    public ResponseEntity<Void> updatePncCheckStatus(
+    public ResponseEntity<PoliceCheckStatusDto> updatePncCheckStatus(
         @Parameter(description = "Valid juror number",
             required = true)
         @JurorNumber
@@ -386,8 +386,7 @@ public class JurorRecordController {
         @Valid String jurorNumber,
         @Valid @RequestBody PoliceCheckStatusDto request
     ) {
-        jurorRecordService.updatePncStatus(jurorNumber, request.getStatus());
-        return new ResponseEntity<>(HttpStatus.ACCEPTED);
+        return ResponseEntity.accepted().body(jurorRecordService.updatePncStatus(jurorNumber, request.getStatus()));
     }
 
     @PatchMapping("/failed-to-attend")
@@ -432,7 +431,6 @@ public class JurorRecordController {
         @Valid @PathVariable("locCode") @CourtLocationCode String locCode) {
         final JurorAttendanceDetailsResponseDto details =
             jurorRecordService.getJurorAttendanceDetails(locCode, jurorNumber, payload);
-
         return ResponseEntity.ok().body(details);
     }
 

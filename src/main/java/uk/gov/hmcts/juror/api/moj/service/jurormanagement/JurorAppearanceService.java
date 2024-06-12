@@ -13,9 +13,12 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorAppearanceResponseDto
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsOnTrialResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsToDismissResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.AttendanceDetailsResponse;
+import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
 
 import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Optional;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public interface JurorAppearanceService {
@@ -30,13 +33,13 @@ public interface JurorAppearanceService {
 
     boolean hasAppearances(String jurorNumber);
 
+    Optional<Appearance> getFirstAppearanceWithAuditNumber(String juryAuditNumber, Collection<String> locCodes);
+
     AttendanceDetailsResponse retrieveAttendanceDetails(BureauJwtPayload payload, RetrieveAttendanceDetailsDto request);
 
     AttendanceDetailsResponse updateAttendance(BureauJwtPayload payload, UpdateAttendanceDto request);
 
     String updateAttendanceDate(UpdateAttendanceDateDto request);
-
-    AttendanceDetailsResponse deleteAttendance(BureauJwtPayload payload, UpdateAttendanceDto request);
 
     void markJurorAsAbsent(BureauJwtPayload payload, UpdateAttendanceDto.CommonData request);
 
@@ -51,4 +54,6 @@ public interface JurorAppearanceService {
     void modifyConfirmedAttendance(ModifyConfirmedAttendanceDto request);
 
     boolean hasAttendances(String jurorNumber);
+
+    void realignAttendanceType(Appearance appearance);
 }

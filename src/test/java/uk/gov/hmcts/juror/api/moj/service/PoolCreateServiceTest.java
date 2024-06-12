@@ -126,7 +126,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    public void test_getPoolRequest_recordFound() {
+    void test_getPoolRequest_recordFound() {
         String poolNumber = "415220110";
         String owner = "415";
 
@@ -158,7 +158,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    public void test_getPoolRequest_noMatch() {
+    void test_getPoolRequest_noMatch() {
         String poolNumber = "415220111";
         String owner = "415";
 
@@ -171,7 +171,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    public void getCourtCatchmentItems_invalidLocationCode() {
+    void getCourtCatchmentItems_invalidLocationCode() {
         final String locationCode = "100";
         final boolean isCoronersPool = false;
         assertThatExceptionOfType(PoolCreateException.CourtLocationNotFound.class)
@@ -182,7 +182,7 @@ public class PoolCreateServiceTest {
 
 
     @Test
-    public void checkVoterUnlocked() {
+    void checkVoterUnlocked() {
         final String owner = "400";
         int citizensToSummon = 100;
         int noRequested = 100;
@@ -201,18 +201,18 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    public void createPool() throws SQLException {
+    void createPool() throws SQLException {
         String owner = "400";
         int citizensToSummon = 1;
         int noRequested = 1;
         final Map<String, String> jurorNumber = Collections.singletonMap(createValidVoter().getJurorNumber(), null);
-        CourtLocation courtLocation = createValidPoolRequest("415220110").getCourtLocation();
 
         final BureauJwtPayload payload = buildPayload(owner);
 
         PoolCreateRequestDto poolCreateRequestDto = createValidPoolCreateRequestDto();
         poolCreateRequestDto.setNoRequested(noRequested);
         poolCreateRequestDto.setCitizensToSummon(citizensToSummon);
+        poolCreateRequestDto.setPreviousJurorCount(0);
 
         //GET POOL MEMBER
         Mockito.when(votersServiceImpl.getVoters(Mockito.any(), Mockito.any())).thenReturn(jurorNumber);
@@ -227,18 +227,20 @@ public class PoolCreateServiceTest {
 
         //CREATE POOL MEMBER
         JurorPool jurorPool = createValidJurorPool();
-        Mockito.when(jurorRepository.saveAndFlush(Mockito.any())).thenReturn(jurorPool.getJuror());
-        Mockito.when(jurorPoolRepository.saveAndFlush(Mockito.any())).thenReturn(jurorPool);
-        Mockito.when(poolRequestRepository.saveAndFlush(Mockito.any()))
+        List<Juror> jurorList = List.of(jurorPool.getJuror());
+        Mockito.when(jurorRepository.saveAll(Mockito.any())).thenReturn(jurorList);
+        Mockito.when(jurorPoolRepository.saveAll(Mockito.any())).thenReturn(List.of(jurorPool));
+        Mockito.when(poolRequestRepository.save(Mockito.any()))
             .thenReturn(createValidPoolRequest("415220110"));
 
         //UPDATE POOL HISTORY
         Mockito.when(poolHistoryRepository.save(Mockito.any())).thenReturn(createPoolHistory());
 
         //UPDATE JUROR HISTORY
-        Mockito.when(jurorHistoryRepository.save(Mockito.any())).thenReturn(createValidJurorHist());
+        Mockito.when(jurorHistoryRepository.saveAll(Mockito.any())).thenReturn(List.of(createValidJurorHist()));
 
-        Mockito.when(jurorHistoryRepository.save(Mockito.any())).thenReturn(createValidJurorHist());
+        Mockito.when(jurorHistoryRepository.saveAll(Mockito.any()))
+            .thenReturn((List.of(createValidJurorHist())));
 
         poolCreateService.createPool(payload, poolCreateRequestDto);
 
@@ -252,14 +254,14 @@ public class PoolCreateServiceTest {
             .markVoterAsSelected(Mockito.any(), Mockito.any());
         Mockito.verify(poolMemberSequenceService, Mockito.times(jurorNumber.size())).leftPadInteger(1);
         Mockito.verify(jurorStatusRepository, Mockito.times(jurorNumber.size())).findById(1);
-        Mockito.verify(jurorPoolRepository, Mockito.times(jurorNumber.size())).saveAndFlush(Mockito.any());
-        Mockito.verify(poolRequestRepository, Mockito.times(1)).saveAndFlush(Mockito.any());
+        Mockito.verify(jurorPoolRepository, Mockito.times(1)).saveAll(Mockito.any());
+        Mockito.verify(poolRequestRepository, Mockito.times(1)).save(Mockito.any());
         Mockito.verify(poolHistoryRepository, Mockito.times(1)).save(Mockito.any());
-        Mockito.verify(jurorHistoryRepository, Mockito.times(1)).save(Mockito.any());
+        Mockito.verify(jurorHistoryRepository, Mockito.times(1)).saveAll(Mockito.any());
     }
 
     @Test
-    public void checkYield_throw_error() {
+    void checkYield_throw_error() {
         final String owner = "400";
         int citizensToSummon = 199;
         int noRequested = 99;
@@ -277,7 +279,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    public void test_checkForDeferrals_withCourtLocNameOnly_happy() {
+    void test_checkForDeferrals_withCourtLocNameOnly_happy() {
         String owner = "415";
         CourtLocation courtLocation = createValidPoolRequest("415220110").getCourtLocation();
         NilPoolRequestDto nilPoolRequestDto = createValidNilPoolRequestDto();
@@ -296,7 +298,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    public void test_checkForDeferrals_withCourtLocCodeOnly_happy() {
+    void test_checkForDeferrals_withCourtLocCodeOnly_happy() {
         String owner = "415";
         CourtLocation courtLocation = createValidPoolRequest("415220110").getCourtLocation();
         NilPoolRequestDto nilPoolRequestDto = createValidNilPoolRequestDto();
@@ -315,7 +317,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    public void test_createNilPool_happy() {
+    void test_createNilPool_happy() {
 
         String owner = "415";
         CourtLocation courtLocation = createValidPoolRequest("415220110").getCourtLocation();
@@ -441,7 +443,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    public void test_createCoronerPool_happy() {
+    void test_createCoronerPool_happy() {
         String owner = "400";
         String locCode = "415";
         CoronerPoolRequestDto coronerPoolRequestDto = getCoronerPoolRequestDto(locCode);
@@ -461,7 +463,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    public void test_createCoronerPool_TooManyRequested() {
+    void test_createCoronerPool_TooManyRequested() {
         String owner = "400";
         String locCode = "415";
         CoronerPoolRequestDto coronerPoolRequestDto = getCoronerPoolRequestDto(locCode);
@@ -474,7 +476,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    public void test_createCoronerPool_TooFewRequested() {
+    void test_createCoronerPool_TooFewRequested() {
         String owner = "400";
         String locCode = "415";
         CoronerPoolRequestDto coronerPoolRequestDto = getCoronerPoolRequestDto(locCode);
@@ -487,7 +489,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    public void test_getCoronerPool_happy() {
+    void test_getCoronerPool_happy() {
 
         CoronerPool coronerPool = getCoronerPool();
 
@@ -796,6 +798,7 @@ public class PoolCreateServiceTest {
         courtLocation.setYield(BigDecimal.valueOf(2));
         poolRequest.setCourtLocation(courtLocation);
         poolRequest.setLastUpdate(LocalDateTime.now());
+        poolRequest.setJurorPools(List.of());
         return poolRequest;
     }
 

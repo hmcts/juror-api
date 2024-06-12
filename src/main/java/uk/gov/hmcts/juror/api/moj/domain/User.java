@@ -8,13 +8,13 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.Version;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -46,10 +46,6 @@ import java.util.Set;
 @EqualsAndHashCode(exclude = {"team", "courts"})
 public class User implements Serializable {
 
-    @Column(name = "owner")
-    @Deprecated(forRemoval = true)
-    private String owner;
-
     @Id
     @Column(name = "username", unique = true, length = 20)
     @NotEmpty
@@ -80,10 +76,6 @@ public class User implements Serializable {
     @Deprecated(forRemoval = true)//TODO confirm
     private Team team;
 
-    @NotAudited
-    @Version
-    private Integer version;
-
     @Column(name = "approval_limit")
     private BigDecimal approvalLimit;
 
@@ -91,7 +83,7 @@ public class User implements Serializable {
     @Enumerated(EnumType.STRING)
     private UserType userType;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(schema = "juror_mod", name = "user_roles", joinColumns = @JoinColumn(name = "username",
         referencedColumnName = "username"))
     @Enumerated(EnumType.STRING)
@@ -128,11 +120,6 @@ public class User implements Serializable {
 
     public boolean hasRole(Role role) {
         return getRoles().contains(role);
-    }
-
-    @Deprecated(forRemoval = true)
-    public String getOwner() {
-        return owner;
     }
 
     @Deprecated(forRemoval = true)

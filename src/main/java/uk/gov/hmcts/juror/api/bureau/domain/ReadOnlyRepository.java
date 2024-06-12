@@ -13,6 +13,7 @@ import java.util.Optional;
  * @param <I> type of entity's ID (implicit from JDK5 onwards)
  */
 @NoRepositoryBean
+@Deprecated(forRemoval = true)
 public interface ReadOnlyRepository<T, I> extends Repository<T, I> {
 
     Optional<T> findById(I id);

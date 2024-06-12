@@ -28,6 +28,7 @@ import static uk.gov.hmcts.juror.api.juror.notify.NotifyTemplateType.WELSH_TOKEN
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SuppressWarnings("PMD.TooManyMethods")
 public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
     private static final boolean WITH_ADJUSTMENTS = true;
     private static final boolean NO_ADJUSTMENTS = false;
@@ -37,7 +38,6 @@ public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
     private static final boolean EN_LANG = false;
     private static final boolean CY_LANG = true;
     public static final boolean ELLIGIBLE = false;//NOTE: the Ineligibility being a thing is the positive!
-    public static final boolean INELLIGIBLE = true;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -56,7 +56,7 @@ public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getAppSettingKeyDisqualificationAge() {
+    public void testGAppSettingKeyDisqualificationAge() {
         final NotifyTemplateType type = DISQUALIFICATION_AGE;
 
         final Set<Object> settings =
@@ -103,7 +103,7 @@ public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getAppSettingKeyExcusalDeceased() {
+    public void testGAppSettingKeyExcusalDeceased() {
         final NotifyTemplateType type = EXCUSAL_DECEASED;
 
         final Set<Object> settings =
@@ -150,7 +150,7 @@ public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getAppSettingKeyExcusal() {
+    public void testGAppSettingKeyExcusal() {
         final NotifyTemplateType type = EXCUSAL;
 
         final Set<Object> settings =
@@ -198,7 +198,7 @@ public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getAppSettingKeyStraightThrough() {
+    public void testGAppSettingKeyStraightThrough() {
         final NotifyTemplateType type = STRAIGHT_THROUGH;
 
         final Set<Object> settings =
@@ -245,7 +245,7 @@ public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getAppSettingKeyDeferral() {
+    public void testGAppSettingKeyDeferral() {
         final NotifyTemplateType type = DEFERRAL;
 
         final Set<Object> settings =
@@ -292,7 +292,7 @@ public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getAppSettingKeyDisqualificationAgeWelshLanguage() {
+    public void testGAppSettingKeyDisqualificationAgeWelshLanguage() {
         final NotifyTemplateType type = DISQUALIFICATION_AGE;
 
         final Set<Object> settings =
@@ -339,7 +339,7 @@ public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getAppSettingKeyExcusalDeceasedWelshLanguage() {
+    public void testGAppSettingKeyExcusalDeceasedWelshLanguage() {
         final NotifyTemplateType type = EXCUSAL_DECEASED;
 
         final Set<Object> settings =
@@ -386,7 +386,7 @@ public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getAppSettingKeyExcusalWelshLanguage() {
+    public void testGAppSettingKeyExcusalWelshLanguage() {
         final NotifyTemplateType type = EXCUSAL;
 
         final Set<Object> settings =
@@ -433,7 +433,7 @@ public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getAppSettingKeyStraightThroughWelshLanguage() {
+    public void testGAppSettingKeyStraightThroughWelshLanguage() {
         final NotifyTemplateType type = STRAIGHT_THROUGH;
 
         final Set<Object> settings =
@@ -480,7 +480,7 @@ public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getAppSettingKeyDeferralWelshLanguage() {
+    public void testGAppSettingKeyDeferralWelshLanguage() {
         final NotifyTemplateType type = DEFERRAL;
 
         final Set<Object> settings =

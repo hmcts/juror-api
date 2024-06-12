@@ -6,7 +6,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.CourtType;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-public class CourtLocationTest {
+class CourtLocationTest {
 
 
     @Test
@@ -25,5 +25,14 @@ public class CourtLocationTest {
             .locCode("416")
             .build();
         assertThat(courtLocation.getType()).isEqualTo(CourtType.SATELLITE);
+    }
+
+    @Test
+    void positiveGetNameWithLocCode() {
+        CourtLocation courtLocation = CourtLocation.builder()
+            .name("Some name")
+            .locCode("416")
+            .build();
+        assertThat(courtLocation.getNameWithLocCode()).isEqualTo("Some name (416)");
     }
 }

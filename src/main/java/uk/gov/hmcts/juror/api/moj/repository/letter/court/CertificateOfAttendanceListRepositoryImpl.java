@@ -12,7 +12,6 @@ import uk.gov.hmcts.juror.api.moj.domain.letter.court.QCertificateOfAttendanceLe
 
 import java.util.List;
 
-@SuppressWarnings("PMD.LawOfDemeter")
 public class CertificateOfAttendanceListRepositoryImpl implements ICertificateOfAttendanceListRepository {
 
     @PersistenceContext

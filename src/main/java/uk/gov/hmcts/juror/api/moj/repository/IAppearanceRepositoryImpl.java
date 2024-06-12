@@ -1,8 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.repository;
 
 import com.querydsl.core.Tuple;
-import com.querydsl.core.types.dsl.CaseBuilder;
-import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -14,22 +12,27 @@ import lombok.extern.slf4j.Slf4j;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
 import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.UnpaidExpenseSummaryRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAttendanceDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorAppearanceResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.expense.UnpaidExpenseSummaryResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
+import uk.gov.hmcts.juror.api.moj.utils.PaginationUtil;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -42,7 +45,7 @@ import java.util.Optional;
  * Custom Repository implementation for the Appearance entity.
  */
 @Slf4j
-@SuppressWarnings({"PMD.LawOfDemeter", "PMD.TooManyMethods"})
+@SuppressWarnings("PMD.TooManyMethods")
 public class IAppearanceRepositoryImpl implements IAppearanceRepository {
     @PersistenceContext
     EntityManager entityManager;
@@ -249,26 +252,6 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
     }
 
     @Override
-    public Integer countJurorExpenseForApproval(String jurorNumber, String poolNumber) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-
-        NumberExpression<Integer> countAwaitingApproval = new CaseBuilder()
-            .when(APPEARANCE.isDraftExpense.eq(false)
-                .and(APPEARANCE.appearanceStage.eq(AppearanceStage.EXPENSE_ENTERED))).then(1)
-            .otherwise(0)
-            .sum();
-
-        return queryFactory
-            .select(countAwaitingApproval.as("forApproval"))
-            .from(APPEARANCE)
-            .where(APPEARANCE.jurorNumber.eq(jurorNumber))
-            .where(APPEARANCE.poolNumber.eq(poolNumber))
-            .groupBy(APPEARANCE.jurorNumber)
-            .groupBy(APPEARANCE.poolNumber)
-            .fetchOne();
-    }
-
-    @Override
     public long countPendingApproval(String locCode, boolean isCash) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         return queryFactory
@@ -324,4 +307,59 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
                 APPEARANCE.attendanceAuditNumber)
             .fetch();
     }
+
+    @Override
+    public PaginatedList<UnpaidExpenseSummaryResponseDto> findUnpaidExpenses(String locCode,
+                                                                             UnpaidExpenseSummaryRequestDto search) {
+
+
+        JPAQuery<Tuple> query = getQueryFactory()
+            .select(QAppearance.appearance.jurorNumber,
+                QAppearance.appearance.poolNumber,
+                QJuror.juror.firstName,
+                QJuror.juror.lastName,
+                QAppearance.appearance.totalDue.sum().subtract(QAppearance.appearance.totalPaid.sum())
+                    .as(UnpaidExpenseSummaryRequestDto.TOTAL_OUTSTANDING_EXPRESSION)
+            )
+            .from(QAppearance.appearance)
+            .where(QAppearance.appearance.locCode.eq(locCode))
+            .where(QAppearance.appearance.appearanceStage.in(
+                AppearanceStage.EXPENSE_ENTERED, AppearanceStage.EXPENSE_EDITED
+            ))
+            .join(QJuror.juror)
+            .on(QJuror.juror.jurorNumber.eq(QAppearance.appearance.jurorNumber))
+            .groupBy(
+                QAppearance.appearance.jurorNumber,
+                QAppearance.appearance.poolNumber,
+                QJuror.juror.firstName,
+                QJuror.juror.lastName
+            );
+
+        if (search.getFrom() != null || search.getTo() != null) {
+            query.where(QAppearance.appearance.jurorNumber
+                .in(getQueryFactory().query()
+                    .select(APPEARANCE.jurorNumber)
+                    .distinct()
+                    .from(APPEARANCE)
+                    .where(APPEARANCE.courtLocation.locCode.eq(locCode))
+                    .where(APPEARANCE.attendanceDate.between(search.getFrom(), search.getTo()))));
+        }
+
+        return PaginationUtil.toPaginatedList(query, search,
+            UnpaidExpenseSummaryRequestDto.SortField.JUROR_NUMBER,
+            SortMethod.DESC,
+            tuple -> UnpaidExpenseSummaryResponseDto.builder()
+                .jurorNumber(tuple.get(QAppearance.appearance.jurorNumber))
+                .poolNumber(tuple.get(QAppearance.appearance.poolNumber))
+                .firstName(tuple.get(QJuror.juror.firstName))
+                .lastName(tuple.get(QJuror.juror.lastName))
+                .totalUnapproved(tuple.get(UnpaidExpenseSummaryRequestDto.TOTAL_OUTSTANDING_EXPRESSION))
+                .build(), null);
+    }
+
+    JPAQueryFactory getQueryFactory() {
+        return new JPAQueryFactory(entityManager);
+    }
+
+
 }

@@ -39,6 +39,7 @@ public class UniquePoolRepositoryTest extends AbstractIntegrationTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/UniquePoolRepositoryTest.sql")
     @Test
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False positive
     public void findAll() {
         assertThat(uniquePoolRepository.findAll()).isNotNull().hasSize(2).extracting("poolNumber")
             .containsExactlyInAnyOrder("101", "102");

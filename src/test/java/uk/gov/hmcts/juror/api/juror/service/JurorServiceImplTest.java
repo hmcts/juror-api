@@ -52,7 +52,6 @@ import static org.mockito.Mockito.when;
  * Unit test of {@link JurorServiceImpl}.
  */
 @RunWith(MockitoJUnitRunner.StrictStubs.class)
-@SuppressWarnings("PMD.LawOfDemeter")
 public class JurorServiceImplTest {
 
     private static final String TEST_JUROR_NUMBER = "209092530";
@@ -152,17 +151,18 @@ public class JurorServiceImplTest {
      */
     @Test
     public void getJurorByJurorNumber_alternatePath_uniquePoolAttendTime() {
-        doReturn("8am").when(mockUniquePoolService).getPoolAttendanceTime("101");
+        doReturn(LocalDateTime.of(2024,1,1,8,0,0))
+            .when(mockUniquePoolService).getPoolAttendanceTime("101");
         doReturn(jurorPoolDetails).when(poolDetailsRepository).findByJurorJurorNumber(TEST_JUROR_NUMBER);
 
         final JurorDetailDto jurorDto = defaultService.getJurorByJurorNumber(TEST_JUROR_NUMBER);
-        assertThat(jurorDto.getCourtAttendTime()).isEqualTo("8am");
+        assertThat(jurorDto.getCourtAttendTime()).isEqualTo("08:00");
     }
 
     @Test
     public void convertJurorResponseDtoToEntityTest() throws Exception {
         final String jurorNumber = "546547731";
-        final LocalDate dob = LocalDateTime.now().toLocalDate();
+        final LocalDate dob = LocalDate.now();
         final String title = "Dr";
         final String firstName = "Namey";
         final String lastName = "McName";

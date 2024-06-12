@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.bureau.service;
 
-import com.google.common.collect.Lists;
+import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.Expressions;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,52 +9,49 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauBacklogCountData;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauOfficerAllocatedData;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauOfficerAllocatedResponses;
-import uk.gov.hmcts.juror.api.bureau.domain.UserQueries;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries;
-import uk.gov.hmcts.juror.api.moj.domain.User;
-import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 
 import java.util.List;
-
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries.byAssignedAll;
+import java.util.Optional;
 
 @Service
 @Slf4j
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class BureauOfficerAllocatedRepliesServiceImpl implements BureauOfficerAllocatedRepliesService {
-
-
     private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
-
-    private final BureauBacklogCountService bureauBacklogCountService;
-    private final UserRepository userRepository;
 
     @Override
     public BureauOfficerAllocatedResponses getBackLogData() {
-        final List<User> bureauOfficers = Lists.newLinkedList(userRepository
-            .findAll(UserQueries.activeBureauOfficers()));
+        Tuple backlogStats = jurorResponseRepository.getAssignRepliesStatistics();
 
         log.trace("Extracting backlog data");
         BureauBacklogCountData bureauBacklogCountDto = BureauBacklogCountData.builder()
-            .nonUrgent(bureauBacklogCountService.getBacklogNonUrgentCount())
-            .urgent(bureauBacklogCountService.getBacklogUrgentCount())
-            .allReplies(bureauBacklogCountService.getBacklogAllRepliesCount())
+            .nonUrgent(Optional.ofNullable(backlogStats.get(Expressions.numberPath(Long.class, "nonUrgent")))
+                .orElse(0L))
+            .urgent(Optional.ofNullable(backlogStats.get(Expressions.numberPath(Long.class, "urgent")))
+                .orElse(0L))
+            .allReplies(Optional.ofNullable(backlogStats.get(Expressions.numberPath(Long.class, "allReplies")))
+                .orElse(0L))
             .build();
 
-        log.trace("No of Bureau officers {}", bureauOfficers.size());
+        List<Tuple> assignedRepliesStats = jurorResponseRepository.getAssignRepliesStatisticForUsers();
 
         return BureauOfficerAllocatedResponses.builder()
             .data(
-                bureauOfficers.stream()
-                    .map(user -> BureauOfficerAllocatedData
-                        .staffAllocationResponseBuilder()
-                        .login(user.getUsername())
-                        .name(user.getName())
-                        .nonUrgent(jurorResponseRepository.count(JurorResponseQueries.byAssignedNonUrgent(user)))
-                        .urgent(jurorResponseRepository.count(JurorResponseQueries.byAssignedUrgent(user)))
-                        .all(jurorResponseRepository.count(byAssignedAll(user)))
-                        .build()).toList()
+                assignedRepliesStats.stream()
+                    .map(data ->
+                        BureauOfficerAllocatedData
+                            .staffAllocationResponseBuilder()
+                            .login(data.get(Expressions.stringPath("login")))
+                            .name(data.get(Expressions.stringPath("name")))
+                            .nonUrgent(Optional.ofNullable(data.get(Expressions.numberPath(Long.class,"nonUrgent")))
+                                .orElse(0L))
+                            .urgent(Optional.ofNullable(data.get(Expressions.numberPath(Long.class,"urgent")))
+                                .orElse(0L))
+                            .all(Optional.ofNullable(data.get(Expressions.numberPath(Long.class,"allReplies")))
+                                .orElse(0L))
+                            .build()
+                    ).toList()
             )
             .bureauBacklogCount(bureauBacklogCountDto)
             .build();

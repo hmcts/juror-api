@@ -51,6 +51,7 @@ import static org.springframework.http.HttpMethod.POST;
 @Sql(value = "/db/administration/teardownUsers.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @SuppressWarnings({
     "PMD.JUnitTestsShouldIncludeAssert",
+    "PMD.ExcessiveImports",
     "PMD.JUnitAssertionsShouldIncludeMessage"//False positive
 })
 public class AuthenticationControllerITest extends AbstractIntegrationTest {

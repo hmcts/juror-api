@@ -4,23 +4,25 @@ import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import org.junit.jupiter.api.Test;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QReasonableAdjustments;
+import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
+import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-@SuppressWarnings({
-    "PMD.LawOfDemeter",
-    "PMD.TooManyMethods"
-})
+@SuppressWarnings({ "PMD.TooManyMethods", "PMD.GodClass" })
 class DataTypeTest {
 
     @Test
@@ -134,21 +136,33 @@ class DataTypeTest {
     void reasonableAdjustmentCode() {
         assertMatchesStandard(DataType.REASONABLE_ADJUSTMENT_CODE, "reasonable_adjustment_code",
             "Reasonable Adjustment Code", String.class,
-            QJuror.juror.reasonableAdjustmentCode, QJuror.juror);
+            QReasonableAdjustments.reasonableAdjustments.code, QReasonableAdjustments.reasonableAdjustments);
     }
 
     @Test
-    void reasonableAdjustmentMessage() {
-        assertMatchesStandard(DataType.REASONABLE_ADJUSTMENT_MESSAGE, "reasonable_adjustment_message",
-            "Reasonable Adjustment Message", String.class,
-            QJuror.juror.reasonableAdjustmentMessage, QJuror.juror);
+    void reasonableAdjustmentCodeWithDescription() {
+        assertMatchesStandard(DataType.REASONABLE_ADJUSTMENT_CODE_WITH_DESCRIPTION,
+            "reasonable_adjustment_code_with_description",
+            "Reasonable Adjustment Code With Description", String.class,
+            QReasonableAdjustments.reasonableAdjustments.code
+                .concat(" - ")
+                .concat(QReasonableAdjustments.reasonableAdjustments.description),
+                        QReasonableAdjustments.reasonableAdjustments);
     }
 
     @Test
-    void reasonableAdjustment() {
-        assertMatchesCombined(DataType.REASONABLE_ADJUSTMENT, "reasonable_adjustment", "Reasonable Adjustment",
-            List.class,
-            DataType.REASONABLE_ADJUSTMENT_CODE, DataType.REASONABLE_ADJUSTMENT_MESSAGE);
+    void jurorReasonableAdjustmentMessage() {
+        assertMatchesStandard(DataType.JUROR_REASONABLE_ADJUSTMENT_MESSAGE, "juror_reasonable_adjustment_message",
+            "Juror Reasonable Adjustment Message", String.class, QJuror.juror.reasonableAdjustmentMessage,
+            QJuror.juror);
+    }
+
+    @Test
+    void jurorReasonableAdjustmentWithMessage() {
+        assertMatchesCombined(DataType.JUROR_REASONABLE_ADJUSTMENT_WITH_MESSAGE,
+            "juror_reasonable_adjustment_with_message",
+            "Reasonable Adjustments", List.class, DataType.REASONABLE_ADJUSTMENT_CODE_WITH_DESCRIPTION,
+            DataType.JUROR_REASONABLE_ADJUSTMENT_MESSAGE);
     }
 
     @Test
@@ -217,6 +231,156 @@ class DataTypeTest {
         assertMatchesCombined(DataType.JUROR_POSTAL_ADDRESS, "juror_postal_address", "Address",
             List.class, DataType.JUROR_ADDRESS_LINE_1, DataType.JUROR_ADDRESS_LINE_2, DataType.JUROR_ADDRESS_LINE_3,
             DataType.JUROR_ADDRESS_LINE_4, DataType.JUROR_ADDRESS_LINE_5, DataType.JUROR_POSTCODE);
+    }
+
+    @Test
+    void courtLocationNameAndCode() {
+        assertMatchesStandard(DataType.COURT_LOCATION_NAME_AND_CODE, "court_location_name_and_code",
+            "Court Location Name And Code", String.class,
+            QPoolRequest.poolRequest.courtLocation.name.concat(" (")
+                .concat(QPoolRequest.poolRequest.courtLocation.locCode).concat(")"), QPoolRequest.poolRequest);
+    }
+
+    @Test
+    void appearanceTrialNumber() {
+        assertMatchesStandard(DataType.APPEARANCE_TRIAL_NUMBER, "appearance_trial_number", "Trial Number",
+            String.class, QAppearance.appearance.trialNumber, QAppearance.appearance);
+    }
+
+    @Test
+    void appearancePoolNumber() {
+        assertMatchesStandard(DataType.APPEARANCE_POOL_NUMBER, "appearance_pool_number", "Pool Number",
+            String.class, QAppearance.appearance.poolNumber, QAppearance.appearance);
+    }
+
+    @Test
+    void appearanceCheckedIn() {
+        assertMatchesStandard(DataType.APPEARANCE_CHECKED_IN, "appearance_checked_in", "Checked In",
+            LocalTime.class, QAppearance.appearance.timeIn, QAppearance.appearance);
+    }
+
+    @Test
+    void appearanceCheckedOut() {
+        assertMatchesStandard(DataType.APPEARANCE_CHECKED_OUT, "appearance_checked_out", "Checked Out",
+            LocalTime.class, QAppearance.appearance.timeOut, QAppearance.appearance);
+    }
+
+    @Test
+    void appearanceDateAndPoolType() {
+        assertMatchesStandard(DataType.APPEARANCE_DATE_AND_POOL_TYPE, "appearance_date_and_pool_type",
+            "Appearance Date And Pool Type", String.class,
+            QAppearance.appearance.attendanceDate.stringValue()
+                .concat(",").concat(QPoolRequest.poolRequest.poolType.description),
+            QAppearance.appearance, QPoolRequest.poolRequest);
+    }
+
+    @Test
+    void panelStatus() {
+        assertMatchesStandard(DataType.PANEL_STATUS, "panel_status", "Panel Status", String.class,
+            new CaseBuilder()
+                .when(QPanel.panel.result.eq(PanelResult.NOT_USED)).then("Not Used")
+                .when(QPanel.panel.result.eq(PanelResult.CHALLENGED)).then("Challenged")
+                .when(QPanel.panel.result.eq(PanelResult.JUROR)).then("Juror")
+                .when(QPanel.panel.result.eq(PanelResult.RETURNED).and(QPanel.panel.empanelledDate.isNotNull()))
+                    .then("Returned Juror")
+                .when(QPanel.panel.result.eq(PanelResult.RETURNED).and(QPanel.panel.empanelledDate.isNull()))
+                    .then("Returned")
+                .otherwise(""),
+            QPanel.panel);
+    }
+
+    @Test
+    void jurorNumberFromTrial() {
+        assertMatchesStandard(DataType.JUROR_NUMBER_FROM_TRIAL, "juror_number_from_trial", "Juror Number",
+            String.class, QPanel.panel.juror.jurorNumber, QPanel.panel);
+    }
+
+    @Test
+    void failedToAttendTotal() {
+        assertMatchesStandard(DataType.FAILED_TO_ATTEND_TOTAL, "failed_to_attend_total", "FTA",
+            Integer.class, new CaseBuilder().when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.FAILED_TO_ATTEND))
+                .then(1).otherwise(0).sum(),
+            QJurorPool.jurorPool);
+    }
+
+    @Test
+    void jurorsSummonedTotal() {
+        assertMatchesStandard(DataType.JURORS_SUMMONED_TOTAL, "jurors_summoned_total", "Summoned",
+            Long.class, QJurorPool.jurorPool.count(), QJurorPool.jurorPool);
+    }
+
+    @Test
+    void attendedTotal() {
+        assertMatchesStandard(DataType.ATTENDED_TOTAL, "attended_total", "Attended", Integer.class,
+            new CaseBuilder()
+                .when(QJurorPool.jurorPool.appearances.size().gt(0)).then(1).otherwise(0).sum(),
+            QJurorPool.jurorPool);
+    }
+
+    @Test
+    void respondedTotalPercentage() {
+        assertMatchesCombined(DataType.RESPONDED_TOTAL_PERCENTAGE, "responded_total_percentage",
+            "Responded Total Percentage", Double.class);
+    }
+
+    @Test
+    void attendedTotalPercentage() {
+        assertMatchesCombined(DataType.ATTENDED_TOTAL_PERCENTAGE, "attended_total_percentage",
+            "Attended Total Percentage", Double.class);
+    }
+
+    @Test
+    void panelTotalPercentage() {
+        assertMatchesCombined(DataType.PANEL_TOTAL_PERCENTAGE, "panel_total_percentage",
+            "Panel Total Percentage", Double.class);
+    }
+
+    @Test
+    void jurorTotalPercentage() {
+        assertMatchesCombined(DataType.JUROR_TOTAL_PERCENTAGE, "juror_total_percentage",
+            "Juror Total Percentage", Double.class);
+    }
+
+    @Test
+    void excusedTotalPercentage() {
+        assertMatchesCombined(DataType.EXCUSED_TOTAL_PERCENTAGE, "excused_total_percentage",
+            "Excused Total Percentage", Double.class);
+    }
+
+    @Test
+    void disqualifiedTotalPercentage() {
+        assertMatchesCombined(DataType.DISQUALIFIED_TOTAL_PERCENTAGE, "disqualified_total_percentage",
+            "Disqualified Total Percentage", Double.class);
+    }
+
+    @Test
+    void deferredTotalPercentage() {
+        assertMatchesCombined(DataType.DEFERRED_TOTAL_PERCENTAGE, "deferred_total_percentage",
+            "Deferred Total Percentage", Double.class);
+    }
+
+    @Test
+    void reassignedTotalPercentage() {
+        assertMatchesCombined(DataType.REASSIGNED_TOTAL_PERCENTAGE, "reassigned_total_percentage",
+            "Reassigned Total Percentage", Double.class);
+    }
+
+    @Test
+    void undeliverableTotalPercentage() {
+        assertMatchesCombined(DataType.UNDELIVERABLE_TOTAL_PERCENTAGE, "undeliverable_total_percentage",
+            "Undeliverable Total Percentage", Double.class);
+    }
+
+    @Test
+    void transferredTotalPercentage() {
+        assertMatchesCombined(DataType.TRANSFERRED_TOTAL_PERCENTAGE, "transferred_total_percentage",
+            "Transferred Total Percentage", Double.class);
+    }
+
+    @Test
+    void failedToAttendTotalPercentage() {
+        assertMatchesCombined(DataType.FAILED_TO_ATTEND_TOTAL_PERCENTAGE, "failed_to_attend_total_percentage",
+            "Failed To Attend Total Percentage", Double.class);
     }
 
     void assertMatchesStandard(DataType dataType,

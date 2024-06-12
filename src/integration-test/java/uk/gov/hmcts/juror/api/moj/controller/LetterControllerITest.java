@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -107,7 +106,7 @@ import static uk.gov.hmcts.juror.api.utils.DataConversionUtil.getExceptionDetail
  */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.LawOfDemeter", "PMD.NcssCount"})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.NcssCount"})
 class LetterControllerITest extends AbstractIntegrationTest {
     private static final String GET_LETTER_LIST_URI = "/api/v1/moj/letter/court-letter-list";
 
@@ -148,7 +147,6 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Test
         void requestInformationBureauPaperUserHappyPath() throws Exception {
             final String jurorNumber = "222222222";
-            final String owner = "400";
             final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/request-information");
             final String expectedRequestString = "Part 2 Section D, Part 2 Section A";
@@ -304,7 +302,6 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Test
         void requestInformationBureauUserPaperEmptyMissingInformation() throws Exception {
             final String jurorNumber = "222222222";
-            final String owner = "400";
             final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/request-information");
 
@@ -1894,6 +1891,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initReissuePostponeLetter.sql"})
+        @SuppressWarnings("PMD.CyclomaticComplexity")
         void reissuePostponeLetterListHappy() throws Exception {
             final URI uri = URI.create("/api/v1/moj/letter/reissue-letter-list");
             final String bureauJwt = createJwtBureau("BUREAU_USER");
@@ -2850,13 +2848,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 httpHeaders, POST, uri);
             ResponseEntity<String> response = template.exchange(request, String.class);
 
-            // making sure the test passes on the weekend as letters cannot be sent via weekend
-            Calendar calendar = Calendar.getInstance();
-            if (calendar.get(Calendar.DAY_OF_WEEK) == SATURDAY || calendar.get(Calendar.DAY_OF_WEEK) == SUNDAY) {
-                assertBusinessRuleViolation(response, "Can not generate a letter on a weekend",
-                    MojException.BusinessRuleViolation.ErrorCode.LETTER_CANNOT_GENERATE_ON_WEEKEND);
-                return;
-            }
+
 
             assertThat(response).isNotNull();
             assertThat(response.getStatusCode())
@@ -2877,14 +2869,14 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(bulkPrintData.get().getFormAttribute().getFormType())
                 .as("Expect form attribute form code to be " + FormCode.ENG_POSTPONE.getCode());
 
-
+            Calendar calendar = Calendar.getInstance();
             switch (calendar.get(Calendar.DAY_OF_WEEK)) {
                 case MONDAY, TUESDAY, WEDNESDAY -> assertThat(bulkPrintData.get().getDetailRec()).contains(
                     LocalDate
                         .now()
                         .plusDays(2)
                         .format(DateTimeFormatter.ofPattern("dd MMMM yyyy")).toUpperCase());
-                case THURSDAY, FRIDAY -> assertThat(bulkPrintData.get().getDetailRec()).contains(
+                case THURSDAY, FRIDAY, SATURDAY, SUNDAY -> assertThat(bulkPrintData.get().getDetailRec()).contains(
                     LocalDate
                         .now()
                         .plusDays(4)
@@ -2912,14 +2904,14 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now()).orElseThrow(() -> Failures.instance()
                     .failure("Expected record to be found in bulk print data table"));
 
-                verifyDataResponse(bulkPrintData, "561", Boolean.FALSE, LocalDate.now(), null,false);
+                verifyDataResponse(bulkPrintData, "561", Boolean.FALSE, LocalDate.now(), null, false);
 
                 // verify history added
                 List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
                     .findByJurorNumberAndDateCreatedGreaterThanEqual("555555561", LocalDate.now());
                 assertThat(updatedJurorHistoryList).as("History record should have been added").isNotNull();
                 assertThat(updatedJurorHistoryList.size()).as("Expect 1 history record").isEqualTo(1);
-                verifyHistoryResponse(updatedJurorHistoryList.get(0), "561",  "504");
+                verifyHistoryResponse(updatedJurorHistoryList.get(0), "561", "504");
             }
 
             @Test
@@ -2949,17 +2941,18 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
                 // verify letter added
                 BulkPrintData bulkPrintData = bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(jurorNumber,
-                    FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now()).orElseThrow(()
-                        -> Failures.instance().failure("Expected record to be found in bulk print data table"));
+                        FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now())
+                    .orElseThrow(
+                        () -> Failures.instance().failure("Expected record to be found in bulk print data table"));
 
-                verifyDataResponse(bulkPrintData, "570", Boolean.FALSE, LocalDate.now(), null,false);
+                verifyDataResponse(bulkPrintData, "570", Boolean.FALSE, LocalDate.now(), null, false);
 
                 // verify history added
                 updatedJurorHistoryList = jurorHistoryRepository
                     .findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, LocalDate.now());
                 assertThat(updatedJurorHistoryList).as("History record should have been added").isNotNull();
                 assertThat(updatedJurorHistoryList.size()).isEqualTo(1);
-                verifyHistoryResponse(updatedJurorHistoryList.get(0), "570",  "405");
+                verifyHistoryResponse(updatedJurorHistoryList.get(0), "570", "405");
             }
 
             @Test
@@ -2978,10 +2971,11 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
                 // verify letter added
                 BulkPrintData bulkPrintData = bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(jurorNumber,
-                    FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now()).orElseThrow(()
-                        -> Failures.instance().failure("Expected record to be found in bulk print data table"));
+                        FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now())
+                    .orElseThrow(
+                        () -> Failures.instance().failure("Expected record to be found in bulk print data table"));
 
-                verifyDataResponse(bulkPrintData, "570", Boolean.FALSE, LocalDate.now(), null,false);
+                verifyDataResponse(bulkPrintData, "570", Boolean.FALSE, LocalDate.now(), null, false);
 
                 // verify history added
                 List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
@@ -2989,7 +2983,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(updatedJurorHistoryList).isNotNull();
                 assertThat(updatedJurorHistoryList.size()).isEqualTo(1);
 
-                verifyHistoryResponse(updatedJurorHistoryList.get(0), "570",  "405");
+                verifyHistoryResponse(updatedJurorHistoryList.get(0), "570", "405");
 
                 // invoke api again for same juror and letter
                 final URI uri = URI.create("/api/v1/moj/letter/reissue-letter");
@@ -3074,8 +3068,9 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
                 // verify a previous letter exists - should be english
                 BulkPrintData bulkPrintData = bulkPrintDataRepository.findByJurorNumberFormCodeAndExtracted(jurorNumber,
-                    FormCode.ENG_SUMMONS_REMINDER.getCode(), true).orElseThrow(()
-                        -> Failures.instance().failure("Expected record to be found in bulk print data table"));
+                        FormCode.ENG_SUMMONS_REMINDER.getCode(), true)
+                    .orElseThrow(
+                        () -> Failures.instance().failure("Expected record to be found in bulk print data table"));
 
                 verifyDataResponse(bulkPrintData, "575", true,
                     LocalDate.of(2024, 1, 31),
@@ -3092,17 +3087,18 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
                 // verify letter added - should be welsh (welsh flag was updated - juror now wants welsh letters)
                 bulkPrintData = bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(jurorNumber,
-                    FormCode.BI_SUMMONS_REMINDER.getCode(), LocalDate.now()).orElseThrow(()
-                        -> Failures.instance().failure("Expected record to be found in bulk print data table"));
+                        FormCode.BI_SUMMONS_REMINDER.getCode(), LocalDate.now())
+                    .orElseThrow(
+                        () -> Failures.instance().failure("Expected record to be found in bulk print data table"));
 
-                verifyDataResponse(bulkPrintData, "575", Boolean.FALSE, LocalDate.now(), null,true);
+                verifyDataResponse(bulkPrintData, "575", Boolean.FALSE, LocalDate.now(), null, true);
 
                 // verify history added
                 List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
                     .findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, LocalDate.now());
                 assertThat(updatedJurorHistoryList).as("History record should have been added").isNotNull();
                 assertThat(updatedJurorHistoryList.size()).isEqualTo(1);
-                verifyHistoryResponse(updatedJurorHistoryList.get(0), "575",  "405");
+                verifyHistoryResponse(updatedJurorHistoryList.get(0), "575", "405");
             }
 
             @Test
@@ -3145,7 +3141,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     .findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, LocalDate.now());
                 assertThat(updatedJurorHistoryList).as("History record should have been added").isNotNull();
                 assertThat(updatedJurorHistoryList.size()).isEqualTo(1);
-                verifyHistoryResponse(updatedJurorHistoryList.get(0), "576",  "405");
+                verifyHistoryResponse(updatedJurorHistoryList.get(0), "576", "405");
             }
 
             @Test
@@ -3195,17 +3191,18 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 // verify letter added - a new letter will be created for today's date if a match is not found
                 BulkPrintData bulkPrintData = bulkPrintDataRepository
                     .findByJurorNumberFormCodeDatePrinted("555555561",
-                        FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now()).orElseThrow(()
-                            -> Failures.instance().failure("Expected record to be found in bulk print data table"));
+                        FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now())
+                    .orElseThrow(
+                        () -> Failures.instance().failure("Expected record to be found in bulk print data table"));
 
-                verifyDataResponse(bulkPrintData, "561", Boolean.FALSE, LocalDate.now(), null,false);
+                verifyDataResponse(bulkPrintData, "561", Boolean.FALSE, LocalDate.now(), null, false);
 
                 // verify history added
                 List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
                     .findByJurorNumberAndDateCreatedGreaterThanEqual("555555561", LocalDate.now());
                 assertThat(updatedJurorHistoryList).as("History record should have been added").isNotNull();
                 assertThat(updatedJurorHistoryList.size()).isEqualTo(1);
-                verifyHistoryResponse(updatedJurorHistoryList.get(0), "561",  "504");
+                verifyHistoryResponse(updatedJurorHistoryList.get(0), "561", "504");
             }
 
             private void verifyDataResponse(BulkPrintData bulkPrintData,
@@ -3218,7 +3215,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(bulkPrintData.getJurorNo()).isEqualTo("555555" + jurorNumberPostfix);
                 assertThat(bulkPrintData.getCreationDate()).isEqualTo(creationDate);
                 assertThat(bulkPrintData.isExtractedFlag()).isEqualTo(extractedFlag);
-                assertThat(bulkPrintData.getDigitalComms()).isNull();
+                assertThat(bulkPrintData.isDigitalComms()).isFalse();
 
                 verifyRecDate(bulkPrintData, reprintRecDate);
                 if (isWelsh) {
@@ -3253,7 +3250,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                                 .now()
                                 .plusDays(2)
                                 .format(DateTimeFormatter.ofPattern("dd MMMM yyyy")).toUpperCase());
-                        case THURSDAY, FRIDAY -> assertThat(bulkPrintData.getDetailRec()).contains(
+                        case THURSDAY, FRIDAY, SATURDAY, SUNDAY -> assertThat(bulkPrintData.getDetailRec()).contains(
                             LocalDate
                                 .now()
                                 .plusDays(4)
@@ -4835,7 +4832,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             static final String PRINT_CERTIFICATE_OF_EXEMPTION_URL =
                 "/api/v1/moj/letter/print-certificate-of-exemption";
 
-            protected PrintCertificateOfExemption() {
+            private PrintCertificateOfExemption() {
 
             }
 
@@ -5026,11 +5023,12 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Nested
         @DisplayName("GET - /api/v1/moj/letter/trials-exemption-list")
         class TrialExemptionList {
-            protected TrialExemptionList() {
-
-            }
 
             static final String TRIAL_EXEMPTION_URL = "/api/v1/moj/letter/trials-exemption-list";
+
+            private TrialExemptionList() {
+
+            }
 
             @Nested
             @DisplayName("Positive")
@@ -5118,7 +5116,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
                     assertThat(response).isNotNull();
                     assertThat(response.getBody()).isNotNull();
-                    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+                    assertThat(response.getStatusCode()).isEqualTo(OK);
                     assertThat(response.getBody().length).as("Expect size to be zero").isEqualTo(0);
                 }
 
@@ -5157,7 +5155,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
                     assertThat(response).isNotNull();
                     assertThat(response.getBody()).isNotNull();
-                    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+                    assertThat(response.getStatusCode()).isEqualTo(OK);
                     assertThat(response.getBody().length).isEqualTo(0);
                 }
 
@@ -5398,19 +5396,23 @@ class LetterControllerITest extends AbstractIntegrationTest {
             }
 
             private String buildJurorExemptionUri(String caseNumber, String courtLocation) {
-                String newUri = JUROR_EXEMPITON_URL;
+                StringBuilder builder = new StringBuilder(JUROR_EXEMPITON_URL);
 
+                boolean hasStartOfQueryParam = false;
                 if (!caseNumber.isBlank()) {
-                    newUri += "?case_number=" + caseNumber;
+                    builder.append("?case_number=").append(caseNumber);
+                    hasStartOfQueryParam = true;
                 }
 
                 if (!courtLocation.isBlank()) {
-                    newUri += newUri.contains("?")
-                        ? "&court_location=" + courtLocation
-                        :
-                            "?court_location=" + courtLocation;
+                    if (hasStartOfQueryParam) {
+                        builder.append('&');
+                    } else {
+                        builder.append('?');
+                    }
+                    builder.append("court_location=").append(courtLocation);
                 }
-                return newUri;
+                return builder.toString();
             }
         }
 
@@ -6152,6 +6154,8 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Test
         @SneakyThrows
         @DisplayName("Reissue Show Cause letter - invalid request - missing mandatory data: showCauseDate")
+        //False Positive
+        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void printCourtLettersShowCauseInvalidRequestMissingShowCauseDate() {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwt("COURT_USER", "415"));
 
@@ -6182,6 +6186,8 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Test
         @SneakyThrows
         @DisplayName("Reissue Show Cause letter - invalid request - missing mandatory data: showCauseTime")
+        //False Positive
+        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void printCourtLettersShowCauseInvalidRequestMissingShowCauseTime() {
             List<String> jurorNumbers = new ArrayList<>();
             jurorNumbers.add(JUROR_NUMBER + "61");
@@ -6257,6 +6263,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
+        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         private void verifyDataEnglish(PrintLetterDataResponseDto response,
                                        PrintLettersRequestDto request,
                                        LocalDate attendanceDate,
@@ -6954,7 +6961,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_CertificateOfAttendance.sql"})
     class CertificateOfAttendance {
 
-        static final URI uri = URI.create("/api/v1/moj/letter/print-court-letter");
+        static final URI LETTER_URI = URI.create("/api/v1/moj/letter/print-court-letter");
 
         static final String JUROR_NUMBER = "5555555";
         static final String COURT_USER = "COURT_USER";
@@ -6980,7 +6987,8 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .letterType(CourtLetterType.CERTIFICATE_OF_ATTENDANCE)
                 .build();
 
-            RequestEntity<PrintLettersRequestDto> requestEntity = new RequestEntity<>(request, httpHeaders, POST, uri);
+            RequestEntity<PrintLettersRequestDto> requestEntity = new RequestEntity<>(request, httpHeaders, POST,
+                LETTER_URI);
             ResponseEntity<PrintLetterDataResponseDto[]> response = template.exchange(requestEntity,
                 PrintLetterDataResponseDto[].class);
 
@@ -7009,7 +7017,8 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .letterType(CourtLetterType.CERTIFICATE_OF_ATTENDANCE)
                 .build();
 
-            RequestEntity<PrintLettersRequestDto> requestEntity = new RequestEntity<>(request, httpHeaders, POST, uri);
+            RequestEntity<PrintLettersRequestDto> requestEntity = new RequestEntity<>(request, httpHeaders, POST,
+                LETTER_URI);
             ResponseEntity<PrintLetterDataResponseDto[]> response = template.exchange(requestEntity,
                 PrintLetterDataResponseDto[].class);
 
@@ -7028,7 +7037,6 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @DisplayName("Issue Certificate of Attendance Letter - Invalid Owner - English")
         void englishLetterInvalidOwner() {
             final String jurorNumber = "555555561";
-            final String bureauOwner = "400";
             final String payload = createJwtBureau("BUREAU_USER");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -7039,11 +7047,11 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .build();
 
             RequestEntity<PrintLettersRequestDto> request =
-                new RequestEntity<>(requestDto, httpHeaders, POST, uri);
+                new RequestEntity<>(requestDto, httpHeaders, POST, LETTER_URI);
             ResponseEntity<String> response = template.exchange(request,
                 String.class);
 
-            assertForbiddenResponse(response, String.valueOf(uri));
+            assertForbiddenResponse(response, String.valueOf(LETTER_URI));
         }
 
 
@@ -7063,7 +7071,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .build();
 
             RequestEntity<PrintLettersRequestDto> requestEntity
-                = new RequestEntity<>(requestDto, httpHeaders, POST, uri);
+                = new RequestEntity<>(requestDto, httpHeaders, POST, LETTER_URI);
             ResponseEntity<String> response = template.exchange(requestEntity,
                 String.class);
 
@@ -7114,7 +7122,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(JUROR_NUMBER + jurorPostfix);
             assertThat(response.getAttendanceDataList()).isNotNull().hasSize(4);
             assertThat(response.getAttendanceDataList().get(0).getNonAttendance()).as("Expected Non Attendance to be "
-                + "false").isEqualTo("false");
+                + "false").isFalse();
             assertThat(response.getAttendanceDataList().get(0).getChildCare()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(0).getMisc()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(0).getLossOfEarnings()).isEqualTo(new BigDecimal("40.00"));
@@ -7123,7 +7131,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
 
             assertThat(response.getAttendanceDataList().get(1).getNonAttendance()).as("Expected Non Attendance to be "
-                + "false").isEqualTo("false");
+                + "false").isFalse();
             assertThat(response.getAttendanceDataList().get(1).getChildCare()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(1).getMisc()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(1).getLossOfEarnings()).isEqualTo(new BigDecimal("50.00"));
@@ -7132,7 +7140,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
 
             assertThat(response.getAttendanceDataList().get(2).getNonAttendance()).as("Expected Non Attendance to be "
-                + "false").isEqualTo("false");
+                + "false").isFalse();
             assertThat(response.getAttendanceDataList().get(2).getChildCare()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(2).getMisc()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(2).getLossOfEarnings()).isEqualTo(new BigDecimal("45.00"));
@@ -7141,7 +7149,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
 
             assertThat(response.getAttendanceDataList().get(3).getNonAttendance()).as("Expected Non Attendance to be "
-                + "false").isEqualTo("false");
+                + "false").isFalse();
             assertThat(response.getAttendanceDataList().get(3).getChildCare()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(3).getMisc()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(3).getLossOfEarnings()).isEqualTo(new BigDecimal("38.00"));
@@ -7199,7 +7207,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             assertThat(response.getAttendanceDataList()).isNotNull().hasSize(4);
             assertThat(response.getAttendanceDataList().get(0).getNonAttendance()).as("Expected Non Attendance to be "
-                + "false").isEqualTo("false");
+                + "false").isFalse();
             assertThat(response.getAttendanceDataList().get(0).getChildCare()).isEqualTo(new BigDecimal("30.00"));
             assertThat(response.getAttendanceDataList().get(0).getMisc()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(0).getLossOfEarnings()).isEqualTo(new BigDecimal("50.00"));
@@ -7207,7 +7215,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 LocalDate.now().plusDays(10));
 
             assertThat(response.getAttendanceDataList().get(1).getNonAttendance()).as("Expected Non Attendance to be "
-                + "false").isEqualTo("false");
+                + "false").isFalse();
             assertThat(response.getAttendanceDataList().get(1).getChildCare()).isEqualTo(new BigDecimal("30.00"));
             assertThat(response.getAttendanceDataList().get(1).getMisc()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(1).getLossOfEarnings()).isEqualTo(new BigDecimal("50.00"));
@@ -7215,7 +7223,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 LocalDate.now().plusDays(11));
 
             assertThat(response.getAttendanceDataList().get(2).getNonAttendance()).as("Expected Non Attendance to be "
-                + "false").isEqualTo("false");
+                + "false").isFalse();
             assertThat(response.getAttendanceDataList().get(2).getChildCare()).isEqualTo(new BigDecimal("30.00"));
             assertThat(response.getAttendanceDataList().get(2).getMisc()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(2).getLossOfEarnings()).isEqualTo(new BigDecimal("50.00"));
@@ -7223,7 +7231,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 LocalDate.now().plusDays(12));
 
             assertThat(response.getAttendanceDataList().get(3).getNonAttendance()).as("Expected Non Attendance to be "
-                + "false").isEqualTo("false");
+                + "false").isFalse();
             assertThat(response.getAttendanceDataList().get(3).getChildCare()).isEqualTo(new BigDecimal("30.00"));
             assertThat(response.getAttendanceDataList().get(3).getMisc()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(3).getLossOfEarnings()).isEqualTo(new BigDecimal("50.00"));

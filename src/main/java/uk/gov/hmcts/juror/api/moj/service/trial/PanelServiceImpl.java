@@ -311,6 +311,7 @@ public class PanelServiceImpl implements PanelService {
                 responded.setStatusDesc("Juror");
                 jurorPool.setStatus(responded);
                 panelMember.setCompleted(true);
+                panelMember.setEmpanelledDate(LocalDate.now());
             }
             default -> throw new MojException.BadRequest(
                 "Invalid result - Wrong result set for juror",
@@ -325,7 +326,7 @@ public class PanelServiceImpl implements PanelService {
         List<Panel> panelList =
             panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, locCode);
         for (Panel panel : panelList) {
-            if (panel.getResult() != PanelResult.RETURNED) {
+            if (panel.getResult() == null || panel.getResult() == PanelResult.JUROR) {
                 dtoList.add(createPanelListDto(panel));
             }
         }
@@ -337,8 +338,7 @@ public class PanelServiceImpl implements PanelService {
         List<PanelListDto> dtoList = new ArrayList<>();
         List<Panel> panelList = panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialId, locCode);
         for (Panel panel : panelList) {
-            JurorPool jurorPool = PanelUtils.getAssociatedJurorPool(jurorPoolRepository, panel);
-            if (jurorPool.getStatus().getStatus() == IJurorStatus.JUROR) {
+            if (panel.getResult() == PanelResult.JUROR) {
                 dtoList.add(createPanelListDto(panel));
             }
         }

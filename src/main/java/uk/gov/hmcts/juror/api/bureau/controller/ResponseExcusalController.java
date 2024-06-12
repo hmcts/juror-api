@@ -33,7 +33,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import java.util.List;
 import java.util.Objects;
 
-import static uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController.validateJurorNumberPathVariable;
+import static uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController.assertJurorNumberPathVariable;
 
 @Slf4j
 @RestController
@@ -51,7 +51,7 @@ public class ResponseExcusalController {
     @GetMapping
     @Operation(summary = "list of potential excusal reasons",
         description = "Retrieve list of potential excusal reasons")
-    public ResponseEntity<ExcusalReasonsDto> getExcusalReasons() throws ExcusalException {
+    public ResponseEntity<ExcusalReasonsDto> getExcusalReasons() {
         List<ExcusalCodeDto> excusalReasons = responseExcusalService.getExcusalReasons();
 
         return ResponseEntity.ok().body(new ExcusalReasonsDto(excusalReasons));
@@ -63,8 +63,8 @@ public class ResponseExcusalController {
     public ResponseEntity<Void> excuseJuror(
         @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,
         BureauJwtAuthentication jwt,
-        @Validated @RequestBody ExcusalCodeDto excusalCodeDto) throws ExcusalException {
-        validateJurorNumberPathVariable(jurorId);
+        @Validated @RequestBody ExcusalCodeDto excusalCodeDto) {
+        assertJurorNumberPathVariable(jurorId);
         final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
         if (null == excusalCodeDto.getExcusalCode() || null == excusalCodeDto.getVersion()) {
             // there is either no body or no version present in the request
@@ -86,8 +86,8 @@ public class ResponseExcusalController {
     public ResponseEntity<Void> rejectExcusalRequest(
         @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,
         BureauJwtAuthentication jwt,
-        @Validated @RequestBody ExcusalCodeDto excusalCodeDto) throws ExcusalException {
-        validateJurorNumberPathVariable(jurorId);
+        @Validated @RequestBody ExcusalCodeDto excusalCodeDto) {
+        assertJurorNumberPathVariable(jurorId);
         final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
         if (null == excusalCodeDto.getExcusalCode() || null == excusalCodeDto.getVersion()) {
             // there is either no body or no version present in the request

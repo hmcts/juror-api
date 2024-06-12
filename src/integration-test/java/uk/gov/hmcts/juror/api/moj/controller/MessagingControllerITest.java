@@ -70,7 +70,6 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 @DisplayName("MessagingControllerI: /api/v1/moj/messages")
 @SuppressWarnings({
     "LineLength",
-    "PMD.LawOfDemeter",
     "PMD.ExcessiveImports",
     "PMD.TooManyMethods"
 })
@@ -1171,7 +1170,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
         }
 
 
-        abstract class Positive {
+        class Positive {
 
             private final boolean isSimple;
 
@@ -1180,9 +1179,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
             }
 
 
-
             private ResponseEntity<PaginatedList<JurorToSendMessageCourt>> triggerValidCourt(MessageSearch search) {
-                final String jwt = createJwt(COURT_USER,"415", UserType.COURT, Set.of(), "415");
+                final String jwt = createJwt(COURT_USER, "415", UserType.COURT, Set.of(), "415");
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
                 ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = template.exchange(
@@ -2380,6 +2378,19 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 assertThat(message.getMessageRead()).isEqualTo("NR");
             }
 
+            @Getter
+            @Setter
+            @Builder
+            private static class JurorData {
+                private String jurorPoolNumber;
+                private String jurorNumber;
+                private MessageType.SendType sendType;
+                private String englishMessage;
+                private String welshMessage;
+                private String englishOtherInfo;
+                private String welshOtherInfo;
+            }
+
             private void addTest(MessageType messageType, String englishMessage,
                                  String welshEnglishMessage, String welshMessage,
                                  Map<String, String> placeholders,
@@ -2535,18 +2546,6 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 }
             }
 
-            @Getter
-            @Setter
-            @Builder
-            private static class JurorData {
-                private String jurorPoolNumber;
-                private String jurorNumber;
-                private MessageType.SendType sendType;
-                private String englishMessage;
-                private String welshMessage;
-                private String englishOtherInfo;
-                private String welshOtherInfo;
-            }
 
             private void addTest(
                 MessageType messageType,
@@ -3417,6 +3416,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
+            //False positive requires null values
+            @SuppressWarnings("PMD.UseConcurrentHashMap")
             void badPayload() throws Exception {
                 Map<String, String> request = new HashMap<>();
                 request.put("<trial_no>", null);
@@ -3503,7 +3504,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                             + "4,address2 4,address3 4,address4 4,address5 4,CF10 4AA,false,Juror,415230103,04/01/2023,"
                             + ",04/01/2023\n"
                             + "641500025,T5,FName5,LName5,email5@email.com,1234567896,1234567885,1234567875,address1 "
-                            + "5,address2 5,address3 5,address4 5,address5 5,CF10 5AA,false,Excused,415230104,05/01/2023,"
+                            + "5,address2 5,address3 5,address4 5,address5 5,CF10 5AA,false,Excused,415230104,"
+                            + "05/01/2023,"
                             + "05/02/2023,05/01/2023"
                     );
             }
@@ -3550,7 +3552,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                             + "1,address2 1,address3 1,address4 1,address5 1,CF10 1AA,false,Summoned,415230101,,,"
                             + "01/01/2023\n"
                             + "641500025,T5,FName5,LName5,email5@email.com,1234567896,1234567885,1234567875,address1 "
-                            + "5,address2 5,address3 5,address4 5,address5 5,CF10 5AA,false,Excused,415230104,05/01/2023,"
+                            + "5,address2 5,address3 5,address4 5,address5 5,CF10 5AA,false,Excused,415230104,"
+                            + "05/01/2023,"
                             + "05/02/2023,05/01/2023");
             }
         }

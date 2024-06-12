@@ -10,6 +10,7 @@ import jakarta.validation.ValidatorFactory;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Setter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.juror.api.TestConstants;
@@ -39,7 +40,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.withSettings;
 
 @SuppressWarnings({
-    "PMD.LawOfDemeter",
     "PMD.TooManyMethods",
     "PMD.ExcessiveImports",
 })
@@ -50,16 +50,14 @@ public abstract class AbstractReportTestSupport<
     private final IDataType[] dataTypes;
     private final Class<?> validatorClass;
     protected R report;
-    private PoolRequestRepository poolRequestRepository;
-    public boolean hasPoolRepository = true;
-
+    protected PoolRequestRepository poolRequestRepository;
+    @Setter
+    private boolean hasPoolRepository = true;
+    @Setter
+    private boolean allowBureau = true;
     private final Validator validator;
 
     public abstract R createReport(PoolRequestRepository poolRequestRepository);
-
-    public void setHasPoolRepository(boolean hasPoolRepository) {
-        this.hasPoolRepository = hasPoolRepository;
-    }
 
     public AbstractReportTestSupport(EntityPath<?> from,
                                      Class<?> validatorClass, IDataType... dataTypes) {
@@ -118,6 +116,8 @@ public abstract class AbstractReportTestSupport<
             withSettings().defaultAnswer(RETURNS_SELF));
         StandardReportRequest request = getValidRequest();
         positivePreProcessQueryTypical(query, request);
+        verify(report, times(1))
+            .preProcessQuery(query, request);
         verifyNoMoreInteractions(query);
     }
 
@@ -134,16 +134,17 @@ public abstract class AbstractReportTestSupport<
     @Test
     @SuppressWarnings("unchecked")
     final void positiveGetHeadingsTypical() {
-        StandardReportRequest request = mock(StandardReportRequest.class);
+        StandardReportRequest request = spy(getValidRequest());
         AbstractReportResponse.TableData<T> tableData = mock(AbstractReportResponse.TableData.class);
         T data = spy(createData());
         doReturn(data).when(tableData).getData();
         Map<String, AbstractReportResponse.DataTypeValue> standardPoolMappings = getStandardPoolHeaders();
-        doReturn(standardPoolMappings).when(report).loadStandardPoolHeaders(request, true, true);
+        doReturn(standardPoolMappings).when(report).loadStandardPoolHeaders(request, true, allowBureau);
         Map<String, AbstractReportResponse.DataTypeValue> headings =
             positiveGetHeadingsTypical(request, tableData, data);
         //Is set via getStandardReportResponse so should not be set here
         assertThat(headings).isNotNull().doesNotContainKey("report_created");
+        verify(report, times(1)).getHeadings(request, tableData);
     }
 
     protected abstract T createData();
@@ -196,9 +197,10 @@ public abstract class AbstractReportTestSupport<
         if (hasStandardPoolHeaders) {
             standardPoolMappings.putAll(getStandardPoolHeaders());
         }
-        assertThat(actualMap).isEqualTo(standardPoolMappings);
+        assertThat(actualMap).hasSize(standardPoolMappings.size());
+        assertThat(actualMap).containsExactlyInAnyOrderEntriesOf(standardPoolMappings);
         if (hasStandardPoolHeaders) {
-            verify(report, times(1)).loadStandardPoolHeaders(request, true, true);
+            verify(report, times(1)).loadStandardPoolHeaders(request, true, allowBureau);
         }
     }
 
@@ -208,7 +210,7 @@ public abstract class AbstractReportTestSupport<
         assertThat(violations.stream()
             .map(ValidationFailure::new)
             .toList())
-            .isEqualTo(List.of(validationFailures));
+            .containsExactlyInAnyOrder(validationFailures);
     }
 
     @Data

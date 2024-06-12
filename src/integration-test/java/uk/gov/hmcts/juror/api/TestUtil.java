@@ -22,6 +22,7 @@ import java.util.Map;
 /**
  * Testing utility methods.
  */
+@SuppressWarnings("PMD.UseConcurrentHashMap")//False Positive -- Need to support null values
 public final class TestUtil {
 
     private TestUtil() {
@@ -93,6 +94,7 @@ public final class TestUtil {
         claimsMap.put(Claims.ISSUED_AT, Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
         claimsMap.put("login", payload.getLogin());
         claimsMap.put("owner", payload.getOwner());
+        claimsMap.put("locCode", payload.getLocCode());
         claimsMap.put("userLevel", payload.getUserLevel());
         claimsMap.put("staff", payload.getStaff());
 

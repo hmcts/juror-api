@@ -12,13 +12,13 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 
-import java.time.LocalDateTime;
 import java.util.Set;
 
 @Repository
 @Transactional(readOnly = true)
 public interface JurorCommonResponseRepositoryMod
-    extends JurorResponseRepositoryMod<JurorCommonResponseRepositoryMod.AbstractResponse> {
+    extends JurorResponseRepositoryMod<JurorCommonResponseRepositoryMod.AbstractResponse>,
+    IJurorCommonResponseRepositoryMod {
 
     Set<ProcessingStatus> PENDING_STATUS = Set.of(
         ProcessingStatus.AWAITING_CONTACT,
@@ -44,35 +44,7 @@ public interface JurorCommonResponseRepositoryMod
 
     }
 
-    long countByStaffUsernameEqualsAndProcessingStatusIn(String username, Set<ProcessingStatus> status);
-
     long countByProcessingStatusIn(Set<ProcessingStatus> status);
 
-    long countByStaffUsernameEqualsAndProcessingStatusInAndCompletedAtIsBetween(String username,
-                                                                                Set<ProcessingStatus> status,
-                                                                                LocalDateTime fromDate,
-                                                                                LocalDateTime toDate
-    );
-
-
-    default long countTodo(String username) {
-        return countByStaffUsernameEqualsAndProcessingStatusIn(username, TODO_STATUS);
-    }
-
-
-    default long countPending(String username) {
-        return countByStaffUsernameEqualsAndProcessingStatusIn(username,PENDING_STATUS);
-    }
-
-    default long countComplete(String username) {
-        return countByStaffUsernameEqualsAndProcessingStatusIn(username, COMPLETE_STATUS);
-    }
-
-    default long countComplete(String username, LocalDateTime from, LocalDateTime to) {
-        return countByStaffUsernameEqualsAndProcessingStatusInAndCompletedAtIsBetween(
-            username,
-            COMPLETE_STATUS,
-            from,
-            to);
-    }
+    AbstractResponse findByJurorNumber(String jurorNumber);
 }

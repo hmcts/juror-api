@@ -13,14 +13,13 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-@SuppressWarnings("PMD.LawOfDemeter")
 public interface UserRepository extends CrudRepository<User, String>, QuerydslPredicateExecutor<User>, IUserRepository {
 
     List<User> findAllByUsernameIn(List<String> username);
 
     User findByUsername(String username);
 
-    Optional<User> findByEmail(String email);
+    Optional<User> findByEmailIgnoreCase(String email);
 
     default Iterable<User> findUsersByCourt(EntityManager entityManager, String court) {
         QCourtLocation courtLocation = QCourtLocation.courtLocation;
@@ -30,10 +29,9 @@ public interface UserRepository extends CrudRepository<User, String>, QuerydslPr
         return queryFactory
             .select(user)
             .from(user)
-            .join(courtLocation)
-            .on(user.owner.eq(courtLocation.owner))
+            .join(user.courts, courtLocation)
+            .on(courtLocation.locCode.eq(court))
             .where(user.active.eq(true))
-            .where(courtLocation.locCode.eq(court))
             .fetch();
     }
 

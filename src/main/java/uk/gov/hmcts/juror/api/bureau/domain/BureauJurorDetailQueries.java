@@ -21,7 +21,8 @@ import static org.apache.commons.lang3.StringUtils.deleteWhitespace;
  *
  * @since JDB-1971
  */
-@SuppressWarnings("PMD.LawOfDemeter")
+@SuppressWarnings({"PMD.TooManyFields", "PMD.TooManyMethods"})
+@Deprecated(forRemoval = true)
 public class BureauJurorDetailQueries {
 
     private static final String INWARD_CODE_FRAGMENT = "^([0-9])([A-Z]{0,2})$";
@@ -200,7 +201,7 @@ public class BureauJurorDetailQueries {
      * @return QueryDSL filter.
      */
     public static BooleanExpression urgentsOnly() {
-        return bureauJurorDetail.urgent.isTrue().or(bureauJurorDetail.superUrgent.isTrue());
+        return bureauJurorDetail.urgent.isTrue();
     }
 
     /**

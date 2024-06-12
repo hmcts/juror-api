@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.repository;
 
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -17,7 +18,6 @@ import java.util.List;
  */
 @Slf4j
 @Component
-@SuppressWarnings("PMD.LawOfDemeter")
 public class CourtQueriesRepositoryImpl implements CourtQueriesRepository {
 
     private static final QCourtCatchmentArea COURT_CATCHMENT = QCourtCatchmentArea.courtCatchmentArea;
@@ -50,5 +50,17 @@ public class CourtQueriesRepositoryImpl implements CourtQueriesRepository {
                 WordUtils.capitalizeFully(tuple.get(COURT_LOCATION.name)),
                 null, tuple.get(COURT_LOCATION.owner)))
             .toList();
+    }
+
+    @Override
+    public List<String> getAllCourtLocCodes(boolean includeBureau) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        JPAQuery<String> query =  queryFactory
+            .selectDistinct(COURT_LOCATION.locCode)
+            .from(COURT_LOCATION);
+        if (!includeBureau) {
+            query.where(COURT_LOCATION.locCode.ne("400"));
+        }
+        return query.fetch();
     }
 }

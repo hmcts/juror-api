@@ -7,15 +7,27 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.envers.RevisionEntity;
 import org.hibernate.envers.RevisionNumber;
 import org.hibernate.envers.RevisionTimestamp;
+import uk.gov.hmcts.juror.api.moj.audit.AuditorRevisionListener;
+import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "rev_info", schema = "juror_mod")
-@RevisionEntity
+@RevisionEntity(AuditorRevisionListener.class)
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class RevisionInfo implements Serializable {
 
     private static final String GENERATOR_NAME = "rev_info_revision_gen";
@@ -31,5 +43,14 @@ public class RevisionInfo implements Serializable {
     @RevisionTimestamp
     @Column(name = "revision_timestamp")
     private Long timestamp;
+
+
+    @Column(name = "changed_by")
+    private String changedBy;
+
+    @Transient
+    public LocalDateTime getRevisionDate() {
+        return DateUtils.fromEpochMilli(timestamp);
+    }
 
 }

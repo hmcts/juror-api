@@ -9,7 +9,9 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.bureau.controller.request.StaffAssignmentRequestDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffAssignmentResponseDto;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
@@ -20,14 +22,16 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReplyType;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.StaffJurorResponseAuditMod;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.UserJurorResponseAudit;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCommonRepositoryMod;
-import uk.gov.hmcts.juror.api.moj.repository.staff.StaffJurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.staff.UserJurorResponseAuditRepository;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -36,9 +40,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.RETURNS_DEFAULTS;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.withSettings;
 
 @ExtendWith(SpringExtension.class)
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
@@ -53,7 +60,7 @@ public class StaffServiceTest {
     private JurorPaperResponseRepositoryMod paperResponseRepositoryMod;
 
     @Mock
-    private StaffJurorResponseAuditRepositoryMod mockStaffJurorResponseAuditRepository;
+    private UserJurorResponseAuditRepository mockUserJurorResponseAuditRepository;
 
     @Mock
     private JurorResponseCommonRepositoryMod jurorResponseCommonRepositoryMod;
@@ -71,7 +78,6 @@ public class StaffServiceTest {
         .replyType(ReplyType.builder().type("Digital").build())
         .processingComplete(true)
         .urgent(false)
-        .superUrgent(false)
         .processingStatus(ProcessingStatus.CLOSED)
         .build();
 
@@ -109,7 +115,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         } else {
@@ -118,7 +123,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         }
@@ -139,7 +143,7 @@ public class StaffServiceTest {
         verify(mockuserRepository).findByUsername(ASSIGNING_LOGIN);
         verify(jurorResponseCommonRepositoryMod).findByJurorNumber(JUROR_NUMBER);
         verify(mockuserRepository).findByUsername(TARGET_LOGIN);
-        verify(mockStaffJurorResponseAuditRepository).save(any(StaffJurorResponseAuditMod.class));
+        verify(mockUserJurorResponseAuditRepository).save(any(UserJurorResponseAudit.class));
         if ("Digital".equals(replyType)) {
             verify(mockEntityManager).detach(any());
         }
@@ -167,6 +171,13 @@ public class StaffServiceTest {
     @ValueSource(strings = {"Paper", "Digital"})
     void happyNullStaffAssignment(String replyType) {
 
+        TestUtils.setUpMockAuthentication("400", ASSIGNING_LOGIN, "1", Collections.singletonList("400"));
+        MockedStatic<SecurityUtil> mockSecurityUtil = mockStatic(SecurityUtil.class,
+            withSettings().defaultAnswer(RETURNS_DEFAULTS));
+
+        mockSecurityUtil.when(SecurityUtil::isBureau).thenReturn(true);
+        mockSecurityUtil.when(SecurityUtil::isManager).thenReturn(true);
+        mockSecurityUtil.when(SecurityUtil::isBureauManager).thenReturn(true);
 
         AbstractJurorResponse jurorResponse;
         if ("Digital".equals(replyType)) {
@@ -175,7 +186,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         } else {
@@ -184,7 +194,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         }
@@ -207,7 +216,7 @@ public class StaffServiceTest {
 
         verify(mockuserRepository).findByUsername(ASSIGNING_LOGIN);
         verify(jurorResponseCommonRepositoryMod).findByJurorNumber(JUROR_NUMBER);
-        verify(mockStaffJurorResponseAuditRepository).save(any(StaffJurorResponseAuditMod.class));
+        verify(mockUserJurorResponseAuditRepository).save(any(UserJurorResponseAudit.class));
         if ("Digital".equals(replyType)) {
             ArgumentCaptor<DigitalResponse> digitalResponseArgumentCaptor =
                 ArgumentCaptor.forClass(DigitalResponse.class);
@@ -221,11 +230,14 @@ public class StaffServiceTest {
             verify(paperResponseRepositoryMod, times(1)).save(paperResponseArgumentCaptor.capture());
             assertThat(paperResponseArgumentCaptor.getValue().getStaff()).isNull();
         }
+
+        mockSecurityUtil.close();
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"Paper", "Digital"})
     void unhappyNullStaffAssignmentNotTeamLeader(String replyType) {
+
         AbstractJurorResponse jurorResponse;
         if ("Digital".equals(replyType)) {
             jurorResponse = DigitalResponse.builder()
@@ -233,7 +245,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         } else {
@@ -242,7 +253,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         }
@@ -260,14 +270,15 @@ public class StaffServiceTest {
             .active(true)
             .build();
 
+        TestUtils.setUpMockAuthentication("400", ASSIGNING_LOGIN, "1", Collections.singletonList("400"));
+
         doReturn(normalUser).when(mockuserRepository).findByUsername(ASSIGNING_LOGIN);
         MojException.Forbidden exception = Assertions.assertThrows(MojException.Forbidden.class,
-            () -> staffService.changeAssignment(dto,
-                ASSIGNING_LOGIN));
+            () -> staffService.changeAssignment(dto, ASSIGNING_LOGIN));
         assertThat(exception.getMessage())
             .as("Exception message")
-            .isEqualTo("Unable to assign response for Juror 123456789 to backlog as user assigner does not have "
-                + "rights");
+            .isEqualTo(
+                "Unable to assign response for Juror 123456789 to backlog as user assigner does not have rights");
 
         verify(mockJurorResponseRepository, times(0)).save(any());
         verify(paperResponseRepositoryMod, times(0)).save(any());
@@ -293,7 +304,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         } else {
@@ -302,7 +312,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         }
@@ -329,7 +338,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         } else {
@@ -338,7 +346,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         }
@@ -360,7 +367,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         } else {
@@ -369,7 +375,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         }
@@ -408,7 +413,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(true)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         } else {
@@ -417,7 +421,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(true)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         }
@@ -440,50 +443,6 @@ public class StaffServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"Paper", "Digital"})
-    void unhappySuperUrgentJurorResponse(String replyType) {
-        doReturn(ASSIGNER_STAFF_ENTITY).when(mockuserRepository).findByUsername(ASSIGNING_LOGIN);
-        doReturn(TARGET_LOGIN_ENTITY).when(mockuserRepository).findByUsername(TARGET_LOGIN);
-
-        AbstractJurorResponse jurorResponse;
-        if ("Digital".equals(replyType)) {
-            jurorResponse = DigitalResponse.builder()
-                .jurorNumber(JUROR_NUMBER)
-                .replyType(ReplyType.builder().type(replyType).build())
-                .processingComplete(false)
-                .urgent(false)
-                .superUrgent(true)
-                .processingStatus(ProcessingStatus.TODO)
-                .build();
-        } else {
-            jurorResponse = PaperResponse.builder()
-                .jurorNumber(JUROR_NUMBER)
-                .replyType(ReplyType.builder().type(replyType).build())
-                .processingComplete(false)
-                .urgent(false)
-                .superUrgent(true)
-                .processingStatus(ProcessingStatus.TODO)
-                .build();
-        }
-
-        StaffAssignmentRequestDto dto = StaffAssignmentRequestDto.builder()
-            .assignTo(null)
-            .responseJurorNumber(JUROR_NUMBER)
-            .build();
-
-        doReturn(jurorResponse).when(jurorResponseCommonRepositoryMod).findByJurorNumber(JUROR_NUMBER);
-        MojException.BusinessRuleViolation exception = Assertions.assertThrows(MojException.BusinessRuleViolation.class,
-            () -> staffService.changeAssignment(dto,
-                ASSIGNING_LOGIN));
-        assertThat(exception.getMessage())
-            .as("Exception Message")
-            .isEqualTo("Unable to assign response for Juror 123456789 to backlog as it is super-urgent");
-
-        verify(mockJurorResponseRepository, times(0)).save(any());
-        verify(paperResponseRepositoryMod, times(0)).save(any());
-    }
-
-    @ParameterizedTest
     @MethodSource("generator")
     void unhappyIncorrectProcessingStatus(Map<String, ProcessingStatus> statusMap) {
         doReturn(ASSIGNER_STAFF_ENTITY).when(mockuserRepository).findByUsername(ASSIGNING_LOGIN);
@@ -497,7 +456,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(statusMap.get(replyType))
                 .build();
         } else {
@@ -506,7 +464,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(statusMap.get(replyType))
                 .build();
         }
@@ -542,7 +499,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(true)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         } else {
@@ -551,7 +507,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(true)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.TODO)
                 .build();
         }
@@ -587,7 +542,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.CLOSED)
                 .build();
         } else {
@@ -596,7 +550,6 @@ public class StaffServiceTest {
                 .replyType(ReplyType.builder().type(replyType).build())
                 .processingComplete(false)
                 .urgent(false)
-                .superUrgent(false)
                 .processingStatus(ProcessingStatus.CLOSED)
                 .build();
         }

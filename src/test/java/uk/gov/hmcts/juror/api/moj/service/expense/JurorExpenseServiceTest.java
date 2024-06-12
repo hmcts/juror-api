@@ -15,8 +15,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.bureau.service.UserService;
@@ -29,6 +27,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.expense.CalculateTotalExpen
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.CombinedExpenseDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseType;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.UnpaidExpenseSummaryRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpense;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseApplyToAllDays;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseFinancialLoss;
@@ -51,10 +50,9 @@ import uk.gov.hmcts.juror.api.moj.domain.ExpenseRates;
 import uk.gov.hmcts.juror.api.moj.domain.ExpenseRatesDto;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
-import uk.gov.hmcts.juror.api.moj.domain.JurorExpenseTotals;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PaymentData;
-import uk.gov.hmcts.juror.api.moj.domain.SortDirection;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
@@ -66,7 +64,6 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ExpenseRatesRepository;
 import uk.gov.hmcts.juror.api.moj.repository.FinancialAuditDetailsRepository;
-import uk.gov.hmcts.juror.api.moj.repository.JurorExpenseTotalsRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PaymentDataRepository;
@@ -82,7 +79,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -97,8 +93,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyCollection;
-import static org.mockito.ArgumentMatchers.anyFloat;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -116,12 +110,10 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.EXPENSES_CANNOT_BE_LESS_THAN_ZERO;
 
 @ExtendWith(SpringExtension.class)
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.LawOfDemeter", "PMD.CouplingBetweenObjects", "PMD.NcssCount",
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects", "PMD.NcssCount",
     "PMD.TooManyMethods", "unchecked"})
 class JurorExpenseServiceTest {
 
-    @Mock
-    private JurorExpenseTotalsRepository jurorExpenseTotalsRepository;
     @Mock
     private JurorRepository jurorRepository;
     @Mock
@@ -163,140 +155,26 @@ class JurorExpenseServiceTest {
 
 
     @Nested
-    @DisplayName("public Page<UnpaidExpenseSummaryResponseDto> getUnpaidExpensesForCourtLocation")
+    @DisplayName("public PaginatedList<UnpaidExpenseSummaryResponseDto> getUnpaidExpensesForCourtLocation")
     class GetUnpaidExpensesForCourtLocation {
 
-        @BeforeEach
-        void mockCurrentUser() {
-            securityUtilMockedStatic = mockStatic(SecurityUtil.class);
-            securityUtilMockedStatic.when(SecurityUtil::getActiveLogin).thenReturn("CURRENT_USER");
-        }
-
-        @AfterEach
-        void afterEach() {
-            if (securityUtilMockedStatic != null) {
-                securityUtilMockedStatic.close();
-            }
-        }
-
-
         @Test
-        @DisplayName("Happy path - No date range filter applied")
-        void happyPathNoDateRange() {
-            String courtLocation = "415";
-            SortDirection sortDirection = SortDirection.ASC;
-            String sortBy = "jurorNumber";
-            int pageNumber = 1;
+        @DisplayName("Happy path")
+        @SuppressWarnings("unchecked")
+        void happyPath() {
+            PaginatedList<UnpaidExpenseSummaryResponseDto> paginatedList = mock(PaginatedList.class);
 
-            LocalDate minDate = null;
-            LocalDate maxDate = null;
+            when(appearanceRepository.findUnpaidExpenses(any(), any())).thenReturn(paginatedList);
 
-            doReturn(2L).when(jurorExpenseTotalsRepository)
-                .countByCourtLocationCodeAndTotalUnapprovedGreaterThan(anyString(), anyFloat());
-            doReturn(createJurorExpenseTotals(courtLocation)).when(jurorExpenseTotalsRepository)
-                .findUnpaidByCourtLocationCode(anyString(), any(Pageable.class));
+            UnpaidExpenseSummaryRequestDto request = mock(UnpaidExpenseSummaryRequestDto.class);
+            assertThat(jurorExpenseService.getUnpaidExpensesForCourtLocation(
+                TestConstants.VALID_COURT_LOCATION,
+                request
+            )).isEqualTo(paginatedList);
 
-            Page<UnpaidExpenseSummaryResponseDto> responseDtoPage =
-                jurorExpenseService.getUnpaidExpensesForCourtLocation(courtLocation, minDate, maxDate, pageNumber,
-                    sortBy, sortDirection);
+            verify(appearanceRepository, times(1))
+                .findUnpaidExpenses(TestConstants.VALID_COURT_LOCATION, request);
 
-            assertThat(responseDtoPage).isNotEmpty();
-            List<UnpaidExpenseSummaryResponseDto> responseDtoList = responseDtoPage.getContent();
-            assertThat(responseDtoList).isNotEmpty();
-            assertThat(responseDtoList.size()).isEqualTo(2);
-
-            UnpaidExpenseSummaryResponseDto firstResult = responseDtoList.get(0);
-            assertThat(firstResult.getJurorNumber()).isEqualToIgnoringCase("111111111");
-            assertThat(firstResult.getPoolNumber()).isEqualToIgnoringCase("999999999");
-            assertThat(firstResult.getFirstName()).isEqualToIgnoringCase("Test");
-            assertThat(firstResult.getLastName()).isEqualToIgnoringCase("Person");
-            assertThat(firstResult.getTotalUnapproved().compareTo(BigDecimal.valueOf(50.67))).isEqualTo(0);
-
-            UnpaidExpenseSummaryResponseDto secondResult = responseDtoList.get(1);
-            assertThat(secondResult.getJurorNumber()).isEqualToIgnoringCase("222222222");
-            assertThat(secondResult.getPoolNumber()).isEqualToIgnoringCase("888888888");
-            assertThat(secondResult.getFirstName()).isEqualToIgnoringCase("John");
-            assertThat(secondResult.getLastName()).isEqualToIgnoringCase("Smith");
-            assertThat(secondResult.getTotalUnapproved().compareTo(BigDecimal.valueOf(76.05))).isEqualTo(0);
-
-            verify(jurorExpenseTotalsRepository, never())
-                .countUnpaidByCourtLocationCodeAndAppearanceDate(anyString(), any(LocalDate.class),
-                    any(LocalDate.class));
-            verify(jurorExpenseTotalsRepository, never())
-                .findUnpaidByCourtLocationCodeAndAppearanceDate(anyString(), any(LocalDate.class),
-                    any(LocalDate.class), any(Pageable.class));
-
-            verify(jurorExpenseTotalsRepository, times(1))
-                .countByCourtLocationCodeAndTotalUnapprovedGreaterThan(anyString(), anyFloat());
-            verify(jurorExpenseTotalsRepository, times(1))
-                .findUnpaidByCourtLocationCode(anyString(), any(Pageable.class));
-        }
-
-        @Test
-        @DisplayName("Happy path - Date range filter applied")
-        void happyPathWithDateRange() {
-            String courtLocation = "415";
-            SortDirection sortDirection = SortDirection.DESC;
-            String sortBy = "poolNumber";
-            int pageNumber = 1;
-
-            LocalDate minDate = LocalDate.now().minusDays(14);
-            LocalDate maxDate = LocalDate.now();
-
-            doReturn(2L).when(jurorExpenseTotalsRepository)
-                .countUnpaidByCourtLocationCodeAndAppearanceDate(anyString(), any(LocalDate.class),
-                    any(LocalDate.class));
-            doReturn(createJurorExpenseTotals(courtLocation)).when(jurorExpenseTotalsRepository)
-                .findUnpaidByCourtLocationCodeAndAppearanceDate(anyString(), any(LocalDate.class),
-                    any(LocalDate.class), any(Pageable.class));
-
-            Page<UnpaidExpenseSummaryResponseDto> responseDtoPage =
-                jurorExpenseService.getUnpaidExpensesForCourtLocation(courtLocation, minDate, maxDate, pageNumber,
-                    sortBy, sortDirection);
-
-            assertThat(responseDtoPage).isNotEmpty();
-            List<UnpaidExpenseSummaryResponseDto> responseDtoList = responseDtoPage.getContent();
-            assertThat(responseDtoList).isNotEmpty();
-            assertThat(responseDtoList.size()).isEqualTo(2);
-
-            UnpaidExpenseSummaryResponseDto firstResult = responseDtoList.get(0);
-            assertThat(firstResult.getJurorNumber()).isEqualToIgnoringCase("111111111");
-            assertThat(firstResult.getPoolNumber()).isEqualToIgnoringCase("999999999");
-            assertThat(firstResult.getFirstName()).isEqualToIgnoringCase("Test");
-            assertThat(firstResult.getLastName()).isEqualToIgnoringCase("Person");
-            assertThat(firstResult.getTotalUnapproved().compareTo(BigDecimal.valueOf(50.67))).isEqualTo(0);
-
-            UnpaidExpenseSummaryResponseDto secondResult = responseDtoList.get(1);
-            assertThat(secondResult.getJurorNumber()).isEqualToIgnoringCase("222222222");
-            assertThat(secondResult.getPoolNumber()).isEqualToIgnoringCase("888888888");
-            assertThat(secondResult.getFirstName()).isEqualToIgnoringCase("John");
-            assertThat(secondResult.getLastName()).isEqualToIgnoringCase("Smith");
-            assertThat(secondResult.getTotalUnapproved().compareTo(BigDecimal.valueOf(76.05))).isEqualTo(0);
-
-            verify(jurorExpenseTotalsRepository, times(1))
-                .countUnpaidByCourtLocationCodeAndAppearanceDate(anyString(), any(LocalDate.class),
-                    any(LocalDate.class));
-            verify(jurorExpenseTotalsRepository, times(1))
-                .findUnpaidByCourtLocationCodeAndAppearanceDate(anyString(), any(LocalDate.class),
-                    any(LocalDate.class), any(Pageable.class));
-
-            verify(jurorExpenseTotalsRepository, never())
-                .countByCourtLocationCodeAndTotalUnapprovedGreaterThan(anyString(), anyFloat());
-            verify(jurorExpenseTotalsRepository, never())
-                .findUnpaidByCourtLocationCode(anyString(), any(Pageable.class));
-        }
-
-
-        private List<JurorExpenseTotals> createJurorExpenseTotals(String locCode) {
-            JurorExpenseTotals jurorExpenseTotals1 =
-                JurorExpenseTotals.builder().courtLocationCode(locCode).jurorNumber("111111111").poolNumber("999999999")
-                    .firstName("Test").lastName("Person").totalUnapproved(BigDecimal.valueOf(50.67)).build();
-
-            JurorExpenseTotals jurorExpenseTotals2 =
-                JurorExpenseTotals.builder().courtLocationCode(locCode).jurorNumber("222222222").poolNumber("888888888")
-                    .firstName("John").lastName("Smith").totalUnapproved(BigDecimal.valueOf(76.05)).build();
-
-            return Arrays.asList(jurorExpenseTotals1, jurorExpenseTotals2);
         }
     }
 
@@ -543,6 +421,7 @@ class JurorExpenseServiceTest {
 
         @Test
         @DisplayName("Successfully submit one expense for approval")
+        @SuppressWarnings("LineLength")
         void singleExpenseHappyPath() {
 
             final Appearance appearanceToSubmit = buildTestAppearance(TestConstants.VALID_JUROR_NUMBER,
@@ -568,7 +447,7 @@ class JurorExpenseServiceTest {
 
 
             doReturn(List.of(appearanceToSubmit)).when(appearanceRepository)
-                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(
+                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
                     TestConstants.VALID_COURT_LOCATION,
                     TestConstants.VALID_JUROR_NUMBER,
                     attendanceDates);
@@ -579,11 +458,12 @@ class JurorExpenseServiceTest {
                 attendanceDates);
 
             verify(appearanceRepository, times(1))
-                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(TestConstants.VALID_COURT_LOCATION,
+                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
+                    TestConstants.VALID_COURT_LOCATION,
                     TestConstants.VALID_JUROR_NUMBER, attendanceDates);
             ArgumentCaptor<List<Appearance>> appearanceArgumentCaptor = ArgumentCaptor.forClass(List.class);
 
-            verify(jurorExpenseService, times(1)).saveAppearancesWithExpenseRateIdUpdate(
+            verify(jurorExpenseService, times(1)).updateExpenseRatesId(
                 appearanceArgumentCaptor.capture());
 
             verify(financialAuditService, times(1))
@@ -630,7 +510,7 @@ class JurorExpenseServiceTest {
                 LocalDate.of(2024, 1, 2));
             doReturn(List.of(appearanceToSubmit1, appearanceToSubmit2))
                 .when(appearanceRepository)
-                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(
+                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
                     TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER,
                     attendanceDates);
 
@@ -641,10 +521,11 @@ class JurorExpenseServiceTest {
                 attendanceDates);
 
             verify(appearanceRepository, times(1))
-                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(TestConstants.VALID_COURT_LOCATION,
+                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
+                    TestConstants.VALID_COURT_LOCATION,
                     TestConstants.VALID_JUROR_NUMBER, attendanceDates);
             verify(jurorExpenseService, times(1))
-                .saveAppearancesWithExpenseRateIdUpdate(appearanceArgumentCaptor.capture());
+                .updateExpenseRatesId(appearanceArgumentCaptor.capture());
             verify(financialAuditService, times(1))
                 .createFinancialAuditDetail(TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_COURT_LOCATION,
                     FinancialAuditDetails.Type.FOR_APPROVAL,
@@ -667,7 +548,8 @@ class JurorExpenseServiceTest {
             List<LocalDate> attendanceDates = List.of(LocalDate.of(2024, 1, 1));
 
             doReturn(new ArrayList<Appearance>()).when(appearanceRepository)
-                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(TestConstants.VALID_COURT_LOCATION,
+                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
+                    TestConstants.VALID_COURT_LOCATION,
                     TestConstants.VALID_JUROR_NUMBER, attendanceDates);
 
             assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
@@ -677,7 +559,8 @@ class JurorExpenseServiceTest {
                     attendanceDates));
 
             verify(appearanceRepository, times(1))
-                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(TestConstants.VALID_COURT_LOCATION,
+                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
+                    TestConstants.VALID_COURT_LOCATION,
                     TestConstants.VALID_JUROR_NUMBER, attendanceDates);
             verify(appearanceRepository, never())
                 .save(Mockito.any());
@@ -2521,7 +2404,6 @@ class JurorExpenseServiceTest {
                 .thenReturn(username);
             User user = mock(User.class);
             doReturn(user).when(userService).findByUsername(username);
-            doReturn(TestConstants.VALID_COURT_LOCATION).when(user).getOwner();
             return user;
         }
 
@@ -3193,10 +3075,12 @@ class JurorExpenseServiceTest {
             doReturn(new BigDecimal("1.01")).when(appearance1).getTravelTotalChanged();
             doReturn(new BigDecimal("2.01")).when(appearance1).getSubsistenceTotalChanged();
             doReturn(new BigDecimal("3.01")).when(appearance1).getFinancialLossTotalChanged();
+            doReturn(new BigDecimal("0.01")).when(appearance1).getSmartCardTotalChanged();
             Appearance appearance2 = mock(Appearance.class);
             doReturn(new BigDecimal("4.01")).when(appearance2).getTravelTotalChanged();
             doReturn(new BigDecimal("5.01")).when(appearance2).getSubsistenceTotalChanged();
             doReturn(new BigDecimal("6.01")).when(appearance2).getFinancialLossTotalChanged();
+            doReturn(new BigDecimal("0.02")).when(appearance2).getSmartCardTotalChanged();
 
             Juror juror = mock(Juror.class);
             doReturn(juror).when(jurorExpenseService).getJuror(TestConstants.VALID_JUROR_NUMBER);
@@ -3227,8 +3111,8 @@ class JurorExpenseServiceTest {
             );
 
             assertThat(paymentData.getCourtLocation()).isEqualTo(courtLocation);
-            assertThat(paymentData.getCreationDate()).isEqualToIgnoringHours(LocalDateTime.now());
-            assertThat(paymentData.getExpenseTotal()).isEqualTo(new BigDecimal("21.06"));
+            assertThat(paymentData.getCreationDateTime()).isEqualToIgnoringHours(LocalDateTime.now());
+            assertThat(paymentData.getExpenseTotal()).isEqualTo(new BigDecimal("21.03"));
             assertThat(paymentData.getJurorNumber()).isEqualTo(TestConstants.VALID_JUROR_NUMBER);
             assertThat(paymentData.getBankSortCode()).isEqualTo("112233");
             assertThat(paymentData.getBankAccountName()).isEqualTo("bankAccountName");
@@ -3244,7 +3128,7 @@ class JurorExpenseServiceTest {
             assertThat(paymentData.getJurorName()).isEqualTo("Jurorname asd");
             assertThat(paymentData.getLocCostCentre()).isEqualTo("costCenter312");
             assertThat(paymentData.getTravelTotal()).isEqualTo(new BigDecimal("5.02"));
-            assertThat(paymentData.getSubsistenceTotal()).isEqualTo(new BigDecimal("7.02"));
+            assertThat(paymentData.getSubsistenceTotal()).isEqualTo(new BigDecimal("6.99"));
             assertThat(paymentData.getFinancialLossTotal()).isEqualTo(new BigDecimal("9.02"));
             assertThat(paymentData.getExpenseFileName()).isNull();
             assertThat(paymentData.isExtracted()).isFalse();
@@ -3256,6 +3140,7 @@ class JurorExpenseServiceTest {
             doReturn(new BigDecimal("1.01")).when(appearance1).getTravelTotalChanged();
             doReturn(new BigDecimal("2.01")).when(appearance1).getSubsistenceTotalChanged();
             doReturn(new BigDecimal("3.01")).when(appearance1).getFinancialLossTotalChanged();
+            doReturn(new BigDecimal("0.01")).when(appearance1).getSmartCardTotalChanged();
             Juror juror = mock(Juror.class);
             doReturn(juror).when(jurorExpenseService).getJuror(TestConstants.VALID_JUROR_NUMBER);
             CourtLocation courtLocation = mock(CourtLocation.class);
@@ -3651,7 +3536,8 @@ class JurorExpenseServiceTest {
             financialAuditDetails.setId(123L);
             financialAuditDetails.setCreatedOn(LocalDateTime.now());
             Appearance appearance = mock(Appearance.class);
-            when(appearance.getFinancialAuditDetails()).thenReturn(financialAuditDetails);
+
+            doReturn(financialAuditDetails).when(financialAuditService).findFromAppearance(appearance);
             when(appearance.getAttendanceDate()).thenReturn(LocalDate.now());
             when(appearance.getAttendanceType()).thenReturn(AttendanceType.FULL_DAY);
             when(appearance.getTotalFinancialLossDue()).thenReturn(new BigDecimal("12.2"));
@@ -3690,9 +3576,11 @@ class JurorExpenseServiceTest {
             List<LocalDate> localDates = List.of(mock(LocalDate.class), mock(LocalDate.class), mock(LocalDate.class));
 
             List<Appearance> appearances = List.of(mock(Appearance.class), mock(Appearance.class));
-            when(appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(
-                TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, localDates))
-                .thenReturn(appearances);
+            when(
+                appearanceRepository
+                    .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
+                        TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, localDates)
+            ).thenReturn(appearances);
             CombinedExpenseDetailsDto<ExpenseDetailsDto> result = mock(CombinedExpenseDetailsDto.class);
             doReturn(result).when(jurorExpenseService).getExpenses(appearances);
             when(result.getExpenseDetails()).thenReturn(List.of(mock(ExpenseDetailsDto.class),
@@ -3703,7 +3591,7 @@ class JurorExpenseServiceTest {
                 .isEqualTo(result);
 
             verify(appearanceRepository, times(1))
-                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(
+                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
                     TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, localDates);
             verify(jurorExpenseService, times(1)).getExpenses(appearances);
         }
@@ -3713,9 +3601,12 @@ class JurorExpenseServiceTest {
             List<LocalDate> localDates = List.of(mock(LocalDate.class), mock(LocalDate.class), mock(LocalDate.class));
 
             List<Appearance> appearances = List.of(mock(Appearance.class), mock(Appearance.class));
-            when(appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(
-                TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, localDates))
-                .thenReturn(appearances);
+            when(
+                appearanceRepository
+                    .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
+                        TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, localDates
+                    )
+            ).thenReturn(appearances);
             CombinedExpenseDetailsDto<ExpenseDetailsDto> result = mock(CombinedExpenseDetailsDto.class);
             doReturn(result).when(jurorExpenseService).getExpenses(appearances);
             when(result.getExpenseDetails()).thenReturn(
@@ -5676,14 +5567,15 @@ class JurorExpenseServiceTest {
                 mockAppearance(LocalDate.of(2023, 1, 3))
             ));
             doReturn(appearances).when(appearanceRepository)
-                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(
+                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
                     TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, attendanceDates);
 
             assertThat(jurorExpenseService.getAppearances(TestConstants.VALID_COURT_LOCATION,
                 TestConstants.VALID_JUROR_NUMBER, attendanceDates))
                 .isEqualTo(appearances);
 
-            verify(appearanceRepository, times(1)).findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(
+            verify(appearanceRepository,
+                times(1)).findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
                 TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, attendanceDates
             );
         }
@@ -5697,40 +5589,8 @@ class JurorExpenseServiceTest {
             );
 
             doReturn(List.of()).when(appearanceRepository)
-                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(
+                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
                     TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, attendanceDates);
-
-
-            MojException.NotFound exception = assertThrows(MojException.NotFound.class,
-                () -> jurorExpenseService.getAppearances(TestConstants.VALID_COURT_LOCATION,
-                    TestConstants.VALID_JUROR_NUMBER, attendanceDates),
-                "Expect exception to be thrown when no appearances are found"
-            );
-            assertThat(exception).isNotNull();
-            assertThat(exception.getCause()).isNull();
-            assertThat(exception.getMessage()).isEqualTo(
-                "One or more appearance records not found for Loc code: 415, Juror Number: 123456789 and Attendance "
-                    + "Dates provided");
-
-
-            verify(appearanceRepository, times(1)).findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(
-                TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, attendanceDates
-            );
-        }
-
-        @Test
-        void negativeSizeDoNoMatch() {
-            List<LocalDate> attendanceDates = List.of(
-                LocalDate.of(2023, 1, 1),
-                LocalDate.of(2023, 1, 2),
-                LocalDate.of(2023, 1, 3)
-            );
-            doReturn(new ArrayList<>(List.of(
-                mockAppearance(LocalDate.of(2023, 1, 1)),
-                mockAppearance(LocalDate.of(2023, 1, 2))
-            ))).when(appearanceRepository).findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(
-                TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, attendanceDates
-            );
 
 
             MojException.NotFound exception = assertThrows(MojException.NotFound.class,
@@ -5746,7 +5606,41 @@ class JurorExpenseServiceTest {
 
 
             verify(appearanceRepository, times(1))
-                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(
+                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
+                    TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, attendanceDates
+                );
+        }
+
+        @Test
+        @SuppressWarnings("LineLength")
+        void negativeSizeDoNoMatch() {
+            List<LocalDate> attendanceDates = List.of(
+                LocalDate.of(2023, 1, 1),
+                LocalDate.of(2023, 1, 2),
+                LocalDate.of(2023, 1, 3)
+            );
+            doReturn(new ArrayList<>(List.of(
+                mockAppearance(LocalDate.of(2023, 1, 1)),
+                mockAppearance(LocalDate.of(2023, 1, 2))
+            ))).when(appearanceRepository)
+                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
+                    TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, attendanceDates);
+
+
+            MojException.NotFound exception = assertThrows(MojException.NotFound.class,
+                () -> jurorExpenseService.getAppearances(TestConstants.VALID_COURT_LOCATION,
+                    TestConstants.VALID_JUROR_NUMBER, attendanceDates),
+                "Expect exception to be thrown when no appearances are found"
+            );
+            assertThat(exception).isNotNull();
+            assertThat(exception.getCause()).isNull();
+            assertThat(exception.getMessage()).isEqualTo(
+                "One or more appearance records not found for Loc code: 415, Juror Number: 123456789 and Attendance "
+                    + "Dates provided");
+
+
+            verify(appearanceRepository, times(1))
+                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
                     TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, attendanceDates
                 );
         }
@@ -5787,7 +5681,6 @@ class JurorExpenseServiceTest {
         assertThat(expenseRates.getLimitFinancialLossFullDayLongTrial()).isEqualTo(new BigDecimal("1.10"));
         assertThat(expenseRates.getSubsistenceRateStandard()).isEqualTo(new BigDecimal("1.11"));
         assertThat(expenseRates.getSubsistenceRateLongDay()).isEqualTo(new BigDecimal("1.12"));
-        assertThat(expenseRates.getRatesEffectiveFrom()).isNotNull();
 
     }
 

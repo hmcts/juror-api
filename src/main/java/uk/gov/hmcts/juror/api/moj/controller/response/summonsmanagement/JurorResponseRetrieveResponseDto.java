@@ -25,6 +25,14 @@ public class JurorResponseRetrieveResponseDto {
     @Schema(name = "Record count", description = "The number or responses retrieved matching the search criteria")
     private int recordCount;
 
+    @JsonProperty("limit")
+    @Schema(name = "limit", description = "The limit for the number of search results")
+    private int limit;
+
+    @JsonProperty("limit_exceeded")
+    @Schema(name = "Limit Exceeded", description = "Was the limit exceeded?")
+    private boolean limitExceeded;
+
     @JsonProperty("juror_response")
     @Schema(name = "Juror response", description = "List of juror response records retrieved based on search criteria")
     @Singular("jurorResponse")

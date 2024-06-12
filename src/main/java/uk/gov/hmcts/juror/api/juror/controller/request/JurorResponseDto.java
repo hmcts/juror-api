@@ -39,42 +39,6 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.THIRD_PARTY_
 @Schema(description = "Juror response information from a Juror Response updating exiting information. Parameters "
     + "should be the correct values, not just changes.")
 public class JurorResponseDto {
-    /**
-     * Required arguments builder for common flows.
-     */
-    public static JurorResponseDtoBuilder builder(
-        String jurorNumber, String firstName, String lastName,
-        String addressLineOne, String addressLineTwo, String addressLineThree,
-        String addressPostcode, LocalDate dateOfBirth, String primaryPhone,
-        String emailAddress, Qualify qualify, Integer version,
-        ReplyMethod replyMethod) {
-
-        return realBuilder()
-            .jurorNumber(jurorNumber)
-            .firstName(firstName)
-            .lastName(lastName)
-            .addressLineOne(addressLineOne)
-            .addressLineTwo(addressLineTwo)
-            .addressLineThree(addressLineThree)
-            .addressPostcode(addressPostcode)
-            .dateOfBirth(dateOfBirth)
-            .primaryPhone(primaryPhone)
-            .emailAddress(emailAddress)
-            .qualify(qualify)
-            .version(version)
-            .replyMethod(replyMethod);
-    }
-
-    /**
-     * Required arguments builder for Third Party Deceased flow.
-     */
-    public static JurorResponseDtoBuilder builderThirdPartyDeceased(String jurorNumber, ThirdParty thirdParty) {
-        return realBuilder()
-            .jurorNumber(jurorNumber)
-            .thirdParty(thirdParty)
-            ;
-    }
-
 
     @Schema(description = "Juror number", requiredMode = Schema.RequiredMode.REQUIRED)
     private String jurorNumber;
@@ -205,6 +169,43 @@ public class JurorResponseDto {
     @Schema(description = "Is this response Welsh language?")
     @Builder.Default
     private Boolean welsh = Boolean.FALSE;
+
+    /**
+     * Required arguments builder for common flows.
+     */
+    public static JurorResponseDtoBuilder builder(
+        String jurorNumber, String firstName, String lastName,
+        String addressLineOne, String addressLineTwo, String addressLineThree,
+        String addressPostcode, LocalDate dateOfBirth, String primaryPhone,
+        String emailAddress, Qualify qualify, Integer version,
+        ReplyMethod replyMethod) {
+
+        return realBuilder()
+            .jurorNumber(jurorNumber)
+            .firstName(firstName)
+            .lastName(lastName)
+            .addressLineOne(addressLineOne)
+            .addressLineTwo(addressLineTwo)
+            .addressLineThree(addressLineThree)
+            .addressPostcode(addressPostcode)
+            .dateOfBirth(dateOfBirth)
+            .primaryPhone(primaryPhone)
+            .emailAddress(emailAddress)
+            .qualify(qualify)
+            .version(version)
+            .replyMethod(replyMethod);
+    }
+
+    /**
+     * Required arguments builder for Third Party Deceased flow.
+     */
+    public static JurorResponseDtoBuilder builderThirdPartyDeceased(String jurorNumber, ThirdParty thirdParty) {
+        return realBuilder()
+            .jurorNumber(jurorNumber)
+            .thirdParty(thirdParty)
+            ;
+    }
+
 
     @Builder
     @AllArgsConstructor

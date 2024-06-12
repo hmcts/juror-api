@@ -52,7 +52,7 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 @ExtendWith(SpringExtension.class)
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class PanelControllerITest extends AbstractIntegrationTest {
+class PanelControllerITest extends AbstractIntegrationTest {
 
     static final String COURT_USER_NAME = "court_user";
     static final String CHESTER_LOC_CODE = "415";
@@ -341,14 +341,17 @@ public class PanelControllerITest extends AbstractIntegrationTest {
             assertThat(panelMember.getResult()).as("Result should not be null").isNotNull();
             switch (panelMember.getResult()) {
                 case NOT_USED -> {
+                    assertThat(panelMember.getEmpanelledDate()).as("date should be null").isNull();
                     validateNotUsedChallengedHistory(panelMember);
                     notUsedCount++;
                 }
                 case CHALLENGED -> {
+                    assertThat(panelMember.getEmpanelledDate()).as("date should be null").isNull();
                     validateNotUsedChallengedHistory(panelMember);
                     challengedCount++;
                 }
                 case JUROR -> {
+                    assertThat(panelMember.getEmpanelledDate()).as("date should be today").isEqualTo(LocalDate.now());
                     List<JurorHistory> jurorHistories =
                         jurorHistoryRepository.findByJurorNumber(panelMember.getJurorNumber());
                     assertThat(jurorHistories.size()).as("Expected history items to be one").isEqualTo(1);

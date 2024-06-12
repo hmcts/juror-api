@@ -4,7 +4,6 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 
 import java.time.LocalDate;
 
-@SuppressWarnings("PMD.LawOfDemeter")
 public abstract class CurrentlyDeferredQueries {
 
     private static BooleanExpression filterByOwner(String owner) {

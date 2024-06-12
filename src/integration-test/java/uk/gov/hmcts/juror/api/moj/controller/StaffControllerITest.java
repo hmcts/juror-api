@@ -302,28 +302,6 @@ public class StaffControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @Sql({"/db/mod/truncate.sql", "/db/staff/changeAssignment.sql"})
-            void superUrgentJurorResponse() {
-                String jurorNumber = "586856854";
-                StaffAssignmentRequestDto requestDto = StaffAssignmentRequestDto.builder()
-                    .assignTo(null)
-                    .responseJurorNumber(jurorNumber)
-                    .version(0)
-                    .build();
-
-                ResponseEntity<StaffAssignmentResponseDto> response =
-                    restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                        URI.create(BASE_URL + "/assign")), StaffAssignmentResponseDto.class);
-
-                assertThat(response.getStatusCode())
-                    .as("Http Status")
-                    .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
-
-                PaperResponse paperResponse = paperResponseRepositoryMod.findByJurorNumber(jurorNumber);
-                assertThat(paperResponse.getStaff().getUsername()).as("Username").isEqualTo("smcbob");
-            }
-
-            @Test
             @SneakyThrows
             @Sql({"/db/mod/truncate.sql", "/db/staff/changeAssignment.sql"})
             void incorrectProcessingStatus() {
@@ -600,28 +578,6 @@ public class StaffControllerITest extends AbstractIntegrationTest {
                 DigitalResponse digitalResponse = digitalResponseRepositoryMod.findByJurorNumber(jurorNumber);
                 assertThat(digitalResponse.getStaff().getUsername()).as("Username").isEqualTo("smcbob");
 
-            }
-
-            @Test
-            @Sql({"/db/mod/truncate.sql", "/db/staff/changeAssignment.sql"})
-            void superUrgentJurorResponse() {
-                String jurorNumber = "686856854";
-                StaffAssignmentRequestDto requestDto = StaffAssignmentRequestDto.builder()
-                    .assignTo(null)
-                    .responseJurorNumber(jurorNumber)
-                    .version(0)
-                    .build();
-
-                ResponseEntity<StaffAssignmentResponseDto> response =
-                    restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                        URI.create(BASE_URL + "/assign")), StaffAssignmentResponseDto.class);
-
-                assertThat(response.getStatusCode())
-                    .as("Http Status")
-                    .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
-
-                DigitalResponse digitalResponse = digitalResponseRepositoryMod.findByJurorNumber(jurorNumber);
-                assertThat(digitalResponse.getStaff().getUsername()).as("Username").isEqualTo("smcbob");
             }
 
             @Test

@@ -7,6 +7,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
  * QueryDSL queries for {@Link StatsDeferrals}.
  */
 
+@Deprecated(forRemoval = true)
 public class StatsDeferralsQueries {
     private static final String bureauSelection = "Bureau";
     private static final String courtSelection = "Court";

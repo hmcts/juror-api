@@ -8,16 +8,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.bureau.exception.JurorCommsNotificationServiceException;
 import uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType;
+import uk.gov.hmcts.juror.api.moj.client.contracts.SchedulerServiceClient;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintDataNotifyComms;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintDataNotifyCommsRepository;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Implementation of {@link BureauProcessService}.
@@ -57,7 +60,7 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
      */
     @Override
     @Transactional
-    public void process() {
+    public SchedulerServiceClient.Result process() {
 
         SimpleDateFormat dateFormat = new SimpleDateFormat();
         log.info("Letter Comms Processing : Started - {}", dateFormat.format(new Date()));
@@ -66,15 +69,17 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
             Lists.newLinkedList(bulkPrintDataNotifyCommsRepository.findAll());
 
         log.debug("jurorCommsPrintFiles {}", bulkPrintDataNotifyCommsList.size());
-
+        int commsSent = 0;
+        int commsfailed = 0;
         if (!bulkPrintDataNotifyCommsList.isEmpty()) {
 
-            int commsSent = 0;
-            int commsfailed = 0;
+
             for (BulkPrintDataNotifyComms printFile : bulkPrintDataNotifyCommsList) {
 
                 log.trace("LetterService :  jurorNumber {}", printFile.getJurorNo());
-                final JurorPool juror = jurorRepository.findByJurorJurorNumber(printFile.getJurorNo());
+                final JurorPool juror =
+                    jurorRepository.findByJurorJurorNumberAndIsActiveAndOwner(printFile.getJurorNo(), true,
+                        SecurityUtil.BUREAU_OWNER);
 
                 try {
 
@@ -113,6 +118,13 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
             log.trace("Letter Comms Processing : No pending records found.");
         }
         log.info("Letter Comms Processing : Finished - {}", dateFormat.format(new Date()));
+
+        return new SchedulerServiceClient.Result(
+            commsfailed == 0
+                ? SchedulerServiceClient.Result.Status.SUCCESS
+                : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS, null,
+            Map.of("COMMS_FAILED", "" + commsfailed,
+                "COMMNS_SENT", "" + commsSent));
     }
 
     /**

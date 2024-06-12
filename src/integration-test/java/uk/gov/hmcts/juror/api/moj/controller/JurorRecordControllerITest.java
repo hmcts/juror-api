@@ -141,7 +141,6 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
     "PMD.ExcessiveImports",
     "PMD.CouplingBetweenObjects",
     "PMD.ExcessivePublicCount",
-    "PMD.LawOfDemeter",
     "PMD.LinguisticNaming",
     "PMD.NcssCount",
     "PMD.CyclomaticComplexity",
@@ -209,6 +208,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             .userType(UserType.BUREAU)
             .login("BUREAU_USER")
             .owner("400")
+            .locCode("400")
             .staff(staff)
             .build());
 
@@ -264,7 +264,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_createJurorRecordProcess.sql"})
-    void getAllPendingJurorRecordsHappyPath() throws Exception {
+    void testGAllPendingJurorRecordsHappyPath() throws Exception {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
             UserType.COURT));
@@ -323,7 +323,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_createJurorRecordProcess.sql"})
-    void getQueuedPendingJurorRecordsHappyPath() throws Exception {
+    void testGQueuedPendingJurorRecordsHappyPath() throws Exception {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
             UserType.COURT));
@@ -709,7 +709,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorGetOpticalReferenceBureau.sql"})
-    void getOpticReferenceBureauUser() {
+    void testGOpticReferenceBureauUser() {
         ResponseEntity<String> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
             URI.create("/api/v1/moj/juror-record/optic-reference/123456789/415220502")), String.class);
 
@@ -724,7 +724,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorGetOpticalReferenceCourt.sql"})
-    void getOpticReferenceCourtUser() throws Exception {
+    void testGOpticReferenceCourtUser() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
             UserType.COURT));
         ResponseEntity<String> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
@@ -740,7 +740,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorGetOpticalReferenceBureau.sql"})
-    void getOpticReferenceCourtUserWrongAccess() throws Exception {
+    void testGOpticReferenceCourtUserWrongAccess() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
             UserType.COURT));
         ResponseEntity<String> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
@@ -753,7 +753,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorGetOpticalReferenceCourt.sql"})
-    void getOpticReferenceBureauUserCourtRecord() {
+    void testGOpticReferenceBureauUserCourtRecord() {
         ResponseEntity<String> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
             URI.create("/api/v1/moj/juror-record/optic-reference/123456789/415220502")), String.class);
 
@@ -772,7 +772,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorDetailRequestCourt.sql"})
-    void getJurorDetailsCourtUser() throws Exception {
+    void testGJurorDetailsCourtUser() throws Exception {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
             UserType.COURT));
@@ -792,7 +792,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorDetailRequestCourtOnly.sql"})
-    void getJurorDetailsCourtUserCourtRecordOnly() throws Exception {
+    void testGJurorDetailsCourtUserCourtRecordOnly() throws Exception {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
             UserType.COURT));
@@ -812,7 +812,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorDetailRequestCourt.sql"})
-    void getJurorDetailsBureauUserActiveRecord() {
+    void testGJurorDetailsBureauUserActiveRecord() {
 
         ResponseEntity<JurorDetailsResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
@@ -831,7 +831,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorDetailRequestSummoned.sql"})
-    void getJurorDetailsBureauUserActiveRecordSummoned() {
+    void testGJurorDetailsBureauUserActiveRecordSummoned() {
 
         ResponseEntity<JurorDetailsResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
@@ -856,7 +856,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/truncate.sql",
         "/db/standing_data.sql", "/db/JurorRecordController_jurorDetailThirdPartyRequestBureau.sql"})
-    void getJurorDetailsBureauUser() {
+    void testGJurorDetailsBureauUser() {
 
         ResponseEntity<JurorDetailsResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
@@ -919,7 +919,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorDetailRequestCourtOnly.sql"})
-    void getJurorDetailsBureauUserCourtRecordOnly() {
+    void testGJurorDetailsBureauUserCourtRecordOnly() {
 
         ResponseEntity<JurorDetailsResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
@@ -967,7 +967,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorDetailRequestBureau.sql"})
-    void getJurorDetailsCourtUserForbiddenBureauRecord() throws Exception {
+    void testGJurorDetailsCourtUserForbiddenBureauRecord() throws Exception {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
             UserType.COURT));
@@ -983,7 +983,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorDetailRequestBureau.sql"})
-    void getJurorDetailsCourtUserForbiddenDifferentCourt() throws Exception {
+    void testGJurorDetailsCourtUserForbiddenDifferentCourt() throws Exception {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("417", Collections.singletonList("417"),
             UserType.COURT));
@@ -998,7 +998,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorDetailRequestCourt.sql"})
-    void getJurorDetailsCourtUserNoRecordMatch() throws Exception {
+    void testGJurorDetailsCourtUserNoRecordMatch() throws Exception {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
             UserType.COURT));
@@ -1016,7 +1016,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
      */
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorOverviewRequestBureau.sql"})
-    void getJurorOverviewBureauUserPaperResponse() {
+    void testGJurorOverviewBureauUserPaperResponse() {
 
         ResponseEntity<JurorOverviewResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
@@ -1057,7 +1057,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/truncate.sql", "/db/standing_data.sql",
         "/db/JurorRecordController_jurorOverviewRequestBureau.sql"})
-    void getJurorOverviewBureauUserOnlineResponse() {
+    void testGJurorOverviewBureauUserOnlineResponse() {
 
         ResponseEntity<JurorOverviewResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
@@ -1094,7 +1094,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorOverviewRequestBureau.sql"})
-    void getJurorOverviewBureauUserSummonedResponse() {
+    void testGJurorOverviewBureauUserSummonedResponse() {
 
         ResponseEntity<JurorOverviewResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
@@ -1135,7 +1135,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorOverviewRequestBureau.sql"})
-    void getJurorOverviewBureauUserDisqualifiedOnSelectionResponse() {
+    void testGJurorOverviewBureauUserDisqualifiedOnSelectionResponse() {
 
         ResponseEntity<JurorOverviewResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
@@ -1161,7 +1161,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorOverviewRequestBureau.sql"})
-    void getJurorOverviewBureauUserDisqualifiedNotOnSelectionResponse() {
+    void testGJurorOverviewBureauUserDisqualifiedNotOnSelectionResponse() {
 
         ResponseEntity<JurorOverviewResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
@@ -1184,7 +1184,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorOverviewRequestBureau.sql"})
-    void getJurorOverviewBureauUserNotAvailableResponse() {
+    void testGJurorOverviewBureauUserNotAvailableResponse() {
 
         ResponseEntity<JurorOverviewResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
@@ -1208,7 +1208,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorOverviewRequestBureau.sql"})
-    void getOverviewDetailsCourtUserSummonedResponse() throws Exception {
+    void testGOverviewDetailsCourtUserSummonedResponse() throws Exception {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
             UserType.COURT));
@@ -1227,7 +1227,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorSummonsReplyBureau.sql"})
-    void getJurorSummonsReplyBureauUserPaperResponse() {
+    void testGJurorSummonsReplyBureauUserPaperResponse() {
 
         ResponseEntity<JurorSummonsReplyResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
@@ -1260,7 +1260,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorSummonsReplyBureau.sql"})
-    void getJurorSummonsReplyBureauUserPaperResponseExcusalRefused() {
+    void testGJurorSummonsReplyBureauUserPaperResponseExcusalRefused() {
 
         ResponseEntity<JurorSummonsReplyResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
@@ -1304,7 +1304,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorSummonsReplyBureau.sql"})
-    void getJurorSummonsReplyBureauUserDigitalResponseExcusalRefused() {
+    void testGJurorSummonsReplyBureauUserDigitalResponseExcusalRefused() {
 
         ResponseEntity<JurorSummonsReplyResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
@@ -1347,7 +1347,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/truncate.sql", "/db/standing_data.sql",
         "/db/JurorRecordController_jurorSummonsReplyBureau.sql"})
-    void getJurorSummonsReplyBureauUserOnlineResponse() {
+    void testGJurorSummonsReplyBureauUserOnlineResponse() {
 
         ResponseEntity<JurorSummonsReplyResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
@@ -1380,7 +1380,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorSummonsReplyBureau.sql"})
-    void getJurorSummonsReplyBureauUserSummonedResponse() {
+    void testGJurorSummonsReplyBureauUserSummonedResponse() {
 
         ResponseEntity<JurorSummonsReplyResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
@@ -1408,7 +1408,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorSummonsReplyBureau.sql"})
-    void getJurorSummonsReplyBureauUserDisqualifiedOnSelectionResponse() {
+    void testGJurorSummonsReplyBureauUserDisqualifiedOnSelectionResponse() {
 
         ResponseEntity<JurorSummonsReplyResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
@@ -1435,7 +1435,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorSummonsReplyBureau.sql"})
-    void getJurorSummonsReplyBureauUserDisqualifiedNotOnSelectionResponse() {
+    void testGJurorSummonsReplyBureauUserDisqualifiedNotOnSelectionResponse() {
 
         ResponseEntity<JurorSummonsReplyResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
@@ -1459,7 +1459,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorSummonsReplyBureau.sql"})
-    void getJurorSummonsReplyBureauUserNotAvailableResponse() {
+    void testGJurorSummonsReplyBureauUserNotAvailableResponse() {
 
         ResponseEntity<JurorSummonsReplyResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
@@ -1486,7 +1486,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorSummonsReplyBureau.sql"})
-    void getJurorSummonsReplyCourtUserSummonedResponse() throws Exception {
+    void testGJurorSummonsReplyCourtUserSummonedResponse() throws Exception {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
             UserType.COURT));
@@ -1666,7 +1666,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_transferredRecord.sql"})
-    void getJurorContactLogsBureauUserHappyPath() {
+    void testGJurorContactLogsBureauUserHappyPath() {
         ResponseEntity<ContactLogListDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
                 URI.create("/api/v1/moj/juror-record/contact-log/123456789")), ContactLogListDto.class);
@@ -1737,7 +1737,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     }
 
     @Sql(statements = {"DELETE FROM juror_mod.juror_pool", "DELETE FROM juror_mod.juror", "DELETE FROM juror_mod.pool"})
-    void getJurorContactLogsBureauUserJurorNotFound() {
+    void testGJurorContactLogsBureauUserJurorNotFound() {
         ResponseEntity<JurorDetailsResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
                 URI.create("/api/v1/moj/juror-record/contact-log/123456789")), JurorDetailsResponseDto.class);
@@ -1749,7 +1749,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_transferredRecord.sql"})
-    void getJurorContactLogsCourtsUserHappyPath() throws Exception {
+    void testGJurorContactLogsCourtsUserHappyPath() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
             UserType.COURT));
         ResponseEntity<ContactLogListDto> response =
@@ -1766,7 +1766,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauOwnedRecord.sql"})
-    void getJurorContactLogsCourtsUserBureauLogs() throws Exception {
+    void testGJurorContactLogsCourtsUserBureauLogs() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
             UserType.COURT));
         ResponseEntity<JurorDetailsResponseDto> response =
@@ -1780,7 +1780,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_transferredRecord.sql"})
-    void getJurorContactLogsCourtsUserDifferentCourtLogs() throws Exception {
+    void testGJurorContactLogsCourtsUserDifferentCourtLogs() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
             UserType.COURT));
         ResponseEntity<JurorDetailsResponseDto> response =
@@ -3357,7 +3357,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_initAttendanceTests.sql"})
-        void getJurorAttendanceHappy() {
+        void testGJurorAttendanceHappy() {
             ResponseEntity<JurorAttendanceDetailsResponseDto> response =
                 restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
                         URI.create("/api/v1/moj/juror-record/attendance-detail/415/111111111")),
@@ -3427,7 +3427,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_initAttendanceTests.sql"})
-        void getJurorAttendanceOnCall() {
+        void testGJurorAttendanceOnCall() {
             ResponseEntity<JurorAttendanceDetailsResponseDto> response =
                 restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
                         URI.create("/api/v1/moj/juror-record/attendance-detail/415/222222222")),
@@ -3482,16 +3482,18 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             "111111122"})
         @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
         void updatePncCheckStatusEligible(String jurorNumber) {
-            ResponseEntity<Void> response =
+            ResponseEntity<PoliceCheckStatusDto> response =
                 restTemplate.exchange(new RequestEntity<>(new PoliceCheckStatusDto(PoliceCheck.ELIGIBLE),
                         httpHeaders, HttpMethod.PATCH,
                         URI.create("/api/v1/moj/juror-record/pnc/" + jurorNumber)),
-                    Void.class);
+                    PoliceCheckStatusDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP GET request to be accepted")
                 .isEqualTo(HttpStatus.ACCEPTED);
 
+            assertThat(response.getBody())
+                .isEqualTo(new PoliceCheckStatusDto(PoliceCheck.ELIGIBLE));
 
             Juror juror = jurorRepository.findById(jurorNumber).get();
             final JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true).get(0);
@@ -3532,16 +3534,18 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             "111111122"})
         @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
         void updatePncCheckStatusIneligible(String jurorNumber) {
-            ResponseEntity<Void> response =
+            ResponseEntity<PoliceCheckStatusDto> response =
                 restTemplate.exchange(new RequestEntity<>(new PoliceCheckStatusDto(PoliceCheck.INELIGIBLE),
                         httpHeaders, HttpMethod.PATCH,
                         URI.create("/api/v1/moj/juror-record/pnc/" + jurorNumber)),
-                    Void.class);
+                    PoliceCheckStatusDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP GET request to be accepted")
                 .isEqualTo(HttpStatus.ACCEPTED);
 
+            assertThat(response.getBody())
+                .isEqualTo(new PoliceCheckStatusDto(PoliceCheck.INELIGIBLE));
 
             Juror juror = jurorRepository.findById(jurorNumber).get();
             final JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true).get(0);
@@ -3580,16 +3584,19 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         })
         @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
         void updatePncCheckStatusInError(String jurorNumber) {
-            ResponseEntity<Void> response =
+            ResponseEntity<PoliceCheckStatusDto> response =
                 restTemplate.exchange(
                     new RequestEntity<>(new PoliceCheckStatusDto(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR),
                         httpHeaders, HttpMethod.PATCH,
                         URI.create("/api/v1/moj/juror-record/pnc/" + jurorNumber)),
-                    Void.class);
+                    PoliceCheckStatusDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP GET request to be accepted")
                 .isEqualTo(HttpStatus.ACCEPTED);
+
+            assertThat(response.getBody())
+                .isEqualTo(new PoliceCheckStatusDto(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR));
 
 
             Juror juror = jurorRepository.findById(jurorNumber).get();
@@ -3618,17 +3625,19 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         })
         @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
         void updatePncCheckStatusMaxRetiesError(String jurorNumber) {
-            ResponseEntity<Void> response =
+            ResponseEntity<PoliceCheckStatusDto> response =
                 restTemplate.exchange(
                     new RequestEntity<>(new PoliceCheckStatusDto(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR),
                         httpHeaders, HttpMethod.PATCH,
                         URI.create("/api/v1/moj/juror-record/pnc/" + jurorNumber)),
-                    Void.class);
+                    PoliceCheckStatusDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP GET request to be accepted")
                 .isEqualTo(HttpStatus.ACCEPTED);
 
+            assertThat(response.getBody())
+                .isEqualTo(new PoliceCheckStatusDto(PoliceCheck.UNCHECKED_MAX_RETRIES_EXCEEDED));
 
             Juror juror = jurorRepository.findById(jurorNumber).get();
             final JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true).get(0);
@@ -3657,7 +3666,6 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @DisplayName("PATCH " + UpdateJurorToFailedToAttend.URL)
     @Sql({"/db/mod/truncate.sql",
         "/db/JurorRecordControllerITest_failedToAttend_typical.sql"})
-    @SuppressWarnings("PMD.LawOfDemeter")
     class UpdateJurorToFailedToAttend {
 
         private static final String URL = BASE_URL + "/failed-to-attend";
@@ -3829,7 +3837,6 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @DisplayName("PATCH " + UndoUpdateJurorToFailedToAttend.URL)
     @Sql({"/db/mod/truncate.sql",
         "/db/JurorRecordControllerITest_failedToAttend_undo_typical.sql"})
-    @SuppressWarnings("PMD.LawOfDemeter")
     class UndoUpdateJurorToFailedToAttend {
 
         private static final String URL = BASE_URL + "/failed-to-attend/undo";
@@ -3984,7 +3991,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("GetJurorBankDetailsHappyPath")
-        void getJurorBankDetailsHappyPath() throws Exception {
+        void testGJurorBankDetailsHappyPath() throws Exception {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
                 UserType.COURT));
 
@@ -4033,7 +4040,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        void getJurorBankDetailsUnhappyPathBureauUserDoesNotHaveAccess() throws Exception {
+        void testGJurorBankDetailsUnhappyPathBureauUserDoesNotHaveAccess() throws Exception {
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("400", Collections.singletonList("400"),
                 UserType.BUREAU));
@@ -4050,7 +4057,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        void getJurorBankDetailsUnhappyPathCourtUserDoesNotHaveAccessToJuror() throws Exception {
+        void testGJurorBankDetailsUnhappyPathCourtUserDoesNotHaveAccessToJuror() throws Exception {
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
                 UserType.COURT));
@@ -4067,7 +4074,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        void getJurorBankDetailsUnhappyPathJurorNotFound() throws Exception {
+        void testGJurorBankDetailsUnhappyPathJurorNotFound() throws Exception {
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
                 UserType.COURT));
@@ -4100,7 +4107,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        void getJurorBankDetailsUnhappyPathInvalidJurorNumber() throws Exception {
+        void testGJurorBankDetailsUnhappyPathInvalidJurorNumber() throws Exception {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
                 UserType.COURT));
 
@@ -4162,7 +4169,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            void getSingleGetNameDetails() {
+            void testGSingleGetNameDetails() {
                 ResponseEntity<FilterableJurorDetailsResponseDto[]> responseEntity = triggerValid(
                     createDto(TestConstants.VALID_JUROR_NUMBER, null,
                         FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS));
@@ -4182,7 +4189,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            void getSingleGetPaymentDetails() {
+            void testGSingleGetPaymentDetails() {
                 ResponseEntity<FilterableJurorDetailsResponseDto[]> responseEntity = triggerValid(
                     createDto(TestConstants.VALID_JUROR_NUMBER, null,
                         FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS));
@@ -4203,7 +4210,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            void getSingleGetAddressDetails() {
+            void testGSingleGetAddressDetails() {
                 ResponseEntity<FilterableJurorDetailsResponseDto[]> responseEntity = triggerValid(
                     createDto(TestConstants.VALID_JUROR_NUMBER, null,
                         FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS));
@@ -4226,7 +4233,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            void getSingleGetAll() {
+            void testGSingleGetAll() {
                 ResponseEntity<FilterableJurorDetailsResponseDto[]> responseEntity = triggerValid(
                     createDto(TestConstants.VALID_JUROR_NUMBER, null,
                         FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS,
@@ -4264,7 +4271,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            void getSingleGetAllFromVersion() {
+            void testGSingleGetAllFromVersion() {
                 ResponseEntity<FilterableJurorDetailsResponseDto[]> responseEntity = triggerValid(
                     createDto(TestConstants.VALID_JUROR_NUMBER, 2L,
                         FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS,
@@ -4302,7 +4309,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            void getMultiple() {
+            void testGMultiple() {
                 ResponseEntity<FilterableJurorDetailsResponseDto[]> responseEntity = triggerValid(
                     List.of(
                         createDto(TestConstants.VALID_JUROR_NUMBER, null,
@@ -4512,7 +4519,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        @Sql({"/db/mod/truncate.sql"})
+        @Sql(scripts = {"/db/mod/truncate.sql"},
+            statements = "insert into juror_mod.users(username, name, email)"
+                + "values ('COURT_USER', 'COURT_USER', 'COURT_USER@hmcts.net')")
         void createJurorRecordNewPoolHappyPath() throws Exception {
             JurorCreateRequestDto requestDto = createJurorRequestDto(null, "415");
 
@@ -5330,16 +5339,6 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     }
 
     private record JurorHistoryExpectedValues(String historyCode, String info) {
-    }
-
-    private String convertBooleanToYesNo(Boolean bool) {
-        if (bool.equals(Boolean.TRUE)) {
-            return "Y";
-        } else if (bool.equals(Boolean.FALSE)) {
-            return "N";
-        }
-
-        return null;
     }
 
     private String initPayloadWithStaffRank(String owner, String username, UserType userType,

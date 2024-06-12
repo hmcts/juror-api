@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.juror.api.bureau.controller.request.AutoAssignRequest;
 import uk.gov.hmcts.juror.api.bureau.controller.response.AutoAssignResponse;
 import uk.gov.hmcts.juror.api.bureau.domain.UserQueries;
@@ -15,13 +16,12 @@ import uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.StaffJurorResponseAuditMod;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.UserJurorResponseAudit;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
-import uk.gov.hmcts.juror.api.moj.repository.staff.StaffJurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.staff.UserJurorResponseAuditRepository;
 import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,7 +50,7 @@ public class AutoAssignmentServiceImpl implements AutoAssignmentService {
     private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
     private final UserRepository userRepository;
     private final AppSettingService appSettingService;
-    private final StaffJurorResponseAuditRepositoryMod auditRepository;
+    private final UserJurorResponseAuditRepository userJurorResponseAuditRepository;
 
 
     @Override
@@ -88,11 +88,11 @@ public class AutoAssignmentServiceImpl implements AutoAssignmentService {
             throw new AutoAssignException.CapacityBiggerThanBacklog(totalCapacity, backlogSize);
         }
 
-        final List<StaffJurorResponseAuditMod> auditEntries =
+        final List<UserJurorResponseAudit> auditEntries =
             assignAndAudit(backlog, request.getData(), requestingUser);
 
         jurorResponseRepository.saveAll(backlog);
-        auditRepository.saveAll(auditEntries);
+        userJurorResponseAuditRepository.saveAll(auditEntries);
 
     }
 
@@ -161,13 +161,14 @@ public class AutoAssignmentServiceImpl implements AutoAssignmentService {
      * @param backlog        backlog to assign
      * @param staffCapacity  capacity details of staff members
      * @param requestingUser the logged-in user for audit purposes
+     *
      * @return audit entries for the assignments
      * @throws AutoAssignException if input is invalid
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = true)
-    public List<StaffJurorResponseAuditMod> assignAndAudit(List<DigitalResponse> backlog,
-                                                           List<AutoAssignRequest.StaffCapacity> staffCapacity,
-                                                           String requestingUser) throws AutoAssignException {
+    public List<UserJurorResponseAudit> assignAndAudit(List<DigitalResponse> backlog,
+                                                       List<AutoAssignRequest.StaffCapacity> staffCapacity,
+                                                       String requestingUser) throws AutoAssignException {
 
         final List<String> staffLogins = staffCapacity.stream().map(AutoAssignRequest.StaffCapacity::getLogin).toList();
         LinkedList<User> staff = new LinkedList<>(userRepository.findAllByUsernameIn(staffLogins));
@@ -183,19 +184,22 @@ public class AutoAssignmentServiceImpl implements AutoAssignmentService {
 
         final Map<User, Set<DigitalResponse>> allocation = distributeWorkload(backlog, staff, capacityMap);
 
-        final List<StaffJurorResponseAuditMod> auditEntries = new LinkedList<>();
-        final LocalDate now = LocalDateTime.now().toLocalDate();
+        final List<UserJurorResponseAudit> auditEntries = new LinkedList<>();
+        final User assignedBy = userRepository.findByUsername(requestingUser);
+        if (ObjectUtils.isEmpty(userRepository)) {
+            throw new StaffAssignmentException("Assigning staff record does not exist!");
+        }
+        final LocalDateTime now = LocalDateTime.now();
 
         allocation.forEach((key, value) -> value.forEach(r -> {
             r.setStaff(key);
-            r.setStaffAssignmentDate(now);
+            r.setStaffAssignmentDate(now.toLocalDate());
             r.setVersion(r.getVersion() != null ? r.getVersion() + 1 : 1);
-            auditEntries.add(StaffJurorResponseAuditMod.realBuilder()
-                .teamLeaderLogin(requestingUser)
-                .staffLogin(key.getUsername())
+            auditEntries.add(UserJurorResponseAudit.builder()
                 .jurorNumber(r.getJurorNumber())
-                .dateReceived(r.getDateReceived())
-                .staffAssignmentDate(now)
+                .assignedBy(assignedBy)
+                .assignedTo(key)
+                .assignedOn(now)
                 .build());
         }));
         return auditEntries;
@@ -210,6 +214,7 @@ public class AutoAssignmentServiceImpl implements AutoAssignmentService {
      * @param backlog               backlog items to distribute
      * @param staff                 staff members to distribute to
      * @param staffMemberCapacities capacity limits for each staff member
+     *
      * @return distributed workload
      */
     private Map<User, Set<DigitalResponse>> distributeWorkload(Collection<DigitalResponse> backlog, List<User> staff,
@@ -232,6 +237,7 @@ public class AutoAssignmentServiceImpl implements AutoAssignmentService {
      *
      * @param staffLogins staff logins specified by front-end
      * @param staff       staff entities retrieved from database
+     *
      * @throws AutoAssignException if there are fewer entities than logins
      */
     private void checkForMissingStaff(List<String> staffLogins, List<User> staff) throws AutoAssignException {

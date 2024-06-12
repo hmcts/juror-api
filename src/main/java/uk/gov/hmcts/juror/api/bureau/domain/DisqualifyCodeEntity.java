@@ -22,6 +22,7 @@ import java.io.Serializable;
 @Entity
 @Table(name = "DIS_CODE", schema = "JUROR_DIGITAL_USER")
 @Immutable
+@Deprecated(forRemoval = true)
 public class DisqualifyCodeEntity implements Serializable {
     @Id
     @Column(name = "DISQ_CODE")

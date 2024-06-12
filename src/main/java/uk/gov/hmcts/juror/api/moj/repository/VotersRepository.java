@@ -17,8 +17,7 @@ public interface VotersRepository extends JpaRepository<Voters, Voters.VotersId>
 
     /**
      * Function to randomly select a number of voters from the Voters table.
-     * The function returns just the row Ids, so will need to be used to read the individual records.
-     * The function returns 1 extra record that is null at the end of the list
+     * The function returns the juror number of the selected voters.
      */
     @Query(nativeQuery = true, value = "SELECT * from juror_mod.get_voters( :required, :minDate, :maxDate, :LocCode, "
         + ":areaCodeList, :poolType)")

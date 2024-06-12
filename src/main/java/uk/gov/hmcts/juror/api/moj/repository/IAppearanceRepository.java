@@ -2,10 +2,13 @@ package uk.gov.hmcts.juror.api.moj.repository;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.UnpaidExpenseSummaryRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAttendanceDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorAppearanceResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.expense.UnpaidExpenseSummaryResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
 
 import java.time.LocalDate;
@@ -33,8 +36,6 @@ public interface IAppearanceRepository {
 
     JPAQuery<JurorPool> buildJurorPoolsCheckedInTodayQuery(String locCode, LocalDate date);
 
-    Integer countJurorExpenseForApproval(String jurorNumber, String poolNumber);
-
     long countPendingApproval(String locCode, boolean isCash);
 
     Optional<Appearance> findByJurorNumberAndLocCodeAndAttendanceDateAndVersion(
@@ -44,4 +45,7 @@ public interface IAppearanceRepository {
         long appearanceVersion);
 
     List<Tuple> getTrialsWithAttendanceCount(String locationCode, LocalDate attendanceDate);
+
+    PaginatedList<UnpaidExpenseSummaryResponseDto> findUnpaidExpenses(String locCode,
+                                                                      UnpaidExpenseSummaryRequestDto search);
 }

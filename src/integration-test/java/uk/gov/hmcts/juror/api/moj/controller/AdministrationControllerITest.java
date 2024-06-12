@@ -1,9 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -42,7 +40,6 @@ import uk.gov.hmcts.juror.api.moj.repository.ExpenseRatesRepository;
 
 import java.math.BigDecimal;
 import java.net.URI;
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
@@ -51,7 +48,6 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.PUT;
-import static org.springframework.test.util.AssertionErrors.fail;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -283,15 +279,9 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            void invalidCodeType() throws JsonProcessingException {
+            void invalidCodeType() {
                 assertInvalidPathParam(triggerInvalid("INVALID", "415"),
                     "INVALID is the incorrect data type or is not in the expected format (code_type)");
-            }
-
-            @Test
-            @Disabled("Pending new authentication rules for admin users")
-            void unauthorisedNotAdminUser() {
-                fail("TODO");
             }
         }
     }
@@ -910,7 +900,6 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
                         .limitFinancialLossFullDayLongTrial(new BigDecimal("0.10000"))
                         .subsistenceRateStandard(new BigDecimal("0.10000"))
                         .subsistenceRateLongDay(new BigDecimal("0.10000"))
-                        .ratesEffectiveFrom(LocalDate.now().minusDays(1))
                         .build());
                 assertThat(expenseRates.get(1)).isEqualTo(
                     ExpenseRates.builder()
@@ -927,7 +916,6 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
                         .limitFinancialLossFullDayLongTrial(new BigDecimal("129.91000"))
                         .subsistenceRateStandard(new BigDecimal("5.71000"))
                         .subsistenceRateLongDay(new BigDecimal("12.17000"))
-                        .ratesEffectiveFrom(LocalDate.now())
                         .build());
 
                 ExpenseRates addedExpenseRates = expenseRates.get(2);
@@ -955,7 +943,6 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
                     request.getSubsistenceRateStandard());
                 assertThat(addedExpenseRates.getSubsistenceRateLongDay()).isEqualTo(
                     request.getSubsistenceRateLongDay());
-                assertThat(addedExpenseRates.getRatesEffectiveFrom()).isToday();
             }
         }
 

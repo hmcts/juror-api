@@ -29,6 +29,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_REFUSE_FIRST_DEFERRAL;
 
@@ -69,7 +70,8 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
         checkExcusalCodeIsValid(deferralRequestDto.getDeferralReason());
         Juror juror = jurorPool.getJuror();
 
-        boolean firstDeferral = juror.getNoDefPos() == null || juror.getNoDefPos() == 0;
+        int deferralCount = Optional.ofNullable(juror.getNoDefPos()).orElse(0);
+        boolean firstDeferral = deferralCount == 0;
 
         if (firstDeferral && deferralRequestDto.getDeferralDecision().equals(DeferralDecision.REFUSE)) {
             log.debug("Cannot decline first deferral for juror {}", jurorNumber);
@@ -78,6 +80,11 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
         } else if (deferralRequestDto.getDeferralDecision().equals(DeferralDecision.REFUSE)) {
             log.debug("Begin processing decline deferral juror {} by user {}", jurorNumber, payload.getLogin());
             declineDeferralForJurorPool(payload, deferralRequestDto, jurorPool);
+        } else if (!deferralRequestDto.isAllowMultipleDeferrals() && !firstDeferral) {
+            log.debug("Can not defer juror multiple times without allowMultipleDeferrals flag. Juror {}", jurorNumber);
+            throw new MojException.BusinessRuleViolation("Juror has been deferred before. Please use "
+                + "allow_multiple_deferrals to bypass this error.",
+                MojException.BusinessRuleViolation.ErrorCode.JUROR_HAS_BEEN_DEFERRED_BEFORE);
         } else if (deferralRequestDto.getDeferralDecision().equals(DeferralDecision.GRANT)) {
             log.info("Begin processing grant deferral juror {} by user {}", jurorNumber, payload.getLogin());
             grantDeferralForJurorPool(payload, deferralRequestDto, jurorPool);

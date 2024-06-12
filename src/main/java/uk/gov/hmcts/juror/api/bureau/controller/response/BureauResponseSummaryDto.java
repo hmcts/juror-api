@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@SuppressWarnings("PMD.TooManyFields")
 @Schema(description = "Summary returning most important fields of relative to juror response")
 public class BureauResponseSummaryDto {
     @Schema(description = "Juror number")
@@ -29,11 +30,11 @@ public class BureauResponseSummaryDto {
     private String postcode;
     @Schema(description = "Name of court assigned to juror")
     private String courtName;
-    @Schema(description = "Response processing status")
+    @Schema(description = "court code")
     private String courtCode;
     @Schema(description = "Juror Reply method, Paper or Digital")
     private String replyMethod;
-    @Schema(description = "court code")
+    @Schema(description = "Response processing status")
     private String processingStatus;
     @Schema(description = "Juror residency")
     private Boolean residency;
@@ -51,8 +52,6 @@ public class BureauResponseSummaryDto {
     private String poolNumber;
     @Schema(description = "Response flagged as urgent")
     private Boolean urgent;
-    @Schema(description = "Response flagged as super urgent")
-    private Boolean superUrgent;
     @Schema(description = "SLA is expired")
     private Boolean slaOverdue;
     @Schema(description = "Response received date")

@@ -1,9 +1,11 @@
 package uk.gov.hmcts.juror.api.juror.domain;
 
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QDigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QPaperResponse;
 
 import java.util.List;
 
@@ -19,6 +21,7 @@ public class JurorResponseQueries {
     }
 
     private static final QDigitalResponse jurorResponse = QDigitalResponse.digitalResponse;
+    private static final QPaperResponse paperJurorResponse = QPaperResponse.paperResponse;
 
 
     /**
@@ -36,7 +39,7 @@ public class JurorResponseQueries {
 
 
     private static BooleanExpression urgent() {
-        return jurorResponse.urgent.isTrue().or(jurorResponse.superUrgent.isTrue());
+        return jurorResponse.urgent.isTrue();
     }
 
 
@@ -70,11 +73,15 @@ public class JurorResponseQueries {
         return jurorResponse.processingStatus.notIn(statuses);
     }
 
+    public static BooleanExpression byStatusNotClosedPaper(List<ProcessingStatus> statuses) {
+        return paperJurorResponse.processingStatus.notIn(statuses);
+    }
+
 
     public static BooleanExpression byAssignmentAndProcessingStatusAndUrgency(String staffLogin,
                                                                               List<ProcessingStatus> statuses,
-                                                                              boolean isUrgentOrSuperUrgent) {
-        if (isUrgentOrSuperUrgent) {
+                                                                              boolean isUrgent) {
+        if (isUrgent) {
             return byMemberOfStaffAssigned(staffLogin)
                 .and(byStatus(statuses))
                 .and(urgent());
@@ -117,35 +124,19 @@ public class JurorResponseQueries {
             .and(urgent());
     }
 
-
-    /**
-     * return all un assigned responses assigned to staff.
-     *
-     * @return all un assigned responses assigned to staff
-     */
-    public static BooleanExpression byAssignedNonUrgent(User staffMember) {
-        return byAssignedAll(staffMember)
-            .and(nonUrgent());
+    public static Predicate jurorIsNotTransferred() {
+        return jurorResponse.juror.bureauTransferDate.isNull();
     }
 
-    /**
-     * return all urgent responses assigned to staff.
-     *
-     * @return all urgent responses assigned to staff
-     */
-    public static BooleanExpression byAssignedUrgent(User staffMember) {
-        return byAssignedAll(staffMember)
-            .and(urgent());
+    public static Predicate jurorIsNotTransferredPaper() {
+        return paperJurorResponse.juror.bureauTransferDate.isNull();
     }
 
-    /**
-     * return all responses assigned to staff.
-     *
-     * @return all responses assigned to staff
-     */
-    public static BooleanExpression byAssignedAll(User staffMember) {
-        return jurorResponse.staff.isNotNull()
-            .and(notClosed())
-            .and(assignedTo(staffMember));
+    public static Predicate isDigital() {
+        return jurorResponse.replyType.type.eq("Digital");
+    }
+
+    public static Predicate isPaper() {
+        return paperJurorResponse.replyType.type.eq("Paper");
     }
 }

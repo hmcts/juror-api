@@ -19,7 +19,6 @@ import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -40,12 +39,11 @@ public class JurorCommsRequestInformationLetterServiceImplTest {
 
     private JurorPool pool;
 
-    private Juror jurorSet;
     List<NotifyTemplateFieldMod> templateFields = new LinkedList<>();
     List<BulkPrintDataNotifyComms> jurorCommsPrintFilesList = new LinkedList<>();
     List<BulkPrintData> printFileList = new LinkedList<>();
 
-    LocalDate currentDate = LocalDateTime.now().toLocalDate();
+    LocalDate currentDate = LocalDate.now();
 
     @Mock
     private BulkPrintDataNotifyCommsRepository jurorCommsPrintFilesRepository;
@@ -71,7 +69,7 @@ public class JurorCommsRequestInformationLetterServiceImplTest {
         juror.setEmail("a@b.com");
 
 
-        jurorSet = new Juror();
+        Juror jurorSet = new Juror();
         pool = new JurorPool();
         pool.setJuror(jurorSet);
         pool = new JurorPool();
@@ -111,7 +109,6 @@ public class JurorCommsRequestInformationLetterServiceImplTest {
             .id(1L)
             .templateId(TEMPLATE_ID)
             .templateField("FIRSTNAME")
-            .databaseField("PRINT_FILES.DETAIL_REC")
             .positionFrom(5)
             .positionTo(14)
             .build();
@@ -120,7 +117,6 @@ public class JurorCommsRequestInformationLetterServiceImplTest {
             .id(2L)
             .templateId(TEMPLATE_ID)
             .templateField("LASTNAME")
-            .databaseField("PRINT_FILES.DETAIL_REC")
             .positionFrom(15)
             .positionTo(24)
             .build();
@@ -128,7 +124,6 @@ public class JurorCommsRequestInformationLetterServiceImplTest {
             .id(3L)
             .templateId(TEMPLATE_ID)
             .templateField("JUROR NUMBER")
-            .databaseField("PRINT_FILES.DETAIL_REC")
             .positionFrom(31)
             .positionTo(39)
             .build();
@@ -154,7 +149,8 @@ public class JurorCommsRequestInformationLetterServiceImplTest {
     @Test
     public void process_HappyPath() {
         given(jurorCommsPrintFilesRepository.findAll()).willReturn(jurorCommsPrintFilesList);
-        given(poolRepository.findByJurorJurorNumber(anyString())).willReturn(pool);
+        given(poolRepository.findByJurorJurorNumberAndIsActiveAndOwner(anyString(),anyBoolean(),anyString()))
+            .willReturn(pool);
         given(printFileRepository.findByJurorNoAndIdAndCreationDate(anyString(), anyLong(),
                                                                     any(LocalDate.class))).willReturn(printFileList);
 

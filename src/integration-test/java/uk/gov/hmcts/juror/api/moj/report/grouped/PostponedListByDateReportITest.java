@@ -6,7 +6,9 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupByResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
@@ -14,9 +16,7 @@ import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
 import java.time.LocalDate;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 @Sql({
     "/db/truncate.sql",
@@ -24,8 +24,8 @@ import java.util.Map;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/PostponedListByDateReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.LawOfDemeter")
 class PostponedListByDateReportITest extends AbstractGroupedReportControllerITest {
+
     @Autowired
     public PostponedListByDateReportITest(TestRestTemplate template) {
         super(template, PostponedListByDateReport.class);
@@ -78,7 +78,7 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
             .triggerValid()
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(GroupedReportResponse.builder()
-                .groupBy(DataType.POOL_NUMBER)
+                .groupBy(getTypicalGroupByResponse())
                 .headings(new ReportHashMap<String, StandardReportResponse.DataTypeValue>()
                     .add("total_postponed", StandardReportResponse.DataTypeValue.builder()
                         .displayName("Total postponed")
@@ -101,7 +101,7 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
                         .value("2023-01-01")
                         .build()))
                 .tableData(
-                    AbstractReportResponse.TableData.<Map<String, List<LinkedHashMap<String, Object>>>>builder()
+                    AbstractReportResponse.TableData.<GroupedTableData>builder()
                         .headings(List.of(
                             StandardReportResponse.TableData.Heading.builder()
                                 .id("juror_number")
@@ -133,14 +133,14 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
                                 .dataType("LocalDate")
                                 .headings(null)
                                 .build()))
-                        .data(new ReportLinkedMap<>())
+                        .data(new GroupedTableData())
                         .build())
                 .build());
     }
 
     private GroupedReportResponse getTypicalResponseCourt() {
         return GroupedReportResponse.builder()
-            .groupBy(DataType.POOL_NUMBER)
+            .groupBy(getTypicalGroupByResponse())
             .headings(new ReportHashMap<String, StandardReportResponse.DataTypeValue>()
                 .add("total_postponed", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Total postponed")
@@ -163,7 +163,7 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
                     .value("2023-01-01")
                     .build()))
             .tableData(
-                AbstractReportResponse.TableData.<Map<String, List<LinkedHashMap<String, Object>>>>builder()
+                AbstractReportResponse.TableData.<GroupedTableData>builder()
                     .headings(List.of(
                         StandardReportResponse.TableData.Heading.builder()
                             .id("juror_number")
@@ -195,7 +195,7 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
                             .dataType("LocalDate")
                             .headings(null)
                             .build()))
-                    .data(new ReportLinkedMap<String, List<LinkedHashMap<String, Object>>>()
+                    .data(new GroupedTableData()
                         .add("415230103", List.of(
                             new ReportLinkedMap<String, Object>()
                                 .add("juror_number", "641500023")
@@ -228,7 +228,7 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
 
     private GroupedReportResponse getTypicalResponseBureau() {
         return GroupedReportResponse.builder()
-            .groupBy(DataType.POOL_NUMBER)
+            .groupBy(getTypicalGroupByResponse())
             .headings(new ReportHashMap<String, StandardReportResponse.DataTypeValue>()
                 .add("total_postponed", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Total postponed")
@@ -246,7 +246,7 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
                     .value("2023-01-01")
                     .build()))
             .tableData(
-                AbstractReportResponse.TableData.<Map<String, List<LinkedHashMap<String, Object>>>>builder()
+                AbstractReportResponse.TableData.<GroupedTableData>builder()
                     .headings(List.of(
                         StandardReportResponse.TableData.Heading.builder()
                             .id("juror_number")
@@ -278,7 +278,7 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
                             .dataType("LocalDate")
                             .headings(null)
                             .build()))
-                    .data(new ReportLinkedMap<String, List<LinkedHashMap<String, Object>>>()
+                    .data(new GroupedTableData()
                         .add("415230101", List.of(
                             new ReportLinkedMap<String, Object>()
                                 .add("juror_number", "641500020")
@@ -319,6 +319,13 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
                                 .add("juror_postcode", "AB1 6CD")
                                 .add("postponed_to", "2023-01-02"))))
                     .build())
+            .build();
+    }
+
+    public GroupByResponse getTypicalGroupByResponse() {
+        return GroupByResponse.builder()
+            .name(DataType.POOL_NUMBER.name())
+            .nested(null)
             .build();
     }
 }

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.domain.QBulkPrintData;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
@@ -14,8 +15,6 @@ import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -25,8 +24,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("PMD.LawOfDemeter")
-public class AbaccusReportTest extends AbstractStandardReportTestSupport<AbaccusReport> {
+class AbaccusReportTest extends AbstractStandardReportTestSupport<AbaccusReport> {
 
     public AbaccusReportTest() {
         super(
@@ -77,10 +75,10 @@ public class AbaccusReportTest extends AbstractStandardReportTestSupport<Abaccus
     }
 
     @Override
-    public Map<String, AbstractReportResponse.DataTypeValue> positiveGetHeadingsTypical(StandardReportRequest request,
-                                    AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData,
-                                    List<LinkedHashMap<String,
-                                        Object>> data) {
+    public Map<String, AbstractReportResponse.DataTypeValue> positiveGetHeadingsTypical(
+        StandardReportRequest request,
+        AbstractReportResponse.TableData<StandardTableData> tableData,
+        StandardTableData data) {
 
         LocalDate fromDate = LocalDate.now().minus(7, ChronoUnit.DAYS);
         LocalDate toDate = LocalDate.now();

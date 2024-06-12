@@ -60,6 +60,8 @@ spring:
     show-sql: true
     properties:
       hibernate:
+        jdbc:
+          batch_size: 20
         dialect: org.hibernate.dialect.PostgreSQLDialect
       org:
         hibernate:
@@ -92,12 +94,14 @@ spring:
       write-dates-as-timestamps: true
   # Flyway must align with build.gradle
   flyway:
+    locations: [ '${FLYWAY_LOC_OVERRIDE:db/**/*.sql}' ]
     schemas: [ juror, juror_digital, juror_digital_user, hk, juror_dashboard, juror_mod ]
     default-schema: juror_mod
     table: schema_history
     user: ${spring.datasource.username}
     password: ${spring.datasource.password}
     # url: ${spring.datasource.url}
+    out-of-order: false
 logging:
   level:
     uk.gov.hmcts.juror.api: info

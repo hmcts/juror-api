@@ -24,6 +24,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Deprecated(forRemoval = true)
 public class DeferDbf implements Serializable {
     @Id
     @Column(name = "PART_NO")

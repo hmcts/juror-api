@@ -6,23 +6,20 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 @Sql({
     "/db/mod/truncate.sql",
     "/db/mod/reports/IncompleteServiceReportITest_typical.sql"
 })
-@SuppressWarnings({
-    "PMD.LawOfDemeter",
-    "PMD.JUnitTestsShouldIncludeAssert"//False positive
-})
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
 class IncompleteServiceReportITest extends AbstractStandardReportControllerITest {
     @Autowired
     public IncompleteServiceReportITest(TestRestTemplate template) {
@@ -117,7 +114,7 @@ class IncompleteServiceReportITest extends AbstractStandardReportControllerITest
                     .value("CHESTER (415)")
                     .build()))
             .tableData(
-                StandardReportResponse.TableData.<List<LinkedHashMap<String, Object>>>builder()
+                StandardReportResponse.TableData.<StandardTableData>builder()
                     .headings(List.of(
                         StandardReportResponse.TableData.Heading.builder()
                             .id("juror_number")
@@ -144,33 +141,43 @@ class IncompleteServiceReportITest extends AbstractStandardReportControllerITest
                             .headings(null)
                             .build(),
                         StandardReportResponse.TableData.Heading.builder()
+                            .id("last_attendance_date")
+                            .name("Last attended on")
+                            .dataType("LocalDate")
+                            .headings(null)
+                            .build(),
+                        StandardReportResponse.TableData.Heading.builder()
                             .id("next_attendance_date")
                             .name("Next attendance date")
                             .dataType("LocalDate")
                             .headings(null)
                             .build()))
-                    .data(List.of(
+                    .data(StandardTableData.of(
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number", "641500003")
                             .add("first_name", "FNAMETHREE")
                             .add("last_name", "LNAMETHREE")
                             .add("pool_number_by_jp", "415240601")
+                            .add("last_attendance_date",
+                                DateTimeFormatter.ISO_DATE.format(LocalDate.now().minusDays(1)))
                             .add("next_attendance_date",
-                                DateTimeFormatter.ISO_DATE.format(LocalDate.now().minusDays(1))),
+                                DateTimeFormatter.ISO_DATE.format(LocalDate.now().plusDays(1))),
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number", "641500011")
                             .add("first_name", "FNAMEONEONE")
                             .add("last_name", "LNAMEONEONE")
                             .add("pool_number_by_jp", "415240601")
+                            .add("last_attendance_date",
+                                DateTimeFormatter.ISO_DATE.format(LocalDate.now().minusDays(2)))
                             .add("next_attendance_date",
-                                DateTimeFormatter.ISO_DATE.format(LocalDate.now().minusDays(1))),
+                                DateTimeFormatter.ISO_DATE.format(LocalDate.now().plusDays(1))),
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number", "641500021")
                             .add("first_name", "FNAMETWOONE")
                             .add("last_name", "LNAMETWOONE")
                             .add("pool_number_by_jp", "415240601")
                             .add("next_attendance_date",
-                                DateTimeFormatter.ISO_DATE.format(LocalDate.now().minusDays(1)))))
+                                DateTimeFormatter.ISO_DATE.format(LocalDate.now().plusDays(1)))))
                     .build())
             .build();
     }
@@ -194,7 +201,7 @@ class IncompleteServiceReportITest extends AbstractStandardReportControllerITest
                     .value("CHESTER (415)")
                     .build()))
             .tableData(
-                StandardReportResponse.TableData.<List<LinkedHashMap<String, Object>>>builder()
+                StandardReportResponse.TableData.<StandardTableData>builder()
                     .headings(List.of(
                         StandardReportResponse.TableData.Heading.builder()
                             .id("juror_number")
@@ -221,12 +228,18 @@ class IncompleteServiceReportITest extends AbstractStandardReportControllerITest
                             .headings(null)
                             .build(),
                         StandardReportResponse.TableData.Heading.builder()
+                            .id("last_attendance_date")
+                            .name("Last attended on")
+                            .dataType("LocalDate")
+                            .headings(null)
+                            .build(),
+                        StandardReportResponse.TableData.Heading.builder()
                             .id("next_attendance_date")
                             .name("Next attendance date")
                             .dataType("LocalDate")
                             .headings(null)
                             .build()))
-                    .data(List.of())
+                    .data(StandardTableData.of())
                     .build())
             .build();
     }

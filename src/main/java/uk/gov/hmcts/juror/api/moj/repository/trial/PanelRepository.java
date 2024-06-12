@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.repository.trial;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
@@ -25,8 +26,10 @@ public interface PanelRepository extends IPanelRepository, JpaRepository<Panel, 
                                                                                     String locCode,
                                                                                     String poolNumber);
 
-
-    Panel findByTrialCourtLocationLocCodeAndJurorJurorNumberAndCompleted(String locCode,
-                                                                         String jurorNumber,
-                                                                         boolean completed);
+    @Query(
+        value = "SELECT * FROM juror_mod.juror_trial "
+            + "WHERE loc_code = ?1 AND juror_number = ?2 AND completed = true AND (result IS NULL OR result = 'J')",
+        nativeQuery = true
+    )
+    Panel findActivePanel(String locCode, String jurorNumber);
 }

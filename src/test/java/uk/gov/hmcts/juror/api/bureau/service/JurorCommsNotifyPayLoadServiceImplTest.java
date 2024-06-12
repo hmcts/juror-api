@@ -12,15 +12,13 @@ import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.NotifyTemplateFieldMod;
-import uk.gov.hmcts.juror.api.moj.domain.NotifyTemplateMappingMod;
+import uk.gov.hmcts.juror.api.moj.domain.NotifyTemplateMapperMod;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.NotifyTemplateFieldRepositoryMod;
-import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorCommonResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.PoolRequestService;
 
-import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.LinkedList;
@@ -29,7 +27,9 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @SuppressWarnings("Duplicates")
 @RunWith(MockitoJUnitRunner.class)
@@ -38,8 +38,6 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
     private static final String FIRST_NAME = "Farah";
     private static final String LAST_NAME_1 = "Lee";
     private static final String LAST_NAME = "LASTNAME";
-    private static final String EMAIL = "email";
-    private static final String JUROR = "juror";
     private static final String EMAIL_1 = "a@aaa.com";
     private static final String EMAIL_2 = "b@b.com";
     private static final String COURT_NAME_1 = "COURTNAME";
@@ -51,7 +49,6 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
     private static final String EMAIL_ADDRESS = "email address";
     private static final String SERVICE_START_TIME = "SERVICESTARTTIME";
     private static final String SERVICE_START_DATE = "SERVICESTARTDATE";
-    private static final String BULK_PRINT_DATA_DETAIL_REC = "bulk_print_data.detail_rec";
     private static final String Description_1 = "ServiceStartDate is present in the payLoad Map";
     private static final String Description_2 = "ServiceStartTime is present in the payLoad Map";
     private static final String Description_3 = "Email address is present in the payLoad Map";
@@ -60,25 +57,18 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
     private NotifyTemplateFieldMod templateField1;
     private NotifyTemplateFieldMod templateField2;
     private NotifyTemplateFieldMod templateField3;
-    private NotifyTemplateFieldMod templateField4;
 
-    private NotifyTemplateFieldMod templateField5;
-    private NotifyTemplateFieldMod templateField6;
-    private NotifyTemplateMappingMod notifyCommsTemplateMapping;
     private Map<String, String> payLoad;
     private List<NotifyTemplateFieldMod> templateFields;
     private JurorPool pool;
-    private DigitalResponse jurorResponse;
-    private LocalDate hearingDate;
+    private JurorCommonResponseRepositoryMod.AbstractResponse jurorResponse;
     private CourtLocation court;
-
-    private Juror juror;
 
     @Mock
     private NotifyTemplateFieldRepositoryMod notifyTemplateFieldRepository;
 
     @Mock
-    private JurorDigitalResponseRepositoryMod jurorResponseRepository;
+    private JurorCommonResponseRepositoryMod commonResponseRepositoryMod;
 
     @Mock
     private JurorPoolRepository poolRepository;
@@ -102,27 +92,23 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
 
         getNotifyCommsTemplateMapping();
 
-        jurorResponse = new DigitalResponse();
-        juror = new Juror();
-
+        jurorResponse = mock(JurorCommonResponseRepositoryMod.AbstractResponse.class);
         court = new CourtLocation();
 
-        hearingDate = LocalDate.of(2019, 7, 8);
-
-        juror = new Juror();
+        Juror juror = new Juror();
         pool = new JurorPool();
         pool.setJuror(juror);
         juror = pool.getJuror();
         juror.setJurorNumber(JUROR_NUMBER);
         juror.setFirstName(FIRST_NAME);
         juror.setLastName(LAST_NAME_1);
-        pool.setNextDate(hearingDate);
+        pool.setNextDate(LocalDate.of(2019, 7, 8));
         juror.setEmail(EMAIL_1);
 
     }
 
     @Test
-    public void generatePayLoadData_printFiles_HappyPath() throws ParseException {
+    public void generatePayLoadData_printFiles_HappyPath() {
         final String detailRec = "    Farah     Lee       YYY   " + JUROR_NUMBER + "XX     ";
 
         getCourt(false);
@@ -163,19 +149,17 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
 
 
     @Test
-    public void generatePayLoadData_sentToCourt_HappyPath() throws ParseException {
+    public void generatePayLoadData_sentToCourt_HappyPath() {
         //print_files.detail_rec not present for sent to court.
-        templateFields.remove(templateFields.remove(templateField1));
-        templateFields.remove(templateFields.remove(templateField2));
-        templateFields.remove(templateFields.remove(templateField3));
+        templateFields.remove(templateField1);
+        templateFields.remove(templateField2);
+        templateFields.remove(templateField3);
 
         NotifyTemplateFieldMod templateField = NotifyTemplateFieldMod.builder()
             .id(7L)
             .templateId(TEMPLATE_ID)
             .templateField(COURT_NAME_1)
-            .databaseField("COURT_LOCATION.COURT_LOC_NAME")
-            .jdClassName("court")
-            .jdClassProperty("locCourtName")
+            .mapperObject(NotifyTemplateMapperMod.COURT_LOC_COURT_NAME)
             .build();
 
         templateFields.add(templateField);
@@ -213,15 +197,13 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
     }
 
     @Test
-    public void generatePayLoadData_superUrgentSentToCourt_HappyPath() throws ParseException {
+    public void generatePayLoadData_superUrgentSentToCourt_HappyPath() {
 
         NotifyTemplateFieldMod templateField = NotifyTemplateFieldMod.builder()
             .id(8L)
             .templateId(TEMPLATE_ID)
             .templateField(EMAIL_ADDRESS)
-            .databaseField("JURUR_RESPONSE.EMAIL")
-            .jdClassName("jurorResponse")
-            .jdClassProperty(EMAIL)
+            .mapperObject(NotifyTemplateMapperMod.RESPONSE_EMAIL)
             .build();
 
         templateFields.add(templateField);
@@ -234,7 +216,7 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
         pool.setPool(poolRequest);
         poolRequest.setCourtLocation(court);
 
-        given(jurorResponseRepository.findByJurorNumber(JUROR_NUMBER)).willReturn(jurorResponse);
+        given(commonResponseRepositoryMod.findByJurorNumber(JUROR_NUMBER)).willReturn(jurorResponse);
         given(notifyTemplateFieldRepository.findByTemplateId(TEMPLATE_ID)).willReturn(templateFields);
 
         payLoad = service.generatePayLoadData(TEMPLATE_ID, pool);
@@ -256,23 +238,19 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
             .containsValue(EMAIL_2);
 
         verify(notifyTemplateFieldRepository).findByTemplateId(TEMPLATE_ID);
-        verify(jurorResponseRepository).findByJurorNumber(JUROR_NUMBER);
+        verify(commonResponseRepositoryMod).findByJurorNumber(JUROR_NUMBER);
     }
 
 
-    private CourtLocation getCourt(final boolean sentToCourt) {
-        if (sentToCourt == true) {
+    private void getCourt(final boolean sentToCourt) {
+        if (sentToCourt) {
             court.setLocCourtName(COURT_NAME);
         }
         court.setCourtAttendTime(LocalTime.parse(TIME));
-        return court;
     }
 
-
-    private DigitalResponse getJurorResponse() {
-        jurorResponse.setEmail(EMAIL_2);
-        jurorResponse.setPhoneNumber("07112293123");
-        return jurorResponse;
+    private void getJurorResponse() {
+        when(jurorResponse.getEmail()).thenReturn(EMAIL_2);
     }
 
 
@@ -281,7 +259,7 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
             .id(1L)
             .templateId(TEMPLATE_ID)
             .templateField("FIRSTNAME")
-            .databaseField(BULK_PRINT_DATA_DETAIL_REC)
+            .mapperObject(NotifyTemplateMapperMod.BULK_PRINT_DATA)
             .positionFrom(5)
             .positionTo(14)
             .build();
@@ -290,7 +268,7 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
             .id(2L)
             .templateId(TEMPLATE_ID)
             .templateField(LAST_NAME)
-            .databaseField(BULK_PRINT_DATA_DETAIL_REC)
+            .mapperObject(NotifyTemplateMapperMod.BULK_PRINT_DATA)
             .positionFrom(15)
             .positionTo(24)
             .build();
@@ -298,34 +276,28 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
             .id(3L)
             .templateId(TEMPLATE_ID)
             .templateField(JUROR_NUM)
-            .databaseField(BULK_PRINT_DATA_DETAIL_REC)
+            .mapperObject(NotifyTemplateMapperMod.BULK_PRINT_DATA)
             .positionFrom(31)
             .positionTo(39)
             .build();
 
-        templateField4 = NotifyTemplateFieldMod.builder()
+        NotifyTemplateFieldMod templateField4 = NotifyTemplateFieldMod.builder()
             .id(4L)
             .templateId(TEMPLATE_ID)
             .templateField(SERVICE_START_DATE)
-            .databaseField("jurorPool.next_date")
-            .jdClassName(JUROR)
-            .jdClassProperty("nextDate")
+            .mapperObject(NotifyTemplateMapperMod.JUROR_POOL_NEXT_DATE)
             .build();
-        templateField5 = NotifyTemplateFieldMod.builder()
+        NotifyTemplateFieldMod templateField5 = NotifyTemplateFieldMod.builder()
             .id(5L)
             .templateId(TEMPLATE_ID)
             .templateField(SERVICE_START_TIME)
-            .databaseField("pool.attend_time")
-            .jdClassName("Pool")
-            .jdClassProperty("attendTime")
+            .mapperObject(NotifyTemplateMapperMod.POOL_ATTEND_TIME)
             .build();
-        templateField6 = NotifyTemplateFieldMod.builder()
+        NotifyTemplateFieldMod templateField6 = NotifyTemplateFieldMod.builder()
             .id(6L)
             .templateId(TEMPLATE_ID)
             .templateField(EMAIL_ADDRESS)
-            .databaseField("juror.h_email")
-            .jdClassName(JUROR)
-            .jdClassProperty(EMAIL)
+            .mapperObject(NotifyTemplateMapperMod.JUROR_EMAIL)
             .build();
 
 
@@ -335,6 +307,5 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
         templateFields.add(templateField4);
         templateFields.add(templateField5);
         templateFields.add(templateField6);
-        notifyCommsTemplateMapping = NotifyTemplateMappingMod.builder().templateId(TEMPLATE_ID.toString()).build();
     }
 }

@@ -16,6 +16,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @Builder
 @Data
+@SuppressWarnings("PMD.TooManyFields")
 @Schema(description = "Dashboard mandatory kpis.")
 public class DashboardMandatoryKpiData implements Serializable {
 

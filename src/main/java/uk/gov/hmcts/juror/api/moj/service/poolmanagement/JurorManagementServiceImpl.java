@@ -20,7 +20,6 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
-import uk.gov.hmcts.juror.api.moj.domain.letter.ConfirmationLetter;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
@@ -30,8 +29,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.service.GeneratePoolNumberService;
 import uk.gov.hmcts.juror.api.moj.service.PoolMemberSequenceService;
-import uk.gov.hmcts.juror.api.moj.service.letter.CertLetterServiceImpl;
-import uk.gov.hmcts.juror.api.moj.service.letter.ConfirmationLetterServiceImpl;
+import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
@@ -69,12 +67,10 @@ public class JurorManagementServiceImpl implements JurorManagementService {
     @NonNull
     private final PoolMemberSequenceService poolMemberSequenceService;
     @NonNull
-    private final CertLetterServiceImpl certLetterService;
-    @NonNull
     private final ResponseInspector responseInspector;
-
     @NonNull
-    private final ConfirmationLetterServiceImpl confirmationLetterService;
+    private final PrintDataService printDataService;
+
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -158,7 +154,9 @@ public class JurorManagementServiceImpl implements JurorManagementService {
                 deleteExistingJurorPool(owner, jurorNumber, targetPoolNumber);
 
                 // copy the pool members data over to a new record in the new court location
-                createReassignedJurorPool(sourceJurorPool, receivingCourtLocation, targetPoolRequest, currentUser);
+                JurorPool targetJurorPool = createReassignedJurorPool(sourceJurorPool, receivingCourtLocation,
+                    targetPoolRequest,
+                    currentUser);
 
                 updateSourceJurorPool(sourceJurorPool, currentUser);
 
@@ -174,9 +172,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
 
                 // queue a summons confirmation letter (Bureau only!)
                 if (JurorDigitalApplication.JUROR_OWNER.equals(payload.getOwner())) {
-                    ConfirmationLetter confirmationLetter = confirmationLetterService.getLetterToEnqueue(owner,
-                        jurorNumber);
-                    confirmationLetterService.enqueueLetter(confirmationLetter);
+                    printDataService.printConfirmationLetter(targetJurorPool);
                 }
 
                 reassignedJurorsCount++;
@@ -206,7 +202,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         }
     }
 
-    private void createReassignedJurorPool(JurorPool sourceJurorPool, CourtLocation receivingCourtLocation,
+    private JurorPool createReassignedJurorPool(JurorPool sourceJurorPool, CourtLocation receivingCourtLocation,
                                            PoolRequest targetPool, String currentUser) {
         log.trace("Enter createReassignedJurorPool");
         JurorPool newTargetJurorPool = new JurorPool();
@@ -238,6 +234,8 @@ public class JurorManagementServiceImpl implements JurorManagementService {
 
         jurorPoolRepository.save(newTargetJurorPool);
         log.trace("Exit createReassignedJurorPool");
+
+        return newTargetJurorPool;
     }
 
     private void deleteExistingJurorPool(String owner, String jurorNumber, String poolNumber) {
@@ -356,7 +354,6 @@ public class JurorManagementServiceImpl implements JurorManagementService {
                 createTransferredJurorPool(sourceJurorPool, receivingCourtLocation, targetPoolRequest, currentUser);
 
                 updateSourceJurorPoolTransfer(sourceJurorPool, currentUser);
-                certLetterService.enqueueNewLetter(activeUserOwner, jurorNumber);
 
                 // add history event to juror
                 jurorHistoryRepository.save(JurorHistory.builder()
@@ -422,7 +419,8 @@ public class JurorManagementServiceImpl implements JurorManagementService {
 
         sourceJurorPools.forEach(jurorPool -> {
             // status validation (acceptable status values are 1 (summoned) or 2 (responded)
-            if (jurorPool.getStatus().getStatus() > 2) {
+            if (jurorPool.getStatus().getStatus() > 2 && !(jurorPool.getStatus().getStatus() == 7
+                && requestDto.getDeferralMaintenance() != null && requestDto.getDeferralMaintenance().equals(true))) {
                 failedTransfers.put(jurorPool.getJurorNumber(),
                     new Triple<>(String.format(JurorManagementConstants.INVALID_STATUS_MESSAGE, jurorPool.getStatus()
                         .getStatusDesc()), jurorPool.getJuror().getFirstName(), jurorPool.getJuror().getLastName()));
@@ -603,6 +601,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         newTargetJurorPool.setNextDate(targetPool.getReturnDate());
         newTargetJurorPool.setUserEdtq(currentUser);
         newTargetJurorPool.setOnCall(false);
+        newTargetJurorPool.setReminderSent(null);
 
         newTargetJurorPool.setStatus(RepositoryUtils
             .retrieveFromDatabase(IJurorStatus.RESPONDED, jurorStatusRepository));

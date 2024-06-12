@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
  * Repository for {@link BureauJurorDetail} entities.
  */
 @Repository
+@Deprecated(forRemoval = true)
 public interface BureauJurorDetailRepository extends CrudRepository<BureauJurorDetail, String>,
     QuerydslPredicateExecutor<BureauJurorDetail> {
 

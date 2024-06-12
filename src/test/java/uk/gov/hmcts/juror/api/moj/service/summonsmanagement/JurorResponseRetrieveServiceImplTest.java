@@ -1,6 +1,8 @@
 package uk.gov.hmcts.juror.api.moj.service.summonsmanagement;
 
+import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -17,6 +19,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCommonRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -32,9 +35,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.juror.api.moj.utils.converters.ConversionUtils.toProperCase;
 
 @ExtendWith(SpringExtension.class)
+@SuppressWarnings("PMD.ExcessiveImports")
 class JurorResponseRetrieveServiceImplTest {
     private static final String JUROR_X_8 = "11111111";
 
@@ -59,8 +64,16 @@ class JurorResponseRetrieveServiceImplTest {
     @Mock
     private JurorResponseCommonRepositoryMod jurorResponseCommonRepository;
 
+    @Mock
+    private AppSettingService appSettingService;
+
     @InjectMocks
     private JurorResponseRetrieveServiceImpl jurorResponseRetrieveService;
+
+    @AfterEach
+    public void afterEach() {
+        TestUtils.afterAll();
+    }
 
     @DisplayName("Retrieve juror responses based on search criteria")
     @Nested
@@ -68,6 +81,7 @@ class JurorResponseRetrieveServiceImplTest {
 
         @Test
         @DisplayName("Bureau officer - basic search with single criteria is okay")
+        @SuppressWarnings("unchecked")
         void bureauOfficerBasicSearchSingleCriteriaOkay() {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
             request.setJurorNumber(JUROR_X_8 + "1");
@@ -77,7 +91,12 @@ class JurorResponseRetrieveServiceImplTest {
             List<Tuple> tupleList = new ArrayList<>();
             tupleList.add(tuple);
 
-            doReturn(tupleList).when(jurorResponseCommonRepository).retrieveJurorResponseDetails(
+            QueryResults<Tuple> queryResults = mock(QueryResults.class);
+            when(queryResults.getResults()).thenReturn(tupleList);
+            when(queryResults.getTotal()).thenReturn(1L);
+
+            doReturn(100).when(appSettingService).getBureauOfficerSearchResultLimit();
+            doReturn(queryResults).when(jurorResponseCommonRepository).retrieveJurorResponseDetails(
                 request, false, 100);
 
             // mock jwt payload
@@ -89,7 +108,41 @@ class JurorResponseRetrieveServiceImplTest {
 
             // verify response
             assertThat(response).isNotNull();
-            verifyResponse(0, 1, 1, response);
+            verifyResponse(0, 1, 1, 100,false,response);
+            verify(jurorResponseCommonRepository, times(1))
+                .retrieveJurorResponseDetails(request, false, 100);
+        }
+
+        @Test
+        @DisplayName("Bureau officer - Limit Exceeded")
+        @SuppressWarnings("unchecked")
+        void bureauOfficerBasicSearchLimitExceeded() {
+            JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
+            request.setJurorNumber(JUROR_X_8 + "1");
+
+            // mock the database response
+            Tuple tuple = createMockedDbResponse(1, ProcessingStatus.TODO);
+            List<Tuple> tupleList = new ArrayList<>();
+            tupleList.add(tuple);
+
+            QueryResults<Tuple> queryResults = mock(QueryResults.class);
+            when(queryResults.getResults()).thenReturn(tupleList);
+            when(queryResults.getTotal()).thenReturn(110L);
+
+            doReturn(100).when(appSettingService).getBureauOfficerSearchResultLimit();
+            doReturn(queryResults).when(jurorResponseCommonRepository).retrieveJurorResponseDetails(
+                request, false, 100);
+
+            // mock jwt payload
+            BureauJwtPayload payload = mockJwt(BUREAU_OWNER, BUREAU_USER, BUREAU_STAFF_NAME, UserType.BUREAU);
+            TestUtils.mockSecurityUtil(payload);
+            // invoke service
+            JurorResponseRetrieveResponseDto response =
+                jurorResponseRetrieveService.retrieveJurorResponse(request);
+
+            // verify response
+            assertThat(response).isNotNull();
+            verifyResponse(0, 1, 1, 100,true,response);
             verify(jurorResponseCommonRepository, times(1))
                 .retrieveJurorResponseDetails(request, false, 100);
         }
@@ -118,6 +171,7 @@ class JurorResponseRetrieveServiceImplTest {
 
         @Test
         @DisplayName("Bureau officer - basic and advanced search (isUrgent criteria is false) is okay")
+        @SuppressWarnings("unchecked")
         void bureauOfficerBasicAndAdvancedSearchIsUrgentFlagFalseIsOkay() {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
             request.setJurorNumber(JUROR_X_8 + 1);
@@ -127,8 +181,12 @@ class JurorResponseRetrieveServiceImplTest {
             Tuple tuple = createMockedDbResponse(1, ProcessingStatus.TODO);
             List<Tuple> tupleList = new ArrayList<>();
             tupleList.add(tuple);
+            QueryResults<Tuple> queryResults = mock(QueryResults.class);
+            when(queryResults.getResults()).thenReturn(tupleList);
+            when(queryResults.getTotal()).thenReturn(1L);
 
-            doReturn(tupleList).when(jurorResponseCommonRepository).retrieveJurorResponseDetails(
+            doReturn(100).when(appSettingService).getBureauOfficerSearchResultLimit();
+            doReturn(queryResults).when(jurorResponseCommonRepository).retrieveJurorResponseDetails(
                 request, false, 100);
 
             // mock jwt payload
@@ -141,10 +199,11 @@ class JurorResponseRetrieveServiceImplTest {
 
             // verify response
             assertThat(response).isNotNull();
-            verifyResponse(0, 1, 1, response);
+            verifyResponse(0, 1, 1, 100, false, response);
             verify(jurorResponseCommonRepository, times(1))
                 .retrieveJurorResponseDetails(request, false, 100);
         }
+
 
         @Test
         @DisplayName("Bureau officer - advanced search with single criteria - isUrgent is false, is bad request.  "
@@ -209,11 +268,13 @@ class JurorResponseRetrieveServiceImplTest {
                 .retrieveJurorResponseDetails(request, false, 100);
         }
 
-        private void verifyResponse(int listIndex, int listSize, int postfixId,
+        private void verifyResponse(int listIndex, int listSize, int postfixId, int limit, boolean isLimitExceeded,
                                     JurorResponseRetrieveResponseDto response) {
 
             String id = String.valueOf(postfixId);
 
+            assertThat(response.getLimit()).isEqualTo(limit);
+            assertThat(response.isLimitExceeded()).isEqualTo(isLimitExceeded);
             List<JurorResponseRetrieveResponseDto.JurorResponseDetails> records = response.getRecords();
             assertThat(records).hasSize(listSize);
             assertThat(records.get(listIndex).getJurorNumber()).isEqualTo(JUROR_X_8 + id);
@@ -229,7 +290,7 @@ class JurorResponseRetrieveServiceImplTest {
         private BureauJwtPayload mockJwt(String owner, String username, String staffName, UserType userType,
                                          Role... roles) {
             BureauJwtPayload payload = TestUtils.createJwt(owner, username, userType, List.of(roles));
-            payload.setStaff(TestUtils.staffBuilder(staffName,  null));
+            payload.setStaff(TestUtils.staffBuilder(staffName, null));
             return payload;
         }
 

@@ -10,7 +10,7 @@ import java.util.List;
  * Repository for {@link StatsDeferrals}.
  **/
 @Repository
-
+@Deprecated(forRemoval = true)
 public interface StatsDeferralsRepository extends CrudRepository<StatsDeferrals, String>,
     QuerydslPredicateExecutor<StatsDeferrals> {
     List<StatsDeferrals> findByWeekBetween(String startYearWeek, String endYearWeek);

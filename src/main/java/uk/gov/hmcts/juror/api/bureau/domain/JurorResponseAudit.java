@@ -33,6 +33,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REG
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@Deprecated(forRemoval = true)
 //TODO: low: implement a sequence PK
 public class JurorResponseAudit {
     @Id

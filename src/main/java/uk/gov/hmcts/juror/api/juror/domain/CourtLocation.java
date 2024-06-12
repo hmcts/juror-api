@@ -19,6 +19,7 @@ import lombok.ToString;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 import uk.gov.hmcts.juror.api.moj.domain.CourtRegionMod;
+import uk.gov.hmcts.juror.api.moj.domain.ICourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
 import uk.gov.hmcts.juror.api.moj.enumeration.CourtType;
@@ -38,11 +39,11 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Audited
-@ToString(exclude = "assemblyRoom")
-@EqualsAndHashCode(exclude = {"courtRegion","assemblyRoom"})
+@ToString(exclude = {"courtRegion", "assemblyRoom", "poolRequests"})
+@EqualsAndHashCode(exclude = {"courtRegion", "assemblyRoom", "poolRequests"})
 @Table(name = "court_location", schema = "juror_mod")
 @SuppressWarnings("PMD.TooManyFields")
-public class CourtLocation implements Serializable {
+public class CourtLocation implements Serializable, ICourtLocation {
 
     @Id
     @Column(name = "loc_code")
@@ -201,5 +202,9 @@ public class CourtLocation implements Serializable {
 
     public boolean isPrimaryCourt() {
         return CourtType.MAIN.equals(getType());
+    }
+
+    public String getNameWithLocCode() {
+        return this.getName() + " (" + this.getLocCode() + ")";
     }
 }

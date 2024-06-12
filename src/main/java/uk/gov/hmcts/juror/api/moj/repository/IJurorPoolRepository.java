@@ -54,4 +54,8 @@ public interface IJurorPoolRepository {
     JPAQuery<Tuple> fetchFilteredPoolMembers(PoolMemberFilterRequestQuery search, String owner);
 
     List<String> fetchThinPoolMembers(String poolNumber, String owner);
+
+    boolean hasPoolWithLocCode(String jurorNumber, List<String> locCodes);
+
+
 }

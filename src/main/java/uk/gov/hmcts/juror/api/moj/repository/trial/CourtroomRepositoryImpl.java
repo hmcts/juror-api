@@ -17,8 +17,7 @@ public class CourtroomRepositoryImpl implements ICourtroomRepository {
 
     private static final QCourtLocation Q_COURT_LOCATION = QCourtLocation.courtLocation;
 
-    @Override
-    @SuppressWarnings("PMD.LawOfDemeter") //PMD is complaining about the static property being accessed, so ignoring
+    @Override //PMD is complaining about the static property being accessed, so ignoring
     // as unable to sort this issue out (tried instantiating the objects and still didn't work)
     public List<Tuple> getCourtroomsForLocation(List<String> courts) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);

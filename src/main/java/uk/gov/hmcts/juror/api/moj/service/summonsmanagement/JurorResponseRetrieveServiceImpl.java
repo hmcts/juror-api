@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.service.summonsmanagement;
 
+import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +12,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.summonsmanagement.JurorResp
 import uk.gov.hmcts.juror.api.moj.controller.response.summonsmanagement.JurorResponseRetrieveResponseDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCommonRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDateTime;
@@ -25,11 +27,12 @@ import static uk.gov.hmcts.juror.api.moj.utils.converters.ConversionUtils.toProp
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class JurorResponseRetrieveServiceImpl implements JurorResponseRetrieveService {
-    private static final int SEARCH_RESULT_LIMIT_BUREAU_OFFICER = 100;
-    private static final int SEARCH_RESULT_LIMIT_TEAM_LEADER = 250;
 
     @Autowired
     private JurorResponseCommonRepositoryMod jurorResponseRepository;
+
+    @Autowired
+    private AppSettingService appSettingService;
 
     @Override
     @Transactional(readOnly = true)
@@ -41,16 +44,17 @@ public class JurorResponseRetrieveServiceImpl implements JurorResponseRetrieveSe
         validateRequest(request, isBureauUser, isTeamLeader);
 
         // retrieve results from the repository for the given criteria
-        List<Tuple> queryResponse = retrieveJurorResponseDetails(request, isTeamLeader);
+        QueryResults<Tuple> queryResponse = retrieveJurorResponseDetails(request, isTeamLeader);
 
         // map query response to dto response
-        return mapQueryResponseToDtoResponse(queryResponse);
+        return mapQueryResponseToDtoResponse(queryResponse, getResultsLimit(isTeamLeader));
     }
 
-    private JurorResponseRetrieveResponseDto mapQueryResponseToDtoResponse(List<Tuple> tuples) {
+    private JurorResponseRetrieveResponseDto mapQueryResponseToDtoResponse(QueryResults<Tuple> queryResults,
+                                                                           int limit) {
         List<JurorResponseRetrieveResponseDto.JurorResponseDetails> records = new ArrayList<>();
 
-        for (Tuple tuple : tuples) {
+        for (Tuple tuple : queryResults.getResults()) {
             JurorResponseRetrieveResponseDto.JurorResponseDetails dataRecord =
                 JurorResponseRetrieveResponseDto.JurorResponseDetails.builder()
                     .jurorNumber(tuple.get(0, String.class))
@@ -67,7 +71,12 @@ public class JurorResponseRetrieveServiceImpl implements JurorResponseRetrieveSe
             records.add(dataRecord);
         }
 
-        return JurorResponseRetrieveResponseDto.builder().records(records).recordCount(tuples.size()).build();
+        return JurorResponseRetrieveResponseDto.builder()
+            .records(records)
+            .limit(limit)
+            .limitExceeded(queryResults.getTotal() > limit)
+            .recordCount(queryResults.getResults().size())
+            .build();
     }
 
     private void validateRequest(JurorResponseRetrieveRequestDto request, boolean isBureauUser, boolean isTeamLeader) {
@@ -94,12 +103,15 @@ public class JurorResponseRetrieveServiceImpl implements JurorResponseRetrieveSe
             && (request.getIsUrgent() == null || request.getIsUrgent().equals(FALSE));
     }
 
-    private List<Tuple> retrieveJurorResponseDetails(JurorResponseRetrieveRequestDto request, boolean isTeamLeader) {
+    private QueryResults<Tuple> retrieveJurorResponseDetails(JurorResponseRetrieveRequestDto request,
+                                                             boolean isTeamLeader) {
         return jurorResponseRepository.retrieveJurorResponseDetails(request, isTeamLeader,
             getResultsLimit(isTeamLeader));
     }
 
     private int getResultsLimit(boolean isTeamLeader) {
-        return isTeamLeader ? SEARCH_RESULT_LIMIT_TEAM_LEADER : SEARCH_RESULT_LIMIT_BUREAU_OFFICER;
+        return isTeamLeader
+            ? appSettingService.getTeamLeaderSearchResultLimit()
+            : appSettingService.getBureauOfficerSearchResultLimit();
     }
 }

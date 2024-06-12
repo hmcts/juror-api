@@ -5,7 +5,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
-import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
@@ -14,7 +13,6 @@ import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 
 import java.util.List;
 
-@SuppressWarnings("PMD.LawOfDemeter")
 public class PanelRepositoryImpl implements IPanelRepository {
     @PersistenceContext
     EntityManager entityManager;
@@ -22,7 +20,6 @@ public class PanelRepositoryImpl implements IPanelRepository {
     private static final QPanel PANEL = QPanel.panel;
     private static final QTrial TRIAL = QTrial.trial;
     private static final QCourtLocation COURT_LOCATION = QCourtLocation.courtLocation;
-    private static final QJuror JUROR = QJuror.juror;
     private static final QJurorPool JUROR_POOL = QJurorPool.jurorPool;
 
     /**

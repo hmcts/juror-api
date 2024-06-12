@@ -6,21 +6,21 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.moj.domain.QUser;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.StaffJurorResponseAuditMod;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.UserJurorResponseAudit;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
-import uk.gov.hmcts.juror.api.moj.repository.staff.StaffJurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.staff.UserJurorResponseAuditRepository;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Slf4j
 @Service
 public class AssignOnUpdateServiceModImpl implements AssignOnUpdateServiceMod {
-    @Autowired
-    private UserRepository userRepository;
 
     @Autowired
-    private StaffJurorResponseAuditRepositoryMod auditRepository;
+    private UserRepository userRepository;
+    @Autowired
+    private UserJurorResponseAuditRepository userJurorResponseAuditRepository;
 
 
     @Override
@@ -33,28 +33,23 @@ public class AssignOnUpdateServiceModImpl implements AssignOnUpdateServiceMod {
                         null);
                 });
 
-        final LocalDate assignmentDate = LocalDate.now();
-        if (log.isTraceEnabled()) {
-            log.trace("Assignment date: {}", assignmentDate);
-        }
+        final LocalDateTime assignmentDate = LocalDateTime.now();
+        log.trace("Assignment date: {}", assignmentDate);
 
         // 1. perform assignment update
         jurorResponse.setStaff(staffToAssign);
-        jurorResponse.setStaffAssignmentDate(assignmentDate);
+        jurorResponse.setStaffAssignmentDate(assignmentDate.toLocalDate());
 
         // 2. create audit entity for assignment update
-        final StaffJurorResponseAuditMod staffJurorResponseAudit = StaffJurorResponseAuditMod.realBuilder()
-            .teamLeaderLogin(auditorUsername)
-            .staffLogin(auditorUsername)
+        final UserJurorResponseAudit userJurorResponseAudit = UserJurorResponseAudit.builder()
             .jurorNumber(jurorResponse.getJurorNumber())
-            .dateReceived(jurorResponse.getDateReceived())
-            .staffAssignmentDate(assignmentDate)
+            .assignedBy(staffToAssign)
+            .assignedTo(staffToAssign)
+            .assignedOn(assignmentDate)
             .build();
 
         // 3. persist audit entity
-        if (log.isTraceEnabled()) {
-            log.trace("Auditing assignment {}", staffJurorResponseAudit);
-        }
-        auditRepository.save(staffJurorResponseAudit);
+        log.trace("Auditing assignment {}", userJurorResponseAudit);
+        userJurorResponseAuditRepository.save(userJurorResponseAudit);
     }
 }

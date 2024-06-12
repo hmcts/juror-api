@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
@@ -13,13 +14,10 @@ import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
-@SuppressWarnings("PMD.LawOfDemeter")
 public class DeferredListByDateReport extends AbstractStandardReport {
 
     @Autowired
@@ -45,7 +43,7 @@ public class DeferredListByDateReport extends AbstractStandardReport {
     @Override
     public Map<String, StandardReportResponse.DataTypeValue> getHeadings(
         StandardReportRequest request,
-        StandardReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData) {
+        StandardReportResponse.TableData<StandardTableData> tableData) {
 
         Map<String, StandardReportResponse.DataTypeValue> map = new ConcurrentHashMap<>();
         map.put("total_deferred", StandardReportResponse.DataTypeValue.builder()

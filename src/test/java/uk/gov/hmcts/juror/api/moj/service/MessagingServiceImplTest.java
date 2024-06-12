@@ -66,7 +66,6 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.PLACEHOLDER_MUST_HAVE_VALUE;
 
 @SuppressWarnings({
-    "PMD.LawOfDemeter",
     "PMD.ExcessiveImports",
     "PMD.CouplingBetweenObjects",
     "PMD.TooManyMethods",

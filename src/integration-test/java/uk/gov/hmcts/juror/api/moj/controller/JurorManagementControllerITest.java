@@ -60,7 +60,6 @@ import java.util.Optional;
 import static java.time.LocalDate.now;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
-import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.PATCH;
 import static org.springframework.http.HttpMethod.POST;
@@ -122,12 +121,12 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         initHeaders();
     }
 
-    @SuppressWarnings("PMD.LawOfDemeter")
     private void initHeaders() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .login("COURT_USER")
             .userType(UserType.COURT)
             .owner("415")
+            .locCode("415")
             .staff(BureauJwtPayload.Staff.builder().courts(Collections.singletonList("415")).build())
             .build());
 
@@ -153,7 +152,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                     URI.create("/api/v1/moj/juror-management/appearance")),
                 JurorAppearanceResponseDto.JurorAppearanceResponseData.class);
 
-        validateAppearanceRecord(response);
+        assertValidateAppearanceRecord(response);
     }
 
     @Test
@@ -224,7 +223,6 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         assertThat(appearance.getTimeIn()).isEqualTo(requestDto.getCheckInTime());
         assertThat(appearance.getTimeOut()).isEqualTo(requestDto.getCheckOutTime());
     }
-
 
 
     @Test
@@ -369,7 +367,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                         + "&group=" + JurorStatusGroup.AT_COURT)),
                 JurorAppearanceResponseDto.class);
 
-        validateAppearanceRecordMultiple(response);
+        assertValidateAppearanceRecordMultiple(response);
     }
 
 
@@ -495,6 +493,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("GET Retrieve attendance details okay - for tag NOT_CHECKED_OUT")
+        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False positive
         void retrieveAttendanceNotCheckedOutTag() {
             RetrieveAttendanceDetailsDto request = buildRetrieveAttendanceDetailsDto(null);
             request.getCommonData().setTag(RetrieveAttendanceDetailsTag.NOT_CHECKED_OUT);
@@ -527,6 +526,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("GET Retrieve attendance details okay - for tag CONFIRM_ATTENDANCE")
+        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False Positive
         void retrieveAttendanceConfirmAttendanceTag() {
             RetrieveAttendanceDetailsDto request = buildRetrieveAttendanceDetailsDto(null);
             request.getCommonData().setTag(RetrieveAttendanceDetailsTag.CONFIRM_ATTENDANCE);
@@ -715,6 +715,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         @Test
         @DisplayName("PATCH Update attendance - checkout multiple jurors in list")
         @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql"})
+        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False Positive
         void updateAttendanceCheckOutMultipleJurorsInList() {
             List<String> jurors = new ArrayList<>();
             jurors.add(JUROR6);
@@ -743,21 +744,25 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             List<AttendanceDetailsResponse.Details> retrievedDetails = attendanceResponse.getDetails();
 
             assertThat(retrievedDetails)
+                .as("Juror Status")
                 .extracting(AttendanceDetailsResponse.Details::getJurorStatus)
                 .containsExactlyInAnyOrder(IJurorStatus.RESPONDED, IJurorStatus.JUROR);
 
             // check-in time should not have been updated for this scenario
             assertThat(retrievedDetails)
+                .as("Check In Time")
                 .extracting(AttendanceDetailsResponse.Details::getCheckInTime)
                 .containsExactlyInAnyOrder(LocalTime.of(9, 30), LocalTime.of(9, 30));
 
             // check-out time should have been updated for this scenario
             assertThat(retrievedDetails)
+                .as("Check Out time")
                 .extracting(AttendanceDetailsResponse.Details::getCheckOutTime)
                 .containsExactlyInAnyOrder(LocalTime.of(17, 51), LocalTime.of(17, 51));
 
             // app-stage time should have been updated for this scenario
             assertThat(retrievedDetails)
+                .as("Appearance Stage")
                 .extracting(AttendanceDetailsResponse.Details::getAppearanceStage)
                 .containsExactlyInAnyOrder(CHECKED_OUT, CHECKED_OUT);
 
@@ -840,6 +845,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         @Test
         @DisplayName("PATCH Update attendance - - check out all panelled jurors in list")
         @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql"})
+        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False Positive
         void updateAttendanceCheckOutAllPanelledJurorsInList() {
             List<String> jurors = new ArrayList<>();
             jurors.add(JUROR3);
@@ -868,21 +874,25 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             List<AttendanceDetailsResponse.Details> retrievedDetails = attendanceResponse.getDetails();
 
             assertThat(retrievedDetails)
+                .as("Attendance Response Details")
                 .extracting(AttendanceDetailsResponse.Details::getJurorStatus)
                 .containsExactlyInAnyOrder(IJurorStatus.PANEL, IJurorStatus.JUROR);
 
             // check-in time should not have been updated for this scenario
             assertThat(retrievedDetails)
+                .as("Attendance Response Details")
                 .extracting(AttendanceDetailsResponse.Details::getCheckInTime)
                 .containsExactlyInAnyOrder(LocalTime.of(9, 30), LocalTime.of(9, 30));
 
             // check-out time should have been updated
             assertThat(retrievedDetails)
+                .as("Attendance Response Details")
                 .extracting(AttendanceDetailsResponse.Details::getCheckOutTime)
                 .containsExactlyInAnyOrder(LocalTime.of(17, 51), LocalTime.of(17, 51));
 
             // app-stage should have been updated
             assertThat(retrievedDetails)
+                .as("Attendance Response Details")
                 .extracting(AttendanceDetailsResponse.Details::getAppearanceStage)
                 .containsExactlyInAnyOrder(CHECKED_OUT, CHECKED_OUT);
 
@@ -1008,6 +1018,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         @DisplayName("PATCH Update attendance - confirm attendance (no shows)")
         @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql",
             "/db/JurorExpenseControllerITest_expenseRates.sql"})
+        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False positive
         void updateAttendanceNoShow() {
             UpdateAttendanceDto request = buildUpdateAttendanceDto(new ArrayList<>());
             request.getCommonData().setCheckInTime(null);
@@ -1479,86 +1490,6 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
     }
 
     @Nested
-    @DisplayName("DELETE Delete attendance")
-    class DeleteAttendance {
-        @Test
-        @DisplayName("DELETE delete attendance - delete attendance record okay")
-        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql"})
-        void deleteAttendance() {
-            List<String> jurors = new ArrayList<>();
-            jurors.add(JUROR7);
-
-            ResponseEntity<AttendanceDetailsResponse> response =
-                restTemplate.exchange(new RequestEntity<>(buildUpdateAttendanceDtoDelete(jurors), httpHeaders, DELETE,
-                    URI.create(URL_ATTENDANCE)), AttendanceDetailsResponse.class);
-
-            assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
-
-            AttendanceDetailsResponse.Summary summary = response.getBody().getSummary();
-            assertThat(summary.getDeleted()).isEqualTo(1L);
-            assertThat(summary.getAdditionalInformation()).isBlank();
-
-            // verify attendance record no longer exists
-            List<Tuple> tuples =
-                appearanceRepository.retrieveAttendanceDetails(buildRetrieveAttendanceDetailsDto(jurors));
-            assertThat(tuples).size().isEqualTo(0);
-        }
-
-        @Test
-        @DisplayName("DELETE delete attendance - attendance record does not exist")
-        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql"})
-        void deleteAttendanceRecordDoesNotExist() {
-            List<String> jurors = new ArrayList<>();
-            jurors.add(JUROR8);
-
-            ResponseEntity<AttendanceDetailsResponse> response =
-                restTemplate.exchange(new RequestEntity<>(buildUpdateAttendanceDtoDelete(jurors), httpHeaders, DELETE,
-                    URI.create(URL_ATTENDANCE)), AttendanceDetailsResponse.class);
-
-            assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
-
-            AttendanceDetailsResponse.Summary summary = response.getBody().getSummary();
-            assertThat(summary.getDeleted()).isEqualTo(0L);
-            assertThat(summary.getAdditionalInformation())
-                .isEqualTo("No attendance record found for juror number 888888888");
-        }
-
-        @Test
-        @DisplayName("DELETE delete attendance - Exception multiple jurors being deleted")
-        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql"})
-        void deleteAttendanceRecordMultipleJurors() {
-            List<String> jurors = new ArrayList<>();
-            jurors.add(JUROR8);
-            jurors.add(JUROR2);
-
-            ResponseEntity<String> response =
-                restTemplate.exchange(new RequestEntity<>(buildUpdateAttendanceDtoDelete(jurors), httpHeaders, DELETE,
-                    URI.create(URL_ATTENDANCE)), String.class);
-
-            assertThat(response.getStatusCode()).as(HTTP_STATUS_BAD_REQUEST_MESSAGE).isEqualTo(BAD_REQUEST);
-
-            JSONObject exceptionDetails = getExceptionDetails(response);
-            assertThat(exceptionDetails.getString("error")).isEqualTo("Bad Request");
-            assertThat(exceptionDetails.getString("message"))
-                .isEqualTo("Cannot delete multiple juror attendance records");
-        }
-
-        private UpdateAttendanceDto buildUpdateAttendanceDtoDelete(List<String> jurors) {
-            UpdateAttendanceDto.CommonData commonData = new UpdateAttendanceDto.CommonData();
-            commonData.setStatus(UpdateAttendanceStatus.DELETE);
-            commonData.setAttendanceDate(now().minusDays(2));
-            commonData.setLocationCode("415");
-            commonData.setSingleJuror(Boolean.TRUE);
-
-            UpdateAttendanceDto request = new UpdateAttendanceDto();
-            request.setCommonData(commonData);
-            request.setJuror(jurors);
-
-            return request;
-        }
-    }
-
-    @Nested
     @DisplayName("GET jurors to dismiss list")
     @Sql({"/db/mod/truncate.sql", "/db/JurorManagementController_poolsAtCourtLocation.sql"})
     class JurorsToDismissList {
@@ -1852,8 +1783,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                 restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
                     URI.create("/api/v1/moj/juror-management/non-attendance")), String.class);
 
-            assertNotFound(response, "/api/v1/moj/juror-management/non-attendance",
-                "Court location 999 not found");
+            assertMojForbiddenResponse(response, "/api/v1/moj/juror-management/non-attendance",
+                "User does not have access");
         }
 
         @Test
@@ -1991,7 +1922,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(appearanceOpt).isNotEmpty();
             appearance = appearanceOpt.get();
             assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));
-            assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 00));
+            assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 0));
             assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
             assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J10123456");
             assertThat(appearance.getSatOnJury()).isTrue();
@@ -2000,11 +1931,11 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             // verify juror history records have been created
             assertThat(jurorHistoryRepository.findByJurorNumber("222222222")
                 .stream().anyMatch(jh -> jh.getHistoryCode().equals(HistoryCodeMod.JURY_ATTENDANCE)
-                    && jh.getOtherInformation().equalsIgnoreCase("J10123456"))).isTrue();
+                    && "J10123456".equalsIgnoreCase(jh.getOtherInformation()))).isTrue();
 
             assertThat(jurorHistoryRepository.findByJurorNumber("333333333")
                 .stream().anyMatch(jh -> jh.getHistoryCode().equals(HistoryCodeMod.JURY_ATTENDANCE)
-                    && jh.getOtherInformation().equalsIgnoreCase("J10123456"))).isTrue();
+                    && "J10123456".equalsIgnoreCase(jh.getOtherInformation()))).isTrue();
         }
 
         @Test
@@ -2050,7 +1981,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             .build();
     }
 
-    private static void validateAppearanceRecord(
+    private static void assertValidateAppearanceRecord(
         ResponseEntity<JurorAppearanceResponseDto.JurorAppearanceResponseData> response) {
 
         assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
@@ -2067,7 +1998,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         assertThat(jurorAppearanceResponseData.getPoliceCheck()).isEqualTo(PoliceCheck.NOT_CHECKED);
     }
 
-    private void validateAppearanceRecordMultiple(ResponseEntity<JurorAppearanceResponseDto> response) {
+    private void assertValidateAppearanceRecordMultiple(ResponseEntity<JurorAppearanceResponseDto> response) {
         assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
 
         JurorAppearanceResponseDto jurorAppearanceResponseDto = response.getBody();

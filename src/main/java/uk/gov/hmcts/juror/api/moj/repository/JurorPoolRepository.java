@@ -1,12 +1,15 @@
 package uk.gov.hmcts.juror.api.moj.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPoolId;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -30,8 +33,6 @@ public interface JurorPoolRepository extends IJurorPoolRepository, JpaRepository
     Optional<JurorPool> findByOwnerAndJurorJurorNumberAndPoolPoolNumber(String owner, String jurorNumber,
                                                                         String poolNumber);
 
-    List<JurorPool> findByPoolPoolNumberAndOwnerAndIsActive(String poolNumber, String owner, boolean isActive);
-
     List<JurorPool> findByPoolPoolNumberAndWasDeferredAndIsActive(String poolNumber, boolean wasDeferred,
                                                                   boolean isActive);
 
@@ -50,4 +51,20 @@ public interface JurorPoolRepository extends IJurorPoolRepository, JpaRepository
                                                                          String poolNumber, boolean isActive);
 
     JurorPool findByJurorJurorNumber(String jurorNumber);
+
+    JurorPool findByJurorJurorNumberAndIsActiveAndOwner(String jurorNumber, boolean isActive, String owner);
+
+    @Query(value = "SELECT * from juror_mod.jsm_report_by_pool(:poolNumber)", nativeQuery = true)
+    String getJurySummoningMonitorReportByPool(@Param("poolNumber") String poolNumber) throws SQLException;
+
+    @Query(value = "SELECT * from juror_mod.jsm_report_by_court(:locCodes, :fromDate, :toDate)", nativeQuery = true)
+    String getJurySummoningMonitorReportByCourt(@Param("locCodes") String locCodes,
+                                                @Param("fromDate") LocalDate fromDate,
+                                                @Param("toDate") LocalDate toDate) throws SQLException;
+
+    @Query(value = "SELECT * from juror_mod.yield_performance_report(:locCodes, :fromDate, :toDate)",
+        nativeQuery = true)
+    List<String> getYieldPerformanceReportStats(@Param("locCodes") String locCodes,
+                                                @Param("fromDate") LocalDate fromDate,
+                                                @Param("toDate") LocalDate toDate) throws SQLException;
 }

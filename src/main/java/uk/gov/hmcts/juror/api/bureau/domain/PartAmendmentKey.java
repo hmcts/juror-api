@@ -10,6 +10,7 @@ import java.util.Date;
  * Composite key for {@link PartAmendment}.
  */
 @EqualsAndHashCode
+@Deprecated(forRemoval = true)
 public class PartAmendmentKey implements Serializable {
     private String jurorNumber;
     private String owner;

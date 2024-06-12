@@ -18,6 +18,7 @@ import java.io.Serializable;
 @Data
 @Builder
 @EqualsAndHashCode
+@Deprecated(forRemoval = true)
 public class SurveyResponseKey implements Serializable {
     private String id;
     private String surveyId;

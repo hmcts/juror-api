@@ -15,7 +15,6 @@ import uk.gov.hmcts.juror.api.moj.domain.letter.court.QPostponedLetterList;
 import java.util.List;
 
 @Repository
-@SuppressWarnings("PMD.LawOfDemeter")
 public class PostponementLetterListRepositoryImpl implements PostponementLetterListRepository {
 
     @PersistenceContext

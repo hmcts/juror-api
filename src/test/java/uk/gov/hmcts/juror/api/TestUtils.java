@@ -25,8 +25,8 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 public final class TestUtils {
-
     public static final ObjectMapper objectMapper;
+    private static MockedStatic<SecurityUtil> SECURITY_UTIL_MOCK;
 
     static {
         objectMapper = new ObjectMapper().findAndRegisterModules();
@@ -72,13 +72,13 @@ public final class TestUtils {
     public static BureauJwtPayload createJwt(String owner, String username, String userLevel, List<String> courts) {
         return BureauJwtPayload.builder()
             .owner(owner)
+            .locCode(owner)
             .login(username)
             .staff(staffBuilder(username, Integer.valueOf(userLevel), courts))
             .userLevel(userLevel)
             .build();
     }
 
-    @SuppressWarnings("PMD.LawOfDemeter")
     public static BureauJwtPayload.Staff staffBuilder(String staffName, Integer rank, List<String> courts) {
         return BureauJwtPayload.Staff.builder()
             .name(staffName)
@@ -145,18 +145,18 @@ public final class TestUtils {
         BureauJwtAuthentication auth = mock(BureauJwtAuthentication.class);
         when(auth.getPrincipal())
             .thenReturn(TestUtils.createJwt(owner, username, userLevel, courts));
-        SecurityContext securityContext = mock(SecurityContext.class);
 
+        SecurityContext securityContext = mock(SecurityContext.class);
         when(securityContext.getAuthentication()).thenReturn(auth);
+
         SecurityContextHolder.setContext(securityContext);
     }
-
-    private static MockedStatic<SecurityUtil> SECURITY_UTIL_MOCK;
 
     @AfterAll
     public static void afterAll() {
         if (SECURITY_UTIL_MOCK != null) {
             SECURITY_UTIL_MOCK.close();
+            SECURITY_UTIL_MOCK = null;
         }
     }
 

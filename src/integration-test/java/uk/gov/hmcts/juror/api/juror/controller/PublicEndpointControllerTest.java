@@ -40,6 +40,7 @@ import static org.mockito.Mockito.verify;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SuppressWarnings("PMD.ExcessiveImports")
 public class PublicEndpointControllerTest extends AbstractIntegrationTest {
 
     @MockBean

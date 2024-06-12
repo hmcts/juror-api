@@ -31,7 +31,6 @@ import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.hasValueChanged;
 @Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
-@SuppressWarnings("PMD.LawOfDemeter")
 public class JurorResponseServiceImpl implements JurorResponseService {
 
     @NonNull

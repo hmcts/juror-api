@@ -23,6 +23,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Deprecated(forRemoval = true)
 public class DefDenied implements Serializable {
     @Id
     @Column(name = "PART_NO")

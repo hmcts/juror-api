@@ -31,16 +31,18 @@ import static org.assertj.core.api.Assertions.assertThat;
     "logging.level.org.hibernate.type=INFO",
     "spring.jpa.show-sql=false"
 })
+@SuppressWarnings("PMD.TooManyMethods")
 public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest {
+
+
+    @Autowired
+    private JurorResponseSearchService searchService;
 
     @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
     }
-
-    @Autowired
-    private JurorResponseSearchService searchService;
 
     @Test
     @Sql("/db/truncate.sql")
@@ -102,7 +104,7 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
             searchService.searchForResponses(JurorResponseSearchRequest.builder().lastName("a").build(), false);
         assertThat(dto).isNotNull();
         assertThat(dto.getResponses()).isNotNull().hasSize(0);
-        assertThat(dto.getMeta().getMax()).isEqualTo(100);
+        assertThat(dto.getMeta().getMax()).isEqualTo(1000);
         assertThat(dto.getMeta().getTotal()).isEqualTo(0);
 
         assertResponsesSortedCorrectly(dto);
@@ -181,7 +183,7 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
         final List<String> works = Arrays.asList("G1 1RD", "G11RD");
         //"G1 1R", "G11R", "G1 1", "G11", "G1", "1 1RD", "11RD", "1RD"
         final List<String> doesNotWork = Arrays.asList("G1 1R", "G11R", "G1 1", "G11", "G1", "1 1RD", "11RD", "1RD");
-        postcodeCheck(works, doesNotWork);
+        assertPostcodeCheck(works, doesNotWork);
     }
 
     /**
@@ -196,7 +198,7 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
         final List<String> works = Arrays.asList("G46 6JF", "G466JF");
         final List<String> doesNotWork = Arrays.asList("G4", "G46", "G466", "G46 6", "G466J", "G46 6J", "466JF",
             "46 6JF", "6 6JF", "66JF", "6JF");
-        postcodeCheck(works, doesNotWork);
+        assertPostcodeCheck(works, doesNotWork);
     }
 
     /**
@@ -211,10 +213,10 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
         final List<String> works = Arrays.asList("LL12 7BQ", "LL127BQ");
         final List<String> doesNotWork = Arrays.asList("LL12 7B", "LL127B", "LL12 7", "LL127", "LL12", "L12 7BQ",
             "L127BQ", "12 7BQ", "127BQ", "2 7BQ", "27BQ", "7BQ");
-        postcodeCheck(works, doesNotWork);
+        assertPostcodeCheck(works, doesNotWork);
     }
 
-    private void postcodeCheck(Iterable<String> working, Iterable<String> notWorking) {
+    private void assertPostcodeCheck(Iterable<String> working, Iterable<String> notWorking) {
         for (String search : working) {
             assertThat(searchService.searchForResponses(JurorResponseSearchRequest.builder().postCode(search).build(),
                 false).getResponses()).describedAs("Search using " + search + " should return 50 matches")
@@ -271,6 +273,7 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/JurorResponseSearchServiceImpl_searchForResponses_bureauOfficer.sql")
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False positive
     public void searchForResponses_lastNameAndPostcode() {
         final JurorResponseSearchResults dto =
             searchService.searchForResponses(JurorResponseSearchRequest.builder().lastName("Larson").postCode(
@@ -351,7 +354,7 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
         assertThat(dto).isNotNull();
         assertThat(dto.getResponses()).isNotNull().hasSize(179);
         assertThat(dto.getResponses()).allMatch(
-            summary -> Boolean.TRUE.equals(summary.getUrgent()) || Boolean.TRUE.equals(summary.getSuperUrgent()));
+            summary -> Boolean.TRUE.equals(summary.getUrgent()));
     }
 
     @Test
@@ -381,7 +384,7 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
         assertThat(dto.getResponses()).isNotNull().hasSize(60);
         assertThat(dto.getResponses()).extracting("assignedStaffMember").extracting("login").containsOnly("sgomez");
         assertThat(dto.getResponses()).allMatch(
-            summary -> Boolean.TRUE.equals(summary.getUrgent()) || Boolean.TRUE.equals(summary.getSuperUrgent()));
+            summary -> Boolean.TRUE.equals(summary.getUrgent()));
 
     }
 

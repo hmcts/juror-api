@@ -1,41 +1,35 @@
 package uk.gov.hmcts.juror.api.bureau.service;
 
-import io.jsonwebtoken.lang.Assert;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.bureau.exception.JurorCommsNotificationServiceException;
 import uk.gov.hmcts.juror.api.config.WelshDayMonthTranslationConfig;
-import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
+import uk.gov.hmcts.juror.api.moj.domain.ICourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.NotifyTemplateFieldMod;
-import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.NotifyTemplateMapperMod;
 import uk.gov.hmcts.juror.api.moj.repository.NotifyTemplateFieldRepositoryMod;
-import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorCommonResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.PoolRequestService;
-import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
+import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
 
-import java.beans.IntrospectionException;
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.text.DateFormat;
 import java.text.DateFormatSymbols;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -43,58 +37,23 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLoadService {
 
-    private static final String BULK_PRINT_DATA_DETAIL_REC = "bulk_print_data.detail_rec";
     private static final String SERVICE_START_DATE = "SERVICESTARTDATE";
     private static final String SERVICE_START_TIME = "SERVICESTARTTIME";
     private static final String DATE_FORMAT = "EEEE dd MMMM, yyyy";
-    private static final String TIME_FORMAT = "HH:mm";
 
-    Locale langLocale = new Locale("en", "GB");
-
-    DateFormat formatter = new SimpleDateFormat(DATE_FORMAT);
-
-    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(DATE_FORMAT);
-
-    LocalDateTime dateNow = LocalDateTime.now();
-
-    DateFormat timeformatter = new SimpleDateFormat(TIME_FORMAT);
-    DateFormat timeformatterunique = new SimpleDateFormat(TIME_FORMAT);
-    DateTimeFormatter formatterWelsh = DateTimeFormatter.ofPattern(DATE_FORMAT, langLocale);
-
+    private static final DateTimeFormatter ENGLISH_DATE_TIME_FORMATTER =
+        DateTimeFormatter.ofPattern(DATE_FORMAT);
+    private static final DateTimeFormatter WELSH_DATE_TIME_FORMATTER =
+        DateTimeFormatter.ofPattern(DATE_FORMAT, new Locale("en", "GB"));
 
     private final NotifyTemplateFieldRepositoryMod notifyTemplateFieldRepositoryMod;
-
-
-    private final JurorDigitalResponseRepositoryMod jurorDigitalResponseRepositoryMod;
+    private final JurorCommonResponseRepositoryMod commonResponseRepositoryMod;
     private final WelshDayMonthTranslationConfig welshDayMonthTranslationConfig;
-
     private final PoolRequestService poolRequestService;
-
     private final WelshCourtLocationRepository welshCourtLocationRepository;
-
-
-    @Autowired
-    public JurorCommsNotifyPayLoadServiceImpl(NotifyTemplateFieldRepositoryMod notifyTemplateFieldRepositoryMod,
-
-                                              JurorDigitalResponseRepositoryMod jurorDigitalResponseRepositoryMod,
-                                              WelshDayMonthTranslationConfig welshDayMonthTranslationConfig,
-                                              PoolRequestService poolRequestService,
-                                              WelshCourtLocationRepository welshCourtLocationRepository) {
-        Assert.notNull(notifyTemplateFieldRepositoryMod, "NotifyTemplateFieldRepositoryMod must not be null");
-
-        Assert.notNull(jurorDigitalResponseRepositoryMod, "JurorDigitalResponseRepositoryMod must not be null");
-        Assert.notNull(welshDayMonthTranslationConfig, "welshDayMonthTranslationConfig must not be null");
-        Assert.notNull(poolRequestService, "PoolRequestService must not be null");
-        Assert.notNull(welshCourtLocationRepository, "WelshCourtLocationRepository must not be null");
-        this.notifyTemplateFieldRepositoryMod = notifyTemplateFieldRepositoryMod;
-
-        this.jurorDigitalResponseRepositoryMod = jurorDigitalResponseRepositoryMod;
-        this.welshDayMonthTranslationConfig = welshDayMonthTranslationConfig;
-        this.poolRequestService = poolRequestService;
-        this.welshCourtLocationRepository = welshCourtLocationRepository;
-    }
 
     /**
      * Establishes the mapping for the required fields required for the given templateId
@@ -105,70 +64,60 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
      * @return Map pairing for each template placeholder:value.
      */
     @Override
-
-
     public Map<String, String> generatePayLoadData(String templateId, String detailData, JurorPool juror) {
-        PoolRequest poolRequest = juror.getPool();
-        final CourtLocation court = poolRequest.getCourtLocation();
 
         SimpleDateFormat dateFormat = new SimpleDateFormat();
         log.info("Letter Comms getting PAYLOAD STUFF : Started - {}", dateFormat.format(new Date()));
 
         List<NotifyTemplateFieldMod> fields = getPayLoadFieldsForTemplate(templateId);
-
+        NotifyTemplateMapperMod.Context context = NotifyTemplateMapperMod.Context.from(juror);
+        context.setDetailData(detailData);
         log.trace("payloadService. generating payloadMap. fields {}", fields.size());
         final Map<String, String> map = new HashMap<>();
-        Object fieldValue;
+        Object fieldValue = null;
         try {
             for (NotifyTemplateFieldMod field : fields) {
-                if (field.getDatabaseField().equals(BULK_PRINT_DATA_DETAIL_REC)) {
-                    log.trace("is bulk_print_data.detail_rec field: {} ", field.getTemplateField());
-                    map.put(
-                        field.getTemplateField(),
-                        detailData.substring(field.getPositionFrom() - 1, field.getPositionTo()).trim()
-                    );
-                } else if (field.getTemplateField().equals(SERVICE_START_DATE)) {
-                    log.trace("is service start date : {} ", field.getJdClassProperty());
-                    fieldValue = invokeGetter(juror, field.getJdClassProperty());
-                    String formattedDate = dateTimeFormatter.format((LocalDate) fieldValue);
-                    log.trace("class of fieldValue : {}", fieldValue.getClass().getCanonicalName());
+                NotifyTemplateMapperMod mapperObject = field.getMapperObject();
+                log.trace("processing field: {} using mapper {}", field.getTemplateField(), mapperObject);
+                context.setPositionFrom(field.getPositionFrom());
+                context.setPositionTo(field.getPositionTo());
+                context.setDetailData(detailData);
+                if (field.getTemplateField().equals(SERVICE_START_DATE)) {
+                    fieldValue = invokeGetter(context, mapperObject);
+                    String formattedDate = ENGLISH_DATE_TIME_FORMATTER.format((LocalDate) fieldValue);
                     map.put(field.getTemplateField(), formattedDate);
                 } else if (field.getTemplateField().equals(SERVICE_START_TIME)) {
-                    log.trace("is service start time : {} ", field.getJdClassProperty());
-                    final String attendTime = getAttendTime(juror);
+                    final String attendTime = getAttendTime(context.getJurorPool());
                     map.put(field.getTemplateField(), attendTime);
-                } else if (field.getDatabaseField().equals("POOL.LOC_CODE")) {
-                    log.info("is other fields : {} ", field.getJdClassProperty());
-                    fieldValue = invokeGetter(juror, field.getJdClassProperty());
-                    map.put(field.getTemplateField(), fieldValue.toString().substring(22, 25));
-                } else if (field.getJdClassName().equals("court")) {
-                    fieldValue = invokeGetter(court, field.getJdClassProperty());
-                    String value = fieldValue == null ? "" : fieldValue.toString();
-                    value = value.replace(",", "\r\n");
+                } else if (mapperObject.getType() == NotifyTemplateMapperMod.Type.COURT) {
+                    fieldValue = invokeGetter(context, mapperObject, "");
+                    String value = String.valueOf(fieldValue);
+                    if (!value.isEmpty() && mapperObject == NotifyTemplateMapperMod.COURT_LOC_ADDRESS) {
+                        value = value.replace(",", "\r\n");
+                    }
                     map.put(field.getTemplateField(), value);
+                    fieldValue = value;
                 } else {
-                    log.trace("is other fields : {} ", field.getJdClassProperty());
-                    fieldValue = invokeGetterJurorPool(juror, field);
+                    fieldValue = invokeGetter(context, mapperObject);
                     map.put(field.getTemplateField(), fieldValue.toString());
-                    log.info("fieldValue: {} ", fieldValue);
                 }
+                log.trace("fieldValue: {} ", fieldValue);
             }
+
 
         } catch (StringIndexOutOfBoundsException stre) {
             log.error(
                 "Failed to establish data needed for notify template fields to send comms (missing template fields "
-                    + "data) : "
-                    + stre);
+                    + "data)", stre);
             throw new StringIndexOutOfBoundsException();
         } catch (Exception e) {
             log.error(
                 "Failed to establish data needed for notify template fields to send comms (missing template fields "
-                    + "data)  : " + e);
+                    + "data)", e);
             throw new JurorCommsNotificationServiceException(e.getMessage(), e);
         }
         return map;
     }
-
 
     /**
      * Establishes the mapping for the required fields required for the given templateId.
@@ -180,32 +129,33 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
     public Map<String, String> generatePayLoadData(String templateId, JurorPool jurorPool) {
 
         List<NotifyTemplateFieldMod> fields = getPayLoadFields(templateId);
-        final DigitalResponse digitalResponse =
-            jurorDigitalResponseRepositoryMod.findByJurorNumber(jurorPool.getJurorNumber());
-
-        final CourtLocation court = jurorPool.getPool().getCourtLocation();
-        final WelshCourtLocation welshCourtLocation = getWelshCourtLocation(court.getLocCode());
-        Boolean isWelshCourt = isWelshCourtAndComms(jurorPool.getJuror().getWelsh(), welshCourtLocation);
         log.trace("payloadService-reflection generating payloadMap. fields {}", fields.size());
+
+        NotifyTemplateMapperMod.Context context = NotifyTemplateMapperMod.Context.from(jurorPool);
+        context.setAbstractResponse(commonResponseRepositoryMod.findByJurorNumber(jurorPool.getJurorNumber()));
+        context.setActualCourtLocation(context.getCourtLocation());
+        final WelshCourtLocation welshCourtLocation = getWelshCourtLocation(context.getCourtLocation().getLocCode());
+        context.setWelshCourtLocation(welshCourtLocation);
+        Boolean isWelshCourt = isWelshCourtAndComms(jurorPool.getJuror().getWelsh(), welshCourtLocation);
+
 
         final Map<String, String> map = new HashMap<>();
         try {
-            Object fieldValue;
+            Object fieldValue = null;
             String value;
             for (NotifyTemplateFieldMod field : fields) {
-                if (field.getJdClassName().equalsIgnoreCase("pool")
-                    && field.getJdClassProperty().equals("attendTime")) {
-                    log.trace("is pool {} ", field.getJdClassProperty());
-                    final String attendTime = getAttendTime(jurorPool);
+                NotifyTemplateMapperMod mapperObject = field.getMapperObject();
+                log.trace("processing field: {}", mapperObject);
+                if (mapperObject == NotifyTemplateMapperMod.POOL_ATTEND_TIME) {
+                    final String attendTime = getAttendTime(context.getJurorPool());
                     map.put(field.getTemplateField(), attendTime);
-                } else if (field.getJdClassName().equals("juror")) {
-                    //meta java reflection
-                    log.trace("is juror {} ", field.getJdClassProperty());
-                    fieldValue = invokeGetterJurorPool(jurorPool, field);
+                } else if (mapperObject.getType() == NotifyTemplateMapperMod.Type.JUROR) {
+                    fieldValue = invokeGetter(context, mapperObject);
+
                     if (field.getTemplateField().equalsIgnoreCase(SERVICE_START_DATE)) {
-                        String formattedDate = dateTimeFormatter.format((LocalDate) fieldValue);
-                        String formattedDateWelsh = formatterWelsh.format((LocalDate) fieldValue);
-                        String str = null;
+                        String formattedDate = ENGLISH_DATE_TIME_FORMATTER.format((LocalDate) fieldValue);
+                        String formattedDateWelsh = WELSH_DATE_TIME_FORMATTER.format((LocalDate) fieldValue);
+                        String str;
 
                         if (isWelshCourt) {
                             Map<String, String> myWelshTranslationMap;
@@ -222,33 +172,25 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
                         }
                         map.put(field.getTemplateField(), formattedDate);
 
-                    } else if (field.getDatabaseField().equalsIgnoreCase("pool.loc_code")) {
-                        log.info("is other fields : {} ", field.getJdClassProperty());
-                        fieldValue = invokeGetterJurorPool(jurorPool, field);
-                        map.put(field.getTemplateField(), fieldValue.toString().substring(22, 25));
                     } else {
-                        map.put(field.getTemplateField(), fieldValue.toString());
+                        map.put(field.getTemplateField(), String.valueOf(fieldValue));
                     }
 
-                } else if (field.getJdClassName().equals("court")) {
-                    fieldValue = getFieldValueForCourt(isWelshCourt, field, court, welshCourtLocation);
+                } else if (mapperObject.getType() == NotifyTemplateMapperMod.Type.COURT) {
+                    fieldValue = getFieldValueForCourt(isWelshCourt, mapperObject, context);
                     value = fieldValue == null ? "" : fieldValue.toString();
-                    if (!value.isEmpty() && field.getJdClassProperty().equals("locationAddress")) {
+                    if (!value.isEmpty() && mapperObject == NotifyTemplateMapperMod.COURT_LOC_ADDRESS) {
                         value = value.replace(",", "\r\n");
                     }
-                    log.trace("court. fieldvalue is : {} {} ", field.getJdClassProperty(), value);
-                    log.info("court. fieldvalue is : {} {} ", field.getJdClassProperty(), value);
                     map.put(field.getTemplateField(), value);
-                } else if (field.getJdClassName().equals("jurorResponse")) {
-                    fieldValue = invokeGetter(digitalResponse, field.getJdClassProperty());
-                    value = fieldValue == null ? "" : fieldValue.toString();
-                    log.trace("jurorResponse. fieldvalue is : {} {} ", field.getJdClassProperty(), value);
-                    map.put(field.getTemplateField(), value);
+                } else if (mapperObject.getType() == NotifyTemplateMapperMod.Type.RESPONSE) {
+                    map.put(field.getTemplateField(), invokeGetter(context, mapperObject, "").toString());
                 }
+                log.trace("fieldValue: {} ", fieldValue);
             }
 
         } catch (Exception e) {
-            log.error("Failed to generate the template field map." + e);
+            log.error("Failed to generate the template field map.", e);
             throw new JurorCommsNotificationServiceException(e.getMessage(), e);
         }
 
@@ -257,12 +199,9 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
 
     @Override
     public Boolean isWelshCourtAndComms(Boolean welsh, WelshCourtLocation welshCourtLocation) {
-        log.info("inside isWelshComms");
         if (welshCourtLocation == null || welsh == null) {
-            log.trace("not welsh court");
             return false;
         } else {
-            log.trace("welsh court");
             return welsh;
         }
     }
@@ -273,16 +212,19 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
     }
 
 
-    private Object getFieldValueForCourt(Boolean isWelshCourt, NotifyTemplateFieldMod field, CourtLocation court,
-                                         WelshCourtLocation welshCourtLocation) {
-        log.trace("getFieldValueForCourt - field : {} iswelsh {} ", field.getJdClassProperty(), isWelshCourt);
-        if (field.getJdClassProperty().equals("juryOfficerPhone") || field.getJdClassProperty().equals("postcode")) {
-            return invokeGetter(court, field.getJdClassProperty());
-        } else if (isWelshCourt) {
-            return invokeGetter(welshCourtLocation, field.getJdClassProperty());
+    private Object getFieldValueForCourt(boolean isWelshCourt, NotifyTemplateMapperMod mapperMod,
+                                         NotifyTemplateMapperMod.Context context) {
+        final ICourtLocation actualCourtLocation = context.getActualCourtLocation();
+        if (isWelshCourt
+            && !Set.of(NotifyTemplateMapperMod.COURT_JURY_OFFICER_PHONE,
+            NotifyTemplateMapperMod.COURT_LOC_POSTCODE).contains(mapperMod)) {
+            context.setActualCourtLocation(context.getWelshCourtLocation());
         } else {
-            return invokeGetter(court, field.getJdClassProperty());
+            context.setActualCourtLocation(context.getCourtLocation());
         }
+        Object returnValue = invokeGetter(context, mapperMod);
+        context.setActualCourtLocation(actualCourtLocation);
+        return returnValue;
     }
 
     /**
@@ -292,7 +234,6 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
      * @return List of required fields for template.
      */
     private List<NotifyTemplateFieldMod> getPayLoadFieldsForTemplate(String templateId) {
-        log.debug("Inside PayLoadService.getPayLoadFieldsForTemplate ........");
         return queryNotifyTemplateField(templateId);
     }
 
@@ -302,15 +243,11 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
      * @return List of required fields for template.
      */
     private List<NotifyTemplateFieldMod> getPayLoadFields(String templateId) {
-
         List<NotifyTemplateFieldMod> payload = queryNotifyTemplateField(templateId);
-
-        log.trace("after findByTemplateId() call - fields found : {} ", payload.size());
         return payload
             .stream()
-            .filter(f -> f.getJdClassName() != null && f.getJdClassName().length() > 0)
+            .filter(f -> f.getMapperObject() != null)
             .collect(Collectors.toList());
-
     }
 
     private List<NotifyTemplateFieldMod> queryNotifyTemplateField(String templateId) {
@@ -326,7 +263,7 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
     public List<String> setUpEnglishDaysWeek() {
         List<String> daysWeek = new ArrayList<>();
         for (String dayOfWeek : new DateFormatSymbols().getWeekdays()) {
-            if (dayOfWeek != null && !"".equals(dayOfWeek)) {
+            if (dayOfWeek != null && !dayOfWeek.isEmpty()) {
                 daysWeek.add(dayOfWeek);
             }
         }
@@ -336,7 +273,7 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
     public List<String> setUpEnglishMonths() {
         List<String> monthNames = new ArrayList<>();
         for (String nameOfMonth : new DateFormatSymbols().getMonths()) {
-            if (nameOfMonth != null && !"".equals(nameOfMonth)) {
+            if (nameOfMonth != null && !nameOfMonth.isEmpty()) {
                 monthNames.add(nameOfMonth);
             }
         }
@@ -344,60 +281,18 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
     }
 
     public List<String> setUpEnglishDaysMonth() {
-
         ArrayList<String> daysMonths = new ArrayList<>();
-
-        for (int i = 0;
-             i < setUpEnglishDaysWeek().size();
-             i++) {
-            daysMonths.add(setUpEnglishDaysWeek().get(i));
-        }
-        for (int ip = 0;
-             ip < setUpEnglishMonths().size();
-             ip++) {
-            daysMonths.add(setUpEnglishMonths().get(ip));
-        }
+        daysMonths.addAll(setUpEnglishDaysWeek());
+        daysMonths.addAll(setUpEnglishMonths());
         return daysMonths;
     }
 
     public Map<String, String> setUpTranslationMap() {
-
         Map<String, String> myWelshTranslationMap = new HashMap<>();
-
-        for (int i = 0;
-             i < setUpWelshMonthDays().size();
-             i++) {
+        for (int i = 0; i < setUpWelshMonthDays().size(); i++) {
             myWelshTranslationMap.put(setUpEnglishDaysMonth().get(i), setUpWelshMonthDays().get(i));
         }
         return myWelshTranslationMap;
-
-    }
-
-    public Object invokeGetterJurorPool(JurorPool obj, NotifyTemplateFieldMod field) {
-        Object invokeObject = obj;
-        if (field.getDatabaseField().startsWith("juror.")) {
-            invokeObject = obj.getJuror();
-        }
-        if (field.getDatabaseField().startsWith("pool.")) {
-            invokeObject = obj.getPool();
-        }
-        return invokeGetter(invokeObject, field.getJdClassProperty());
-    }
-
-    public Object invokeGetter(Object obj, String variableName) {
-        try {
-            PropertyDescriptor pd = new PropertyDescriptor(variableName, obj.getClass());
-            Method getter = pd.getReadMethod();
-            Object f = getter.invoke(obj);
-            if (f != null) {
-                log.info(f.toString());
-            }
-            return f;
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
-                 | IntrospectionException e) {
-            log.error(" reflection invokeGetter failed {} ", Arrays.toString(e.getStackTrace()));
-        }
-        return null;
     }
 
     /**
@@ -408,25 +303,29 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
      * @param jurorDetails juror details to transform, not null
      * @return attendance time, nullable
      */
-    private String getAttendTime(JurorPool jurorDetails) throws ParseException {
-
-        String poolAttendTime = poolRequestService.getPoolAttendanceTime(jurorDetails.getPoolNumber());
-
+    private String getAttendTime(JurorPool jurorDetails) {
+        LocalDateTime poolAttendTime = poolRequestService.getPoolAttendanceTime(jurorDetails.getPoolNumber());
         if (poolAttendTime != null) {
             if (log.isTraceEnabled()) {
                 log.trace("Attend time is set in unique pool, using pool attend time of {}", poolAttendTime);
             }
+            return DateUtils.TIME_FORMAT.format(poolAttendTime);
 
-            Date attendTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S").parse(poolAttendTime);
-            poolAttendTime = timeformatterunique.format(attendTime);
-
-            return poolAttendTime;
         } else {
-            final String courtAttendTime = DataUtils.asStringHHmm(jurorDetails.getCourt().getCourtAttendTime());
+            final String courtAttendTime = DateUtils.TIME_FORMAT.format(jurorDetails.getCourt().getCourtAttendTime());
             if (log.isTraceEnabled()) {
                 log.trace("Attend time is not set in pool, using court attend time of {}", courtAttendTime);
             }
             return courtAttendTime;
         }
+    }
+
+    private Object invokeGetter(NotifyTemplateMapperMod.Context context, NotifyTemplateMapperMod mapperObject,
+                                Object defaultValue) {
+        return Optional.ofNullable(mapperObject.getMapper().apply(context)).orElse(defaultValue);
+    }
+
+    private Object invokeGetter(NotifyTemplateMapperMod.Context context, NotifyTemplateMapperMod mapperObject) {
+        return invokeGetter(context, mapperObject, null);
     }
 }

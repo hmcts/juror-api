@@ -3,11 +3,13 @@ package uk.gov.hmcts.juror.api.moj.domain.jurorresponse;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import jakarta.validation.constraints.NotNull;
@@ -21,6 +23,7 @@ import org.hibernate.validator.constraints.Length;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Address;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.validation.LocalDateOfBirth;
 import uk.gov.hmcts.juror.api.validation.ValidationConstants;
@@ -39,8 +42,8 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REG
 @Getter
 @SuperBuilder
 @Setter
-@ToString(exclude = {"reasonableAdjustments", "cjsEmployments"})// lazy init fields
-@EqualsAndHashCode(callSuper = true, exclude = {"cjsEmployments", "reasonableAdjustments", "staff"})
+@ToString(exclude = {"reasonableAdjustments", "cjsEmployments", "juror"})// lazy init fields
+@EqualsAndHashCode(callSuper = true, exclude = {"cjsEmployments", "reasonableAdjustments", "staff", "juror"})
 public class AbstractJurorResponse extends Address implements Serializable {
 
     @Id
@@ -49,6 +52,12 @@ public class AbstractJurorResponse extends Address implements Serializable {
     @Length(max = 9)
     @NotNull
     private String jurorNumber;
+
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "juror_number", referencedColumnName = "juror_number", insertable = false, updatable = false,
+        nullable = false)
+    private Juror juror;
 
     @Column(name = "date_received")
     @NotNull
@@ -163,12 +172,6 @@ public class AbstractJurorResponse extends Address implements Serializable {
      */
     @Column(name = "urgent")
     private boolean urgent;
-
-    /**
-     * Flag this response as super urgent.
-     */
-    @Column(name = "super_urgent")
-    private boolean superUrgent;
 
     /**
      * Flag this response as welsh language.

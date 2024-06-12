@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.repository.jurorresponse;
 
+import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.juror.api.moj.controller.request.summonsmanagement.JurorResponseRetrieveRequestDto;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCommon;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QDigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QJurorResponseCommon;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QPaperResponse;
@@ -24,7 +26,6 @@ import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.isNotEmptyOrNull;
  * */
 
 @Repository
-@SuppressWarnings("PMD.LawOfDemeter")
 public class JurorResponseCommonRepositoryModImpl implements JurorResponseCommonRepositoryMod {
 
     private static final QJurorResponseCommon JUROR_RESPONSE_COMMON = QJurorResponseCommon.jurorResponseCommon;
@@ -37,8 +38,8 @@ public class JurorResponseCommonRepositoryModImpl implements JurorResponseCommon
     EntityManager entityManager;
 
     @Override
-    public List<Tuple> retrieveJurorResponseDetails(JurorResponseRetrieveRequestDto request,
-                                                    boolean isTeamLeader, int resultsLimit) {
+    public QueryResults<Tuple> retrieveJurorResponseDetails(JurorResponseRetrieveRequestDto request,
+                                                            boolean isTeamLeader, int resultsLimit) {
         // build sql query
         JPAQuery<Tuple> query = sqlRetrieveJurorResponseDetails(request, isTeamLeader);
 
@@ -60,11 +61,19 @@ public class JurorResponseCommonRepositoryModImpl implements JurorResponseCommon
         return response;
     }
 
-    private List<Tuple> fetchQueryResults(JPAQuery<Tuple> query, int resultsLimit) {
+    @Override
+    public List<JurorResponseCommon> findByJurorNumberIn(List<String> jurorNumbers) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        return queryFactory.select(JUROR_RESPONSE_COMMON).from(JUROR_RESPONSE_COMMON)
+            .where(JUROR_RESPONSE_COMMON.jurorNumber.in(jurorNumbers))
+            .fetch();
+    }
+
+    private QueryResults<Tuple> fetchQueryResults(JPAQuery<Tuple> query, int resultsLimit) {
         return query
             .orderBy(JUROR_RESPONSE_COMMON.dateReceived.asc())
             .limit(resultsLimit)
-            .fetch();
+            .fetchResults();
     }
 
     private JPAQuery<Tuple> sqlRetrieveJurorResponseDetails(JurorResponseRetrieveRequestDto request,
@@ -117,7 +126,6 @@ public class JurorResponseCommonRepositoryModImpl implements JurorResponseCommon
         if (request.getIsUrgent() != null && TRUE.equals(request.getIsUrgent())) {
             query
                 .where(JUROR_RESPONSE_COMMON.urgent.eq(TRUE)
-                    .or(JUROR_RESPONSE_COMMON.superUrgent.eq(TRUE))
                     .or(JUROR_POOL.pool.returnDate.lt(now())));
         }
 

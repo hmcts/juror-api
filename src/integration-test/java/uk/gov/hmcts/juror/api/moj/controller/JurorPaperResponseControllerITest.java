@@ -4,7 +4,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpHeaders;
@@ -17,7 +16,6 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.CjsEmploymentDetailsDto;
@@ -47,7 +45,6 @@ import uk.gov.hmcts.juror.api.moj.repository.SummonsSnapshotRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
-import uk.gov.hmcts.juror.api.moj.service.StraightThroughProcessorService;
 import uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 
@@ -68,16 +65,14 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 /**
  * Integration tests for the API endpoints defined in {@link JurorPaperResponseController}.
  */
-@SuppressWarnings("PMD.LawOfDemeter")
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.ExcessivePublicCount", "PMD.TooManyMethods",
+    "PMD.CyclomaticComplexity"})
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
     private static final String POOL_415220502 = "415220502";
     private static final String POOL_411220502 = "411220502";
-
-    @Value("${jwt.secret.bureau}")
-    private String bureauSecret;
 
     @Autowired
     private TestRestTemplate template;
@@ -91,8 +86,6 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
     @Autowired
     private JurorPoolRepository jurorPoolRepository;
     @Autowired
-    private JurorResponseRepository jurorResponseRepository;
-    @Autowired
     private JurorHistoryRepository jurorHistoryRepository;
     @Autowired
     private DisqualifyLetterModRepository disqualifyLetterRepository;
@@ -100,8 +93,6 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
     private SummonsSnapshotRepository summonsSnapshotRepository;
     @Autowired
     private WelshCourtLocationRepository welshCourtLocationRepository;
-    @Autowired
-    private StraightThroughProcessorService straightThroughProcessorService;
 
     @Autowired
     private JurorRepository jurorRepository;
@@ -118,7 +109,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_initPoolMembers.sql"})
-    public void respondToSummons_bureauUser_happyPath_notStraightThroughAcceptance() throws Exception {
+    public void respondToSummons_bureauUser_happyPath_notStraightThroughAcceptance() {
         final String bureauJwt = createJwtBureau("BUREAU_USER");
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/response");
 
@@ -144,7 +135,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_initPoolMembers.sql"})
-    public void respondToSummons_bureauUser_happyPath_straightThroughAcceptance() throws Exception {
+    public void respondToSummons_bureauUser_happyPath_straightThroughAcceptance() {
         final String bureauJwt = createJwtBureau("BUREAU_USER");
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/response");
 
@@ -168,111 +159,6 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_initPoolMembers.sql"})
-    public void respondToSummons_courtUser_superUrgent_happyPath_notStraightThroughAcceptance() throws Exception {
-        final String bureauJwt = createJwt("MODTESTCOURT", "415");
-        final URI uri = URI.create("/api/v1/moj/juror-paper-response/response");
-
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-        JurorPaperResponseDto requestDto = buildJurorPaperResponseDto();
-        requestDto.setJurorNumber("123456791");
-
-        RequestEntity<JurorPaperResponseDto> requestEntity = new RequestEntity<>(requestDto, httpHeaders,
-            HttpMethod.POST, uri);
-        ResponseEntity<SaveJurorPaperReplyResponseDto> response = template.exchange(requestEntity,
-            SaveJurorPaperReplyResponseDto.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-
-        SaveJurorPaperReplyResponseDto responseDto = response.getBody();
-        assertThat(responseDto).isNotNull();
-
-        assertThat(responseDto.isStraightThroughAcceptance()).isFalse();
-
-        final URI uri2 = URI.create("/api/v1/moj/juror-paper-response/juror/123456791");
-
-        RequestEntity<Void> requestEntity2 = new RequestEntity<>(httpHeaders, HttpMethod.GET, uri2);
-        ResponseEntity<JurorPaperResponseDetailDto> responseDetailDto = template.exchange(requestEntity2,
-            JurorPaperResponseDetailDto.class);
-        assertThat(responseDetailDto.getStatusCode()).isEqualTo(HttpStatus.OK);
-
-        //get request for object and check super urgent set.
-        JurorPaperResponseDetailDto responseDetail = responseDetailDto.getBody();
-        assertThat(responseDetail).isNotNull();
-
-        assertThat(responseDetail.getSuperUrgent()).isEqualTo(true);
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_initPoolMembers.sql"})
-    public void respondToSummons_courtUser_superUrgent_happyPath_straightThroughAcceptance() throws Exception {
-        final String bureauJwt = createJwt("MODTESTCOURT", "415");
-        final URI uri = URI.create("/api/v1/moj/juror-paper-response/response");
-
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-        JurorPaperResponseDto requestDto = buildJurorPaperResponseDto();
-        requestDto.setJurorNumber("333333333");
-
-        RequestEntity<JurorPaperResponseDto> requestEntity = new RequestEntity<>(requestDto, httpHeaders,
-            HttpMethod.POST, uri);
-        ResponseEntity<SaveJurorPaperReplyResponseDto> response = template.exchange(requestEntity,
-            SaveJurorPaperReplyResponseDto.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-
-        SaveJurorPaperReplyResponseDto responseDto = response.getBody();
-        assertThat(responseDto).isNotNull();
-
-        assertThat(responseDto.isStraightThroughAcceptance()).isTrue();
-
-        final URI uri2 = URI.create("/api/v1/moj/juror-paper-response/juror/333333333");
-
-        RequestEntity<Void> requestEntity2 = new RequestEntity<>(httpHeaders, HttpMethod.GET, uri2);
-        ResponseEntity<JurorPaperResponseDetailDto> responseDetailDto = template.exchange(requestEntity2,
-            JurorPaperResponseDetailDto.class);
-        assertThat(responseDetailDto.getStatusCode()).isEqualTo(HttpStatus.OK);
-
-        //get request for object and check super urgent set.
-        JurorPaperResponseDetailDto responseDetail = responseDetailDto.getBody();
-        assertThat(responseDetail).isNotNull();
-
-        assertThat(responseDetail.getSuperUrgent()).isEqualTo(true);
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_initPoolMembers.sql"})
-    public void respondToSummons_courtUser_notSuperUrgent_happyPath() throws Exception {
-        final String bureauJwt = createJwt("MODTESTCOURT", "415");
-        final URI uri = URI.create("/api/v1/moj/juror-paper-response/response");
-
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-        JurorPaperResponseDto requestDto = buildJurorPaperResponseDto();
-        requestDto.setJurorNumber("123456711");
-
-        RequestEntity<JurorPaperResponseDto> requestEntity = new RequestEntity<>(requestDto, httpHeaders,
-            HttpMethod.POST, uri);
-        ResponseEntity<SaveJurorPaperReplyResponseDto> response = template.exchange(requestEntity,
-            SaveJurorPaperReplyResponseDto.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-
-        SaveJurorPaperReplyResponseDto responseDto = response.getBody();
-        assertThat(responseDto).isNotNull();
-
-        assertThat(responseDto.isStraightThroughAcceptance()).isFalse();
-
-        final URI uri2 = URI.create("/api/v1/moj/juror-paper-response/juror/123456711");
-
-        RequestEntity<Void> requestEntity2 = new RequestEntity<>(httpHeaders, HttpMethod.GET, uri2);
-        ResponseEntity<JurorPaperResponseDetailDto> responseDetailDto = template.exchange(requestEntity2,
-            JurorPaperResponseDetailDto.class);
-        assertThat(responseDetailDto.getStatusCode()).isEqualTo(HttpStatus.OK);
-
-        //get request for object and check super urgent set.
-        JurorPaperResponseDetailDto responseDetail = responseDetailDto.getBody();
-        assertThat(responseDetail).isNotNull();
-
-        assertThat(responseDetail.getSuperUrgent()).isEqualTo(false);
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_initPoolMembers.sql"})
     public void respondToSummons_courtUser_noAccess() throws Exception {
         final String bureauJwt = createJwt("COURT_USER", "416");
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/response");
@@ -290,7 +176,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_initPoolMembers.sql"})
-    public void respondToSummons_bureauUser_noJurorRecord() throws Exception {
+    public void respondToSummons_bureauUser_noJurorRecord() {
         final String bureauJwt = createJwtBureau("BUREAU_USER");
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/response");
 
@@ -383,8 +269,8 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
         PaperResponse jurorPaperResponse = getJurorPaperResponse(jurorNumber);
 
-        verifyRequestDtoMapping_personalDetails(jurorPaperResponse, requestDto);
-        verifyRequestDtoMapping_contactDetails(jurorPaperResponse, requestDto);
+        verifyRequestDtoMappingPersonalDetails(jurorPaperResponse, requestDto);
+        verifyRequestDtoMappingContactDetails(jurorPaperResponse, requestDto);
 
         Optional<JurorPool> jurorPoolOpt =
             jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber, POOL_415220502, true);
@@ -421,8 +307,8 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         assertThat(responseDto.isStraightThroughAcceptance()).isFalse();
 
         PaperResponse jurorPaperResponse = getJurorPaperResponse(jurorNumber);
-        verifyRequestDtoMapping_personalDetails(jurorPaperResponse, requestDto);
-        verifyRequestDtoMapping_contactDetails(jurorPaperResponse, requestDto);
+        verifyRequestDtoMappingPersonalDetails(jurorPaperResponse, requestDto);
+        verifyRequestDtoMappingContactDetails(jurorPaperResponse, requestDto);
 
         Optional<JurorPool> jurorPoolOpt =
             jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber,
@@ -467,7 +353,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
         assertThat(jurorPool.isPresent()).isTrue();
 
-        verifyStraightThrough_ageDisqualification_notProcessed(jurorPaperResponse, jurorPool.get(),
+        verifyStraightThroughAgeDisqualificationNotProcessed(jurorPaperResponse, jurorPool.get(),
             IJurorStatus.DEFERRED);
     }
 
@@ -502,7 +388,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber, POOL_415220502, true);
 
         assertThat(jurorPool.isPresent()).isTrue();
-        verifyStraightThrough_ageDisqualification_notProcessed(jurorPaperResponse, jurorPool.get(),
+        verifyStraightThroughAgeDisqualificationNotProcessed(jurorPaperResponse, jurorPool.get(),
             IJurorStatus.SUMMONED);
     }
 
@@ -534,8 +420,8 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
         PaperResponse jurorPaperResponse = getJurorPaperResponse(jurorNumber);
 
-        verifyRequestDtoMapping_personalDetails(jurorPaperResponse, requestDto);
-        verifyRequestDtoMapping_contactDetails(jurorPaperResponse, requestDto);
+        verifyRequestDtoMappingPersonalDetails(jurorPaperResponse, requestDto);
+        verifyRequestDtoMappingContactDetails(jurorPaperResponse, requestDto);
 
         Optional<JurorPool> jurorPoolOpt =
             jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber, POOL_411220502, true);
@@ -1214,8 +1100,8 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
         assertThat(reasonableAdjustments.size()).isEqualTo(0);  // we need a record to be present
-        assertNull(juror.getReasonableAdjustmentCode());
-        assertNull(juror.getReasonableAdjustmentMessage());
+        assertNull(juror.getReasonableAdjustmentCode(), "Reasonable Adjustment code should be null");
+        assertNull(juror.getReasonableAdjustmentMessage(), "Reasonable Adjustment Message should be null");
     }
 
 
@@ -1846,6 +1732,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         assertThat(juror.getEmail()).isNull();
     }
 
+    @SuppressWarnings({"PMD.NcssCount", "PMD.NPathComplexity"})
     private void verifyResponseDtoMapping(JurorPaperResponseDetailDto responseDetailDto, String owner) {
         PaperResponse jurorPaperResponse =
             jurorPaperResponseRepository.findByJurorNumber(responseDetailDto.getJurorNumber());
@@ -1968,19 +1855,24 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         return jurorPaperResponse;
     }
 
-    private void verifyRequestDtoMapping_personalDetails(PaperResponse jurorPaperResponse,
-                                                         JurorPaperResponseDto requestDto) {
-        assertThat(jurorPaperResponse.getJurorNumber()).isEqualTo(requestDto.getJurorNumber());
-        assertThat(jurorPaperResponse.getDateReceived()).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS));
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False Positive
+    private void verifyRequestDtoMappingPersonalDetails(PaperResponse jurorPaperResponse,
+                                                        JurorPaperResponseDto requestDto) {
+        assertThat(jurorPaperResponse.getJurorNumber())
+            .as("Juror Number")
+            .isEqualTo(requestDto.getJurorNumber());
+        assertThat(jurorPaperResponse.getDateReceived())
+            .as("Date Received")
+            .isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS));
 
-        assertThat(jurorPaperResponse.getTitle()).isEqualTo(requestDto.getTitle());
-        assertThat(jurorPaperResponse.getFirstName()).isEqualTo(requestDto.getFirstName());
-        assertThat(jurorPaperResponse.getLastName()).isEqualTo(requestDto.getLastName());
-        assertThat(jurorPaperResponse.getDateOfBirth()).isEqualTo(requestDto.getDateOfBirth());
+        assertThat(jurorPaperResponse.getTitle()).as("Title").isEqualTo(requestDto.getTitle());
+        assertThat(jurorPaperResponse.getFirstName()).as("First Name").isEqualTo(requestDto.getFirstName());
+        assertThat(jurorPaperResponse.getLastName()).as("Last Name").isEqualTo(requestDto.getLastName());
+        assertThat(jurorPaperResponse.getDateOfBirth()).as("Date Of Birth").isEqualTo(requestDto.getDateOfBirth());
     }
 
-    private void verifyRequestDtoMapping_contactDetails(PaperResponse jurorPaperResponse,
-                                                        JurorPaperResponseDto requestDto) {
+    private void verifyRequestDtoMappingContactDetails(PaperResponse jurorPaperResponse,
+                                                       JurorPaperResponseDto requestDto) {
         assertThat(jurorPaperResponse.getAddressLine1()).isEqualTo(requestDto.getAddressLineOne());
         assertThat(jurorPaperResponse.getAddressLine2()).isEqualTo(requestDto.getAddressLineTwo());
         assertThat(jurorPaperResponse.getAddressLine3()).isEqualTo(requestDto.getAddressLineThree());
@@ -1996,8 +1888,8 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
     private void verifyRequestDtoMapping(JurorPaperResponseDto requestDto) {
         PaperResponse jurorPaperResponse = getJurorPaperResponse(requestDto.getJurorNumber());
 
-        verifyRequestDtoMapping_personalDetails(jurorPaperResponse, requestDto);
-        verifyRequestDtoMapping_contactDetails(jurorPaperResponse, requestDto);
+        verifyRequestDtoMappingPersonalDetails(jurorPaperResponse, requestDto);
+        verifyRequestDtoMappingContactDetails(jurorPaperResponse, requestDto);
 
         JurorPaperResponseDto.ThirdParty thirdParty = requestDto.getThirdParty();
         if (requestDto.getThirdParty() != null) {
@@ -2179,7 +2071,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             jurorHistoryList.stream().anyMatch(ph -> ph.getHistoryCode().equals(HistoryCodeMod.WITHDRAWAL_LETTER)))
             .as("Expect history record to be created for disqualification letter")
             .isTrue();
-        
+
         // TODO Need to revisit the Letter verification as a separate task as this is now using the bulk print service
         //        Iterable<DisqualificationLetterMod> disqualifyLetterIterator = disqualifyLetterRepository.findAll();
         //        List<DisqualificationLetterMod> disqualificationLetters = new ArrayList<>();
@@ -2190,8 +2082,8 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         //            .isEqualTo(1);
     }
 
-    private void verifyStraightThrough_ageDisqualification_notProcessed(PaperResponse jurorPaperResponse,
-                                                                        JurorPool jurorPool, int statusCode) {
+    private void verifyStraightThroughAgeDisqualificationNotProcessed(PaperResponse jurorPaperResponse,
+                                                                      JurorPool jurorPool, int statusCode) {
         final Juror juror = jurorPool.getJuror();
         assertThat(jurorPaperResponse.getProcessingComplete())
             .as("No automatic processing, so processing complete flag remains unset")

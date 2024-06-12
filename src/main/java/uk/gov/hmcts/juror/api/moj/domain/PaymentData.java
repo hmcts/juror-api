@@ -15,6 +15,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.validator.constraints.Length;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 
@@ -29,6 +30,7 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @SuppressWarnings("PMD.TooManyFields")
+@ToString(exclude = {"courtLocation"})
 public class PaymentData {
     @Id
     @NotNull
@@ -47,7 +49,7 @@ public class PaymentData {
 
     @NotNull
     @Column(name = "creation_date")
-    private LocalDateTime creationDate;
+    private LocalDateTime creationDateTime;
 
     @NotNull
     @Column(name = "expense_total")

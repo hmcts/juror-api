@@ -16,7 +16,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
-import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.test.context.ActiveProfiles;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
@@ -45,8 +45,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SuppressWarnings({
     "PMD.AbstractClassWithoutAbstractMethod",
     "PMD.TooManyMethods",
-    "PMD.LawOfDemeter",
-    "PMD.ExcessiveImports",
+    "PMD.ExcessiveImports"
 })
 public abstract class AbstractIntegrationTest extends ContainerTest {
 
@@ -190,6 +189,7 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
                 .active(1)
                 .courts(new ArrayList<>(courtsToSet))
                 .build())
+            .locCode(courts.length >= 1 ? courts[0] : null)
             .userType(userType)
             .activeUserType(userType)
             .roles(roles)
@@ -201,7 +201,7 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
         assertErrorResponse(response,
             HttpStatus.FORBIDDEN,
             url,
-            AccessDeniedException.class,
+            AuthorizationDeniedException.class,
             "Forbidden");
     }
 
@@ -346,7 +346,15 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
     }
 
     public String getCourtJwt(String number) {
+        return getCourtJwt(number, Set.of());
+    }
+
+    public String getCourtJwt(String number, Set<Role> roles) {
         return createJwt("test_court_standard", number,
-            UserType.COURT, Set.of(), number);
+            UserType.COURT, roles, number);
+    }
+
+    public String getSatelliteCourtJwt(String owner, String... courts) {
+        return createJwt("test_court_standard", owner, UserType.COURT, Set.of(), courts);
     }
 }

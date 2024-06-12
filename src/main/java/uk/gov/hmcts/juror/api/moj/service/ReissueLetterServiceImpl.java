@@ -33,7 +33,6 @@ import java.util.function.BiConsumer;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@SuppressWarnings({"PMD.LawOfDemeter"})
 public class ReissueLetterServiceImpl implements ReissueLetterService {
 
     private final JurorPoolRepository jurorPoolRepository;
@@ -280,6 +279,8 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
 
             JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository,
                 letter.getJurorNumber());
+
+            jurorPool.setReminderSent(true);
 
             // add additional switch-case statements for other letter types
             switch (letter.getFormCode()) {

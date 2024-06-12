@@ -40,7 +40,6 @@ import java.util.Optional;
 import java.util.Set;
 
 @RunWith(SpringRunner.class)
-@SuppressWarnings("PMD.LawOfDemeter")
 public class JurorAuditChangeServiceTest {
 
     @Mock

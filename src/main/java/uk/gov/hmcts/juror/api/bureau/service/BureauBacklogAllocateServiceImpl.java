@@ -12,16 +12,17 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.juror.api.bureau.controller.request.BureauBacklogAllocateRequestDto;
 import uk.gov.hmcts.juror.api.bureau.exception.BureauBacklogAllocateException;
 import uk.gov.hmcts.juror.api.bureau.exception.BureauOptimisticLockingException;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.StaffJurorResponseAuditMod;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.UserJurorResponseAudit;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
-import uk.gov.hmcts.juror.api.moj.repository.staff.StaffJurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.staff.UserJurorResponseAuditRepository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -43,7 +44,7 @@ public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateSe
 
     private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
     private final UserRepository userRepository;
-    private final StaffJurorResponseAuditRepositoryMod auditRepository;
+    private final UserJurorResponseAuditRepository userJurorResponseAuditRepository;
 
     @Override
     @Transactional
@@ -84,7 +85,7 @@ public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateSe
         for (User staffMember : staff) {
 
             final List<DigitalResponse> toBeAllocated = new LinkedList<>();
-            final List<StaffJurorResponseAuditMod> auditEntries = new LinkedList<>();
+            final List<UserJurorResponseAudit> auditEntries = new LinkedList<>();
 
             log.trace("Allocating backlog responses to bureau officer : {} ", staffMember.getUsername());
 
@@ -133,7 +134,7 @@ public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateSe
 
             try {
                 jurorResponseRepository.saveAll(toBeAllocated);
-                auditRepository.saveAll(auditEntries);
+                userJurorResponseAuditRepository.saveAll(auditEntries);
             } catch (OptimisticLockingFailureException olfe) {
                 log.warn("One or more Juror responses was updated by another user!. Try Allocation again.");
                 throw new BureauOptimisticLockingException(olfe);
@@ -156,6 +157,7 @@ public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateSe
      * @param condition            Creiteria for the query to return the responses based on urgency.
      * @param staffMember          details of selected staff to allocate responses to.
      * @param urgencyAllocateCount Requested Allocate count for Staff (ie nonUrgentCount)
+     *
      * @return List Allocated Responses for staff member.
      */
     private List<DigitalResponse> allocateResponses(BooleanExpression condition, User staffMember,
@@ -174,6 +176,7 @@ public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateSe
      * @param backlogData          repsonses to allocate.
      * @param staff                staffMember to allocate responses to.
      * @param urgencyAllocateCount Requested Allocate count for Staff (ie nonUrgentCount)
+     *
      * @return List Allocated Responses for saff member.
      */
     private List<DigitalResponse> allocate(List<DigitalResponse> backlogData, User staff,
@@ -182,7 +185,7 @@ public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateSe
         final List<DigitalResponse> allocation = new LinkedList<>();
 
         final Iterator<DigitalResponse> backlogItems = backlogData.iterator();
-        final LocalDate now = LocalDateTime.now().toLocalDate();
+        final LocalDate now = LocalDate.now();
 
         for (int j = 0;
              j < urgencyAllocateCount && backlogItems.hasNext();
@@ -209,20 +212,25 @@ public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateSe
      * @param allocation     allocated responses.
      * @param staff          details of selected staff to allocate responses to.
      * @param requestingUser logged in user
+     *
      * @return List StaffJurorResponseAudit
      */
-    private List<StaffJurorResponseAuditMod> auditAllocatedEntries(List<DigitalResponse> allocation, User staff,
-                                                                   String requestingUser) {
+    private List<UserJurorResponseAudit> auditAllocatedEntries(List<DigitalResponse> allocation, User staff,
+                                                               String requestingUser) {
 
-        final List<StaffJurorResponseAuditMod> auditEntries = new LinkedList<>();
+        final List<UserJurorResponseAudit> auditEntries = new LinkedList<>();
+
+        final User assignedBy = userRepository.findByUsername(requestingUser);
+        if (ObjectUtils.isEmpty(userRepository)) {
+            throw new StaffAssignmentException("Assigning staff record does not exist!");
+        }
 
         allocation.forEach(r -> {
-            auditEntries.add(StaffJurorResponseAuditMod.realBuilder()
-                .teamLeaderLogin(requestingUser)
-                .staffLogin(staff.getUsername())
+            auditEntries.add(UserJurorResponseAudit.builder()
                 .jurorNumber(r.getJurorNumber())
-                .dateReceived(r.getDateReceived())
-                .staffAssignmentDate(r.getStaffAssignmentDate())
+                .assignedBy(assignedBy)
+                .assignedTo(staff)
+                .assignedOn(LocalDateTime.now())
                 .build());
         });
 
@@ -232,8 +240,9 @@ public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateSe
     /**
      * Query the Juror backlog responses based on given conditions and order.
      *
-     * @param condition    Creiteria for response query.
+     * @param condition    Criteria for response query.
      * @param resultsLimit Requested no of responses to retrieve.
+     *
      * @return List JurorResponse
      */
     private List<DigitalResponse> getBacklogData(BooleanExpression condition, int resultsLimit) {

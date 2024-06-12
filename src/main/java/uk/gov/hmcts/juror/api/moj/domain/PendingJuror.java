@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.moj.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -100,9 +101,9 @@ public class PendingJuror extends Address implements Serializable {
     @Column(name = "next_date")
     private LocalDate nextDate;
 
-    @Column(name = "added_by")
-    @Length(max = 20)
-    private String addedBy;
+    @ManyToOne
+    @JoinColumn(name = "added_by")
+    private User addedBy;
 
     @Length(max = 2000)
     @Column(name = "notes")
@@ -131,6 +132,11 @@ public class PendingJuror extends Address implements Serializable {
     @NotNull
     @Column(name = "date_created", updatable = false)
     private LocalDateTime dateCreated;
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pool_number", referencedColumnName = "pool_no", insertable = false, updatable = false)
+    private PoolRequest pool;
 
     @PrePersist
     @SuppressWarnings("PMD.UnusedPrivateMethod")

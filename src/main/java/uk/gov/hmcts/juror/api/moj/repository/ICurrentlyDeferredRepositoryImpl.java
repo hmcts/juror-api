@@ -15,7 +15,6 @@ import java.util.List;
 /**
  * Custom Repository implementation for the JurorPool entity.
  */
-@SuppressWarnings("PMD.LawOfDemeter")
 public class ICurrentlyDeferredRepositoryImpl implements ICurrentlyDeferredRepository {
 
     @PersistenceContext

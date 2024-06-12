@@ -55,7 +55,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = "notify.disabled=false"
 )
-@SuppressWarnings("PMD.LawOfDemeter")
+@SuppressWarnings({"PMD.ExcessiveImports","PMD.TooManyMethods"})
 public class PublicEndpointControllerIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     private TestRestTemplate template;
@@ -217,7 +217,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         final LocalDateTime poolAttendTime =
             jdbcTemplate.queryForObject("SELECT ATTEND_TIME FROM juror_mod.pool", LocalDateTime.class);
 
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm");
         assertThat(exchange.getBody().getCourtAttendTime()).isNotNull();
         assertThat(exchange.getBody().getCourtAttendTime()).isNotEqualTo(dateTimeFormatter.format(courtAttendTime));
         assertThat(exchange.getBody().getCourtAttendTime()).isEqualTo(dateTimeFormatter.format(poolAttendTime));

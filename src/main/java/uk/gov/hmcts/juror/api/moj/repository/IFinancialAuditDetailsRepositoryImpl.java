@@ -23,13 +23,17 @@ public class IFinancialAuditDetailsRepositoryImpl implements IFinancialAuditDeta
         FinancialAuditDetails financialAuditDetails,
         FinancialAuditDetails.Type.GenericType genericType,
         SortMethod sortMethod) {
-
         JPAQueryFactory queryFactory = getJpaQueryFactory();
         JPAQuery<FinancialAuditDetails> query = queryFactory.select(QFinancialAuditDetails.financialAuditDetails)
             .from(QFinancialAuditDetails.financialAuditDetails)
             .join(QFinancialAuditDetailsAppearances.financialAuditDetailsAppearances)
             .on(QFinancialAuditDetailsAppearances.financialAuditDetailsAppearances.financialAuditId
-                .eq(financialAuditDetails.getId()))
+                .eq(financialAuditDetails.getId())
+                .and(QFinancialAuditDetailsAppearances.financialAuditDetailsAppearances.locCode.eq(
+                    financialAuditDetails.getLocCode()))
+            )
+            .where(QFinancialAuditDetails.financialAuditDetails.jurorNumber.eq(financialAuditDetails.getJurorNumber()))
+            .where(QFinancialAuditDetails.financialAuditDetails.locCode.eq(financialAuditDetails.getLocCode()))
             .where(QFinancialAuditDetails.financialAuditDetails.type.in(genericType.getTypes()))
             //If more then one type is passed, then get the very first one
             .orderBy(sortMethod.from(QFinancialAuditDetails.financialAuditDetails.createdOn));

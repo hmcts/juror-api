@@ -55,7 +55,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 @Sql(value = {"/db/administration/teardownUsers.sql",
     "/db/administration/createUsers.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(value = "/db/administration/teardownUsers.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+@SuppressWarnings({"PMD.JUnitTestsShouldIncludeAssert","PMD.ExcessiveImports"})
 public class UserControllerITest extends AbstractIntegrationTest {
 
     public static final String BASE_URL = "/api/v1/moj/users";
@@ -1340,7 +1340,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                     .triggerValid()
                     .assertValidNoBody();
                 assertUserHasCourts("test_court_multi", "415", "421", "466");
-                assertUserIsUpdatedBy("test_court_multi", "test_admin_standard");
+                assertUserIsUpdatedBy("test_court_multi", SYSTEM_USER);
             }
 
             @Test
@@ -1452,7 +1452,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                     .triggerValid()
                     .assertValidNoBody();
                 assertUserHasCourts("test_court_multi", "421");
-                assertUserIsUpdatedBy("test_court_multi", "test_admin_standard");
+                assertUserIsUpdatedBy("test_court_multi", SYSTEM_USER);
             }
 
 

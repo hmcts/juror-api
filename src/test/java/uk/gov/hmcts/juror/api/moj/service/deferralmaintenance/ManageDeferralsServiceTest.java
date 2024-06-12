@@ -36,9 +36,10 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
-import uk.gov.hmcts.juror.api.moj.domain.letter.PostponementLetter;
 import uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -56,7 +57,6 @@ import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.PoolMemberSequenceService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.service.SummonsReplyMergeService;
-import uk.gov.hmcts.juror.api.moj.service.letter.PostponementLetterServiceImpl;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -92,7 +92,7 @@ import static uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDefer
 import static uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDeferralsServiceTestData.createJurorResponseWithoutDeferrals;
 
 @ExtendWith(SpringExtension.class)
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.LawOfDemeter"})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 class ManageDeferralsServiceTest {
 
     private static final String BUREAU_OWNER = "400";
@@ -130,8 +130,6 @@ class ManageDeferralsServiceTest {
     @Mock
     private SummonsReplyMergeService mergeService;
     @Mock
-    private PostponementLetterServiceImpl postponementLetterService;
-    @Mock
     private PrintDataService printDataService;
     @Mock
     private JurorHistoryService jurorHistoryService;
@@ -166,7 +164,8 @@ class ManageDeferralsServiceTest {
             LocalDate newAttendanceDate = LocalDate.now();
             LocalDate oldAttendanceDate = LocalDate.of(2023, 6, 6);
 
-            final BureauJwtPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
+            final BureauJwtPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER,
+                UserType.BUREAU, Collections.singletonList(Role.MANAGER));
 
             final PoolRequest oldPoolRequest = createPoolRequest(BUREAU_OWNER, POOL_111111111, LOC_CODE_415,
                 oldAttendanceDate);
@@ -185,7 +184,7 @@ class ManageDeferralsServiceTest {
             doReturn(1).when(poolMemberSequenceService).getPoolMemberSequenceNumber(any());
 
             doReturn(Optional.of(newPoolRequest)).when(poolRequestRepository).findByPoolNumber(anyString());
-            doReturn(new PostponementLetter()).when(postponementLetterService).getLetterToEnqueue(any(), any());
+            doNothing().when(printDataService).printPostponeLetter(any());
 
             DeferralResponseDto response =
                 manageDeferralsService.processJurorPostponement(bureauPayload, createProcessJurorRequestDto());
@@ -204,9 +203,8 @@ class ManageDeferralsServiceTest {
             verify(poolRequestRepository, times(1)).save(any());
             verify(poolRequestRepository, times(1)).saveAndFlush(any());
             verify(poolMemberSequenceService, times(1)).leftPadInteger(any(int.class));
-            verify(postponementLetterService, never()).getLetterToEnqueue(any(), any());
-            verify(postponementLetterService, never()).enqueueLetter(any());
             verify(printDataService, times(1)).printConfirmationLetter(any());
+            verify(printDataService, times(1)).printPostponeLetter(any());
             verify(jurorHistoryService, times(1)).createConfirmationLetterHistory(any(), anyString());
             verify(currentlyDeferredRepository, times(0)).save(any());
         }
@@ -217,7 +215,8 @@ class ManageDeferralsServiceTest {
             LocalDate newAttendanceDate = LocalDate.now();
             LocalDate oldAttendanceDate = LocalDate.of(2023, 6, 6);
 
-            final BureauJwtPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
+            final BureauJwtPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER,
+                UserType.BUREAU, Collections.singletonList(Role.MANAGER));
 
             final PoolRequest oldPoolRequest = createPoolRequest(BUREAU_OWNER, POOL_111111111, LOC_CODE_415,
                 oldAttendanceDate);
@@ -236,9 +235,7 @@ class ManageDeferralsServiceTest {
             doReturn(Optional.of(oldPoolRequest)).when(poolRequestRepository).findByPoolNumber(POOL_111111111);
             doReturn(Optional.of(jurorStatus)).when(jurorStatusRepository).findById(anyInt());
             doReturn(1).when(poolMemberSequenceService).getPoolMemberSequenceNumber(any());
-
             doReturn(Optional.of(newPoolRequest)).when(poolRequestRepository).findByPoolNumber(anyString());
-            doReturn(new PostponementLetter()).when(postponementLetterService).getLetterToEnqueue(any(), any());
 
             DeferralResponseDto response =
                 manageDeferralsService.processJurorPostponement(bureauPayload, createProcessJurorRequestDto());
@@ -257,11 +254,10 @@ class ManageDeferralsServiceTest {
             verify(poolRequestRepository, times(1)).save(any());
             verify(poolRequestRepository, times(1)).saveAndFlush(any());
             verify(poolMemberSequenceService, times(1)).leftPadInteger(any(int.class));
-            verify(postponementLetterService, never()).getLetterToEnqueue(any(), any());
-            verify(postponementLetterService, never()).enqueueLetter(any());
-            verify(printDataService, times(0)).printConfirmationLetter(any());
-            verify(jurorHistoryService, times(0)).createConfirmationLetterHistory(any(), anyString());
-            verify(currentlyDeferredRepository, times(0)).save(any());
+            verify(printDataService, times(1)).printPostponeLetter(any());
+            verify(printDataService, never()).printConfirmationLetter(any());
+            verify(jurorHistoryService, never()).createConfirmationLetterHistory(any(), anyString());
+            verify(currentlyDeferredRepository, never()).save(any());
         }
 
         @Test
@@ -269,7 +265,8 @@ class ManageDeferralsServiceTest {
             LocalDate newAttendanceDate = LocalDate.now();
             LocalDate oldAttendanceDate = LocalDate.of(2023, 6, 6);
 
-            final BureauJwtPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
+            final BureauJwtPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER,
+                UserType.BUREAU, Collections.singletonList(Role.MANAGER));
 
             final PoolRequest oldPoolRequest = createPoolRequest(BUREAU_OWNER, POOL_111111111, LOC_CODE_415,
                 oldAttendanceDate);
@@ -291,7 +288,6 @@ class ManageDeferralsServiceTest {
             doReturn(1).when(poolMemberSequenceService).getPoolMemberSequenceNumber(any());
 
             doReturn(Optional.of(newPoolRequest)).when(poolRequestRepository).findByPoolNumber(anyString());
-            doReturn(new PostponementLetter()).when(postponementLetterService).getLetterToEnqueue(any(), any());
 
             ProcessJurorPostponementRequestDto request = createProcessJurorRequestDto();
             List<String> jurorNumbers = new ArrayList<>();
@@ -314,10 +310,9 @@ class ManageDeferralsServiceTest {
             verify(poolRequestRepository, times(2)).save(any());
             verify(poolRequestRepository, times(2)).saveAndFlush(any());
             verify(poolMemberSequenceService, times(2)).leftPadInteger(any(int.class));
-            verify(postponementLetterService, never()).getLetterToEnqueue(any(), any());
-            verify(postponementLetterService, never()).enqueueLetter(any());
             verify(printDataService, times(2)).printConfirmationLetter(any());
-            verify(currentlyDeferredRepository, times(0)).save(any());
+            verify(printDataService, times(2)).printPostponeLetter(any());
+            verify(currentlyDeferredRepository, never()).save(any());
         }
 
         @Test
@@ -337,10 +332,9 @@ class ManageDeferralsServiceTest {
                 .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), anyBoolean());
 
             // make sure no letters are sent or deferral records created
-            verify(postponementLetterService, times(0)).getLetterToEnqueue(any(), any());
-            verify(postponementLetterService, times(0)).enqueueLetter(any());
-            verify(printDataService, times(0)).printConfirmationLetter(any());
-            verify(currentlyDeferredRepository, times(0)).save(any());
+            verify(printDataService, never()).printConfirmationLetter(any());
+            verify(printDataService, never()).printPostponeLetter(any());
+            verify(currentlyDeferredRepository, never()).save(any());
         }
 
         @Test
@@ -362,9 +356,8 @@ class ManageDeferralsServiceTest {
                 .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), anyBoolean());
 
             // make sure no letters are sent or deferral records created
-            verify(postponementLetterService, times(0)).getLetterToEnqueue(any(), any());
-            verify(postponementLetterService, times(0)).enqueueLetter(any());
-            verify(printDataService, times(0)).printConfirmationLetter(any());
+            verify(printDataService, never()).printConfirmationLetter(any());
+            verify(printDataService, never()).printPostponeLetter(any());
             verify(currentlyDeferredRepository, times(0)).save(any());
         }
 
@@ -385,20 +378,18 @@ class ManageDeferralsServiceTest {
             verify(poolRequestRepository, times(1)).findByPoolNumber(anyString());
 
             // make sure no letters are sent or deferral records created
-            verify(postponementLetterService, times(0)).getLetterToEnqueue(any(), any());
-            verify(postponementLetterService, times(0)).enqueueLetter(any());
-            verify(printDataService, times(0)).printConfirmationLetter(any());
+            verify(printDataService, never()).printConfirmationLetter(any());
+            verify(printDataService, never()).printPostponeLetter(any());
             verify(currentlyDeferredRepository, times(0)).save(any());
         }
 
         @Test
         void processJurorPostponementHappyPathMoveToCurrentlyDeferred() {
-            final BureauJwtPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
+            final BureauJwtPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER,
+                UserType.BUREAU, Collections.singletonList(Role.MANAGER));
 
             doReturn(createJurorPoolMember(JUROR_123456789)).when(jurorPoolRepository)
                 .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR_123456789, true);
-
-            doReturn(new PostponementLetter()).when(postponementLetterService).getLetterToEnqueue(any(), any());
 
             DeferralResponseDto response = manageDeferralsService.processJurorPostponement(bureauPayload,
                 createProcessJurorRequestDtoToCurrentlyDeferred());
@@ -415,9 +406,8 @@ class ManageDeferralsServiceTest {
             verify(poolRequestRepository, times(0)).save(any());
             verify(poolRequestRepository, times(0)).saveAndFlush(any());
             verify(poolMemberSequenceService, times(0)).leftPadInteger(any(int.class));
-            verify(postponementLetterService, never()).getLetterToEnqueue(any(), any());
-            verify(postponementLetterService, never()).enqueueLetter(any());
-            verify(printDataService, times(0)).printConfirmationLetter(any());
+            verify(printDataService, times(1)).printPostponeLetter(any());
+            verify(printDataService, never()).printConfirmationLetter(any());
         }
 
         @Test
@@ -444,9 +434,8 @@ class ManageDeferralsServiceTest {
                 .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), anyBoolean());
 
             // make sure no letters are sent or deferral records created
-            verify(postponementLetterService, times(0)).getLetterToEnqueue(any(), any());
-            verify(postponementLetterService, times(0)).enqueueLetter(any());
-            verify(printDataService, times(0)).printConfirmationLetter(any());
+            verify(printDataService, never()).printConfirmationLetter(any());
+            verify(printDataService, never()).printPostponeLetter(any());
             verify(currentlyDeferredRepository, times(0)).save(any());
         }
 
@@ -939,7 +928,6 @@ class ManageDeferralsServiceTest {
             .getPoolMemberSequenceNumber(any(String.class));
         verify(poolMemberSequenceService, times(1))
             .leftPadInteger(any(int.class));
-        verify(poolHistoryRepository, times(1)).save(any());
         verify(currentlyDeferredRepository, times(0)).save(any());
         verify(printDataService, times(1)).printDeferralLetter(any());
         verify(printDataService, times(1)).printConfirmationLetter(any());

@@ -3,11 +3,14 @@ package uk.gov.hmcts.juror.api.moj.domain;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -20,6 +23,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.envers.AuditOverride;
 import org.hibernate.envers.Audited;
@@ -27,12 +31,15 @@ import org.hibernate.envers.NotAudited;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCommon;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Optional;
 import java.util.Set;
 
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.JUROR_NUMBER;
@@ -40,14 +47,16 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REG
 
 @Entity
 @Table(name = "juror", schema = "juror_mod")
+@EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor
 @Getter
 @Setter
 @Audited
 @AllArgsConstructor
 @SuperBuilder
-@AuditOverride(forClass = Address.class, isAudited = true)
-@EqualsAndHashCode(callSuper = true, exclude = {"associatedPools"})
+@AuditOverride(forClass = Address.class)
+@ToString(exclude = {"jurorResponse"})
+@EqualsAndHashCode(callSuper = true, exclude = {"associatedPools", "jurorResponse"})
 public class Juror extends Address implements Serializable {
 
     @Id
@@ -184,6 +193,10 @@ public class Juror extends Address implements Serializable {
     @Builder.Default
     private PoliceCheck policeCheck = PoliceCheck.NOT_CHECKED;
 
+    @Column(name = "police_check_last_update")
+    @NotAudited
+    private LocalDateTime policeCheckLastUpdate;
+
     @NotAudited
     @Length(max = 20)
     @Column(name = "summons_file")
@@ -205,9 +218,9 @@ public class Juror extends Address implements Serializable {
     @Column(name = "notifications")
     private int notifications;
 
-    @NotAudited
     @LastModifiedDate
     @Column(name = "last_update")
+    @NotAudited
     private LocalDateTime lastUpdate;
 
     @NotAudited
@@ -271,6 +284,12 @@ public class Juror extends Address implements Serializable {
     private Set<JurorPool> associatedPools;
 
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "juror_number", referencedColumnName = "juror_number")
+    @NotAudited
+    private JurorResponseCommon jurorResponse;
+
+
     @PrePersist
     private void prePersist() {
         dateCreated = LocalDateTime.now();
@@ -290,4 +309,12 @@ public class Juror extends Address implements Serializable {
         return buildName + firstName + " " + lastName;
     }
 
+    public void setPoliceCheck(PoliceCheck policeCheck) {
+        this.policeCheck = policeCheck;
+        this.policeCheckLastUpdate = LocalDateTime.now();
+    }
+
+    public boolean isWelsh() {
+        return Optional.ofNullable(this.welsh).orElse(false);
+    }
 }

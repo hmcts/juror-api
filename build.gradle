@@ -1,10 +1,10 @@
 buildscript {
     ext {
-        springBootVersion = '3.2.5'
-        notifyVersion = '5.0.1-RELEASE'
+        springBootVersion = '3.3.0'
+        notifyVersion = '5.1.0-RELEASE'
         springDocVersion = '2.5.0'
         queryDslVersion = '5.1.0'
-        flywayVersion = '10.12.0'
+        flywayVersion = '10.15.0'
         postgresVersion = '42.7.3'
     }
     dependencies {
@@ -17,7 +17,7 @@ buildscript {
 plugins {
     id 'org.springframework.boot' version "${springBootVersion}"
     id "org.flywaydb.flyway" version "${flywayVersion}"
-    id 'org.owasp.dependencycheck' version '9.1.0'
+    id 'org.owasp.dependencycheck' version '9.2.0'
     id 'checkstyle'
     id 'pmd'
     id 'com.github.ben-manes.versions' version '0.51.0'
@@ -82,8 +82,8 @@ dependencies {
 
     //Internal dependency overrides
     implementation 'org.yaml:snakeyaml:2.2'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:10.1.23'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.23'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:10.1.24'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.24'
     //
     implementation("org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}")
@@ -105,7 +105,7 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
     implementation 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
 
-    implementation('com.google.guava:guava:33.2.0-jre')
+    implementation('com.google.guava:guava:33.2.1-jre')
 
     implementation('org.hibernate.orm:hibernate-core:6.3.0.CR1')
 
@@ -118,7 +118,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
 
     annotationProcessor("com.querydsl:querydsl-apt:${queryDslVersion}:jakarta")
-    annotationProcessor('jakarta.persistence:jakarta.persistence-api:3.1.0')
+    annotationProcessor('jakarta.persistence:jakarta.persistence-api:3.2.0')
 
     implementation('org.projectlombok:lombok:1.18.32')
     annotationProcessor('org.projectlombok:lombok')
@@ -127,7 +127,7 @@ dependencies {
     implementation('org.apache.commons:commons-text:1.12.0')
     implementation("uk.gov.service.notify:notifications-java-client:${notifyVersion}")
 
-    runtimeOnly(group: 'com.microsoft.azure', name: 'applicationinsights-core', version: '3.5.2')
+    runtimeOnly(group: 'com.microsoft.azure', name: 'applicationinsights-core', version: '3.5.3')
 
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springDocVersion}"
     implementation group: 'io.rest-assured', name: 'rest-assured'
@@ -138,20 +138,20 @@ dependencies {
     testImplementation 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
     //testImplementation 'org.apache.httpcomponents:httpclient:4.5.13'
     testImplementation 'net.javacrumbs.json-unit:json-unit-fluent:3.2.7'
-    testImplementation('org.assertj:assertj-core:3.25.3')
-    testImplementation 'org.mockito:mockito-core:5.11.0'
+    testImplementation('org.assertj:assertj-core:3.26.0')
+    testImplementation 'org.mockito:mockito-core:5.12.0'
 
     testImplementation('org.projectlombok:lombok')
     testAnnotationProcessor('org.projectlombok:lombok')
 
-    testImplementation('net.bytebuddy:byte-buddy:1.14.14')
+    testImplementation('net.bytebuddy:byte-buddy:1.14.17')
     testImplementation('junit:junit:4.13.2')
-    testImplementation "org.testcontainers:testcontainers:1.19.7"
-    testImplementation "org.testcontainers:junit-jupiter:1.19.7"
-    testImplementation 'org.testcontainers:postgresql:1.19.7'
+    testImplementation "org.testcontainers:testcontainers:1.19.8"
+    testImplementation "org.testcontainers:junit-jupiter:1.19.8"
+    testImplementation 'org.testcontainers:postgresql:1.19.8'
 
     // Validation
-    testImplementation 'org.wiremock:wiremock-standalone:3.5.4'
+    testImplementation 'org.wiremock:wiremock-standalone:3.6.0'
 }
 
 sonarqube {
@@ -203,10 +203,12 @@ flyway {
     def dbUrl = System.getenv("DB_URL") ?: "jdbc:postgresql://localhost:5432/juror"
     def dbUserName = System.getenv("DB_USERNAME") ?: "system"
     def dbPassword = System.getenv("DB_PASSWORD") ?: "postgres"
-
+    def flywayLocations = System.getenv("FLYWAY_LOC_OVERRIDE") ?: "db/**/*.sql"
+    
     url = "$dbUrl"
     user = "$dbUserName"
     password = "$dbPassword"
+    locations = [ "$flywayLocations" ]
     schemas = ['juror', 'juror_digital', 'juror_digital_user', 'juror_dashboard', 'hk', 'juror_mod']
     defaultSchema = 'juror_mod'
     table = 'schema_history'
@@ -231,7 +233,7 @@ processResources.finalizedBy(copyDocs)
 
 
 wrapper {
-    gradleVersion = '8.7'
+    gradleVersion = '8.8'
 }
 
 sourceSets {
@@ -271,18 +273,15 @@ sourceSets {
 }
 checkstyle {
     maxWarnings = 0
-    toolVersion = '10.15.0'
+    toolVersion = '10.17.0'
     getConfigDirectory().set(new File(rootDir, 'config/checkstyle'))
 }
 
-pmdIntegrationTest {
-    maxFailures = 366
-}
 pmdTest {
-    maxFailures = 381
+    maxFailures = 335
 }
 pmdMain {
-    maxFailures = 1113
+    maxFailures = 870
 }
 pmd {
     maxFailures = 0

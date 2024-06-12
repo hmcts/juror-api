@@ -23,6 +23,7 @@ import java.io.Serializable;
 @Table(name = "EXPENSES_RATES", schema = "JUROR_DIGITAL")
 @Immutable
 @Builder
+@Deprecated(forRemoval = true)
 public class ExpensesRates implements Serializable {
     @Id
     @Length(max = 80)

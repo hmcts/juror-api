@@ -612,7 +612,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
     }
 
     @Override
-    public String getPoolAttendanceTime(String poolId) {
+    public LocalDateTime getPoolAttendanceTime(String poolId) {
         log.trace("Looking up pool attendance time for pool ID {}", poolId);
         Optional<PoolRequest> optPoolRequest = poolRequestRepository.findById(poolId);
         final PoolRequest poolRequest = optPoolRequest.orElse(null);
@@ -627,7 +627,13 @@ public class PoolRequestServiceImpl implements PoolRequestService {
         }
         log.trace("Attend time for pool ID {} is: {}", poolId, attendanceTime);
 
-        return attendanceTime.toString();
+        return attendanceTime;
+    }
+
+    @Override
+    public PoolRequest getPoolRequest(String poolNumber) {
+        return poolRequestRepository.findById(poolNumber)
+            .orElseThrow(() -> new MojException.NotFound("Pool Number not found", null));
     }
 
     public static <T> Page<T> convertListToPage(List<T> objectList, Pageable pageable) {

@@ -27,6 +27,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.JurorCreateRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNameDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorOpticRefRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorRecordFilterRequestQuery;
+import uk.gov.hmcts.juror.api.moj.controller.request.PoliceCheckStatusDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessNameChangeRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessPendingJurorRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.RequestBankDetailsDto;
@@ -129,7 +130,7 @@ import static uk.gov.hmcts.juror.api.moj.utils.JurorUtils.checkReadAccessForCurr
  */
 @Slf4j
 @Service
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.LawOfDemeter", "PMD.ExcessiveImports"})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class JurorRecordServiceImpl implements JurorRecordService {
     private final ContactCodeRepository contactCodeRepository;
@@ -172,6 +173,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     private final AppearanceRepository appearanceRepository;
     private final ReasonableAdjustmentsRepository reasonableAdjustmentsRepository;
     private final Clock clock;
+    private final UserServiceModImpl userServiceModImpl;
 
     @Override
     @Transactional
@@ -256,9 +258,26 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     @Override
     @Transactional(readOnly = true)
     public FilterableJurorDetailsResponseDto getJurorDetails(FilterableJurorDetailsRequestDto request) {
+        boolean requiresJurorPool = request.getInclude()
+            .contains(FilterableJurorDetailsRequestDto.IncludeType.ACTIVE_POOL);
+
+        if (request.getJurorVersion() != null && requiresJurorPool) {
+            throw new MojException.BadRequest("Juror version can not be used along side and Active Pool include filter",
+                null);
+        }
+
+        Juror juror;
+        JurorPool jurorPool;
+        if (requiresJurorPool) {
+            jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, request.getJurorNumber());
+            juror = jurorPool.getJuror();
+        } else {
+            jurorPool = null;
+            juror = getJuror(request.getJurorNumber(), request.getJurorVersion());
+        }
         FilterableJurorDetailsRequestDto.FilterContext context = new FilterableJurorDetailsRequestDto.FilterContext(
-            getJuror(request.getJurorNumber(), request.getJurorVersion())
-        );
+            juror, jurorPool);
+
         FilterableJurorDetailsResponseDto filterableJurorDetailsResponseDto = new FilterableJurorDetailsResponseDto();
         filterableJurorDetailsResponseDto.setJurorNumber(request.getJurorNumber());
         filterableJurorDetailsResponseDto.setJurorVersion(request.getJurorVersion());
@@ -471,6 +490,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         JurorAddressDto jurorAddress = jurorCreateRequestDto.getAddress();
         PendingJuror pendingJuror = PendingJuror.builder()
+            .addedBy(userServiceModImpl.findUserByUsername(SecurityUtil.getUsername()))
             .jurorNumber(pendingJurorNumber)
             .poolNumber(poolNumber)
             .title(jurorCreateRequestDto.getTitle())
@@ -1072,7 +1092,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     @Override
     @Transactional
-    public void updatePncStatus(final String jurorNumber, final PoliceCheck policeCheck) {
+    public PoliceCheckStatusDto updatePncStatus(final String jurorNumber, final PoliceCheck policeCheck) {
         log.info("Attempting to update PNC check status for juror {} to be {}", jurorNumber, policeCheck);
         final JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
         final Juror juror = jurorPool.getJuror();
@@ -1081,7 +1101,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         final PoliceCheck newPoliceCheckValue = PoliceCheck.getEffectiveValue(oldPoliceCheckValue, policeCheck);
         if (oldPoliceCheckValue == newPoliceCheckValue) {
             log.debug("Skipping PNC check update for juror {} as new value equals existing value", jurorNumber);
-            return;//If both are the same no point continuing
+            return new PoliceCheckStatusDto(policeCheck);//If both are the same no point continuing
         }
         juror.setPoliceCheck(newPoliceCheckValue);
 
@@ -1119,6 +1139,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         }
         jurorPoolRepository.save(jurorPool);
         jurorRepository.save(juror);
+        return new PoliceCheckStatusDto(newPoliceCheckValue);
     }
 
     @Override

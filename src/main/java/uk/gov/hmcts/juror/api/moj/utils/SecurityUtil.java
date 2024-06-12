@@ -5,6 +5,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.config.public1.PublicJwtAuthentication;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -39,6 +40,25 @@ public final class SecurityUtil {
         throw new IllegalStateException("Utility class");
     }
 
+
+    public static boolean hasBureauJwtPayload() {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        if (securityContext != null) {
+            Authentication authentication = securityContext.getAuthentication();
+            return authentication instanceof BureauJwtAuthentication;
+        }
+        return false;
+    }
+
+    public static boolean hasPublicJwtPayload() {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        if (securityContext != null) {
+            Authentication authentication = securityContext.getAuthentication();
+            return authentication instanceof PublicJwtAuthentication;
+        }
+        return false;
+    }
+
     public static BureauJwtAuthentication getActiveUsersBureauJwtAuthentication() {
         SecurityContext securityContext = SecurityContextHolder.getContext();
         Authentication authentication = securityContext.getAuthentication();
@@ -47,6 +67,7 @@ public final class SecurityUtil {
         }
         throw new MojException.Forbidden("User must be authorised with BureauJwtAuthentication", null);
     }
+
 
     public static BureauJwtPayload getActiveUsersBureauPayload() {
         Object principal = getActiveUsersBureauJwtAuthentication().getPrincipal();
@@ -85,8 +106,24 @@ public final class SecurityUtil {
         return UserType.COURT.equals(getUserType());
     }
 
+    public static boolean isSatellite() {
+        return isCourt() && !getActiveOwner().equals(getLocCode());
+    }
+
     public static void validateCanAccessOwner(String owner) {
         if (!getActiveOwner().equals(owner)) {
+            throw new MojException.Forbidden("User does not have access", null);
+        }
+    }
+
+    public static void validateIsLocCode(String locCode) {
+        if (!getLocCode().equals(locCode)) {
+            throw new MojException.Forbidden("User does not have access", null);
+        }
+    }
+
+    public static void validateCanAccessRole(Role role) {
+        if (!hasRole(role)) {
             throw new MojException.Forbidden("User does not have access", null);
         }
     }
@@ -123,4 +160,5 @@ public final class SecurityUtil {
     public static boolean hasRole(Role role) {
         return getActiveUsersBureauPayload().getRoles().contains(role);
     }
+
 }

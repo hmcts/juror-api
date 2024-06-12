@@ -139,9 +139,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.juror.api.moj.controller.request.FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS;
 
 @ExtendWith(SpringExtension.class)
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.LawOfDemeter", "PMD.CouplingBetweenObjects",
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects",
     "PMD.TooManyMethods", "PMD.TooManyFields", "PMD.NcssCount"})
 class JurorRecordServiceTest {
 
@@ -204,6 +205,8 @@ class JurorRecordServiceTest {
     private AppearanceRepository appearanceRepository;
     @Mock
     private ReasonableAdjustmentsRepository reasonableAdjustmentsRepository;
+    @Mock
+    private UserServiceModImpl userServiceMod;
 
     @Mock
     private Clock clock;
@@ -3095,7 +3098,6 @@ class JurorRecordServiceTest {
 
         @ParameterizedTest
         @ValueSource(strings = {"416", "400"})
-        @SuppressWarnings("PMD.LawOfDemeter")
         void positiveJurorAttendanceTab(String owner) {
 
             //test scenario where juror has attended
@@ -3141,7 +3143,6 @@ class JurorRecordServiceTest {
 
         @ParameterizedTest
         @ValueSource(strings = {"416", "100"})
-        @SuppressWarnings("PMD.LawOfDemeter")
         void negativeWrongOwner(String userOwner) {
 
             final String owner = "415";
@@ -3331,7 +3332,6 @@ class JurorRecordServiceTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.LawOfDemeter")
         void positiveRejectPendingJuror() {
 
             TestUtils.setupAuthentication("415", "SENIORJURORUSER", "9");
@@ -3419,7 +3419,11 @@ class JurorRecordServiceTest {
                 assertAndTrigger(FilterableJurorDetailsRequestDto.builder()
                     .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
                     .jurorVersion(1L)
-                    .include(List.of(FilterableJurorDetailsRequestDto.IncludeType.values()))
+                    .include(List.of(
+                        FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS,
+                        FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS,
+                        FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS,
+                        FilterableJurorDetailsRequestDto.IncludeType.MILEAGE))
                     .build());
             }
 
@@ -3428,12 +3432,17 @@ class JurorRecordServiceTest {
                 assertAndTrigger(FilterableJurorDetailsRequestDto.builder()
                     .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
                     .jurorVersion(null)
-                    .include(List.of(FilterableJurorDetailsRequestDto.IncludeType.values()))
+                    .include(List.of(
+                        FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS,
+                        FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS,
+                        FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS,
+                        FilterableJurorDetailsRequestDto.IncludeType.MILEAGE))
                     .build());
             }
 
             private void assertAndTrigger(FilterableJurorDetailsRequestDto request) {
                 Juror juror = mock(Juror.class);
+                JurorPool jurorPool = mock(JurorPool.class);
 
                 PaymentDetails paymentDetails = mock(PaymentDetails.class);
                 paymentDetailsMockedStatic = mockStatic(PaymentDetails.class);
@@ -3469,7 +3478,7 @@ class JurorRecordServiceTest {
                 includeTypeValidator.accept(paymentDetails, response.getPaymentDetails(),
                     FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS);
                 includeTypeValidator.accept(nameDetails, response.getNameDetails(),
-                    FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS);
+                    NAME_DETAILS);
                 includeTypeValidator.accept(jurorAddressDto, response.getAddress(),
                     FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS);
 

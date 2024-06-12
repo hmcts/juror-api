@@ -11,6 +11,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Immutable;
+import uk.gov.hmcts.juror.api.moj.domain.ICourtLocation;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -25,7 +26,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Immutable
 @Table(name = "welsh_court_location", schema = "juror_mod")
-public class WelshCourtLocation implements Serializable {
+public class WelshCourtLocation implements Serializable, ICourtLocation {
 
     @Id
     @Column(name = "loc_code")

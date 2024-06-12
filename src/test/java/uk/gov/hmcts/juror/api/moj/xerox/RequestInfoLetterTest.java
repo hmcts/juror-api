@@ -4,19 +4,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
-import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.RequestInfoLetter;
-import uk.gov.hmcts.juror.api.testsupport.DisableIfWeekend;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.Calendar;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 @ExtendWith(SpringExtension.class)
-@SuppressWarnings("PMD.LawOfDemeter")
 class RequestInfoLetterTest extends AbstractLetterTest {
     private final String additionalInformation =
         "This is additional information required for the additional information letter";
@@ -86,26 +81,21 @@ class RequestInfoLetterTest extends AbstractLetterTest {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         setupEnglishExpectedResult();
         RequestInfoLetter requestInfoLetter = new RequestInfoLetter(LetterTestUtils.testJurorPool(date),
-                                                        additionalInformation,
-                                                        LetterTestUtils.testCourtLocation(),
-                                                        LetterTestUtils.testBureauLocation());
+            additionalInformation,
+            LetterTestUtils.testCourtLocation(),
+            LetterTestUtils.testBureauLocation());
 
-        int dayOfTheWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
-        if (dayOfTheWeek == Calendar.SATURDAY || dayOfTheWeek == Calendar.SUNDAY) {
-            assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
-                .isThrownBy(requestInfoLetter::getLetterString);
-        } else {
-            assertThat(requestInfoLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
-            assertThat(requestInfoLetter.getFormCode()).isEqualTo(FormCode.ENG_REQUESTINFO.getCode());
-            assertThat(requestInfoLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testJuror().getJurorNumber());
 
-            // Fax number is always empty
-            assertThat(requestInfoLetter.getData().get(11).getFormattedString())
-                .isEqualTo(LetterTestUtils.emptyField(12));
-            // Juror address 6 is always empty
-            assertThat(requestInfoLetter.getData().get(21).getFormattedString())
-                .isEqualTo(LetterTestUtils.emptyField(35));
-        }
+        assertThat(requestInfoLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
+        assertThat(requestInfoLetter.getFormCode()).isEqualTo(FormCode.ENG_REQUESTINFO.getCode());
+        assertThat(requestInfoLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testJuror().getJurorNumber());
+
+        // Fax number is always empty
+        assertThat(requestInfoLetter.getData().get(11).getFormattedString())
+            .isEqualTo(LetterTestUtils.emptyField(12));
+        // Juror address 6 is always empty
+        assertThat(requestInfoLetter.getData().get(21).getFormattedString())
+            .isEqualTo(LetterTestUtils.emptyField(35));
     }
 
     @Test
@@ -114,38 +104,31 @@ class RequestInfoLetterTest extends AbstractLetterTest {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         setupWelshExpectedResult();
         RequestInfoLetter requestInfoLetter = new RequestInfoLetter(LetterTestUtils.testWelshJurorPool(date),
-                                                        additionalInformation,
-                                                        LetterTestUtils.testCourtLocation(),
-                                                        LetterTestUtils.testBureauLocation(),
-                                                        LetterTestUtils.testWelshCourtLocation());
+            additionalInformation,
+            LetterTestUtils.testCourtLocation(),
+            LetterTestUtils.testBureauLocation(),
+            LetterTestUtils.testWelshCourtLocation());
 
-        int dayOfTheWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
-        if (dayOfTheWeek == Calendar.SATURDAY || dayOfTheWeek == Calendar.SUNDAY) {
-            assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
-                .isThrownBy(requestInfoLetter::getLetterString);
-        } else {
-            assertThat(requestInfoLetter.getLetterString()).isEqualTo(getExpectedWelshResult());
-            assertThat(requestInfoLetter.getFormCode()).isEqualTo(FormCode.BI_REQUESTINFO.getCode());
-            assertThat(requestInfoLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testWelshJuror().getJurorNumber());
+        assertThat(requestInfoLetter.getLetterString()).isEqualTo(getExpectedWelshResult());
+        assertThat(requestInfoLetter.getFormCode()).isEqualTo(FormCode.BI_REQUESTINFO.getCode());
+        assertThat(requestInfoLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testWelshJuror().getJurorNumber());
 
-            // Fax number is always empty
-            assertThat(requestInfoLetter.getData().get(11).getFormattedString())
-                .isEqualTo(LetterTestUtils.emptyField(12));
-            // Juror address 6 is always empty
-            assertThat(requestInfoLetter.getData().get(21).getFormattedString())
-                .isEqualTo(LetterTestUtils.emptyField(35));
-        }
+        // Fax number is always empty
+        assertThat(requestInfoLetter.getData().get(11).getFormattedString())
+            .isEqualTo(LetterTestUtils.emptyField(12));
+        // Juror address 6 is always empty
+        assertThat(requestInfoLetter.getData().get(21).getFormattedString())
+            .isEqualTo(LetterTestUtils.emptyField(35));
     }
 
     @Test
-    @DisableIfWeekend
     void confirmWelshWithoutWelshCourtProducesEnglishOutput() {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         setupEnglishExpectedResult();
         RequestInfoLetter requestInfoLetter = new RequestInfoLetter(LetterTestUtils.testWelshJurorPool(date),
-                                                        additionalInformation,
-                                                        LetterTestUtils.testCourtLocation(),
-                                                        LetterTestUtils.testBureauLocation());
+            additionalInformation,
+            LetterTestUtils.testCourtLocation(),
+            LetterTestUtils.testBureauLocation());
         assertThat(requestInfoLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
     }
 }

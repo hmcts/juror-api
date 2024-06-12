@@ -23,6 +23,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@SuppressWarnings({
+    "PMD.ExcessivePublicCount",
+    "PMD.TooManyMethods",
+    "PMD.GodClass"
+})
 public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegrationTest {
     private static final String UUID_REGEX = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
     private static final String TEMPLATE_SQL = "SELECT VALUE FROM juror_mod.APP_SETTING WHERE SETTING = ?";

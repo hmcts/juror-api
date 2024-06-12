@@ -7,8 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 import lombok.experimental.SuperBuilder;
+import uk.gov.hmcts.juror.api.moj.report.IDataType;
 
 import java.util.List;
 import java.util.Map;
@@ -17,7 +17,6 @@ import java.util.Map;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonSubTypes({
     @JsonSubTypes.Type(value = GroupedReportResponse.class, name = "Standard Response"),
@@ -40,16 +39,25 @@ public class AbstractReportResponse<T> {
     @Data
     @Builder
     @NoArgsConstructor
-    @ToString
     @AllArgsConstructor
     public static class TableData<T> {
         private List<Heading> headings;
         private T data;
 
+        public void removeData(IDataType... dataTypes) {
+            for (IDataType dataType : dataTypes) {
+                headings.removeIf(heading -> dataType.getId().equals(heading.getId()));
+            }
+            if (data instanceof StandardTableData standardTableData) {
+                standardTableData.removeDataTypes(dataTypes);
+            } else if (data instanceof GroupedTableData groupedTableData) {
+                groupedTableData.removeDataTypes(dataTypes);
+            }
+        }
+
         @Data
         @Builder
         @NoArgsConstructor
-        @ToString
         @AllArgsConstructor
         public static class Heading {
             private String id;

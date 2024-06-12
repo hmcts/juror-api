@@ -28,7 +28,6 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -65,9 +64,7 @@ public class BureauOfficerAllocatedRepliesControllerTest extends AbstractIntegra
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/BureauOfficerAllocateRepliesService_BacklogData.sql")
-    public void bureauAllocationReplies_happy() throws Exception {
-
-
+    public void bureauAllocationReplies_happy() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userType(UserType.BUREAU)
             .roles(Set.of(Role.MANAGER))
@@ -82,14 +79,8 @@ public class BureauOfficerAllocatedRepliesControllerTest extends AbstractIntegra
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE where "
             + "PROCESSING_STATUS = 'TODO' and STAFF_LOGIN IS NULL ", Integer.class)).isEqualTo(7);
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE where "
-                + "PROCESSING_STATUS = 'TODO' and STAFF_LOGIN IS NULL and URGENT = 'Y' AND SUPER_URGENT='N' ",
-            Integer.class)).isEqualTo(2);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE where "
-                + "PROCESSING_STATUS = 'TODO' and STAFF_LOGIN IS NULL and (URGENT = 'Y' OR SUPER_URGENT='Y') ",
+                + "PROCESSING_STATUS = 'TODO' and STAFF_LOGIN IS NULL and URGENT = 'Y'",
             Integer.class)).isEqualTo(3);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE where "
-                + "PROCESSING_STATUS = 'TODO' and STAFF_LOGIN IS NULL and URGENT = 'N' and  SUPER_URGENT='Y' ",
-            Integer.class)).isEqualTo(1);
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE where "
             + "PROCESSING_STATUS != 'TODO' ", Integer.class)).isEqualTo(2);
 
@@ -107,11 +98,12 @@ public class BureauOfficerAllocatedRepliesControllerTest extends AbstractIntegra
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(exchange.getBody().getBureauBacklogCount().getNonUrgent()).isEqualTo(4);
         assertThat(exchange.getBody().getBureauBacklogCount().getUrgent()).isEqualTo(3);
+
         assertThat(exchange.getBody().getData().size()).isEqualTo(6);
 
         List<BureauOfficerAllocatedData> carneson =
-            exchange.getBody().getData().stream().filter(r -> r.getLogin().equals("carneson"))
-                .collect(Collectors.toList());
+            exchange.getBody().getData().stream().filter(r -> "carneson".equals(r.getLogin()))
+                .toList();
         assertThat(carneson.size()).isEqualTo(1);
         assertThat(carneson.get(0).getName()).isEqualToIgnoringCase("Chad Arneson");
         assertThat(carneson.get(0).getAllReplies()).isEqualTo(8);
@@ -119,14 +111,21 @@ public class BureauOfficerAllocatedRepliesControllerTest extends AbstractIntegra
         assertThat(carneson.get(0).getNonUrgent()).isEqualTo(2);
 
         List<BureauOfficerAllocatedData> mruby =
-            exchange.getBody().getData().stream().filter(r -> r.getLogin().equals("mruby"))
-                .collect(Collectors.toList());
+            exchange.getBody().getData().stream().filter(r -> "mruby".equals(r.getLogin()))
+                .toList();
         assertThat(mruby.size()).isEqualTo(1);
         assertThat(mruby.get(0).getName()).isEqualToIgnoringCase("Martin Ruby");
         assertThat(mruby.get(0).getAllReplies()).isEqualTo(4);
         assertThat(mruby.get(0).getUrgent()).isEqualTo(2);
         assertThat(mruby.get(0).getNonUrgent()).isEqualTo(2);
 
+        exchange.getBody().getData()
+            .stream()
+            .filter(r -> !("carneson".equals(r.getLogin()) || "mruby".equals(r.getLogin())))
+            .forEach(bureauOfficerAllocatedData -> {
+                assertThat(bureauOfficerAllocatedData.getAllReplies()).isEqualTo(0);
+                assertThat(bureauOfficerAllocatedData.getUrgent()).isEqualTo(0);
+                assertThat(bureauOfficerAllocatedData.getNonUrgent()).isEqualTo(0);
+            });
     }
-
 }

@@ -40,7 +40,7 @@ import static uk.gov.hmcts.juror.api.bureau.service.JurorResponseSearchServiceIm
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@SuppressWarnings("PMD.LawOfDemeter")
+@SuppressWarnings("PMD.TooManyMethods")
 public class BureauResponsesControllerTest extends AbstractIntegrationTest {
 
     @Autowired
@@ -70,7 +70,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         "/db/standing_data.sql",
         "/db/BureauServiceImpl_getByProcessingStatus.sql"
     })
-    public void getTodo() throws Exception {
+    public void positiveGetTodo() throws Exception {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
@@ -104,7 +104,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         "/db/standing_data.sql",
         "/db/BureauServiceImpl_getByProcessingStatus.sql"
     })
-    public void getRepliesPending() throws Exception {
+    public void positiveGetRepliesPending() throws Exception {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
@@ -140,7 +140,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         "/db/standing_data.sql",
         "/db/BureauServiceImplTest_completedToday.sql"
     })
-    public void getCompletedToday() throws Exception {
+    public void testGCompletedToday() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .login("ncrawford")
@@ -174,7 +174,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         "/db/standing_data.sql",
         "/db/BureauServiceImpl_getByProcessingStatus.sql"
     })
-    public void getOverview() throws Exception {
+    public void testGOverview() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .login("ncrawford")

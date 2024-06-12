@@ -7,13 +7,13 @@ import org.springframework.test.context.jdbc.Sql;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 @Sql({
@@ -22,8 +22,7 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/letter/LetterController_initSummonsReminderLetter.sql"
 })
-@SuppressWarnings("PMD.LawOfDemeter")
-public class AbaccusReportITest extends AbstractStandardReportControllerITest {
+class AbaccusReportITest extends AbstractStandardReportControllerITest {
     @Autowired
     public AbaccusReportITest(TestRestTemplate template) {
         super(template, AbaccusReport.class);
@@ -65,7 +64,7 @@ public class AbaccusReportITest extends AbstractStandardReportControllerITest {
                     .dataType(LocalDate.class.getSimpleName())
                     .value(LocalDate.of(2024, 1, 1).format(DateTimeFormatter.ISO_DATE))
                     .build())
-            ).tableData(StandardReportResponse.TableData.<List<LinkedHashMap<String, Object>>>builder()
+            ).tableData(StandardReportResponse.TableData.<StandardTableData>builder()
                 .headings(List.of(StandardReportResponse.TableData.Heading.builder()
                         .id("document_code")
                         .name("Document code")
@@ -82,8 +81,7 @@ public class AbaccusReportITest extends AbstractStandardReportControllerITest {
                         .dataType("LocalDate")
                         .build()
                 ))
-                .data(
-                    List.of(
+                .data(StandardTableData.of(
                         new ReportLinkedMap<String, Object>()
                             .add("document_code", "5224AC")
                             .add("total_sent_for_printing", 1)

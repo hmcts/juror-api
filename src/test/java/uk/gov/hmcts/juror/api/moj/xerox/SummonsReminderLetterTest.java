@@ -5,19 +5,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
-import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.SummonsReminderLetter;
-import uk.gov.hmcts.juror.api.testsupport.DisableIfWeekend;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.Calendar;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 @ExtendWith(SpringExtension.class)
-@SuppressWarnings("PMD.LawOfDemeter")
 class SummonsReminderLetterTest extends AbstractLetterTest {
     @Override
     protected void setupEnglishExpectedResult() {
@@ -86,22 +81,16 @@ class SummonsReminderLetterTest extends AbstractLetterTest {
             LetterTestUtils.testCourtLocation(),
             LetterTestUtils.testBureauLocation());
 
-        int dayOfTheWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
-        if (dayOfTheWeek == Calendar.SATURDAY || dayOfTheWeek == Calendar.SUNDAY) {
-            assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
-                .isThrownBy(summonsReminderLetter::getLetterString);
-        } else {
-            assertThat(summonsReminderLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
-            assertThat(summonsReminderLetter.getFormCode()).isEqualTo(FormCode.ENG_SUMMONS_REMINDER.getCode());
-            assertThat(summonsReminderLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testJuror().getJurorNumber());
+        assertThat(summonsReminderLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
+        assertThat(summonsReminderLetter.getFormCode()).isEqualTo(FormCode.ENG_SUMMONS_REMINDER.getCode());
+        assertThat(summonsReminderLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testJuror().getJurorNumber());
 
-            // Juror address 6 is always empty
-            assertThat(summonsReminderLetter.getData().get(11).getFormattedString())
-                .isEqualTo(LetterTestUtils.emptyField(12));
-            // Fax number is always empty
-            assertThat(summonsReminderLetter.getData().get(20).getFormattedString())
-                .isEqualTo(LetterTestUtils.emptyField(35));
-        }
+        // Juror address 6 is always empty
+        assertThat(summonsReminderLetter.getData().get(11).getFormattedString())
+            .isEqualTo(LetterTestUtils.emptyField(12));
+        // Fax number is always empty
+        assertThat(summonsReminderLetter.getData().get(20).getFormattedString())
+            .isEqualTo(LetterTestUtils.emptyField(35));
     }
 
     @Test
@@ -115,27 +104,20 @@ class SummonsReminderLetterTest extends AbstractLetterTest {
                 LetterTestUtils.testBureauLocation(),
                 LetterTestUtils.testWelshCourtLocation());
 
-        int dayOfTheWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
-        if (dayOfTheWeek == Calendar.SATURDAY || dayOfTheWeek == Calendar.SUNDAY) {
-            assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
-                .isThrownBy(summonsReminderLetter::getLetterString);
-        } else {
-            assertThat(summonsReminderLetter.getLetterString()).isEqualTo(getExpectedWelshResult());
-            assertThat(summonsReminderLetter.getFormCode()).isEqualTo(FormCode.BI_SUMMONS_REMINDER.getCode());
-            assertThat(summonsReminderLetter.getJurorNumber()).isEqualTo(
-                LetterTestUtils.testWelshJuror().getJurorNumber());
+        assertThat(summonsReminderLetter.getLetterString()).isEqualTo(getExpectedWelshResult());
+        assertThat(summonsReminderLetter.getFormCode()).isEqualTo(FormCode.BI_SUMMONS_REMINDER.getCode());
+        assertThat(summonsReminderLetter.getJurorNumber()).isEqualTo(
+            LetterTestUtils.testWelshJuror().getJurorNumber());
 
-            // Juror address 6 is always empty
-            assertThat(summonsReminderLetter.getData().get(12).getFormattedString()).isEqualTo(
-                LetterTestUtils.emptyField(12));
-            // Fax number is always empty
-            assertThat(summonsReminderLetter.getData().get(21).getFormattedString()).isEqualTo(
-                LetterTestUtils.emptyField(35));
-        }
+        // Juror address 6 is always empty
+        assertThat(summonsReminderLetter.getData().get(12).getFormattedString()).isEqualTo(
+            LetterTestUtils.emptyField(12));
+        // Fax number is always empty
+        assertThat(summonsReminderLetter.getData().get(21).getFormattedString()).isEqualTo(
+            LetterTestUtils.emptyField(35));
     }
 
     @Test
-    @DisableIfWeekend
     void confirmWelshWithoutWelshCourtProducesEnglishOutput() {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         setupEnglishExpectedResult();

@@ -27,7 +27,6 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.StaffDetailDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffListDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffRosterResponseDto;
 import uk.gov.hmcts.juror.api.bureau.exception.BureauOptimisticLockingException;
-import uk.gov.hmcts.juror.api.bureau.service.BureauAuthenticationService;
 import uk.gov.hmcts.juror.api.bureau.service.UserService;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
@@ -45,7 +44,6 @@ import java.util.stream.Collectors;
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class BureauStaffController {
 
-    private final BureauAuthenticationService bureauAuthService;
     private final UserService userService;
 
 
@@ -91,7 +89,7 @@ public class BureauStaffController {
         description = "Update staff assignment to juror response")
     public ResponseEntity<StaffAssignmentResponseDto> changeStaffAssignment(
         @RequestBody @Validated StaffAssignmentRequestDto requestDto,
-        @Parameter(hidden = true) BureauJwtAuthentication principal) throws BureauOptimisticLockingException {
+        @Parameter(hidden = true) BureauJwtAuthentication principal) {
         log.info("Processing assignment {} by '{}'", requestDto, principal);
         final BureauJwtPayload jwtPayload = (BureauJwtPayload) principal.getPrincipal();
         try {
@@ -127,7 +125,7 @@ public class BureauStaffController {
         description = "Assign multiple responses to a single staff member")
     public ResponseEntity<OperationFailureListDto> changeMultipleAssignments(
         @RequestBody @Validated MultipleStaffAssignmentDto requestDto,
-        @Parameter(hidden = true) BureauJwtAuthentication principal) throws BureauOptimisticLockingException {
+        @Parameter(hidden = true) BureauJwtAuthentication principal) {
         final BureauJwtPayload jwtPayload = (BureauJwtPayload) principal.getPrincipal();
 
         try {
