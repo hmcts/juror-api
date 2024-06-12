@@ -2550,7 +2550,9 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(pendingCount).as("Expect there to be 2 pending rows").isEqualTo(2);
         }
 
-        private void verifyHeadingsAndTypesInformationRequest(ReissueLetterListResponseDto reissueLetterListResponseDto) {
+        private void verifyHeadingsAndTypesInformationRequest(
+            ReissueLetterListResponseDto reissueLetterListResponseDto) {
+
             assertThat(reissueLetterListResponseDto).isNotNull();
             List<String> headings = reissueLetterListResponseDto.getHeadings();
             assertThat(headings).isNotNull();

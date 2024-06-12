@@ -28,7 +28,6 @@ import uk.gov.hmcts.juror.api.moj.xerox.letters.WithdrawalLetter;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 import static uk.gov.hmcts.juror.api.moj.xerox.LetterBase.getDateOfLetter;
 
