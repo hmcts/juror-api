@@ -46,6 +46,7 @@ import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.service.CompleteServiceServiceImpl;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
+import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
 
 import java.time.LocalDate;
@@ -100,6 +101,9 @@ class TrialServiceImplTest {
 
     @Mock
     private JurorExpenseService jurorExpenseService;
+
+    @Mock
+    private JurorHistoryService jurorHistoryService;
 
     @InjectMocks
     TrialServiceImpl trialService;
@@ -340,6 +344,109 @@ class TrialServiceImplTest {
         assertThat(appearance.getAttendanceType()).as("Attendance type").isEqualTo(AttendanceType.HALF_DAY);
 
     }
+
+    @Test
+    void testReturnJuryConfirmAttendanceFullDay() {
+        final String trialNumber = "T100000000";
+        List<Panel> panelMembers = createPanelMembers(10, PanelResult.JUROR, trialNumber, IJurorStatus.JUROR);
+        when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415"))
+            .thenReturn(panelMembers);
+
+
+        for (Panel panel : panelMembers) {
+            Appearance appearance = createAppearance(panel.getJurorNumber());
+
+            when(jurorExpenseService.isLongTrialDay("415", panel.getJurorNumber(), LocalDate.now()))
+                .thenReturn(false);
+            when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
+                now())).thenReturn(Optional.of(appearance));
+        }
+
+        trialService.returnJury(payload, trialNumber, "415",
+            createReturnJuryDto(false, "09:00", "17:30"));
+
+        ArgumentCaptor<Appearance> appearanceArgumentCaptor = ArgumentCaptor.forClass(Appearance.class);
+
+        verify(panelRepository, times(1))
+            .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
+        verify(panelRepository, times(panelMembers.size())).saveAndFlush(any());
+        verify(jurorHistoryRepository, times(panelMembers.size())).save(any());
+        verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(appearanceArgumentCaptor.capture());
+        Appearance appearance = appearanceArgumentCaptor.getValue();
+        assertThat(appearance.getSatOnJury()).as("Sat on Jury").isTrue();
+        assertThat(appearance.getAttendanceType()).as("Attendance type").isEqualTo(AttendanceType.FULL_DAY);
+
+    }
+
+    @Test
+    void testReturnJuryConfirmAttendanceFullDayLongTrial() {
+        final String trialNumber = "T100000000";
+        List<Panel> panelMembers = createPanelMembers(10, PanelResult.JUROR, trialNumber, IJurorStatus.JUROR);
+        when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415"))
+            .thenReturn(panelMembers);
+
+
+        for (Panel panel : panelMembers) {
+            Appearance appearance = createAppearance(panel.getJurorNumber());
+
+            when(jurorExpenseService.isLongTrialDay("415", panel.getJurorNumber(), LocalDate.now()))
+                .thenReturn(true);
+            when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
+                now())).thenReturn(Optional.of(appearance));
+        }
+
+        trialService.returnJury(payload, trialNumber, "415",
+            createReturnJuryDto(false, "09:00", "17:30"));
+
+        ArgumentCaptor<Appearance> appearanceArgumentCaptor = ArgumentCaptor.forClass(Appearance.class);
+
+        verify(panelRepository, times(1))
+            .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
+        verify(panelRepository, times(panelMembers.size())).saveAndFlush(any());
+        verify(jurorHistoryRepository, times(panelMembers.size())).save(any());
+        verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(appearanceArgumentCaptor.capture());
+        Appearance appearance = appearanceArgumentCaptor.getValue();
+        assertThat(appearance.getSatOnJury()).as("Sat on Jury").isTrue();
+        assertThat(appearance.getAttendanceType()).as("Attendance type").isEqualTo(AttendanceType.FULL_DAY_LONG_TRIAL);
+
+    }
+
+    @Test
+    void testReturnJuryConfirmAttendanceHalfDayLongTrial() {
+        final String trialNumber = "T100000000";
+        List<Panel> panelMembers = createPanelMembers(10, PanelResult.JUROR, trialNumber, IJurorStatus.JUROR);
+        when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415"))
+            .thenReturn(panelMembers);
+
+
+        for (Panel panel : panelMembers) {
+            Appearance appearance = createAppearance(panel.getJurorNumber());
+
+            appearance.setTimeIn(null);
+            appearance.setTimeOut(null);
+
+            when(jurorExpenseService.isLongTrialDay("415", panel.getJurorNumber(), LocalDate.now()))
+                .thenReturn(true);
+            when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
+                now())).thenReturn(Optional.of(appearance));
+        }
+
+        trialService.returnJury(payload, trialNumber, "415",
+            createReturnJuryDto(false, "09:00", "11:30"));
+
+        ArgumentCaptor<Appearance> appearanceArgumentCaptor = ArgumentCaptor.forClass(Appearance.class);
+
+        verify(panelRepository, times(1))
+            .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
+        verify(panelRepository, times(panelMembers.size())).saveAndFlush(any());
+        verify(jurorHistoryRepository, times(panelMembers.size())).save(any());
+        verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(appearanceArgumentCaptor.capture());
+        Appearance appearance = appearanceArgumentCaptor.getValue();
+        assertThat(appearance.getSatOnJury()).as("Sat on Jury").isTrue();
+        assertThat(appearance.getAttendanceType()).as("Attendance type").isEqualTo(AttendanceType.HALF_DAY_LONG_TRIAL);
+
+    }
+
 
     @Test
     void testReturnJuryNoConfirmAttendanceNullTimes() {
