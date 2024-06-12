@@ -8,9 +8,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
@@ -45,11 +42,10 @@ import uk.gov.hmcts.juror.api.moj.repository.trial.JudgeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.service.CompleteServiceServiceImpl;
-import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
+import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -323,7 +319,7 @@ class TrialServiceImplTest {
                 appearance.setTimeOut(LocalTime.parse(checkInTime));
             }
 
-            when(jurorExpenseService.isLongTrialDay("415", panel.getJurorNumber(), LocalDate.now()))
+            when(jurorExpenseService.isLongTrialDay("415", panel.getJurorNumber(), now()))
                 .thenReturn(false);
             when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
                 now())).thenReturn(Optional.of(appearance));
@@ -356,7 +352,7 @@ class TrialServiceImplTest {
         for (Panel panel : panelMembers) {
             Appearance appearance = createAppearance(panel.getJurorNumber());
 
-            when(jurorExpenseService.isLongTrialDay("415", panel.getJurorNumber(), LocalDate.now()))
+            when(jurorExpenseService.isLongTrialDay("415", panel.getJurorNumber(), now()))
                 .thenReturn(false);
             when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
                 now())).thenReturn(Optional.of(appearance));
@@ -389,7 +385,7 @@ class TrialServiceImplTest {
         for (Panel panel : panelMembers) {
             Appearance appearance = createAppearance(panel.getJurorNumber());
 
-            when(jurorExpenseService.isLongTrialDay("415", panel.getJurorNumber(), LocalDate.now()))
+            when(jurorExpenseService.isLongTrialDay("415", panel.getJurorNumber(), now()))
                 .thenReturn(true);
             when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
                 now())).thenReturn(Optional.of(appearance));
@@ -425,7 +421,7 @@ class TrialServiceImplTest {
             appearance.setTimeIn(null);
             appearance.setTimeOut(null);
 
-            when(jurorExpenseService.isLongTrialDay("415", panel.getJurorNumber(), LocalDate.now()))
+            when(jurorExpenseService.isLongTrialDay("415", panel.getJurorNumber(), now()))
                 .thenReturn(true);
             when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
                 now())).thenReturn(Optional.of(appearance));
@@ -562,44 +558,6 @@ class TrialServiceImplTest {
         });
 
         return jury;
-    }
-
-    private List<Trial> createTrialList() {
-        Trial trial1 = new Trial();
-        trial1.setTrialNumber("T100000025");
-        trial1.setCourtLocation(createCourtLocation());
-        trial1.setDescription("CHESTER");
-        trial1.setCourtroom(createCourtroom());
-        trial1.setJudge(createJudge());
-        trial1.setTrialType(TrialType.CRI);
-        trial1.setTrialStartDate(now().plusMonths(1));
-        trial1.setAnonymous(Boolean.TRUE);
-
-        Courtroom courtroom = createCourtroom();
-        courtroom.setId(2L);
-        courtroom.setCourtLocation(trial1.getCourtLocation());
-        courtroom.setRoomNumber("68");
-        courtroom.setDescription("Courtroom 2");
-
-        Trial trial2 = new Trial();
-        trial2.setTrialNumber("T100000024");
-        trial2.setCourtLocation(createCourtLocation());
-        trial2.setDescription("CHESTER");
-        trial2.setCourtroom(courtroom);
-        trial2.setJudge(createJudge());
-        trial2.setTrialType(TrialType.CIV);
-        trial2.setTrialStartDate(now().plusMonths(2));
-        trial2.setAnonymous(Boolean.FALSE);
-
-        List<Trial> trialList = new ArrayList<>();
-        trialList.add(trial1);
-        trialList.add(trial2);
-
-        return trialList;
-    }
-
-    private Pageable createPageable() {
-        return PageRequest.of(0, 25, Sort.by("trialNumber").descending());
     }
 
     private List<String> createCourtList() {

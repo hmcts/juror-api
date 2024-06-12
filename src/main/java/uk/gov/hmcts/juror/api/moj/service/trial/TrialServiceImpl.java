@@ -40,9 +40,9 @@ import uk.gov.hmcts.juror.api.moj.repository.trial.JudgeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.service.CompleteServiceService;
-import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
+import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorHistoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.PanelUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
@@ -90,6 +90,8 @@ public class TrialServiceImpl implements TrialService {
 
     @Autowired
     private JurorAppearanceService jurorAppearanceService;
+
+    @Autowired
     private JurorExpenseService jurorExpenseService;
 
     @Autowired
@@ -97,7 +99,7 @@ public class TrialServiceImpl implements TrialService {
 
     private static final int PAGE_SIZE = 25;
     private static final String CANNOT_FIND_TRIAL_ERROR_MESSAGE = "Cannot find trial with number: %s for "
-        + "court location %s";
+                                                                  + "court location %s";
 
     @Override
     public TrialSummaryDto createTrial(BureauJwtPayload payload, TrialDto trialDto) {
@@ -105,7 +107,9 @@ public class TrialServiceImpl implements TrialService {
         if (trialRepository.existsByTrialNumberAndCourtLocationLocCode(trialDto.getCaseNumber(),
             trialDto.getCourtLocation())) {
             throw new MojException.BadRequest(String.format("Unable to create trial with case number: %s at "
-                    + "location code %s (case number already in use at this location)", trialDto.getCaseNumber(),
+                                                            + "location code %s (case number already in use at this "
+                                                            + "location)",
+                trialDto.getCaseNumber(),
                 trialDto.getCourtLocation()), null);
         }
 
@@ -191,7 +195,7 @@ public class TrialServiceImpl implements TrialService {
     public TrialSummaryDto getTrialSummary(BureauJwtPayload payload, String trialNo, String locCode) {
         if (!payload.getStaff().getCourts().contains(locCode)) {
             throw new MojException.Forbidden("Current user has insufficient permission "
-                + "to view the trial details for the court location", null);
+                                             + "to view the trial details for the court location", null);
         }
 
         Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNo, locCode)
