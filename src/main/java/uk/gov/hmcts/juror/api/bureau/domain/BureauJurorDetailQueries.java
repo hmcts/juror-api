@@ -6,11 +6,9 @@ import com.querydsl.core.types.dsl.StringPath;
 import org.apache.commons.lang3.StringUtils;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
-import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QModJurorDetail;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -33,8 +31,6 @@ public class BureauJurorDetailQueries {
     private static final String YES = "Y";
     private static final String OWNER_IS_BUREAU = "400";
 
-
-    //  private static final QBureauJurorDetail bureauJurorDetail = QBureauJurorDetail.bureauJurorDetail;
     private static final QModJurorDetail bureauJurorDetail = QModJurorDetail.modJurorDetail;
 
 
@@ -126,12 +122,8 @@ public class BureauJurorDetailQueries {
     }
 
     public static BooleanExpression filterByActiveStatus() {
-
-        return null;
+        return bureauJurorDetail.isActive.isTrue();
     }
-
-
-
 
     /**
      * Builds matchers to allow for postcode variation.
