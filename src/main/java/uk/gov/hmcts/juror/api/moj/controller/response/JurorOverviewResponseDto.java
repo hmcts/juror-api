@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.IdCheckCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurorresponse.ReasonableAdjustmentsEnum;
@@ -23,6 +24,7 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Response DTO for Juror overview on the Juror record.
@@ -89,11 +91,16 @@ public class JurorOverviewResponseDto {
         this.commonDetails = new JurorDetailsCommonResponseDto(jurorPool, jurorStatusRepository,
             pendingJurorRepository);
 
-        List<Appearance> appearanceList = appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumber(
+        List<Appearance> appearanceList = appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumberAndAppearanceStageIn(
             SecurityUtil.getLocCode(),
-            jurorPool.getJurorNumber()
+            jurorPool.getJurorNumber(),
+            Set.of(AppearanceStage.EXPENSE_ENTERED,
+                AppearanceStage.EXPENSE_AUTHORISED,
+                AppearanceStage.EXPENSE_EDITED)
         );
-        this.attendances = appearanceList.size();
+        this.attendances = appearanceList.stream()
+            .filter(appearance -> !AttendanceType.ABSENT.equals(appearance.getAttendanceType()))
+            .count();
         this.absences = appearanceList.stream()
             .filter(appearance -> AttendanceType.ABSENT.equals(appearance.getAttendanceType()))
             .count();
