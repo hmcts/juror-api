@@ -36,12 +36,6 @@ public class ModifyConfirmedAttendanceDto {
     @Schema(description = "Juror to update attendance record of")
     private String jurorNumber;
 
-    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "The location code of the court of the "
-        + "appearance to modify")
-    @NotBlank(message = "Request should contain a valid location code")
-    @CourtLocationCode
-    private String locCode;
-
     @NotNull(message = "attendanceDate is mandatory")
     @Schema(description = "Attendance date for jury service")
     @JsonFormat(pattern = "yyyy-MM-dd")

@@ -340,7 +340,6 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     @Override
     @Transactional
     public void modifyConfirmedAttendance(ModifyConfirmedAttendanceDto request) {
-        SecurityUtil.validateCourtLocationPermitted(request.getLocCode());
         final LocalDate attendanceDate = request.getAttendanceDate();
         final String jurorNumber = request.getJurorNumber();
 
@@ -350,7 +349,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         // get the appearance record if it exists
         Appearance appearance =
             appearanceRepository.findByCourtLocationLocCodeAndJurorNumberAndAttendanceDate(
-                request.getLocCode(),
+                SecurityUtil.getLocCode(),
                 jurorNumber,
                 attendanceDate)
                 .orElseThrow(() -> new MojException.NotFound("No valid appearance record found", null));
