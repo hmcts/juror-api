@@ -49,11 +49,6 @@ withPipeline(type, product, component) {
   enableSlackNotifications('#juror-build-notices')
   syncBranchesWithMaster(branchesToSync)
 
-  env.JWT_SECRET_BUREAU = 'W3N1cGVyLXNlY3JldC1rZXktYnVyZWF1XVtzdXBlci1zZWNyZXQta2V5LWJ1cmVhdV1bc3VwZXItc2VjcmV0LWtleS1idXJlYXVd'
-  env.JWT_SECRET_PUBLIC = 'W3N1cGVyLXNlY3JldC1rZXldW3N1cGVyLXNlY3JldC1rZXldW3N1cGVyLXNlY3JldC1rZXld'
-  env.JWT_SECRET_HMAC = 'W3N1cGVyLXNlY3JldC1rZXktbG9naW5dW3N1cGVyLXNlY3JldC1rZXktbG9naW5dW3N1cGVyLXNlY3JldC1rZXktbG9naW5d'
-  env.SCHEDULER_SERVICE_SECRET = 'WW91clZlcnlWZXJ5VmVyeVNlY3JldEtleVRoYXRJc1NvU2VjcmV0SURvbnRFdmVuS25vd0l0'
-  env.PNC_CHECK_SERVICE_SECRET = 'WW91clZlcnlWZXJ5VmVyeVNlY3JldEtleVRoYXRJc1NvU2VjcmV0SURvbnRFdmVuS25vd0l0'
   env.SCHEDULER_SERVICE_SUBJECT = 'external-api@juror-scheduler-api.hmcts.net'
   env.SCHEDULER_SERVICE_HOST = 'juror-scheduler-api.staging.platform.hmcts.net'
   env.SCHEDULER_SERVICE_PORT = '443'
