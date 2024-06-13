@@ -980,8 +980,10 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
             if (activePoolsData.isEmpty()) {
                 DeferralOptionsDto.DeferralOptionDto deferralOption = new DeferralOptionsDto.DeferralOptionDto();
+                // use the preferred date for deferral maintenance if no active pools are found
+                poolSummary.setWeekCommencing(preferredDate);
                 deferralOption.setUtilisation(currentlyDeferredRepository.count(filterByCourtAndDate(owner,
-                    currentCourtLocation, weekCommencing)));
+                    currentCourtLocation, preferredDate)));
                 deferralOption.setUtilisationDescription(PoolUtilisationDescription.IN_MAINTENANCE);
                 deferralOptions.add(deferralOption);
             } else {
