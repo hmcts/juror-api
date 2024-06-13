@@ -133,7 +133,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             deferralDatesRequestDto.setDeferralDates(Arrays.asList(
                 LocalDate.of(2023, 5, 30),
                 LocalDate.of(2023, 6, 12),
-                LocalDate.of(2023, 6, 26)));
+                LocalDate.of(2023, 6, 28))); // Wednesday
 
             RequestEntity<DeferralDatesRequestDto> requestEntity = new RequestEntity<>(deferralDatesRequestDto,
                 httpHeaders, POST, URI.create(URL_PREFIX + JUROR_555555551));
@@ -228,20 +228,20 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
              * expect no active pools to be available as deferral options - use deferral maintenance
              */
             DeferralOptionsDto.OptionSummaryDto thirdOption = optionsSummary.stream()
-                .filter(option -> option.getWeekCommencing().equals(LocalDate.of(2023, 6, 26)))
+                .filter(option -> option.getWeekCommencing().equals(LocalDate.of(2023, 6, 28)))
                 .findFirst()
                 .orElse(null);
             assertThat(thirdOption)
-                .as("Preferred deferral date of 2023-06-26 is a Monday, expect the deferral options to check "
-                    + "for week commencing 2023-06-26 (the same day)")
+                .as("Preferred deferral date of 2023-06-28 is a Wednesday, expect the deferral options to check "
+                    + "for week commencing 2023-06-28 (the same day)")
                 .isNotNull();
             List<DeferralOptionsDto.DeferralOptionDto> deferralOptions3 = thirdOption.getDeferralOptions();
             assertThat(deferralOptions3.size()).as(EXPECT_POOL_UTILISATION).isEqualTo(1);
-            // get first deferral option for w/c 2023-06-26, no available pools - deferral maintenance
+            // get first deferral option for 2023-06-28, no available pools - deferral maintenance
             DeferralOptionsDto.DeferralOptionDto deferralMaintenance = deferralOptions3.stream()
                 .findFirst()
                 .orElse(null);
-            validateDeferralMaintenanceOptions(deferralMaintenance, 2);
+            validateDeferralMaintenanceOptions(deferralMaintenance, 0);
         }
 
         @Test
