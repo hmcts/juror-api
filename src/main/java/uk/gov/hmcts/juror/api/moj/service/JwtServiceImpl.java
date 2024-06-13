@@ -27,7 +27,7 @@ public class JwtServiceImpl implements JwtService {
     private String bureauSecret;
 
     @Value("${jwt.expiry.bureau}")
-    private String bureauExpiry;
+    private Long bureauExpiry;
 
     @Autowired
     public JwtServiceImpl(Clock clock) {
@@ -95,7 +95,7 @@ public class JwtServiceImpl implements JwtService {
             id,
             "juror",
             null,
-            Long.parseLong(bureauExpiry),
+            bureauExpiry,
             getSigningKey(bureauSecret),
             payload.toClaims()
         );
