@@ -215,7 +215,7 @@ public class PrintDataServiceImpl implements PrintDataService {
     @Override
     public void checkLetterInBulkPrint(String jurorNumber, String formType, LocalDate creationDate,
                                        boolean extractedFlag) {
-        if (!bulkPrintDataRepository.findByJurorNoAndFormTypeAndCreationDateAndExtractedFlag(jurorNumber, formType,
+        if (!bulkPrintDataRepository.findByJurorNumberAndFormTypeAndCreationDateAndExtractedFlag(jurorNumber, formType,
             creationDate, extractedFlag).isEmpty()) {
             throw new MojException.BusinessRuleViolation(
                 "Letter already exists in bulk print queue for the same day", DAY_ALREADY_EXISTS);

@@ -162,7 +162,7 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
     }
 
     @Override
-    public List<BulkPrintData> findByJurorNoAndFormTypeAndCreationDateAndExtractedFlag(String jurorNumber,
+    public List<BulkPrintData> findByJurorNumberAndFormTypeAndCreationDateAndExtractedFlag(String jurorNumber,
                                                                                        String formType,
                                                                                        LocalDate creationDate,
                                                                                        boolean extractedFlag) {
