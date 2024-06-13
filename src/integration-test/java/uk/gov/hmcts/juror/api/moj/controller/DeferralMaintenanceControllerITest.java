@@ -58,9 +58,11 @@ import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription.CONFIRMED;
 import static uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription.NEEDED;
 import static uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription.SURPLUS;
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.DAY_ALREADY_EXISTS;
 import static uk.gov.hmcts.juror.api.testvalidation.DeferralMaintenanceValidation.validateDeferralMaintenanceOptions;
 
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
@@ -122,7 +124,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         static final String URL_PREFIX = "/api/v1/moj/deferral-maintenance/available-pools/";
 
         @Test
-        void testGDeferralOptionsForDatesBureauUserHappyPath() throws Exception {
+        void testGDeferralOptionsForDatesBureauUserHappyPath() {
             final String bureauJwt = createJwt(BUREAU_USER, OWNER_400);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -243,7 +245,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         }
 
         @Test
-        void testGDeferralOptionsForDatesCourtUserHappyPath() throws Exception {
+        void testGDeferralOptionsForDatesCourtUserHappyPath() {
             final String bureauJwt = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -374,7 +376,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         }
 
         @Test
-        void testGDeferralOptionsForDatesBureauUserInvalidAccess() throws Exception {
+        void testGDeferralOptionsForDatesBureauUserInvalidAccess() {
             final String bureauJwt = createJwt(BUREAU_USER, OWNER_400);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -392,7 +394,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         }
 
         @Test
-        void testGDeferralOptionsForDatesCourtUserInvalidAccess() throws Exception {
+        void testGDeferralOptionsForDatesCourtUserInvalidAccess() {
             final String bureauJwt = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -410,7 +412,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         }
 
         @Test
-        void testGDeferralOptionsForDatesNoDates() throws Exception {
+        void testGDeferralOptionsForDatesNoDates() {
             final String bureauJwt = createJwt(BUREAU_USER, OWNER_400);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -429,7 +431,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/DeferralMaintenanceController_initDeferralOptions.sql"})
-        void testGDeferralOptionsForDatesTooManyDates() throws Exception {
+        void testGDeferralOptionsForDatesTooManyDates() {
             final String bureauJwt = createJwt(BUREAU_USER, OWNER_400);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -453,7 +455,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         static final String URL_POSTFIX = "/deferral_dates";
 
         @Test
-        void testGDeferralOptionsForDatesAndCourtLocationBureauUserHappyPath() throws Exception {
+        void testGDeferralOptionsForDatesAndCourtLocationBureauUserHappyPath() {
             final String bureauJwt = createJwt(BUREAU_USER, OWNER_400);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -572,7 +574,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         }
 
         @Test
-        void testGDeferralOptionsForDatesAndCourtLocationCourtUserHappyPath() throws Exception {
+        void testGDeferralOptionsForDatesAndCourtLocationCourtUserHappyPath() {
             final String bureauJwt = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -704,7 +706,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/DeferralMaintenanceController_initDeferralOptions.sql"})
-        void testGDeferralOptionsForDatesAndCourtLocationNoDates() throws Exception {
+        void testGDeferralOptionsForDatesAndCourtLocationNoDates() {
             final String bureauJwt = createJwt(BUREAU_USER, OWNER_400);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -729,7 +731,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         static final String URL_PREFIX = "/api/v1/moj/deferral-maintenance/deferral-dates/";
 
         @Test
-        void testGPreferredDatesBureauUserHappyPath() throws Exception {
+        void testGPreferredDatesBureauUserHappyPath() {
             final String bureauJwt = createJwt(BUREAU_USER, OWNER_400);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -753,7 +755,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         }
 
         @Test
-        void testGPreferredDatesCourtUserHappyPath() throws Exception {
+        void testGPreferredDatesCourtUserHappyPath() {
             final String bureauJwt = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -777,7 +779,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         }
 
         @Test
-        void testGPreferredDatesCourtUserInvalidAccess() throws Exception {
+        void testGPreferredDatesCourtUserInvalidAccess() {
             final String bureauJwt = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -791,7 +793,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         }
 
         @Test
-        void testGPreferredDatesBureauUserNoDigitalResponse() throws Exception {
+        void testGPreferredDatesBureauUserNoDigitalResponse() {
             final String jurorNumber = "555555550";
             final String login = "BUREAU_USER";
             final String bureauJwt = createJwt(login, "400");
@@ -807,7 +809,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         }
 
         @Test
-        void testGPreferredDatesBureauUserNoDates() throws Exception {
+        void testGPreferredDatesBureauUserNoDates() {
             final String bureauJwt = createJwt(BUREAU_USER, OWNER_400);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -834,7 +836,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         static final String URL_PREFIX = "/api/v1/moj/deferral-maintenance/juror/defer/";
 
         @Test
-        void bureauProcessJurorActivePoolPaper() throws Exception {
+        void bureauProcessJurorActivePoolPaper() {
 
             final String bureauJwt = createJwt(BUREAU_USER, OWNER_400);
 
@@ -868,7 +870,25 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         }
 
         @Test
-        void bureauOwnedCourtUserProcessJurorActivePoolPaper() throws Exception {
+        void bureauProcessJurorAlreadyInBulkPrintForGivenDate() {
+            final String bureauJwt = createJwt(BUREAU_USER, OWNER_400);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            ResponseEntity<String> response = template.exchange(new RequestEntity<>(
+                createDeferralReasonRequestDtoToActivePool(ReplyMethod.PAPER),
+                httpHeaders, POST, URI.create(URL_PREFIX + JUROR_555555552)), String.class);
+
+            assertThat(response.getStatusCode()).as("HTTP status unprocessable entity expected")
+                .isEqualTo(UNPROCESSABLE_ENTITY);
+
+            assertBusinessRuleViolation(response, "Letter already exists in bulk print queue for the same day",
+                DAY_ALREADY_EXISTS);
+        }
+
+
+        @Test
+        void bureauOwnedCourtUserProcessJurorActivePoolPaper() {
             final String bureauJwt = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -882,7 +902,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         }
 
         @Test
-        void courtProcessJurorActivePoolDigital() throws Exception {
+        void courtProcessJurorActivePoolDigital() {
             final String bureauJwt = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -915,7 +935,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         }
 
         @Test
-        void bureauProcessJurorDeferralMaintenancePaper() throws Exception {
+        void bureauProcessJurorDeferralMaintenancePaper() {
             final String bureauJwt = createJwt(BUREAU_USER, OWNER_400);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -933,7 +953,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         }
 
         @Test
-        void courtProcessJurorDeferralMaintenanceDigital() throws Exception {
+        void courtProcessJurorDeferralMaintenanceDigital() {
             final String bureauJwt = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -987,7 +1007,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         static final String URL_PREFIX = "/api/v1/moj/deferral-maintenance/deferrals/change-deferral-date/";
 
         @Test
-        void changeDeferralDateActivePoolNotFound() throws Exception {
+        void changeDeferralDateActivePoolNotFound() {
             final String bureauJwt = createJwt(BUREAU_USER, OWNER_400);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -1001,7 +1021,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         }
 
         @Test
-        void changeDeferralDateActivePoolForbidden() throws Exception {
+        void changeDeferralDateActivePoolForbidden() {
             final String courtJwt = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
@@ -1015,7 +1035,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         }
 
         @Test
-        void changeDateDeferralMaintenanceHappyPath() throws Exception {
+        void changeDateDeferralMaintenanceHappyPath() {
             final String bureauJwt = createJwt(BUREAU_USER, OWNER_400);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -1035,7 +1055,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         }
 
         @Test
-        void changeDeferralDateActivePoolBureauUser() throws Exception {
+        void changeDeferralDateActivePoolBureauUser() {
             final String bureauJwt = createJwt(BUREAU_USER, OWNER_400);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -1049,7 +1069,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         }
 
         @Test
-        void courtUserChangeDateDeferralMaintenance() throws Exception {
+        void courtUserChangeDateDeferralMaintenance() {
             final String courtJwt = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
@@ -1068,7 +1088,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         }
 
         @Test
-        void courtUserChangeDateActivePool() throws Exception {
+        void courtUserChangeDateActivePool() {
             final String courtJwt = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
@@ -1134,7 +1154,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         static final String URL = "/api/v1/moj/deferral-maintenance/deferrals/allocate-jurors-to-pool";
 
         @Test
-        void allocateJurorFromDeferralMaintenanceSingleJuror() throws Exception {
+        void allocateJurorFromDeferralMaintenanceSingleJuror() {
             final String bureauJwt = createJwt(BUREAU_USER, OWNER_400);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -1174,7 +1194,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         }
 
         @Test
-        void allocateJurorFromDeferralMaintenanceMultipleJurors() throws Exception {
+        void allocateJurorFromDeferralMaintenanceMultipleJurors() {
             final String bureauJwt = createJwt(BUREAU_USER, OWNER_400);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -1215,7 +1235,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         }
 
         @Test
-        void allocateJurorFromDeferralMaintenanceSingleJurorCourtUserPoolRequestNotFound() throws Exception {
+        void allocateJurorFromDeferralMaintenanceSingleJurorCourtUserPoolRequestNotFound() {
             final String bureauJwt = createJwt(BUREAU_USER, OWNER_400);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -1231,7 +1251,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         }
 
         @Test
-        void allocateJurorFromDeferralMaintenanceSingleJurorCourtUserPoolMemberInvalidAccess() throws Exception {
+        void allocateJurorFromDeferralMaintenanceSingleJurorCourtUserPoolMemberInvalidAccess() {
             final String courtJwt = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
@@ -1263,7 +1283,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
         @Test
         @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False positive
-        void testGDeferralsByCourtLocationCodeBureauUser() throws Exception {
+        void testGDeferralsByCourtLocationCodeBureauUser() {
             final String bureauJwt = createJwt(BUREAU_USER, OWNER_400);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -1281,7 +1301,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
         @Test
         @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False positive
-        void testGDeferralsByCourtLocationCodeCourtUser() throws Exception {
+        void testGDeferralsByCourtLocationCodeCourtUser() {
             final String courtJwt = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
@@ -1305,7 +1325,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         static final String URL = "/api/v1/moj/deferral-maintenance/available-pools/415";
 
         @Test
-        void findActivePoolsForCourtLocationNullMaxDate() throws Exception {
+        void findActivePoolsForCourtLocationNullMaxDate() {
             final String courtJwt = createJwt(BUREAU_USER, OWNER_400);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
@@ -1332,7 +1352,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/DeferralMaintenance_DeleteDeferralTest.sql"})
-        void deleteDeferredRecordHappyPath() throws Exception {
+        void deleteDeferredRecordHappyPath() {
             final String bureauJwt = createJwt(BUREAU_USER, OWNER_400);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -1359,7 +1379,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/DeferralMaintenance_DeleteDeferralTest.sql"})
-        void deleteDeferredRecordJurorNotFound() throws Exception {
+        void deleteDeferredRecordJurorNotFound() {
             final String bureauJwt = createJwt(BUREAU_USER, OWNER_400);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -1385,7 +1405,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/DeferralMaintenance_DeleteDeferralTest.sql"})
-        void deleteDeferredRecordWrongAccess() throws Exception {
+        void deleteDeferredRecordWrongAccess() {
             final String courtJwt = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
@@ -1416,7 +1436,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/DeferralMaintenanceController_postponeJuror.sql"})
-        void bureauPostponeJurorActivePool() throws Exception {
+        void bureauPostponeJurorActivePool() {
             setHeaders(BUREAU_USER, OWNER_400, UserType.BUREAU);
 
             ProcessJurorPostponementRequestDto request =
@@ -1460,7 +1480,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/DeferralMaintenanceController_postponeJuror.sql"})
-        void courtPostponeJurorActivePool() throws Exception {
+        void courtPostponeJurorActivePool() {
             setHeaders(COURT_USER, OWNER_415, UserType.COURT);
 
             ProcessJurorPostponementRequestDto request =
@@ -1504,7 +1524,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/DeferralMaintenanceController_postponeJuror.sql"})
-        void bureauPostponeJurorDeferralMaintenance() throws Exception {
+        void bureauPostponeJurorDeferralMaintenance() {
             setHeaders(BUREAU_USER, OWNER_400, UserType.BUREAU);
 
             ProcessJurorPostponementRequestDto request = new ProcessJurorPostponementRequestDto();
@@ -1544,7 +1564,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/DeferralMaintenanceController_postponeJuror.sql"})
-        void bureauPostponeJurorToTheSamePool() throws Exception {
+        void bureauPostponeJurorToTheSamePool() {
             setHeaders(BUREAU_USER, OWNER_400, UserType.BUREAU);
 
             ResponseEntity<MojException.BadRequest> response = template.exchange(new RequestEntity<>(
@@ -1556,7 +1576,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         }
 
         @Test
-        void bureauPostponeJurorWithAnInvalidCode() throws Exception {
+        void bureauPostponeJurorWithAnInvalidCode() {
             setHeaders(BUREAU_USER, OWNER_400, UserType.BUREAU);
 
             ProcessJurorPostponementRequestDto request =
@@ -1571,7 +1591,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         }
 
         @Test
-        void bureauPostponeJurorForNonExistingJuror() throws Exception {
+        void bureauPostponeJurorForNonExistingJuror() {
             setHeaders(BUREAU_USER, OWNER_400, UserType.BUREAU);
 
             ProcessJurorPostponementRequestDto request =
@@ -1585,7 +1605,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         }
 
         @Test
-        void bureauPostponeJurorPoolNumberDoesNotExist() throws Exception {
+        void bureauPostponeJurorPoolNumberDoesNotExist() {
             setHeaders(BUREAU_USER, OWNER_400, UserType.BUREAU);
 
             ProcessJurorPostponementRequestDto request =
@@ -1600,7 +1620,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         }
 
         @Test
-        void courtPostponeJurorNoJurorsInRequest() throws Exception {
+        void courtPostponeJurorNoJurorsInRequest() {
             setHeaders(COURT_USER, OWNER_415, UserType.COURT);
 
             ProcessJurorPostponementRequestDto request = createProcessJurorPostponementRequestDto(new ArrayList<>());
@@ -1614,7 +1634,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         }
 
         @Test
-        void courtPostponeJurorNullJurorsInRequest() throws Exception {
+        void courtPostponeJurorNullJurorsInRequest() {
             setHeaders(COURT_USER, OWNER_415, UserType.COURT);
 
             ProcessJurorPostponementRequestDto request = createProcessJurorPostponementRequestDto(new ArrayList<>());
@@ -1627,7 +1647,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
                 .isEqualTo(BAD_REQUEST);
         }
 
-        private void setHeaders(String user, String owner, UserType userType) throws Exception {
+        private void setHeaders(String user, String owner, UserType userType) {
             final String bureauJwt = createJwt(user, owner, userType);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);

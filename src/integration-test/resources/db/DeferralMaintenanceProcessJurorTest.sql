@@ -204,3 +204,7 @@ VALUES('555555569', TIMESTAMP '2023-03-08 00:00:00.000000', 'Mr', 'Test', 'Perso
  NULL, 'Y', NULL, 'N', NULL, 'N', NULL, 'N', NULL, 'C', '29/05/2023, 12/6/2023, 3/7/2023', NULL, NULL, 'N', 0, NULL,
  NULL, NULL, '01111111110', '01234098765', 'new_email@address.com', NULL, NULL, NULL, NULL, NULL, NULL, 'N', NULL,
  'N', 'Paper');
+
+ INSERT INTO juror_mod.bulk_print_data (juror_no,creation_date,form_type,detail_rec,extracted_flag,digital_comms) VALUES
+ ('555555552',current_date,'5229A','18 JANUARY 2024   THE CROWN COURT AT CHESTER
+ JURY CENTRAL SUMMONING BUREAU           THE COURT SERVICE                  FREEPOST LON 19669                 POCOCK STREET                      LONDON                                                                                                   SE1 0YG   0845 3555567            MONDAY 12 JUNE, 2023            09:00             FNAMEFIVEFOURZERO   LNAMEFIVEFOURZERO   540 STREET NAME                    ANYTOWN                                                                                                                                                                        CH1 2AN   555555561JURY MANAGER                  ',false,false);

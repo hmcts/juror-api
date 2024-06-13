@@ -22,6 +22,7 @@ import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAudit;
 import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAuditRepository;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralAllocateRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralDatesRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralReasonRequestDto;
@@ -133,6 +134,9 @@ class ManageDeferralsServiceTest {
     private PrintDataService printDataService;
     @Mock
     private JurorHistoryService jurorHistoryService;
+    @Mock
+    private WelshCourtLocationRepository welshCourtLocationRepository;
+
 
     @InjectMocks
     ManageDeferralsServiceImpl manageDeferralsService;

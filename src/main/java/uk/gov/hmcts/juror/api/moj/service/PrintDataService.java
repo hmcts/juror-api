@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.moj.service;
 
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @SuppressWarnings("PMD.TooManyMethods")
@@ -33,4 +34,5 @@ public interface PrintDataService {
 
     void printWithdrawalLetter(JurorPool jurorPool);
 
+    void checkLetterInBulkPrint(String jurorNumber, String formType, LocalDate creationDate, boolean extractedFlag);
 }
