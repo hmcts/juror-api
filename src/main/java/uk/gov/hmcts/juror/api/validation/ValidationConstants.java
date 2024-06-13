@@ -29,7 +29,7 @@ public final class ValidationConstants {
     public static final String MD5_HASHCODE = "^[a-fA-F0-9]{32}+$";
     public static final String TWO_DIGIT_REGEX = "^\\d{2}$";
     public static final String FOUR_DIGIT_REGEX = "^\\d{4}$";
-    public static final String PHONE_NO_REGEX = "^[04(+][0-9\\s-()]{8,14}$";
+    public static final String PHONE_NO_REGEX = "^[04(+][0-9\\s-()]{7,19}$";
     public static final String DATE_FORMAT = "yyyy-MM-dd";
     public static final String DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 

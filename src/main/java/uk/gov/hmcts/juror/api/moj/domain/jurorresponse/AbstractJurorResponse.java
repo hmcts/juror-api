@@ -90,7 +90,7 @@ public class AbstractJurorResponse extends Address implements Serializable {
      * Juror phone number.
      */
     @Column(name = "phone_number")
-    @Length(max = 15)
+    @Length(max = 19)
     @Pattern(regexp = NO_PIPES_REGEX)
     private String phoneNumber;
 
@@ -98,7 +98,7 @@ public class AbstractJurorResponse extends Address implements Serializable {
      * Juror alternative number.
      */
     @Column(name = "alt_phone_number")
-    @Length(max = 15)
+    @Length(max = 19)
     @Pattern(regexp = NO_PIPES_REGEX)
     private String altPhoneNumber;
 
