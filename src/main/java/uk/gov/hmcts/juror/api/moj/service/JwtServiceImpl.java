@@ -104,7 +104,7 @@ public class JwtServiceImpl implements JwtService {
 
     private long timeUnitToMilliseconds(String value) {
         String lastDigit = value.substring(value.length() - 1).toLowerCase();
-        long number = Long.parseLong(value.substring(0, value.length() - 2));
+        long number = Long.parseLong(value.substring(0, value.length() - 1));
         return switch (lastDigit) {
             case "h" -> number * 3600000;
             case "m" -> number * 60000;
