@@ -4,8 +4,6 @@ CREATE OR REPLACE PROCEDURE juror_mod.printfiles_to_clob(IN p_document_limit int
  LANGUAGE plpgsql
 AS $procedure$
 DECLARE
-	v_form_type VARCHAR(6);
-	v_max_rec_len INTEGER;
 	v_ext_date DATE;
 	forms RECORD;
 	v_count INTEGER:=0;
@@ -130,7 +128,7 @@ begin
 		v_data := v_data||v_detail_rec||CHR(10);
 
 		UPDATE juror_mod.bulk_print_data
-		SET  extracted_flag = 'Y'
+		SET  extracted_flag = true
 		WHERE id = v_row_id;
 
 		-- increment the loop counter so that the process can be stopped if it reaches the threshold
