@@ -109,7 +109,7 @@ public class JwtServiceImpl implements JwtService {
             case "h" -> number * 3600000;
             case "m" -> number * 60000;
             case "s" -> number * 1000;
-            default -> throw new MojException.InternalServerError("Unkonwn number format:  '" + value + "'", null);
+            default -> throw new MojException.InternalServerError("Unknown number format:  '" + value + "'", null);
         };
     }
 }
