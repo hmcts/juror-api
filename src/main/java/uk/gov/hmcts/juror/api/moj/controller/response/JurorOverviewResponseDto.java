@@ -91,13 +91,14 @@ public class JurorOverviewResponseDto {
         this.commonDetails = new JurorDetailsCommonResponseDto(jurorPool, jurorStatusRepository,
             pendingJurorRepository);
 
-        List<Appearance> appearanceList = appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumberAndAppearanceStageIn(
-            SecurityUtil.getLocCode(),
-            jurorPool.getJurorNumber(),
-            Set.of(AppearanceStage.EXPENSE_ENTERED,
-                AppearanceStage.EXPENSE_AUTHORISED,
-                AppearanceStage.EXPENSE_EDITED)
-        );
+        List<Appearance> appearanceList = appearanceRepository
+            .findAllByCourtLocationLocCodeAndJurorNumberAndAppearanceStageIn(
+                SecurityUtil.getLocCode(),
+                jurorPool.getJurorNumber(),
+                Set.of(AppearanceStage.EXPENSE_ENTERED,
+                    AppearanceStage.EXPENSE_AUTHORISED,
+                    AppearanceStage.EXPENSE_EDITED)
+            );
         this.attendances = appearanceList.stream()
             .filter(appearance -> !AttendanceType.ABSENT.equals(appearance.getAttendanceType()))
             .count();
