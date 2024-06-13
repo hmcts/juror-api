@@ -352,6 +352,9 @@ class TrialServiceImplTest {
         for (Panel panel : panelMembers) {
             Appearance appearance = createAppearance(panel.getJurorNumber());
 
+            appearance.setTimeIn(null);
+            appearance.setTimeOut(null);
+
             when(jurorExpenseService.isLongTrialDay("415", panel.getJurorNumber(), now()))
                 .thenReturn(false);
             when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
@@ -384,6 +387,9 @@ class TrialServiceImplTest {
 
         for (Panel panel : panelMembers) {
             Appearance appearance = createAppearance(panel.getJurorNumber());
+
+            appearance.setTimeIn(null);
+            appearance.setTimeOut(null);
 
             when(jurorExpenseService.isLongTrialDay("415", panel.getJurorNumber(), now()))
                 .thenReturn(true);
