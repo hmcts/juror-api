@@ -18,6 +18,7 @@ import uk.gov.hmcts.juror.api.bureau.service.JurorResponseAlreadyCompletedExcept
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralAllocateRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralDatesRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralReasonRequestDto;
@@ -26,6 +27,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.DeferralListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralOptionsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.CurrentlyDeferred;
+import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
@@ -58,6 +60,7 @@ import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.PoolMemberSequenceService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.service.SummonsReplyMergeService;
+import uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
@@ -101,6 +104,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
     @NonNull
     private final CurrentlyDeferredRepository currentlyDeferredRepository;
+    @NonNull
+    private final WelshCourtLocationRepository welshCourtLocationRepository;
     @NonNull
     private final JurorRepository jurorRepository;
     @NonNull
@@ -664,8 +669,11 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     }
 
     private void printDeferralAndConfirmationLetters(String owner, JurorPool jurorPool, JurorPool newJurorPool) {
+        // send letters via bulk print for Bureau users only
         if (JurorDigitalApplication.JUROR_OWNER.equals(owner)) {
-            // send letters via bulk print for Bureau users only
+            printDataService.checkLetterInBulkPrint(jurorPool.getJurorNumber(), getLetterCode(newJurorPool),
+                LocalDate.now(), false);
+
             printDataService.printDeferralLetter(jurorPool);
             jurorHistoryService.createDeferredLetterHistory(jurorPool);
             Juror juror = jurorPool.getJuror();
@@ -677,11 +685,22 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     }
 
     private void printDeferralLetter(String owner, JurorPool jurorPool) {
+        // send letter via bulk print for Bureau users only
         if (JurorDigitalApplication.JUROR_OWNER.equals(owner)) {
-            // send letter via bulk print for Bureau users only
+            printDataService.checkLetterInBulkPrint(jurorPool.getJurorNumber(), getLetterCode(jurorPool),
+                LocalDate.now(), false);
+
             printDataService.printDeferralLetter(jurorPool);
             jurorHistoryService.createDeferredLetterHistory(jurorPool);
         }
+    }
+
+    private String getLetterCode(JurorPool jurorPool) {
+        CourtLocation courtLocation = jurorPool.getCourt();
+
+        return CourtLocationUtils.isWelshCourtLocation(welshCourtLocationRepository,
+            courtLocation.getLocCode())
+            ? FormCode.BI_DEFERRAL.getCode() : FormCode.ENG_DEFERRAL.getCode();
     }
 
     private void printConfirmationLetter(String owner, JurorPool jurorPool) {
