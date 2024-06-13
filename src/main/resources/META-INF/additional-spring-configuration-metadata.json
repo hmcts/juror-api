@@ -17,8 +17,8 @@
     },
     {
       "name": "jwt.expiry.bureau",
-      "type": "java.lang.Long",
-      "description": "Expiry in milliseconds."
+      "type": "java.lang.String",
+      "description": "Expiry 1h = 1 hour. 1m = 1 minute. 1s = 1 second."
     }
   ]
 }
