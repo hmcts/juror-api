@@ -154,7 +154,7 @@ AS $procedure$
 BEGIN
 	DELETE
 	FROM juror_mod.bulk_print_data bpd
-	WHERE COALESCE (bpd.extracted_flag,'N') = 'N'
+	WHERE bpd.extracted_flag = false
 	AND EXISTS 	(
 					SELECT 1
 					FROM juror_mod.juror_pool jp
