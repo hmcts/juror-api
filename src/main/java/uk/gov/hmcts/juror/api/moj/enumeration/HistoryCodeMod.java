@@ -80,5 +80,4 @@ public enum HistoryCodeMod {
         this.code = code;
         this.description = description;
     }
-
 }
