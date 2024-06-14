@@ -36,13 +36,13 @@ VALUES (1, EXTRACT(EPOCH FROM current_date)),--Appearance
 SELECT setval('juror_mod.rev_info_seq', 4, true);
 
 
-INSERT INTO juror_mod.users (username,email, name, active, team_id)
-VALUES ('smcintyre','smcintyre@email.gov.uk', 'Stephanie Mcintyre', true, 1),
-       ('sbell','sbell@email.gov.uk', 'Sandra Bell', true, 2),
-       ('alineweaver','alineweaver@email.gov.uk', 'Albert Lineweaver', true, 3),
-       ('jbrown1','jbrown1@email.gov.uk', 'Jared Brown', true, 1),
-       ('jwilliams','jwilliams@email.gov.uk', 'Jeremy Williams', true, 2),
-       ('jbrown','jbrown@email.gov.uk', 'John Brown', true, 3);
+INSERT INTO juror_mod.users (created_by, updated_by,username,email, name, active, team_id)
+VALUES ('smcintyre','smcintyre','smcintyre','smcintyre@email.gov.uk', 'Stephanie Mcintyre', true, 1),
+       ('smcintyre','smcintyre','sbell','sbell@email.gov.uk', 'Sandra Bell', true, 2),
+       ('smcintyre','smcintyre','alineweaver','alineweaver@email.gov.uk', 'Albert Lineweaver', true, 3),
+       ('smcintyre','smcintyre','jbrown1','jbrown1@email.gov.uk', 'Jared Brown', true, 1),
+       ('smcintyre','smcintyre','jwilliams','jwilliams@email.gov.uk', 'Jeremy Williams', true, 2),
+       ('smcintyre','smcintyre','jbrown','jbrown@email.gov.uk', 'John Brown', true, 3);
 
 insert into juror_mod.user_courts (username, loc_code)
 values ('smcintyre', '415'),

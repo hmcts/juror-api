@@ -23,7 +23,7 @@ import java.io.Serializable;
 @Schema(description = "Staff member profile dto")
 public class StaffMemberCrudRequestDto implements Serializable {
     @NotEmpty(groups = CreationOnlyValidationGroup.class)
-    @Size(min = 1, max = 20, groups = CreationOnlyValidationGroup.class)
+    @Size(min = 1, max = 30, groups = CreationOnlyValidationGroup.class)
     @Schema(description = "Login username of the staff member juror account", requiredMode =
         Schema.RequiredMode.REQUIRED)
     private String login;

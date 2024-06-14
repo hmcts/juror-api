@@ -2625,7 +2625,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 }
 
 
-                List<JurorHistory> history = jurorHistoryRepository.findByJurorNumber(jurorNumber);
+                List<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
                 JurorHistory historyItem = history.get(history.size() - 1);
                 assertThat(historyItem).isNotNull();
                 assertThat(historyItem.getHistoryCode()).isEqualTo(HistoryCodeMod.NOTIFY_MESSAGE_REQUESTED);

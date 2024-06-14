@@ -14,9 +14,9 @@ INSERT INTO juror_mod.juror_response (juror_number,date_received,title,first_nam
     ('352004504','2017-10-23 00:00:00','Rev','Jose','Rivera','22177 Redwing Way','England','London','United Kingdom',NULL,'EC3M 2NY','TODO','1995-08-08','11111111111','00000000000','email@email.com',true,NULL,false,NULL,NULL,false,NULL,false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,false,NULL,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,true,true,NULL,NULL,true,NULL,false,'Digital');
 
 -- staff
-INSERT INTO juror_mod.users (username,email, name, active,team_id)
-VALUES ('BUREAUGUY1','BUREAUGUY1@email.gov.uk','Bureau Guy',true,1),
-       ('BUREAULADY9','BUREAULADY9@email.gov.uk','Bureau Lady',true,1);
+INSERT INTO juror_mod.users (created_by, updated_by,username,email, name, active,team_id)
+VALUES ('BUREAUGUY1','BUREAUGUY1','BUREAUGUY1','BUREAUGUY1@email.gov.uk','Bureau Guy',true,1),
+       ('BUREAUGUY1','BUREAUGUY1','BUREAULADY9','BUREAULADY9@email.gov.uk','Bureau Lady',true,1);
 
 insert into juror_mod.user_courts (username, loc_code)
 values ('BUREAUGUY1', '448'),

@@ -133,7 +133,7 @@ public class Juror extends Address implements Serializable {
 
     @NotAudited
     @Column(name = "user_edtq")
-    @Length(max = 20)
+    @Length(max = 30)
     private String userEdtq;
 
     @NotAudited

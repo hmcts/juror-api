@@ -150,7 +150,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     private void assertJurorHistory(String jurorNumber, HistoryCodeMod historyCodeMod, String courtUser,
                                     String otherInfo, String poolNumber, LocalDate date, String reference,
                                     int expectedSize, int index) {
-        List<JurorHistory> jurorHistory = jurorHistoryRepository.findByJurorNumber(jurorNumber);
+        List<JurorHistory> jurorHistory = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
         assertThat(jurorHistory).hasSize(expectedSize);
         JurorHistory history = jurorHistory.get(index);
         assertThat(history.getJurorNumber()).isEqualTo(jurorNumber);

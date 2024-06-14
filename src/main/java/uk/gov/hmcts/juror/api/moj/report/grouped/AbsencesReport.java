@@ -26,7 +26,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 @Component
-@SuppressWarnings("PMD.LawOfDemeter")
 public class AbsencesReport extends AbstractGroupedReport {
 
     private final CourtLocationRepository courtLocationRepository;

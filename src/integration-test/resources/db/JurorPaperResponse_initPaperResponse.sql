@@ -1,10 +1,10 @@
 -- users
-INSERT INTO juror_mod.users (user_type, username, email, name, active)
-VALUES ('BUREAU', 'MODTESTBUREAU', 'MODTESTBUREAU@email.gov.uk', 'MODTESTBUREAU', true),
-       ('COURT', 'MODTESTCOURT', 'MODTESTCOURT@email.gov.uk', 'MODTESTCOURT', true);
+INSERT INTO juror_mod.users (created_by, updated_by,user_type, username, email, name, active)
+VALUES ('BUREAU','BUREAU','BUREAU', 'MODTESTBUREAU', 'MODTESTBUREAU@email.gov.uk', 'MODTESTBUREAU', true),
+       ('BUREAU','BUREAU','COURT', 'MODTESTCOURT', 'MODTESTCOURT@email.gov.uk', 'MODTESTCOURT', true);
 
-INSERT INTO juror_mod.users (username, "name", active, last_logged_in, team_id, approval_limit, user_type, email) VALUES
-('court-southwark', 'Court Southwark', true, NULL, NULL, 0.00, 'COURT', 'court-southwark@email.gov.uk');
+INSERT INTO juror_mod.users (created_by, updated_by,username, "name", active, last_logged_in, team_id, approval_limit, user_type, email) VALUES
+('court-southwark','court-southwark','court-southwark', 'Court Southwark', true, NULL, NULL, 0.00, 'COURT', 'court-southwark@email.gov.uk');
 
 -- user_roles
 INSERT INTO juror_mod.user_roles (username, role)

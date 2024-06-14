@@ -353,7 +353,7 @@ class PanelControllerITest extends AbstractIntegrationTest {
                 case JUROR -> {
                     assertThat(panelMember.getEmpanelledDate()).as("date should be today").isEqualTo(LocalDate.now());
                     List<JurorHistory> jurorHistories =
-                        jurorHistoryRepository.findByJurorNumber(panelMember.getJurorNumber());
+                        jurorHistoryRepository.findByJurorNumberOrderById(panelMember.getJurorNumber());
                     assertThat(jurorHistories.size()).as("Expected history items to be one").isEqualTo(1);
                     assertThat(jurorHistories.get(0).getHistoryCode().getCode()).as(
                             "Expected history code to be TADD")
@@ -372,7 +372,7 @@ class PanelControllerITest extends AbstractIntegrationTest {
 
     private void validateNotUsedChallengedHistory(Panel panelMember) {
         List<JurorHistory> jurorHistories =
-            jurorHistoryRepository.findByJurorNumber(panelMember.getJurorNumber());
+            jurorHistoryRepository.findByJurorNumberOrderById(panelMember.getJurorNumber());
         assertThat(jurorHistories.size()).as("Expected history items to be one").isEqualTo(1);
         assertThat(jurorHistories.get(0).getHistoryCode().getCode()).as(
                 "Expected history code to be VRET")

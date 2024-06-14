@@ -684,7 +684,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
             assertThat(jurorPool.getStatus().getStatus()).as(
                 "Expect status to be Responded (Juror in waiting)").isEqualTo(IJurorStatus.RESPONDED);
             assertThat(
-                jurorHistoryRepository.findByJurorNumber(panel.getJurorNumber()).size())
+                jurorHistoryRepository.findByJurorNumberOrderById(panel.getJurorNumber()).size())
                 .as("Expect one history item for juror " + panel.getJurorNumber())
                 .isEqualTo(1);
         }
@@ -720,7 +720,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
             assertThat(jurorPool.getStatus().getStatus()).as(
                 "Expect status to be Responded (Juror in waiting)").isEqualTo(IJurorStatus.RESPONDED);
             assertThat(
-                jurorHistoryRepository.findByJurorNumber(panel.getJurorNumber()).size())
+                jurorHistoryRepository.findByJurorNumberOrderById(panel.getJurorNumber()).size())
                 .as("Expect two history items for juror " + panel.getJurorNumber())
                 .isEqualTo(2);
             assertThat(panel.isCompleted()).as("Expected panel completed status to be true").isTrue();
@@ -781,7 +781,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
             assertThat(jurorPool.getStatus().getStatus()).as(
                 "Expect status to be Responded").isEqualTo(IJurorStatus.RESPONDED);
             assertThat(
-                jurorHistoryRepository.findByJurorNumber(panel.getJurorNumber()).size())
+                jurorHistoryRepository.findByJurorNumberOrderById(panel.getJurorNumber()).size())
                 .as("Expect two history item for juror " + panel.getJurorNumber())
                 .isEqualTo(2);
 
@@ -823,7 +823,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
             assertThat(panel.getResult()).as("Expect result to be Returned")
                 .isEqualTo(PanelResult.RETURNED);
             assertThat(
-                jurorHistoryRepository.findByJurorNumber(panel.getJurorNumber()).size())
+                jurorHistoryRepository.findByJurorNumberOrderById(panel.getJurorNumber()).size())
                 .as("Expect three history item for juror " + panel.getJurorNumber())
                 .isEqualTo(3);
             assertThat(panel.isCompleted()).as("Expect completed status to be true").isTrue();

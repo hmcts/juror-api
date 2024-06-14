@@ -1335,7 +1335,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     public JurorHistoryResponseDto getJurorHistory(String jurorNumber) {
         checkReadAccessForCurrentUser(jurorPoolRepository, jurorNumber, SecurityUtil.getActiveOwner());
 
-        List<JurorHistory> data = jurorHistoryRepository.findByJurorNumber(jurorNumber);
+        List<JurorHistory> data = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
 
         return JurorHistoryResponseDto.builder()
             .data(data.stream().map(item -> JurorHistoryResponseDto.JurorHistoryEntryDto.builder()

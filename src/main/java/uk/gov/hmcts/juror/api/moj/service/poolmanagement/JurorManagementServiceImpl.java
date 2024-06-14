@@ -48,8 +48,7 @@ import java.util.Optional;
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 @SuppressWarnings({"PMD.TooManyMethods",
     "PMD.ExcessiveImports",
-    "PMD.GodClass",
-    "PMD.PotentialLawOfDemeterViolation"})
+    "PMD.GodClass"})
 public class JurorManagementServiceImpl implements JurorManagementService {
 
     @NonNull

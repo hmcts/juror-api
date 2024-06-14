@@ -55,7 +55,7 @@ public class JurorPool implements Serializable {
     private String owner;
 
     @Column(name = "user_edtq")
-    @Length(max = 20)
+    @Length(max = 30)
     private String userEdtq;
 
     @Column(name = "is_active")
