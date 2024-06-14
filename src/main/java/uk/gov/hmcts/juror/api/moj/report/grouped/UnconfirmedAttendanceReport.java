@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
-@SuppressWarnings("PMD.LawOfDemeter")
 public class UnconfirmedAttendanceReport extends AbstractGroupedReport {
 
     private final CourtLocationService courtLocationService;
