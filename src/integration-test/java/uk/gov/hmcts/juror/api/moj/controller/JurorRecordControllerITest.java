@@ -2823,7 +2823,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         assertThat(juror.getFirstName()).isEqualTo(dto.getFirstName());
         assertThat(juror.getLastName()).isEqualTo(dto.getLastName());
         assertThat(juror.getUserEdtq()).isEqualTo(username);
-        List<JurorHistory> jurorHistoryList = jurorHistoryRepository.findByJurorNumber(jurorNumber);
+        List<JurorHistory> jurorHistoryList = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
         assertThat(jurorHistoryList.size()).isEqualTo(3);
         for (JurorHistory jurorHistory : jurorHistoryList) {
             assertThat(jurorHistory.getPoolNumber()).isEqualTo(jurorPool.getPoolNumber());
@@ -2886,7 +2886,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         assertThat(juror.getLastName()).isEqualTo(dto.getLastName());
         assertThat(juror.getUserEdtq()).isEqualTo(username);
 
-        List<JurorHistory> jurorHistoryList = jurorHistoryRepository.findByJurorNumber(jurorNumber);
+        List<JurorHistory> jurorHistoryList = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
         assertThat(jurorHistoryList.size()).isEqualTo(3);
         for (JurorHistory jurorHistory : jurorHistoryList) {
             assertThat(jurorHistory.getPoolNumber()).isEqualTo(jurorPool.getPoolNumber());
@@ -2972,7 +2972,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         assertThat(juror.getPendingFirstName()).isNull();
         assertThat(juror.getPendingLastName()).isNull();
 
-        List<JurorHistory> jurorHistoryList = jurorHistoryRepository.findByJurorNumber(jurorNumber);
+        List<JurorHistory> jurorHistoryList = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
         assertThat(jurorHistoryList.size()).isEqualTo(4);
         for (JurorHistory jurorHistory : jurorHistoryList) {
             assertThat(jurorHistory.getPoolNumber()).isEqualTo(jurorPool.getPoolNumber());
@@ -3044,7 +3044,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         assertThat(juror.getPendingFirstName()).isNull();
         assertThat(juror.getPendingLastName()).isNull();
 
-        List<JurorHistory> jurorHistoryList = jurorHistoryRepository.findByJurorNumber(jurorNumber);
+        List<JurorHistory> jurorHistoryList = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
         assertThat(jurorHistoryList.size()).isEqualTo(1);
         JurorHistory jurorHistory = jurorHistoryList.get(0);
         assertThat(jurorHistory.getHistoryCode()).isEqualTo(HistoryCodeMod.CHANGE_PERSONAL_DETAILS);
@@ -3509,7 +3509,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 "Juror pool status should match");
 
             List<JurorHistory> jurorHistoryList = new ArrayList<>(
-                jurorHistoryRepository.findByJurorNumber(jurorNumber));
+                jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber));
             jurorHistoryList.sort(Comparator.comparing(JurorHistory::getHistoryCode));
             verifyStandardJurorHistory(jurorPool, jurorHistoryList,
                 new JurorHistoryExpectedValues("RRES", "Confirmation Letter Auto"),
@@ -3696,7 +3696,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertEquals(IJurorStatus.FAILED_TO_ATTEND, jurorPool.getStatus().getStatus(),
                 "Juror pool status should be failed to attend");
 
-            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumber(JUROR_NUMBER);
+            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(JUROR_NUMBER);
             assertEquals(1, jurorHistories.size(), "Should only be one history entry");
             JurorHistory jurorHistory = jurorHistories.get(0);
             assertEquals(POOL_NUMBER, jurorHistory.getPoolNumber(), "Pool number should match");
@@ -3739,7 +3739,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertEquals(IJurorStatus.PANEL, jurorPool.getStatus().getStatus(),
                 "Juror pool status should not change");
 
-            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumber(jurorNumber);
+            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
             assertEquals(0, jurorHistories.size(),
                 "No new history entry as request should be rejected before processing");
         }
@@ -3763,7 +3763,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertEquals(IJurorStatus.RESPONDED, jurorPool.getStatus().getStatus(),
                 "Juror pool status should not change");
 
-            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumber(jurorNumber);
+            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
             assertEquals(0, jurorHistories.size(),
                 "No new history entry as request should be rejected before processing");
         }
@@ -3787,7 +3787,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertEquals(IJurorStatus.RESPONDED, jurorPool.getStatus().getStatus(),
                 "Juror pool status should not change");
 
-            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumber(jurorNumber);
+            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
             assertEquals(0, jurorHistories.size(),
                 "No new history entry as request should be rejected before processing");
         }
@@ -3807,7 +3807,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertEquals(IJurorStatus.RESPONDED, jurorPool.getStatus().getStatus(),
                 "Juror pool status should not change");
 
-            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumber(JUROR_NUMBER);
+            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(JUROR_NUMBER);
             assertEquals(0, jurorHistories.size(),
                 "No new history entry as request should be rejected before processing");
         }
@@ -3827,7 +3827,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertEquals(IJurorStatus.RESPONDED, jurorPool.getStatus().getStatus(),
                 "Juror pool status should not change");
 
-            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumber(JUROR_NUMBER);
+            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(JUROR_NUMBER);
             assertEquals(0, jurorHistories.size(),
                 "No new history entry as request should be rejected before processing");
         }
@@ -3867,7 +3867,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertEquals(IJurorStatus.RESPONDED, jurorPool.getStatus().getStatus(),
                 "Juror pool status should be responded");
 
-            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumber(JUROR_NUMBER);
+            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(JUROR_NUMBER);
             assertEquals(1, jurorHistories.size(), "Should only be one history entry");
             JurorHistory jurorHistory = jurorHistories.get(0);
             assertEquals(POOL_NUMBER, jurorHistory.getPoolNumber(), "Pool number should match");
@@ -3910,7 +3910,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertEquals(IJurorStatus.RESPONDED, jurorPool.getStatus().getStatus(),
                 "Juror pool status should not change");
 
-            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumber(jurorNumber);
+            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
             assertEquals(0, jurorHistories.size(),
                 "No new history entry as request should be rejected before processing");
         }
@@ -3932,7 +3932,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertEquals(IJurorStatus.FAILED_TO_ATTEND, jurorPool.getStatus().getStatus(),
                 "Juror pool status should not change");
 
-            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumber(JUROR_NUMBER);
+            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(JUROR_NUMBER);
             assertEquals(0, jurorHistories.size(),
                 "No new history entry as request should be rejected before processing");
         }
@@ -3952,7 +3952,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertEquals(IJurorStatus.FAILED_TO_ATTEND, jurorPool.getStatus().getStatus(),
                 "Juror pool status should not change");
 
-            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumber(JUROR_NUMBER);
+            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(JUROR_NUMBER);
             assertEquals(0, jurorHistories.size(),
                 "No new history entry as request should be rejected before processing");
         }
@@ -3972,7 +3972,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertEquals(IJurorStatus.FAILED_TO_ATTEND, jurorPool.getStatus().getStatus(),
                 "Juror pool status should not change");
 
-            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumber(JUROR_NUMBER);
+            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(JUROR_NUMBER);
             assertEquals(0, jurorHistories.size(),
                 "No new history entry as request should be rejected before processing");
         }
