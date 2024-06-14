@@ -4,8 +4,6 @@ CREATE OR REPLACE PROCEDURE juror_mod.printfiles_to_clob(IN p_document_limit int
  LANGUAGE plpgsql
 AS $procedure$
 DECLARE
-	v_form_type VARCHAR(6);
-	v_max_rec_len INTEGER;
 	v_ext_date DATE;
 	forms RECORD;
 	v_count INTEGER:=0;
@@ -86,7 +84,7 @@ begin
 
 		-- setting header for file first time only
 		IF v_header IS null or v_header = '' THEN
-			SELECT RPAD('   ' ||RPAD(p_form_type,16)||LPAD(v_records_count::VARCHAR(20),6,'0')||LPAD(v_records_count::VARCHAR(20),6,'0')||'50'||LPAD(p_rec_len::VARCHAR(20),8,'0'),256,' ')
+			SELECT RPAD('   ' ||RPAD(p_form_type,16)||LPAD(v_records_count::VARCHAR(6),6,'0')||LPAD(v_records_count::VARCHAR(6),6,'0')||'50'||LPAD(p_rec_len::VARCHAR(8),8,'0'),256,' ')
 			INTO v_header;
 			v_data := '' || v_header || chr(10);
 		END if;
@@ -111,7 +109,7 @@ begin
 			end if;
 
 			-- create new header for new file
-			SELECT RPAD('   ' ||RPAD(p_form_type,16)||LPAD(v_records_count::VARCHAR(6),6,'0')||LPAD(v_records_count::VARCHAR(6),6,'0')||'50'||LPAD(p_rec_len::VARCHAR(20),8,'0'),256,' ')
+			SELECT RPAD('   ' ||RPAD(p_form_type,16)||LPAD(v_records_count::VARCHAR(6),6,'0')||LPAD(v_records_count::VARCHAR(6),6,'0')||'50'||LPAD(p_rec_len::VARCHAR(8),8,'0'),256,' ')
 			INTO v_header;
 
 			-- erasing data for new file
@@ -130,7 +128,7 @@ begin
 		v_data := v_data||v_detail_rec||CHR(10);
 
 		UPDATE juror_mod.bulk_print_data
-		SET  extracted_flag = 'Y'
+		SET  extracted_flag = true
 		WHERE id = v_row_id;
 
 		-- increment the loop counter so that the process can be stopped if it reaches the threshold
@@ -156,7 +154,7 @@ AS $procedure$
 BEGIN
 	DELETE
 	FROM juror_mod.bulk_print_data bpd
-	WHERE COALESCE (bpd.extracted_flag,'N') = 'N'
+	WHERE bpd.extracted_flag = false
 	AND EXISTS 	(
 					SELECT 1
 					FROM juror_mod.juror_pool jp
