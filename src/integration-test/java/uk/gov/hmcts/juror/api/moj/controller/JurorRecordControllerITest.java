@@ -3561,7 +3561,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 "Juror pool status should match");
 
             List<JurorHistory> jurorHistoryList = new ArrayList<>(
-                jurorHistoryRepository.findByJurorNumber(jurorNumber));
+                jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber));
 
             verifyStandardJurorHistory(jurorPool,
                 jurorHistoryList,
@@ -3653,7 +3653,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 "Juror pool status should match");
 
             List<JurorHistory> jurorHistoryList =
-                jurorHistoryRepository.findByJurorNumber(jurorNumber);
+                jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
             JurorHistory jurorHistory = jurorHistoryList.get(0);
             verifyStandardJurorHistory(jurorPool, List.of(jurorHistory),
                 new JurorHistoryExpectedValues("POLG", "Unchecked - timed out")
@@ -4520,8 +4520,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         @Test
         @Sql(scripts = {"/db/mod/truncate.sql"},
-            statements = "insert into juror_mod.users(username, name, email)"
-                + "values ('COURT_USER', 'COURT_USER', 'COURT_USER@hmcts.net')")
+            statements = "insert into juror_mod.users(username, name, email, created_by, updated_by)"
+                + "values ('COURT_USER', 'COURT_USER', 'COURT_USER@hmcts.net','COURT_USER','COURT_USER')")
         void createJurorRecordNewPoolHappyPath() throws Exception {
             JurorCreateRequestDto requestDto = createJurorRequestDto(null, "415");
 
@@ -4735,7 +4735,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
 
-            List<JurorHistory> historyList = jurorHistoryRepository.findByJurorNumber(jurorNumber);
+            List<JurorHistory> historyList = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
 
             assertThat(juror.getSortCode()).isEqualTo(dto.getSortCode());
             assertThat(juror.getBankAccountName()).isEqualTo(dto.getAccountHolderName());

@@ -106,6 +106,7 @@ public class User implements Serializable {
 
     @Column(name = "updated_by")
     @LastModifiedBy
+    @NotEmpty
     private String updatedBy;
 
 
