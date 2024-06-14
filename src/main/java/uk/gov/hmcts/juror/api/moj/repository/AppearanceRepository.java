@@ -32,6 +32,11 @@ public interface AppearanceRepository extends IAppearanceRepository, JpaReposito
         String jurorNumber,
         AppearanceStage appearanceStage);
 
+
+    List<Appearance> findAllByCourtLocationLocCodeAndJurorNumberAndAppearanceStageIn(String locCode,
+                                                                                     String jurorNumber,
+                                                                                     Set<AppearanceStage> appearanceStages);
+
     List<Appearance> findAllByJurorNumberAndAppearanceStageInAndCourtLocationOwnerAndIsDraftExpenseTrueOrderByAttendanceDateDesc(
         String jurorNumber,
         Set<AppearanceStage> stages,
@@ -77,5 +82,5 @@ public interface AppearanceRepository extends IAppearanceRepository, JpaReposito
 
 
     Optional<Appearance> findFirstByAttendanceAuditNumberEqualsAndLocCodeIn(String auditNumber,
-                                                                         Collection<String> locCode);
+                                                                            Collection<String> locCode);
 }
