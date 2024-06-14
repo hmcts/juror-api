@@ -30,11 +30,11 @@ public class JurorPaymentsResponseDto {
 
     @JsonProperty("attendances")
     @Schema(description = "Number of attendances")
-    private long attendances;
+    private Integer attendances;
 
     @JsonProperty("non_attendances")
     @Schema(description = "Number of non-attendances")
-    private long nonAttendances;
+    private Integer nonAttendances;
 
     @JsonProperty("financial_loss")
     @Schema(description = "Total financial loss")

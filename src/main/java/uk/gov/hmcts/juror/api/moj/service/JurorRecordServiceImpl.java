@@ -1266,7 +1266,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             return this;
         }
     }
-    
+
     @Override
     public JurorPaymentsResponseDto getJurorPayments(String jurorNumber) {
         JurorUtils.checkOwnershipForCurrentUser(JurorPoolUtils.getActiveJurorRecord(jurorPoolRepository, jurorNumber),
@@ -1275,7 +1275,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         List<Tuple> data = jurorPaymentsSummaryRepository.fetchPaymentLogByJuror(jurorNumber);
 
-        long nonAttendanceCount = data.stream().filter(
+        int nonAttendanceCount = (int) data.stream().filter(
             item -> Optional.ofNullable(item.get(QReportsJurorPayments.reportsJurorPayments.nonAttendance))
                 .orElse(false)
         ).count();

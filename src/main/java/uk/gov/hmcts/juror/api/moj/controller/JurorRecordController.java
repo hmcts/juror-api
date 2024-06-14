@@ -445,6 +445,7 @@ public class JurorRecordController {
      */
     @GetMapping(path = "/{jurorNumber}/payments")
     @Operation(summary = "Get attendance and payments log for a given juror")
+    @IsCourtUser
     public ResponseEntity<JurorPaymentsResponseDto> getJurorPaymentsHistory(
         @PathVariable("jurorNumber") @Valid @JurorNumber
         @Parameter(description = "Valid juror number", required = true) String jurorNumber) {
