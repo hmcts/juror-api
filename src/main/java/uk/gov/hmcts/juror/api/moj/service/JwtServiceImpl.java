@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.config.InvalidJwtAuthenticationException;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 
 import java.security.Key;
 import java.time.Clock;
@@ -95,9 +96,20 @@ public class JwtServiceImpl implements JwtService {
             id,
             "juror",
             null,
-            Long.parseLong(bureauExpiry),
+            timeUnitToMilliseconds(bureauExpiry),
             getSigningKey(bureauSecret),
             payload.toClaims()
         );
+    }
+
+    private long timeUnitToMilliseconds(String value) {
+        String lastDigit = value.substring(value.length() - 1).toLowerCase();
+        long number = Long.parseLong(value.substring(0, value.length() - 1));
+        return switch (lastDigit) {
+            case "h" -> number * 3600000;
+            case "m" -> number * 60000;
+            case "s" -> number * 1000;
+            default -> throw new MojException.InternalServerError("Unknown number format:  '" + value + "'", null);
+        };
     }
 }

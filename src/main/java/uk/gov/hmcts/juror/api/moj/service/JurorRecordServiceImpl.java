@@ -96,6 +96,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRep
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCommonRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.ReasonableAdjustmentsRepository;
+import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAuditChangeService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
@@ -174,6 +175,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     private final ReasonableAdjustmentsRepository reasonableAdjustmentsRepository;
     private final Clock clock;
     private final UserServiceModImpl userServiceModImpl;
+    private final PanelRepository panelRepository;
 
     @Override
     @Transactional
@@ -354,15 +356,13 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             && juror.getSummonsFile() != null
             && juror.getSummonsFile().equals(DISQUALIFIED_ON_SELECTION)) {
             //return just the common details
-            return new JurorOverviewResponseDto(jurorPool, jurorStatusRepository, responseExcusalService,
-                pendingJurorRepository);
+            return getJurorOverviewResponseDto(jurorPool);
         }
 
         DigitalResponse jurorResponse = jurorResponseRepository.findByJurorNumber(jurorNumber);
 
         if (jurorResponse != null) {
-            JurorOverviewResponseDto jurorOverviewResponseDto = new JurorOverviewResponseDto(jurorPool,
-                jurorStatusRepository, responseExcusalService, pendingJurorRepository);
+            JurorOverviewResponseDto jurorOverviewResponseDto = getJurorOverviewResponseDto(jurorPool);
             jurorOverviewResponseDto.setOpticReference(jurorPool.getJuror().getOpticRef());
             jurorOverviewResponseDto.setWelshLanguageRequired(jurorPool.getJuror().getWelsh());
             jurorOverviewResponseDto.setReplyMethod(REPLY_METHOD_ONLINE);
@@ -383,8 +383,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
                 jurorHistoryList.stream().filter(p -> PART_HIST_LIST_TO_MATCH.contains(p.getHistoryCode().getCode()))
                     .toList();
             if (!jurorHistFiltered.isEmpty()) {
-                JurorOverviewResponseDto jurorOverviewResponseDto = new JurorOverviewResponseDto(jurorPool,
-                    jurorStatusRepository, responseExcusalService, pendingJurorRepository);
+                JurorOverviewResponseDto jurorOverviewResponseDto = getJurorOverviewResponseDto(jurorPool);
 
                 jurorOverviewResponseDto.setReplyMethod(REPLY_METHOD_PAPER);
                 return jurorOverviewResponseDto;
@@ -392,11 +391,15 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         }
 
         //send the default response.
-        JurorOverviewResponseDto jurorOverviewResponseDto = new JurorOverviewResponseDto(jurorPool,
-            jurorStatusRepository, responseExcusalService, pendingJurorRepository);
+        JurorOverviewResponseDto jurorOverviewResponseDto = getJurorOverviewResponseDto(jurorPool);
 
         jurorOverviewResponseDto.setReplyMethod(REPLY_METHOD_NOT_AVAILABLE);
         return jurorOverviewResponseDto;
+    }
+
+    private JurorOverviewResponseDto getJurorOverviewResponseDto(JurorPool jurorPool) {
+        return new JurorOverviewResponseDto(jurorPool,
+            jurorStatusRepository, panelRepository, appearanceRepository, pendingJurorRepository);
     }
 
     @Override

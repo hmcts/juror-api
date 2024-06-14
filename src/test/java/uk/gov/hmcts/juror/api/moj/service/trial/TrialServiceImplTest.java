@@ -8,9 +8,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
@@ -32,6 +29,7 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Judge;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
+import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.TrialType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -44,6 +42,8 @@ import uk.gov.hmcts.juror.api.moj.repository.trial.JudgeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.service.CompleteServiceServiceImpl;
+import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
+import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 
 import java.time.LocalTime;
@@ -94,6 +94,12 @@ class TrialServiceImplTest {
     private CompleteServiceServiceImpl completeService;
     @Mock
     private JurorAppearanceService jurorAppearanceService;
+
+    @Mock
+    private JurorExpenseService jurorExpenseService;
+
+    @Mock
+    private JurorHistoryService jurorHistoryService;
 
     @InjectMocks
     TrialServiceImpl trialService;
@@ -301,6 +307,7 @@ class TrialServiceImplTest {
         when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415"))
             .thenReturn(panelMembers);
 
+
         for (Panel panel : panelMembers) {
             Appearance appearance = createAppearance(panel.getJurorNumber());
 
@@ -312,6 +319,8 @@ class TrialServiceImplTest {
                 appearance.setTimeOut(LocalTime.parse(checkInTime));
             }
 
+            when(jurorExpenseService.isLongTrialDay("415", panel.getJurorNumber(), now()))
+                .thenReturn(false);
             when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
                 now())).thenReturn(Optional.of(appearance));
         }
@@ -326,9 +335,120 @@ class TrialServiceImplTest {
         verify(panelRepository, times(panelMembers.size())).saveAndFlush(any());
         verify(jurorHistoryRepository, times(panelMembers.size())).save(any());
         verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(appearanceArgumentCaptor.capture());
-        assertThat(appearanceArgumentCaptor.getValue().getSatOnJury()).as("Sat on Jury").isTrue();
+        Appearance appearance = appearanceArgumentCaptor.getValue();
+        assertThat(appearance.getSatOnJury()).as("Sat on Jury").isTrue();
+        assertThat(appearance.getAttendanceType()).as("Attendance type").isEqualTo(AttendanceType.HALF_DAY);
 
     }
+
+    @Test
+    void testReturnJuryConfirmAttendanceFullDay() {
+        final String trialNumber = "T100000000";
+        List<Panel> panelMembers = createPanelMembers(10, PanelResult.JUROR, trialNumber, IJurorStatus.JUROR);
+        when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415"))
+            .thenReturn(panelMembers);
+
+
+        for (Panel panel : panelMembers) {
+            Appearance appearance = createAppearance(panel.getJurorNumber());
+
+            appearance.setTimeIn(null);
+            appearance.setTimeOut(null);
+
+            when(jurorExpenseService.isLongTrialDay("415", panel.getJurorNumber(), now()))
+                .thenReturn(false);
+            when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
+                now())).thenReturn(Optional.of(appearance));
+        }
+
+        trialService.returnJury(payload, trialNumber, "415",
+            createReturnJuryDto(false, "09:00", "17:30"));
+
+        ArgumentCaptor<Appearance> appearanceArgumentCaptor = ArgumentCaptor.forClass(Appearance.class);
+
+        verify(panelRepository, times(1))
+            .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
+        verify(panelRepository, times(panelMembers.size())).saveAndFlush(any());
+        verify(jurorHistoryRepository, times(panelMembers.size())).save(any());
+        verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(appearanceArgumentCaptor.capture());
+        Appearance appearance = appearanceArgumentCaptor.getValue();
+        assertThat(appearance.getSatOnJury()).as("Sat on Jury").isTrue();
+        assertThat(appearance.getAttendanceType()).as("Attendance type").isEqualTo(AttendanceType.FULL_DAY);
+
+    }
+
+    @Test
+    void testReturnJuryConfirmAttendanceFullDayLongTrial() {
+        final String trialNumber = "T100000000";
+        List<Panel> panelMembers = createPanelMembers(10, PanelResult.JUROR, trialNumber, IJurorStatus.JUROR);
+        when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415"))
+            .thenReturn(panelMembers);
+
+
+        for (Panel panel : panelMembers) {
+            Appearance appearance = createAppearance(panel.getJurorNumber());
+
+            appearance.setTimeIn(null);
+            appearance.setTimeOut(null);
+
+            when(jurorExpenseService.isLongTrialDay("415", panel.getJurorNumber(), now()))
+                .thenReturn(true);
+            when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
+                now())).thenReturn(Optional.of(appearance));
+        }
+
+        trialService.returnJury(payload, trialNumber, "415",
+            createReturnJuryDto(false, "09:00", "17:30"));
+
+        ArgumentCaptor<Appearance> appearanceArgumentCaptor = ArgumentCaptor.forClass(Appearance.class);
+
+        verify(panelRepository, times(1))
+            .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
+        verify(panelRepository, times(panelMembers.size())).saveAndFlush(any());
+        verify(jurorHistoryRepository, times(panelMembers.size())).save(any());
+        verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(appearanceArgumentCaptor.capture());
+        Appearance appearance = appearanceArgumentCaptor.getValue();
+        assertThat(appearance.getSatOnJury()).as("Sat on Jury").isTrue();
+        assertThat(appearance.getAttendanceType()).as("Attendance type").isEqualTo(AttendanceType.FULL_DAY_LONG_TRIAL);
+
+    }
+
+    @Test
+    void testReturnJuryConfirmAttendanceHalfDayLongTrial() {
+        final String trialNumber = "T100000000";
+        List<Panel> panelMembers = createPanelMembers(10, PanelResult.JUROR, trialNumber, IJurorStatus.JUROR);
+        when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415"))
+            .thenReturn(panelMembers);
+
+
+        for (Panel panel : panelMembers) {
+            Appearance appearance = createAppearance(panel.getJurorNumber());
+
+            appearance.setTimeIn(null);
+            appearance.setTimeOut(null);
+
+            when(jurorExpenseService.isLongTrialDay("415", panel.getJurorNumber(), now()))
+                .thenReturn(true);
+            when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
+                now())).thenReturn(Optional.of(appearance));
+        }
+
+        trialService.returnJury(payload, trialNumber, "415",
+            createReturnJuryDto(false, "09:00", "11:30"));
+
+        ArgumentCaptor<Appearance> appearanceArgumentCaptor = ArgumentCaptor.forClass(Appearance.class);
+
+        verify(panelRepository, times(1))
+            .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
+        verify(panelRepository, times(panelMembers.size())).saveAndFlush(any());
+        verify(jurorHistoryRepository, times(panelMembers.size())).save(any());
+        verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(appearanceArgumentCaptor.capture());
+        Appearance appearance = appearanceArgumentCaptor.getValue();
+        assertThat(appearance.getSatOnJury()).as("Sat on Jury").isTrue();
+        assertThat(appearance.getAttendanceType()).as("Attendance type").isEqualTo(AttendanceType.HALF_DAY_LONG_TRIAL);
+
+    }
+
 
     @Test
     void testReturnJuryNoConfirmAttendanceNullTimes() {
@@ -444,44 +564,6 @@ class TrialServiceImplTest {
         });
 
         return jury;
-    }
-
-    private List<Trial> createTrialList() {
-        Trial trial1 = new Trial();
-        trial1.setTrialNumber("T100000025");
-        trial1.setCourtLocation(createCourtLocation());
-        trial1.setDescription("CHESTER");
-        trial1.setCourtroom(createCourtroom());
-        trial1.setJudge(createJudge());
-        trial1.setTrialType(TrialType.CRI);
-        trial1.setTrialStartDate(now().plusMonths(1));
-        trial1.setAnonymous(Boolean.TRUE);
-
-        Courtroom courtroom = createCourtroom();
-        courtroom.setId(2L);
-        courtroom.setCourtLocation(trial1.getCourtLocation());
-        courtroom.setRoomNumber("68");
-        courtroom.setDescription("Courtroom 2");
-
-        Trial trial2 = new Trial();
-        trial2.setTrialNumber("T100000024");
-        trial2.setCourtLocation(createCourtLocation());
-        trial2.setDescription("CHESTER");
-        trial2.setCourtroom(courtroom);
-        trial2.setJudge(createJudge());
-        trial2.setTrialType(TrialType.CIV);
-        trial2.setTrialStartDate(now().plusMonths(2));
-        trial2.setAnonymous(Boolean.FALSE);
-
-        List<Trial> trialList = new ArrayList<>();
-        trialList.add(trial1);
-        trialList.add(trial2);
-
-        return trialList;
-    }
-
-    private Pageable createPageable() {
-        return PageRequest.of(0, 25, Sort.by("trialNumber").descending());
     }
 
     private List<String> createCourtList() {

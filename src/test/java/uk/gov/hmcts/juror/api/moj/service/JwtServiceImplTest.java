@@ -55,7 +55,7 @@ import static org.mockito.Mockito.when;
 @SuppressWarnings({"unchecked", "PMD.ExcessiveImports"})
 @TestPropertySource(properties = {
     "jwt.secret.bureau=" + TestConstants.JWT_SECRET,
-    "jwt.expiry.bureau=" + TestConstants.JWT_EXPIRY
+    "jwt.expiry.bureau=" + TestConstants.JWT_EXPIRY_STR
 })
 class JwtServiceImplTest {
 
