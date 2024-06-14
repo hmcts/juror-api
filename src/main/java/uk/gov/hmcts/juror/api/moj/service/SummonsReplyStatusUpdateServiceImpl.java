@@ -40,6 +40,7 @@ import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAuditChangeServic
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -116,6 +117,15 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
         JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
 
+        // if response is closed already and new processing status is closed (responded) and juror is not
+        // responded then update the juror status to responded and return
+        if (ProcessingStatus.CLOSED == status && Boolean.TRUE.equals(paperResponse.getProcessingComplete())
+            && jurorPool.getStatus().getStatus() != IJurorStatus.RESPONDED) {
+            log.info("Juror {} has already responded, marking as responded", jurorNumber);
+            updateJurorAsResponded(jurorNumber, payload.getLogin());
+            return;
+        }
+
         // store the current processing status (to be used as the "changed from" value in the audit/history table)
         final ProcessingStatus initialProcessingStatus = paperResponse.getProcessingStatus();
 
@@ -166,6 +176,18 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
             throw new JurorPaperResponseException.NoJurorPaperResponseRecordFound(jurorNumber);
         }
 
+        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
+        JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
+
+        // if response is closed already and new processing status is closed (responded) and juror is not
+        // responded then update the juror status to responded and return
+        if (ProcessingStatus.CLOSED == status && Boolean.TRUE.equals(jurorResponse.getProcessingComplete())
+            && jurorPool.getStatus().getStatus() != IJurorStatus.RESPONDED) {
+            log.info("Juror {} has already responded, marking as responded", jurorNumber);
+            updateJurorAsResponded(jurorNumber, auditorUsername);
+            return;
+        }
+
         entityManager.detach(jurorResponse);
         final ProcessingStatus auditProcessingStatus = jurorResponse.getProcessingStatus();
 
@@ -173,9 +195,6 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
         if (null == jurorResponse.getStaff()) {
             assignOnUpdateService.assignToCurrentLogin(jurorResponse, auditorUsername);
         }
-
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
-        JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
 
         // store the current processing status (to be used as the "changed from" value in the audit/history table)
         final ProcessingStatus initialProcessingStatus = jurorResponse.getProcessingStatus();
