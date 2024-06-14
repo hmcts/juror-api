@@ -57,6 +57,8 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorOverviewResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorRecordSearchDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorSummonsReplyResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PendingJurorsResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorHistoryResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorPaymentsResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.FilterJurorRecord;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PendingJurorStatus;
@@ -431,6 +433,40 @@ public class JurorRecordController {
         @Valid @PathVariable("locCode") @CourtLocationCode String locCode) {
         final JurorAttendanceDetailsResponseDto details =
             jurorRecordService.getJurorAttendanceDetails(locCode, jurorNumber, payload);
+        return ResponseEntity.ok().body(details);
+    }
+
+
+    /**
+     * Get the attendance and payments log details for a given Juror.
+     *
+     * @param jurorNumber Unique Juror number of the juror
+     * @return Fully populated DTO of the juror's attendance and payments log
+     */
+    @GetMapping(path = "/{jurorNumber}/payments")
+    @Operation(summary = "Get attendance and payments log for a given juror")
+    @IsCourtUser
+    public ResponseEntity<JurorPaymentsResponseDto> getJurorPaymentsHistory(
+        @PathVariable("jurorNumber") @Valid @JurorNumber
+        @Parameter(description = "Valid juror number", required = true) String jurorNumber) {
+
+        return ResponseEntity.ok().body(jurorRecordService.getJurorPayments(jurorNumber));
+    }
+
+    /**
+     * Get the history log for a given Juror.
+     *
+     * @param jurorNumber Unique Juror number of the juror
+     * @return Fully populated DTO of the juror's history entries
+     */
+    @GetMapping(path = "/{jurorNumber}/history")
+    @Operation(summary = "Get history log for a given juror")
+    public ResponseEntity<JurorHistoryResponseDto> getJurorHistory(
+        @PathVariable("jurorNumber") @Valid @JurorNumber
+        @Parameter(description = "Valid juror number", required = true) String jurorNumber) {
+        final JurorHistoryResponseDto details =
+            jurorRecordService.getJurorHistory(jurorNumber);
+
         return ResponseEntity.ok().body(details);
     }
 

@@ -32,6 +32,7 @@ public final class ValidationConstants {
     public static final String PHONE_NO_REGEX = "^[04(+][0-9\\s-()]{8,14}$";
     public static final String DATE_FORMAT = "yyyy-MM-dd";
     public static final String DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+    public static final String TIME_FORMAT = "HH:mm";
 
     private ValidationConstants() {
 

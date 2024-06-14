@@ -44,6 +44,9 @@ public class ReportsJurorPayments extends Address implements Serializable {
     @Column(name = "attendance_date")
     private LocalDate attendanceDate;
 
+    @Column(name = "non_attendance")
+    private Boolean nonAttendance;
+
     @Id
     @Column(name = "juror_number")
     @Length(max = 9)
