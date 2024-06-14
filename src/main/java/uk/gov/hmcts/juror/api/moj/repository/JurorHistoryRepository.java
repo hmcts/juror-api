@@ -15,4 +15,6 @@ public interface JurorHistoryRepository extends CrudRepository<JurorHistory, Lon
     List<JurorHistory> findByJurorNumberAndDateCreatedGreaterThanEqual(String jurorNumber, LocalDateTime dateCreated);
 
     List<JurorHistory> findByJurorNumber(String jurorNumber);
+
+    List<JurorHistory> findByJurorNumberOrderById(String jurorNumber);
 }
