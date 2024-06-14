@@ -17,11 +17,11 @@ values ('T100000002', '415', 'TEST DEFENDANT', 1, 'CIV', current_date, null, fal
 
 
 
-INSERT INTO juror_mod.users (username, "name", active, approval_limit, user_type,
+INSERT INTO juror_mod.users (created_by, updated_by,username, "name", active, approval_limit, user_type,
                              email)
-VALUES ('COURT.USER.270.415', 'COURT USER.270.415', true, 0.00, 'COURT',
+VALUES ('COURT.USER.270.415','COURT.USER.270.415','COURT.USER.270.415', 'COURT USER.270.415', true, 0.00, 'COURT',
         'COURT.USER.270.415@justice.gov.uk'),
-       ('COURT.415', 'COURT 415', true, 100000.00, 'COURT', 'COURT.415@justice.gov.uk');
+       ('COURT.USER.270.415','COURT.USER.270.415','COURT.415', 'COURT 415', true, 100000.00, 'COURT', 'COURT.415@justice.gov.uk');
 
 INSERT INTO juror_mod.juror
 (juror_number, poll_number, title, last_name, first_name, dob, address_line_1, address_line_2, address_line_3,

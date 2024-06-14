@@ -23,8 +23,8 @@ VALUES (7344726, 1715794422606),
 INSERT INTO juror_mod.users (username, "name", active, last_logged_in, team_id, approval_limit, user_type,
                              email, created_by, updated_by)
 VALUES ('COURT.USER.270.415', 'COURT USER.270.415', true, NULL, NULL, 0.00, 'COURT',
-        'COURT.USER.270.415@justice.gov.uk', NULL, NULL),
-       ('COURT.415', 'COURT 415', true, NULL, NULL, 100000.00, 'COURT', 'COURT.415@justice.gov.uk', NULL, NULL);
+        'COURT.USER.270.415@justice.gov.uk', 'COURT.USER.270.415', 'COURT.USER.270.415'),
+       ('COURT.415', 'COURT 415', true, NULL, NULL, 100000.00, 'COURT', 'COURT.415@justice.gov.uk', 'COURT.USER.270.415', 'COURT.USER.270.415');
 
 INSERT INTO juror_mod.juror
 (juror_number, poll_number, title, last_name, first_name, dob, address_line_1, address_line_2, address_line_3,

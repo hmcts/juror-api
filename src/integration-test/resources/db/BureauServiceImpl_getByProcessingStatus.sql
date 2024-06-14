@@ -39,10 +39,10 @@ INSERT INTO juror_mod.juror_response (juror_number,date_received,title,first_nam
 
 
 
-INSERT INTO juror_mod.users (username,email, name, active)
-VALUES ('ncrawford','ncrawford@email.gov.uk','Natasha Crawford',true),
-       ('lrees','lrees@email.gov.uk','Lewis Rees',true),
-       ('kfry','kfry@email.gov.uk','Katherine Fry',true);
+INSERT INTO juror_mod.users (created_by, updated_by,username,email, name, active)
+VALUES ('ncrawford','ncrawford','ncrawford','ncrawford@email.gov.uk','Natasha Crawford',true),
+       ('ncrawford','ncrawford','lrees','lrees@email.gov.uk','Lewis Rees',true),
+       ('ncrawford','ncrawford','kfry','kfry@email.gov.uk','Katherine Fry',true);
 
 insert into juror_mod.user_courts (username, loc_code)
 values ('ncrawford', '400'),

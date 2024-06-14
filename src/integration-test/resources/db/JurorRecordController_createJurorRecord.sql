@@ -1,5 +1,5 @@
-insert into juror_mod.users(username, name, email)
-values ('COURT_USER', 'COURT_USER', 'COURT_USER@hmcts.net');
+insert into juror_mod.users(created_by, updated_by, username, name, email)
+values ('COURT_USER', 'COURT_USER', 'COURT_USER', 'COURT_USER', 'COURT_USER@hmcts.net');
 
 -- create a pool record owned by 415
 INSERT INTO juror_mod.pool
