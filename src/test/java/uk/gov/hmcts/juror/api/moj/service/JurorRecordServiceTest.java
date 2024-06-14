@@ -3432,7 +3432,7 @@ class JurorRecordServiceTest {
                 .findByJurorJurorNumberAndIsActive(any(), anyBoolean());
 
             doReturn(List.of(generateData("First", 1), generateData("Second", 2)))
-                .when(jurorHistoryRepository).findByJurorNumber(jurorNumber);
+                .when(jurorHistoryRepository).findByJurorNumberOrderById(jurorNumber);
 
             JurorHistoryResponseDto history = jurorRecordService.getJurorHistory(jurorNumber);
 

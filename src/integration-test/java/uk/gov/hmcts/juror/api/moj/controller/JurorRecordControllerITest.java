@@ -3704,15 +3704,6 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                         .otherInfoRef("F1")
                         .build(),
                     JurorHistoryResponseDto.JurorHistoryEntryDto.builder()
-                        .description("Pool attendance confirmed")
-                        .username("Court_user")
-                        .dateCreated(LocalDateTime.of(2024, 6, 7, 10, 18, 7, 342_000_000))
-                        .poolNumber("415240801")
-                        .otherInfo("P10000001")
-                        .otherInfoDate(null)
-                        .otherInfoRef("")
-                        .build(),
-                    JurorHistoryResponseDto.JurorHistoryEntryDto.builder()
                         .description("Expenses approved")
                         .username("MODCOURT")
                         .dateCreated(LocalDateTime.of(2024, 6, 7, 10, 15, 53, 433_000_000))
@@ -3720,6 +3711,15 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                         .otherInfo("£20.00")
                         .otherInfoDate(LocalDate.of(2024, 6, 6))
                         .otherInfoRef("F2")
+                        .build(),
+                    JurorHistoryResponseDto.JurorHistoryEntryDto.builder()
+                        .description("Pool attendance confirmed")
+                        .username("Court_user")
+                        .dateCreated(LocalDateTime.of(2024, 6, 7, 10, 18, 7, 342_000_000))
+                        .poolNumber("415240801")
+                        .otherInfo("P10000001")
+                        .otherInfoDate(null)
+                        .otherInfoRef("")
                         .build(),
                     JurorHistoryResponseDto.JurorHistoryEntryDto.builder()
                         .description("Expenses submitted for approval")
