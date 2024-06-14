@@ -3358,6 +3358,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_initAttendanceTests.sql"})
         void testGJurorAttendanceHappy() {
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, getCourtJwt("415"));
             ResponseEntity<JurorAttendanceDetailsResponseDto> response =
                 restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
                         URI.create("/api/v1/moj/juror-record/attendance-detail/415/111111111")),
@@ -3428,6 +3429,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_initAttendanceTests.sql"})
         void testGJurorAttendanceOnCall() {
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, getCourtJwt("415"));
             ResponseEntity<JurorAttendanceDetailsResponseDto> response =
                 restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
                         URI.create("/api/v1/moj/juror-record/attendance-detail/415/222222222")),

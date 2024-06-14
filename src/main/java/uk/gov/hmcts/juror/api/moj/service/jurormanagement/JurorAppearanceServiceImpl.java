@@ -340,29 +340,19 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     @Override
     @Transactional
     public void modifyConfirmedAttendance(ModifyConfirmedAttendanceDto request) {
-
         final LocalDate attendanceDate = request.getAttendanceDate();
         final String jurorNumber = request.getJurorNumber();
-        final String poolNumber = request.getPoolNumber();
-
 
         log.debug(
             String.format("User %s is modifying attendance for juror %s", SecurityUtil.getActiveLogin(), jurorNumber));
 
-        JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(jurorNumber,
-            poolNumber);
-
-        if (jurorPool == null) {
-            throw new MojException.NotFound("No valid juror pool found for juror " + jurorNumber, null);
-        }
-
-        // validate the court user has access to the juror and pool
-        JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, SecurityUtil.getActiveOwner());
-
         // get the appearance record if it exists
         Appearance appearance =
-            appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(jurorNumber, poolNumber,
-                attendanceDate).orElseThrow(() -> new MojException.NotFound("No valid appearance record found", null));
+            appearanceRepository.findByCourtLocationLocCodeAndJurorNumberAndAttendanceDate(
+                SecurityUtil.getLocCode(),
+                jurorNumber,
+                attendanceDate)
+                .orElseThrow(() -> new MojException.NotFound("No valid appearance record found", null));
 
         modifyConfirmedAttendance(appearance,
             request.getModifyAttendanceType(),

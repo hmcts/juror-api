@@ -1193,6 +1193,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
                                                                        BureauJwtPayload payload) {
         log.info("Juror {} attendance record requested by user {}", jurorNumber, payload.getLogin());
 
+        SecurityUtil.validateCourtLocationPermitted(locCode);
         JurorPool jurorPool = getJurorPoolByLocCode(locCode, jurorNumber);
         JurorPoolUtils.checkReadAccessForCurrentUser(jurorPool, payload.getOwner());
 
