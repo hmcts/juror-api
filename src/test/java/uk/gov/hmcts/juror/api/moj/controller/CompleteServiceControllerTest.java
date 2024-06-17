@@ -36,6 +36,7 @@ import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.service.BulkService;
 import uk.gov.hmcts.juror.api.moj.service.BulkServiceImpl;
 import uk.gov.hmcts.juror.api.moj.service.CompleteServiceService;
+import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -60,6 +61,7 @@ import static uk.gov.hmcts.juror.api.moj.controller.CompleteServiceControllerTes
 @ContextConfiguration(
     classes = {
         CompleteServiceController.class,
+        SjoTasksController.class,
         RestResponseEntityExceptionHandler.class,
         BulkServiceImpl.class
     }
@@ -81,6 +83,11 @@ class CompleteServiceControllerTest {
     @MockBean
     private CompleteServiceService completeServiceService;
 
+    @MockBean
+    private JurorPoolService jurorPoolService;
+
+    @MockBean
+    private SjoTasksController sjoTasksController;
 
     @Nested
     @DisplayName("PATCH " + COMPLETE_SERVICE_URL)
@@ -423,12 +430,13 @@ class CompleteServiceControllerTest {
     @Nested
     @DisplayName("POST " + GetCompleteJurors.URL)
     class GetCompleteJurors {
-        public static final String URL = BASE_URL;
+        public static final String URL = "/api/v1/moj/sjo-tasks/juror/search";
 
         @Test
         void positiveTypical() throws Exception {
             JurorPoolSearch poolSearch = JurorPoolSearch.builder()
                 .jurorNumber("123")
+                .jurorStatus(IJurorStatus.RESPONDED)
                 .pageLimit(5)
                 .pageNumber(1)
                 .build();
@@ -445,8 +453,8 @@ class CompleteServiceControllerTest {
 
             PaginatedList<JurorDetailsDto> result = new PaginatedList<>();
             result.setData(List.of(response1, response2, response3));
-            when(completeServiceService.search(poolSearch))
-                .thenReturn(result);
+
+            when(jurorPoolService.search(poolSearch)).thenReturn(result);
 
             mockMvc.perform(post(URL)
                     .contentType(MediaType.APPLICATION_JSON)
@@ -460,8 +468,7 @@ class CompleteServiceControllerTest {
                 .andExpect(jsonPath("$.data.[2].juror_number", CoreMatchers.is("1236")));
 
 
-            verify(completeServiceService, times(1))
-                .search(poolSearch);
+            verify(jurorPoolService, times(1)).search(poolSearch);
             verifyNoMoreInteractions(completeServiceService);
         }
 

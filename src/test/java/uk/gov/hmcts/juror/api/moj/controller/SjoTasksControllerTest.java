@@ -18,11 +18,13 @@ import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAndPoolRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
-import uk.gov.hmcts.juror.api.moj.controller.response.FailedToAttendListResponse;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsDto;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.service.BulkService;
 import uk.gov.hmcts.juror.api.moj.service.BulkServiceImpl;
+import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.SjoTasksService;
 
 import java.util.List;
@@ -44,7 +46,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     classes = {
         SjoTasksController.class,
         RestResponseEntityExceptionHandler.class,
-        BulkServiceImpl.class
+        BulkServiceImpl.class,
+        JurorPoolService.class,
     }
 )
 @DisplayName("Controller: " + SjoTasksControllerTest.BASE_URL)
@@ -60,33 +63,37 @@ class SjoTasksControllerTest {
     @MockBean
     private SjoTasksService sjoTasksService;
 
+    @MockBean
+    private JurorPoolService jurorPoolService;
+
     @Nested
     @DisplayName("POST " + GetFailedToAttendJurors.URL)
     class GetFailedToAttendJurors {
-        public static final String URL = BASE_URL + "/failed-to-attend";
+        public static final String URL = BASE_URL + "/juror/search";
 
         @Test
         void positiveTypicalPoolSearch() throws Exception {
             JurorPoolSearch jurorPoolSearch = JurorPoolSearch.builder()
                 .poolNumber("415")
+                .jurorStatus(IJurorStatus.FAILED_TO_ATTEND)
                 .pageLimit(5)
                 .pageNumber(1)
                 .build();
 
-            FailedToAttendListResponse response1 = FailedToAttendListResponse.builder()
+            JurorDetailsDto response1 = JurorDetailsDto.builder()
                 .jurorNumber("111111111")
                 .build();
-            FailedToAttendListResponse response2 = FailedToAttendListResponse.builder()
+            JurorDetailsDto response2 = JurorDetailsDto.builder()
                 .jurorNumber("111111112")
                 .build();
-            FailedToAttendListResponse response3 = FailedToAttendListResponse.builder()
+            JurorDetailsDto response3 = JurorDetailsDto.builder()
                 .jurorNumber("111111113")
                 .build();
 
-            PaginatedList<FailedToAttendListResponse> result = new PaginatedList<>();
+            PaginatedList<JurorDetailsDto> result = new PaginatedList<>();
             result.setData(List.of(response1, response2, response3));
 
-            when(sjoTasksService.search(jurorPoolSearch)).thenReturn(result);
+            when(jurorPoolService.search(jurorPoolSearch)).thenReturn(result);
 
             mockMvc.perform(post(URL)
                     .contentType(MediaType.APPLICATION_JSON)
@@ -99,8 +106,8 @@ class SjoTasksControllerTest {
                 .andExpect(jsonPath("$.data.[1].juror_number", CoreMatchers.is("111111112")))
                 .andExpect(jsonPath("$.data.[2].juror_number", CoreMatchers.is("111111113")));
 
-            verify(sjoTasksService, times(1)).search(jurorPoolSearch);
-            verifyNoMoreInteractions(sjoTasksService);
+            verify(jurorPoolService, times(1)).search(jurorPoolSearch);
+            verifyNoMoreInteractions(jurorPoolService);
         }
 
         @Test

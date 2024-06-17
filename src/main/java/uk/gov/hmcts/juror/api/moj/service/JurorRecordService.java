@@ -81,8 +81,6 @@ public interface JurorRecordService {
 
     void updateJurorToFailedToAttend(String jurorNumber, String poolNumber);
 
-    void undoUpdateJurorToFailedToAttend(String jurorNumber, String poolNumber);
-
     JurorAttendanceDetailsResponseDto getJurorAttendanceDetails(String locCode,
                                                                 String jurorNumber,
                                                                 BureauJwtPayload payload);

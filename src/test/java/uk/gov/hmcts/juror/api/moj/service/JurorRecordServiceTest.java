@@ -218,6 +218,8 @@ class JurorRecordServiceTest {
     private UserServiceModImpl userServiceMod;
     @Mock
     private JurorPaymentsSummaryRepository jurorPaymentsSummaryRepository;
+    @Mock
+    private SjoTasksService sjoTasksService;
 
     @Mock
     private Clock clock;
@@ -2782,92 +2784,6 @@ class JurorRecordServiceTest {
             assertEquals(
                 "This juror cannot be given a Failed To Attend status because they have had attendances recorded."
                     + " The Failed To Attend status is only for jurors who have not attended at all",
-                exception.getMessage(), "Exception message should match");
-            verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndPoolPoolNumber(
-                TestConstants.VALID_JUROR_NUMBER,
-                TestConstants.VALID_POOL_NUMBER);
-
-            verifyNoMoreInteractions(jurorPoolRepository);
-            verifyNoInteractions(jurorHistoryService);
-        }
-    }
-
-    @Nested
-    @DisplayName("public void undoUpdateJurorToFailedToAttend(String jurorNumber, String poolNumber)")
-    class UndoUpdateJurorToFailedToAttend {
-
-        @Test
-        void typical() {
-            JurorStatus status = mock(JurorStatus.class);
-            when(status.getStatus()).thenReturn(IJurorStatus.FAILED_TO_ATTEND);
-            JurorPool jurorPool = mock(JurorPool.class);
-            when(jurorPool.getStatus()).thenReturn(status);
-
-            Juror juror = mock(Juror.class);
-            when(jurorPool.getJuror()).thenReturn(juror);
-            when(juror.getCompletionDate()).thenReturn(null);
-
-            JurorStatus respondedStatus = new JurorStatus();
-            when(jurorStatusRepository.findById(IJurorStatus.RESPONDED))
-                .thenReturn(Optional.of(respondedStatus));
-
-            when(jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(TestConstants.VALID_JUROR_NUMBER,
-                TestConstants.VALID_POOL_NUMBER)).thenReturn(jurorPool);
-
-
-            jurorRecordService.undoUpdateJurorToFailedToAttend(
-                TestConstants.VALID_JUROR_NUMBER,
-                TestConstants.VALID_POOL_NUMBER);
-
-            verify(jurorPool, times(1)).setStatus(respondedStatus);
-            verify(jurorPool, times(1)).getStatus();
-            verify(jurorPoolRepository, times(1)).save(jurorPool);
-            verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndPoolPoolNumber(
-                TestConstants.VALID_JUROR_NUMBER,
-                TestConstants.VALID_POOL_NUMBER);
-
-
-            verify(jurorHistoryService, times(1)).createUndoFailedToAttendHistory(jurorPool);
-            verifyNoMoreInteractions(jurorPoolRepository, jurorHistoryService, jurorPool);
-        }
-
-        @Test
-        void notFound() {
-            when(jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(TestConstants.VALID_JUROR_NUMBER,
-                TestConstants.VALID_POOL_NUMBER)).thenReturn(null);
-
-            MojException.NotFound exception
-                = assertThrows(MojException.NotFound.class, () -> jurorRecordService.undoUpdateJurorToFailedToAttend(
-                TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER), "Not found");
-
-            assertEquals("Juror number " + TestConstants.VALID_JUROR_NUMBER
-                    + " not found in pool " + TestConstants.VALID_POOL_NUMBER,
-                exception.getMessage(), "Exception message should match");
-            verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndPoolPoolNumber(
-                TestConstants.VALID_JUROR_NUMBER,
-                TestConstants.VALID_POOL_NUMBER);
-
-            verifyNoMoreInteractions(jurorPoolRepository);
-            verifyNoInteractions(jurorHistoryService);
-        }
-
-        @Test
-        void wrongStatus() {
-            JurorStatus status = mock(JurorStatus.class);
-            when(status.getStatus()).thenReturn(IJurorStatus.RESPONDED);
-            JurorPool jurorPool = mock(JurorPool.class);
-            when(jurorPool.getStatus()).thenReturn(status);
-
-
-            when(jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(TestConstants.VALID_JUROR_NUMBER,
-                TestConstants.VALID_POOL_NUMBER)).thenReturn(jurorPool);
-
-            MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
-                () -> jurorRecordService.undoUpdateJurorToFailedToAttend(
-                    TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER),
-                "Expect an exception when the pool status is not failed to respond");
-
-            assertEquals("Juror status must be failed to attend in order to undo the failed to attend status.",
                 exception.getMessage(), "Exception message should match");
             verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndPoolPoolNumber(
                 TestConstants.VALID_JUROR_NUMBER,

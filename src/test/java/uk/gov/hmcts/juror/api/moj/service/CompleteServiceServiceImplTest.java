@@ -36,9 +36,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -55,6 +53,7 @@ class CompleteServiceServiceImplTest {
     private JurorStatusRepository jurorStatusRepository;
     private JurorHistoryService jurorHistoryService;
     private JurorRepository jurorRepository;
+    private JurorPoolService jurorPoolService;
     private CompleteServiceServiceImpl completeServiceService;
 
     @BeforeEach
@@ -63,6 +62,7 @@ class CompleteServiceServiceImplTest {
         this.jurorStatusRepository = mock(JurorStatusRepository.class);
         this.jurorHistoryService = mock(JurorHistoryService.class);
         this.jurorRepository = mock(JurorRepository.class);
+        this.jurorPoolService = mock(JurorPoolService.class);
         this.completeServiceService = new CompleteServiceServiceImpl(
             jurorPoolRepository, jurorStatusRepository,
             jurorRepository, jurorHistoryService);
@@ -692,13 +692,9 @@ class CompleteServiceServiceImplTest {
 
             PaginatedList<JurorDetailsDto> result = new PaginatedList<>();
             result.setData(List.of(jurorDetailsDto1, jurorDetailsDto2, jurorDetailsDto3));
-            doReturn(result)
-                .when(jurorPoolRepository)
-                .findJurorPoolsBySearch(eq(poolSearch), eq("415"), any(), any(), eq(500L));
+            doReturn(result).when(jurorPoolService).search(poolSearch);
 
-
-            PaginatedList<JurorDetailsDto> responses =
-                completeServiceService.search(poolSearch);
+            PaginatedList<JurorDetailsDto> responses = jurorPoolService.search(poolSearch);
 
             assertThat(responses).isNotNull();
             List<JurorDetailsDto> data = responses.getData();
@@ -730,9 +726,7 @@ class CompleteServiceServiceImplTest {
             assertThat(response3.getPostCode()).isEqualTo("POSTCODE3");
             assertThat(response3.getCompletionDate()).isEqualTo(LocalDate.of(2023, 1, 3));
 
-
-            verify(jurorPoolRepository, times(1))
-                .findJurorPoolsBySearch(eq(poolSearch), eq("415"), any(), any(), eq(500L));
+            verify(jurorPoolService, times(1)).search(poolSearch);
         }
 
         @ParameterizedTest
@@ -741,6 +735,7 @@ class CompleteServiceServiceImplTest {
         void negativePoolsNotFound(List<JurorDetailsDto> data) {
             JurorPoolSearch poolSearch = JurorPoolSearch.builder()
                 .jurorNumber("123")
+                .jurorStatus(IJurorStatus.COMPLETED)
                 .build();
 
             SecurityContextHolder.getContext().setAuthentication(
@@ -749,13 +744,11 @@ class CompleteServiceServiceImplTest {
             );
             PaginatedList<JurorDetailsDto> response = new PaginatedList<>();
             response.setData(data);
-            doReturn(response)
-                .when(jurorPoolRepository)
-                .findJurorPoolsBySearch(eq(poolSearch), eq("415"), any(), any(), eq(500L));
+            doReturn(response).when(jurorPoolService).search(poolSearch);
 
 
             MojException.NotFound exception = assertThrows(MojException.NotFound.class,
-                () -> completeServiceService.search(poolSearch),
+                () -> jurorPoolService.search(poolSearch),
                 "Exception should be thrown");
 
             assertThat(exception).isNotNull();
@@ -764,8 +757,7 @@ class CompleteServiceServiceImplTest {
                 "No complete juror pools found that meet your search criteria.");
 
 
-            verify(jurorPoolRepository, times(1))
-                .findJurorPoolsBySearch(eq(poolSearch), eq("415"), any(), any(), eq(500L));
+            verify(jurorPoolService, times(1)).search(poolSearch);
 
         }
 

@@ -4,9 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
-import uk.gov.hmcts.juror.api.moj.controller.response.FailedToAttendListResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsDto;
-import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
@@ -42,7 +40,7 @@ public class JurorPoolServiceImpl implements JurorPoolService {
         PaginatedList<JurorDetailsDto> jurorDetailsDtoList =
             jurorPoolRepository.findJurorPoolsBySearch(search, SecurityUtil.getActiveOwner(),
                 jurorPoolJPQLQuery -> jurorPoolJPQLQuery.where(
-                    QJurorPool.jurorPool.status.status.eq(IJurorStatus.COMPLETED)),
+                    QJurorPool.jurorPool.status.status.eq(search.getJurorStatus())),
                 jurorPool -> {
                     Juror juror = jurorPool.getJuror();
                     return JurorDetailsDto.builder()
@@ -59,6 +57,7 @@ public class JurorPoolServiceImpl implements JurorPoolService {
         if (jurorDetailsDtoList == null || jurorDetailsDtoList.isEmpty()) {
             throw new MojException.NotFound("No juror pools found that meet your search criteria.", null);
         }
+
         return jurorDetailsDtoList;
     }
 }

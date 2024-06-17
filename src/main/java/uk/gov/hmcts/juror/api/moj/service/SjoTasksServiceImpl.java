@@ -43,9 +43,11 @@ public class SjoTasksServiceImpl implements SjoTasksService {
                 "Juror status must be failed to attend in order to undo the failed to attend status.",
                 JUROR_STATUS_MUST_BE_FAILED_TO_ATTEND);
         }
+
         jurorPool.setStatus(
             RepositoryUtils.retrieveFromDatabase(IJurorStatus.RESPONDED, jurorStatusRepository)
         );
+
         jurorHistoryService.createUndoFailedToAttendHistory(jurorPool);
         jurorPoolRepository.save(jurorPool);
     }

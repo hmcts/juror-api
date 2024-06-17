@@ -212,6 +212,7 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
             query.where(JUROR.firstName.concat(" ").concat(JUROR.lastName)
                 .likeIgnoreCase("%" + search.getJurorName() + "%"));
         }
+
         if (search.getJurorStatus() != null) {
             query.where(JUROR_POOL.status.status.eq(search.getJurorStatus()));
         }
