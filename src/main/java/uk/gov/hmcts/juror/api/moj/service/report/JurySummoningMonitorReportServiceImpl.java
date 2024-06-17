@@ -21,6 +21,7 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -78,7 +79,12 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
 
     private void setupResponseDto(JurySummoningMonitorReportResponse response, String result) {
         if (result != null && !result.isEmpty()) {
-            List<String> values = List.of(result.split(","));
+            List<String> values = Arrays.stream(result.split(",")).map(item -> {
+                if (item.equals("null")) {
+                    return "0";
+                }
+                return item;
+            }).toList();
             setupResponse(response, values);
         }
     }
