@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -48,10 +49,11 @@ public class SjoTasksController {
     @PatchMapping("/failed-to-attend/undo")
     @Operation(summary = "Undo failed to attend status for a list of jurors")
     @IsSeniorCourtUser
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(HttpStatus.ACCEPTED)
     public void undoFailedToAttendStatus(
         @Valid
         @NotNull
+        @Size(min = 1, max = 500)
         @RequestBody List<@Valid @NotNull JurorAndPoolRequest> requestList) {
         bulkService.processVoid(requestList,
             jurorAndPoolRequest -> sjoTasksService.undoFailedToAttendStatus(
