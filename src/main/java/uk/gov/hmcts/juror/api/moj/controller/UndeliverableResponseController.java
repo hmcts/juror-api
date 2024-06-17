@@ -25,7 +25,6 @@ import uk.gov.hmcts.juror.api.moj.service.UndeliverableResponseService;
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 @Validated
 @Tag(name = "Summons Management")
-@IsBureauUser
 public class UndeliverableResponseController {
     private final UndeliverableResponseService undeliverableResponseService;
 
