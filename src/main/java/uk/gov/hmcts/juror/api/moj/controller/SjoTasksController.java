@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.config.security.IsSeniorCourtUser;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAndPoolRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
-import uk.gov.hmcts.juror.api.moj.controller.response.FailedToAttendListResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsDto;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.service.BulkService;
@@ -60,8 +59,8 @@ public class SjoTasksController {
         @RequestBody List<@Valid @NotNull JurorAndPoolRequest> requestList) {
         bulkService.processVoid(requestList,
             jurorAndPoolRequest -> sjoTasksService.undoFailedToAttendStatus(
-            jurorAndPoolRequest.getJurorNumber(),
-            jurorAndPoolRequest.getPoolNumber())
+                jurorAndPoolRequest.getJurorNumber(),
+                jurorAndPoolRequest.getPoolNumber())
         );
     }
 

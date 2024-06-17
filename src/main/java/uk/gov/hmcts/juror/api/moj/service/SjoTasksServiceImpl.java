@@ -28,32 +28,6 @@ public class SjoTasksServiceImpl implements SjoTasksService {
     private final JurorStatusRepository jurorStatusRepository;
     private final JurorHistoryService jurorHistoryService;
 
-    @Override
-    @Transactional
-    public PaginatedList<FailedToAttendListResponse> search(JurorPoolSearch request) {
-        String owner = SecurityUtil.getActiveOwner();
-
-        PaginatedList<FailedToAttendListResponse> failedToAttendJurors = jurorPoolRepository
-            .findJurorPoolsBySearch(request, owner,
-                jurorPoolJPQLQuery -> jurorPoolJPQLQuery.where(
-                    QJurorPool.jurorPool.status.status.eq(IJurorStatus.FAILED_TO_ATTEND)),
-                jurorPool -> {
-                    Juror juror = jurorPool.getJuror();
-                    return FailedToAttendListResponse.builder()
-                        .jurorNumber(jurorPool.getJurorNumber())
-                        .poolNumber(jurorPool.getPoolNumber())
-                        .firstName(juror.getFirstName())
-                        .lastName(juror.getLastName())
-                        .postcode(juror.getPostcode())
-                        .build();
-                }, 500L);
-
-        if (failedToAttendJurors == null || failedToAttendJurors.isEmpty()) {
-            throw new MojException.NotFound("No Failed To Attend jurors found.", null);
-        }
-
-        return failedToAttendJurors;
-    }
 
     @Override
     @Transactional
