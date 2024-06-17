@@ -667,7 +667,7 @@ public class JurorPaperResponseTest {
         response.setAddressLine1("Test");
         response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
-        response.setPhoneNumber("+44 1234 - 56789");
+        response.setPhoneNumber("+44 1234 - 567895678956");
 
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
         assertThat(violations).as("Validation violation expected (phone number format invalid)").isNotEmpty();
@@ -725,7 +725,7 @@ public class JurorPaperResponseTest {
         response.setAddressLine1("Test");
         response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
-        response.setAltPhoneNumber("+44 1234 - 56789");
+        response.setAltPhoneNumber("+44 1234 - 567895678956");
 
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
         assertThat(violations).as("Validation violation expected (alternative phone number format invalid)")

@@ -27,9 +27,7 @@ public final class ValidationConstants {
         + "(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])|$";
     public static final String WHITESPACE_MATCHER = "\\s+";
     public static final String MD5_HASHCODE = "^[a-fA-F0-9]{32}+$";
-    public static final String TWO_DIGIT_REGEX = "^\\d{2}$";
-    public static final String FOUR_DIGIT_REGEX = "^\\d{4}$";
-    public static final String PHONE_NO_REGEX = "^[04(+][0-9\\s-()]{7,19}$";
+    public static final String PHONE_NO_REGEX = "^[04(+][0-9\\s-()]{7,20}$";
     public static final String DATE_FORMAT = "yyyy-MM-dd";
     public static final String DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
     public static final String TIME_FORMAT = "HH:mm";
