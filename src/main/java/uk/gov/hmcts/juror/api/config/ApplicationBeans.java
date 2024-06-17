@@ -42,4 +42,5 @@ public class ApplicationBeans {
     public Executor threadPoolTaskExecutor() {
         return new ThreadPoolTaskExecutor();
     }
+
 }

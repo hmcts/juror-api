@@ -219,8 +219,8 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
         return new SchedulerServiceClient.Result(SchedulerServiceClient.Result.Status.SUCCESS,
             "Successfully loaded survey records",
             Map.of(
-                "RECORDS_INSERTED", "" + dbInsertCount,
-                "RECORDS_SKIPPED", "" + dbSkipCount
+                "RECORDS_INSERTED", String.valueOf(dbInsertCount),
+                "RECORDS_SKIPPED",  String.valueOf(dbSkipCount)
             ));
     }
 

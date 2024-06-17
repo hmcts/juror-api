@@ -36,6 +36,7 @@ import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
+import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.TrialType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -683,7 +684,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
             assertThat(jurorPool.getStatus().getStatus()).as(
                 "Expect status to be Responded (Juror in waiting)").isEqualTo(IJurorStatus.RESPONDED);
             assertThat(
-                jurorHistoryRepository.findByJurorNumber(panel.getJurorNumber()).size())
+                jurorHistoryRepository.findByJurorNumberOrderById(panel.getJurorNumber()).size())
                 .as("Expect one history item for juror " + panel.getJurorNumber())
                 .isEqualTo(1);
         }
@@ -719,15 +720,17 @@ class TrialControllerITest extends AbstractIntegrationTest {
             assertThat(jurorPool.getStatus().getStatus()).as(
                 "Expect status to be Responded (Juror in waiting)").isEqualTo(IJurorStatus.RESPONDED);
             assertThat(
-                jurorHistoryRepository.findByJurorNumber(panel.getJurorNumber()).size())
-                .as("Expect one history item for juror " + panel.getJurorNumber())
-                .isEqualTo(1);
+                jurorHistoryRepository.findByJurorNumberOrderById(panel.getJurorNumber()).size())
+                .as("Expect two history items for juror " + panel.getJurorNumber())
+                .isEqualTo(2);
             assertThat(panel.isCompleted()).as("Expected panel completed status to be true").isTrue();
 
             Appearance appearance =
                 appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
                     LocalDate.now()).orElseThrow(() ->
                     new MojException.NotFound("No appearance record found", null));
+
+            assertThat(appearance.getAttendanceAuditNumber()).isNotNull();
 
             assertThat(appearance.getTimeIn()).as("Expect time in to not be null").isNotNull();
             assertThat(appearance.getTimeIn()).as("Expect time in to be 09:00").isEqualTo(LocalTime.parse(
@@ -741,6 +744,10 @@ class TrialControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getAppearanceStage())
                 .as("Expect appearance stage to be EXPENSE_ENTERED")
                 .isEqualTo(AppearanceStage.EXPENSE_ENTERED);
+
+            assertThat(appearance.getAttendanceType())
+                .as("Expect attendance type to be HALF_DAY")
+                .isEqualTo(AttendanceType.HALF_DAY);
         }
     }
 
@@ -774,9 +781,9 @@ class TrialControllerITest extends AbstractIntegrationTest {
             assertThat(jurorPool.getStatus().getStatus()).as(
                 "Expect status to be Responded").isEqualTo(IJurorStatus.RESPONDED);
             assertThat(
-                jurorHistoryRepository.findByJurorNumber(panel.getJurorNumber()).size())
-                .as("Expect one history item for juror " + panel.getJurorNumber())
-                .isEqualTo(1);
+                jurorHistoryRepository.findByJurorNumberOrderById(panel.getJurorNumber()).size())
+                .as("Expect two history item for juror " + panel.getJurorNumber())
+                .isEqualTo(2);
 
             Appearance appearance =
                 appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
@@ -816,9 +823,9 @@ class TrialControllerITest extends AbstractIntegrationTest {
             assertThat(panel.getResult()).as("Expect result to be Returned")
                 .isEqualTo(PanelResult.RETURNED);
             assertThat(
-                jurorHistoryRepository.findByJurorNumber(panel.getJurorNumber()).size())
-                .as("Expect one history item for juror " + panel.getJurorNumber())
-                .isEqualTo(2);
+                jurorHistoryRepository.findByJurorNumberOrderById(panel.getJurorNumber()).size())
+                .as("Expect three history item for juror " + panel.getJurorNumber())
+                .isEqualTo(3);
             assertThat(panel.isCompleted()).as("Expect completed status to be true").isTrue();
             assertThat(panel.getReturnDate()).as("Expect result to be today's date")
                 .isEqualTo(LocalDate.now());

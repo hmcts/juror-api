@@ -1,6 +1,6 @@
 -- STAFF
-INSERT INTO juror_mod.users (username,email, name, active)
-VALUES ('STAFF1','STAFF1@email.gov.uk','Staffy McStaff1',true);
+INSERT INTO juror_mod.users (created_by, updated_by,username,email, name, active)
+VALUES ('STAFF1','STAFF1','STAFF1','STAFF1@email.gov.uk','Staffy McStaff1',true);
 insert into juror_mod.user_courts (username, loc_code)
 values ('STAFF1', '400');
 

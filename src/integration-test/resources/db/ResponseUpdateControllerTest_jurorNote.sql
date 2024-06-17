@@ -11,8 +11,8 @@ INSERT INTO juror_mod.juror_response (juror_number,date_received,title,first_nam
     ('209092530','2024-03-12 00:00:00','Dr','JANE','CASTILLO','4 Knutson Trail','Scotland','Aberdeen','United Kingdom',NULL,'AB3 9RY','TODO',NULL,NULL,NULL,NULL,false,NULL,false,NULL,NULL,false,NULL,false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,false,NULL,555,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,true,true,NULL,NULL,false,NULL,false,'Digital');
 
 -- team member with login enabled
-INSERT INTO juror_mod.users (username,email, name, active)
-VALUES ('testlogin','testlogin@email.gov.uk','Test Login',true);
+INSERT INTO juror_mod.users (created_by, updated_by,username,email, name, active)
+VALUES ('testlogin','testlogin','testlogin','testlogin@email.gov.uk','Test Login',true);
 
 insert into juror_mod.user_courts (username, loc_code)
 values ('testlogin', '400');
