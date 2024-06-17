@@ -6,21 +6,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.moj.controller.request.CompleteServiceJurorNumberListDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberListDto;
-import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
-import uk.gov.hmcts.juror.api.moj.controller.response.CompleteJurorResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.CompleteServiceValidationResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorStatusValidationResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
-import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
-import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
-import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -37,34 +32,6 @@ public class CompleteServiceServiceImpl implements CompleteServiceService {
     private final JurorRepository jurorRepository;
     private final JurorHistoryService jurorHistoryService;
 
-
-    @Override
-    @Transactional(readOnly = true)
-    public PaginatedList<CompleteJurorResponse> search(JurorPoolSearch search) {
-        String owner = SecurityUtil.getActiveOwner();
-
-        PaginatedList<CompleteJurorResponse> completeJurorResponses =
-            jurorPoolRepository.findJurorPoolsBySearch(search, owner,
-                jurorPoolJPQLQuery -> jurorPoolJPQLQuery.where(
-                    QJurorPool.jurorPool.status.status.eq(IJurorStatus.COMPLETED)),
-                jurorPool -> {
-                    Juror juror = jurorPool.getJuror();
-                    return CompleteJurorResponse.builder()
-                        .jurorNumber(jurorPool.getJurorNumber())
-                        .poolNumber(jurorPool.getPoolNumber())
-                        .firstName(juror.getFirstName())
-                        .lastName(juror.getLastName())
-                        .postCode(juror.getPostcode())
-                        .completionDate(juror.getCompletionDate())
-                        .build();
-                },
-                500L);
-
-        if (completeJurorResponses == null || completeJurorResponses.isEmpty()) {
-            throw new MojException.NotFound("No complete juror pools found that meet your search criteria.", null);
-        }
-        return completeJurorResponses;
-    }
 
     @Override
     public void uncompleteJurorsService(String jurorNumber, String poolNumber) {

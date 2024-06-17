@@ -26,7 +26,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.CompleteServiceJurorNumberL
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAndPoolRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberListDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
-import uk.gov.hmcts.juror.api.moj.controller.response.CompleteJurorResponse;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.CompleteServiceValidationResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorStatusValidationResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -433,17 +433,17 @@ class CompleteServiceControllerTest {
                 .pageNumber(1)
                 .build();
 
-            CompleteJurorResponse response1 = CompleteJurorResponse.builder()
+            JurorDetailsDto response1 = JurorDetailsDto.builder()
                 .jurorNumber("1234")
                 .build();
-            CompleteJurorResponse response2 = CompleteJurorResponse.builder()
+            JurorDetailsDto response2 = JurorDetailsDto.builder()
                 .jurorNumber("1235")
                 .build();
-            CompleteJurorResponse response3 = CompleteJurorResponse.builder()
+            JurorDetailsDto response3 = JurorDetailsDto.builder()
                 .jurorNumber("1236")
                 .build();
 
-            PaginatedList<CompleteJurorResponse> result = new PaginatedList<>();
+            PaginatedList<JurorDetailsDto> result = new PaginatedList<>();
             result.setData(List.of(response1, response2, response3));
             when(completeServiceService.search(poolSearch))
                 .thenReturn(result);

@@ -404,19 +404,6 @@ public class JurorRecordController {
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
-    @PatchMapping("/failed-to-attend/undo")
-    @Operation(summary = "Revert failed to attend status back to a responded status",
-        description = "Undo a previous failed to attend update")
-    @IsSeniorCourtUser
-    public ResponseEntity<Void> undoUpdateJurorToFailedToAttend(
-        @Valid @RequestBody JurorNumberAndPoolNumberDto request
-    ) {
-        jurorRecordService.undoUpdateJurorToFailedToAttend(
-            request.getJurorNumber(),
-            request.getPoolNumber());
-        return new ResponseEntity<>(HttpStatus.ACCEPTED);
-    }
-
     /**
      * Get the Attendance details for a given Juror in a given court.
      *

@@ -7,15 +7,18 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
 
 import java.time.LocalDate;
+
+import static uk.gov.hmcts.juror.api.validation.ValidationConstants.DATE_FORMAT;
 
 @Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "Response containing juror detail and completion date")
-public class CompleteJurorResponse {
+public class JurorDetailsDto {
 
     @JsonProperty("juror_number")
     @Schema(description = "Juror number", requiredMode = Schema.RequiredMode.REQUIRED)
@@ -39,6 +42,6 @@ public class CompleteJurorResponse {
 
     @JsonProperty("completion_date")
     @Schema(description = "The Juror's completion date")
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = DATE_FORMAT)
     private LocalDate completionDate;
 }

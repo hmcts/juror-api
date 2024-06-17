@@ -20,8 +20,10 @@ import uk.gov.hmcts.juror.api.config.security.IsSeniorCourtUser;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAndPoolRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
 import uk.gov.hmcts.juror.api.moj.controller.response.FailedToAttendListResponse;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsDto;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.service.BulkService;
+import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.SjoTasksService;
 
 import java.util.List;
@@ -35,15 +37,16 @@ import java.util.List;
 public class SjoTasksController {
 
     private final SjoTasksService sjoTasksService;
+    private final JurorPoolService jurorPoolService;
     private final BulkService bulkService;
 
-    @PostMapping("/failed-to-attend")
+    @PostMapping("/juror/search")
     @Operation(summary = "Get a list of failed to attend jurors based on search criteria")
     @IsSeniorCourtUser
     @ResponseStatus(HttpStatus.OK)
-    public PaginatedList<FailedToAttendListResponse> getCompleteJurors(
+    public PaginatedList<JurorDetailsDto> getCompleteJurors(
         @Valid @RequestBody JurorPoolSearch request) {
-        return sjoTasksService.search(request);
+        return jurorPoolService.search(request);
     }
 
     @PatchMapping("/failed-to-attend/undo")

@@ -18,6 +18,8 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.JUROR_STATUS_MUST_BE_FAILED_TO_ATTEND;
+
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class SjoTasksServiceImpl implements SjoTasksService {
@@ -37,14 +39,13 @@ public class SjoTasksServiceImpl implements SjoTasksService {
                     QJurorPool.jurorPool.status.status.eq(IJurorStatus.FAILED_TO_ATTEND)),
                 jurorPool -> {
                     Juror juror = jurorPool.getJuror();
-
                     return FailedToAttendListResponse.builder()
                         .jurorNumber(jurorPool.getJurorNumber())
                         .poolNumber(jurorPool.getPoolNumber())
                         .firstName(juror.getFirstName())
                         .lastName(juror.getLastName())
                         .postcode(juror.getPostcode())
-                    .build();
+                        .build();
                 }, 500L);
 
         if (failedToAttendJurors == null || failedToAttendJurors.isEmpty()) {
@@ -57,22 +58,21 @@ public class SjoTasksServiceImpl implements SjoTasksService {
     @Override
     @Transactional
     public void undoFailedToAttendStatus(String jurorNumber, String poolNumber) {
-        JurorStatus jurorStatusFailedToAttend = RepositoryUtils
-            .retrieveFromDatabase(IJurorStatus.FAILED_TO_ATTEND, jurorStatusRepository);
-        JurorStatus jurorStatusResponded = RepositoryUtils
-            .retrieveFromDatabase(IJurorStatus.RESPONDED, jurorStatusRepository);
-
         JurorPool jurorPool = jurorPoolRepository
-            .findByJurorJurorNumberAndPoolPoolNumberAndStatus(jurorNumber, poolNumber, jurorStatusFailedToAttend);
+            .findByJurorJurorNumberAndIsActiveAndOwner(jurorNumber, true, SecurityUtil.getActiveOwner());
 
         if (jurorPool == null) {
             throw new MojException.NotFound("No Failed To Attend juror pool found for Juror number "
                 + jurorNumber, null);
+        } else if (jurorPool.getStatus().getStatus() != IJurorStatus.FAILED_TO_ATTEND) {
+            throw new MojException.BusinessRuleViolation(
+                "Juror status must be failed to attend in order to undo the failed to attend status.",
+                JUROR_STATUS_MUST_BE_FAILED_TO_ATTEND);
         }
-
-        jurorPool.setStatus(jurorStatusResponded);
+        jurorPool.setStatus(
+            RepositoryUtils.retrieveFromDatabase(IJurorStatus.RESPONDED, jurorStatusRepository)
+        );
         jurorHistoryService.createUndoFailedToAttendHistory(jurorPool);
         jurorPoolRepository.save(jurorPool);
     }
-
 }

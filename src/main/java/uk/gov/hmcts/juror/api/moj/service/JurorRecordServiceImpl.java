@@ -1186,18 +1186,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         jurorPoolRepository.save(jurorPool);
     }
 
-    @Override
-    public void undoUpdateJurorToFailedToAttend(String jurorNumber, String poolNumber) {
-        JurorPool jurorPool = getJurorPool(jurorNumber, poolNumber);
-        if (jurorPool.getStatus().getStatus() != IJurorStatus.FAILED_TO_ATTEND) {
-            throw new MojException.BusinessRuleViolation(
-                "Juror status must be failed to attend in order to undo the failed to attend status.",
-                JUROR_STATUS_MUST_BE_FAILED_TO_ATTEND);
-        }
-        jurorPool.setStatus(RepositoryUtils.retrieveFromDatabase(IJurorStatus.RESPONDED, jurorStatusRepository));
-        jurorHistoryService.createUndoFailedToAttendHistory(jurorPool);
-        jurorPoolRepository.save(jurorPool);
-    }
+
 
     @Override
     @Transactional(readOnly = true)
