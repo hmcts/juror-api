@@ -69,4 +69,6 @@ public interface JurorHistoryService {
     void createPoolAttendanceHistory(JurorPool jurorPool, String otherInfo);
 
     public String getHistoryDescription(String historyCode);
+
+    void createUndeliveredSummonsHistory(JurorPool jurorPool);
 }

@@ -15,7 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberListDto;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
@@ -45,6 +45,8 @@ public class UndeliverableResponseControllerITest extends AbstractIntegrationTes
     @Autowired
     private JurorHistoryRepository jurorHistoryRepository;
 
+    private static final String BASE_URL = "/api/v1/moj/undeliverable-response";
+
 
     private HttpHeaders httpHeaders;
 
@@ -53,23 +55,47 @@ public class UndeliverableResponseControllerITest extends AbstractIntegrationTes
     public void setUp() throws Exception {
         super.setUp();
         initHeaders();
+    }
 
+    private RequestEntity<JurorNumberListDto> createRequest(String... jurorNumbers) {
+        return new RequestEntity<>(new JurorNumberListDto(List.of(jurorNumbers)),
+            httpHeaders, HttpMethod.PATCH, URI.create(BASE_URL));
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql","/db/UndeliverableResponseController_createInitialPoolRecords.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/UndeliverableResponseController_createInitialPoolRecords.sql"})
     public void markJurorAsUndeliverable_BureauUser() {
         String jurorNumber = "123456789";
 
         ResponseEntity<?> response =
-            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.PUT,
-                URI.create("/api/v1/moj/undeliverable-response/" + jurorNumber)), String.class);
+            restTemplate.exchange(createRequest(jurorNumber), Void.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP PUT request to be OK")
             .isEqualTo(HttpStatus.OK);
 
+        assertUpdated(jurorNumber);
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/UndeliverableResponseController_createInitialPoolRecords.sql"})
+    public void markJurorAsUndeliverable_multiple_BureauUser() {
+        String jurorNumber1 = "123456789";
+        String jurorNumber2 = "123456788";
+
+        ResponseEntity<?> response =
+            restTemplate.exchange(createRequest(jurorNumber1, jurorNumber2), String.class);
+        assertThat(response.getStatusCode())
+            .as("Expect the HTTP PUT request to be OK")
+            .isEqualTo(HttpStatus.OK);
+
         // verify the status of the juror record has been updated
+        assertUpdated(jurorNumber1);
+        assertUpdated(jurorNumber2);
+
+    }
+
+    private void assertUpdated(String jurorNumber) {
         JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
         Juror juror = jurorPool.getJuror();
 
@@ -79,22 +105,17 @@ public class UndeliverableResponseControllerITest extends AbstractIntegrationTes
 
         // verify the history record has been created
         LocalDate today = LocalDate.now();
-
         List<JurorHistory> jurorHistoryList =
             jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, today);
-
         assertThat(jurorHistoryList).isNotNull();
     }
 
 
     @Test
-    @Sql({"/db/mod/truncate.sql","/db/UndeliverableResponseController_createInitialPoolRecords.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/UndeliverableResponseController_createInitialPoolRecords.sql"})
     public void markJurorAsUndeliverable_BureauUser_jurorRecordDoesNotExist() {
-        String jurorNumber = "111111111";
-
         ResponseEntity<?> response =
-            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.PUT,
-                URI.create("/api/v1/moj/undeliverable-response/" + jurorNumber)), String.class);
+            restTemplate.exchange(createRequest("111111111"), String.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP PUT request to be NOT_FOUND")
@@ -102,14 +123,12 @@ public class UndeliverableResponseControllerITest extends AbstractIntegrationTes
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql","/db/UndeliverableResponseController_createInitialPoolRecords.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/UndeliverableResponseController_createInitialPoolRecords.sql"})
     public void markJurorAsUndeliverable_CourtUser_bureauOwnedRecord() throws Exception {
-        String jurorNumber = "123456789";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415")));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, getCourtJwt("415"));
 
         ResponseEntity<?> response =
-            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.PUT,
-                URI.create("/api/v1/moj/undeliverable-response/" + jurorNumber)), String.class);
+            restTemplate.exchange(createRequest("123456789"), String.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP PUT request to be FORBIDDEN")
@@ -117,38 +136,19 @@ public class UndeliverableResponseControllerITest extends AbstractIntegrationTes
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql","/db/UndeliverableResponseController_createInitialPoolRecords.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/UndeliverableResponseController_createInitialPoolRecords.sql"})
     public void markJurorAsUndeliverable_BureauUser_CourtOwnedRecord() {
-        String jurorNumber = "222222224";
-
         ResponseEntity<?> response =
-            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.PUT,
-                URI.create("/api/v1/moj/undeliverable-response/" + jurorNumber)), String.class);
+            restTemplate.exchange(createRequest("222222224"), String.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP PUT request to be FORBIDDEN")
             .isEqualTo(HttpStatus.FORBIDDEN);
     }
 
-    private void initHeaders() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .login("BUREAU_USER")
-            .owner("400")
-            .build());
-
+    private void initHeaders() {
         httpHeaders = new HttpHeaders();
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, getBureauJwt());
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-    }
-
-    private String initCourtsJwt(String owner, List<String> courts) throws Exception {
-
-        return mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .login("COURT_USER")
-            .owner(owner)
-            .staff(BureauJwtPayload.Staff.builder().courts(courts).build())
-            .build());
     }
 }
