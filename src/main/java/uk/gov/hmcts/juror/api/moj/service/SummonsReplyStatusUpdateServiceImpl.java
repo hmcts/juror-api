@@ -40,7 +40,6 @@ import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAuditChangeServic
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
-import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

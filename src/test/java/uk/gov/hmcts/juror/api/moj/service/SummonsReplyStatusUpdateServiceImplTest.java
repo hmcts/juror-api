@@ -34,7 +34,6 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRep
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAuditChangeService;
-import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
 import java.text.ParseException;
 import java.time.LocalDate;
