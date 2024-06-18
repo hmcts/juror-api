@@ -21,8 +21,10 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.codehaus.groovy.runtime.DefaultGroovyMethods.round;
 
@@ -78,7 +80,8 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
 
     private void setupResponseDto(JurySummoningMonitorReportResponse response, String result) {
         if (result != null && !result.isEmpty()) {
-            List<String> values = List.of(result.split(","));
+            List<String> values = Arrays.stream(result.split(",")).map(
+                item -> item.equals("null") ? "0" : item).collect(Collectors.toList());
             setupResponse(response, values);
         }
     }
