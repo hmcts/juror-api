@@ -12,6 +12,7 @@ import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
@@ -52,6 +53,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 @RunWith(SpringRunner.class)
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
@@ -119,6 +121,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
 
         CourtLocation courtLocation = createCourtLocation("415", "CHESTER", "09:15");
         JurorPool jurorPool = createJuror(jurorNumber);
+        jurorPool.setStatus(createPoolStatus(2));
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
@@ -276,6 +279,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
 
         CourtLocation courtLocation = createCourtLocation("415", "CHESTER", "09:15");
         JurorPool jurorPool = createJuror(jurorNumber);
+        jurorPool.setStatus(createPoolStatus(2));
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
@@ -2263,6 +2267,50 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         verify(jurorRecordService, Mockito.never()).setPendingNameChange(any(), any(),
             any(), any());
     }
+
+    @Test
+    public void test_updateJurorResponseStatus_processingAlreadyComplete_NonRespondedJuror() {
+
+        final int respondedStatusCode = 2;
+        String jurorNumber = "123456789";
+        PaperResponse response = createPaperResponse(jurorNumber);
+        response.setProcessingComplete(true);
+        response.setProcessingStatus(ProcessingStatus.CLOSED);
+        response.setPhoneNumber("07123456789");
+        response.setAltPhoneNumber("01234567890");
+
+        JurorStatus respondedStatus = new JurorStatus();
+
+        respondedStatus.setStatus(respondedStatusCode);
+
+        final BureauJwtPayload payload = buildPayload();
+
+        Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
+
+        Mockito.doReturn(Optional.of(respondedStatus)).when(jurorStatusRepository).findById(IJurorStatus.RESPONDED);
+
+        CourtLocation courtLocation = createCourtLocation("415", "CHESTER", "09:15");
+        JurorPool jurorPool = createJuror(jurorNumber);
+        jurorPool.setStatus(createPoolStatus(IJurorStatus.EXCUSED));
+        PoolRequest poolRequest = jurorPool.getPool();
+        poolRequest.setCourtLocation(courtLocation);
+
+        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+
+        summonsReplyStatusUpdateService.updateJurorResponseStatus(jurorNumber,
+            ProcessingStatus.CLOSED, payload);
+
+        verify(jurorPaperResponseRepository, times(1)).findByJurorNumber(jurorNumber);
+        verify(jurorRepository, times(1)).save(any());
+        verify(jurorPoolRepository, times(1)).save(any());
+        verify(jurorStatusRepository, times(1)).findById(respondedStatusCode);
+        verify(jurorHistoryRepository, times(1)).save(any());
+
+        verify(jurorPaperResponseRepository, times(0)).save(any());
+        verifyNoInteractions(jurorAuditChangeService);
+    }
+
 
     private CourtLocation createCourtLocation(String locationCode, String name, String attendanceTime) {
         CourtLocation courtLocation = new CourtLocation();
