@@ -1892,7 +1892,10 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("Confirm attendance for jurors on a trial - happy path")
-        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/ConfirmJuryAttendance.sql",
+        @Sql({"/db/mod/truncate.sql",
+            "/db/administration/createJudges.sql",
+            "/db/administration/createCourtRooms.sql",
+            "/db/jurormanagement/ConfirmJuryAttendance.sql",
             "/db/JurorExpenseControllerITest_expenseRates.sql"})
         void confirmAttendanceHappy() {
 
@@ -1931,11 +1934,11 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             // verify juror history records have been created
             assertThat(jurorHistoryRepository.findByJurorNumberOrderById("222222222")
                 .stream().anyMatch(jh -> jh.getHistoryCode().equals(HistoryCodeMod.JURY_ATTENDANCE)
-                    && "J10123456".equalsIgnoreCase(jh.getOtherInformation()))).isTrue();
+                    && "J10123456".equalsIgnoreCase(jh.getOtherInformationRef()))).isTrue();
 
             assertThat(jurorHistoryRepository.findByJurorNumberOrderById("333333333")
                 .stream().anyMatch(jh -> jh.getHistoryCode().equals(HistoryCodeMod.JURY_ATTENDANCE)
-                    && "J10123456".equalsIgnoreCase(jh.getOtherInformation()))).isTrue();
+                    && "J10123456".equalsIgnoreCase(jh.getOtherInformationRef()))).isTrue();
         }
 
         @Test

@@ -29,11 +29,11 @@ set template = E'{other_information}'
 where history_code in ('CHID', 'PDET', 'RESP', 'RNOT');
 
 update juror_mod.t_history_code
-set template = E'Attendance date: {other_info_date:d MMM yyyy}\nAttendance audit report {other_info_reference}\nTotal due {other_information}'
+set template = E'Attendance date {other_info_date:d MMM yyyy}\nAttendance audit report {other_info_reference}\nTotal due {other_information}'
 where history_code in ('FADD');
 
 update juror_mod.t_history_code
-set template = E'Attendance date: {other_info_date:d MMM yyyy}\nEdit audit report ({other_information_support}) {other_info_reference}\nTotal due {other_information}'
+set template = E'Attendance date {other_info_date:d MMM yyyy}\nEdit audit report ({other_information_support}) {other_info_reference}\nTotal due {other_information}'
 where history_code in ('FEDT');
 
 update juror_mod.t_history_code
@@ -42,5 +42,5 @@ where history_code in ('TADD', 'VCRE', 'VRET');
 
 
 update juror_mod.t_history_code
-set template = 'EAttendance date: {other_info_date:d MMM yyyy}\nTrial {other_info_reference}\nJury attendance audit report {other_info_reference}'
+set template = 'EAttendance date {other_info_date:d MMM yyyy}\nTrial {other_info_reference}\nJury attendance audit report {other_info_reference}'
 where history_code in ('AJUR');

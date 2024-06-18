@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.repository;
 
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.juror.api.bureau.domain.ReadOnlyRepository;

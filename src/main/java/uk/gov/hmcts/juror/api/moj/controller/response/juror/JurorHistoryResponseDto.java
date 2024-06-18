@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
