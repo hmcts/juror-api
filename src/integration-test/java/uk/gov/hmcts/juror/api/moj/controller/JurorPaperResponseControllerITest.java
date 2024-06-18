@@ -1667,14 +1667,30 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_updatePaperResponseStatus.sql"})
-    public void updateJurorPaperResponseStatus_bureauUser_alreadyProcessed() throws Exception {
+    public void updateJurorPaperResponseStatus_bureauUser_alreadyProcessed_nonRespondedJuror() throws Exception {
         final String bureauJwt = createJwtBureau("BUREAU_USER");
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/update-status/222222222/CLOSED");
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
         RequestEntity<Void> requestEntity = new RequestEntity<>(httpHeaders, HttpMethod.PUT, uri);
         ResponseEntity<Void> response = template.exchange(requestEntity, Void.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getStatusCode()).as("Should be possible to update status of non responded"
+                + "Juror on a closed response")
+            .isEqualTo(HttpStatus.ACCEPTED);
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_updatePaperResponseStatus.sql"})
+    public void updateJurorPaperResponseStatus_bureauUser_alreadyProcessed_RespondedJuror() throws Exception {
+        final String bureauJwt = createJwtBureau("BUREAU_USER");
+        final URI uri = URI.create("/api/v1/moj/juror-paper-response/update-status/766666612/CLOSED");
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        RequestEntity<Void> requestEntity = new RequestEntity<>(httpHeaders, HttpMethod.PUT, uri);
+        ResponseEntity<Void> response = template.exchange(requestEntity, Void.class);
+        assertThat(response.getStatusCode()).as("Should not be possible to update status of responded"
+                + "Juror on a closed response")
+            .isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     @Test

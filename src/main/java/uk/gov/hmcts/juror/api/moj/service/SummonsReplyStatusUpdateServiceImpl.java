@@ -11,8 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
-import uk.gov.hmcts.juror.api.JurorDigitalApplication;
-import uk.gov.hmcts.juror.api.bureau.domain.PartAmendment;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
@@ -28,6 +26,7 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.JurorPaperResponseException;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
@@ -47,8 +46,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Implementation of operations for updating the status of a Juror's response by a Bureau officer.
@@ -56,6 +53,7 @@ import java.util.stream.Stream;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings("PMD.CyclomaticComplexity")
 public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUpdateService, SummonsReplyMergeService {
     public static final String COPY_RESPONSE_TO_GENERIC_JUROR_RESPONSE_POJO = "Juror: {}. Copying properties from {} "
         + "to a generic juror response pojo";
@@ -110,11 +108,34 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
     public void updateJurorResponseStatus(final String jurorNumber, final ProcessingStatus status,
                                           final BureauJwtPayload payload) {
         log.debug("Updating status for juror {} to {}", jurorNumber, status.getDescription());
-        PaperResponse paperResponse = DataUtils.getJurorPaperResponse(jurorNumber,
-            jurorPaperResponseRepository);
 
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
+        final PaperResponse paperResponse = jurorPaperResponseRepository.findByJurorNumber(jurorNumber);
+        final JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
+
+        // if there is no paper response found for the juror and status is to be updated to responded then update the
+        // juror status to responded and return
+        if (paperResponse == null && ProcessingStatus.CLOSED == status
+            && jurorPool.getStatus().getStatus() != IJurorStatus.RESPONDED) {
+            log.info("No paper response found for juror {}, marking as responded", jurorNumber);
+            updateJurorAsResponded(jurorNumber, payload.getLogin());
+            return;
+        }
+
+        // need a valid paper response at this stage
+        if (paperResponse == null) {
+            throw new MojException.NotFound(
+                String.format("Juror: %s. Cannot find paper response", jurorNumber), null);
+        }
+
+        // if response is closed already and new processing status is closed (responded) and juror is not
+        // responded then update the juror status to responded and return
+        if (ProcessingStatus.CLOSED == status && Boolean.TRUE.equals(paperResponse.getProcessingComplete())
+            && jurorPool.getStatus().getStatus() != IJurorStatus.RESPONDED) {
+            log.info("Juror {} has already responded, marking as responded", jurorNumber);
+            updateJurorAsResponded(jurorNumber, payload.getLogin());
+            return;
+        }
 
         // store the current processing status (to be used as the "changed from" value in the audit/history table)
         final ProcessingStatus initialProcessingStatus = paperResponse.getProcessingStatus();
@@ -141,7 +162,6 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
         log.info("Updated juror '{}' processing status from '{}' to '{}'", jurorNumber, initialProcessingStatus,
             paperResponse.getProcessingStatus()
         );
-        // TODO - Persist an audit entry to record the Processing Status change of the Juror Response
     }
 
     /**
@@ -156,7 +176,6 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
     public void updateDigitalJurorResponseStatus(final String jurorNumber,
         final ProcessingStatus status,
         final BureauJwtPayload payload) {
-        final String auditorUsername = payload.getLogin();
 
         log.debug("Updating status for juror {} to {}", jurorNumber, status.getDescription());
         DigitalResponse jurorResponse = DataUtils.getJurorDigitalResponse(jurorNumber, jurorDigitalResponseRepository);
@@ -166,7 +185,21 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
             throw new JurorPaperResponseException.NoJurorPaperResponseRecordFound(jurorNumber);
         }
 
+        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
+        JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
+
+        final String auditorUsername = payload.getLogin();
+        // if response is closed already and new processing status is closed (responded) and juror is not
+        // responded then update the juror status to responded and return
+        if (ProcessingStatus.CLOSED == status && Boolean.TRUE.equals(jurorResponse.getProcessingComplete())
+            && jurorPool.getStatus().getStatus() != IJurorStatus.RESPONDED) {
+            log.info("Juror {} has already responded, marking as responded", jurorNumber);
+            updateJurorAsResponded(jurorNumber, auditorUsername);
+            return;
+        }
+
         entityManager.detach(jurorResponse);
+        // store the current processing status (to be used as the "changed from" value in the audit/history table)
         final ProcessingStatus auditProcessingStatus = jurorResponse.getProcessingStatus();
 
         // JDB-2685: if no staff assigned, assign current login
@@ -174,11 +207,6 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
             assignOnUpdateService.assignToCurrentLogin(jurorResponse, auditorUsername);
         }
 
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
-        JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
-
-        // store the current processing status (to be used as the "changed from" value in the audit/history table)
-        final ProcessingStatus initialProcessingStatus = jurorResponse.getProcessingStatus();
         jurorResponse.setProcessingStatus(status);
 
         // merge the changes if required/allowed
@@ -199,7 +227,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
             jurorDigitalResponseRepository.save(jurorResponse);
         }
 
-        log.info("Updated juror '{}' processing status from '{}' to '{}'", jurorNumber, initialProcessingStatus,
+        log.info("Updated juror '{}' processing status from '{}' to '{}'", jurorNumber, auditProcessingStatus,
             jurorResponse.getProcessingStatus()
         );
         JurorResponseAuditMod responseAudit = auditRepository.save(JurorResponseAuditMod.builder()
@@ -554,39 +582,6 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
 
     private boolean isMobileNumber(String number) {
         return !ObjectUtils.isEmpty(number) && number.startsWith("07");
-    }
-
-    private PartAmendment createBasePartAmendment(Juror juror, String auditorUsername) {
-        final String lineSeparator = ", ";
-        PartAmendment allAmendments = new PartAmendment();
-        BeanUtils.copyProperties(juror, allAmendments);
-
-        // initialise the original date of birth property from the juror record
-        LocalDate dob = juror.getDateOfBirth();
-        if (dob == null) {
-            // if the juror record date of birth is null, use a default date for part amendments (required by Heritage)
-            dob = LocalDate.of(1901, 1, 1);
-        }
-
-        allAmendments.setDateOfBirth(dob);
-
-        final String fullAddress = Stream.of(
-                juror.getAddressLine1(),
-                juror.getAddressLine2(),
-                juror.getAddressLine3(),
-                juror.getAddressLine4(),
-                juror.getAddressLine5()
-            )
-            .filter(string -> string != null && !string.isEmpty())
-            .map(lineSeparator::concat)
-            .collect(Collectors.joining())
-            .replaceFirst(lineSeparator, "");
-
-        allAmendments.setAddress(fullAddress);
-        allAmendments.setOwner(JurorDigitalApplication.JUROR_OWNER);
-        allAmendments.setEditUserId(auditorUsername);
-
-        return allAmendments;
     }
 
     private void updateJurorFromSummonsReply(AbstractJurorResponse updatedDetails, Juror juror,
