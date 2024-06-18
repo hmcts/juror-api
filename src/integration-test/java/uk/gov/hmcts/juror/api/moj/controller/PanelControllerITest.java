@@ -486,7 +486,7 @@ class PanelControllerITest extends AbstractIntegrationTest {
         AvailableJurorsDto pool5 =
             responseBody.stream().filter(summary -> "415231105".equalsIgnoreCase(summary.getPoolNumber())).findFirst()
                 .orElse(new AvailableJurorsDto());
-        assertAvailableJurorsData(pool5, 3);
+        assertAvailableJurorsData(pool5, 4);
     }
 
     @Test
