@@ -171,14 +171,20 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     @Override
     @PreAuthorize("isAuthenticated()")
     public void createExpenseEditHistory(FinancialAuditDetails financialAuditDetails,
-                                         Appearance appearance) {
+                                         Appearance appearance,
+                                         FinancialAuditDetails.Type type) {
         registerHistoryWithAdditionalInfo(appearance.getJurorNumber(),
             appearance.getPoolNumber(),
             HistoryCodeMod.EDIT_PAYMENTS,
             BigDecimalUtils.currencyFormat(appearance.getTotalDue()),
             SecurityUtil.getActiveLogin(),
             appearance.getAttendanceDate(),
-            financialAuditDetails.getFinancialAuditNumber());
+            financialAuditDetails.getFinancialAuditNumber(),
+            switch (type) {
+                case FOR_APPROVAL_EDIT -> "For-Approval";
+                case APPROVED_EDIT -> "Repayment";
+                default -> throw new IllegalStateException("Unexpected value: " + type);
+            });
     }
 
     @Override
@@ -278,10 +284,6 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
 
     }
 
-    public void createSummonsLetterHistory(JurorPool jurorPool) {
-        registerHistorySystem(jurorPool, HistoryCodeMod.PRINT_SUMMONS, null);
-    }
-
     public void createJuryAttendanceHistory(JurorPool jurorPool, Appearance appearance, Panel panel) {
         registerHistoryWithAdditionalInfo(jurorPool, HistoryCodeMod.JURY_ATTENDANCE,
             panel.getTrial().getTrialNumber(),
@@ -353,6 +355,15 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
                                                    HistoryCodeMod historyCode,
                                                    String info,
                                                    String userId, LocalDate otherInfoDate, String otherInfoRef) {
+        registerHistoryWithAdditionalInfo(jurorNumber, poolNumber, historyCode, info, userId, otherInfoDate,
+            otherInfoRef, null);
+    }
+
+    private void registerHistoryWithAdditionalInfo(String jurorNumber, String poolNumber,
+                                                   HistoryCodeMod historyCode,
+                                                   String info,
+                                                   String userId, LocalDate otherInfoDate, String otherInfoRef,
+                                                   String otherInfoSupport) {
         log.debug("Creating part history for juror {} with code {} and info {} for userId {}",
             jurorNumber, historyCode, info, userId);
 
@@ -365,6 +376,7 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
             .otherInformation(info)
             .otherInformationDate(otherInfoDate)
             .otherInformationRef(otherInfoRef)
+            .otherInformationSupport(otherInfoSupport)
             .build());
     }
 }

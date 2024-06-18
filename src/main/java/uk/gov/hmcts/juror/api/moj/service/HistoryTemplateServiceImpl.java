@@ -35,12 +35,6 @@ public class HistoryTemplateServiceImpl implements HistoryTemplateService {
             return getMigratedDetails(item);
         } else {
             String historyText = buildHistoryText(item);
-            System.out.println(historyText);
-            System.out.println(Arrays.toString(historyText.split("\\R")));
-            System.out.println(Arrays.toString(historyText.split("\\n")));
-            System.out.println(Arrays.toString(historyText.split("\n")));
-            System.out.println(Arrays.toString(historyText.split("\\n")));
-            System.out.println(Arrays.toString(historyText.split(System.lineSeparator())));
             return List.of(historyText.split("\\n"));
         }
     }
@@ -49,6 +43,7 @@ public class HistoryTemplateServiceImpl implements HistoryTemplateService {
         String template = item.getHistory().getTemplate();
         template = replace(template, "other_information", item.getOtherInformation());
         template = replace(template, "other_info_reference", item.getOtherInformationRef());
+        template = replace(template, "other_information_support", item.getOtherInformationSupport());
 
         template = replaceRegex(template, "\\{other_info_date:(.*?)\\}", matcher -> {
             if (item.getOtherInformationDate() != null) {

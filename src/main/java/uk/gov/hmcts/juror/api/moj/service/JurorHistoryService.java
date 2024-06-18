@@ -51,7 +51,8 @@ public interface JurorHistoryService {
                                          Appearance appearance);
 
     void createExpenseEditHistory(FinancialAuditDetails financialAuditDetails,
-                                  Appearance appearance);
+                                  Appearance appearance,
+                                  FinancialAuditDetails.Type type);
 
     void createSummonsReminderLetterHistory(JurorPool jurorPool);
 
@@ -63,13 +64,9 @@ public interface JurorHistoryService {
 
     void createIdentityConfirmedHistory(JurorPool jurorPool);
 
-    void createSummonsLetterHistory(JurorPool jurorPool);
-
     void createJuryAttendanceHistory(JurorPool jurorPool, Appearance appearance, Panel panel);
 
     void createPoolAttendanceHistory(JurorPool jurorPool, Appearance appearance);
-
-    String getHistoryDescription(String historyCode);
 
     void createJuryEmpanelmentHistory(JurorPool jurorPool, Panel panelMember);
 

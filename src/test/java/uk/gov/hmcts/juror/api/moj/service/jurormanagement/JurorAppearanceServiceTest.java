@@ -33,6 +33,8 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
+import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.PayAttendanceType;
@@ -44,6 +46,7 @@ import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
+import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryServiceImpl;
 import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
@@ -102,6 +105,8 @@ class JurorAppearanceServiceTest {
     private JurorExpenseService jurorExpenseService;
     @Mock
     private TrialRepository trialRepository;
+    @Mock
+    private PanelRepository panelRepository;
     @Mock
     private JurorHistoryServiceImpl jurorHistoryService;
 
@@ -2948,15 +2953,24 @@ class JurorAppearanceServiceTest {
             final Juror juror2 = new Juror();
             juror2.setJurorNumber(JUROR2);
 
+            final Trial trial = mock(Trial.class);
+            when(trial.getTrialNumber()).thenReturn(TestConstants.VALID_TRIAL_NUMBER);
+            final Panel panel1 = mock(Panel.class);
+            final Panel panel2 = mock(Panel.class);
+            when(panel1.getTrial()).thenReturn(trial);
+            when(panel2.getTrial()).thenReturn(trial);
+            doReturn(panel1).when(panelRepository).findActivePanel(locationCode, JUROR1);
+            doReturn(panel2).when(panelRepository).findActivePanel(locationCode, JUROR2);
+
             final PoolRequest poolRequest = new PoolRequest();
             poolRequest.setPoolNumber("987654321");
             poolRequest.setOwner("415");
 
-            final JurorPool jurorPool1 = getJurorPool(juror1, IJurorStatus.RESPONDED);
+            final JurorPool jurorPool1 = getJurorPool(juror1, IJurorStatus.JUROR);
             jurorPool1.setPool(poolRequest);
             jurorPool1.setOwner("415");
 
-            final JurorPool jurorPool2 = getJurorPool(juror2, IJurorStatus.RESPONDED);
+            final JurorPool jurorPool2 = getJurorPool(juror2, IJurorStatus.JUROR);
             jurorPool2.setPool(poolRequest);
             jurorPool2.setOwner("415");
 
@@ -3052,9 +3066,9 @@ class JurorAppearanceServiceTest {
             verify(jurorPoolRepository, times(2)).saveAndFlush(Mockito.any());
 
             verify(jurorHistoryService, times(1)).createJuryAttendanceHistory(jurorPool1,
-                capturedAppearance1.getAttendanceAuditNumber());
+                capturedAppearance1, panel1);
             verify(jurorHistoryService, times(1)).createJuryAttendanceHistory(jurorPool2,
-                capturedAppearance1.getAttendanceAuditNumber());
+                capturedAppearance1, panel2);
         }
 
         @Test

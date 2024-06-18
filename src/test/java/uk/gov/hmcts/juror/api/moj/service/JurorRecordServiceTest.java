@@ -167,6 +167,8 @@ class JurorRecordServiceTest {
     @Mock
     private PanelRepository panelRepository;
     @Mock
+    private HistoryTemplateService historyTemplateService;
+    @Mock
     private JurorRepository jurorRepository;
     @Mock
     private JurorPoolRepository jurorPoolRepository;

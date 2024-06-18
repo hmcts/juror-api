@@ -22,10 +22,5 @@ public interface NotifyTemplateFieldRepositoryMod extends ReadOnlyRepository<Not
      * @return List of NotifyTemplateFieldMod detail objects.
      */
     List<NotifyTemplateFieldMod> findByTemplateId(String templateId);
-
-    //TODO tmp
-    @Query(value = "SELECT distinct template_id FROM juror_mod.notify_template_field",
-        nativeQuery = true)
-    List<String> tmpQuery();
 }
 

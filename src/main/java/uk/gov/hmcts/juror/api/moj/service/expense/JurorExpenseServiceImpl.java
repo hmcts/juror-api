@@ -756,7 +756,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
                 jurorHistoryService.createExpenseEditHistory(
                     financialAuditDetails,
-                    appearance
+                    appearance,
+                    FinancialAuditDetails.Type.FOR_APPROVAL_EDIT
                 );
             }
         }
@@ -865,7 +866,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
         appearances.forEach(appearance -> jurorHistoryService.createExpenseEditHistory(
             financialAuditDetails,
-            appearance
+            appearance,
+            type.toEditType()
         ));
     }
 

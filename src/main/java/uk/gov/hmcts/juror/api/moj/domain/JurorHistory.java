@@ -100,6 +100,10 @@ public class JurorHistory implements Serializable {
     @Column(name = "other_info_reference")
     private String otherInformationRef;
 
+
+    @Column(name = "other_information_support")
+    private String otherInformationSupport;
+
     @Column(name = "pool_number")
     @Length(max = 9)
     private String poolNumber;
@@ -107,7 +111,7 @@ public class JurorHistory implements Serializable {
 
     @NotNull
     @Column(name = "migrated")
-    private Boolean migrated;//TODO make primitive
+    private Boolean migrated;
 
     @PrePersist
     public void prePersist() {
