@@ -128,10 +128,9 @@ public abstract class AbstractJurorAmendmentReport implements IReport {
             .name("Changed")
             .dataType(String.class.getSimpleName())
             .build());
-
         headings.add(AbstractReportResponse.TableData.Heading.builder()
             .id("from")
-            .name("From")
+            .name("Changed from")
             .dataType(String.class.getSimpleName())
             .build());
         headings.add(AbstractReportResponse.TableData.Heading.builder()
