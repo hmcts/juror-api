@@ -42,18 +42,9 @@ public class JurorHistoryResponseDto {
         @Schema(description = "Relevant pool number for this event")
         String poolNumber;
 
-        @JsonProperty("other_info")
-        @Schema(description = "Other related information")
-        String otherInfo;
-
-        @JsonProperty("other_info_date")
-        @Schema(description = "Other related date")
-        @JsonFormat(pattern = ValidationConstants.DATE_FORMAT)
-        LocalDate otherInfoDate;
-
-        @JsonProperty("other_info_ref")
-        @Schema(description = "Other related reference")
-        String otherInfoRef;
+        @JsonProperty("history_details")
+        @Schema(description = "History details")
+        List<String> details;
     }
 
 }

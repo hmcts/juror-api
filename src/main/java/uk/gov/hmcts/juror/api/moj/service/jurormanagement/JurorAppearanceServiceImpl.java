@@ -117,7 +117,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         realignAttendanceType(appearance);
         appearance.setAttendanceAuditNumber(poolAttendanceNumber);
 
-        jurorHistoryService.createPoolAttendanceHistory(jurorPool, poolAttendanceNumber);
+        jurorHistoryService.createPoolAttendanceHistory(jurorPool, appearance);
         jurorExpenseService.applyDefaultExpenses(List.of(appearance));
         appearanceRepository.saveAndFlush(appearance);
     }
@@ -349,9 +349,9 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         // get the appearance record if it exists
         Appearance appearance =
             appearanceRepository.findByCourtLocationLocCodeAndJurorNumberAndAttendanceDate(
-                SecurityUtil.getLocCode(),
-                jurorNumber,
-                attendanceDate)
+                    SecurityUtil.getLocCode(),
+                    jurorNumber,
+                    attendanceDate)
                 .orElseThrow(() -> new MojException.NotFound("No valid appearance record found", null));
 
         modifyConfirmedAttendance(appearance,
@@ -626,7 +626,6 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
             appearance.setAttendanceAuditNumber(juryAttendanceNumber);
             appearance.setSatOnJury(true);
-            jurorHistoryService.createJuryAttendanceHistory(jurorPool, appearance.getAttendanceAuditNumber());
 
             // update appearance by adding the trial number
             if (IJurorStatus.JUROR == jurorPool.getStatus().getStatus()) {
@@ -634,6 +633,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                 Panel panel = panelRepository.findActivePanel(locCode, jurorNumber);
                 if (panel != null) {
                     appearance.setTrialNumber(panel.getTrial().getTrialNumber());
+                    jurorHistoryService.createJuryAttendanceHistory(jurorPool, appearance, panel);
                 }
             }
 
@@ -872,7 +872,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
             JurorPool jurorPool = JurorPoolUtils.getActiveJurorPool(jurorPoolRepository, appearance.getJurorNumber(),
                 appearance.getCourtLocation());
-            jurorHistoryService.createPoolAttendanceHistory(jurorPool, poolAttendanceNumber);
+            jurorHistoryService.createPoolAttendanceHistory(jurorPool, appearance);
         });
 
         jurorExpenseService.applyDefaultExpenses(checkedInAttendances);

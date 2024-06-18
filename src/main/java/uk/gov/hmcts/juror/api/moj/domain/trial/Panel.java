@@ -38,7 +38,6 @@ public class Panel implements Serializable {
     @JoinColumn(name = "trial_number")
     @ManyToOne
     @Id
-    @Nullable
     private Trial trial;
 
     @JoinColumn(name = "juror_number")

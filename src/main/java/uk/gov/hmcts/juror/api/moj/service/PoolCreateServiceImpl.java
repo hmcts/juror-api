@@ -378,7 +378,6 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                 jurorHistBuilder.historyCode(HistoryCodeMod.DISQUALIFY_POOL_MEMBER);
                 jurorHistBuilder.otherInformation(HistoryCodeMod.DISQUALIFY_POOL_MEMBER.getDescription());
             } else {
-                jurorHistBuilder.otherInformation(HistoryCodeMod.PRINT_SUMMONS.getDescription());
                 jurorHistBuilder.historyCode(HistoryCodeMod.PRINT_SUMMONS);
             }
             historyList.add(jurorHistBuilder.build());

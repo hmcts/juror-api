@@ -99,7 +99,7 @@ public class TrialServiceImpl implements TrialService {
 
     private static final int PAGE_SIZE = 25;
     private static final String CANNOT_FIND_TRIAL_ERROR_MESSAGE = "Cannot find trial with number: %s for "
-                                                                  + "court location %s";
+        + "court location %s";
 
     @Override
     public TrialSummaryDto createTrial(BureauJwtPayload payload, TrialDto trialDto) {
@@ -107,8 +107,8 @@ public class TrialServiceImpl implements TrialService {
         if (trialRepository.existsByTrialNumberAndCourtLocationLocCode(trialDto.getCaseNumber(),
             trialDto.getCourtLocation())) {
             throw new MojException.BadRequest(String.format("Unable to create trial with case number: %s at "
-                                                            + "location code %s (case number already in use at this "
-                                                            + "location)",
+                    + "location code %s (case number already in use at this "
+                    + "location)",
                 trialDto.getCaseNumber(),
                 trialDto.getCourtLocation()), null);
         }
@@ -195,7 +195,7 @@ public class TrialServiceImpl implements TrialService {
     public TrialSummaryDto getTrialSummary(BureauJwtPayload payload, String trialNo, String locCode) {
         if (!payload.getStaff().getCourts().contains(locCode)) {
             throw new MojException.Forbidden("Current user has insufficient permission "
-                                             + "to view the trial details for the court location", null);
+                + "to view the trial details for the court location", null);
         }
 
         Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNo, locCode)
@@ -229,9 +229,7 @@ public class TrialServiceImpl implements TrialService {
             jurorPoolRepository.saveAndFlush(jurorPool);
 
             log.debug(String.format("updated juror trial record for juror %s", panel.getJurorNumber()));
-
-            JurorHistoryUtils.saveJurorHistory(HistoryCodeMod.RETURN_PANEL, panel.getJurorNumber(),
-                jurorPool.getPoolNumber(), payload, jurorHistoryRepository);
+            jurorHistoryService.createReturnFromPanelHistory(jurorPool, panel);
             log.debug(String.format("saved history item for juror %s", panel.getJurorNumber()));
         }
     }
@@ -278,7 +276,7 @@ public class TrialServiceImpl implements TrialService {
                 realignAttendanceType(appearance);
                 appearance.setAttendanceAuditNumber("J" + attendanceAuditNumber);
 
-                jurorHistoryService.createJuryAttendanceHistory(jurorPool, appearance.getAttendanceAuditNumber());
+                jurorHistoryService.createJuryAttendanceHistory(jurorPool, appearance, panel);
 
                 appearance.setSatOnJury(true);
                 appearanceRepository.saveAndFlush(appearance);
@@ -292,10 +290,7 @@ public class TrialServiceImpl implements TrialService {
             jurorPool.setStatus(jurorStatus);
 
             log.debug(String.format("updated juror trial record for juror %s", jurorNumber));
-
-            JurorHistoryUtils.saveJurorHistory(HistoryCodeMod.RETURN_PANEL, jurorNumber,
-                jurorPool.getPoolNumber(), payload, jurorHistoryRepository);
-
+            jurorHistoryService.createReturnFromPanelHistory(jurorPool, panel);
             log.debug(String.format(String.format("saved history item for juror %s", jurorNumber)));
 
             if (Boolean.TRUE.equals(returnJuryDto.getCompleted())) {

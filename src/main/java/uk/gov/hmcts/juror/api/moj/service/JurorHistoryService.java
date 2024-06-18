@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.service;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -20,12 +21,12 @@ public interface JurorHistoryService {
 
     void createPoliceCheckInsufficientInformationHistory(JurorPool jurorPool);
 
-    void createExpenseApproveCash(String jurorNumber,
+    void createExpenseApproveCash(JurorPool jurorPool,
                                   FinancialAuditDetails financialAuditDetails,
                                   LocalDate latestAppearanceDate,
                                   BigDecimal totalAmount);
 
-    void createExpenseApproveBacs(String jurorNumber,
+    void createExpenseApproveBacs(JurorPool jurorPool,
                                   FinancialAuditDetails financialAuditDetails,
                                   LocalDate latestAppearanceDate,
                                   BigDecimal totalAmount);
@@ -62,13 +63,19 @@ public interface JurorHistoryService {
 
     void createIdentityConfirmedHistory(JurorPool jurorPool);
 
-    void createSummonsLetterHistory(JurorPool jurorPool, String otherInfo);
+    void createSummonsLetterHistory(JurorPool jurorPool);
 
-    void createJuryAttendanceHistory(JurorPool jurorPool, String otherInfo);
+    void createJuryAttendanceHistory(JurorPool jurorPool, Appearance appearance, Panel panel);
 
-    void createPoolAttendanceHistory(JurorPool jurorPool, String otherInfo);
+    void createPoolAttendanceHistory(JurorPool jurorPool, Appearance appearance);
 
-    public String getHistoryDescription(String historyCode);
+    String getHistoryDescription(String historyCode);
+
+    void createJuryEmpanelmentHistory(JurorPool jurorPool, Panel panelMember);
+
+    void createAddedToPanelHistory(JurorPool jurorPool, Panel panel);
+
+    void createReturnFromPanelHistory(JurorPool jurorPool, Panel panelMember);
 
     void createUndeliveredSummonsHistory(JurorPool jurorPool);
 }

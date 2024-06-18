@@ -3,9 +3,14 @@ package uk.gov.hmcts.juror.api.moj.domain;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinColumns;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
@@ -17,12 +22,16 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.validator.constraints.Length;
+import uk.gov.hmcts.juror.api.juror.domain.THistoryCode;
+import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeConverter;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
@@ -55,6 +64,11 @@ public class JurorHistory implements Serializable {
     @Column(name = "history_code")
     @Convert(converter = HistoryCodeConverter.class)
     private HistoryCodeMod historyCode;
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "history_code", updatable = false, insertable = false)
+    private THistoryCode history;
 
     @NotNull
     @Column(name = "date_created")
@@ -90,6 +104,11 @@ public class JurorHistory implements Serializable {
     @Length(max = 9)
     private String poolNumber;
 
+
+    @NotNull
+    @Column(name = "migrated")
+    private Boolean migrated;//TODO make primitive
+
     @PrePersist
     public void prePersist() {
         this.dateCreated = LocalDateTime.now();
@@ -105,4 +124,7 @@ public class JurorHistory implements Serializable {
         this.poolNumber = poolNumber;
     }
 
+    public boolean isMigrated() {
+        return migrated != null && migrated;
+    }
 }

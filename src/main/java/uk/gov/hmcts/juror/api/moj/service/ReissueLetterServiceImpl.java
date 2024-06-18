@@ -75,7 +75,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
     @Override
     @Transactional
     public ReissueLetterReponseDto reissueLetter(ReissueLetterRequestDto request) {
-        String login = SecurityUtil.getActiveUsersBureauPayload().getLogin();
+        String login = SecurityUtil.getActiveLogin();
         log.debug("Reissue letters request received from Bureau user {}", login);
 
         ReissueLetterReponseDto response = new ReissueLetterReponseDto();
@@ -86,7 +86,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
         // if no jurors with a modified status are found, print the requested letters
         if (response.getJurors().isEmpty()) {
 
-            request.getLetters().stream().forEach(letter -> {
+            request.getLetters().forEach(letter -> {
                 // ensure the request to reprint the letter meets criteria
                 validateRequestedLetter(letter);
 
@@ -121,7 +121,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
     }
 
     private void validateReissueRequest(ReissueLetterRequestDto request, ReissueLetterReponseDto response) {
-        request.getLetters().stream().forEach(letter -> {
+        request.getLetters().forEach(letter -> {
             FormCode formCode = FormCode.getFormCode(letter.getFormCode());
 
             List<JurorPool> jurorPools = jurorPoolRepository
@@ -173,7 +173,8 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
 
     /**
      * Set status description to be in line with certain statuses combined with status code.
-     * @param data - Letter list data.
+     *
+     * @param data     - Letter list data.
      * @param headings - Letter list headings
      * @return data with status updated to correspond to code.
      */
@@ -252,9 +253,8 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
 
         if (printedLetter.isEmpty()) {
             // for some letters do not throw exception as need to print the initial letter (after validation)
-            List<String> createLetterIfNotExist = Arrays.asList("5228", "5228C");
-            boolean createLetter = createLetterIfNotExist
-                .stream().anyMatch(code -> code.contains(letter.getFormCode()));
+            List<String> createLetterIfNotExist = List.of("5228", "5228C");
+            boolean createLetter = createLetterIfNotExist.contains(letter.getFormCode());
 
             if (!createLetter) {
                 throw new MojException.NotFound(String.format("Bulk print data not found for juror %s ",
