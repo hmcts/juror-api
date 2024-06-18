@@ -41,7 +41,6 @@ public class SjoTasksController {
 
     @PostMapping("/juror/search")
     @Operation(summary = "Get a list of failed to attend jurors based on search criteria")
-    @IsSeniorCourtUser
     @ResponseStatus(HttpStatus.OK)
     public PaginatedList<JurorDetailsDto> getCompleteJurors(
         @Valid @RequestBody JurorPoolSearch request) {
@@ -50,7 +49,6 @@ public class SjoTasksController {
 
     @PatchMapping("/failed-to-attend/undo")
     @Operation(summary = "Undo failed to attend status for a list of jurors")
-    @IsSeniorCourtUser
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void undoFailedToAttendStatus(
         @Valid

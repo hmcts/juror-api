@@ -784,7 +784,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/CompleteServiceControllerSearch.sql"})
     @SuppressWarnings("PMD.TooManyMethods")
     class GetCompleteJurors {
-        public static final String URL = BASE_URL;
+        public static final String URL = "/api/v1/moj/sjo-tasks/juror/search";
 
 
         ResponseEntity<PaginatedList<JurorDetailsDto>> triggerValid(JurorPoolSearch search) throws Exception {
@@ -810,6 +810,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
             ResponseEntity<PaginatedList<JurorDetailsDto>> response = triggerValid(
                 JurorPoolSearch.builder()
                     .jurorName("FNAMEZERO")
+                    .jurorStatus(IJurorStatus.COMPLETED)
                     .pageLimit(25)
                     .pageNumber(1)
                     .build()
@@ -833,6 +834,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
             ResponseEntity<PaginatedList<JurorDetailsDto>> response = triggerValid(
                 JurorPoolSearch.builder()
                     .jurorName("LNAMEONE")
+                    .jurorStatus(IJurorStatus.COMPLETED)
                     .pageLimit(25)
                     .pageNumber(1)
                     .build()
@@ -858,6 +860,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
             ResponseEntity<PaginatedList<JurorDetailsDto>> response = triggerValid(
                 JurorPoolSearch.builder()
                     .jurorName("FNAMEZEROSEVEN LNAMEZEROSE")
+                    .jurorStatus(IJurorStatus.COMPLETED)
                     .pageLimit(25)
                     .pageNumber(1)
                     .build()
@@ -879,6 +882,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
             ResponseEntity<PaginatedList<JurorDetailsDto>> response = triggerValid(
                 JurorPoolSearch.builder()
                     .jurorNumber("64150000")
+                    .jurorStatus(IJurorStatus.COMPLETED)
                     .pageLimit(25)
                     .pageNumber(1)
                     .build()
@@ -903,6 +907,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
             ResponseEntity<PaginatedList<JurorDetailsDto>> response = triggerValid(
                 JurorPoolSearch.builder()
                     .postcode("CH0 5AN")
+                    .jurorStatus(IJurorStatus.COMPLETED)
                     .pageLimit(25)
                     .pageNumber(1)
                     .build()
@@ -925,6 +930,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
             ResponseEntity<PaginatedList<JurorDetailsDto>> response = triggerValid(
                 JurorPoolSearch.builder()
                     .poolNumber("415220902")
+                    .jurorStatus(IJurorStatus.COMPLETED)
                     .pageLimit(25)
                     .pageNumber(1)
                     .build()
@@ -948,6 +954,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
             ResponseEntity<PaginatedList<JurorDetailsDto>> response = triggerValid(
                 JurorPoolSearch.builder()
                     .poolNumber("415")
+                    .jurorStatus(IJurorStatus.COMPLETED)
                     .pageLimit(5)
                     .pageNumber(1)
                     .build()
@@ -970,6 +977,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
             response = triggerValid(
                 JurorPoolSearch.builder()
                     .poolNumber("415")
+                    .jurorStatus(IJurorStatus.COMPLETED)
                     .pageLimit(5)
                     .pageNumber(2)
                     .build()
@@ -999,13 +1007,14 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
             RequestEntity<JurorPoolSearch> request = new RequestEntity<>(
                 JurorPoolSearch.builder()
                     .poolNumber("321")
+                    .jurorStatus(IJurorStatus.COMPLETED)
                     .pageLimit(5)
                     .pageNumber(2)
                     .build(), httpHeaders,
                 HttpMethod.POST, URI.create(URL));
 
             assertNotFound(template.exchange(request, String.class), URL,
-                "No complete juror pools found that meet your search criteria.");
+                "No juror pools found that meet your search criteria.");
         }
 
         @Test
@@ -1018,6 +1027,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
                 JurorPoolSearch.builder()
                     .jurorName("ABC")
                     .jurorNumber("12")
+                    .jurorStatus(IJurorStatus.COMPLETED)
                     .pageLimit(5)
                     .pageNumber(2)
                     .build(), httpHeaders,
@@ -1038,6 +1048,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
             RequestEntity<JurorPoolSearch> request = new RequestEntity<>(
                 JurorPoolSearch.builder()
                     .poolNumber("415")
+                    .jurorStatus(IJurorStatus.COMPLETED)
                     .pageLimit(5)
                     .pageNumber(2)
                     .build(), httpHeaders,
