@@ -55,6 +55,7 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
         return getHistoryCodeMap().get(historyCode);
     }
 
+
     @Override
     public void createPoliceCheckDisqualifyHistory(JurorPool jurorPool) {
         registerHistorySystem(jurorPool, HistoryCodeMod.POLICE_CHECK_FAILED, "Failed");
@@ -239,6 +240,12 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     @Override
     public void createIdentityConfirmedHistory(JurorPool jurorPool) {
         registerHistorySystem(jurorPool, HistoryCodeMod.CHECK_ID, "Id confirmed");
+    }
+
+    @Override
+    public void createUndeliveredSummonsHistory(JurorPool jurorPool) {
+        registerHistoryLoginUser(jurorPool, HistoryCodeMod.UNDELIVERED_SUMMONS, null);
+
     }
 
     public void createPostponementLetterHistory(JurorPool jurorPool, String confirmationLetter) {

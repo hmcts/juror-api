@@ -1,64 +1,47 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
-import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
-import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
-import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class UndeliverableResponseServiceImpl implements UndeliverableResponseService {
-
-    public static final int UNDELIVERABLE = 9;
-
-    @NonNull
     private final JurorPoolRepository jurorPoolRepository;
-    @NonNull
-    private final JurorHistoryRepository jurorHistoryRepository;
+    private final JurorHistoryService jurorHistoryService;
 
     @Override
     @Transactional
-    public void markAsUndeliverable(BureauJwtPayload payload, String jurorNumber) {
-        final String owner = payload.getOwner();
+    public void markAsUndeliverable(List<String> jurorNumbers) {
 
-        log.debug("Begin processing mark as undeliverable for juror {} by user {}", jurorNumber, payload.getLogin());
+        final String username = SecurityUtil.getUsername();
+        final String owner = SecurityUtil.getActiveOwner();
 
-        // update juror record for each active entry
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
+        for (String jurorNumber : jurorNumbers) {
+            log.debug("Begin processing mark as undeliverable for juror {} by user {}", jurorNumber, username);
 
-        JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, owner);
+            JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
+            JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, owner);
 
-        JurorStatus jurorStatus = new JurorStatus();
-        jurorStatus.setStatus(UNDELIVERABLE);
+            JurorStatus jurorStatus = new JurorStatus();
+            jurorStatus.setStatus(IJurorStatus.UNDELIVERABLE);
 
-        jurorPool.setStatus(jurorStatus);
-        jurorPool.setUserEdtq(payload.getLogin());
-        jurorPool.setNextDate(null);
-
-        JurorHistory history = JurorHistory.builder()
-            .jurorNumber(jurorNumber)
-            .dateCreated(LocalDateTime.now())
-            .historyCode(HistoryCodeMod.UNDELIVERED_SUMMONS)
-            .createdBy(payload.getLogin())
-            .poolNumber(jurorPool.getPoolNumber())
-            .otherInformation(null)
-            .build();
-
-        jurorPoolRepository.save(jurorPool);
-        jurorHistoryRepository.save(history);
-
+            jurorPool.setStatus(jurorStatus);
+            jurorPool.setUserEdtq(username);
+            jurorPool.setNextDate(null);
+            jurorHistoryService.createUndeliveredSummonsHistory(jurorPool);
+            jurorPoolRepository.save(jurorPool);
+        }
     }
 }

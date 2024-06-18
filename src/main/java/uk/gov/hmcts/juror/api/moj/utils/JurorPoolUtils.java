@@ -188,7 +188,6 @@ public final class JurorPoolUtils {
         List<JurorPool> jurorPoolDetails = jurorPoolRepository
             .findByJurorJurorNumberAndIsActive(jurorNumber, true);
         log.debug("{} Active Juror Record(s) found for Juror Number: {}", jurorPoolDetails.size(), jurorNumber);
-
         switch (jurorPoolDetails.size()) {
             case 0 -> throw new MojException.NotFound(String.format("Unable to find a Juror Pool association for"
                 + "Juror Number %s", jurorNumber), null);
