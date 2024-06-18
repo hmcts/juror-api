@@ -35,6 +35,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -46,7 +47,7 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class SjoTasksControllerITest extends AbstractIntegrationTest {
-    private static final String BASE_URL = "/api/v1/sjo-tasks";
+    private static final String BASE_URL = "/api/v1/moj/sjo-tasks";
 
     @Autowired
     private TestRestTemplate restTemplate;
@@ -87,7 +88,7 @@ public class SjoTasksControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordControllerITest_failedToAttend_undo_typical.sql"})
     class UndoUpdateJurorToFailedToAttend {
 
-        private static final String URL = "/failed-to-attend/undo";
+        private static final String URL = BASE_URL + "/failed-to-attend/undo";
 
         private static final String JUROR_NUMBER = "641500005";
         private static final String POOL_NUMBER = "415220901";
@@ -105,7 +106,7 @@ public class SjoTasksControllerITest extends AbstractIntegrationTest {
             JurorAndPoolRequest dto = createDto("123456789", POOL_NUMBER);
             ResponseEntity<Void> response =
                 restTemplate.exchange(
-                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), Void.class);
+                    new RequestEntity<>(List.of(dto), httpHeaders, HttpMethod.PATCH, URI.create(URL)), Void.class);
 
             assertThat(response).isNotNull();
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
@@ -113,7 +114,7 @@ public class SjoTasksControllerITest extends AbstractIntegrationTest {
             JurorPool jurorPool =
                 jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(JUROR_NUMBER, POOL_NUMBER);
             assertEquals(IJurorStatus.RESPONDED, jurorPool.getStatus().getStatus(),
-                         "Juror pool status should be responded");
+                "Juror pool status should be responded");
 
             List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(JUROR_NUMBER);
             assertEquals(1, jurorHistories.size(), "Should only be one history entry");
@@ -123,7 +124,7 @@ public class SjoTasksControllerITest extends AbstractIntegrationTest {
             assertEquals("COURT_USER", jurorHistory.getCreatedBy(), "User id should match");
             assertEquals(HistoryCodeMod.FAILED_TO_ATTEND, jurorHistory.getHistoryCode(), "History code should match");
             assertEquals("FTA status removed", jurorHistory.getOtherInformation(),
-                         "Info should match");
+                "Info should match");
         }
 
         @Test
@@ -132,12 +133,12 @@ public class SjoTasksControllerITest extends AbstractIntegrationTest {
             JurorAndPoolRequest dto = createDto("123456789", POOL_NUMBER);
             ResponseEntity<String> response =
                 restTemplate.exchange(
-                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
+                    new RequestEntity<>(List.of(dto), httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
             assertErrorResponse(response,
                 HttpStatus.NOT_FOUND,
                 URL,
                 MojException.NotFound.class,
-                "Juror number 123456789 not found in pool " + POOL_NUMBER);
+                "No Failed To Attend juror pool found for Juror number 123456789");
         }
 
         @Test
@@ -148,19 +149,19 @@ public class SjoTasksControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<String> response =
                 restTemplate.exchange(
-                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
+                    new RequestEntity<>(List.of(dto), httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
             assertBusinessRuleViolation(response,
-                                        "Juror status must be failed to attend in order to undo the failed to attend status.",
-                                        JUROR_STATUS_MUST_BE_FAILED_TO_ATTEND
+                "Juror status must be failed to attend in order to undo the failed to attend status.",
+                JUROR_STATUS_MUST_BE_FAILED_TO_ATTEND
             );
 
             JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, POOL_NUMBER);
             assertEquals(IJurorStatus.RESPONDED, jurorPool.getStatus().getStatus(),
-                         "Juror pool status should not change");
+                "Juror pool status should not change");
 
             List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
             assertEquals(0, jurorHistories.size(),
-                         "No new history entry as request should be rejected before processing");
+                "No new history entry as request should be rejected before processing");
         }
 
 
@@ -170,19 +171,19 @@ public class SjoTasksControllerITest extends AbstractIntegrationTest {
             JurorAndPoolRequest dto = createDto("INVALID", POOL_NUMBER);
             ResponseEntity<String> response =
                 restTemplate.exchange(
-                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
+                    new RequestEntity<>(List.of(dto), httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
             assertInvalidPayload(response,
-                                 new RestResponseEntityExceptionHandler.FieldError("jurorNumber", "must match \"^\\d{9}$\""));
+                new RestResponseEntityExceptionHandler.FieldError("jurorNumber", "must match \"^\\d{9}$\""));
 
 
             JurorPool jurorPool =
                 jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(JUROR_NUMBER, POOL_NUMBER);
             assertEquals(IJurorStatus.FAILED_TO_ATTEND, jurorPool.getStatus().getStatus(),
-                         "Juror pool status should not change");
+                "Juror pool status should not change");
 
             List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(JUROR_NUMBER);
             assertEquals(0, jurorHistories.size(),
-                         "No new history entry as request should be rejected before processing");
+                "No new history entry as request should be rejected before processing");
         }
 
         @Test
@@ -191,18 +192,18 @@ public class SjoTasksControllerITest extends AbstractIntegrationTest {
             JurorAndPoolRequest dto = createDto(JUROR_NUMBER, POOL_NUMBER);
             ResponseEntity<String> response =
                 restTemplate.exchange(
-                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
+                    new RequestEntity<>(List.of(dto), httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
 
             assertForbiddenResponse(response, URL);
 
             JurorPool jurorPool =
                 jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(JUROR_NUMBER, POOL_NUMBER);
             assertEquals(IJurorStatus.FAILED_TO_ATTEND, jurorPool.getStatus().getStatus(),
-                         "Juror pool status should not change");
+                "Juror pool status should not change");
 
             List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(JUROR_NUMBER);
             assertEquals(0, jurorHistories.size(),
-                         "No new history entry as request should be rejected before processing");
+                "No new history entry as request should be rejected before processing");
         }
 
         @Test
@@ -210,31 +211,27 @@ public class SjoTasksControllerITest extends AbstractIntegrationTest {
             setAuthorization("BUREAU_USER", "400", UserType.BUREAU);
             JurorAndPoolRequest dto = createDto(JUROR_NUMBER, POOL_NUMBER);
             ResponseEntity<String> response = restTemplate.exchange(
-                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
+                new RequestEntity<>(List.of(dto), httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
 
             assertForbiddenResponse(response, URL);
 
             JurorPool jurorPool =
                 jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(JUROR_NUMBER, POOL_NUMBER);
             assertEquals(IJurorStatus.FAILED_TO_ATTEND, jurorPool.getStatus().getStatus(),
-                         "Juror pool status should not change");
+                "Juror pool status should not change");
 
             List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(JUROR_NUMBER);
             assertEquals(0, jurorHistories.size(),
-                         "No new history entry as request should be rejected before processing");
+                "No new history entry as request should be rejected before processing");
         }
     }
 
     @SneakyThrows
     private void setAuthorization(String login, String owner, UserType userType, Role... roles) {
         httpHeaders.remove(HttpHeaders.AUTHORIZATION);
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
-            .userType(userType)
-            .roles(List.of(roles))
-            .login(login)
-            .owner(owner)
-            .locCode(owner)
-            .build()));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION,
+            createJwt(login, owner, userType, Set.of(roles), owner)
+        );
     }
 
 }

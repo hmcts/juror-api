@@ -209,7 +209,7 @@ class SjoTasksServiceImplTest {
                 .isEqualTo("No Failed To Attend juror pool found for Juror number 111111111");
 
             verify(jurorPoolRepository, times(1))
-                .findByJurorJurorNumberAndIsActiveAndOwner("111111111", true, SecurityUtil.getActiveOwner());
+                .findByJurorJurorNumberAndIsActiveAndOwner("111111111", true, "415");
 
             verifyNoMoreInteractions(jurorStatusRepository, jurorPoolRepository, jurorHistoryService);
         }
