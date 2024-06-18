@@ -522,7 +522,7 @@ public class JurorPaperResponseDtoTest {
     @Test
     public void test_setPrimaryPhone_tooLong() {
         JurorPaperResponseDto response = createBasicResponse();
-        response.setPrimaryPhone("+44 1234 - 56789");
+        response.setPrimaryPhone("+44 1234 - 567895678956");
 
         Set<ConstraintViolation<JurorPaperResponseDto>> violations = validator.validate(response);
         assertThat(violations).as("Validation violation expected (phone number format invalid)").isNotEmpty();
@@ -568,7 +568,7 @@ public class JurorPaperResponseDtoTest {
     @Test
     public void test_setSecondaryPhone_tooLong() {
         JurorPaperResponseDto response = createBasicResponse();
-        response.setSecondaryPhone("+44 1234 - 56789");
+        response.setSecondaryPhone("+44 1234 - 567895678956");
 
         Set<ConstraintViolation<JurorPaperResponseDto>> violations = validator.validate(response);
         assertThat(violations).as("Validation violation expected (alternative phone number format invalid)")
