@@ -142,7 +142,7 @@ class SjoTasksControllerTest {
 
             mockMvc.perform(patch(URL)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtils.asJsonString(List.of(request))))
+                    .content(TestUtils.asJsonString(request)))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isAccepted());
 

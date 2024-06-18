@@ -21,6 +21,7 @@ import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAndPoolRequest;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberListDto;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
@@ -93,20 +94,19 @@ public class SjoTasksControllerITest extends AbstractIntegrationTest {
         private static final String JUROR_NUMBER = "641500005";
         private static final String POOL_NUMBER = "415220901";
 
-        private JurorAndPoolRequest createDto(String jurorNumber, String poolNumber) {
-            return JurorAndPoolRequest.builder()
-                .jurorNumber(jurorNumber)
-                .poolNumber(poolNumber)
+        private JurorNumberListDto createDto(String... jurorNumber) {
+            return JurorNumberListDto.builder()
+                .jurorNumbers(List.of(jurorNumber))
                 .build();
         }
 
         @Test
         void positiveTypical() {
             setAuthorization("COURT_USER", "415", UserType.COURT, Role.SENIOR_JUROR_OFFICER);
-            JurorAndPoolRequest dto = createDto("123456789", POOL_NUMBER);
+            JurorNumberListDto dto = createDto("123456789");
             ResponseEntity<Void> response =
                 restTemplate.exchange(
-                    new RequestEntity<>(List.of(dto), httpHeaders, HttpMethod.PATCH, URI.create(URL)), Void.class);
+                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), Void.class);
 
             assertThat(response).isNotNull();
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
@@ -130,10 +130,10 @@ public class SjoTasksControllerITest extends AbstractIntegrationTest {
         @Test
         void negativeNotFound() {
             setAuthorization("COURT_USER", "415", UserType.COURT, Role.SENIOR_JUROR_OFFICER);
-            JurorAndPoolRequest dto = createDto("123456789", POOL_NUMBER);
+            JurorNumberListDto dto = createDto("123456789");
             ResponseEntity<String> response =
                 restTemplate.exchange(
-                    new RequestEntity<>(List.of(dto), httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
+                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
             assertErrorResponse(response,
                 HttpStatus.NOT_FOUND,
                 URL,
@@ -145,11 +145,11 @@ public class SjoTasksControllerITest extends AbstractIntegrationTest {
         void negativeNotFailedToRespond() {
             final String jurorNumber = "641500004";
             setAuthorization("COURT_USER", "415", UserType.COURT, Role.SENIOR_JUROR_OFFICER);
-            JurorAndPoolRequest dto = createDto(jurorNumber, POOL_NUMBER);
+            JurorNumberListDto dto = createDto(jurorNumber);
 
             ResponseEntity<String> response =
                 restTemplate.exchange(
-                    new RequestEntity<>(List.of(dto), httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
+                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
             assertBusinessRuleViolation(response,
                 "Juror status must be failed to attend in order to undo the failed to attend status.",
                 JUROR_STATUS_MUST_BE_FAILED_TO_ATTEND
@@ -168,12 +168,12 @@ public class SjoTasksControllerITest extends AbstractIntegrationTest {
         @Test
         void negativeInvalidPayload() {
             setAuthorization("COURT_USER", "415", UserType.COURT, Role.SENIOR_JUROR_OFFICER);
-            JurorAndPoolRequest dto = createDto("INVALID", POOL_NUMBER);
+            JurorNumberListDto dto = createDto("INVALID");
             ResponseEntity<String> response =
                 restTemplate.exchange(
-                    new RequestEntity<>(List.of(dto), httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
+                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
             assertInvalidPayload(response,
-                new RestResponseEntityExceptionHandler.FieldError("jurorNumber", "must match \"^\\d{9}$\""));
+                new RestResponseEntityExceptionHandler.FieldError("jurorNumbers[0]", "must match \"^\\d{9}$\""));
 
 
             JurorPool jurorPool =
@@ -189,10 +189,10 @@ public class SjoTasksControllerITest extends AbstractIntegrationTest {
         @Test
         void negativeUnauthorisedWrongLevel() {
             setAuthorization("COURT_USER", "415", UserType.COURT);
-            JurorAndPoolRequest dto = createDto(JUROR_NUMBER, POOL_NUMBER);
+            JurorNumberListDto dto = createDto(JUROR_NUMBER);
             ResponseEntity<String> response =
                 restTemplate.exchange(
-                    new RequestEntity<>(List.of(dto), httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
+                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
 
             assertForbiddenResponse(response, URL);
 
@@ -209,9 +209,9 @@ public class SjoTasksControllerITest extends AbstractIntegrationTest {
         @Test
         void negativeUnauthorisedBureau() {
             setAuthorization("BUREAU_USER", "400", UserType.BUREAU);
-            JurorAndPoolRequest dto = createDto(JUROR_NUMBER, POOL_NUMBER);
+            JurorNumberListDto dto = createDto(JUROR_NUMBER);
             ResponseEntity<String> response = restTemplate.exchange(
-                new RequestEntity<>(List.of(dto), httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
+                new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
 
             assertForbiddenResponse(response, URL);
 

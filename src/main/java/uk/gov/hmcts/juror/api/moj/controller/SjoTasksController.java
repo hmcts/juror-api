@@ -52,10 +52,7 @@ public class SjoTasksController {
     @Operation(summary = "Undo failed to attend status for a list of jurors")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void undoFailedToAttendStatus(
-        @Valid
-        @NotNull
-        @Size(min = 1, max = 500)
-        @RequestBody JurorNumberListDto requestList) {
+        @Valid @RequestBody JurorNumberListDto requestList) {
         bulkService.processVoid(requestList.getJurorNumbers(),
             sjoTasksService::undoFailedToAttendStatus
         );
