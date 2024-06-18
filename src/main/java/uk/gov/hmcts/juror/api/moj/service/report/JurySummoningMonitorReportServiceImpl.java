@@ -24,6 +24,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.codehaus.groovy.runtime.DefaultGroovyMethods.round;
 
@@ -79,12 +80,8 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
 
     private void setupResponseDto(JurySummoningMonitorReportResponse response, String result) {
         if (result != null && !result.isEmpty()) {
-            List<String> values = Arrays.stream(result.split(",")).map(item -> {
-                if (item.equals("null")) {
-                    return "0";
-                }
-                return item;
-            }).toList();
+            List<String> values = Arrays.stream(result.split(",")).map(
+                item -> item.equals("null") ? "0" : item).collect(Collectors.toList());
             setupResponse(response, values);
         }
     }
