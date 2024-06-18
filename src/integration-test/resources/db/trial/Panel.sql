@@ -55,7 +55,8 @@ insert into juror_mod.juror (juror_number,last_name,first_name,address_line_1,re
 ('415000029','LNAME','FNAME','ADDRESS LINE 1', true),
 ('415000030','LNAME','FNAME','ADDRESS LINE 1', true),
 ('415000031','LNAME','FNAME','ADDRESS LINE 1', true),
-('415000032','LNAME','FNAME','ADDRESS LINE 1', true);
+('415000032','LNAME','FNAME','ADDRESS LINE 1', true),
+('415000033','LNAME','FNAME','ADDRESS LINE 1', true);
 
 insert into juror_mod.juror_pool(owner, juror_number, pool_number, status, is_active, location, times_sel)
 values
@@ -93,7 +94,8 @@ values
 ('415', '415000029', '415231105', 2, true,'415',0),
 ('415', '415000030', '415231105', 2, true,'415',0),
 ('415', '415000031', '415231105', 3, true,'415',0),
-('415', '415000032', '415231105', 4, true,'415',0);
+('415', '415000032', '415231105', 4, true,'415',0),
+('415', '415000033', '415231105', 2, true,'415',0);
 
 -- include multiple appearance records when testing - add appearance for yesterday
 insert into juror_mod.appearance (attendance_date,juror_number,loc_code, time_in, time_out, misc_total_paid, appearance_stage, non_attendance) values
@@ -128,7 +130,7 @@ insert into juror_mod.appearance (attendance_date,juror_number,loc_code, time_in
 (current_date - 1, '415000029', '415', '09:30', '16:30', 0, 'EXPENSE_ENTERED', false),
 (current_date - 1, '415000030', '415', '09:30', '16:30', 0, 'EXPENSE_ENTERED', false),
 (current_date - 1, '415000031', '415', '09:30', '16:30', 0, 'EXPENSE_ENTERED', false),
-(current_date - 1, '415000032', '415', '09:30', '16:30', 0,'EXPENSE_ENTERED',false);
+(current_date - 1, '415000032', '415', '09:30', '16:30', 0, 'EXPENSE_ENTERED', false);
 -- add appearance for today
 insert into juror_mod.appearance (attendance_date,juror_number,loc_code, time_in, misc_total_paid, appearance_stage, non_attendance) values
 (current_date, '452000001', '452', current_time,0,'CHECKED_IN',false),
@@ -165,7 +167,8 @@ insert into juror_mod.appearance (attendance_date,juror_number,loc_code, time_in
 (current_date, '415000029', '415', current_time,0,'CHECKED_IN',false),
 (current_date, '415000030', '415', current_time,0,'CHECKED_IN',false),
 (current_date, '415000031', '415', current_time,0,'CHECKED_IN',false),
-(current_date, '415000032', '415', current_time,0,'CHECKED_IN',false);
+(current_date, '415000032', '415', current_time,0,'CHECKED_IN',false),
+(current_date, '415000033', '415', current_time,0,'CHECKED_IN',false);
 
 insert into juror_mod.judge (owner, code, description) values
 ('452', '0002', 'judge jose'),
@@ -179,11 +182,13 @@ insert into juror_mod.trial (trial_number,loc_code,description,courtroom,judge,t
 ('T10000000', '452', 'test trial', 1, 1, 'CIV', current_date, false),
 ('T10000000', '415', 'test trial', 1, 1, 'CIV', current_date, false),
 ('T10000001', '415', 'test trial', 1, 1, 'CIV', current_date, false),
-('T10000002', '415', 'test trial', 1, 1, 'CIV', current_date, false);
+('T10000002', '415', 'test trial', 1, 1, 'CIV', current_date, false),
+('T10000003', '415', 'test trial3', 1, 1, 'CIV', current_date, false);
 
 -- add existing panel on a trial with teh same number (different court location code)
 insert into juror_mod.juror_trial (loc_code, juror_number, trial_number, rand_number, date_selected, "result", completed) values
 ('452', '452000001', 'T10000000', 1, current_date - 1, 'J', false),
 ('452', '452000002', 'T10000000', 1, current_date - 1, 'J', false),
-('452', '452000003', 'T10000000', 1, current_date - 1, 'J', false);
+('452', '452000003', 'T10000000', 1, current_date - 1, 'J', false),
+('415', '415000033', 'T10000003', 1, current_date, 'R', true);
 
