@@ -121,6 +121,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
 
         CourtLocation courtLocation = createCourtLocation("415", "CHESTER", "09:15");
         JurorPool jurorPool = createJuror(jurorNumber);
+        jurorPool.setStatus(createPoolStatus(2));
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
@@ -278,6 +279,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
 
         CourtLocation courtLocation = createCourtLocation("415", "CHESTER", "09:15");
         JurorPool jurorPool = createJuror(jurorNumber);
+        jurorPool.setStatus(createPoolStatus(2));
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
@@ -2278,6 +2280,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         response.setAltPhoneNumber("01234567890");
 
         JurorStatus respondedStatus = new JurorStatus();
+
         respondedStatus.setStatus(respondedStatusCode);
 
         final BureauJwtPayload payload = buildPayload();
