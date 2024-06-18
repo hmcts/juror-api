@@ -3067,8 +3067,8 @@ class JurorAppearanceServiceTest {
 
             verify(jurorHistoryService, times(1)).createJuryAttendanceHistory(jurorPool1,
                 capturedAppearance1, panel1);
-            verify(jurorHistoryService, times(1)).createJuryAttendanceHistory(jurorPool2,
-                capturedAppearance1, panel2);
+            verify(jurorHistoryService, times(1))
+                .createJuryAttendanceHistory(jurorPool2, capturedAppearance2, panel2);
         }
 
         @Test

@@ -2484,6 +2484,8 @@ class JurorExpenseServiceTest {
             doReturn(List.of(jurorPool)).when(jurorPoolRepository)
                 .findByJurorJurorNumberAndIsActive(
                 TestConstants.VALID_JUROR_NUMBER, true);
+            when(jurorPool.getOwner()).thenReturn(TestConstants.VALID_COURT_LOCATION);
+            when(jurorPool.getCourt()).thenReturn(courtLocation);
             jurorExpenseService.approveExpenses(
                 TestConstants.VALID_COURT_LOCATION,
                 PaymentMethod.BACS,
@@ -2581,8 +2583,11 @@ class JurorExpenseServiceTest {
             doNothing().when(jurorExpenseService).approveAppearance(any());
             doNothing().when(jurorExpenseService).saveAppearancesWithExpenseRateIdUpdate(any());
             JurorPool jurorPool = mock(JurorPool.class);
+
             doReturn(List.of(jurorPool)).when(jurorPoolRepository).findByJurorJurorNumberAndIsActive(
                 TestConstants.VALID_JUROR_NUMBER, true);
+            when(jurorPool.getOwner()).thenReturn(TestConstants.VALID_COURT_LOCATION);
+            when(jurorPool.getCourt()).thenReturn(courtLocation);
 
             jurorExpenseService.approveExpenses(
                 TestConstants.VALID_COURT_LOCATION,
