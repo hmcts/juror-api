@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -23,11 +24,14 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -61,122 +65,6 @@ class SjoTasksServiceImplTest {
     @AfterEach
     void afterEach() {
         securityUtilMockedStatic.close();
-    }
-
-    @Nested
-    @DisplayName("GetFailedToAttendJurors")
-    class GetFailedToAttendJurors {
-
-        @Test
-        void positiveTypicalPoolSearch() {
-            SecurityContextHolder.getContext().setAuthentication(
-                new BureauJwtAuthentication(List.of(),
-                    TestUtils.createJwt("415", "COURT_USER", "0", List.of("MANAGER", "SENIOR_JUROR_OFFICER"))
-                ));
-
-            JurorDetailsDto response1 = mock(JurorDetailsDto.class);
-            when(response1.getJurorNumber()).thenReturn("111111111");
-            when(response1.getPoolNumber()).thenReturn("111111111");
-            when(response1.getFirstName()).thenReturn("FNAME1");
-            when(response1.getLastName()).thenReturn("LNAME1");
-            when(response1.getPostCode()).thenReturn("POSTCODE1");
-
-            JurorDetailsDto response2 = mock(JurorDetailsDto.class);
-            when(response2.getJurorNumber()).thenReturn("111111112");
-            when(response2.getPoolNumber()).thenReturn("111111112");
-            when(response2.getFirstName()).thenReturn("FNAME2");
-            when(response2.getLastName()).thenReturn("LNAME2");
-            when(response2.getPostCode()).thenReturn("POSTCODE2");
-
-            JurorDetailsDto response3 = mock(JurorDetailsDto.class);
-            when(response3.getJurorNumber()).thenReturn("111111113");
-            when(response3.getPoolNumber()).thenReturn("111111113");
-            when(response3.getFirstName()).thenReturn("FNAME3");
-            when(response3.getLastName()).thenReturn("LNAME3");
-            when(response3.getPostCode()).thenReturn("POSTCODE3");
-
-            JurorPoolSearch jurorPoolSearch = JurorPoolSearch.builder()
-                .poolNumber("415")
-                .jurorStatus(IJurorStatus.FAILED_TO_ATTEND)
-                .pageLimit(5)
-                .pageNumber(1)
-                .build();
-
-            // mock the response
-            PaginatedList<JurorDetailsDto> result = new PaginatedList<>();
-            result.setData(List.of(response1, response2, response3));
-
-            doReturn(result).when(jurorPoolService).search(jurorPoolSearch);
-
-            // get the mocked response and verify
-            PaginatedList<JurorDetailsDto> jurors = jurorPoolService.search(jurorPoolSearch);
-
-            assertThat(jurors).isNotNull();
-            assertThat(jurors.getData()).hasSize(3);
-            List<JurorDetailsDto> data = jurors.getData();
-
-            JurorDetailsDto juror1 = data.get(0);
-            assertThat(juror1.getJurorNumber()).isEqualTo("111111111");
-            assertThat(juror1.getPoolNumber()).isEqualTo("111111111");
-            assertThat(juror1.getFirstName()).isEqualTo("FNAME1");
-            assertThat(juror1.getLastName()).isEqualTo("LNAME1");
-            assertThat(juror1.getPostCode()).isEqualTo("POSTCODE1");
-
-            JurorDetailsDto juror2 = data.get(1);
-            assertThat(juror2.getJurorNumber()).isEqualTo("111111112");
-            assertThat(juror2.getPoolNumber()).isEqualTo("111111112");
-            assertThat(juror2.getFirstName()).isEqualTo("FNAME2");
-            assertThat(juror2.getLastName()).isEqualTo("LNAME2");
-            assertThat(juror2.getPostCode()).isEqualTo("POSTCODE2");
-
-            JurorDetailsDto juror3 = data.get(2);
-            assertThat(juror3.getJurorNumber()).isEqualTo("111111113");
-            assertThat(juror3.getPoolNumber()).isEqualTo("111111113");
-            assertThat(juror3.getFirstName()).isEqualTo("FNAME3");
-            assertThat(juror3.getLastName()).isEqualTo("LNAME3");
-            assertThat(juror3.getPostCode()).isEqualTo("POSTCODE3");
-
-            verify(jurorPoolService, times(1)).search(jurorPoolSearch);
-
-            verifyNoMoreInteractions(jurorStatusRepository, jurorHistoryService);
-        }
-
-        @ParameterizedTest
-        @NullSource
-        @EmptySource
-        void negativeNoFailedToAttendJurors(List<JurorDetailsDto> data) {
-            SecurityContextHolder.getContext().setAuthentication(
-                new BureauJwtAuthentication(List.of(),
-                    TestUtils.createJwt("415", "COURT_USER", "0", List.of("MANAGER", "SENIOR_JUROR_OFFICER"))
-                ));
-
-            JurorPoolSearch jurorPoolSearch = JurorPoolSearch.builder()
-                .poolNumber("415")
-                .jurorStatus(IJurorStatus.FAILED_TO_ATTEND)
-                .pageLimit(5)
-                .pageNumber(1)
-                .build();
-
-            // mock the response
-            PaginatedList<JurorDetailsDto> result = new PaginatedList<>();
-
-            result.setData(data);
-
-            doReturn(result).when(jurorPoolService).search(jurorPoolSearch);
-
-            // get the mocked response and verify
-            MojException.NotFound exception = assertThrows(
-                MojException.NotFound.class,
-                () -> jurorPoolService.search(jurorPoolSearch)
-            );
-
-            assertThat(exception).isNotNull();
-            assertThat(exception.getCause()).isNull();
-            assertThat(exception.getMessage()).isEqualTo("No juror pools found that meet your search criteria.");
-
-            verify(jurorPoolService, times(1)).search(jurorPoolSearch);
-            verifyNoMoreInteractions(jurorStatusRepository, jurorHistoryService);
-        }
     }
 
     @Nested
@@ -327,5 +215,4 @@ class SjoTasksServiceImplTest {
         }
 
     }
-
 }
