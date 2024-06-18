@@ -54,6 +54,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsCommonResponse
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorNotesDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorOverviewResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorPoolDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorRecordSearchDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorSummonsReplyResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.NameDetails;
@@ -4343,6 +4344,54 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
+            void typicalBureauGetAllDetails() {
+                setAuthorization("BUREAU_USER", "400", UserType.BUREAU, Role.MANAGER);
+
+                ResponseEntity<FilterableJurorDetailsResponseDto[]> responseEntity = triggerValid(
+                    createDto(TestConstants.VALID_JUROR_NUMBER, null,
+                              FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS,
+                              FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS,
+                              FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS,
+                              FilterableJurorDetailsRequestDto.IncludeType.ACTIVE_POOL)
+                );
+
+                //Count validated in triggerValid so no need to do here
+                FilterableJurorDetailsResponseDto responseDto = Objects.requireNonNull(responseEntity.getBody())[0];
+                assertThat(responseDto.getJurorNumber()).isEqualTo(TestConstants.VALID_JUROR_NUMBER);
+                assertThat(responseDto.getJurorVersion()).isNull();
+
+                assertThat(responseDto.getNameDetails()).isNotNull();
+                assertThat(responseDto.getPaymentDetails()).isNotNull();
+                assertThat(responseDto.getAddress()).isNotNull();
+                assertThat(responseDto.getActivePool()).isNotNull();
+
+
+                NameDetails nameDetails = responseDto.getNameDetails();
+                assertThat(nameDetails.getTitle()).isEqualTo("Mr");
+                assertThat(nameDetails.getFirstName()).isEqualTo("FNAME");
+                assertThat(nameDetails.getLastName()).isEqualTo("LNAME");
+
+                PaymentDetails paymentDetails = responseDto.getPaymentDetails();
+                assertThat(paymentDetails.getSortCode()).isEqualTo("112233");
+                assertThat(paymentDetails.getBankAccountName()).isEqualTo("Bank NAME");
+                assertThat(paymentDetails.getBankAccountNumber()).isEqualTo("12345678");
+                assertThat(paymentDetails.getBuildingSocietyRollNumber()).isNull();
+
+                JurorAddressDto jurorAddressDto = responseDto.getAddress();
+                assertThat(jurorAddressDto.getLineOne()).isEqualTo("Address Line 1");
+                assertThat(jurorAddressDto.getLineTwo()).isEqualTo("Address Line 2");
+                assertThat(jurorAddressDto.getLineThree()).isEqualTo("Address Line 3");
+                assertThat(jurorAddressDto.getTown()).isEqualTo("Address Line 4");
+                assertThat(jurorAddressDto.getCounty()).isEqualTo("Address Line 5");
+                assertThat(jurorAddressDto.getPostcode()).isEqualTo("CH1 2AN");
+
+                JurorPoolDetailsDto jurorPoolDetailsDto = responseDto.getActivePool();
+                assertThat(jurorPoolDetailsDto.getPoolNumber()).isEqualTo("415220502");
+                assertThat(jurorPoolDetailsDto.getCourtName()).isEqualTo("CHESTER");
+                assertThat(jurorPoolDetailsDto.getStatus()).isEqualTo("Responded");
+            }
+
+            @Test
             void testGSingleGetNameDetails() {
                 ResponseEntity<FilterableJurorDetailsResponseDto[]> responseEntity = triggerValid(
                     createDto(TestConstants.VALID_JUROR_NUMBER, null,
@@ -4566,6 +4615,27 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 assertThat(jurorAddressDto3.getCounty()).isEqualTo("Country123");
                 assertThat(jurorAddressDto3.getPostcode()).isEqualTo("BH2 4AN");
             }
+
+            @Test
+            void typicalCourtGetActivePoolDetails() {
+                ResponseEntity<FilterableJurorDetailsResponseDto[]> responseEntity = triggerValid(
+                    createDto(TestConstants.VALID_JUROR_NUMBER, null,
+                        FilterableJurorDetailsRequestDto.IncludeType.ACTIVE_POOL));
+                //Count validated in triggerValid so no need to do here
+                FilterableJurorDetailsResponseDto responseDto = Objects.requireNonNull(responseEntity.getBody())[0];
+                assertThat(responseDto.getJurorNumber()).isEqualTo(TestConstants.VALID_JUROR_NUMBER);
+                assertThat(responseDto.getJurorVersion()).isNull();
+
+                assertThat(responseDto.getNameDetails()).isNull();
+                assertThat(responseDto.getPaymentDetails()).isNull();
+                assertThat(responseDto.getAddress()).isNull();
+                assertThat(responseDto.getActivePool()).isNotNull();
+
+                JurorPoolDetailsDto jurorPoolDetailsDto = responseDto.getActivePool();
+                assertThat(jurorPoolDetailsDto.getPoolNumber()).isEqualTo("415220502");
+                assertThat(jurorPoolDetailsDto.getCourtName()).isEqualTo("CHESTER");
+                assertThat(jurorPoolDetailsDto.getStatus()).isEqualTo("Responded");
+            }
         }
 
         @DisplayName("Negative")
@@ -4607,18 +4677,6 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
                 assertInvalidPathParam(triggerInvalid(request),
                     "getJurorDetailsBulkFilterable.request[0].jurorNumber: must match \"^\\d{9}$\"");
-            }
-
-            @Test
-            @DisplayName("Unauthorised - none court user")
-            void unauthorisedNoneCourtUser() {
-                List<FilterableJurorDetailsRequestDto> request =
-                    List.of(createDto(TestConstants.VALID_JUROR_NUMBER, null,
-                        FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS));
-                setAuthorization("BUREAU_USER", "400", UserType.BUREAU, Role.MANAGER);
-
-                assertForbiddenResponse(restTemplate.exchange(
-                    new RequestEntity<>(request, httpHeaders, POST, URI.create(URL)), String.class), URL);
             }
 
             @Test

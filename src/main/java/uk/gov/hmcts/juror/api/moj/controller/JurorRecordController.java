@@ -105,7 +105,6 @@ public class JurorRecordController {
     @PostMapping("/details")
     @Operation(summary = "Get juror details for a juror number",
         description = "Retrieve details of a single juror by his/her juror number")
-    @IsCourtUser
     public ResponseEntity<List<FilterableJurorDetailsResponseDto>> getJurorDetailsBulkFilterable(
         @Valid
         @NotNull
