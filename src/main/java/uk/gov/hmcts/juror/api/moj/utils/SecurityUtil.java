@@ -44,8 +44,8 @@ public final class SecurityUtil {
     public static boolean hasBureauJwtPayload() {
         SecurityContext securityContext = SecurityContextHolder.getContext();
         if (securityContext != null) {
-            Authentication authentication = securityContext.getAuthentication();
-            return authentication instanceof BureauJwtAuthentication;
+            // Authentication authentication = ;
+            return securityContext.getAuthentication() instanceof BureauJwtAuthentication;
         }
         return false;
     }
@@ -53,8 +53,8 @@ public final class SecurityUtil {
     public static boolean hasPublicJwtPayload() {
         SecurityContext securityContext = SecurityContextHolder.getContext();
         if (securityContext != null) {
-            Authentication authentication = securityContext.getAuthentication();
-            return authentication instanceof PublicJwtAuthentication;
+            // Authentication authentication = ;
+            return securityContext.getAuthentication() instanceof PublicJwtAuthentication;
         }
         return false;
     }

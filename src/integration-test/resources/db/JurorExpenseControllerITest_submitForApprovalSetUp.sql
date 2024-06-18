@@ -26,9 +26,9 @@ insert into juror_mod.juror_pool (owner, juror_number, pool_number, status, is_a
 values ('415', '641500020', '415230101', 2, true);
 
 
-INSERT INTO juror_mod.users (username, email, name, active, team_id)
-VALUES ('COURT_USER', 'COURT_USER@email.gov.uk', 'Court User', true, 1),
-       ('BUREAU_USER', 'BUREAU_USER@email.gov.uk', 'Bureau User', true, 1);
+INSERT INTO juror_mod.users (created_by, updated_by,username, email, name, active, team_id)
+VALUES ('COURT_USER', 'COURT_USER', 'COURT_USER', 'COURT_USER@email.gov.uk', 'Court User', true, 1),
+       ('COURT_USER', 'COURT_USER', 'BUREAU_USER', 'BUREAU_USER@email.gov.uk', 'Bureau User', true, 1);
 
 insert into juror_mod.user_courts (username, loc_code)
 values ('COURT_USER', '415'),

@@ -10,8 +10,8 @@ INSERT INTO juror_mod.juror_response (juror_number,date_received,title,first_nam
 
 -- team member with login enabled
 
-INSERT INTO juror_mod.users (username, email, name, active,team_id)
-VALUES ('testlogin','testlogin@email.gov.uk','Test Login',true,1);
+INSERT INTO juror_mod.users (created_by, updated_by,username, email, name, active,team_id)
+VALUES ('testlogin','testlogin','testlogin','testlogin@email.gov.uk','Test Login',true,1);
 insert into juror_mod.user_courts (username, loc_code)
 values ('testlogin','400');
 --

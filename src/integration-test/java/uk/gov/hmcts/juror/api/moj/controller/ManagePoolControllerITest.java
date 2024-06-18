@@ -1576,7 +1576,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         CourtLocation targetCourt = courtLocationRepository.findById("416").orElse(null);
         assertThat(targetCourt).isNotNull();
 
-        List<JurorHistory> historyEvents = jurorHistoryRepository.findByJurorNumber(jurorNumber);
+        List<JurorHistory> historyEvents = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
         JurorHistory jurorHistory = historyEvents.stream().filter(hist ->
             hist.getHistoryCode().equals(HistoryCodeMod.REASSIGN_POOL_MEMBER)).findFirst().orElse(null);
         assertThat(jurorHistory).isNotNull();

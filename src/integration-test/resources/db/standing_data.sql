@@ -19,8 +19,8 @@ DO UPDATE SET SP_DESC = 'Lower Age Limit', SP_VALUE = '18';
 --WHEN NOT MATCHED THEN INSERT (SP_ID, SP_DESC, SP_VALUE) VALUES ('101', 'Lower Age Limit', '18');
 
 -- Auto user
-INSERT INTO juror_mod.users (username, name, active, email, user_type)
-VALUES ('AUTO', 'AUTO', true, 'AUTO@hmcts.gov.uk', 'SYSTEM');
+INSERT INTO juror_mod.users (created_by, updated_by,username, name, active, email, user_type)
+VALUES ('AUTO', 'AUTO','AUTO','AUTO', true, 'AUTO@hmcts.gov.uk', 'SYSTEM');
 insert into juror_mod.user_courts (username, loc_code)
 values ('AUTO', '400');
 -- Teams

@@ -139,7 +139,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
                 "Juror completion date should match");
 
 
-            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumber(jurorNumber);
+            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
             assertEquals(1, jurorHistories.size(), "Should only be one history entry");
             JurorHistory jurorHistory = jurorHistories.get(0);
             assertEquals(poolNumber, jurorHistory.getPoolNumber(), "Pool number should match");
@@ -508,7 +508,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
             assertThat(jurorPool.getNextDate()).isNull();
             assertThat(jurorPool.getOnCall()).isFalse();
 
-            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumber(jurorNumber);
+            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
             assertEquals(1, jurorHistories.size(), "Should only be one history entry");
             JurorHistory jurorHistory = jurorHistories.get(0);
             assertEquals(poolNumber, jurorHistory.getPoolNumber(), "Pool number should match");
@@ -637,7 +637,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
             assertNull(juror.getCompletionDate(),
                 "Juror completion date should be null");
 
-            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumber(jurorNumber);
+            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
             assertEquals(1, jurorHistories.size(), "Should only be one history entry");
             JurorHistory jurorHistory = jurorHistories.get(0);
             assertEquals(poolNumber, jurorHistory.getPoolNumber(), "Pool number should match");

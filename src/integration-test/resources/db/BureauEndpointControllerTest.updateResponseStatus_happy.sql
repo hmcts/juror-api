@@ -19,8 +19,8 @@ INSERT INTO juror_mod.juror_response_cjs_employment (juror_number,cjs_employer,c
 INSERT INTO juror_mod.juror_history (juror_number,date_created,history_code,user_id,other_information,pool_number,other_info_date,other_info_reference) VALUES
     ('644892530','2024-03-12 00:00:00','RSUM','TESTSQL','Summoned','',NULL,NULL);
 
-INSERT INTO juror_mod.users(username,email, name, active, last_logged_in, team_id)
-VALUES ('testlogin','testlogin@email.gov.uk', 'Test Login', true, CURRENT_DATE-3, 1);
+INSERT INTO juror_mod.users(created_by,updated_by,username,email, name, active, last_logged_in, team_id)
+VALUES ('testlogin','testlogin','testlogin','testlogin@email.gov.uk', 'Test Login', true, CURRENT_DATE-3, 1);
 
 insert into juror_mod.user_courts (username, loc_code)
 values ('testlogin', '400');

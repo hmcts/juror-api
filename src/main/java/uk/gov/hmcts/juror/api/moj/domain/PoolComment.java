@@ -41,7 +41,7 @@ public class PoolComment implements Serializable {
     private PoolRequest pool;
 
     @NotNull
-    @Length(max = 20)
+    @Length(max = 30)
     @Column(name = "user_id")
     private String userId;
 
