@@ -31,7 +31,7 @@ public class SjoTasksServiceImpl implements SjoTasksService {
 
     @Override
     @Transactional
-    public void undoFailedToAttendStatus(String jurorNumber, String poolNumber) {
+    public void undoFailedToAttendStatus(String jurorNumber) {
         JurorPool jurorPool = jurorPoolRepository
             .findByJurorJurorNumberAndIsActiveAndOwner(jurorNumber, true, SecurityUtil.getActiveOwner());
 

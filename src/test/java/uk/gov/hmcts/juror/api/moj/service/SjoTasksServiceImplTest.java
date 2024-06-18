@@ -97,7 +97,7 @@ class SjoTasksServiceImplTest {
                 "111111111", true, SecurityUtil.getActiveOwner()
             )).thenReturn(jurorPool);
 
-            sjoTasksService.undoFailedToAttendStatus("111111111", "111111111");
+            sjoTasksService.undoFailedToAttendStatus("111111111");
 
             verify(jurorStatusRepository, times(1)).findById(IJurorStatus.RESPONDED);
 
@@ -156,9 +156,9 @@ class SjoTasksServiceImplTest {
                 "111111113", true, SecurityUtil.getActiveOwner()
             )).thenReturn(jurorPool3);
 
-            sjoTasksService.undoFailedToAttendStatus("111111111", "111111111");
-            sjoTasksService.undoFailedToAttendStatus("111111112", "111111112");
-            sjoTasksService.undoFailedToAttendStatus("111111113", "111111113");
+            sjoTasksService.undoFailedToAttendStatus("111111111");
+            sjoTasksService.undoFailedToAttendStatus("111111112");
+            sjoTasksService.undoFailedToAttendStatus("111111113");
 
             verify(jurorStatusRepository, times(3)).findById(IJurorStatus.RESPONDED);
 
@@ -200,7 +200,7 @@ class SjoTasksServiceImplTest {
 
             MojException.NotFound exception = assertThrows(
                 MojException.NotFound.class,
-                () -> sjoTasksService.undoFailedToAttendStatus("111111111", "111111111")
+                () -> sjoTasksService.undoFailedToAttendStatus("111111111")
             );
 
             assertThat(exception).isNotNull();

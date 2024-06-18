@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAndPoolRequest;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberListDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsDto;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -135,9 +136,8 @@ class SjoTasksControllerTest {
 
         @Test
         void positiveTypical() throws Exception {
-            JurorAndPoolRequest request = JurorAndPoolRequest.builder()
-                .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
-                .poolNumber(TestConstants.VALID_POOL_NUMBER)
+            JurorNumberListDto request = JurorNumberListDto.builder()
+                .jurorNumbers(List.of(TestConstants.VALID_JUROR_NUMBER))
                 .build();
 
             mockMvc.perform(patch(URL)
@@ -147,33 +147,22 @@ class SjoTasksControllerTest {
                 .andExpect(status().isAccepted());
 
             verify(sjoTasksService, times(1))
-                .undoFailedToAttendStatus(TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER);
+                .undoFailedToAttendStatus(TestConstants.VALID_JUROR_NUMBER);
         }
 
         @Test
         void positiveMultiple() throws Exception {
-            JurorAndPoolRequest request1 = JurorAndPoolRequest.builder()
-                .jurorNumber("111111111")
-                .poolNumber("111111111")
-                .build();
-            JurorAndPoolRequest request2 = JurorAndPoolRequest.builder()
-                .jurorNumber("111111112")
-                .poolNumber("111111112")
-                .build();
-            JurorAndPoolRequest request3 = JurorAndPoolRequest.builder()
-                .jurorNumber("111111113")
-                .poolNumber("111111113")
-                .build();
-
             mockMvc.perform(patch(URL)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtils.asJsonString(List.of(request1, request2, request3))))
+                    .content(TestUtils.asJsonString(JurorNumberListDto.builder()
+                        .jurorNumbers(List.of("111111111","111111112","111111113"))
+                        .build())))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isAccepted());
 
-            verify(sjoTasksService, times(1)).undoFailedToAttendStatus("111111111", "111111111");
-            verify(sjoTasksService, times(1)).undoFailedToAttendStatus("111111112", "111111112");
-            verify(sjoTasksService, times(1)).undoFailedToAttendStatus("111111113", "111111113");
+            verify(sjoTasksService, times(1)).undoFailedToAttendStatus("111111111");
+            verify(sjoTasksService, times(1)).undoFailedToAttendStatus("111111112");
+            verify(sjoTasksService, times(1)).undoFailedToAttendStatus("111111113");
 
             verifyNoMoreInteractions(sjoTasksService);
         }

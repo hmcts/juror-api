@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.config.security.IsSeniorCourtUser;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAndPoolRequest;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberListDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsDto;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
@@ -54,11 +55,9 @@ public class SjoTasksController {
         @Valid
         @NotNull
         @Size(min = 1, max = 500)
-        @RequestBody List<@Valid @NotNull JurorAndPoolRequest> requestList) {
-        bulkService.processVoid(requestList,
-            jurorAndPoolRequest -> sjoTasksService.undoFailedToAttendStatus(
-                jurorAndPoolRequest.getJurorNumber(),
-                jurorAndPoolRequest.getPoolNumber())
+        @RequestBody JurorNumberListDto requestList) {
+        bulkService.processVoid(requestList.getJurorNumbers(),
+            sjoTasksService::undoFailedToAttendStatus
         );
     }
 
