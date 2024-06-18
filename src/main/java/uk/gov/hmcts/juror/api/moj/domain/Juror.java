@@ -93,11 +93,11 @@ public class Juror extends Address implements Serializable {
     private LocalDate dateOfBirth;
 
     @Column(name = "h_phone")
-    @Length(max = 15)
+    @Length(max = 20)
     private String phoneNumber;
 
     @Column(name = "w_phone")
-    @Length(max = 15)
+    @Length(max = 20)
     private String workPhone;
 
     @Column(name = "w_ph_local")
@@ -203,7 +203,7 @@ public class Juror extends Address implements Serializable {
     private String summonsFile;
 
     @Column(name = "m_phone")
-    @Length(max = 15)
+    @Length(max = 20)
     private String altPhoneNumber;
 
     @Length(max = 254)
