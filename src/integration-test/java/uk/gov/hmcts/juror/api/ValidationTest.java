@@ -70,7 +70,7 @@ public class ValidationTest extends ContainerTest {
 
     @Test
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
-    public void testEmailValidation_invalidEmails() throws Exception {
+    public void testEmailValidation_invalidEmails() {
         ArrayList<String> emailList = new ArrayList<>();
         emailList.add("@domain.com");
         emailList.add("#%^|*£$@#.com");
@@ -105,7 +105,7 @@ public class ValidationTest extends ContainerTest {
     }
 
     @Test
-    public void phoneValidation_validNumbers() throws Exception {
+    public void phoneValidation_validNumbers() {
         ArrayList<String> phoneNumberList = new ArrayList<>();
         phoneNumberList.add("012345678");
         phoneNumberList.add("123456789");
@@ -128,7 +128,7 @@ public class ValidationTest extends ContainerTest {
     }
 
     @Test
-    public void phoneValidation_invalidNumbers() throws Exception {
+    public void phoneValidation_invalidNumbers() {
         ArrayList<String> phoneNumberList = new ArrayList<>();
         phoneNumberList.add("test");
         phoneNumberList.add("1234567");
@@ -158,7 +158,7 @@ public class ValidationTest extends ContainerTest {
     }
 
     @Test
-    public void testThirdPartyPhoneValidation_validNumbers() throws Exception {
+    public void testThirdPartyPhoneValidation_validNumbers() {
         ArrayList<String> phoneNumberList = new ArrayList<>();
         phoneNumberList.add("");   // should be allowed when using Jurors phone number as contact
         phoneNumberList.add(null); // should be allowed when using Jurors phone number as contact
@@ -180,7 +180,7 @@ public class ValidationTest extends ContainerTest {
     }
 
     @Test
-    public void testThirdPartyPhoneValidation_invalidNumbers() throws Exception {
+    public void testThirdPartyPhoneValidation_invalidNumbers() {
         ArrayList<String> phoneNumberList = new ArrayList<>();
         phoneNumberList.add("test");
         phoneNumberList.add("1234567");
