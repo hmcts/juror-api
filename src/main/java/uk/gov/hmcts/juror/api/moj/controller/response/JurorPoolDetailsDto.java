@@ -14,14 +14,17 @@ public class JurorPoolDetailsDto {
     @JsonProperty("pool_number")
     private String poolNumber;
 
-
     @JsonProperty("status")
     private String status;
+
+    @JsonProperty("court_name")
+    private String courtName;
 
     public static JurorPoolDetailsDto from(JurorPool jurorPool) {
         return JurorPoolDetailsDto.builder()
             .poolNumber(jurorPool.getPoolNumber())
             .status(jurorPool.getStatus().getStatusDesc())
+            .courtName(jurorPool.getCourt().getName())
             .build();
     }
 }
