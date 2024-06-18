@@ -64,7 +64,7 @@ class JurorAmendmentByDateReportITest extends AbstractJurorAmendmentReportITest 
                                     .build(),
                                 StandardReportResponse.TableData.Heading.builder()
                                     .id("from")
-                                    .name("From")
+                                    .name("Changed from")
                                     .dataType("String")
                                     .headings(null)
                                     .build(),
