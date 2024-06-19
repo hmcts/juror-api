@@ -38,3 +38,10 @@ VALUES (1, 1, '123456789',
         'Mr3', 'FNAME3', 'LNAME3',
         '3Address Line 1', '3Address Line 2', '3Address Line 3', '3Address Line 4', '3Address Line 5', 'CH3 2AN',
         '333333', '3Bank NAME', '33333333', null);
+
+INSERT INTO juror_mod.pool
+(pool_no, "owner", return_date, total_no_required, no_requested, pool_type, loc_code, new_request)
+VALUES ('415220502', '415', '2022-05-03', 5, 5, 'CRO', '415', 'N');
+
+INSERT INTO juror_mod.juror_pool (owner, juror_number, pool_number, is_active, next_date, status)
+VALUES ('415', '123456789', '415220502', true, '2022-05-03', 2);

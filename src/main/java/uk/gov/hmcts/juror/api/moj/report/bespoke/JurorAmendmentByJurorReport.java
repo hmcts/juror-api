@@ -49,7 +49,7 @@ public class JurorAmendmentByJurorReport extends AbstractJurorAmendmentReport {
         });
         tableData.getHeadings().removeIf(heading ->
             "juror_number".equalsIgnoreCase(heading.getId())
-                || "from".equalsIgnoreCase(heading.getId()));
+                || "to".equalsIgnoreCase(heading.getId()));
 
         JurorAmendmentReportResponse response = new JurorAmendmentReportResponse();
         response.setTableData(tableData);
