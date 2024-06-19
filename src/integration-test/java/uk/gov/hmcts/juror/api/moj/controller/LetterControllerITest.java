@@ -4035,8 +4035,8 @@ class LetterControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("Reissue Letter List - Summons Reminder all queued (some letters created but pending, some "
-            + "created and printed")
+        @DisplayName("Reissue Letter List - Summons Reminder all queued (some letters created but pending, exclude "
+            + "printed")
         void reissueSummonsReminderListAllQueued() throws Exception {
             ReissueLetterListResponseDto response = triggerValid(ReissueLetterListRequestDto.builder()
                 .letterType(LetterType.SUMMONED_REMINDER)
@@ -4046,7 +4046,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             List<List<Object>> data = response.getData();
             assertThat(data).isNotNull();
-            assertThat(data.size()).isEqualTo(13);
+            assertThat(data.size()).isEqualTo(6);
 
             // verify data
             List<Object> dataIndex0 = data.get(0);
@@ -4055,37 +4055,16 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<Object> dataIndex1 = data.get(1);
             verifyResponse(dataIndex1, "565", "2024-02-01", false, "5228");
 
-            List<Object> dataIndex2 = data.get(2);
-            verifyResponse(dataIndex2, "561", "2024-01-31", true, "5228");
-
-            List<Object> dataIndex3 = data.get(3);
-            verifyResponse(dataIndex3, "561", "2024-01-31", true, "5228C");
-
-            List<Object> dataIndex4 = data.get(4);
-            verifyResponse(dataIndex4, "571", "2024-01-31", true, "5228C");
-
-            List<Object> dataIndex5 = data.get(5);
-            verifyResponse(dataIndex5, "573", "2024-01-31", true, "5228C");
-
-            List<Object> dataIndex6 = data.get(6);
-            verifyResponse(dataIndex6, "574", "2024-01-31", true, "5228");
-
-            List<Object> dataIndex7 = data.get(7);
-            verifyResponse(dataIndex7, "575", "2024-01-31", true, "5228");
-
-            List<Object> dataIndex8 = data.get(8);
-            verifyResponse(dataIndex8, "576", "2024-01-31", true, "5228C");
-
-            List<Object> dataIndex9 = data.get(9);
+            List<Object> dataIndex9 = data.get(2);
             verifyResponse(dataIndex9, "577", "2024-01-31", false, "5228");
 
-            List<Object> dataIndex10 = data.get(10);
+            List<Object> dataIndex10 = data.get(3);
             verifyResponse(dataIndex10, "567", "2024-01-27", false, "5228");
 
-            List<Object> dataIndex11 = data.get(11);
+            List<Object> dataIndex11 = data.get(4);
             verifyResponse(dataIndex11, "563", "2024-01-25", false, "5228");
 
-            List<Object> dataIndex12 = data.get(12);
+            List<Object> dataIndex12 = data.get(5);
             verifyResponse(dataIndex12, "564", "2024-01-20", false, "5228");
         }
 
