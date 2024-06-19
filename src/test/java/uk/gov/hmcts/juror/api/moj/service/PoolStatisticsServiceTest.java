@@ -10,6 +10,7 @@ import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolSummaryResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.PoolStatistics;
+import uk.gov.hmcts.juror.api.moj.domain.PoolType;
 import uk.gov.hmcts.juror.api.moj.exception.PoolRequestException;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolStatisticsRepository;
@@ -49,6 +50,7 @@ public class PoolStatisticsServiceTest {
         courtLocation.setLocCourtName("The Crown Court at Test Location");
         poolRequest.setCourtLocation(courtLocation);
         poolRequest.setNilPool(isNilPool);
+        poolRequest.setPoolType(new PoolType("CIV", "Civil Court"));
         return poolRequest;
     }
 
@@ -87,6 +89,7 @@ public class PoolStatisticsServiceTest {
         assertThat(poolDetails.getCourtName())
             .as("Court name should be mapped from the COURT_LOCATION associated with this POOL_REQUEST record")
             .isEqualToIgnoringCase(courtLocation.getName());
+        assertThat(poolDetails.getPoolType()).isEqualTo("Civil Court");
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE dd MMM yyyy");
         assertThat(poolDetails.getCourtStartDate())
             .as("Court start date should be mapped from the RETURN_DATE value in the POOL_REQUEST view")
@@ -185,6 +188,7 @@ public class PoolStatisticsServiceTest {
         assertThat(poolDetails.getCourtName())
             .as("Court name should be mapped from the COURT_LOCATION associated with this POOL_REQUEST record")
             .isEqualToIgnoringCase(courtLocation.getName());
+        assertThat(poolDetails.getPoolType()).isEqualTo("Civil Court");
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE dd MMM yyyy");
         assertThat(poolDetails.getCourtStartDate())
             .as("Court start date should be mapped from the RETURN_DATE value in the POOL_REQUEST view")
@@ -235,6 +239,7 @@ public class PoolStatisticsServiceTest {
         assertThat(poolDetails.getCourtName())
             .as("Court name should be mapped from the COURT_LOCATION associated with this POOL_REQUEST record")
             .isEqualToIgnoringCase(courtLocation.getName());
+        assertThat(poolDetails.getPoolType()).isEqualTo("Civil Court");
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE dd MMM yyyy");
         assertThat(poolDetails.getCourtStartDate())
             .as("Court start date should be mapped from the RETURN_DATE value in the POOL_REQUEST view")
