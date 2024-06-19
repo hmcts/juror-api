@@ -108,9 +108,8 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
             if  (request.getLetterType().equals(LetterType.SUMMONED_REMINDER)) {
                 query.where(BULK_PRINT_DATA.formAttribute.formType.in(request.getLetterType().getFormCodes().stream()
                     .map(FormCode::getCode).toList()));
-            } else {
-                query.where(BULK_PRINT_DATA.extractedFlag.isNull().or(BULK_PRINT_DATA.extractedFlag.eq(false)));
             }
+            query.where(BULK_PRINT_DATA.extractedFlag.isNull().or(BULK_PRINT_DATA.extractedFlag.eq(false)));
         } else if (request.getJurorName() != null) {
             query.where(QJuror.juror.firstName.concat(" ").concat(QJuror.juror.lastName).toLowerCase()
                 .likeIgnoreCase("%" + request.getJurorName().toLowerCase(Settings.LOCALE) + "%"));
