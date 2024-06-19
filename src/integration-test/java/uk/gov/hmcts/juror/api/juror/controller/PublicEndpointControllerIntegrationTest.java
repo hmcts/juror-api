@@ -1049,12 +1049,12 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                     + "juror_number='644892530'",
                 Integer.class)).isEqualTo(1);
         assertThat(jdbcTemplate.queryForObject(
-            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='PDIS' and OTHER_INFORMATION='Disqualify"
-                + " Code A' and juror_number='644892530'",
+            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='PDIS' and other_info_reference='A'"
+                + " and juror_number='644892530'",
             Integer.class)).isEqualTo(1);
         assertThat(jdbcTemplate.queryForObject(
-            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='RDIS' and OTHER_INFORMATION='Disqualify"
-                + " Letter Code A' and juror_number='644892530'",
+            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='RDIS' "
+                + "and other_info_reference='A' and juror_number='644892530'",
             Integer.class)).isEqualTo(1);
         assertThat(jdbcTemplate.queryForObject(
             "select count(*) from JUROR.DISQ_LETT WHERE DISQ_CODE='A' and PART_NO='644892530'",

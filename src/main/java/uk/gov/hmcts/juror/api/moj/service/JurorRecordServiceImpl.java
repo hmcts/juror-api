@@ -1144,7 +1144,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             jurorHistoryService.createPoliceCheckDisqualifyHistory(jurorPool);
             if (SecurityUtil.BUREAU_OWNER.equals(jurorPool.getOwner())) {
                 printDataService.printWithdrawalLetter(jurorPool);
-                jurorHistoryService.createWithdrawHistory(jurorPool, "Withdrawal Letter Auto");
+                jurorHistoryService.createWithdrawHistory(jurorPool, "Withdrawal Letter Auto","E");
             }
         } else if (newPoliceCheckValue == PoliceCheck.IN_PROGRESS) {
             log.debug("Juror {} police check is in progress adding part history", jurorNumber);

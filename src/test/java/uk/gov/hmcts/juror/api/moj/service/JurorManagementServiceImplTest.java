@@ -15,7 +15,6 @@ import uk.gov.hmcts.juror.api.moj.controller.request.JurorManagementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorManagementResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.ReassignPoolMembersResultDto;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
-import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
@@ -24,7 +23,6 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolType;
 import uk.gov.hmcts.juror.api.moj.exception.JurorRecordException;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
-import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
@@ -53,6 +51,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings({
@@ -71,7 +70,7 @@ public class JurorManagementServiceImplTest {
     @Mock
     private JurorPoolRepository jurorPoolRepository;
     @Mock
-    private JurorHistoryRepository jurorHistoryRepository;
+    private JurorHistoryService jurorHistoryService;
     @Mock
     private GeneratePoolNumberService generatePoolNumberService;
     @Mock
@@ -90,7 +89,6 @@ public class JurorManagementServiceImplTest {
         doReturn(1).when(poolMemberSequenceService).getPoolMemberSequenceNumber(any());
         doReturn(null).when(poolRequestRepository).saveAndFlush(any());
         doReturn(null).when(jurorPoolRepository).save(any());
-        doReturn(null).when(jurorHistoryRepository).save(any());
 
         doReturn(Optional.of(createJurorStatus(1, "Summoned")))
             .when(jurorStatusRepository).findById(1);
@@ -180,7 +178,8 @@ public class JurorManagementServiceImplTest {
                 anyString());
         verify(poolMemberSequenceService, times(1))
             .getPoolMemberSequenceNumber(anyString());
-        verify(jurorHistoryRepository, times(1)).save(any(JurorHistory.class));
+        verify(jurorHistoryService, times(1))
+            .createReassignPoolMemberHistory(any(), any(), any());
         verify(printDataService, times(1)).printConfirmationLetter(any());
     }
 
@@ -263,8 +262,8 @@ public class JurorManagementServiceImplTest {
                 anyString());
         verify(poolMemberSequenceService, times(1))
             .getPoolMemberSequenceNumber(anyString());
-        verify(jurorHistoryRepository, times(1))
-            .save(any(JurorHistory.class));
+        verify(jurorHistoryService, times(1))
+            .createReassignPoolMemberHistory(any(), any(), any());
         verify(printDataService, never())
             .printConfirmationLetter(any());
 
@@ -321,8 +320,7 @@ public class JurorManagementServiceImplTest {
             .findByPoolNumber(anyString());
         verify(courtLocationRepository, times(2))
             .findByLocCode(anyString());
-        verify(jurorHistoryRepository, never())
-            .save(any(JurorHistory.class));
+        verifyNoInteractions(jurorHistoryService);
         verify(printDataService, never())
             .printConfirmationLetter(any());
         verify(jurorPoolRepository, never())
@@ -501,8 +499,9 @@ public class JurorManagementServiceImplTest {
             .save(any());
         verify(poolRequestRepository, times(1))
             .saveAndFlush(any());
-        verify(jurorHistoryRepository, times(jurorNumbers.size()))
-            .save(any());
+
+        verify(jurorHistoryService, times(jurorNumbers.size()))
+            .createReassignPoolMemberHistory(any(), any(), any());
     }
 
     @Test
@@ -580,8 +579,9 @@ public class JurorManagementServiceImplTest {
             .save(any());
         verify(poolRequestRepository, times(1))
             .saveAndFlush(any());
-        verify(jurorHistoryRepository, times(jurorNumbers.size()))
-            .save(any());
+
+        verify(jurorHistoryService, times(jurorNumbers.size()))
+            .createReassignPoolMemberHistory(any(), any(), any());
 
     }
 
@@ -659,8 +659,8 @@ public class JurorManagementServiceImplTest {
             .save(any());
         verify(poolRequestRepository, times(1))
             .saveAndFlush(any());
-        verify(jurorHistoryRepository, times(jurorNumbers.size()))
-            .save(any());
+        verify(jurorHistoryService, times(jurorNumbers.size()))
+            .createReassignPoolMemberHistory(any(), any(), any());
     }
 
     @Test
@@ -746,8 +746,8 @@ public class JurorManagementServiceImplTest {
             .save(any());
         verify(poolRequestRepository, times(1))
             .saveAndFlush(any());
-        verify(jurorHistoryRepository, times(2))
-            .save(any());
+        verify(jurorHistoryService, times(2))
+            .createReassignPoolMemberHistory(any(), any(), any());
     }
 
     @Test
@@ -795,8 +795,7 @@ public class JurorManagementServiceImplTest {
             .save(any());
         verify(poolRequestRepository, never())
             .saveAndFlush(any());
-        verify(jurorHistoryRepository, never())
-            .save(any());
+        verifyNoInteractions(jurorHistoryService);
     }
 
     @Test
@@ -842,8 +841,7 @@ public class JurorManagementServiceImplTest {
             .save(any());
         verify(poolRequestRepository, never())
             .saveAndFlush(any());
-        verify(jurorHistoryRepository, never())
-            .save(any());
+        verifyNoInteractions(jurorHistoryService);
     }
 
     @Test
@@ -891,8 +889,7 @@ public class JurorManagementServiceImplTest {
             .save(any());
         verify(poolRequestRepository, never())
             .saveAndFlush(any());
-        verify(jurorHistoryRepository, never())
-            .save(any());
+        verifyNoInteractions(jurorHistoryService);
     }
 
     @Test
@@ -947,8 +944,7 @@ public class JurorManagementServiceImplTest {
             .save(any());
         verify(poolRequestRepository, never())
             .saveAndFlush(any());
-        verify(jurorHistoryRepository, never())
-            .save(any());
+        verifyNoInteractions(jurorHistoryService);
     }
 
     @Test
@@ -1003,8 +999,7 @@ public class JurorManagementServiceImplTest {
             .save(any());
         verify(poolRequestRepository, never())
             .saveAndFlush(any());
-        verify(jurorHistoryRepository, never())
-            .save(any());
+        verifyNoInteractions(jurorHistoryService);
     }
 
     @Test
@@ -1057,8 +1052,7 @@ public class JurorManagementServiceImplTest {
             .save(any());
         verify(poolRequestRepository, never())
             .saveAndFlush(any());
-        verify(jurorHistoryRepository, never())
-            .save(any());
+        verifyNoInteractions(jurorHistoryService);
     }
 
     @Test
@@ -1114,8 +1108,7 @@ public class JurorManagementServiceImplTest {
             .save(any());
         verify(poolRequestRepository, never())
             .saveAndFlush(any());
-        verify(jurorHistoryRepository, never())
-            .save(any());
+        verifyNoInteractions(jurorHistoryService);
     }
 
     @Test
@@ -1192,8 +1185,7 @@ public class JurorManagementServiceImplTest {
             .save(any());
         verify(poolRequestRepository, times(1))
             .saveAndFlush(any());
-        verify(jurorHistoryRepository, never())
-            .save(any());
+        verifyNoInteractions(jurorHistoryService);
 
     }
 
@@ -1270,8 +1262,7 @@ public class JurorManagementServiceImplTest {
             .save(any());
         verify(poolRequestRepository, times(1))
             .saveAndFlush(any());
-        verify(jurorHistoryRepository, never())
-            .save(any());
+        verifyNoInteractions(jurorHistoryService);
     }
 
     @Test
@@ -1346,8 +1337,7 @@ public class JurorManagementServiceImplTest {
             .save(any());
         verify(poolRequestRepository, times(1))
             .saveAndFlush(any());
-        verify(jurorHistoryRepository, never())
-            .save(any());
+        verifyNoInteractions(jurorHistoryService);
 
     }
 
@@ -1396,8 +1386,7 @@ public class JurorManagementServiceImplTest {
             .save(any());
         verify(poolRequestRepository, never())
             .saveAndFlush(any());
-        verify(jurorHistoryRepository, never())
-            .save(any());
+        verifyNoInteractions(jurorHistoryService);
     }
 
     @Test

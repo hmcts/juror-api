@@ -376,7 +376,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
             // check if pool member is disqualified on selection
             if (Objects.equals(jurorPool.getStatus(), IJurorStatus.DISQUALIFIED)) {
                 jurorHistBuilder.historyCode(HistoryCodeMod.DISQUALIFY_POOL_MEMBER);
-                jurorHistBuilder.otherInformation(HistoryCodeMod.DISQUALIFY_POOL_MEMBER.getDescription());
+                jurorHistBuilder.otherInformationRef(HistoryCodeMod.DISQUALIFY_POOL_MEMBER.getCode());
             } else {
                 jurorHistBuilder.historyCode(HistoryCodeMod.PRINT_SUMMONS);
             }

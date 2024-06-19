@@ -55,6 +55,7 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
     private final JurorHistoryRepository jurorHistoryRepository;
     @NonNull
     private final PrintDataService printDataService;
+    private final JurorHistoryService jurorHistoryService;
 
 
     @Override
@@ -142,7 +143,8 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
                 .historyCode(HistoryCodeMod.NON_DEFERRED_LETTER)
                 .createdBy(payload.getLogin())
                 .poolNumber(jurorPool.getPoolNumber())
-                .otherInformation("Deferral Denied - " + deferralRequestDto.getDeferralReason())
+                .otherInformation("Deferral Denied")
+                .otherInformationRef(deferralRequestDto.getDeferralReason())
                 .build());
         }
     }
@@ -191,14 +193,7 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
             printDataService.printDeferralLetter(jurorPool);
 
             // update Juror History - create deferral granted letter event
-            jurorHistoryRepository.save(JurorHistory.builder()
-                .jurorNumber(jurorPool.getJurorNumber())
-                .dateCreated(LocalDateTime.now())
-                .historyCode(HistoryCodeMod.DEFERRED_LETTER)
-                .createdBy(payload.getLogin())
-                .poolNumber(jurorPool.getPoolNumber())
-                .otherInformation("Deferral Letter Printed")
-                .build());
+            jurorHistoryService.createDeferredLetterHistory(jurorPool);
         }
     }
 

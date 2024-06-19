@@ -120,8 +120,7 @@ class JurorHistoryServiceImplTest {
         jurorHistoryService.createPoliceCheckDisqualifyHistory(jurorPool);
         assertStandardValuesSystem(jurorPool,
             new JurorHistoryPartHistoryJurorHistoryExpectedValues(HistoryCodeMod.POLICE_CHECK_FAILED, "Failed"),
-            new JurorHistoryPartHistoryJurorHistoryExpectedValues(HistoryCodeMod.DISQUALIFY_POOL_MEMBER,
-                "Disqualify - E")
+            new JurorHistoryPartHistoryJurorHistoryExpectedValues(HistoryCodeMod.DISQUALIFY_POOL_MEMBER, null)
         );
     }
 
@@ -152,7 +151,7 @@ class JurorHistoryServiceImplTest {
     @Test
     void createWithdrawHistory() {
         JurorPool jurorPool = createJurorPool();
-        jurorHistoryService.createWithdrawHistory(jurorPool, "Other Info");
+        jurorHistoryService.createWithdrawHistory(jurorPool, "Other Info","E");
         assertStandardValuesSystem(jurorPool, new JurorHistoryPartHistoryJurorHistoryExpectedValues(
             HistoryCodeMod.WITHDRAWAL_LETTER, "Other Info"));
     }

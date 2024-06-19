@@ -17,21 +17,19 @@ import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.summonsmanagement.DisqualifyJurorDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.summonsmanagement.DisqualifyReasonsDto;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
-import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCodeEnum;
-import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
-import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.AssignOnUpdateServiceMod;
+import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.service.SummonsReplyMergeService;
 
@@ -51,6 +49,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static uk.gov.hmcts.juror.api.moj.domain.IJurorStatus.DISQUALIFIED;
 
 @RunWith(SpringRunner.class)
@@ -65,7 +64,7 @@ public class DisqualifyJurorServiceImplTest {
     @Mock
     private JurorResponseAuditRepository jurorResponseAuditRepository;
     @Mock
-    private JurorHistoryRepository jurorHistoryRepository;
+    private JurorHistoryService jurorHistoryService;
     @Mock
     private DisqualificationLetterRepository disqualificationLetterRepository;
     @Mock
@@ -96,7 +95,7 @@ public class DisqualifyJurorServiceImplTest {
         verify(jurorPaperResponseRepository, never()).findById(any());
         verify(jurorDigitalResponseRepository, never()).findByJurorNumber(any());
         verify(jurorResponseAuditRepository, never()).save(any());
-        verify(jurorHistoryRepository, never()).save(any());
+        verifyNoInteractions(jurorHistoryService);
         verify(disqualificationLetterRepository, never()).save(any());
         verify(assignOnUpdateService, never()).assignToCurrentLogin(any(), any());
 
@@ -116,7 +115,7 @@ public class DisqualifyJurorServiceImplTest {
         verify(jurorPaperResponseRepository, never()).findById(any());
         verify(jurorDigitalResponseRepository, never()).findByJurorNumber(any());
         verify(jurorResponseAuditRepository, never()).save(any());
-        verify(jurorHistoryRepository, never()).save(any());
+        verifyNoInteractions(jurorHistoryService);
         verify(disqualificationLetterRepository, never()).save(any());
         verify(assignOnUpdateService, never()).assignToCurrentLogin(any(), any());
 
@@ -199,7 +198,7 @@ public class DisqualifyJurorServiceImplTest {
         verify(jurorPaperResponseRepository, never()).findById(any());
         verify(jurorDigitalResponseRepository, never()).findByJurorNumber(any());
         verify(jurorResponseAuditRepository, never()).save(any());
-        verify(jurorHistoryRepository, never()).save(any());
+        verifyNoInteractions(jurorHistoryService);
         verify(disqualificationLetterRepository, never()).save(any());
         verify(assignOnUpdateService, never()).assignToCurrentLogin(any(), any());
 
@@ -217,9 +216,6 @@ public class DisqualifyJurorServiceImplTest {
             ArgumentCaptor.forClass(PaperResponse.class);
         final ArgumentCaptor<String> userCaptor = ArgumentCaptor.forClass(String.class);
         final ArgumentCaptor<JurorPool> jurorPoolEntityCaptor = ArgumentCaptor.forClass(JurorPool.class);
-        final ArgumentCaptor<JurorHistory> jurorHistoryEntityCaptor = ArgumentCaptor.forClass(JurorHistory.class);
-        final ArgumentCaptor<PrintDataService> printDataServiceArgumentCaptor =
-            ArgumentCaptor.forClass(PrintDataService.class);
 
         BureauJwtPayload courtPayload = buildBureauPayload();
         final DisqualifyJurorDto disqualifyJurorDto = createDisqualifyJurorDtoPaperB();
@@ -234,7 +230,6 @@ public class DisqualifyJurorServiceImplTest {
         doReturn(jurorPoolList).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(anyString(), anyBoolean());
         doReturn(null).when(jurorPoolRepository).save(any(JurorPool.class));
-        doReturn(null).when(jurorHistoryRepository).save(any(JurorHistory.class));
         doReturn(null).when(disqualificationLetterRepository).save(any(DisqualificationLetter.class));
 
         disqualifyJurorService.disqualifyJuror(jurorNumber, disqualifyJurorDto, courtPayload);
@@ -263,13 +258,7 @@ public class DisqualifyJurorServiceImplTest {
         assertThat(capturedJurorPool.getNextDate()).isNull();
         assertThat(capturedJurorPool.getStatus().getStatus()).isEqualTo(DISQUALIFIED);
 
-        verify(jurorHistoryRepository, times(1)).save(jurorHistoryEntityCaptor.capture());
-        assertThat(jurorHistoryEntityCaptor.getValue().getJurorNumber()).isEqualTo(jurorNumber);
-        assertThat(jurorHistoryEntityCaptor.getValue().getHistoryCode()).isEqualTo(
-            HistoryCodeMod.DISQUALIFY_POOL_MEMBER);
-        assertThat(jurorHistoryEntityCaptor.getValue().getCreatedBy()).isEqualTo(BUREAU_USER);
-        assertThat(jurorHistoryEntityCaptor.getValue().getPoolNumber()).isEqualTo("416230101");
-        assertThat(jurorHistoryEntityCaptor.getValue().getOtherInformation()).isEqualTo("Code B");
+        verify(jurorHistoryService).createDisqualifyHistory(jurorPoolList.get(0),"B");
 
         // TODO - verify the printDataServiceArgumentCaptor and approach to letters for disqualification
 
@@ -287,7 +276,6 @@ public class DisqualifyJurorServiceImplTest {
         final ArgumentCaptor<String> jurorNumberCaptor = ArgumentCaptor.forClass(String.class);
         final ArgumentCaptor<String> userCaptor = ArgumentCaptor.forClass(String.class);
         final ArgumentCaptor<Boolean> isActiveCaptor = ArgumentCaptor.forClass(Boolean.class);
-        final ArgumentCaptor<JurorHistory> jurorHistoryEntityCaptor = ArgumentCaptor.forClass(JurorHistory.class);
         final ArgumentCaptor<DigitalResponse> jurorDigitalResponseEntityCaptor =
             ArgumentCaptor.forClass(DigitalResponse.class);
         final ArgumentCaptor<JurorPool> jurorPoolEntityCaptor = ArgumentCaptor.forClass(JurorPool.class);
@@ -309,7 +297,6 @@ public class DisqualifyJurorServiceImplTest {
         doReturn(jurorPoolList).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(anyString(), anyBoolean());
         doReturn(null).when(jurorPoolRepository).save(any(JurorPool.class));
-        doReturn(null).when(jurorHistoryRepository).save(any(JurorHistory.class));
         doReturn(null).when(disqualificationLetterRepository).save(any(DisqualificationLetter.class));
 
         disqualifyJurorService.disqualifyJuror(jurorNumber, disqualifyJurorDto, courtPayload);
@@ -344,16 +331,8 @@ public class DisqualifyJurorServiceImplTest {
         assertThat(capturedJurorPool.getNextDate()).isNull();
         assertThat(capturedJurorPool.getStatus().getStatus()).isEqualTo(DISQUALIFIED);
 
-        verify(jurorHistoryRepository, times(1)).save(jurorHistoryEntityCaptor.capture());
-        assertThat(jurorHistoryEntityCaptor.getValue().getJurorNumber()).isEqualTo(jurorNumber);
-        assertThat(jurorHistoryEntityCaptor.getValue().getHistoryCode()).isEqualTo(
-            HistoryCodeMod.DISQUALIFY_POOL_MEMBER);
-        assertThat(jurorHistoryEntityCaptor.getValue().getCreatedBy()).isEqualTo(BUREAU_USER);
-        assertThat(jurorHistoryEntityCaptor.getValue().getPoolNumber()).isEqualTo("416230101");
-        assertThat(jurorHistoryEntityCaptor.getValue().getOtherInformation()).isEqualTo("Code M");
-
+        verify(jurorHistoryService).createDisqualifyHistory(jurorPoolList.get(0),"N");
         // TODO - verify the printDataServiceArgumentCaptor and approach to letters for disqualification
-
         //Services or repository methods specific to Paper response
         verify(jurorPaperResponseRepository, never()).findById(anyString());
         verify(summonsReplyMergeService, never()).mergePaperResponse(any(PaperResponse.class), anyString());
@@ -382,7 +361,7 @@ public class DisqualifyJurorServiceImplTest {
 
         //Common
         verify(disqualificationLetterRepository, never()).save(any(DisqualificationLetter.class));
-        verify(jurorHistoryRepository, never()).save(any(JurorHistory.class));
+        verifyNoInteractions(jurorHistoryService);
         verify(jurorPoolRepository, never()).save(any(JurorPool.class));
         verify(jurorPoolRepository, times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(anyString(), anyBoolean());
@@ -413,7 +392,7 @@ public class DisqualifyJurorServiceImplTest {
 
         //Common
         verify(disqualificationLetterRepository, never()).save(any(DisqualificationLetter.class));
-        verify(jurorHistoryRepository, never()).save(any(JurorHistory.class));
+        verifyNoInteractions(jurorHistoryService);
         verify(jurorPoolRepository, never()).save(any(JurorPool.class));
         verify(jurorPoolRepository, times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(anyString(), anyBoolean());
@@ -444,7 +423,7 @@ public class DisqualifyJurorServiceImplTest {
 
         //Common
         verify(disqualificationLetterRepository, never()).save(any(DisqualificationLetter.class));
-        verify(jurorHistoryRepository, never()).save(any(JurorHistory.class));
+        verifyNoInteractions(jurorHistoryService);
         verify(jurorPoolRepository, never()).save(any(JurorPool.class));
         verify(jurorPoolRepository, times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(anyString(), anyBoolean());
@@ -479,7 +458,7 @@ public class DisqualifyJurorServiceImplTest {
 
         //Common
         // TODO add verification for printDataServiceArgumentCaptor
-        verify(jurorHistoryRepository, times(1)).save(any(JurorHistory.class));
+        verify(jurorHistoryService).createDisqualifyHistory(jurorPoolList.get(0),"N");
         verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorPoolRepository, times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(anyString(), anyBoolean());

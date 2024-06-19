@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
+import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
@@ -58,9 +59,11 @@ public interface JurorHistoryService {
 
     void createConfirmationLetterHistory(JurorPool jurorPool, String otherInfo);
 
-    void createWithdrawHistory(JurorPool jurorPool, String otherInfo);
+    void createWithdrawHistory(JurorPool jurorPool, String otherInfo, String code);
 
     void createPostponementLetterHistory(JurorPool jurorPool, String otherInfo);
+
+    void createWithdrawHistoryUser(JurorPool jurorPool, String otherInfo, String code);
 
     void createIdentityConfirmedHistory(JurorPool jurorPool);
 
@@ -75,4 +78,13 @@ public interface JurorHistoryService {
     void createReturnFromPanelHistory(JurorPool jurorPool, Panel panelMember);
 
     void createUndeliveredSummonsHistory(JurorPool jurorPool);
+
+    void createDisqualifyHistory(JurorPool jurorPool, String code);
+
+    void createReassignPoolMemberHistory(JurorPool sourceJurorPool, String targetPoolNumber,
+                                         CourtLocation receivingCourtLocation);
+
+    void createNonExcusedLetterHistory(JurorPool jurorPool, String refusedExcusal);
+
+    void createExcusedLetter(JurorPool jurorPool);
 }

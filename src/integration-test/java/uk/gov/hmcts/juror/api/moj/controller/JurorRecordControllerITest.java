@@ -3826,8 +3826,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber));
             jurorHistoryList.sort(Comparator.comparing(JurorHistory::getHistoryCode));
             verifyStandardJurorHistory(jurorPool, jurorHistoryList,
-                new JurorHistoryExpectedValues("RRES", "Confirmation Letter Auto"),
-                new JurorHistoryExpectedValues("POLG", "Passed")
+                new JurorHistoryExpectedValues("RRES", "Confirmation Letter Auto", null, null),
+                new JurorHistoryExpectedValues("POLG", "Passed", null, null)
             );
             verifyBulkPrintData(jurorNumber, FormCode.ENG_CONFIRMATION.getCode());
         }
@@ -3879,9 +3879,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             verifyStandardJurorHistory(jurorPool,
                 jurorHistoryList,
-                new JurorHistoryExpectedValues("POLF", "Failed"),
-                new JurorHistoryExpectedValues("PDIS", "Disqualify - E"),
-                new JurorHistoryExpectedValues("RDIS", "Withdrawal Letter Auto")
+                new JurorHistoryExpectedValues("POLF", "Failed", null, null),
+                new JurorHistoryExpectedValues("PDIS", null, null, "E"),
+                new JurorHistoryExpectedValues("RDIS", "Withdrawal Letter Auto", null, "E")
             );
             verifyBulkPrintData(jurorNumber, FormCode.ENG_WITHDRAWAL.getCode());
         }
@@ -3970,7 +3970,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
             JurorHistory jurorHistory = jurorHistoryList.get(0);
             verifyStandardJurorHistory(jurorPool, List.of(jurorHistory),
-                new JurorHistoryExpectedValues("POLG", "Unchecked - timed out")
+                new JurorHistoryExpectedValues("POLG", "Unchecked - timed out", null, null)
             );
             verifyBulkPrintData(jurorNumber, FormCode.ENG_CONFIRMATION.getCode());
         }
@@ -5706,13 +5706,17 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 "History Code must match");
             assertEquals(expectedValue.info, jurorHistory.getOtherInformation(),
                 "Info must match");
+            assertEquals(expectedValue.date, jurorHistory.getOtherInformationDate(),
+                "Other info Date must match");
+            assertEquals(expectedValue.ref, jurorHistory.getOtherInformationRef(),
+                "Other info Ref must match");
             assertThat(jurorHistory.getDateCreated())
                 .as("Date Part must match")
                 .isEqualToIgnoringHours(LocalDateTime.now());
         }
     }
 
-    private record JurorHistoryExpectedValues(String historyCode, String info) {
+    private record JurorHistoryExpectedValues(String historyCode, String info, LocalDate date, String ref) {
     }
 
     private String initPayloadWithStaffRank(String owner, String username, UserType userType,

@@ -1581,8 +1581,9 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
             hist.getHistoryCode().equals(HistoryCodeMod.REASSIGN_POOL_MEMBER)).findFirst().orElse(null);
         assertThat(jurorHistory).isNotNull();
 
-        String expectedHistoryInfo = "To " + targetPoolNumber + " " + targetCourt.getName();
-        assertThat(jurorHistory.getOtherInformation()).isEqualTo(expectedHistoryInfo);
+
+        assertThat(jurorHistory.getOtherInformation()).isEqualTo(targetCourt.getNameWithLocCode());
+        assertThat(jurorHistory.getOtherInformationRef()).isEqualTo(targetPoolNumber);
 
         // verify confirm letter has been queued for bulk print
         List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findAll();

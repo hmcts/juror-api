@@ -17,17 +17,15 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorManagementResponseDto
 import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.ReassignPoolMembersResultDto;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
-import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
-import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
-import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.service.GeneratePoolNumberService;
+import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.PoolMemberSequenceService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
@@ -36,7 +34,6 @@ import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -60,8 +57,6 @@ public class JurorManagementServiceImpl implements JurorManagementService {
     @NonNull
     private final JurorStatusRepository jurorStatusRepository;
     @NonNull
-    private final JurorHistoryRepository jurorHistoryRepository;
-    @NonNull
     private final GeneratePoolNumberService generatePoolNumberService;
     @NonNull
     private final PoolMemberSequenceService poolMemberSequenceService;
@@ -69,6 +64,8 @@ public class JurorManagementServiceImpl implements JurorManagementService {
     private final ResponseInspector responseInspector;
     @NonNull
     private final PrintDataService printDataService;
+
+    private final JurorHistoryService jurorHistoryService;
 
 
     @Override
@@ -160,14 +157,8 @@ public class JurorManagementServiceImpl implements JurorManagementService {
                 updateSourceJurorPool(sourceJurorPool, currentUser);
 
                 // add juror history event to old pool member
-                jurorHistoryRepository.save(JurorHistory.builder()
-                    .jurorNumber(jurorNumber)
-                    .poolNumber(sourcePoolNumber)
-                    .dateCreated(LocalDateTime.now())
-                    .createdBy(currentUser)
-                    .historyCode(HistoryCodeMod.REASSIGN_POOL_MEMBER)
-                    .otherInformation(String.format("To %s %s", targetPoolNumber, receivingCourtLocation.getName()))
-                    .build());
+                jurorHistoryService.createReassignPoolMemberHistory(sourceJurorPool, targetPoolNumber,
+                    receivingCourtLocation);
 
                 // queue a summons confirmation letter (Bureau only!)
                 if (JurorDigitalApplication.JUROR_OWNER.equals(payload.getOwner())) {
@@ -202,7 +193,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
     }
 
     private JurorPool createReassignedJurorPool(JurorPool sourceJurorPool, CourtLocation receivingCourtLocation,
-                                           PoolRequest targetPool, String currentUser) {
+                                                PoolRequest targetPool, String currentUser) {
         log.trace("Enter createReassignedJurorPool");
         JurorPool newTargetJurorPool = new JurorPool();
 
@@ -356,14 +347,8 @@ public class JurorManagementServiceImpl implements JurorManagementService {
                 updateSourceJurorPoolTransfer(sourceJurorPool, currentUser);
 
                 // add history event to juror
-                jurorHistoryRepository.save(JurorHistory.builder()
-                    .jurorNumber(jurorNumber)
-                    .poolNumber(sourcePoolNumber)
-                    .dateCreated(LocalDateTime.now())
-                    .createdBy(currentUser)
-                    .historyCode(HistoryCodeMod.REASSIGN_POOL_MEMBER)
-                    .otherInformation(String.format("To %s %s", targetPoolNumber, receivingCourtLocation.getName()))
-                    .build());
+                jurorHistoryService.createReassignPoolMemberHistory(sourceJurorPool, targetPoolNumber,
+                    receivingCourtLocation);
 
                 successfulTransferCount++;
             } catch (MojException exception) {
