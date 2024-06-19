@@ -87,4 +87,8 @@ public interface JurorHistoryService {
     void createNonExcusedLetterHistory(JurorPool jurorPool, String refusedExcusal);
 
     void createExcusedLetter(JurorPool jurorPool);
+
+    void createPoolEditHistory(JurorPool updatedPool);
+
+    void createAwaitingFurtherInformationHistory(JurorPool jurorPool, String missingInformation);
 }

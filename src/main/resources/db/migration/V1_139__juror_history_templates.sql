@@ -28,7 +28,7 @@ update juror_mod.t_history_code
 set template = E'{other_information}'
 where history_code in
       ('CHID', 'PDET', 'RESP', 'RNOT', 'PDEF', 'PEXC', 'RCER', 'POLA', 'POLC', 'POLD', 'POLE', 'POLF', 'POLG', 'POLI',
-       'POLX');
+       'POLX', 'PFTA', 'AUTH', 'PUND', 'RSHC', 'RSUM', 'RRES', 'RNRE', 'AWFI', 'RFTA');
 
 update juror_mod.t_history_code
 set template = E'{other_information}\nDeferral Code {other_info_reference}'
@@ -78,3 +78,7 @@ where history_code in ('REXC');
 update juror_mod.t_history_code
 set template = E'Date {other_info_date:d MMM yyyy}\n{other_info_reference} years\n{other_information}'
 where history_code in ('REXE');
+
+update juror_mod.t_history_code
+set template = E'Postponement Date {other_info_date:d MMM yyyy}\nDeferral code: {other_info_reference}\n{other_information}'
+where history_code in ('RPST');

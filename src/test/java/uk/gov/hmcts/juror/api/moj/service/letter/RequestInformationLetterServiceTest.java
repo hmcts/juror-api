@@ -18,9 +18,9 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.MissingInformation;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
-import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.letter.RequestLetterRepository;
+import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.service.SummonsReplyStatusUpdateService;
 
@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -38,6 +39,7 @@ import static org.mockito.Mockito.matches;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static uk.gov.hmcts.juror.api.moj.enumeration.letter.MissingInformation.buildMissingInformationString;
 
 @SuppressWarnings("PMD.ExcessiveImports")
@@ -53,7 +55,7 @@ public class RequestInformationLetterServiceTest {
     @Mock
     private PrintDataService printDataService;
     @Mock
-    private JurorHistoryRepository jurorHistoryRepository;
+    private JurorHistoryService jurorHistoryService;
 
     @InjectMocks
     RequestInformationLetterServiceImpl requestInformationLetterService;
@@ -89,7 +91,8 @@ public class RequestInformationLetterServiceTest {
         verify(jurorPoolRepository, times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
         verify(printDataService, times(1)).printRequestInfoLetter(any(), any());
-        verify(jurorHistoryRepository, times(1)).save(any());
+        verify(jurorHistoryService, times(1))
+            .createAwaitingFurtherInformationHistory(eq(jurorPool), any());
         verify(summonsReplyStatusUpdateService, times(1))
             .updateDigitalJurorResponseStatus(jurorNumber, ProcessingStatus.AWAITING_CONTACT, payload);
     }
@@ -118,7 +121,7 @@ public class RequestInformationLetterServiceTest {
         verify(jurorPoolRepository, never())
             .findByJurorJurorNumberAndIsActive(jurorNumber, true);
         verify(printDataService, never()).printRequestInfoLetter(any(), any());
-        verify(jurorHistoryRepository, never()).save(any());
+        verifyNoInteractions(jurorHistoryService);
         verify(summonsReplyStatusUpdateService, never())
             .updateJurorResponseStatus(jurorNumber, ProcessingStatus.AWAITING_CONTACT, payload);
     }
@@ -154,7 +157,9 @@ public class RequestInformationLetterServiceTest {
         verify(printDataService, times(1)).printRequestInfoLetter(
             any(),
             matches(buildMissingInformationString(additionalInformationDto.getMissingInformation(),true)));
-        verify(jurorHistoryRepository, times(1)).save(any());
+
+        verify(jurorHistoryService, times(1))
+            .createAwaitingFurtherInformationHistory(eq(jurorPool), any());
 
         verify(summonsReplyStatusUpdateService, times(1))
             .updateJurorResponseStatus(jurorNumber, ProcessingStatus.AWAITING_CONTACT, payload);

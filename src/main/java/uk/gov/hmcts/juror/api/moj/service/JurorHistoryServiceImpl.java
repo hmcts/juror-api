@@ -320,6 +320,19 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
             jurorPool.getJuror().getExcusalCode());
     }
 
+    @Override
+    public void createPoolEditHistory(JurorPool jurorPool) {
+        registerHistoryLoginUserAdditionalInfo(jurorPool,
+            HistoryCodeMod.POOL_EDIT,
+            "Updated notes", null, null);
+    }
+
+    @Override
+    public void createAwaitingFurtherInformationHistory(JurorPool jurorPool, String missingInformation) {
+        registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.AWAITING_FURTHER_INFORMATION,
+            missingInformation, null, null);
+    }
+
     public void createPostponementLetterHistory(JurorPool jurorPool, String confirmationLetter) {
         if (jurorPool.getDeferralDate() == null || !jurorPool.getDeferralCode().equals("P")) {
             throw new MojException.InternalServerError("A postponed juror_pool record should exist for "

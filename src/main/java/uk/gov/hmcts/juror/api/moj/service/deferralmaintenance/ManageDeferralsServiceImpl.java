@@ -382,8 +382,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                 setupDeferralEntry(request, auditorUsername, jurorPool);
             }
 
-            updateJurorHistory(jurorPool, jurorPool.getPoolNumber(), auditorUsername, "",
-                HistoryCodeMod.POSTPONED_LETTER);
+            jurorHistoryService.createPostponementLetterHistory(jurorPool,"");
 
             if (payload.getUserType().equals(UserType.BUREAU)) {
                 printPostponementLetter(payload.getOwner(), jurorPool);

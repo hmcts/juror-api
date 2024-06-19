@@ -22,17 +22,14 @@ import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
 import uk.gov.hmcts.juror.api.moj.domain.IContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
-import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
-import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.repository.ContactCodeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactLogRepository;
-import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
@@ -40,6 +37,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjust
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.ReasonableAdjustmentsRepository;
+import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
 import java.lang.reflect.Field;
@@ -97,11 +95,9 @@ import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.TITLE;
 public class ResponseUpdateServiceImpl implements ResponseUpdateService {
     private final ContactCodeRepository contactCodeRepository;
     static final String HASH_SALT = "445NlwAglWA78Vh9DKbVwN5vPHsvy2kA";
-    public static final String UPDATED_NOTES = "Updated notes";
     private static final String MESSAGE = "User {} applied {} total changes to response {}";
     private static final String OTHER_1 = "Other";
     private final JurorPoolRepository jurorRepository;
-    private final JurorHistoryRepository partHistRepository;
     private final ContactLogRepository phoneLogRepository;
     private final JurorDigitalResponseRepositoryMod responseRepository;
     private final ChangeLogRepository changeLogRepository;
@@ -112,6 +108,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
     private final JurorResponseCjsEmploymentRepositoryMod cjsRepository;
     private final AssignOnUpdateService assignOnUpdateService;
     private final JurorResponseAuditRepositoryMod responseAuditRepository;
+    private final JurorHistoryService jurorHistoryService;
 
 
     @Override
@@ -158,13 +155,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
                 }
 
                 // audit the change to the notes column
-                partHistRepository.save(JurorHistory.builder()
-                    .createdBy(auditUser)
-                    .poolNumber(updatedPool.getPoolNumber())
-                    .otherInformation(UPDATED_NOTES)
-                    .historyCode(HistoryCodeMod.POOL_EDIT)
-                    .jurorNumber(updatedPool.getJurorNumber())
-                    .build());
+                jurorHistoryService.createPoolEditHistory(updatedPool);
             } else {
                 log.debug("Note failed hash comparison.");
                 if (log.isTraceEnabled()) {

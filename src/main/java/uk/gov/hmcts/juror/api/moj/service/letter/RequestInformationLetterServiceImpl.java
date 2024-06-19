@@ -9,14 +9,12 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.AdditionalInformationDto;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
-import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
-import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.MissingInformation;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
-import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.service.SummonsReplyStatusUpdateService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
@@ -31,14 +29,10 @@ import java.util.List;
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class RequestInformationLetterServiceImpl implements RequestInformationLetterService {
 
-    @Autowired
     private final JurorPoolRepository jurorPoolRepository;
-    @Autowired
     private final SummonsReplyStatusUpdateService summonsReplyStatusUpdateService;
-    @Autowired
     private final PrintDataService printDataService;
-    @Autowired
-    private final JurorHistoryRepository jurorHistoryRepository;
+    private final JurorHistoryService jurorHistoryService;
 
     @Override
     @Transactional
@@ -67,15 +61,8 @@ public class RequestInformationLetterServiceImpl implements RequestInformationLe
                 welshMapping);
 
         printDataService.printRequestInfoLetter(jurorPool, missingInformation);
-        JurorHistory jurorHistory = JurorHistory.builder()
-            .historyCode(HistoryCodeMod.AWAITING_FURTHER_INFORMATION)
-            .jurorNumber(juror.getJurorNumber())
-            .poolNumber(jurorPool.getPoolNumber())
-            .createdBy(owner)
-            .otherInformation(missingInformation)
-            .build();
+        jurorHistoryService.createAwaitingFurtherInformationHistory(jurorPool, missingInformation);
 
-        jurorHistoryRepository.save(jurorHistory);
 
         // update the response status
         if (replyMethod.equals(ReplyMethod.PAPER)) {
