@@ -82,6 +82,7 @@ public class PoolStatisticsServiceImpl implements PoolStatisticsService {
         CourtLocation courtLocation = poolRequest.getCourtLocation();
         poolDetails.setCourtName(WordUtils.capitalizeFully(courtLocation.getName()));
         poolDetails.setCourtLocationCode(courtLocation.getLocCode());
+        poolDetails.setPoolType(poolRequest.getPoolType().getDescription());
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE dd MMM yyyy");
         poolDetails.setCourtStartDate(poolRequest.getReturnDate().format(formatter));
