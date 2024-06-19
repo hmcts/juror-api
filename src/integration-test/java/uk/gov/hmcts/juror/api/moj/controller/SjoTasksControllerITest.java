@@ -32,6 +32,7 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.net.URI;
 import java.util.Collections;
@@ -102,8 +103,11 @@ public class SjoTasksControllerITest extends AbstractIntegrationTest {
 
         @Test
         void positiveTypical() {
+            final String jurorNumber = "100000001";
+            final String poolNumber = "415240101";
+
             setAuthorization("COURT_USER", "415", UserType.COURT, Role.SENIOR_JUROR_OFFICER);
-            JurorNumberListDto dto = createDto("123456789");
+            JurorNumberListDto dto = createDto(jurorNumber);
             ResponseEntity<Void> response =
                 restTemplate.exchange(
                     new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), Void.class);
@@ -112,15 +116,15 @@ public class SjoTasksControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
 
             JurorPool jurorPool =
-                jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(JUROR_NUMBER, POOL_NUMBER);
+                jurorPoolRepository.findByJurorJurorNumberAndIsActiveAndOwner(jurorNumber, true, "415");
             assertEquals(IJurorStatus.RESPONDED, jurorPool.getStatus().getStatus(),
                 "Juror pool status should be responded");
 
-            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(JUROR_NUMBER);
+            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
             assertEquals(1, jurorHistories.size(), "Should only be one history entry");
             JurorHistory jurorHistory = jurorHistories.get(0);
-            assertEquals(POOL_NUMBER, jurorHistory.getPoolNumber(), "Pool number should match");
-            assertEquals(JUROR_NUMBER, jurorHistory.getJurorNumber(), "Juror number should match");
+            assertEquals(poolNumber, jurorHistory.getPoolNumber(), "Pool number should match");
+            assertEquals(jurorNumber, jurorHistory.getJurorNumber(), "Juror number should match");
             assertEquals("COURT_USER", jurorHistory.getCreatedBy(), "User id should match");
             assertEquals(HistoryCodeMod.FAILED_TO_ATTEND, jurorHistory.getHistoryCode(), "History code should match");
             assertEquals("FTA status removed", jurorHistory.getOtherInformation(),
@@ -142,8 +146,8 @@ public class SjoTasksControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        void negativeNotFailedToRespond() {
-            final String jurorNumber = "641500004";
+        void negativeNotFailedToAttend() {
+            final String jurorNumber = "100000002";
             setAuthorization("COURT_USER", "415", UserType.COURT, Role.SENIOR_JUROR_OFFICER);
             JurorNumberListDto dto = createDto(jurorNumber);
 
@@ -155,7 +159,8 @@ public class SjoTasksControllerITest extends AbstractIntegrationTest {
                 JUROR_STATUS_MUST_BE_FAILED_TO_ATTEND
             );
 
-            JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, POOL_NUMBER);
+            JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndIsActiveAndOwner(jurorNumber, true,
+                "415");
             assertEquals(IJurorStatus.RESPONDED, jurorPool.getStatus().getStatus(),
                 "Juror pool status should not change");
 
