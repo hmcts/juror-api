@@ -3,9 +3,12 @@ package uk.gov.hmcts.juror.api.moj.domain;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
@@ -17,6 +20,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.validator.constraints.Length;
+import uk.gov.hmcts.juror.api.juror.domain.THistoryCode;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeConverter;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 
@@ -56,6 +60,11 @@ public class JurorHistory implements Serializable {
     @Convert(converter = HistoryCodeConverter.class)
     private HistoryCodeMod historyCode;
 
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "history_code", updatable = false, insertable = false)
+    private THistoryCode history;
+
     @NotNull
     @Column(name = "date_created")
     private LocalDateTime dateCreated;
@@ -86,9 +95,16 @@ public class JurorHistory implements Serializable {
     @Column(name = "other_info_reference")
     private String otherInformationRef;
 
+
+    @Column(name = "other_information_support")
+    private String otherInformationSupport;
+
     @Column(name = "pool_number")
     @Length(max = 9)
     private String poolNumber;
+
+    @Column(name = "migrated")
+    private Boolean migrated;
 
     @PrePersist
     public void prePersist() {
@@ -105,4 +121,7 @@ public class JurorHistory implements Serializable {
         this.poolNumber = poolNumber;
     }
 
+    public boolean isMigrated() {
+        return migrated != null && migrated;
+    }
 }

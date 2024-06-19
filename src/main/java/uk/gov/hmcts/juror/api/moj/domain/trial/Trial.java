@@ -49,6 +49,7 @@ public class Trial implements Serializable {
     @Column(name = "trial_number")
     @Length(max = 16)
     @NotBlank
+    @NotNull
     private String trialNumber;
 
     @Id

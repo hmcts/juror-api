@@ -2479,6 +2479,13 @@ class JurorExpenseServiceTest {
 
             doNothing().when(jurorExpenseService).approveAppearance(any());
             doNothing().when(jurorExpenseService).saveAppearancesWithExpenseRateIdUpdate(any());
+
+            JurorPool jurorPool = mock(JurorPool.class);
+            doReturn(List.of(jurorPool)).when(jurorPoolRepository)
+                .findByJurorJurorNumberAndIsActive(
+                TestConstants.VALID_JUROR_NUMBER, true);
+            when(jurorPool.getOwner()).thenReturn(TestConstants.VALID_COURT_LOCATION);
+            when(jurorPool.getCourt()).thenReturn(courtLocation);
             jurorExpenseService.approveExpenses(
                 TestConstants.VALID_COURT_LOCATION,
                 PaymentMethod.BACS,
@@ -2500,7 +2507,7 @@ class JurorExpenseServiceTest {
             verify(jurorExpenseService, times(1))
                 .saveAppearancesWithExpenseRateIdUpdate(List.of(appearance1, appearance3));
             verify(jurorHistoryService, times(1))
-                .createExpenseApproveBacs(TestConstants.VALID_JUROR_NUMBER,
+                .createExpenseApproveBacs(jurorPool,
                     financialAuditDetails,
                     LocalDate.of(2023, 1, 2),
                     new BigDecimal("4.02"));
@@ -2575,6 +2582,12 @@ class JurorExpenseServiceTest {
                     List.of(appearance1, appearance3));
             doNothing().when(jurorExpenseService).approveAppearance(any());
             doNothing().when(jurorExpenseService).saveAppearancesWithExpenseRateIdUpdate(any());
+            JurorPool jurorPool = mock(JurorPool.class);
+
+            doReturn(List.of(jurorPool)).when(jurorPoolRepository).findByJurorJurorNumberAndIsActive(
+                TestConstants.VALID_JUROR_NUMBER, true);
+            when(jurorPool.getOwner()).thenReturn(TestConstants.VALID_COURT_LOCATION);
+            when(jurorPool.getCourt()).thenReturn(courtLocation);
 
             jurorExpenseService.approveExpenses(
                 TestConstants.VALID_COURT_LOCATION,
@@ -2597,7 +2610,7 @@ class JurorExpenseServiceTest {
             verify(jurorExpenseService, times(1))
                 .saveAppearancesWithExpenseRateIdUpdate(List.of(appearance1, appearance3));
             verify(jurorHistoryService, times(1))
-                .createExpenseApproveCash(TestConstants.VALID_JUROR_NUMBER,
+                .createExpenseApproveCash(jurorPool,
                     financialAuditDetails,
                     LocalDate.of(2023, 1, 2),
                     new BigDecimal("4.02"));
@@ -3948,11 +3961,14 @@ class JurorExpenseServiceTest {
                 .updateExpenseInternal(appearance3, dailyExpense3);
 
             verify(jurorHistoryService, times(1))
-                .createExpenseEditHistory(financialAuditDetails, appearance1);
+                .createExpenseEditHistory(financialAuditDetails, appearance1,
+                    FinancialAuditDetails.Type.FOR_APPROVAL_EDIT);
             verify(jurorHistoryService, times(1))
-                .createExpenseEditHistory(financialAuditDetails, appearance2);
+                .createExpenseEditHistory(financialAuditDetails, appearance2,
+                    FinancialAuditDetails.Type.FOR_APPROVAL_EDIT);
             verify(jurorHistoryService, times(1))
-                .createExpenseEditHistory(financialAuditDetails, appearance3);
+                .createExpenseEditHistory(financialAuditDetails, appearance3,
+                    FinancialAuditDetails.Type.FOR_APPROVAL_EDIT);
         }
 
         @Test

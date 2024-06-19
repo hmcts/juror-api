@@ -12,7 +12,6 @@ import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.DisqualifiedCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
-import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
@@ -20,12 +19,12 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
 import uk.gov.hmcts.juror.api.moj.domain.letter.DisqualificationLetterMod;
 import uk.gov.hmcts.juror.api.moj.repository.DisqualifiedCodeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.DisqualifyLetterModRepository;
-import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -39,6 +38,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -56,7 +56,7 @@ public class ResponseDisqualifyServiceImplTest {
     private JurorPoolRepository poolRepository;
 
     @Mock
-    private JurorHistoryRepository partHistRepository;
+    private JurorHistoryService jurorHistoryService;
 
     @Mock
     private DisqualifiedCodeRepository disqualifyCodeRepository;
@@ -144,7 +144,7 @@ public class ResponseDisqualifyServiceImplTest {
         verify(poolDetails).setNextDate(null);
         verify(poolRepository).save(poolDetails);
 
-        verify(partHistRepository).save(any(JurorHistory.class));
+        verify(jurorHistoryService).createDisqualifyHistory(poolDetails,disqualifyCode);
         verify(disqualificationLetterRepository).save(any(DisqualificationLetterMod.class));
     }
 
@@ -184,7 +184,8 @@ public class ResponseDisqualifyServiceImplTest {
             verify(poolDetails, times(0)).setNextDate(null);
             verify(poolRepository, times(0)).save(poolDetails);
 
-            verify(partHistRepository, times(0)).save(any(JurorHistory.class));
+
+            verifyNoInteractions(jurorHistoryService);
             verify(disqualificationLetterRepository, times(0)).save(any(DisqualificationLetterMod.class));
         }
     }
@@ -225,7 +226,7 @@ public class ResponseDisqualifyServiceImplTest {
             verify(poolDetails, times(0)).setNextDate(null);
             verify(poolRepository, times(0)).save(poolDetails);
 
-            verify(partHistRepository, times(0)).save(any(JurorHistory.class));
+            verifyNoInteractions(jurorHistoryService);
             verify(disqualificationLetterRepository, times(0)).save(any(DisqualificationLetterMod.class));
         }
     }

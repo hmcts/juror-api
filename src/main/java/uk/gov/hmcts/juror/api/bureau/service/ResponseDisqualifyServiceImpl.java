@@ -15,23 +15,20 @@ import uk.gov.hmcts.juror.api.bureau.exception.DisqualifyException;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.DisqualifiedCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
-import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
 import uk.gov.hmcts.juror.api.moj.domain.letter.DisqualificationLetterMod;
-import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.repository.DisqualifiedCodeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.DisqualifyLetterModRepository;
-import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,13 +41,12 @@ public class ResponseDisqualifyServiceImpl implements ResponseDisqualifyService 
     private final JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
     private final JurorPoolRepository detailsRepository;
     private final JurorStatusRepository jurorStatusRepository;
-    private final JurorHistoryRepository historyRepository;
     private final DisqualifiedCodeRepository disqualifyCodeRepository;
     private final DisqualifyLetterModRepository disqualificationLetterRepository;
     private final ResponseMergeService mergeService;
     private final EntityManager entityManager;
     private final AssignOnUpdateService assignOnUpdateService;
-
+    private final JurorHistoryService jurorHistoryService;
 
     @Override
     public List<ResponseDisqualifyController.DisqualifyCodeDto> getDisqualifyReasons()
@@ -138,33 +134,11 @@ public class ResponseDisqualifyServiceImpl implements ResponseDisqualifyService 
             detailsRepository.save(jurorDetails);
 
             // audit pool
-            JurorHistory history = new JurorHistory();
-            //history.setOwner("400");
-            history.setJurorNumber(jurorId);
-            history.setDateCreated(LocalDateTime.now());
-            history.setHistoryCode(HistoryCodeMod.DISQUALIFY_POOL_MEMBER);
-            history.setCreatedBy(login);
-            history.setPoolNumber(jurorDetails.getPoolNumber());
-            // Age disqualifications require a different OTHER_INFORMATION entry
-            if (DisCode.AGE.equalsIgnoreCase(disqualifyCodeDto.getDisqualifyCode())) {
-                // this is an age disqualification
-                history.setOtherInformation("Disqualify Code A");
-            } else {
-                history.setOtherInformation("Code " + disqualifyCodeDto.getDisqualifyCode());
-            }
-            historyRepository.save(history);
+            jurorHistoryService.createDisqualifyHistory(jurorDetails, disqualifyCodeDto.getDisqualifyCode());
 
             // Age disqualifications require a second PART_HIST entry
             if (DisCode.AGE.equalsIgnoreCase(disqualifyCodeDto.getDisqualifyCode())) {
-                // this is an age disqualification
-                history = new JurorHistory();
-                history.setJurorNumber(jurorId);
-                history.setDateCreated(LocalDateTime.now());
-                history.setCreatedBy(login);
-                history.setPoolNumber(jurorDetails.getPoolNumber());
-                history.setHistoryCode(HistoryCodeMod.WITHDRAWAL_LETTER);
-                history.setOtherInformation("Disqualify Letter Code A");
-                historyRepository.save(history);
+                jurorHistoryService.createWithdrawHistoryUser(jurorDetails,null,"A");
             }
 
             // disq_lett table entry

@@ -23,6 +23,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.validation.ResponseInspectorImpl;
 
 import java.time.LocalDate;
@@ -71,6 +72,8 @@ public class StraightThroughProcessorImplTest {
     @Mock
     private ResponseInspectorImpl responseInspector;
 
+    @Mock
+    private JurorHistoryService jurorHistoryService;
     @InjectMocks
     private StraightThroughProcessorImpl straightThroughProcessor;
 
@@ -236,7 +239,8 @@ public class StraightThroughProcessorImplTest {
         verify(jurorPool).setNextDate(null);
         verify(poolRepository).save(any(JurorPool.class));
 
-        verify(partHistRepository, times(2)).save(any(JurorHistory.class));
+        verify(partHistRepository, times(1)).save(any(JurorHistory.class));
+        verify(jurorHistoryService).createWithdrawHistory(jurorPool,null,"A");
 
         verify(disqualificationLetterRepository).save(any(DisqualificationLetterMod.class));
 
@@ -280,7 +284,8 @@ public class StraightThroughProcessorImplTest {
         verify(jurorPool).setNextDate(null);
         verify(poolRepository).save(any(JurorPool.class));
 
-        verify(partHistRepository, times(2)).save(any(JurorHistory.class));
+        verify(partHistRepository, times(1)).save(any(JurorHistory.class));
+        verify(jurorHistoryService).createWithdrawHistory(jurorPool,null,"A");
 
         verify(disqualificationLetterRepository).save(any(DisqualificationLetterMod.class));
 

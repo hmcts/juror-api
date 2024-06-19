@@ -20,7 +20,6 @@ import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResultConverter;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import javax.annotation.Nullable;
 
 /**
  * juror_mod.panel table entity.
@@ -38,7 +37,6 @@ public class Panel implements Serializable {
     @JoinColumn(name = "trial_number")
     @ManyToOne
     @Id
-    @Nullable
     private Trial trial;
 
     @JoinColumn(name = "juror_number")

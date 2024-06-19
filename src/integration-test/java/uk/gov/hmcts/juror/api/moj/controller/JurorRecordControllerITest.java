@@ -3481,12 +3481,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             staff.setCourts(Collections.singletonList("415"));
 
             final String courtJwt = mintBureauJwt(BureauJwtPayload.builder()
-                                         .userType(UserType.COURT)
-                                         .login("COURT_USER")
-                                         .owner("415")
-                                         .locCode("415")
-                                         .staff(staff)
-                                         .build());
+                .userType(UserType.COURT)
+                .login("COURT_USER")
+                .owner("415")
+                .locCode("415")
+                .staff(staff)
+                .build());
 
             courtHeaders = new HttpHeaders();
             courtHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
@@ -3498,8 +3498,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         void getJurorPayments() {
             ResponseEntity<JurorPaymentsResponseDto> response =
                 restTemplate.exchange(new RequestEntity<>(courtHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/200956973/payments")),
-                                      JurorPaymentsResponseDto.class);
+                        URI.create("/api/v1/moj/juror-record/200956973/payments")),
+                    JurorPaymentsResponseDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP GET request to be successful")
@@ -3513,11 +3513,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 .subsistence(BigDecimal.valueOf(5.71).setScale(2))
                 .totalPaid(BigDecimal.valueOf(101.34).setScale(2))
                 .data(List.of(JurorPaymentsResponseDto.PaymentDayDto.builder()
-                        .attendanceDate(LocalDate.of(2024,5,6))
+                        .attendanceDate(LocalDate.of(2024, 5, 6))
                         .attendanceAudit("P10011777")
                         .paymentAudit("F12")
-                        .datePaid(LocalDate.of(2024,5,15))
-                        .timePaid(LocalTime.of(18,15))
+                        .datePaid(LocalDate.of(2024, 5, 15))
+                        .timePaid(LocalTime.of(18, 15))
                         .travel(BigDecimal.valueOf(7.63).setScale(2))
                         .financialLoss(BigDecimal.valueOf(12.00).setScale(2))
                         .subsistence(BigDecimal.valueOf(0.00).setScale(2))
@@ -3526,11 +3526,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                         .totalPaid(BigDecimal.valueOf(19.63).setScale(2))
                         .build(),
                     JurorPaymentsResponseDto.PaymentDayDto.builder()
-                        .attendanceDate(LocalDate.of(2024,5,7))
+                        .attendanceDate(LocalDate.of(2024, 5, 7))
                         .attendanceAudit("P10012682")
                         .paymentAudit("F16")
-                        .datePaid(LocalDate.of(2024,5,15))
-                        .timePaid(LocalTime.of(18,29))
+                        .datePaid(LocalDate.of(2024, 5, 15))
+                        .timePaid(LocalTime.of(18, 29))
                         .travel(BigDecimal.valueOf(4.00).setScale(2))
                         .financialLoss(BigDecimal.valueOf(16.00).setScale(2))
                         .subsistence(BigDecimal.valueOf(0.00).setScale(2))
@@ -3539,11 +3539,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                         .totalPaid(BigDecimal.valueOf(20.00).setScale(2))
                         .build(),
                     JurorPaymentsResponseDto.PaymentDayDto.builder()
-                        .attendanceDate(LocalDate.of(2024,5,8))
+                        .attendanceDate(LocalDate.of(2024, 5, 8))
                         .attendanceAudit("P10013503")
                         .paymentAudit("F12")
-                        .datePaid(LocalDate.of(2024,5,15))
-                        .timePaid(LocalTime.of(18,15))
+                        .datePaid(LocalDate.of(2024, 5, 15))
+                        .timePaid(LocalTime.of(18, 15))
                         .travel(BigDecimal.valueOf(3.00).setScale(2))
                         .financialLoss(BigDecimal.valueOf(12.00).setScale(2))
                         .subsistence(BigDecimal.valueOf(5.71).setScale(2))
@@ -3552,11 +3552,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                         .totalPaid(BigDecimal.valueOf(20.71).setScale(2))
                         .build(),
                     JurorPaymentsResponseDto.PaymentDayDto.builder()
-                        .attendanceDate(LocalDate.of(2024,5,9))
+                        .attendanceDate(LocalDate.of(2024, 5, 9))
                         .attendanceAudit("P10014275")
                         .paymentAudit("F10")
-                        .datePaid(LocalDate.of(2024,5,14))
-                        .timePaid(LocalTime.of(18,13))
+                        .datePaid(LocalDate.of(2024, 5, 14))
+                        .timePaid(LocalTime.of(18, 13))
                         .travel(BigDecimal.valueOf(4.00).setScale(2))
                         .financialLoss(BigDecimal.valueOf(12.00).setScale(2))
                         .subsistence(BigDecimal.valueOf(0.00).setScale(2))
@@ -3565,11 +3565,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                         .totalPaid(BigDecimal.valueOf(16.00).setScale(2))
                         .build(),
                     JurorPaymentsResponseDto.PaymentDayDto.builder()
-                        .attendanceDate(LocalDate.of(2024,5,10))
+                        .attendanceDate(LocalDate.of(2024, 5, 10))
                         .attendanceAudit("P10014995")
                         .paymentAudit("F10")
-                        .datePaid(LocalDate.of(2024,5,14))
-                        .timePaid(LocalTime.of(18,13))
+                        .datePaid(LocalDate.of(2024, 5, 14))
+                        .timePaid(LocalTime.of(18, 13))
                         .travel(BigDecimal.valueOf(0.00).setScale(2))
                         .financialLoss(BigDecimal.valueOf(13.00).setScale(2))
                         .subsistence(BigDecimal.valueOf(0.00).setScale(2))
@@ -3578,11 +3578,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                         .totalPaid(BigDecimal.valueOf(13.00).setScale(2))
                         .build(),
                     JurorPaymentsResponseDto.PaymentDayDto.builder()
-                        .attendanceDate(LocalDate.of(2024,5,13))
+                        .attendanceDate(LocalDate.of(2024, 5, 13))
                         .attendanceAudit("P10016300")
                         .paymentAudit("F10")
-                        .datePaid(LocalDate.of(2024,5,14))
-                        .timePaid(LocalTime.of(18,13))
+                        .datePaid(LocalDate.of(2024, 5, 14))
+                        .timePaid(LocalTime.of(18, 13))
                         .travel(BigDecimal.valueOf(0.00).setScale(2))
                         .financialLoss(BigDecimal.valueOf(12.00).setScale(2))
                         .subsistence(BigDecimal.valueOf(0.00).setScale(2))
@@ -3597,8 +3597,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         void noJuror() {
             ResponseEntity<JurorPaymentsResponseDto> response =
                 restTemplate.exchange(new RequestEntity<>(courtHeaders, HttpMethod.GET,
-                                                          URI.create("/api/v1/moj/juror-record/200950000/payments")),
-                                      JurorPaymentsResponseDto.class);
+                        URI.create("/api/v1/moj/juror-record/200950000/payments")),
+                    JurorPaymentsResponseDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP GET request to fail")
@@ -3611,12 +3611,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             staff.setCourts(Collections.singletonList("417"));
 
             final String courtJwt = mintBureauJwt(BureauJwtPayload.builder()
-                                                      .userType(UserType.COURT)
-                                                      .login("COURT_USER")
-                                                      .owner("417")
-                                                      .locCode("417")
-                                                      .staff(staff)
-                                                      .build());
+                .userType(UserType.COURT)
+                .login("COURT_USER")
+                .owner("417")
+                .locCode("417")
+                .staff(staff)
+                .build());
 
             HttpHeaders otherCourtHeaders = new HttpHeaders();
             otherCourtHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
@@ -3625,7 +3625,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             ResponseEntity<JurorPaymentsResponseDto> response =
                 restTemplate.exchange(
                     new RequestEntity<>(otherCourtHeaders, HttpMethod.GET,
-                                        URI.create("/api/v1/moj/juror-record/200956973/payments")
+                        URI.create("/api/v1/moj/juror-record/200956973/payments")
                     ),
                     JurorPaymentsResponseDto.class
                 );
@@ -3641,7 +3641,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             ResponseEntity<JurorPaymentsResponseDto> response =
                 restTemplate.exchange(
                     new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                                        URI.create("/api/v1/moj/juror-record/200956973/payments")
+                        URI.create("/api/v1/moj/juror-record/200956973/payments")
                     ),
                     JurorPaymentsResponseDto.class
                 );
@@ -3659,8 +3659,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         void getJurorHistory() {
             ResponseEntity<JurorHistoryResponseDto> response =
                 restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                                                          URI.create("/api/v1/moj/juror-record/141500073/history")),
-                                      JurorHistoryResponseDto.class);
+                        URI.create("/api/v1/moj/juror-record/141500073/history")),
+                    JurorHistoryResponseDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP GET request to be successful")
@@ -3673,72 +3673,65 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                         .username("Court_user")
                         .dateCreated(LocalDateTime.of(2024, 6, 6, 15, 41, 20, 162_000_000))
                         .poolNumber("415240801")
-                        .otherInfo("Responded")
-                        .otherInfoDate(null)
-                        .otherInfoRef("")
+                        .details(List.of("Responded"))
                         .build(),
                     JurorHistoryResponseDto.JurorHistoryEntryDto.builder()
                         .description("Juror record updated")
                         .username("Court_user")
                         .dateCreated(LocalDateTime.of(2024, 6, 6, 15, 41, 20, 281_000_000))
                         .poolNumber("415240801")
-                        .otherInfo("Date Of Birth Changed")
-                        .otherInfoDate(null)
-                        .otherInfoRef("")
+                        .details(List.of("Date Of Birth Changed"))
                         .build(),
                     JurorHistoryResponseDto.JurorHistoryEntryDto.builder()
                         .description("Pool attendance confirmed")
                         .username("Court_user")
                         .dateCreated(LocalDateTime.of(2024, 6, 6, 15, 41, 57, 117_000_000))
                         .poolNumber("415240801")
-                        .otherInfo("P10000000")
-                        .otherInfoDate(null)
-                        .otherInfoRef("")
-                        .build(),
+                        .details(List.of("Attendance date 1 Jan 2024",
+                            "Pool attendance audit report P10000000"
+                        )).build(),
                     JurorHistoryResponseDto.JurorHistoryEntryDto.builder()
                         .description("Expenses submitted for approval")
                         .username("Court_user")
                         .dateCreated(LocalDateTime.of(2024, 6, 6, 15, 42, 18, 754_000_000))
                         .poolNumber("415240801")
-                        .otherInfo("£20.00")
-                        .otherInfoDate(LocalDate.of(2024, 6, 6))
-                        .otherInfoRef("F1")
+                        .details(List.of("Attendance date 6 Jun 2024",
+                            "Attendance audit report F1",
+                            "Total due £20.00"))
                         .build(),
                     JurorHistoryResponseDto.JurorHistoryEntryDto.builder()
                         .description("Expenses approved")
                         .username("MODCOURT")
                         .dateCreated(LocalDateTime.of(2024, 6, 7, 10, 15, 53, 433_000_000))
                         .poolNumber("")
-                        .otherInfo("£20.00")
-                        .otherInfoDate(LocalDate.of(2024, 6, 6))
-                        .otherInfoRef("F2")
+                        .details(List.of("Attendance date 6 Jun 2024",
+                            "Attendance audit report F2",
+                            "Total paid £20.00"))
                         .build(),
                     JurorHistoryResponseDto.JurorHistoryEntryDto.builder()
                         .description("Pool attendance confirmed")
                         .username("Court_user")
                         .dateCreated(LocalDateTime.of(2024, 6, 7, 10, 18, 7, 342_000_000))
                         .poolNumber("415240801")
-                        .otherInfo("P10000001")
-                        .otherInfoDate(null)
-                        .otherInfoRef("")
+                        .details(List.of("Attendance date 2 Jan 2024",
+                            "Pool attendance audit report P10000001"))
                         .build(),
                     JurorHistoryResponseDto.JurorHistoryEntryDto.builder()
                         .description("Expenses submitted for approval")
                         .username("Court_user")
                         .dateCreated(LocalDateTime.of(2024, 6, 7, 10, 18, 36, 476_000_000))
                         .poolNumber("415240801")
-                        .otherInfo("£5.00")
-                        .otherInfoDate(LocalDate.of(2024, 6, 7))
-                        .otherInfoRef("F3")
+                        .details(List.of("Attendance date 7 Jun 2024",
+                            "Attendance audit report F3",
+                            "Total due £5.00"))
                         .build(),
                     JurorHistoryResponseDto.JurorHistoryEntryDto.builder()
                         .description("Pool attendance confirmed")
                         .username("Court_user")
                         .dateCreated(LocalDateTime.of(2024, 6, 7, 10, 19, 0, 505_000_000))
                         .poolNumber("415240801")
-                        .otherInfo("P10000002")
-                        .otherInfoDate(null)
-                        .otherInfoRef("")
+                        .details(List.of("Attendance date 3 Jan 2024",
+                            "Pool attendance audit report P10000002"))
                         .build()))
                 .build().toString());
         }
@@ -3747,8 +3740,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         void noJuror() {
             ResponseEntity<JurorHistoryResponseDto> response =
                 restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                                                          URI.create("/api/v1/moj/juror-record/141500000/history")),
-                                      JurorHistoryResponseDto.class);
+                        URI.create("/api/v1/moj/juror-record/141500000/history")),
+                    JurorHistoryResponseDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP GET request to fail")
@@ -3761,12 +3754,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             staff.setCourts(Collections.singletonList("417"));
 
             final String courtJwt = mintBureauJwt(BureauJwtPayload.builder()
-                                                      .userType(UserType.COURT)
-                                                      .login("COURT_USER")
-                                                      .owner("417")
-                                                      .locCode("417")
-                                                      .staff(staff)
-                                                      .build());
+                .userType(UserType.COURT)
+                .login("COURT_USER")
+                .owner("417")
+                .locCode("417")
+                .staff(staff)
+                .build());
 
             HttpHeaders otherCourtHeaders = new HttpHeaders();
             otherCourtHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
@@ -3775,7 +3768,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             ResponseEntity<JurorHistoryResponseDto> response =
                 restTemplate.exchange(
                     new RequestEntity<>(otherCourtHeaders, HttpMethod.GET,
-                                        URI.create("/api/v1/moj/juror-record/141500073/payments")
+                        URI.create("/api/v1/moj/juror-record/141500073/payments")
                     ),
                     JurorHistoryResponseDto.class
                 );
@@ -3833,8 +3826,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber));
             jurorHistoryList.sort(Comparator.comparing(JurorHistory::getHistoryCode));
             verifyStandardJurorHistory(jurorPool, jurorHistoryList,
-                new JurorHistoryExpectedValues("RRES", "Confirmation Letter Auto"),
-                new JurorHistoryExpectedValues("POLG", "Passed")
+                new JurorHistoryExpectedValues("RRES", "Confirmation Letter Auto", null, null),
+                new JurorHistoryExpectedValues("POLG", "Passed", null, null)
             );
             verifyBulkPrintData(jurorNumber, FormCode.ENG_CONFIRMATION.getCode());
         }
@@ -3886,9 +3879,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             verifyStandardJurorHistory(jurorPool,
                 jurorHistoryList,
-                new JurorHistoryExpectedValues("POLF", "Failed"),
-                new JurorHistoryExpectedValues("PDIS", "Disqualify - E"),
-                new JurorHistoryExpectedValues("RDIS", "Withdrawal Letter Auto")
+                new JurorHistoryExpectedValues("POLF", "Failed", null, null),
+                new JurorHistoryExpectedValues("PDIS", null, null, "E"),
+                new JurorHistoryExpectedValues("RDIS", "Withdrawal Letter Auto", null, "E")
             );
             verifyBulkPrintData(jurorNumber, FormCode.ENG_WITHDRAWAL.getCode());
         }
@@ -3977,7 +3970,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
             JurorHistory jurorHistory = jurorHistoryList.get(0);
             verifyStandardJurorHistory(jurorPool, List.of(jurorHistory),
-                new JurorHistoryExpectedValues("POLG", "Unchecked - timed out")
+                new JurorHistoryExpectedValues("POLG", "Unchecked - timed out", null, null)
             );
             verifyBulkPrintData(jurorNumber, FormCode.ENG_CONFIRMATION.getCode());
         }
@@ -4115,7 +4108,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         @Test
         void negativeInvalidPayload() {
-            setAuthorization("COURT_USER", "414",  UserType.COURT);
+            setAuthorization("COURT_USER", "414", UserType.COURT);
             JurorNumberAndPoolNumberDto dto = createDto("INVALID", POOL_NUMBER);
             ResponseEntity<String> response =
                 restTemplate.exchange(
@@ -4135,7 +4128,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         @Test
         void negativeUnauthorised() {
-            setAuthorization("COURT_USER", "400",  UserType.BUREAU);
+            setAuthorization("COURT_USER", "400", UserType.BUREAU);
             JurorNumberAndPoolNumberDto dto = createDto(JUROR_NUMBER, POOL_NUMBER);
             ResponseEntity<String> response =
                 restTemplate.exchange(
@@ -4495,10 +4488,10 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
                 ResponseEntity<FilterableJurorDetailsResponseDto[]> responseEntity = triggerValid(
                     createDto(TestConstants.VALID_JUROR_NUMBER, null,
-                              FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS,
-                              FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS,
-                              FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS,
-                              FilterableJurorDetailsRequestDto.IncludeType.ACTIVE_POOL)
+                        FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS,
+                        FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS,
+                        FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS,
+                        FilterableJurorDetailsRequestDto.IncludeType.ACTIVE_POOL)
                 );
 
                 //Count validated in triggerValid so no need to do here
@@ -5413,7 +5406,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<PaginatedList<FilterJurorRecord>> response =
                 restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
-                    URI.create(URL)), new ParameterizedTypeReference<>() {});
+                        URI.create(URL)),
+                    new ParameterizedTypeReference<>() {
+                    });
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request (GET With Body) to be successful")
@@ -5441,7 +5436,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<PaginatedList<FilterJurorRecord>> response =
                 restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
-                    URI.create(URL)), new ParameterizedTypeReference<>() {});
+                        URI.create(URL)),
+                    new ParameterizedTypeReference<>() {
+                    });
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request (GET With Body) to be successful")
@@ -5547,7 +5544,6 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             ResponseEntity<PaginatedList<FilterJurorRecord>> response =
                 restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
                     URI.create(URL)), new ParameterizedTypeReference<>() {});
-
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request (GET With Body) to be successful")
                 .isEqualTo(HttpStatus.OK);
@@ -5604,7 +5600,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         private void validateSearchResultByPool(PaginatedList<FilterJurorRecord> responseBody) {
             assertThat(responseBody.getTotalItems()).as("Expect the response body to contain a total count "
-                    + "value of 10").isEqualTo(10);
+                + "value of 10").isEqualTo(10);
             assertThat(responseBody.getTotalPages()).as("Expect the response body to contain a total page value of 2")
                 .isEqualTo(2);
             assertThat(responseBody.getCurrentPage()).as("Expect the response body to contain a current page value of"
@@ -5630,7 +5626,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         private void validateSearchResultSortedDesc(PaginatedList<FilterJurorRecord> responseBody) {
             assertThat(responseBody.getTotalItems()).as("Expect the response body to contain a total count value "
-                    + "of 10").isEqualTo(10);
+                + "of 10").isEqualTo(10);
             assertThat(responseBody.getTotalPages()).as("Expect the response body to contain a total page value of 1")
                 .isEqualTo(1);
             assertThat(responseBody.getCurrentPage()).as("Expect the response body to contain a current page value of"
@@ -5710,13 +5706,17 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 "History Code must match");
             assertEquals(expectedValue.info, jurorHistory.getOtherInformation(),
                 "Info must match");
+            assertEquals(expectedValue.date, jurorHistory.getOtherInformationDate(),
+                "Other info Date must match");
+            assertEquals(expectedValue.ref, jurorHistory.getOtherInformationRef(),
+                "Other info Ref must match");
             assertThat(jurorHistory.getDateCreated())
                 .as("Date Part must match")
                 .isEqualToIgnoringHours(LocalDateTime.now());
         }
     }
 
-    private record JurorHistoryExpectedValues(String historyCode, String info) {
+    private record JurorHistoryExpectedValues(String historyCode, String info, LocalDate date, String ref) {
     }
 
     private String initPayloadWithStaffRank(String owner, String username, UserType userType,

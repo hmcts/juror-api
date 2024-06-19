@@ -27,6 +27,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
@@ -55,6 +56,7 @@ public class StraightThroughProcessorImpl implements StraightThroughProcessor {
     private final UserRepository userRepository;
     private final ResponseInspector responseInspector;
     private final JurorStatusRepository jurorStatusRepository;
+    private final JurorHistoryService jurorHistoryService;
 
     private static final String THIRD_PARTY_REASON_DECEASED = "deceased";
     private static final String MESSAGE = "Urgent response does not qualify for straight-through";
@@ -495,20 +497,12 @@ public class StraightThroughProcessorImpl implements StraightThroughProcessor {
             //  retrieveJurorHistory.setDatePart(Date.from(Instant.now()));
             retrieveJurorHistory.setHistoryCode(HistoryCodeMod.DISQUALIFY_POOL_MEMBER);
             retrieveJurorHistory.setCreatedBy(AUTO_USER);
-            retrieveJurorHistory.setOtherInformation("Disqualify Code A");
+            retrieveJurorHistory.setOtherInformationRef("A");
             retrieveJurorHistory.setPoolNumber(jurorDetails.getPoolNumber());
             jurorHistoryRepository.save(retrieveJurorHistory);
 
             // audit pool second entry
-            retrieveJurorHistory = new JurorHistory();
-            //   retrieveJurorHistory.s("400");
-            retrieveJurorHistory.setJurorNumber(savedDigitalResponse.getJurorNumber());
-            //   retrieveJurorHistory.setDatePart(Date.from(Instant.now()));
-            retrieveJurorHistory.setHistoryCode(HistoryCodeMod.WITHDRAWAL_LETTER);
-            retrieveJurorHistory.setCreatedBy(AUTO_USER);
-            retrieveJurorHistory.setOtherInformation("Disqualify Letter Code A");
-            retrieveJurorHistory.setPoolNumber(jurorDetails.getPoolNumber());
-            jurorHistoryRepository.save(retrieveJurorHistory);
+            jurorHistoryService.createWithdrawHistory(jurorDetails,null,"A");
 
             // disq_lett table entry
             DisqualificationLetterMod disqualificationLetter = new DisqualificationLetterMod();

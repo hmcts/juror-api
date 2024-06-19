@@ -756,7 +756,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
                 jurorHistoryService.createExpenseEditHistory(
                     financialAuditDetails,
-                    appearance
+                    appearance,
+                    FinancialAuditDetails.Type.FOR_APPROVAL_EDIT
                 );
             }
         }
@@ -865,7 +866,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
         appearances.forEach(appearance -> jurorHistoryService.createExpenseEditHistory(
             financialAuditDetails,
-            appearance
+            appearance,
+            type.toEditType()
         ));
     }
 
@@ -1090,10 +1092,11 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 "User cannot approve expenses over " + BigDecimalUtils.currencyFormat(userLimit),
                 CAN_NOT_APPROVE_MORE_THAN_LIMIT);
         }
-        Appearance firstAppearance = appearances.get(0);
+        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository,dto.getJurorNumber(),
+            SecurityUtil.getActiveOwner());
         if (!PaymentMethod.CASH.equals(paymentMethod)) {
             paymentDataRepository.save(createPaymentData(dto.getJurorNumber(),
-                firstAppearance.getCourtLocation(), appearances));
+                jurorPool.getCourt(), appearances));
         }
         appearances.forEach(this::approveAppearance);
         saveAppearancesWithExpenseRateIdUpdate(appearances);
@@ -1101,7 +1104,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
         FinancialAuditDetails financialAuditDetails =
             financialAuditService.createFinancialAuditDetail(dto.getJurorNumber(),
-                firstAppearance.getCourtLocation().getLocCode(),
+                jurorPool.getCourt().getLocCode(),
                 dto.getApprovalType().toApproveType(PaymentMethod.CASH.equals(paymentMethod)),
                 appearances);
 
@@ -1112,14 +1115,14 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
         if (PaymentMethod.CASH.equals(paymentMethod)) {
             jurorHistoryService.createExpenseApproveCash(
-                dto.getJurorNumber(),
+                jurorPool,
                 financialAuditDetails,
                 latestAppearanceDate,
                 totalToApprove
             );
         } else {
             jurorHistoryService.createExpenseApproveBacs(
-                dto.getJurorNumber(),
+                jurorPool,
                 financialAuditDetails,
                 latestAppearanceDate,
                 totalToApprove

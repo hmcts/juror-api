@@ -188,6 +188,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     private final Clock clock;
     private final UserServiceModImpl userServiceModImpl;
     private final PanelRepository panelRepository;
+    private final HistoryTemplateService historyTemplateService;
 
     @Override
     @Transactional
@@ -1143,7 +1144,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             jurorHistoryService.createPoliceCheckDisqualifyHistory(jurorPool);
             if (SecurityUtil.BUREAU_OWNER.equals(jurorPool.getOwner())) {
                 printDataService.printWithdrawalLetter(jurorPool);
-                jurorHistoryService.createWithdrawHistory(jurorPool, "Withdrawal Letter Auto");
+                jurorHistoryService.createWithdrawHistory(jurorPool, "Withdrawal Letter Auto","E");
             }
         } else if (newPoliceCheckValue == PoliceCheck.IN_PROGRESS) {
             log.debug("Juror {} police check is in progress adding part history", jurorNumber);
@@ -1316,7 +1317,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
                             .get(QReportsJurorPayments.reportsJurorPayments.totalPaid)).setScale(2));
 
                 if (Optional.ofNullable(item.get(QReportsJurorPayments.reportsJurorPayments.latestPaymentFAuditId))
-                        .isPresent()) {
+                    .isPresent()) {
                     day.paymentAudit("F".concat(item.get(
                         QReportsJurorPayments.reportsJurorPayments.latestPaymentFAuditId)));
                 }
@@ -1332,21 +1333,14 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public JurorHistoryResponseDto getJurorHistory(String jurorNumber) {
         checkReadAccessForCurrentUser(jurorPoolRepository, jurorNumber, SecurityUtil.getActiveOwner());
-
         List<JurorHistory> data = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
-
         return JurorHistoryResponseDto.builder()
-            .data(data.stream().map(item -> JurorHistoryResponseDto.JurorHistoryEntryDto.builder()
-                .description(jurorHistoryService.getHistoryDescription(item.getHistoryCode().getCode()))
-                .dateCreated(item.getDateCreated())
-                .username(item.getCreatedBy())
-                .poolNumber(item.getPoolNumber())
-                .otherInfo(item.getOtherInformation())
-                .otherInfoDate(item.getOtherInformationDate())
-                .otherInfoRef(item.getOtherInformationRef())
-                .build()).toList())
+            .data(data.stream()
+                .map(historyTemplateService::toJurorHistoryEntryDto)
+                .toList())
             .build();
     }
 

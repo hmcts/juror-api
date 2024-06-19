@@ -68,6 +68,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
     private final JurorHistoryRepository jurorHistoryRepository;
     @NonNull
     private final PrintDataService printDataService;
+    private final JurorHistoryService jurorHistoryService;
 
     @Override
     @Transactional
@@ -244,15 +245,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
         if (payload.getOwner().equals("400")) {
             printDataService.printExcusalDeniedLetter(jurorPool);
 
-            jurorHistoryRepository.save(JurorHistory.builder()
-                .jurorNumber(jurorPool.getJurorNumber())
-                .dateCreated(LocalDateTime.now())
-                .historyCode(HistoryCodeMod.NON_EXCUSED_LETTER)
-                .createdBy(payload.getLogin())
-                .poolNumber(jurorPool.getPoolNumber())
-                .otherInformation("Refused Excusal")
-                .otherInformationRef(juror.getExcusalCode())
-                .build());
+            jurorHistoryService.createNonExcusedLetterHistory(jurorPool,"Refused Excusal");
         }
 
     }
@@ -262,16 +255,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
 
         printDataService.printExcusalLetter(jurorPool);
 
-        JurorHistory jurorHistory = JurorHistory.builder()
-            .jurorNumber(jurorPool.getJurorNumber())
-            .dateCreated(LocalDateTime.now())
-            .historyCode(HistoryCodeMod.EXCUSED_LETTER)
-            .createdBy(login)
-            .poolNumber(jurorPool.getPoolNumber())
-            .otherInformation("Excuse Letter - " + excusalCode)
-            .build();
-
-        jurorHistoryRepository.save(jurorHistory);
+        jurorHistoryService.createExcusedLetter(jurorPool);
 
         log.info(String.format("Excusal letter enqueued for Juror %s", jurorNumber));
     }

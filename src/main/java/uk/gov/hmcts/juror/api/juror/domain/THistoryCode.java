@@ -34,4 +34,8 @@ public class THistoryCode implements Serializable {
     @Length(max = 40)
     @Column(name = "description")
     private String description;
+
+    @Length(max = 2000)
+    @Column(name = "template")
+    private String template;
 }

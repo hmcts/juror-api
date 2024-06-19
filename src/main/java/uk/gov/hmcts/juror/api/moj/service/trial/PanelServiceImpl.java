@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.service.trial;
 
 import com.querydsl.core.Tuple;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,7 +19,6 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
-import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
@@ -26,7 +26,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
-import uk.gov.hmcts.juror.api.moj.utils.JurorHistoryUtils;
+import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.utils.PanelUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
@@ -53,24 +53,17 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
     "PMD.TooManyMethods",
     "PMD.GodClass"
 })
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class PanelServiceImpl implements PanelService {
 
-    @Autowired
-    private AppearanceRepository appearanceRepository;
-
-    @Autowired
-    private PanelRepository panelRepository;
-
-    @Autowired
-    private TrialRepository trialRepository;
-
-    @Autowired
-    private JurorPoolRepository jurorPoolRepository;
-
-    @Autowired
-    private JurorHistoryRepository jurorHistoryRepository;
-
     private static final int MAX_PANEL_MEMBERS = 1000;
+    private final AppearanceRepository appearanceRepository;
+    private final PanelRepository panelRepository;
+    private final TrialRepository trialRepository;
+    private final JurorPoolRepository jurorPoolRepository;
+    private final JurorHistoryRepository jurorHistoryRepository;
+    private final JurorHistoryService jurorHistoryService;
+
 
     @Override
     public List<AvailableJurorsDto> getAvailableJurors(String courtLocation) {
@@ -210,8 +203,7 @@ public class PanelServiceImpl implements PanelService {
             appearance.setTrialNumber(trial.getTrialNumber());
             appearanceRepository.saveAndFlush(appearance);
 
-            JurorHistoryUtils.saveJurorHistory(HistoryCodeMod.CREATE_NEW_PANEL,
-                jurorNumber, jurorPool.getPoolNumber(), payload, jurorHistoryRepository);
+            jurorHistoryService.createAddedToPanelHistory(jurorPool, panel);
             panelListDtosList.add(createPanelListDto(panel));
         }
 
@@ -261,8 +253,7 @@ public class PanelServiceImpl implements PanelService {
 
                 String jurorNumber = jurorPool.getJurorNumber();
 
-                JurorHistoryUtils.saveJurorHistory(HistoryCodeMod.RETURN_PANEL, jurorNumber,
-                    jurorPool.getPoolNumber(), payload, jurorHistoryRepository);
+                jurorHistoryService.createReturnFromPanelHistory(jurorPool, panelMember);
 
                 // An appearance record MUST exist for the juror and attendance day
                 // - they must be checked in on the day that's being processed
@@ -280,9 +271,7 @@ public class PanelServiceImpl implements PanelService {
 
                 appearanceRepository.saveAndFlush(appearance);
             } else {
-                JurorHistoryUtils.saveJurorHistory(HistoryCodeMod.JURY_EMPANELMENT,
-                    panelMember.getJurorNumber(), jurorPool.getPoolNumber(),
-                    payload, jurorHistoryRepository);
+                jurorHistoryService.createJuryEmpanelmentHistory(jurorPool, panelMember);
             }
         }
 

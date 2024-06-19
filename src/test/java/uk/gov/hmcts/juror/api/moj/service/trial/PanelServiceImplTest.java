@@ -36,6 +36,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
+import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -78,6 +79,8 @@ class PanelServiceImplTest {
     private AppearanceRepository appearanceRepository;
     @Mock
     private JurorHistoryRepository jurorHistoryRepository;
+    @Mock
+    private JurorHistoryService jurorHistoryService;
 
     @InjectMocks
     PanelServiceImpl panelService;
@@ -419,7 +422,10 @@ class PanelServiceImplTest {
 
         verify(appearanceRepository, times(totalUnusedJurors)).saveAndFlush(any());
         verify(panelRepository, times(totalPanelMembers)).saveAndFlush(any());
-        verify(jurorHistoryRepository, times(totalPanelMembers)).save(any());
+        verify(jurorHistoryService, times(4))
+            .createJuryEmpanelmentHistory(any(), any());
+        verify(jurorHistoryService, times(6))
+            .createReturnFromPanelHistory(any(), any());
     }
 
     @Test
@@ -455,7 +461,8 @@ class PanelServiceImplTest {
 
         verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(appearanceArgumentCaptor.capture());
         verify(panelRepository, times(totalPanelMembers)).saveAndFlush(any());
-        verify(jurorHistoryRepository, times(totalPanelMembers)).save(any());
+        verify(jurorHistoryService, times(totalPanelMembers))
+            .createReturnFromPanelHistory(any(), any());
 
         for (Panel member : panelMembers) {
             if (member.getResult().equals(PanelResult.CHALLENGED) || member.getResult().equals(PanelResult.JUROR)) {
