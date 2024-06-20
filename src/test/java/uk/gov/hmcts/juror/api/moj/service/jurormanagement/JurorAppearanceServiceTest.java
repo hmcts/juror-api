@@ -2393,6 +2393,54 @@ class JurorAppearanceServiceTest {
         }
 
         @Test
+        void positiveNonAttendanceInTheFutureAdded() {
+
+            TestUtils.setUpMockAuthentication(courtOwner, username, "1", List.of(courtOwner));
+
+            CourtLocation courtLocation = new CourtLocation();
+            courtLocation.setOwner(courtOwner);
+            when(courtLocationRepository.findByLocCode(courtLocationCode)).thenReturn(Optional.of(courtLocation));
+            when(courtLocationRepository.findById(Mockito.any())).thenReturn(Optional.of(courtLocation));
+
+            PoolRequest poolRequest = PoolRequest.builder()
+                .poolNumber(poolNumber)
+                .returnDate(now().minusDays(5))
+                .build();
+
+            JurorPool jurorPool = new JurorPool();
+            jurorPool.setOwner(courtOwner);
+            jurorPool.setPool(poolRequest);
+
+            Juror juror = new Juror();
+            juror.setJurorNumber(jurorNumber);
+            juror.setFinancialLoss(BigDecimal.valueOf(63.90));
+            jurorPool.setJuror(juror);
+
+            doReturn(jurorPool).when(jurorPoolRepository)
+                .findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, poolNumber);
+
+            final JurorNonAttendanceDto request = JurorNonAttendanceDto.builder()
+                .jurorNumber(jurorNumber)
+                .nonAttendanceDate(now().plusDays(5))
+                .poolNumber(poolNumber)
+                .locationCode(courtLocationCode)
+                .build();
+
+            LocalDate nonAttendanceDate = now().plusDays(5);
+            doReturn(Optional.empty()).when(appearanceRepository)
+                .findByJurorNumberAndPoolNumberAndAttendanceDate(jurorNumber, poolNumber, nonAttendanceDate);
+
+            jurorAppearanceService.addNonAttendance(request);
+
+            verify(courtLocationRepository, times(1)).findByLocCode(courtLocationCode);
+            verify(jurorPoolRepository, times(1))
+                .findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, poolNumber);
+            verify(appearanceRepository, times(1))
+                .findByJurorNumberAndPoolNumberAndAttendanceDate(jurorNumber, poolNumber, nonAttendanceDate);
+            verify(appearanceRepository, times(1)).saveAndFlush(any());
+        }
+
+        @Test
         void happyNonAttendanceJurorNoShow() {
 
             TestUtils.setUpMockAuthentication(courtOwner, username, "1", List.of(courtOwner));
@@ -2494,32 +2542,6 @@ class JurorAppearanceServiceTest {
                 Mockito.anyString(), Mockito.any());
             verify(appearanceRepository, times(0)).saveAndFlush(any());
         }
-
-        @Test
-        void negativeNonAttendanceDayInFuture() {
-
-            TestUtils.setUpMockAuthentication(courtOwner, username, "1", List.of(courtOwner));
-
-            final JurorNonAttendanceDto request = JurorNonAttendanceDto.builder()
-                .jurorNumber(jurorNumber)
-                .nonAttendanceDate(now().plusDays(1))
-                .poolNumber(poolNumber)
-                .locationCode(courtLocationCode)
-                .build();
-
-            assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
-                    jurorAppearanceService.addNonAttendance(request))
-                .withMessage("Requested date is in the future.");
-
-            verify(courtLocationRepository, times(0)).findByLocCode(any());
-            verify(courtLocationRepository, times(0)).findById(anyString());
-            verify(jurorPoolRepository, times(0))
-                .findByJurorJurorNumberAndPoolPoolNumber(Mockito.anyString(), anyString());
-            verify(appearanceRepository, times(0))
-                .findByJurorNumberAndPoolNumberAndAttendanceDate(anyString(), anyString(), any());
-            verify(appearanceRepository, times(0)).saveAndFlush(any());
-        }
-
 
         @Test
         void negativeNonAttendanceForbiddenCourtUser() {
