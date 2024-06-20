@@ -5,24 +5,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EmptySource;
-import org.junit.jupiter.params.provider.NullSource;
-import org.springframework.security.core.context.SecurityContextHolder;
 import uk.gov.hmcts.juror.api.TestConstants;
-import uk.gov.hmcts.juror.api.TestUtils;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.moj.controller.request.CompleteServiceJurorNumberListDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberListDto;
-import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
-import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.CompleteServiceValidationResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorStatusValidationResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
-import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
@@ -30,7 +21,6 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 
 import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,7 +43,6 @@ class CompleteServiceServiceImplTest {
     private JurorStatusRepository jurorStatusRepository;
     private JurorHistoryService jurorHistoryService;
     private JurorRepository jurorRepository;
-    private JurorPoolService jurorPoolService;
     private CompleteServiceServiceImpl completeServiceService;
 
     @BeforeEach
@@ -62,7 +51,6 @@ class CompleteServiceServiceImplTest {
         this.jurorStatusRepository = mock(JurorStatusRepository.class);
         this.jurorHistoryService = mock(JurorHistoryService.class);
         this.jurorRepository = mock(JurorRepository.class);
-        this.jurorPoolService = mock(JurorPoolService.class);
         this.completeServiceService = new CompleteServiceServiceImpl(
             jurorPoolRepository, jurorStatusRepository,
             jurorRepository, jurorHistoryService);

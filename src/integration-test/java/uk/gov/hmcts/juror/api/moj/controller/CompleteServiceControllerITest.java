@@ -24,8 +24,8 @@ import uk.gov.hmcts.juror.api.moj.controller.request.CompleteServiceJurorNumberL
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAndPoolRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberListDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
-import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.CompleteServiceValidationResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorStatusValidationResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;

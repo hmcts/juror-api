@@ -1,38 +1,27 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EmptySource;
-import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.MockedStatic;
 import org.springframework.security.core.context.SecurityContextHolder;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
-import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
-import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsDto;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
-import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
@@ -46,7 +35,6 @@ class SjoTasksServiceImplTest {
     private JurorPoolRepository jurorPoolRepository;
     private JurorStatusRepository jurorStatusRepository;
     private JurorHistoryService jurorHistoryService;
-    private JurorPoolService jurorPoolService;
     private SjoTasksServiceImpl sjoTasksService;
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
@@ -56,7 +44,6 @@ class SjoTasksServiceImplTest {
         this.jurorPoolRepository = mock(JurorPoolRepository.class);
         this.jurorStatusRepository = mock(JurorStatusRepository.class);
         this.jurorHistoryService = mock(JurorHistoryService.class);
-        this.jurorPoolService = mock(JurorPoolService.class);
         this.sjoTasksService = new SjoTasksServiceImpl(jurorPoolRepository, jurorStatusRepository, jurorHistoryService);
 
         this.securityUtilMockedStatic = mockStatic(SecurityUtil.class);

@@ -77,8 +77,6 @@ public interface JurorHistoryService {
 
     void createReturnFromPanelHistory(JurorPool jurorPool, Panel panelMember);
 
-    void createUndeliveredSummonsHistory(JurorPool jurorPool);
-
     void createDisqualifyHistory(JurorPool jurorPool, String code);
 
     void createReassignPoolMemberHistory(JurorPool sourceJurorPool, String targetPoolNumber,

@@ -280,12 +280,6 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     }
 
     @Override
-    public void createUndeliveredSummonsHistory(JurorPool jurorPool) {
-        registerHistoryLoginUser(jurorPool, HistoryCodeMod.UNDELIVERED_SUMMONS, null);
-
-    }
-
-    @Override
     public void createDisqualifyHistory(JurorPool jurorPool, String code) {
         registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.DISQUALIFY_POOL_MEMBER, null, null, code);
     }
