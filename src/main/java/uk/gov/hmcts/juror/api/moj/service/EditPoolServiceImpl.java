@@ -65,7 +65,9 @@ public class EditPoolServiceImpl implements EditPoolService {
             if (currentNoRequested != noRequested) {
                 poolRequest.setNumberRequested(noRequested);
                 poolRequestRepository.saveAndFlush(poolRequest);
-                String otherInformation = "No Requested was " + currentNoRequested;
+                String otherInformation =
+                    "Jurors Requested changed from " + currentNoRequested + " to " + noRequested
+                        + "\nReason for change: " + poolEditRequestDto.getReasonForChange();
                 updatePoolHistory(payload, poolNumber, otherInformation);
             }
 
