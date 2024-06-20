@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.domain;
 
 import lombok.Getter;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 
 import java.util.function.BiConsumer;
@@ -31,7 +32,7 @@ public enum FormCode {
     BI_WITHDRAWAL("5224C", PrintDataService::printWithdrawalLetter, IJurorStatus.DISQUALIFIED);
     private final String code;
 
-    private int jurorStatus;
+    private final int jurorStatus;
 
     private final BiConsumer<PrintDataService, JurorPool> letterPrinter;
 
@@ -47,7 +48,7 @@ public enum FormCode {
                 return formCode;
             }
         }
-        return null;
+        throw new MojException.InternalServerError("Unknown form code '" + code + "'", null);
     }
 
 }

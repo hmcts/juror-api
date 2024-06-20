@@ -26,7 +26,6 @@ import uk.gov.hmcts.juror.api.bureau.domain.ChangeLogType;
 import uk.gov.hmcts.juror.api.bureau.exception.BureauOptimisticLockingException;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseNotesService;
 import uk.gov.hmcts.juror.api.bureau.service.ResponsePhoneLogService;
-import uk.gov.hmcts.juror.api.bureau.service.ResponseUpdateServiceImpl;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseUpdateServiceImpl.CjsEmployment;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
@@ -149,7 +148,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject(
             "SELECT OTHER_INFORMATION FROM juror_mod.juror_history WHERE juror_number = "
                 + "'209092530'", String.class)).as("Other information set to for note update")
-            .isEqualTo(ResponseUpdateServiceImpl.UPDATED_NOTES);
+            .isEqualTo("Updated notes");
         assertThat(jdbcTemplate.queryForObject(
             "SELECT STAFF_LOGIN FROM juror_mod.juror_response WHERE JUROR_NUMBER = '209092530'",
             String.class)).isEqualTo(loginName);

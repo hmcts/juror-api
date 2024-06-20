@@ -187,10 +187,10 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
                 + "juror_number='644892530' AND HISTORY_CODE='PDIS'", String.class))
             .as("Juror's PART_HIST entry should have user login set as USER_ID")
             .isEqualTo(loginName);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT OTHER_INFORMATION FROM juror_mod.juror_history "
+        softly.assertThat(jdbcTemplate.queryForObject("SELECT other_info_reference FROM juror_mod.juror_history "
                 + "WHERE juror_number='644892530' AND HISTORY_CODE='PDIS'", String.class))
             .as("Juror's PART_HIST entry should have the appropriate code set as OTHER_INFORMATION")
-            .isEqualTo("Code " + disqualifyCodeEntity.getDisqualifiedCode());
+            .isEqualTo("B");
         softly.assertThat(jdbcTemplate.queryForObject("SELECT pool_number FROM juror_mod.juror_history WHERE "
                 + "juror_number='644892530' AND HISTORY_CODE='PDIS'", String.class))
             .as("Juror's PART_HIST entry should have the appropriate pool code set as POOL_NO")
@@ -282,13 +282,12 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
                 + "TITLE, LNAME, and FNAME changes)")
             .isEqualTo(5);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_history WHERE "
-                    + "juror_number='644892530' AND HISTORY_CODE='PDIS' AND OTHER_INFORMATION='Disqualify Code A'",
+                    + "juror_number='644892530' AND HISTORY_CODE='PDIS' AND other_info_reference='A'",
                 Integer.class))
             .as("The first entry in PART_HIST should say PDIS and 'Disqualify Code A'")
             .isEqualTo(1);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_history WHERE "
-                    + "juror_number='644892530' AND HISTORY_CODE='RDIS' AND OTHER_INFORMATION='Disqualify Letter Code"
-                    + " A'",
+                    + "juror_number='644892530' AND HISTORY_CODE='RDIS' AND other_info_reference='A'",
                 Integer.class))
             .as("The first entry in PART_HIST should say RDIS and 'Disqualify Letter Code A'")
             .isEqualTo(1);

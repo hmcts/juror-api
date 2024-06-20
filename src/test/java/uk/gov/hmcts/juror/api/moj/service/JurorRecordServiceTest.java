@@ -167,6 +167,8 @@ class JurorRecordServiceTest {
     @Mock
     private PanelRepository panelRepository;
     @Mock
+    private HistoryTemplateService historyTemplateService;
+    @Mock
     private JurorRepository jurorRepository;
     @Mock
     private JurorPoolRepository jurorPoolRepository;
@@ -2529,7 +2531,8 @@ class JurorRecordServiceTest {
             verify(jurorHistoryService, times(1))
                 .createPoliceCheckDisqualifyHistory(jurorPool);
             verify(printDataService, times(1)).printWithdrawalLetter(jurorPool);
-            verify(jurorHistoryService, times(1)).createWithdrawHistory(jurorPool, "Withdrawal Letter Auto");
+            verify(jurorHistoryService, times(1))
+                .createWithdrawHistory(jurorPool, "Withdrawal Letter Auto", "E");
 
             verify(jurorPoolRepository, times(1))
                 .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(TestConstants.VALID_JUROR_NUMBER, true);
@@ -3283,7 +3286,7 @@ class JurorRecordServiceTest {
             assertEquals(3, payments.getAttendances(), "Incorrect number of attendances");
             assertEquals(1, payments.getNonAttendances(), "Incorrect number of non-attendances");
             assertEquals(BigDecimal.valueOf(6).setScale(2), payments.getFinancialLoss(),
-                         "Incorrect financial loss total");
+                "Incorrect financial loss total");
             assertEquals(BigDecimal.valueOf(6).setScale(2), payments.getTravel(), "Incorrect travel total");
             assertEquals(BigDecimal.valueOf(6).setScale(2), payments.getSubsistence(), "Incorrect subsistence total");
             assertEquals(BigDecimal.valueOf(6).setScale(2), payments.getTotalPaid(), "Incorrect total paid");
@@ -3899,7 +3902,7 @@ class JurorRecordServiceTest {
             jurorStatus.setStatus(IJurorStatus.RESPONDED);
 
             when(jurorPoolRepository.findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true))
-                    .thenReturn(List.of(jurorPool));
+                .thenReturn(List.of(jurorPool));
             when(jurorStatusRepository.findById(IJurorStatus.RESPONDED)).thenReturn(Optional.of(jurorStatus));
 
             jurorRecordService.markResponded(jurorNumber);

@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.repository;
 
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.juror.api.bureau.domain.ReadOnlyRepository;
@@ -22,10 +21,5 @@ public interface NotifyTemplateFieldRepositoryMod extends ReadOnlyRepository<Not
      * @return List of NotifyTemplateFieldMod detail objects.
      */
     List<NotifyTemplateFieldMod> findByTemplateId(String templateId);
-
-    //TODO tmp
-    @Query(value = "SELECT distinct template_id FROM juror_mod.notify_template_field",
-        nativeQuery = true)
-    List<String> tmpQuery();
 }
 

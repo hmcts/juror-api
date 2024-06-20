@@ -1,6 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
-import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,16 +12,13 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
-import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReplyType;
-import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
-import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
@@ -36,64 +33,25 @@ import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class StraightThroughProcessorServiceImpl implements StraightThroughProcessorService {
 
-    private static final String COPY_RESPONSE_TO_GENERIC_JUROR_RESPONSE_POJO = "Juror: {}. Copying properties from {}"
-        + " to a generic juror response pojo";
-
-    @Autowired
     private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
-    @Autowired
     private final JurorResponseCjsEmploymentRepositoryMod jurorResponseCjsRepository;
-    @Autowired
     private final JurorReasonableAdjustmentRepository jurorReasonableAdjustmentRepository;
-    @Autowired
     private final JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository;
-    @Autowired
     private final JurorRepository jurorRepository;
-    @Autowired
     private final JurorPoolRepository jurorPoolRepository;
-    @Autowired
-    private final JurorHistoryRepository jurorHistoryRepository;
-    @Autowired
     private final JurorStatusRepository jurorStatusRepository;
-    @Autowired
     private final ResponseInspector responseInspector;
-    @Autowired
     private final SummonsReplyMergeService mergeService;
-    @Autowired
-    PrintDataService printDataService;
+    private final PrintDataService printDataService;
+    private final JurorHistoryService jurorHistoryService;
 
-    @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
-    public StraightThroughProcessorServiceImpl(
-        @NonNull final JurorPaperResponseRepositoryMod jurorPaperResponseRepository,
-        @NonNull final JurorResponseCjsEmploymentRepositoryMod jurorResponseCjsRepository,
-        @NonNull final JurorReasonableAdjustmentRepository jurorReasonableAdjustmentRepository,
-        @NonNull final JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository,
-        @NonNull final JurorRepository jurorRepository,
-        @NonNull final JurorPoolRepository jurorPoolRepository,
-        @NonNull final JurorHistoryRepository jurorHistoryRepository,
-        @NonNull final JurorStatusRepository jurorStatusRepository,
-        @NonNull final ResponseInspector responseInspector,
-        @NonNull final SummonsReplyMergeService mergeService,
-        @NonNull final PrintDataService printDataService) {
-        this.jurorPaperResponseRepository = jurorPaperResponseRepository;
-        this.jurorResponseCjsRepository = jurorResponseCjsRepository;
-        this.jurorReasonableAdjustmentRepository = jurorReasonableAdjustmentRepository;
-        this.jurorDigitalResponseRepository = jurorDigitalResponseRepository;
-        this.jurorRepository = jurorRepository;
-        this.jurorPoolRepository = jurorPoolRepository;
-        this.jurorHistoryRepository = jurorHistoryRepository;
-        this.jurorStatusRepository = jurorStatusRepository;
-        this.responseInspector = responseInspector;
-        this.mergeService = mergeService;
-        this.printDataService = printDataService;
-    }
 
     /**
      * If all the mandatory fields have been entered and the no proof of data changes are required then the response
@@ -105,7 +63,6 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
      *                              location
      * @param canServeOnSummonsDate flag indicating whether the juror can attend jury service on the date they were
      *                              originally summoned for
-     *
      * @return true if the paper summons reply is eligible to be marked as responded immediately, else false
      */
     @Override
@@ -210,7 +167,6 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
      *
      * @param jurorPaperResponse The Paper Summons Reply object entered via the Juror Paper application
      * @param jurorPool          The Juror record associated with the Paper Summons Reply entered
-     *
      * @return a boolean to indicate if the response is suitable for straight through processing (true) or not (false)
      */
     @Override
@@ -233,7 +189,6 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
      *
      * @param jurorDigitalResponse The Paper Summons Reply object entered via the Juror Paper application
      * @param jurorPool            The Juror record associated with the Paper Summons Reply entered
-     *
      * @return a boolean to indicate if the response is suitable for straight through processing (true) or not (false)
      */
     @Override
@@ -242,7 +197,7 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
         return hasPassedValidationForStraightThroughProcessing(jurorDigitalResponse.getReplyType(),
             jurorDigitalResponse.getRelationship(), jurorPool)
             && !isJurorAgeValidForServiceStartDate(jurorPool.getJurorNumber(),
-                jurorDigitalResponse.getDateOfBirth(), returnDate);
+            jurorDigitalResponse.getDateOfBirth(), returnDate);
     }
 
     private void ageDisqualificationImplementation(AbstractJurorResponse jurorResponse,
@@ -320,22 +275,12 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
     private void processJurorAgeDisqualification(JurorPool jurorPool, String jurorNumber, String owner,
                                                  String username) {
         updateJurorPoolForAgeExcusal(jurorPool, username);
-
-        LocalDateTime currentDate = LocalDateTime.now();
-
         // record juror record disqualification history record
-        JurorHistory disqualifyHistory = new JurorHistory(jurorNumber, HistoryCodeMod.DISQUALIFY_POOL_MEMBER,
-            currentDate, username, "Disqualify Code A", jurorPool.getPoolNumber());
-
-        jurorHistoryRepository.save(disqualifyHistory);
-
+        jurorHistoryService.createDisqualifyHistory(jurorPool, "A");
         printDataService.printWithdrawalLetter(jurorPool);
 
         // record disqualification letter entry history record
-        JurorHistory disqualifyLetterHistory = new JurorHistory(jurorNumber, HistoryCodeMod.WITHDRAWAL_LETTER,
-            currentDate, username, "Disqualify Letter Code A", jurorPool.getPoolNumber());
-
-        jurorHistoryRepository.save(disqualifyLetterHistory);
+        jurorHistoryService.createWithdrawHistoryUser(jurorPool, null, "A");
     }
 
     private void updateJurorPoolForAgeExcusal(JurorPool jurorPool, String username) {

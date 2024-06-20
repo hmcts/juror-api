@@ -180,6 +180,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         assertThat(poolDetails.getCourtName())
             .as("Court name should be mapped from the COURT_LOCATION associated with the POOL_REQUEST record")
             .isEqualToIgnoringCase("CHESTER");
+        assertThat(poolDetails.getPoolType()).isEqualTo("CROWN COURT");
         assertThat(poolDetails.getCourtStartDate())
             .as("Court start date should be mapped from the RETURN_DATE value in the POOL_REQUEST view")
             .isEqualToIgnoringCase("Monday 03 Oct 2022");
@@ -262,6 +263,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         assertThat(poolDetails.getCourtName())
             .as("Court name should be mapped from the COURT_LOCATION associated with the POOL_REQUEST record")
             .isEqualToIgnoringCase("CHESTER");
+        assertThat(poolDetails.getPoolType()).isEqualTo("CROWN COURT");
         assertThat(poolDetails.getCourtStartDate())
             .as("Court start date should be mapped from the RETURN_DATE value in the POOL_REQUEST view")
             .isEqualToIgnoringCase("Monday 03 Oct 2022");
@@ -1581,8 +1583,9 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
             hist.getHistoryCode().equals(HistoryCodeMod.REASSIGN_POOL_MEMBER)).findFirst().orElse(null);
         assertThat(jurorHistory).isNotNull();
 
-        String expectedHistoryInfo = "To " + targetPoolNumber + " " + targetCourt.getName();
-        assertThat(jurorHistory.getOtherInformation()).isEqualTo(expectedHistoryInfo);
+
+        assertThat(jurorHistory.getOtherInformation()).isEqualTo(targetCourt.getNameWithLocCode());
+        assertThat(jurorHistory.getOtherInformationRef()).isEqualTo(targetPoolNumber);
 
         // verify confirm letter has been queued for bulk print
         List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findAll();

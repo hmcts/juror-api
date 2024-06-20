@@ -2482,7 +2482,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertApproved(
                     appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR_NUMBER, LocalDate.of(2023, 1, 10)));
                 assertJurorHistory(JUROR_NUMBER, HistoryCodeMod.ARAMIS_EXPENSES_FILE_CREATED, "COURT_USER",
-                    "£1,683.98", null, LocalDate.of(2023, 1, 10), "F" + id);
+                    "£1,683.98", "415230101", LocalDate.of(2023, 1, 10), "F" + id);
                 assertPaymentData(JUROR_NUMBER, new BigDecimal("1683.98"), new BigDecimal("702.98"),
                     new BigDecimal("225.00"), new BigDecimal("756.00"));
 
@@ -2537,7 +2537,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertApproved(
                     appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR_NUMBER, LocalDate.of(2023, 2, 10)));
                 assertJurorHistory(JUROR_NUMBER, HistoryCodeMod.CASH_PAYMENT_APPROVAL, "COURT_USER", "£1,683.98",
-                    null, LocalDate.of(2023, 2, 10), "F" + id);
+                    "415230101", LocalDate.of(2023, 2, 10), "F" + id);
                 List<PaymentData> paymentDataList = paymentDataRepository.findByJurorNumber(JUROR_NUMBER);
                 assertThat(paymentDataList).hasSize(0);
             }
@@ -2619,7 +2619,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
                 assertJurorHistory(JUROR_NUMBER, HistoryCodeMod.ARAMIS_EXPENSES_FILE_CREATED, "COURT_USER",
                     "£409.00",
-                    null, LocalDate.of(2023, 1, 16), "F" + id);
+                    "415230101", LocalDate.of(2023, 1, 16), "F" + id);
                 assertPaymentData(JUROR_NUMBER, new BigDecimal("409.00"), new BigDecimal("260.00"),
                     new BigDecimal("59.00"), new BigDecimal("90.00"));
 

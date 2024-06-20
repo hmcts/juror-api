@@ -55,6 +55,10 @@ public class PoolSummaryResponseDto {
             + " first attend court")
         private String courtStartDate;
 
+        @JsonProperty("poolType")
+        @Schema(name = "Pool Type", description = "The type of pool")
+        private String poolType;
+
         @JsonProperty("additionalRequirements")
         @Schema(name = "Additional Requirements", description = "A String representation of any special requirements,"
             + " formatted as a comma separated list")

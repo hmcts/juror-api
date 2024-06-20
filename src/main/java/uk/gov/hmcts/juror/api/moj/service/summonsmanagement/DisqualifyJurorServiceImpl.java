@@ -1,7 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.service.summonsmanagement;
 
-import jakarta.validation.constraints.NotNull;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,21 +13,19 @@ import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.summonsmanagement.DisqualifyJurorDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.summonsmanagement.DisqualifyReasonsDto;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
-import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCodeEnum;
-import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
-import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.AssignOnUpdateServiceMod;
+import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.service.SummonsReplyMergeService;
 
@@ -53,22 +49,14 @@ import static uk.gov.hmcts.juror.api.moj.utils.JurorResponseUtils.createMinimalP
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
 
-    @NonNull
     private final JurorPoolRepository jurorPoolRepository;
-    @NonNull
     private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
-    @NonNull
     private final JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository;
-    @NotNull
     private final JurorResponseAuditRepository jurorResponseAuditRepository;
-    @NonNull
-    private final JurorHistoryRepository jurorHistoryRepository;
-    @NotNull
     private final AssignOnUpdateServiceMod assignOnUpdateService;
-    @NotNull
     private final SummonsReplyMergeService summonsReplyMergeService;
-    @NotNull
     private final PrintDataService printDataService;
+    private final JurorHistoryService jurorHistoryService;
 
     @Override
     public DisqualifyReasonsDto getDisqualifyReasons(BureauJwtPayload payload) {
@@ -142,7 +130,7 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
             payload.getLogin());
 
         //Create audit history record to reflect changes to juror pool record related to disqualification
-        createAuditHistory(payload.getLogin(), jurorNumber, jurorPool.getPoolNumber(), disqualifyJurorDto.getCode());
+        jurorHistoryService.createDisqualifyHistory(jurorPool, disqualifyJurorDto.getCode().getCode());
 
         if (JurorDigitalApplication.JUROR_OWNER.equals(payload.getOwner())) {
             //Queue request for a letter to be sent to the juror
@@ -194,8 +182,7 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
                                          BureauJwtPayload bureauJwtPayload, DisqualifyCodeEnum disqualifyCodeEnum) {
         saveJurorPoolRecord(jurorPool, response.getJurorNumber(), disqualifyCodeEnum,
             bureauJwtPayload.getLogin());
-        createAuditHistory(bureauJwtPayload.getLogin(), response.getJurorNumber(), jurorPool.getPoolNumber(),
-            disqualifyCodeEnum);
+        jurorHistoryService.createDisqualifyHistory(jurorPool, disqualifyCodeEnum.getCode());
 
         if (JurorDigitalApplication.JUROR_OWNER.equals(bureauJwtPayload.getOwner())) {
             // TODO need to check if this is the right letter to send
@@ -204,20 +191,6 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
 
         log.trace("Juror {} - Api service method disqualifyJuror() finished.  Juror disqualified with code {}",
             response.getJurorNumber(), disqualifyCodeEnum);
-    }
-
-    private void createAuditHistory(String userId, String jurorNumber, String poolNumber,
-                                    DisqualifyCodeEnum disqualificationCode) {
-        log.trace("Juror {} - Service method createAuditHistory() invoked", jurorNumber);
-
-        JurorHistory jurorHistory = JurorHistory.builder()
-            .jurorNumber(jurorNumber)
-            .historyCode(HistoryCodeMod.DISQUALIFY_POOL_MEMBER)
-            .createdBy(userId)
-            .poolNumber(poolNumber)
-            .otherInformation("Code " + disqualificationCode.getHeritageCode())
-            .build();
-        jurorHistoryRepository.save(jurorHistory);
     }
 
     private void saveJurorPoolRecord(JurorPool jurorPool,

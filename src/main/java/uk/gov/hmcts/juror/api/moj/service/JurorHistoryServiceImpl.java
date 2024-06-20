@@ -7,12 +7,14 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.config.security.IsSeniorCourtUser;
+import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
@@ -55,11 +57,28 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
         return getHistoryCodeMap().get(historyCode);
     }
 
+    @Override
+    public void createJuryEmpanelmentHistory(JurorPool jurorPool, Panel panelMember) {
+        registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.JURY_EMPANELMENT, null, null,
+            panelMember.getTrial().getTrialNumber());
+    }
+
+    @Override
+    public void createAddedToPanelHistory(JurorPool jurorPool, Panel panelMember) {
+        registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.CREATE_NEW_PANEL, null, null,
+            panelMember.getTrial().getTrialNumber());
+    }
+
+    @Override
+    public void createReturnFromPanelHistory(JurorPool jurorPool, Panel panelMember) {
+        registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.RETURN_PANEL, null, null,
+            panelMember.getTrial().getTrialNumber());
+    }
 
     @Override
     public void createPoliceCheckDisqualifyHistory(JurorPool jurorPool) {
         registerHistorySystem(jurorPool, HistoryCodeMod.POLICE_CHECK_FAILED, "Failed");
-        registerHistorySystem(jurorPool, HistoryCodeMod.DISQUALIFY_POOL_MEMBER, "Disqualify - E");
+        registerHistorySystem(jurorPool, HistoryCodeMod.DISQUALIFY_POOL_MEMBER, null, null, "E");
     }
 
     @Override
@@ -151,25 +170,30 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     @Override
     @PreAuthorize("isAuthenticated()")
     public void createExpenseEditHistory(FinancialAuditDetails financialAuditDetails,
-                                         Appearance appearance) {
+                                         Appearance appearance,
+                                         FinancialAuditDetails.Type type) {
         registerHistoryWithAdditionalInfo(appearance.getJurorNumber(),
             appearance.getPoolNumber(),
             HistoryCodeMod.EDIT_PAYMENTS,
             BigDecimalUtils.currencyFormat(appearance.getTotalDue()),
             SecurityUtil.getActiveLogin(),
             appearance.getAttendanceDate(),
-            financialAuditDetails.getFinancialAuditNumber());
+            financialAuditDetails.getFinancialAuditNumber(),
+            switch (type) {
+                case FOR_APPROVAL_EDIT -> "For-Approval";
+                case APPROVED_EDIT -> "Repayment";
+                default -> throw new IllegalStateException("Unexpected value: " + type);
+            });
     }
 
     @Override
     @PreAuthorize("isAuthenticated()")
-    public void createExpenseApproveCash(String jurorNumber,
+    public void createExpenseApproveCash(JurorPool jurorPool,
                                          FinancialAuditDetails financialAuditDetails,
                                          LocalDate latestAppearanceDate,
                                          BigDecimal totalAmount) {
         registerHistoryWithAdditionalInfo(
-            jurorNumber,
-            null,
+            jurorPool,
             HistoryCodeMod.CASH_PAYMENT_APPROVAL,
             BigDecimalUtils.currencyFormat(totalAmount),
             SecurityUtil.getActiveLogin(),
@@ -179,12 +203,12 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
 
     @Override
     @PreAuthorize("isAuthenticated()")
-    public void createExpenseApproveBacs(String jurorNumber,
+    public void createExpenseApproveBacs(JurorPool jurorPool,
                                          FinancialAuditDetails financialAuditDetails,
                                          LocalDate latestAppearanceDate,
                                          BigDecimal totalAmount) {
-        registerHistoryWithAdditionalInfo(jurorNumber,
-            null,
+        registerHistoryWithAdditionalInfo(
+            jurorPool,
             HistoryCodeMod.ARAMIS_EXPENSES_FILE_CREATED,
             BigDecimalUtils.currencyFormat(totalAmount),
             SecurityUtil.getActiveLogin(),
@@ -233,13 +257,79 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     }
 
     @Override
-    public void createWithdrawHistory(JurorPool jurorPool, String otherInfo) {
-        registerHistorySystem(jurorPool, HistoryCodeMod.WITHDRAWAL_LETTER, otherInfo);
+    public void createWithdrawHistory(JurorPool jurorPool, String otherInfo, String code) {
+        registerHistorySystem(jurorPool,
+            HistoryCodeMod.WITHDRAWAL_LETTER,
+            otherInfo,
+            null,
+            code);
+    }
+
+    @Override
+    public void createWithdrawHistoryUser(JurorPool jurorPool, String otherInfo, String code) {
+        registerHistoryLoginUserAdditionalInfo(jurorPool,
+            HistoryCodeMod.WITHDRAWAL_LETTER,
+            otherInfo,
+            null,
+            code);
     }
 
     @Override
     public void createIdentityConfirmedHistory(JurorPool jurorPool) {
-        registerHistorySystem(jurorPool, HistoryCodeMod.CHECK_ID, "Id confirmed");
+        registerHistoryLoginUser(jurorPool, HistoryCodeMod.CHECK_ID, "Id confirmed");
+    }
+
+    @Override
+    public void createUndeliveredSummonsHistory(JurorPool jurorPool) {
+        registerHistoryLoginUser(jurorPool, HistoryCodeMod.UNDELIVERED_SUMMONS, null);
+
+    }
+
+    @Override
+    public void createDisqualifyHistory(JurorPool jurorPool, String code) {
+        registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.DISQUALIFY_POOL_MEMBER, null, null, code);
+    }
+
+    @Override
+    public void createReassignPoolMemberHistory(JurorPool sourceJurorPool, String targetPoolNumber,
+                                                CourtLocation receivingCourtLocation) {
+        registerHistoryLoginUserAdditionalInfo(sourceJurorPool,
+            HistoryCodeMod.REASSIGN_POOL_MEMBER,
+            receivingCourtLocation.getNameWithLocCode(),
+            null,
+            targetPoolNumber);
+
+    }
+
+    @Override
+    public void createNonExcusedLetterHistory(JurorPool jurorPool, String otherInfo) {
+        registerHistoryLoginUserAdditionalInfo(jurorPool,
+            HistoryCodeMod.NON_EXCUSED_LETTER,
+            otherInfo,
+            jurorPool.getJuror().getExcusalDate(),
+            jurorPool.getJuror().getExcusalCode());
+    }
+
+    @Override
+    public void createExcusedLetter(JurorPool jurorPool) {
+        registerHistoryLoginUserAdditionalInfo(jurorPool,
+            HistoryCodeMod.EXCUSED_LETTER,
+            null,
+            jurorPool.getJuror().getExcusalDate(),
+            jurorPool.getJuror().getExcusalCode());
+    }
+
+    @Override
+    public void createPoolEditHistory(JurorPool jurorPool) {
+        registerHistoryLoginUserAdditionalInfo(jurorPool,
+            HistoryCodeMod.POOL_EDIT,
+            "Updated notes", null, null);
+    }
+
+    @Override
+    public void createAwaitingFurtherInformationHistory(JurorPool jurorPool, String missingInformation) {
+        registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.AWAITING_FURTHER_INFORMATION,
+            missingInformation, null, null);
     }
 
     @Override
@@ -259,16 +349,20 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
 
     }
 
-    public void createSummonsLetterHistory(JurorPool jurorPool, String otherInfo) {
-        registerHistorySystem(jurorPool, HistoryCodeMod.PRINT_SUMMONS, otherInfo);
+    public void createJuryAttendanceHistory(JurorPool jurorPool, Appearance appearance, Panel panel) {
+        registerHistoryWithAdditionalInfo(jurorPool, HistoryCodeMod.JURY_ATTENDANCE,
+            panel.getTrial().getTrialNumber(),
+            SecurityUtil.getActiveLogin(),
+            appearance.getAttendanceDate(),
+            appearance.getAttendanceAuditNumber());
     }
 
-    public void createJuryAttendanceHistory(JurorPool jurorPool, String otherInfo) {
-        registerHistory(jurorPool, HistoryCodeMod.JURY_ATTENDANCE, otherInfo, SecurityUtil.getActiveLogin());
-    }
-
-    public void createPoolAttendanceHistory(JurorPool jurorPool, String otherInfo) {
-        registerHistory(jurorPool, HistoryCodeMod.POOL_ATTENDANCE, otherInfo, SecurityUtil.getActiveLogin());
+    public void createPoolAttendanceHistory(JurorPool jurorPool, Appearance appearance) {
+        registerHistoryWithAdditionalInfo(jurorPool, HistoryCodeMod.POOL_ATTENDANCE,
+            null,
+            SecurityUtil.getActiveLogin(),
+            appearance.getAttendanceDate(),
+            appearance.getAttendanceAuditNumber());
     }
 
     private void save(JurorHistory jurorHistory) {
@@ -287,6 +381,11 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
 
     private void registerHistorySystem(JurorPool jurorPool, HistoryCodeMod historyCode, String info) {
         registerHistory(jurorPool, historyCode, info, SYSTEM_USER_ID);
+    }
+
+    private void registerHistorySystem(JurorPool jurorPool, HistoryCodeMod historyCode, String info,
+                                       LocalDate otherInfoDate, String otherInfoRef) {
+        registerHistoryWithAdditionalInfo(jurorPool, historyCode, info, SYSTEM_USER_ID, otherInfoDate, otherInfoRef);
     }
 
     private void registerHistory(JurorPool jurorPool, HistoryCodeMod historyCode, String info, String userId) {
@@ -326,6 +425,15 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
                                                    HistoryCodeMod historyCode,
                                                    String info,
                                                    String userId, LocalDate otherInfoDate, String otherInfoRef) {
+        registerHistoryWithAdditionalInfo(jurorNumber, poolNumber, historyCode, info, userId, otherInfoDate,
+            otherInfoRef, null);
+    }
+
+    private void registerHistoryWithAdditionalInfo(String jurorNumber, String poolNumber,
+                                                   HistoryCodeMod historyCode,
+                                                   String info,
+                                                   String userId, LocalDate otherInfoDate, String otherInfoRef,
+                                                   String otherInfoSupport) {
         log.debug("Creating part history for juror {} with code {} and info {} for userId {}",
             jurorNumber, historyCode, info, userId);
 
@@ -338,6 +446,7 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
             .otherInformation(info)
             .otherInformationDate(otherInfoDate)
             .otherInformationRef(otherInfoRef)
+            .otherInformationSupport(otherInfoSupport)
             .build());
     }
 }

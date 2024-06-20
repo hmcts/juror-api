@@ -18,6 +18,8 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
+import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
@@ -118,8 +120,7 @@ class JurorHistoryServiceImplTest {
         jurorHistoryService.createPoliceCheckDisqualifyHistory(jurorPool);
         assertStandardValuesSystem(jurorPool,
             new JurorHistoryPartHistoryJurorHistoryExpectedValues(HistoryCodeMod.POLICE_CHECK_FAILED, "Failed"),
-            new JurorHistoryPartHistoryJurorHistoryExpectedValues(HistoryCodeMod.DISQUALIFY_POOL_MEMBER,
-                "Disqualify - E")
+            new JurorHistoryPartHistoryJurorHistoryExpectedValues(HistoryCodeMod.DISQUALIFY_POOL_MEMBER, null)
         );
     }
 
@@ -150,7 +151,7 @@ class JurorHistoryServiceImplTest {
     @Test
     void createWithdrawHistory() {
         JurorPool jurorPool = createJurorPool();
-        jurorHistoryService.createWithdrawHistory(jurorPool, "Other Info");
+        jurorHistoryService.createWithdrawHistory(jurorPool, "Other Info","E");
         assertStandardValuesSystem(jurorPool, new JurorHistoryPartHistoryJurorHistoryExpectedValues(
             HistoryCodeMod.WITHDRAWAL_LETTER, "Other Info"));
     }
@@ -405,7 +406,8 @@ class JurorHistoryServiceImplTest {
 
         jurorHistoryService.createExpenseEditHistory(
             financialAuditDetails,
-            appearance);
+            appearance,
+            FinancialAuditDetails.Type.APPROVED_EDIT);
         assertValuesAdditional(TestConstants.VALID_JUROR_NUMBER,
             TestConstants.VALID_POOL_NUMBER, "someUserId1",
             attendanceDate,
@@ -422,13 +424,14 @@ class JurorHistoryServiceImplTest {
         when(financialAuditDetails.getFinancialAuditNumber()).thenReturn(financialAuditId);
         LocalDate attendanceDate = LocalDate.now(clock);
         BigDecimal totalAmount = new BigDecimal("23.45");
+        JurorPool jurorPool = createJurorPool();
         jurorHistoryService.createExpenseApproveCash(
-            TestConstants.VALID_JUROR_NUMBER,
+            jurorPool,
             financialAuditDetails,
             attendanceDate,
             totalAmount);
-        assertValuesAdditional(TestConstants.VALID_JUROR_NUMBER,
-            null, "someUserId1",
+        assertValuesAdditional(jurorPool,
+            "someUserId1",
             attendanceDate,
             financialAuditId,
             new JurorHistoryPartHistoryJurorHistoryExpectedValues(HistoryCodeMod.CASH_PAYMENT_APPROVAL,
@@ -443,13 +446,14 @@ class JurorHistoryServiceImplTest {
         when(financialAuditDetails.getFinancialAuditNumber()).thenReturn(financialAuditId);
         LocalDate attendanceDate = LocalDate.now(clock);
         BigDecimal totalAmount = new BigDecimal("23.45");
+        JurorPool jurorPool = createJurorPool();
         jurorHistoryService.createExpenseApproveBacs(
-            TestConstants.VALID_JUROR_NUMBER,
+            jurorPool,
             financialAuditDetails,
             attendanceDate,
             totalAmount);
-        assertValuesAdditional(TestConstants.VALID_JUROR_NUMBER,
-            null, "someUserId1",
+        assertValuesAdditional(jurorPool,
+            "someUserId1",
             attendanceDate,
             financialAuditId,
             new JurorHistoryPartHistoryJurorHistoryExpectedValues(HistoryCodeMod.ARAMIS_EXPENSES_FILE_CREATED,
@@ -481,11 +485,21 @@ class JurorHistoryServiceImplTest {
         when(jurorStatus.getStatus()).thenReturn(IJurorStatus.JUROR);
         jurorPool.setStatus(jurorStatus);
 
+        Appearance appearance = mock(Appearance.class);
+        Panel panel = mock(Panel.class);
+        Trial trial = mock(Trial.class);
+        when(panel.getTrial()).thenReturn(trial);
+        when(trial.getTrialNumber()).thenReturn(TestConstants.VALID_TRIAL_NUMBER);
+
         String attendanceAuditNumber = "J00000001";
-        jurorHistoryService.createJuryAttendanceHistory(jurorPool, attendanceAuditNumber);
-        assertValuesAdditional(jurorPool, "TEST_USER", null, null,
+        LocalDate date = LocalDate.now();
+        when(appearance.getAttendanceAuditNumber()).thenReturn(attendanceAuditNumber);
+        when(appearance.getAttendanceDate()).thenReturn(date);
+
+        jurorHistoryService.createJuryAttendanceHistory(jurorPool, appearance, panel);
+        assertValuesAdditional(jurorPool, "TEST_USER", date, attendanceAuditNumber,
             new JurorHistoryPartHistoryJurorHistoryExpectedValues(HistoryCodeMod.JURY_ATTENDANCE,
-                attendanceAuditNumber));
+                TestConstants.VALID_TRIAL_NUMBER));
     }
 
     @Test
@@ -498,11 +512,17 @@ class JurorHistoryServiceImplTest {
         when(jurorStatus.getStatus()).thenReturn(IJurorStatus.JUROR);
         jurorPool.setStatus(jurorStatus);
 
+        Appearance appearance = mock(Appearance.class);
+
         String attendanceAuditNumber = "P00000001";
-        jurorHistoryService.createPoolAttendanceHistory(jurorPool, attendanceAuditNumber);
-        assertValuesAdditional(jurorPool, "TEST_USER", null, null,
+        LocalDate date = LocalDate.now();
+        when(appearance.getAttendanceAuditNumber()).thenReturn(attendanceAuditNumber);
+        when(appearance.getAttendanceDate()).thenReturn(date);
+
+        jurorHistoryService.createPoolAttendanceHistory(jurorPool, appearance);
+        assertValuesAdditional(jurorPool, "TEST_USER", date, attendanceAuditNumber,
             new JurorHistoryPartHistoryJurorHistoryExpectedValues(HistoryCodeMod.POOL_ATTENDANCE,
-                attendanceAuditNumber));
+                null));
     }
 
     private void assertValuesAdditional(JurorPool jurorPool, String userId,

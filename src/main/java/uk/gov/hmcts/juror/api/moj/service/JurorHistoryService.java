@@ -1,8 +1,10 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
+import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -20,12 +22,12 @@ public interface JurorHistoryService {
 
     void createPoliceCheckInsufficientInformationHistory(JurorPool jurorPool);
 
-    void createExpenseApproveCash(String jurorNumber,
+    void createExpenseApproveCash(JurorPool jurorPool,
                                   FinancialAuditDetails financialAuditDetails,
                                   LocalDate latestAppearanceDate,
                                   BigDecimal totalAmount);
 
-    void createExpenseApproveBacs(String jurorNumber,
+    void createExpenseApproveBacs(JurorPool jurorPool,
                                   FinancialAuditDetails financialAuditDetails,
                                   LocalDate latestAppearanceDate,
                                   BigDecimal totalAmount);
@@ -50,25 +52,47 @@ public interface JurorHistoryService {
                                          Appearance appearance);
 
     void createExpenseEditHistory(FinancialAuditDetails financialAuditDetails,
-                                  Appearance appearance);
+                                  Appearance appearance,
+                                  FinancialAuditDetails.Type type);
 
     void createSummonsReminderLetterHistory(JurorPool jurorPool);
 
     void createConfirmationLetterHistory(JurorPool jurorPool, String otherInfo);
 
-    void createWithdrawHistory(JurorPool jurorPool, String otherInfo);
+    void createWithdrawHistory(JurorPool jurorPool, String otherInfo, String code);
 
     void createPostponementLetterHistory(JurorPool jurorPool, String otherInfo);
 
+    void createWithdrawHistoryUser(JurorPool jurorPool, String otherInfo, String code);
+
     void createIdentityConfirmedHistory(JurorPool jurorPool);
 
-    void createSummonsLetterHistory(JurorPool jurorPool, String otherInfo);
+    void createJuryAttendanceHistory(JurorPool jurorPool, Appearance appearance, Panel panel);
 
-    void createJuryAttendanceHistory(JurorPool jurorPool, String otherInfo);
+    void createPoolAttendanceHistory(JurorPool jurorPool, Appearance appearance);
 
-    void createPoolAttendanceHistory(JurorPool jurorPool, String otherInfo);
+    void createJuryEmpanelmentHistory(JurorPool jurorPool, Panel panelMember);
+
+    void createAddedToPanelHistory(JurorPool jurorPool, Panel panel);
+
+    void createReturnFromPanelHistory(JurorPool jurorPool, Panel panelMember);
+
+    void createUndeliveredSummonsHistory(JurorPool jurorPool);
+
+    void createDisqualifyHistory(JurorPool jurorPool, String code);
+
+    void createReassignPoolMemberHistory(JurorPool sourceJurorPool, String targetPoolNumber,
+                                         CourtLocation receivingCourtLocation);
+
+    void createNonExcusedLetterHistory(JurorPool jurorPool, String refusedExcusal);
+
+    void createExcusedLetter(JurorPool jurorPool);
+
+    void createPoolEditHistory(JurorPool updatedPool);
 
     public String getHistoryDescription(String historyCode);
 
     void createUndeliveredSummonsHistory(JurorPool jurorPool);
+
+    void createAwaitingFurtherInformationHistory(JurorPool jurorPool, String missingInformation);
 }
