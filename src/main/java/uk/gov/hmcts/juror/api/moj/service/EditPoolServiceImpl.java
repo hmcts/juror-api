@@ -35,6 +35,7 @@ public class EditPoolServiceImpl implements EditPoolService {
     private final PoolCommentRepository poolCommentRepository;
 
     @Override
+    @Transactional
     public void editPool(BureauJwtPayload payload, PoolEditRequestDto poolEditRequestDto) {
         String payloadOwner = payload.getOwner();
 
@@ -137,7 +138,9 @@ public class EditPoolServiceImpl implements EditPoolService {
                 poolRequest.setTotalNoRequired(totalRequired);
                 poolRequest.setLastUpdate(LocalDateTime.now());
                 poolRequestRepository.saveAndFlush(poolRequest);
-                String otherInformation = "Total Req was " + currentTotalNoRequired;
+                String otherInformation =
+                    "Pool capacity changed from " + currentTotalNoRequired + " to " + totalRequired
+                        + "\nReason for change: " + poolEditRequestDto.getReasonForChange();
                 updatePoolHistory(payload, poolNumber, otherInformation);
             }
 
