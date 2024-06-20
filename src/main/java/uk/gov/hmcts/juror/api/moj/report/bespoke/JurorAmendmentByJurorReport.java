@@ -44,7 +44,7 @@ public class JurorAmendmentByJurorReport extends AbstractJurorAmendmentReport {
             getTableData(List.of(request.getJurorNumber()));
 
         tableData.getData().forEach(jurorAmendmentReportRow -> {
-            jurorAmendmentReportRow.setFrom(null);
+            jurorAmendmentReportRow.setTo(null);
             jurorAmendmentReportRow.setJurorNumber(null);
         });
         tableData.getHeadings().removeIf(heading ->
