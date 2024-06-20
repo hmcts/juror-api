@@ -493,7 +493,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         log.trace("Create target pool request for transferring/reassigning pool members to {}",
             requestDto.getReceivingCourtLocCode());
         PoolRequest targetPoolRequest = new PoolRequest();
-        targetPoolRequest.setOwner(requestDto.getReceivingCourtLocCode());
+        targetPoolRequest.setOwner(receivingCourtLocation.getOwner());
         targetPoolRequest.setPoolNumber(
             generatePoolNumberService.generatePoolNumber(requestDto.getReceivingCourtLocCode(),
                 requestDto.getServiceStartDate()));
