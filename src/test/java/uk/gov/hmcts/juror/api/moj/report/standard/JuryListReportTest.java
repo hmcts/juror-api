@@ -17,6 +17,7 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Judge;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
+import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
@@ -84,6 +85,8 @@ class JuryListReportTest extends AbstractStandardReportTestSupport<JuryListRepor
             .where(QPanel.panel.trial.trialNumber.eq(TestConstants.VALID_TRIAL_NUMBER));
         verify(query, times(1))
             .where(QPanel.panel.trial.courtLocation.owner.eq(request.getLocCode()));
+        verify(query, times(1))
+            .where(QPanel.panel.result.eq(PanelResult.JUROR));
         verify(query, times(1))
             .orderBy(QJuror.juror.jurorNumber.asc());
     }
