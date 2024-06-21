@@ -8,6 +8,7 @@ import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 import uk.gov.hmcts.juror.api.TestConstants;
+import uk.gov.hmcts.juror.api.config.Settings;
 import uk.gov.hmcts.juror.api.juror.domain.QPool;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorSearch;
@@ -136,7 +137,7 @@ class MessageSearchTest {
 
         verify(query, times(1))
             .where(QJuror.juror.firstName.concat(" ").concat(QJuror.juror.lastName).toLowerCase()
-                .likeIgnoreCase("%abc a%"));
+            .contains("abc a"));
         verifyNoMoreInteractions(query);
     }
 

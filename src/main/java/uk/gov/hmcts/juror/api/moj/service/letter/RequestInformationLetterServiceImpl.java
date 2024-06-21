@@ -55,7 +55,7 @@ public class RequestInformationLetterServiceImpl implements RequestInformationLe
         //Basic validation passed, now map the information required and set the data for the Request Letter
         Juror juror = jurorPool.getJuror();
 
-        boolean welshMapping = juror.getWelsh() != null && !juror.getWelsh().equals(Boolean.FALSE);
+        boolean welshMapping = juror.isWelsh();
         String missingInformation =
             MissingInformation.buildMissingInformationString(additionalInformationDto.getMissingInformation(),
                 welshMapping);

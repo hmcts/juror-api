@@ -104,7 +104,7 @@ public class MessageSearch implements IsPageable {
         if (jurorSearch != null) {
             if (jurorSearch.getJurorName() != null) {
                 query.where(QJuror.juror.firstName.concat(" ").concat(QJuror.juror.lastName).toLowerCase()
-                    .likeIgnoreCase("%" + jurorSearch.getJurorName().toLowerCase(Settings.LOCALE) + "%"));
+                    .contains(jurorSearch.getJurorName().toLowerCase(Settings.LOCALE)));
             }
 
             if (jurorSearch.getJurorNumber() != null) {

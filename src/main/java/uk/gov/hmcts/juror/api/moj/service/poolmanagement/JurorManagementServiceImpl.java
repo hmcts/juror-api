@@ -342,13 +342,13 @@ public class JurorManagementServiceImpl implements JurorManagementService {
                 logicallyDeleteExistingJurorPool(jurorNumber, receivingCourtLocation);
 
                 // copy the pool members data over to a new record in the new court location
-                createTransferredJurorPool(sourceJurorPool, receivingCourtLocation, targetPoolRequest, currentUser);
+                JurorPool targetJurorPool = createTransferredJurorPool(sourceJurorPool, receivingCourtLocation,
+                    targetPoolRequest, currentUser);
 
                 updateSourceJurorPoolTransfer(sourceJurorPool, currentUser);
 
                 // add history event to juror
-                jurorHistoryService.createReassignPoolMemberHistory(sourceJurorPool, targetPoolNumber,
-                    receivingCourtLocation);
+                jurorHistoryService.createTransferCourtHistory(sourceJurorPool, targetJurorPool);
 
                 successfulTransferCount++;
             } catch (MojException exception) {
@@ -573,8 +573,8 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         log.trace("Exit logicallyDeletePreviousJurorPools");
     }
 
-    private void createTransferredJurorPool(JurorPool sourceJurorPool, CourtLocation receivingCourtLocation,
-                                            PoolRequest targetPool, String currentUser) {
+    private JurorPool createTransferredJurorPool(JurorPool sourceJurorPool, CourtLocation receivingCourtLocation,
+                                                 PoolRequest targetPool, String currentUser) {
         log.trace("Enter createTransferredJurorPool");
         JurorPool newTargetJurorPool = new JurorPool();
         BeanUtils.copyProperties(sourceJurorPool, newTargetJurorPool,
@@ -598,8 +598,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         log.debug("Juror: {} - New Pool Member record created for Court Location: {}. Transferred to Pool: {}",
             sourceJurorPool.getJurorNumber(), receivingCourtLocation.getName(), targetPool.getPoolNumber());
 
-        jurorPoolRepository.save(newTargetJurorPool);
-        log.trace("Exit createTransferredJurorPool");
+        return jurorPoolRepository.save(newTargetJurorPool);
     }
 
     private void updateSourceJurorPoolTransfer(JurorPool sourceJurorPool, String currentUser) {

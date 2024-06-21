@@ -46,7 +46,7 @@ public class LetterBase {
     }
 
     protected void setup(Juror juror) {
-        if (Boolean.TRUE.equals(juror.getWelsh()) && ContextType.WELSH_COURT_LOCATION.validate(letterContext)) {
+        if (juror.isWelsh() && ContextType.WELSH_COURT_LOCATION.validate(letterContext)) {
             setupWelsh();
         } else {
             setupEnglish();

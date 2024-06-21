@@ -1268,7 +1268,7 @@ class MessagingServiceImplTest {
             when(juror.getPollNumber()).thenReturn(TestConstants.VALID_POOL_NUMBER);
             when(juror.getPhoneNumber()).thenReturn(TestConstants.VALID_PHONE_NUMBER);
             when(juror.getEmail()).thenReturn(TestConstants.VALID_EMAIL);
-            when(juror.getWelsh()).thenReturn(true);
+            when(juror.isWelsh()).thenReturn(true);
 
             MessageTemplate messageTemplate = mock(MessageTemplate.class);
             final String otherInfo = "Some other info";

@@ -18,7 +18,6 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
-import uk.gov.hmcts.juror.api.moj.repository.THistoryCodeRepository;
 import uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -26,8 +25,6 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 
 
 @Slf4j
@@ -36,26 +33,7 @@ import java.util.HashMap;
 public class JurorHistoryServiceImpl implements JurorHistoryService {
     private static final String SYSTEM_USER_ID = "SYSTEM";
     private final JurorHistoryRepository jurorHistoryRepository;
-    private final THistoryCodeRepository thistoryCodeRepository;
     private final Clock clock;
-    private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-    private static HashMap<String, String> mapper;
-
-    public HashMap<String, String> getHistoryCodeMap() {
-        if (null != mapper) {
-            return mapper;
-        }
-
-        mapper = new HashMap<>();
-        thistoryCodeRepository.findAll().forEach((tHistoryCode ->
-            mapper.put(tHistoryCode.getHistoryCode(), tHistoryCode.getDescription())));
-
-        return mapper;
-    }
-
-    public String getHistoryDescription(String historyCode) {
-        return getHistoryCodeMap().get(historyCode);
-    }
 
 
     @Override
@@ -65,8 +43,14 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     }
 
     @Override
-    public void createAddedToPanelHistory(JurorPool jurorPool, Panel panelMember) {
+    public void createPanelCreationHistory(JurorPool jurorPool, Panel panelMember) {
         registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.CREATE_NEW_PANEL, null, null,
+            panelMember.getTrial().getTrialNumber());
+    }
+
+    @Override
+    public void createAddedToPanelHistory(JurorPool jurorPool, Panel panelMember) {
+        registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.ADD_TO_PANEL, null, null,
             panelMember.getTrial().getTrialNumber());
     }
 
@@ -112,8 +96,10 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
             throw new MojException.InternalServerError("To create a complete service history entry. "
                 + "The juror record must contain a completion date for juror " + juror.getJurorNumber(), null);
         }
-        registerHistoryLoginUser(jurorPool, HistoryCodeMod.COMPLETE_SERVICE,
-            "Completed service on " + dateFormatter.format(juror.getCompletionDate()));
+        registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.COMPLETE_SERVICE,
+            null,
+            juror.getCompletionDate(),
+            null);
     }
 
     @Override
@@ -332,6 +318,34 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
         registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.AWAITING_FURTHER_INFORMATION,
             missingInformation, null, null);
     }
+
+    @Override
+    public void createContactDetailsExportedHistory(String jurorNumber, String poolNumber) {
+        registerHistory(
+            jurorNumber,
+            poolNumber,
+            HistoryCodeMod.INCLUDED_IN_MESSAGE_EXPORT_FILE,
+            null,
+            SecurityUtil.getActiveLogin()
+        );
+    }
+
+    @Override
+    public void createSummonLetterReprintedHistory(JurorPool jurorPool) {
+        registerHistoryLoginUser(jurorPool, HistoryCodeMod.SUMMONS_REPRINTED,
+            "Reissued summons letter");
+    }
+
+    @Override
+    public void createTransferCourtHistory(JurorPool sourceJurorPool, JurorPool targetJurorPool) {
+        registerHistoryLoginUserAdditionalInfo(sourceJurorPool,
+            HistoryCodeMod.TRANSFER_POOL_MEMBER,
+            "Transferred juror from court" + sourceJurorPool.getCourt().getNameWithLocCode() + " to "
+                + targetJurorPool.getCourt().getNameWithLocCode(),
+            LocalDate.now(),
+            null);
+    }
+
 
     public void createPostponementLetterHistory(JurorPool jurorPool, String confirmationLetter) {
         if (jurorPool.getDeferralDate() == null || !jurorPool.getDeferralCode().equals("P")) {
