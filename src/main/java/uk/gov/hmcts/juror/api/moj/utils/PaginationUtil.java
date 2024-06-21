@@ -8,6 +8,8 @@ import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.IsPageable;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -44,9 +46,14 @@ public final class PaginationUtil {
         paginatedList.setTotalItems(results.getTotal(), isPageable.getPageLimit());
         paginatedList.setData(results.getResults().stream().map(dataMapper).toList());
         if (maxItems != null && paginatedList.getTotalItems() > maxItems) {
+            Map<String, Object> metaData = new HashMap<>();
+            metaData.put("max_items", maxItems);
+            metaData.put("total_items", paginatedList.getTotalItems());
+
             throw new MojException.BusinessRuleViolation(
                 "A max of " + maxItems + " items can be returned but got " + paginatedList.getTotalItems(),
-                MAX_ITEMS_EXCEEDED);
+                MAX_ITEMS_EXCEEDED,
+                metaData);
         }
         return paginatedList;
     }
