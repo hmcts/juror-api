@@ -36,9 +36,9 @@ public class SjoTasksController {
     private final BulkService bulkService;
 
     @PostMapping("/juror/search")
-    @Operation(summary = "Get a list of failed to attend jurors based on search criteria")
+    @Operation(summary = "Get a list of jurors based on search criteria")
     @ResponseStatus(HttpStatus.OK)
-    public PaginatedList<JurorDetailsDto> getCompleteJurors(
+    public PaginatedList<JurorDetailsDto> getJurors(
         @Valid @RequestBody JurorPoolSearch request) {
         return jurorPoolService.search(request);
     }

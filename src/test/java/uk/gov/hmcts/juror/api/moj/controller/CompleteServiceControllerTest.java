@@ -79,9 +79,6 @@ class CompleteServiceControllerTest {
     @MockBean
     private CompleteServiceService completeServiceService;
 
-    @MockBean
-    private JurorPoolService jurorPoolService;
-
     @Nested
     @DisplayName("PATCH " + COMPLETE_SERVICE_URL)
     class CompleteService {

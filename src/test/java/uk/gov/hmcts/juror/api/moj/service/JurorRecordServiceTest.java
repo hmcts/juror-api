@@ -220,8 +220,6 @@ class JurorRecordServiceTest {
     private UserServiceModImpl userServiceMod;
     @Mock
     private JurorPaymentsSummaryRepository jurorPaymentsSummaryRepository;
-    @Mock
-    private SjoTasksService sjoTasksService;
 
     @Mock
     private Clock clock;
