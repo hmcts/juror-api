@@ -245,6 +245,9 @@ class PaginationUtilTest {
         assertThat(exception.getMessage()).isEqualTo(
             "A max of 20 items can be returned but got 21"
         );
+        assertThat(exception.getMetaData()).isNotNull();
+        assertThat(exception.getMetaData().get("max_items")).isEqualTo(20L);
+        assertThat(exception.getMetaData().get("total_items")).isEqualTo(21L);
         assertThat(exception.getErrorCode()).isEqualTo(MAX_ITEMS_EXCEEDED);
         assertThat(exception.getCause()).isNull();
 
