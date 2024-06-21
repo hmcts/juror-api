@@ -1,3 +1,5 @@
+INSERT INTO JUROR_MOD.POOL (OWNER, POOL_NO, RETURN_DATE, TOTAL_NO_REQUIRED, NO_REQUESTED, POOL_TYPE,LOC_CODE, NEW_REQUEST, LAST_UPDATE, ADDITIONAL_SUMMONS, ATTEND_TIME)
+VALUES ('400', '415220901', TIMESTAMP'2022-09-04 00:00:00.0', 5, 5, 'CRO', '415','N', TIMESTAMP'2022-02-02 09:22:09.0', NULL, TIMESTAMP'2022-09-04 09:00:00.0');
 
 INSERT INTO juror_mod.juror (juror_number,poll_number,title,last_name,first_name,dob,address_line_1,address_line_2,
                              address_line_3,address_line_4,address_line_5,postcode,h_phone,w_phone,w_ph_local,
@@ -5,6 +7,9 @@ INSERT INTO juror_mod.juror (juror_number,poll_number,title,last_name,first_name
                              no_def_pos,perm_disqual,reasonable_adj_code,reasonable_adj_msg,smart_card_number,
                              completion_date,sort_code,bank_acct_name,bank_acct_no,bldg_soc_roll_no,welsh,police_check,last_update,summons_file,m_phone,h_email,contact_preference,notifications,date_created,optic_reference,pending_title,pending_first_name,pending_last_name,travel_time,mileage,financial_loss) VALUES
 ('555555561','540',NULL,'LNAMEFIVEFOURZERO','FNAMEFIVEFOURZERO','1998-03-08 00:00:00.000','Address Line 1','Address  Line 2','Address Line 3','CARDIFF','Some County','CH1 2AN',NULL,NULL,NULL,true,NULL,NULL,NULL,NULL,NULL,'BUREAU_USER',NULL,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'NOT_CHECKED','2024-01-16 12:07:42.000',NULL,NULL,NULL,0,0,NULL,'12345678','Mr','Test','Person',NULL,NULL,NULL);
+
+INSERT INTO JUROR_MOD.JUROR_POOL (OWNER, JUROR_NUMBER, POOL_NUMBER, DEF_DATE, STATUS, IS_ACTIVE,WAS_DEFERRED)
+VALUES ('400', '555555561', '415220901', '2022-12-04 00:00:00', 12, TRUE, TRUE);
 
 INSERT INTO juror_mod.bulk_print_data (juror_no,creation_date,form_type,detail_rec,extracted_flag,digital_comms) VALUES
 ('555555561',current_date - 1,'5229A','18 JANUARY 2024   THE CROWN COURT AT CHESTER                                 JURY CENTRAL SUMMONING BUREAU           THE COURT SERVICE                  FREEPOST LON 19669                 POCOCK STREET                      LONDON                                                                                                   SE1 0YG   0845 3555567            MONDAY 12 JUNE, 2023            09:00             FNAMEFIVEFOURZERO   LNAMEFIVEFOURZERO   540 STREET NAME                    ANYTOWN                                                                                                                                                                        CH1 2AN   555555561JURY MANAGER                  ',false,false),
