@@ -94,8 +94,7 @@ public class SjoTasksControllerITest extends AbstractIntegrationTest {
                 HttpMethod.POST, URI.create(URL));
 
             ResponseEntity<PaginatedList<JurorDetailsDto>> response =
-                restTemplate.exchange(request, new ParameterizedTypeReference<>() {
-            });
+                restTemplate.exchange(request, new ParameterizedTypeReference<>() {});
 
             assertThat(response).isNotNull();
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);

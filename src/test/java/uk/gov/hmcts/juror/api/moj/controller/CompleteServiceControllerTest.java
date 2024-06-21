@@ -33,7 +33,6 @@ import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.service.BulkService;
 import uk.gov.hmcts.juror.api.moj.service.BulkServiceImpl;
 import uk.gov.hmcts.juror.api.moj.service.CompleteServiceService;
-import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 
 import java.time.LocalDate;
 import java.util.List;
