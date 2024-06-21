@@ -99,4 +99,6 @@ public interface JurorHistoryService {
     void createSummonLetterReprintedHistory(JurorPool jurorPool);
 
     void createTransferCourtHistory(JurorPool sourceJurorPool, JurorPool targetJurorPool);
+
+    void createDeleteAdditionalInfoLetterHistory(JurorPool jurorPool);
 }

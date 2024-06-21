@@ -346,6 +346,11 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
             null);
     }
 
+    @Override
+    public void createDeleteAdditionalInfoLetterHistory(JurorPool jurorPool) {
+        registerHistoryLoginUser(jurorPool, HistoryCodeMod.DELETE_REQUEST_MORE_INFO, null);
+    }
+
 
     public void createPostponementLetterHistory(JurorPool jurorPool, String confirmationLetter) {
         if (jurorPool.getDeferralDate() == null || !jurorPool.getDeferralCode().equals("P")) {

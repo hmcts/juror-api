@@ -86,7 +86,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
         assertEquals(completionTime, juror.getCompletionDate(),
             "Juror completion date should match");
 
-        if(isDismissal) {
+        if (isDismissal) {
             assertThat(jurorPool.getNextDate()).isNull();
             assertThat(jurorPool.getOnCall()).isFalse();
         }

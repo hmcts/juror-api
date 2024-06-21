@@ -27,6 +27,7 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiConsumer;
 
 @Slf4j
@@ -168,6 +169,13 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
             letter.getFormCode());
 
         bulkPrintDataRepository.delete(bulkPrintData);
+
+        if (Set.of(FormCode.ENG_REQUESTINFO.getCode(), FormCode.BI_REQUESTINFO.getCode())
+            .contains(letter.getFormCode())) {
+            JurorPool jurorPool =
+                JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, letter.getJurorNumber());
+            jurorHistoryService.createDeleteAdditionalInfoLetterHistory(jurorPool);
+        }
     }
 
     /**
