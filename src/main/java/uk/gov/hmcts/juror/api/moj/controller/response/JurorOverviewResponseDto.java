@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.controller.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -22,6 +23,7 @@ import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -75,6 +77,8 @@ public class JurorOverviewResponseDto {
 
     @Schema(description = "Identity check code")
     private IdCheckCodeEnum idCheckCode;
+    @JsonProperty("checked_in_today_time")
+    private LocalTime checkedInTodayTime;
 
 
     /**
@@ -91,6 +95,8 @@ public class JurorOverviewResponseDto {
         this.commonDetails = new JurorDetailsCommonResponseDto(jurorPool, jurorStatusRepository,
             pendingJurorRepository);
 
+
+
         List<Appearance> appearanceList = appearanceRepository
             .findAllByCourtLocationLocCodeAndJurorNumberAndAppearanceStageIn(
                 SecurityUtil.getLocCode(),
@@ -99,6 +105,14 @@ public class JurorOverviewResponseDto {
                     AppearanceStage.EXPENSE_AUTHORISED,
                     AppearanceStage.EXPENSE_EDITED)
             );
+
+        this.checkedInTodayTime = appearanceRepository.findByCourtLocationLocCodeAndJurorNumberAndAttendanceDate(
+            jurorPool.getCourt().getLocCode(),
+            jurorPool.getJurorNumber(),
+            LocalDate.now())
+            .map(Appearance::getTimeIn)
+            .orElse(null);
+
         this.attendances = appearanceList.stream()
             .filter(appearance -> !AttendanceType.ABSENT.equals(appearance.getAttendanceType()))
             .filter(appearance -> !AttendanceType.NON_ATTENDANCE.equals(appearance.getAttendanceType()))
