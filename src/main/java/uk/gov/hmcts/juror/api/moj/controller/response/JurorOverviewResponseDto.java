@@ -117,22 +117,24 @@ public class JurorOverviewResponseDto {
                 jurorPool.getCourt().getLocCode(),
                 jurorPool.getJurorNumber(),
                 LocalDate.now());
+
         if (todayAppearance.isPresent()) {
             this.checkedInTodayTime = todayAppearance.get().getTimeIn();
-            String trialNumber = todayAppearance.get().getTrialNumber();
-            Panel panel = panelRepository
-                .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumber(
-                    trialNumber,
-                    jurorPool.getCourt().getLocCode(),
-                    jurorPool.getJurorNumber());
-            if (panel != null) {
-                this.location = panel.getTrial().getCourtroom().getDescription();
-            }
-        }
-        if (this.location == null) {
-            Courtroom assemblyRoom = jurorPool.getCourt().getAssemblyRoom();
-            if (assemblyRoom != null) {
-                this.location = assemblyRoom.getDescription();
+            if (todayAppearance.get().getTimeOut() == null) {
+                String trialNumber = todayAppearance.get().getTrialNumber();
+                Panel panel = panelRepository
+                    .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumber(
+                        trialNumber,
+                        jurorPool.getCourt().getLocCode(),
+                        jurorPool.getJurorNumber());
+                if (panel != null) {
+                    this.location = panel.getTrial().getCourtroom().getDescription();
+                } else {
+                    Courtroom assemblyRoom = jurorPool.getCourt().getAssemblyRoom();
+                    if (assemblyRoom != null) {
+                        this.location = assemblyRoom.getDescription();
+                    }
+                }
             }
         }
 
