@@ -118,7 +118,7 @@ public class JurorOverviewResponseDto {
                 jurorPool.getJurorNumber(),
                 LocalDate.now());
 
-        if (todayAppearance.isPresent()) {
+        if (todayAppearance.isPresent() && todayAppearance.get().getTimeIn() != null) {
             this.checkedInTodayTime = todayAppearance.get().getTimeIn();
             if (todayAppearance.get().getTimeOut() == null) {
                 String trialNumber = todayAppearance.get().getTrialNumber();
