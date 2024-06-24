@@ -1,6 +1,8 @@
 package uk.gov.hmcts.juror.api.moj.controller.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -11,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.IdCheckCodeEnum;
@@ -20,10 +23,13 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PendingJurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
+import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -75,7 +81,11 @@ public class JurorOverviewResponseDto {
 
     @Schema(description = "Identity check code")
     private IdCheckCodeEnum idCheckCode;
+    @JsonProperty("checked_in_today_time")
+    @JsonFormat(pattern = ValidationConstants.TIME_FORMAT)
+    private LocalTime checkedInTodayTime;
 
+    private String location;
 
     /**
      * Initialise an instance of this DTO class using a JurorPool object to populate its properties.
@@ -91,6 +101,7 @@ public class JurorOverviewResponseDto {
         this.commonDetails = new JurorDetailsCommonResponseDto(jurorPool, jurorStatusRepository,
             pendingJurorRepository);
 
+
         List<Appearance> appearanceList = appearanceRepository
             .findAllByCourtLocationLocCodeAndJurorNumberAndAppearanceStageIn(
                 SecurityUtil.getLocCode(),
@@ -99,6 +110,18 @@ public class JurorOverviewResponseDto {
                     AppearanceStage.EXPENSE_AUTHORISED,
                     AppearanceStage.EXPENSE_EDITED)
             );
+
+        Optional<Appearance> todayAppearance =
+            appearanceRepository.findByCourtLocationLocCodeAndJurorNumberAndAttendanceDate(
+                jurorPool.getCourt().getLocCode(),
+                jurorPool.getJurorNumber(),
+                LocalDate.now());
+
+        if (todayAppearance.isPresent() && todayAppearance.get().getTimeIn() != null) {
+            this.checkedInTodayTime = todayAppearance.get().getTimeIn();
+            this.location = getLocation(todayAppearance.get(), panelRepository, jurorPool);
+        }
+
         this.attendances = appearanceList.stream()
             .filter(appearance -> !AttendanceType.ABSENT.equals(appearance.getAttendanceType()))
             .filter(appearance -> !AttendanceType.NON_ATTENDANCE.equals(appearance.getAttendanceType()))
@@ -123,5 +146,22 @@ public class JurorOverviewResponseDto {
                 .filter(sn -> sn.getCode().equalsIgnoreCase(juror.getReasonableAdjustmentCode())).findFirst()
                 .ifPresent(s -> this.specialNeedDescription = s.getDescription());
         }
+    }
+
+    @JsonIgnore
+    private String getLocation(Appearance appearance, PanelRepository panelRepository, JurorPool jurorPool) {
+        if (appearance.getTimeOut() != null) {
+            return null;
+        }
+        return Optional.ofNullable(appearance.getTrialNumber())
+            .flatMap(trialNumber -> Optional.ofNullable(panelRepository
+                    .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumber(
+                        trialNumber,
+                        jurorPool.getCourt().getLocCode(),
+                        jurorPool.getJurorNumber()))
+                .map(panel -> panel.getTrial().getCourtroom().getDescription()))
+            .orElse(Optional.ofNullable(jurorPool.getCourt().getAssemblyRoom())
+                .map(Courtroom::getDescription)
+                .orElse(null));
     }
 }
