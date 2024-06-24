@@ -78,7 +78,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
                                            boolean isDismissal) {
         JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, poolNumber);
         assertEquals(true, jurorPool.getIsActive(),
-            "Juror pool should be inactive");
+            "Juror pool should be active");
         assertEquals(IJurorStatus.COMPLETED, jurorPool.getStatus().getStatus(),
             "Juror pool status should be completed");
         Juror juror = jurorPool.getJuror();
