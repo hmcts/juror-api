@@ -130,7 +130,8 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
         JPAQuery<BulkPrintData> query = queryFactory.selectFrom(BULK_PRINT_DATA)
             .where(BULK_PRINT_DATA.jurorNo.eq(jurorNumber))
             .where(BULK_PRINT_DATA.formAttribute.formType.eq(formCode))
-            .where(BULK_PRINT_DATA.creationDate.eq(datePrinted));
+            .where(BULK_PRINT_DATA.creationDate.eq(datePrinted))
+            .where(BULK_PRINT_DATA.extractedFlag.eq(false));
 
         return Optional.ofNullable(query.fetchOne());
     }
