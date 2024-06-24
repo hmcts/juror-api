@@ -90,8 +90,6 @@ public interface JurorHistoryService {
 
     void createPoolEditHistory(JurorPool updatedPool);
 
-    String getHistoryDescription(String historyCode);
-
     void createUndeliveredSummonsHistory(JurorPool jurorPool);
 
     void createAwaitingFurtherInformationHistory(JurorPool jurorPool, String missingInformation);
