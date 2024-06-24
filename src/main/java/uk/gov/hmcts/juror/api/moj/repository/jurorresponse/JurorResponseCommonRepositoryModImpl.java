@@ -94,7 +94,9 @@ public class JurorResponseCommonRepositoryModImpl implements JurorResponseCommon
                 JUROR_RESPONSE_COMMON.replyType.type.as("reply_type"))
             .from(JUROR_RESPONSE_COMMON)
             .join(JUROR_POOL)
-            .on(JUROR_RESPONSE_COMMON.jurorNumber.eq(JUROR_POOL.juror.jurorNumber));
+            .on(JUROR_RESPONSE_COMMON.jurorNumber
+                .eq(JUROR_POOL.juror.jurorNumber)
+                .and(JUROR_POOL.isActive.eq(true)));
 
         // add filters to query
         addCommonFilters(request, query);
