@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.moj.controller.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.OpenAPI31;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.IdCheckCodeEnum;
@@ -27,6 +29,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -82,6 +85,7 @@ public class JurorOverviewResponseDto {
     @JsonFormat(pattern = ValidationConstants.TIME_FORMAT)
     private LocalTime checkedInTodayTime;
 
+    private String location;
 
     /**
      * Initialise an instance of this DTO class using a JurorPool object to populate its properties.
@@ -98,7 +102,6 @@ public class JurorOverviewResponseDto {
             pendingJurorRepository);
 
 
-
         List<Appearance> appearanceList = appearanceRepository
             .findAllByCourtLocationLocCodeAndJurorNumberAndAppearanceStageIn(
                 SecurityUtil.getLocCode(),
@@ -108,12 +111,23 @@ public class JurorOverviewResponseDto {
                     AppearanceStage.EXPENSE_EDITED)
             );
 
-        this.checkedInTodayTime = appearanceRepository.findByCourtLocationLocCodeAndJurorNumberAndAttendanceDate(
-            jurorPool.getCourt().getLocCode(),
-            jurorPool.getJurorNumber(),
-            LocalDate.now())
-            .map(Appearance::getTimeIn)
-            .orElse(null);
+        Optional<Appearance> todayAppearance =
+            appearanceRepository.findByCourtLocationLocCodeAndJurorNumberAndAttendanceDate(
+                jurorPool.getCourt().getLocCode(),
+                jurorPool.getJurorNumber(),
+                LocalDate.now());
+        if (todayAppearance.isPresent()) {
+            this.checkedInTodayTime = todayAppearance.get().getTimeIn();
+            String trialNumber = todayAppearance.get().getTrialNumber();
+            Panel panel = panelRepository
+                .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumber(
+                    trialNumber,
+                    jurorPool.getCourt().getLocCode(),
+                    jurorPool.getJurorNumber());
+            if (panel != null) {
+                this.location = panel.getTrial().getCourtroom().getDescription();
+            }
+        }
 
         this.attendances = appearanceList.stream()
             .filter(appearance -> !AttendanceType.ABSENT.equals(appearance.getAttendanceType()))
