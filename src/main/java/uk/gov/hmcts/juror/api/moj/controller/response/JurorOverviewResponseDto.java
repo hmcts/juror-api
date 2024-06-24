@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
@@ -126,6 +127,12 @@ public class JurorOverviewResponseDto {
                     jurorPool.getJurorNumber());
             if (panel != null) {
                 this.location = panel.getTrial().getCourtroom().getDescription();
+            }
+        }
+        if (this.location == null) {
+            Courtroom assemblyRoom = jurorPool.getCourt().getAssemblyRoom();
+            if (assemblyRoom != null) {
+                this.location = assemblyRoom.getDescription();
             }
         }
 
