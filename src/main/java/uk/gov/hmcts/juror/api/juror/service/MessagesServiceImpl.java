@@ -81,10 +81,12 @@ public class MessagesServiceImpl implements BureauProcessService {
         @SuppressWarnings("PMD.VariableDeclarationUsageDistance")
         int errorCount = 0;
 
+        List<String> notifyRegionKeys = setUpNotifyRegionKeys();
+        List<String> regionIds = setUpRegionIds();
         for (int i = 0;
-             i < setUpNotifyRegionKeys().size();
+             i < notifyRegionKeys.size();
              i++) {
-            myRegionMap.put(setUpRegionIds().get(i), setUpNotifyRegionKeys().get(i));
+            myRegionMap.put(regionIds.get(i), notifyRegionKeys.get(i));
         }
 
         log.debug("Display myRegionMap {}", myRegionMap);
@@ -102,7 +104,7 @@ public class MessagesServiceImpl implements BureauProcessService {
 
 
         for (Message messagesDetail : messageDetailList) {
-            log.info("messagesDetail  PART_NO : {}", messagesDetail.getJurorNumber());
+            log.info("messagesDetail  Juror number : {}", messagesDetail.getJurorNumber());
 
             try {
                 String templateDetailsKey = messagesDetail.getMessageId()
@@ -131,8 +133,8 @@ public class MessagesServiceImpl implements BureauProcessService {
 
 
                 if (regionApikey == null || regionApikey.isEmpty()) {
-                    log.error("Missing Notify Api Account key Cannot send notify communication: ");
-                    log.info("Missing Notify Api Account key Cannot send notify communication: ");
+                    log.error("Missing Notify Api Account key Cannot send notify communication. RegionId: {}",
+                        regionId);
                     messagesDetail.setMessageRead(MESSAGE_READ_APP_ERROR);
                     updateMessageFlag(messagesDetail);
 
