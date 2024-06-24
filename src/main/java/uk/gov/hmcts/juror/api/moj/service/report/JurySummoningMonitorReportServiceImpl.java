@@ -104,8 +104,11 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
         // includes disqualified on selection
         response.setDisqualifiedOther(Integer.parseInt(result.get(10)));
 
-        // result.get(11) is not used - count of currently deferred jurors (active)
-        // result.get(12) is not used - count of currently postponed jurors (active)
+        // count of currently deferred jurors (active)
+        response.setDeferred(Integer.parseInt(result.get(11)));
+        // count of currently postponed jurors (active)
+        response.setPostponed(Integer.parseInt(result.get(12)));
+
         response.setNonResponded(Integer.parseInt(result.get(13)));
         response.setUndeliverable(Integer.parseInt(result.get(14)));
         response.setTotalUnavailable(Integer.parseInt(result.get(15)));
@@ -142,10 +145,8 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
 
         response.setAwaitingInformation(Integer.parseInt(result.get(41)));
 
-        // all deferrals regardless of current juror status
-        response.setDeferred(Integer.parseInt(result.get(42)));
-        // all postponements regardless of current juror status
-        response.setPostponed(Integer.parseInt(result.get(43)));
+        // result.get(42) is not used - all deferrals regardless of current juror status
+        // result.get(43) is not used - all postponements regardless of current juror status
 
         if (response.getTotalJurorsNeeded() - response.getBureauDeferralsIncluded() > 0) {
             response.setRatio(
