@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
+import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -45,7 +46,7 @@ public class SimplifiedExpenseDetailDto {
 
     private BigDecimal balanceToPay;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = ValidationConstants.DATETIME_FORMAT)
     private LocalDateTime auditCreatedOn;
 
     public BigDecimal getFinancialLoss() {

@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.bureau.service;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -330,7 +331,7 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
 
             //JDB- 3053
             //If Welsh then Y, English - Null
-            if (originalDetails.getWelsh() == Boolean.TRUE
+            if (BooleanUtils.isTrue(originalDetails.getWelsh())
                 && welshCourtLocationRepository.findByLocCode(jurorDetails.getCourt().getLocCode()) != null) {
                 jurorDetails.getJuror().setWelsh(Boolean.TRUE);
             } else {

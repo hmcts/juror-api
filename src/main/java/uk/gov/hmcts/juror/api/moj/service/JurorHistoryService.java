@@ -73,6 +73,8 @@ public interface JurorHistoryService {
 
     void createJuryEmpanelmentHistory(JurorPool jurorPool, Panel panelMember);
 
+    void createPanelCreationHistory(JurorPool jurorPool, Panel panelMember);
+
     void createAddedToPanelHistory(JurorPool jurorPool, Panel panel);
 
     void createReturnFromPanelHistory(JurorPool jurorPool, Panel panelMember);
@@ -91,4 +93,12 @@ public interface JurorHistoryService {
     void createPoolEditHistory(JurorPool updatedPool);
 
     void createAwaitingFurtherInformationHistory(JurorPool jurorPool, String missingInformation);
+
+    void createContactDetailsExportedHistory(String jurorNumber, String poolNumber);
+
+    void createSummonLetterReprintedHistory(JurorPool jurorPool);
+
+    void createTransferCourtHistory(JurorPool sourceJurorPool, JurorPool targetJurorPool);
+
+    void createDeleteAdditionalInfoLetterHistory(JurorPool jurorPool);
 }
