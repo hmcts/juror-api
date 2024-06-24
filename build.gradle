@@ -101,7 +101,7 @@ dependencies {
 
     implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
     implementation 'javax.mail:mail:1.4.7'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
     implementation 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
 
