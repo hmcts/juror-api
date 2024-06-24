@@ -44,6 +44,7 @@ public class PrintDataServiceImpl implements PrintDataService {
     private final WelshCourtLocationRepository welshCourtLocationRepository;
 
     public static final String BUREAU_LOC_CODE = "400";
+    private final JurorHistoryService jurorHistoryService;
 
     @Override
     public void bulkPrintSummonsLetter(List<JurorPool> jurorPools) {
@@ -62,6 +63,12 @@ public class PrintDataServiceImpl implements PrintDataService {
                 ));
             }
         });
+    }
+
+    @Override
+    public void reprintSummonsLetter(JurorPool jurorPool) {
+        bulkPrintSummonsLetter(List.of(jurorPool));
+        jurorHistoryService.createSummonLetterReprintedHistory(jurorPool);
     }
 
     @Override

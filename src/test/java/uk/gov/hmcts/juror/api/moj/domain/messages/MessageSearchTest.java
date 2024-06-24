@@ -136,7 +136,7 @@ class MessageSearchTest {
 
         verify(query, times(1))
             .where(QJuror.juror.firstName.concat(" ").concat(QJuror.juror.lastName).toLowerCase()
-                .likeIgnoreCase("%abc a%"));
+            .contains("abc a"));
         verifyNoMoreInteractions(query);
     }
 

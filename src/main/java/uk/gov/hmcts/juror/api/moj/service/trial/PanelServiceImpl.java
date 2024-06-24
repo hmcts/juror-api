@@ -22,14 +22,12 @@ import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
-import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.utils.PanelUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
-import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -61,7 +59,6 @@ public class PanelServiceImpl implements PanelService {
     private final PanelRepository panelRepository;
     private final TrialRepository trialRepository;
     private final JurorPoolRepository jurorPoolRepository;
-    private final JurorHistoryRepository jurorHistoryRepository;
     private final JurorHistoryService jurorHistoryService;
 
 
@@ -83,7 +80,7 @@ public class PanelServiceImpl implements PanelService {
         createPanelValidationChecks(numberRequested, trialNumber, courtLocationCode);
         List<JurorPool> appearanceList = buildRandomJurorPoolList(courtLocationCode, attendanceDate,
             poolNumbers, new ArrayList<>());
-        return processPanelList(numberRequested, trialNumber, courtLocationCode, attendanceDate, payload,
+        return processPanelList(numberRequested, trialNumber, courtLocationCode, attendanceDate, true,
             appearanceList);
     }
 
@@ -101,8 +98,7 @@ public class PanelServiceImpl implements PanelService {
         List<JurorPool> appearanceList = buildRandomJurorPoolList(courtLocationCode, attendanceDate, poolNumbers,
             members.stream().map(Panel::getJurorNumber).toList());
 
-        BureauJwtPayload payload = SecurityUtil.getActiveUsersBureauPayload();
-        return processPanelList(numberRequested, trialNumber, courtLocationCode, attendanceDate, payload,
+        return processPanelList(numberRequested, trialNumber, courtLocationCode, attendanceDate, false,
             appearanceList);
 
     }
@@ -165,7 +161,7 @@ public class PanelServiceImpl implements PanelService {
 
     private List<PanelListDto> processPanelList(int numberRequested, String trialNumber, String courtLocationCode,
                                                 LocalDate attendanceDate,
-                                                BureauJwtPayload payload,
+                                                boolean isPanelCreation,
                                                 List<JurorPool> appearanceList) {
 
         if (numberRequested > appearanceList.size()) {
@@ -203,7 +199,11 @@ public class PanelServiceImpl implements PanelService {
             appearance.setTrialNumber(trial.getTrialNumber());
             appearanceRepository.saveAndFlush(appearance);
 
-            jurorHistoryService.createAddedToPanelHistory(jurorPool, panel);
+            if (isPanelCreation) {
+                jurorHistoryService.createPanelCreationHistory(jurorPool, panel);
+            } else {
+                jurorHistoryService.createAddedToPanelHistory(jurorPool, panel);
+            }
             panelListDtosList.add(createPanelListDto(panel));
         }
 

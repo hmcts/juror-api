@@ -315,6 +315,6 @@ public class Juror extends Address implements Serializable {
     }
 
     public boolean isWelsh() {
-        return Optional.ofNullable(this.welsh).orElse(false);
+        return Optional.ofNullable(this.getWelsh()).orElse(false);
     }
 }
