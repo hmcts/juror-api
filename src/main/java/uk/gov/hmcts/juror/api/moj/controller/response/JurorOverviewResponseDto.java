@@ -14,7 +14,6 @@ import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
-import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.IdCheckCodeEnum;
@@ -165,5 +164,4 @@ public class JurorOverviewResponseDto {
                 .map(Courtroom::getDescription)
                 .orElse(null));
     }
-}
 }
