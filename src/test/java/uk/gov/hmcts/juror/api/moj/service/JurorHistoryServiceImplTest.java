@@ -23,7 +23,6 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
-import uk.gov.hmcts.juror.api.moj.repository.THistoryCodeRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.math.BigDecimal;
@@ -51,15 +50,13 @@ class JurorHistoryServiceImplTest {
     private final JurorHistoryService jurorHistoryService;
     private final Clock clock;
     private final JurorHistoryRepository jurorHistoryRepository;
-    private final THistoryCodeRepository thistoryCodeRepository;
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
     public JurorHistoryServiceImplTest() {
         this.clock = mock(Clock.class);
         this.jurorHistoryRepository = mock(JurorHistoryRepository.class);
-        this.thistoryCodeRepository = mock(THistoryCodeRepository.class);
-        this.jurorHistoryService = new JurorHistoryServiceImpl(jurorHistoryRepository, thistoryCodeRepository, clock);
+        this.jurorHistoryService = new JurorHistoryServiceImpl(jurorHistoryRepository, clock);
     }
 
     @BeforeEach
@@ -151,7 +148,7 @@ class JurorHistoryServiceImplTest {
     @Test
     void createWithdrawHistory() {
         JurorPool jurorPool = createJurorPool();
-        jurorHistoryService.createWithdrawHistory(jurorPool, "Other Info","E");
+        jurorHistoryService.createWithdrawHistory(jurorPool, "Other Info", "E");
         assertStandardValuesSystem(jurorPool, new JurorHistoryPartHistoryJurorHistoryExpectedValues(
             HistoryCodeMod.WITHDRAWAL_LETTER, "Other Info"));
     }
@@ -209,8 +206,9 @@ class JurorHistoryServiceImplTest {
         jurorPool.getJuror().setCompletionDate(LocalDate.of(2023, 11, 24));
         mockCurrentUser("someUserId1");
         jurorHistoryService.createCompleteServiceHistory(jurorPool);
-        assertStandardValues(jurorPool, "someUserId1", new JurorHistoryPartHistoryJurorHistoryExpectedValues(
-            HistoryCodeMod.COMPLETE_SERVICE, "Completed service on 24/11/2023"));
+        assertValuesAdditional(jurorPool, "someUserId1",
+            LocalDate.of(2023, 11, 24), null,  new JurorHistoryPartHistoryJurorHistoryExpectedValues(
+                HistoryCodeMod.COMPLETE_SERVICE, null));
     }
 
     @Test

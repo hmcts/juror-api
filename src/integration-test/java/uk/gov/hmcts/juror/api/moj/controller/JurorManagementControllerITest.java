@@ -1815,8 +1815,9 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("Add non attendance - add a non attendance record date in the future")
-        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitNonAttendance.sql"})
-        void addBadPayloadNonAttendanceDayInFuture() {
+        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitNonAttendance.sql",
+            "/db/JurorExpenseControllerITest_expenseRates.sql"})
+        void addNonAttendanceHappyDayInFuture() {
             JurorNonAttendanceDto request = JurorNonAttendanceDto.builder()
                 .jurorNumber("111111111")
                 .nonAttendanceDate(now().plusDays(1))
@@ -1828,7 +1829,19 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                 restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
                     URI.create("/api/v1/moj/juror-management/non-attendance")), String.class);
 
-            assertThat(response.getStatusCode()).as("HTTP status created expected").isEqualTo(BAD_REQUEST);
+            assertThat(response.getStatusCode()).as("HTTP status created expected").isEqualTo(CREATED);
+
+            Optional<Appearance> appearanceOpt =
+                appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(request.getJurorNumber(),
+                    "415230101", request.getNonAttendanceDate());
+            assertThat(appearanceOpt).isNotEmpty();
+            Appearance appearance = appearanceOpt.get();
+            assertThat(appearance.getJurorNumber()).isEqualTo(request.getJurorNumber());
+            assertThat(appearance.getAttendanceDate()).isEqualTo(request.getNonAttendanceDate());
+            assertThat(appearance.getPoolNumber()).isEqualTo(request.getPoolNumber());
+            assertThat(appearance.getCourtLocation().getLocCode()).isEqualTo(request.getLocationCode());
+            assertThat(appearance.getNonAttendanceDay()).isTrue();
+            assertThat(appearance.getLossOfEarningsDue()).isEqualTo(BigDecimal.valueOf(63.25));
         }
     }
 

@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        springBootVersion = '3.3.0'
+        springBootVersion = '3.3.1'
         notifyVersion = '5.1.0-RELEASE'
         springDocVersion = '2.5.0'
         queryDslVersion = '5.1.0'
@@ -99,10 +99,10 @@ dependencies {
     implementation "org.flywaydb:flyway-database-postgresql:${flywayVersion}"
     implementation "org.flywaydb:flyway-core:${flywayVersion}"
 
-    implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
     implementation 'javax.mail:mail:1.4.7'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
     implementation 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
 
     implementation('com.google.guava:guava:33.2.1-jre')
@@ -151,7 +151,7 @@ dependencies {
     testImplementation 'org.testcontainers:postgresql:1.19.8'
 
     // Validation
-    testImplementation 'org.wiremock:wiremock-standalone:3.6.0'
+    testImplementation 'org.wiremock:wiremock-standalone:3.7.0'
 }
 
 sonarqube {

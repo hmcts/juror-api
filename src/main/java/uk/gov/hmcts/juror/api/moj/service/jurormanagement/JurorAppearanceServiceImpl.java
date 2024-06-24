@@ -492,8 +492,6 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         final String locationCode = request.getLocationCode();
         final LocalDate nonAttendanceDate = request.getNonAttendanceDate();
         SecurityUtil.validateIsLocCode(locationCode);
-        //check that the appearance date is not in the future
-        checkAttendanceDateIsNotAFutureDate(nonAttendanceDate);
 
         log.debug(String.format("User %s is adding a non attendance day for juror %s", payload.getLogin(),
             request.getJurorNumber()));

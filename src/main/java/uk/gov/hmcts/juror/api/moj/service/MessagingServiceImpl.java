@@ -208,6 +208,11 @@ public class MessagingServiceImpl implements MessagingService {
                     .map(ExportContactDetailsRequest.ExportItems::getTitle)
                     .toList());
         exportItems.forEach(csvBuilder::addRow);
+
+        exportContactDetailsRequest.getJurors()
+            .forEach(jurorAndPoolRequest -> historyService.createContactDetailsExportedHistory(
+                jurorAndPoolRequest.getJurorNumber(),
+                jurorAndPoolRequest.getPoolNumber()));
         return csvBuilder.build();
     }
 
@@ -267,7 +272,7 @@ public class MessagingServiceImpl implements MessagingService {
         }
 
         String otherInfo;
-        if (welshTemplate != null && juror.getWelsh()) {
+        if (welshTemplate != null && juror.isWelsh()) {
             message.setSubject("Eich Gwasanaeth Rheithgor");
             message.setMessageText(welshTemplate);
             message.setMessageId(messageType.getWelshMessageId());

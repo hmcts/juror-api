@@ -9,6 +9,7 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResp
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
+import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
@@ -39,6 +40,7 @@ public class JuryListReport extends AbstractStandardReport {
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QPanel.panel.trial.trialNumber.eq(request.getTrialNumber()));
         query.where(QPanel.panel.trial.courtLocation.owner.eq(SecurityUtil.getActiveOwner()));
+        query.where(QPanel.panel.result.eq(PanelResult.JUROR));
         query.orderBy(QJuror.juror.jurorNumber.asc());
     }
 

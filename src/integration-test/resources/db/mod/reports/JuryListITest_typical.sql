@@ -3,7 +3,10 @@ INSERT INTO juror_mod.juror (juror_number, title, last_name, first_name, dob, ad
 VALUES
 ('415000001', 'MR','LNAME1','FNAME1', '1988-01-01', '542 STREET NAME', 'Chichester', 'PO19 1SX', true),
 ('415000002', 'MR','LNAME2','FNAME2', '1988-01-01', '542 STREET NAME', 'Chichester', 'PO19 1SX', true),
-('415000003', 'MR','LNAME3','FNAME3', '1988-01-01', '542 STREET NAME', 'Chichester', 'PO19 1SX', true);
+('415000003', 'MR','LNAME3','FNAME3', '1988-01-01', '542 STREET NAME', 'Chichester', 'PO19 1SX', true),
+('415000004', 'MR','LNAME4','FNAME4', '1988-01-01', '542 STREET NAME', 'Chichester', 'PO19 1SX', true),
+('415000005', 'MR','LNAME5','FNAME5', '1988-01-01', '542 STREET NAME', 'Chichester', 'PO19 1SX', true),
+('415000006', 'MR','LNAME6','FNAME6', '1988-01-01', '542 STREET NAME', 'Chichester', 'PO19 1SX', true);
 
 insert into juror_mod.appearance (attendance_date, juror_number,loc_code, time_in, time_out, non_attendance) values
 (current_date, '415000001', '415', current_time,null,false);
@@ -63,4 +66,7 @@ INSERT INTO juror_mod.trial
 insert into juror_mod.juror_trial (loc_code, juror_number, trial_number, rand_number, date_selected, "result", completed) values
 ('415', '415000001', 'T100000001', 1, '2024-07-11', 'J', false),
 ('415', '415000002', 'T100000001', 1, '2024-07-11', 'J', false),
-('415', '415000003', 'T100000001', 1, '2024-07-11', 'J', false);
+('415', '415000003', 'T100000001', 1, '2024-07-11', 'J', false),
+('415', '415000004', 'T100000001', 1, '2024-07-11', 'CD', false),
+('415', '415000005', 'T100000001', 1, '2024-07-11', 'CD', false),
+('415', '415000006', 'T100000001', 1, '2024-07-11', 'NU', false);

@@ -501,7 +501,7 @@ public class JurorManagementServiceImplTest {
             .saveAndFlush(any());
 
         verify(jurorHistoryService, times(jurorNumbers.size()))
-            .createReassignPoolMemberHistory(any(), any(), any());
+            .createTransferCourtHistory(any(), any());
     }
 
     @Test
@@ -581,7 +581,7 @@ public class JurorManagementServiceImplTest {
             .saveAndFlush(any());
 
         verify(jurorHistoryService, times(jurorNumbers.size()))
-            .createReassignPoolMemberHistory(any(), any(), any());
+            .createTransferCourtHistory(any(), any());
 
     }
 
@@ -660,7 +660,7 @@ public class JurorManagementServiceImplTest {
         verify(poolRequestRepository, times(1))
             .saveAndFlush(any());
         verify(jurorHistoryService, times(jurorNumbers.size()))
-            .createReassignPoolMemberHistory(any(), any(), any());
+            .createTransferCourtHistory(any(), any());
     }
 
     @Test
@@ -747,7 +747,7 @@ public class JurorManagementServiceImplTest {
         verify(poolRequestRepository, times(1))
             .saveAndFlush(any());
         verify(jurorHistoryService, times(2))
-            .createReassignPoolMemberHistory(any(), any(), any());
+            .createTransferCourtHistory(any(), any());
     }
 
     @Test
