@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.juror.service;
 
 import com.google.common.collect.Lists;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,61 +99,23 @@ public class MessagesServiceImpl implements BureauProcessService {
 
         log.info("messageDetailList Number of records to process : {}", messageDetailList.size());
 
+
+        Map<String, TemplateDetails> templateDetailsMap = new HashMap<>();
+
+
         for (Message messagesDetail : messageDetailList) {
             log.info("messagesDetail  PART_NO : {}", messagesDetail.getJurorNumber());
 
             try {
-                final String welshSubjectText = messagesDetail.getSubject();
-                final String regionIdSms = messagesDetail.getLocationCode().getCourtRegion().getRegionId();
-                final Integer legacyTemplateIdSms = messagesDetail.getMessageId();
-                final String regionIdEmail = messagesDetail.getLocationCode().getCourtRegion().getRegionId();
-                final Integer legacyTemplateIdEmail = messagesDetail.getMessageId();
-                final String regionIdSmsWelsh = messagesDetail.getLocationCode().getCourtRegion().getRegionId();
-                final Integer legacyTemplateIdSmsWelsh = messagesDetail.getMessageId();
-                final String regionIdEmailWelsh = messagesDetail.getLocationCode().getCourtRegion().getRegionId();
-                final Integer legacyTemplateIdEmailWelsh = messagesDetail.getMessageId();
-
-
-                //Queries to filter on Region_id ,Legacy_Template_id,Message_Format and Welsh_Language
-                BooleanExpression regionNotifyTemplateSmsFilter =
-                    RegionNotifyTemplateQueriesMod.regionNotifyTemplateByIdAndSms(
-                        regionIdSms,
-                        legacyTemplateIdSms
-                    );
-                BooleanExpression regionNotifyTemplateEmailFilter =
-                    RegionNotifyTemplateQueriesMod.regionNotifyTemplateByIdAndEmail(
-                        regionIdEmail,
-                        legacyTemplateIdEmail
-                    );
-                BooleanExpression regionNotifyTemplateSmsFilterWelsh =
-                    RegionNotifyTemplateQueriesMod.regionNotifyTemplateByIdAndSmsWelsh(
-                        regionIdSmsWelsh,
-                        legacyTemplateIdSmsWelsh
-                    );
-                BooleanExpression regionNotifyTemplateEmailFilterWelsh =
-                    RegionNotifyTemplateQueriesMod.regionNotifyTemplateByIdAndEmailWelsh(
-                        regionIdEmailWelsh,
-                        legacyTemplateIdEmailWelsh
-                    );
-
-                //Queries to filter on Region_id ,Legacy_Template_id,Message_Format and Welsh_Language
-                final List<RegionNotifyTemplateMod> regionNotifyTemplateListEmail = Lists.newLinkedList(
-                    regionNotifyTemplateRepositoryMod.findAll(regionNotifyTemplateEmailFilter));
-                final List<RegionNotifyTemplateMod> regionNotifyTemplateListSms = Lists.newLinkedList(
-                    regionNotifyTemplateRepositoryMod.findAll(regionNotifyTemplateSmsFilter));
-                final List<RegionNotifyTemplateMod> regionNotifyTemplateListSmsWelsh = Lists.newLinkedList(
-                    regionNotifyTemplateRepositoryMod.findAll(regionNotifyTemplateSmsFilterWelsh));
-                final List<RegionNotifyTemplateMod> regionNotifyTemplateListEmailWelsh = Lists.newLinkedList(
-                    regionNotifyTemplateRepositoryMod.findAll(regionNotifyTemplateEmailFilterWelsh));
-
-
-                templateCheck(
-                    messagesDetail,
-                    regionNotifyTemplateListEmail,
-                    regionNotifyTemplateListSms,
-                    regionNotifyTemplateListSmsWelsh,
-                    regionNotifyTemplateListEmailWelsh
-                );
+                String templateDetailsKey = messagesDetail.getMessageId()
+                    + "--"
+                    + messagesDetail.getLocationCode().getCourtRegion().getRegionId();
+                TemplateDetails templateDetails = templateDetailsMap.get(templateDetailsKey);
+                if (templateDetails == null) {
+                    templateDetails = createTemplateDetails(messagesDetail);
+                    templateDetailsMap.put(templateDetailsKey, templateDetails);
+                }
+                templateCheck(messagesDetail, templateDetails);
 
 
                 final String jurorNumber = messagesDetail.getJurorNumber();
@@ -191,14 +154,14 @@ public class MessagesServiceImpl implements BureauProcessService {
                 }
 
                 List<RegionNotifyTemplateMod> regionNotifyTemplateMods;
-                if (Objects.equals(welshTempComparisonText, welshSubjectText)) {
+                if (Objects.equals(welshTempComparisonText, messagesDetail.getSubject())) {
                     regionNotifyTemplateMods = isEmail
-                        ? regionNotifyTemplateListEmailWelsh
-                        : regionNotifyTemplateListSmsWelsh;
+                        ? templateDetails.getRegionNotifyTemplateListEmailWelsh()
+                        : templateDetails.getRegionNotifyTemplateListSmsWelsh();
                 } else {
                     regionNotifyTemplateMods = isEmail
-                        ? regionNotifyTemplateListEmail
-                        : regionNotifyTemplateListSms;
+                        ? templateDetails.getRegionNotifyTemplateListEmail()
+                        : templateDetails.getRegionNotifyTemplateListSms();
                 }
 
                 NotificationClient notifyClient = new NotificationClient(regionApikey, gotProxy);
@@ -235,14 +198,12 @@ public class MessagesServiceImpl implements BureauProcessService {
                     log.trace("Court Comms  sms messaging  Service :  response {}", response);
                 }
             } catch (NotificationClientException e) {
-                log.error("Failed to send via Notify: {}", e);
-                log.trace("Unable to send notify: {}", e.getHttpResult());
-                log.info("Unable to send notify: {}", e.getHttpResult());
+                log.error("Failed to send via Notify", e);
                 messagesDetail.setMessageRead(MESSAGE_READ_APP_ERROR);
                 updateMessageFlag(messagesDetail);
                 errorCount++;
             } catch (Exception e) {
-                log.info("Unexpected exception: {}", e);
+                log.error("Unexpected exception when sending details to notify", e);
                 errorCount++;
             }
         }
@@ -255,15 +216,43 @@ public class MessagesServiceImpl implements BureauProcessService {
             Map.of("ERROR_COUNT", "" + errorCount));
     }
 
+    private TemplateDetails createTemplateDetails(Message messagesDetail) {
+        TemplateDetails templateDetails = new TemplateDetails();
+        CourtRegionMod courtRegionMod = messagesDetail.getLocationCode().getCourtRegion();
 
-    private void templateCheck(Message messagesDetail, List<RegionNotifyTemplateMod> regionNotifyTemplateListEmail,
-                               List<RegionNotifyTemplateMod> regionNotifyTemplateListSms,
-                               List<RegionNotifyTemplateMod> regionNotifyTemplateListEmailWelsh,
-                               List<RegionNotifyTemplateMod> regionNotifyTemplateListSmsWelsh) {
-        final int missingEmailTemplateCheck = regionNotifyTemplateListEmail.size();
-        final int missingSmsTemplateCheck = regionNotifyTemplateListSms.size();
-        final int missingWelshEmailTemplateCheck = regionNotifyTemplateListEmailWelsh.size();
-        final int missingWelshSmsTemplateCheck = regionNotifyTemplateListSmsWelsh.size();
+        templateDetails.setRegionNotifyTemplateListEmail(Lists.newLinkedList(
+            regionNotifyTemplateRepositoryMod.findAll(
+                RegionNotifyTemplateQueriesMod.regionNotifyTemplateByIdAndEmail(
+                    courtRegionMod.getRegionId(),
+                    messagesDetail.getMessageId()
+                ))));
+        templateDetails.setRegionNotifyTemplateListSms(Lists.newLinkedList(
+            regionNotifyTemplateRepositoryMod.findAll(
+                RegionNotifyTemplateQueriesMod.regionNotifyTemplateByIdAndSms(
+                    courtRegionMod.getRegionId(),
+                    messagesDetail.getMessageId()
+                ))));
+        templateDetails.setRegionNotifyTemplateListSmsWelsh(Lists.newLinkedList(
+            regionNotifyTemplateRepositoryMod.findAll(
+                RegionNotifyTemplateQueriesMod.regionNotifyTemplateByIdAndSmsWelsh(
+                    courtRegionMod.getRegionId(),
+                    messagesDetail.getMessageId()
+                ))));
+        templateDetails.setRegionNotifyTemplateListEmailWelsh(Lists.newLinkedList(
+            regionNotifyTemplateRepositoryMod.findAll(
+                RegionNotifyTemplateQueriesMod.regionNotifyTemplateByIdAndEmailWelsh(
+                    courtRegionMod.getRegionId(),
+                    messagesDetail.getMessageId()
+                ))));
+        return templateDetails;
+    }
+
+
+    private void templateCheck(Message messagesDetail, TemplateDetails templateDetails) {
+        final int missingEmailTemplateCheck = templateDetails.getRegionNotifyTemplateListEmail().size();
+        final int missingSmsTemplateCheck = templateDetails.getRegionNotifyTemplateListSms().size();
+        final int missingWelshEmailTemplateCheck = templateDetails.getRegionNotifyTemplateListEmailWelsh().size();
+        final int missingWelshSmsTemplateCheck = templateDetails.getRegionNotifyTemplateListSmsWelsh().size();
 
         if (missingEmailTemplateCheck < CHECK_NUM) {
             messagesDetail.setMessageRead(MESSAGE_READ_APP_ERROR);
@@ -290,7 +279,7 @@ public class MessagesServiceImpl implements BureauProcessService {
         final NotifyConfigurationProperties.Proxy setUpProxy = notifyConfigurationProperties.getProxy();
         if (setUpProxy != null && setUpProxy.isEnabled()) {
             String setupHost = setUpProxy.getHost();
-            Integer setupPort = Integer.valueOf(setUpProxy.getPort());
+            int setupPort = Integer.parseInt(setUpProxy.getPort());
             Proxy.Type setupType = setUpProxy.getType();
             final InetSocketAddress socketAddress = new InetSocketAddress(setupHost, setupPort);
             proxy = new Proxy(setupType, socketAddress);
@@ -300,29 +289,7 @@ public class MessagesServiceImpl implements BureauProcessService {
     }
 
     private void updateMessageFlag(Message messagesDetail) {
-        try {
-            log.trace("Inside update....");
-            messageRepository.save(messagesDetail);
-            log.trace("Updating messages_read ");
-        } catch (TransactionSystemException e) {
-            Throwable cause = e.getRootCause();
-            if (messagesDetail.getMessageRead().equals(MESSAGE_NOT_READ)) {
-                log.trace("notifications is : {} - logging error", messagesDetail.getMessageRead());
-                log.info("notifications is : {} - logging error", messagesDetail.getMessageRead());
-                log.error("Failed to update db to {}. Manual update required. {}", messagesDetail.getMessageRead(),
-                    cause.toString()
-                );
-            } else {
-                log.trace("notifications is : {} - throwing excep", messagesDetail.getMessageRead());
-                throw new JurorCommsNotificationServiceException(
-                    "Failed to update db to "
-                        + messagesDetail.getMessageRead() + ". Manual update required. ",
-                    cause
-                );
-            }
-        }
-
-
+        messageRepository.save(messagesDetail);
     }
 
     public List<String> setUpNotifyRegionKeys() {
@@ -336,16 +303,20 @@ public class MessagesServiceImpl implements BureauProcessService {
         List<String> regionIds = new ArrayList<>();
 
         for (CourtRegionMod courtRegion : courtRegions) {
-            String courtregionIds = courtRegion.getRegionId();
-            regionIds.add(courtregionIds);
-
+            regionIds.add(courtRegion.getRegionId());
             log.debug("CourtRegions {}", courtRegion.getRegionId());
-
         }
 
         return regionIds;
     }
 
+    @Data
+    static class TemplateDetails {
+        private List<RegionNotifyTemplateMod> regionNotifyTemplateListEmail;
+        private List<RegionNotifyTemplateMod> regionNotifyTemplateListSms;
+        private List<RegionNotifyTemplateMod> regionNotifyTemplateListSmsWelsh;
+        private List<RegionNotifyTemplateMod> regionNotifyTemplateListEmailWelsh;
+    }
 }
 
 
