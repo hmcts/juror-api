@@ -21,6 +21,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PendingJurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
+import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -78,6 +79,7 @@ public class JurorOverviewResponseDto {
     @Schema(description = "Identity check code")
     private IdCheckCodeEnum idCheckCode;
     @JsonProperty("checked_in_today_time")
+    @JsonFormat(pattern = ValidationConstants.TIME_FORMAT)
     private LocalTime checkedInTodayTime;
 
 
