@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.moj.report.datatypes;
 
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import lombok.Getter;
 import uk.gov.hmcts.juror.api.moj.domain.QPaymentData;
 import uk.gov.hmcts.juror.api.moj.report.IDataType;
@@ -19,7 +20,10 @@ import java.util.Locale;
 })
 public enum PaymentStatusDataTypes implements IDataType {
     EXTRACTED("Extracted", Boolean.class,
-        QPaymentData.paymentData.extracted, QPaymentData.paymentData),
+        new CaseBuilder()
+            .when(QPaymentData.paymentData.expenseFileName.isNull())
+            .then(false)
+            .otherwise(true), QPaymentData.paymentData),
 
     CREATION_DATE("Date Approved", LocalDate.class,
         DataUtils.asDate(QPaymentData.paymentData.creationDateTime),

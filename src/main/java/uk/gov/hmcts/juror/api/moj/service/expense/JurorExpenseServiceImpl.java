@@ -1215,7 +1215,6 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             .subsistenceTotal(substanceTotal)
             .financialLossTotal(financialLossTotal)
             .expenseFileName(null)
-            .extracted(false)
             .build();
     }
 

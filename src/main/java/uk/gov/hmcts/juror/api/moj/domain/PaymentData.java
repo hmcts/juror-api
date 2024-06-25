@@ -136,8 +136,4 @@ public class PaymentData {
     @Column(name = "expense_file_name")
     @Length(max = 30)
     private String expenseFileName;
-
-    @Column(name = "extracted")
-    @NotNull
-    private boolean extracted;
 }
