@@ -159,8 +159,8 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
         ReissueLetterRequestDto.ReissueLetterRequestData letter = request.getLetters().get(0);
 
         BulkPrintData bulkPrintData =
-            bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(letter.getJurorNumber(),
-                    letter.getFormCode(), letter.getDatePrinted())
+            bulkPrintDataRepository.findLatestPendingLetterForJuror(letter.getJurorNumber(),
+                    letter.getFormCode())
                 .orElseThrow(() -> new MojException.NotFound(
                     "Bulk print data not found for juror %s " + letter.getJurorNumber(),
                     null));
