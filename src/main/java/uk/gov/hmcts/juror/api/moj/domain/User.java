@@ -13,7 +13,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -27,7 +26,6 @@ import org.hibernate.envers.NotAudited;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import uk.gov.hmcts.juror.api.bureau.domain.Team;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 
 import java.io.Serializable;
@@ -43,7 +41,7 @@ import java.util.Set;
 @Builder
 @AllArgsConstructor
 @Audited
-@EqualsAndHashCode(exclude = {"team", "courts"})
+@EqualsAndHashCode(exclude = {"courts"})
 public class User implements Serializable {
 
     @Id
@@ -70,11 +68,6 @@ public class User implements Serializable {
     @NotAudited
     @JsonProperty("last_logged_in")
     private LocalDateTime lastLoggedIn;
-
-    @NotAudited
-    @ManyToOne
-    @Deprecated(forRemoval = true)//TODO confirm
-    private Team team;
 
     @Column(name = "approval_limit")
     private BigDecimal approvalLimit;
@@ -133,12 +126,6 @@ public class User implements Serializable {
             return 0;
         }
     }
-
-    @Deprecated(forRemoval = true)
-    public Team getTeam() {
-        return team;
-    }
-
 
     public Set<Role> getRoles() {
         if (roles == null) {
