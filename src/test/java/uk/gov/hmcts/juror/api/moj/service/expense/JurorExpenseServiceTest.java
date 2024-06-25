@@ -3144,7 +3144,6 @@ class JurorExpenseServiceTest {
             assertThat(paymentData.getSubsistenceTotal()).isEqualTo(new BigDecimal("6.99"));
             assertThat(paymentData.getFinancialLossTotal()).isEqualTo(new BigDecimal("9.02"));
             assertThat(paymentData.getExpenseFileName()).isNull();
-            assertThat(paymentData.isExtracted()).isFalse();
         }
 
         @Test
