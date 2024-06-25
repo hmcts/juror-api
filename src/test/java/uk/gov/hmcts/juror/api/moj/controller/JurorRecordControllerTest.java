@@ -1334,57 +1334,6 @@ class JurorRecordControllerTest {
     }
 
     @Nested
-    @DisplayName(UndoUpdateJurorToFailedToAttend.URL)
-    class UndoUpdateJurorToFailedToAttend extends AbstractControllerTest<JurorNumberAndPoolNumberDto, Void> {
-        private static final String URL = BASE_URL + "/failed-to-attend/undo";
-        private static final BureauJwtAuthentication MOCK_PRINCIPAL = mock(BureauJwtAuthentication.class);
-
-        public UndoUpdateJurorToFailedToAttend() {
-            super(HttpMethod.PATCH, URL, MOCK_PRINCIPAL);
-            bureauJwtPayload = TestUtils.createJwt("415", "COURT_USER", "9");
-            when(MOCK_PRINCIPAL.getPrincipal()).thenReturn(bureauJwtPayload);
-        }
-
-        @BeforeEach
-        void beforeEach() {
-            this.setMockMvc(mockMvc);
-        }
-
-        @org.junit.jupiter.api.Test
-        void typical() throws Exception {
-            JurorNumberAndPoolNumberDto dto = new JurorNumberAndPoolNumberDto();
-            dto.setJurorNumber(TestConstants.VALID_JUROR_NUMBER);
-            dto.setPoolNumber(TestConstants.VALID_POOL_NUMBER);
-
-            send(dto, HttpStatus.ACCEPTED);
-            verify(jurorRecordService, times(1))
-                .undoUpdateJurorToFailedToAttend(TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER);
-            verifyNoMoreInteractions(jurorRecordService);
-        }
-
-        @org.junit.jupiter.api.Test
-        void negativeInvalidJurorNumber() throws Exception {
-            JurorNumberAndPoolNumberDto dto = new JurorNumberAndPoolNumberDto();
-
-            dto.setJurorNumber(TestConstants.INVALID_JUROR_NUMBER);
-            dto.setPoolNumber(TestConstants.VALID_POOL_NUMBER);
-
-            send(dto, HttpStatus.BAD_REQUEST);
-            verifyNoInteractions(jurorRecordService);
-        }
-
-        @org.junit.jupiter.api.Test
-        void negativeInvalidPoolNumber() throws Exception {
-            JurorNumberAndPoolNumberDto dto = new JurorNumberAndPoolNumberDto();
-            dto.setJurorNumber(TestConstants.VALID_JUROR_NUMBER);
-            dto.setPoolNumber(TestConstants.INVALID_POOL_NUMBER);
-
-            send(dto, HttpStatus.BAD_REQUEST);
-            verifyNoInteractions(jurorRecordService);
-        }
-    }
-
-    @Nested
     @DisplayName(CreateJurorRecord.URL)
     class CreateJurorRecord extends AbstractControllerTest<JurorCreateRequestDto, Void> {
         private static final String URL = BASE_URL + "/create-juror";

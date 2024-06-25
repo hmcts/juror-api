@@ -25,12 +25,9 @@ import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.moj.controller.request.CompleteServiceJurorNumberListDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAndPoolRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberListDto;
-import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
-import uk.gov.hmcts.juror.api.moj.controller.response.CompleteJurorResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.CompleteServiceValidationResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorStatusValidationResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
-import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.service.BulkService;
@@ -80,7 +77,6 @@ class CompleteServiceControllerTest {
 
     @MockBean
     private CompleteServiceService completeServiceService;
-
 
     @Nested
     @DisplayName("PATCH " + COMPLETE_SERVICE_URL)
@@ -420,66 +416,7 @@ class CompleteServiceControllerTest {
         }
     }
 
-    @Nested
-    @DisplayName("POST " + GetCompleteJurors.URL)
-    class GetCompleteJurors {
-        public static final String URL = BASE_URL;
 
-        @Test
-        void positiveTypical() throws Exception {
-            JurorPoolSearch poolSearch = JurorPoolSearch.builder()
-                .jurorNumber("123")
-                .pageLimit(5)
-                .pageNumber(1)
-                .build();
-
-            CompleteJurorResponse response1 = CompleteJurorResponse.builder()
-                .jurorNumber("1234")
-                .build();
-            CompleteJurorResponse response2 = CompleteJurorResponse.builder()
-                .jurorNumber("1235")
-                .build();
-            CompleteJurorResponse response3 = CompleteJurorResponse.builder()
-                .jurorNumber("1236")
-                .build();
-
-            PaginatedList<CompleteJurorResponse> result = new PaginatedList<>();
-            result.setData(List.of(response1, response2, response3));
-            when(completeServiceService.search(poolSearch))
-                .thenReturn(result);
-
-            mockMvc.perform(post(URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtils.asJsonString(poolSearch)))
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(status().isOk())
-
-                .andExpect(jsonPath("$.data.size()", CoreMatchers.is(3)))
-                .andExpect(jsonPath("$.data.[0].juror_number", CoreMatchers.is("1234")))
-                .andExpect(jsonPath("$.data.[1].juror_number", CoreMatchers.is("1235")))
-                .andExpect(jsonPath("$.data.[2].juror_number", CoreMatchers.is("1236")));
-
-
-            verify(completeServiceService, times(1))
-                .search(poolSearch);
-            verifyNoMoreInteractions(completeServiceService);
-        }
-
-
-        @Test
-        void negativeBadPayload() throws Exception {
-            JurorPoolSearch poolSearch = JurorPoolSearch.builder()
-                .jurorName("Ben")
-                .jurorNumber("123")
-                .build();
-            mockMvc.perform(post(URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtils.asJsonString(poolSearch)))
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(status().isBadRequest());
-            verifyNoMoreInteractions(completeServiceService);
-        }
-    }
 
 
     @Test

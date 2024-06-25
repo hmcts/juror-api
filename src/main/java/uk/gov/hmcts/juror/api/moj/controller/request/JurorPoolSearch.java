@@ -54,6 +54,9 @@ public class JurorPoolSearch implements IsPageable {
     @JsonProperty("pool_number")
     private String poolNumber;
 
+    @JsonProperty("juror_status")
+    private Integer jurorStatus;
+
     @Min(1)
     @JsonProperty("page_number")
     private long pageNumber;

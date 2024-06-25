@@ -35,7 +35,6 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     private final JurorHistoryRepository jurorHistoryRepository;
     private final Clock clock;
 
-
     @Override
     public void createJuryEmpanelmentHistory(JurorPool jurorPool, Panel panelMember) {
         registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.JURY_EMPANELMENT, null, null,
@@ -267,12 +266,6 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     }
 
     @Override
-    public void createUndeliveredSummonsHistory(JurorPool jurorPool) {
-        registerHistoryLoginUser(jurorPool, HistoryCodeMod.UNDELIVERED_SUMMONS, null);
-
-    }
-
-    @Override
     public void createDisqualifyHistory(JurorPool jurorPool, String code) {
         registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.DISQUALIFY_POOL_MEMBER, null, null, code);
     }
@@ -317,6 +310,12 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     public void createAwaitingFurtherInformationHistory(JurorPool jurorPool, String missingInformation) {
         registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.AWAITING_FURTHER_INFORMATION,
             missingInformation, null, null);
+    }
+
+    @Override
+    public void createUndeliveredSummonsHistory(JurorPool jurorPool) {
+        registerHistoryLoginUser(jurorPool, HistoryCodeMod.UNDELIVERED_SUMMONS, null);
+
     }
 
     @Override

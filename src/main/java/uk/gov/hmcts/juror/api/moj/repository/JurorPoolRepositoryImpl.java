@@ -213,6 +213,10 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
                 .likeIgnoreCase("%" + search.getJurorName() + "%"));
         }
 
+        if (search.getJurorStatus() != null) {
+            query.where(JUROR_POOL.status.status.eq(search.getJurorStatus()));
+        }
+
         if (search.getJurorNumber() != null) {
             query.where(JUROR.jurorNumber.startsWith(search.getJurorNumber()));
         }
