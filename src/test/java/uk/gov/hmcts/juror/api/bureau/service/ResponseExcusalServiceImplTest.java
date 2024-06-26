@@ -9,10 +9,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseExcusalController.ExcusalCodeDto;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeRepository;
 import uk.gov.hmcts.juror.api.bureau.exception.ExcusalException;
-import uk.gov.hmcts.juror.api.juror.domain.ExcusalDeniedLetter;
-import uk.gov.hmcts.juror.api.juror.domain.ExcusalDeniedLetterRepository;
-import uk.gov.hmcts.juror.api.juror.domain.ExcusalLetter;
-import uk.gov.hmcts.juror.api.juror.domain.ExcusalLetterRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.ExcusalCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -42,6 +38,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -62,12 +59,6 @@ public class ResponseExcusalServiceImplTest {
 
     @Mock
     private ExcusalCodeRepository excusalCodeRepository;
-
-    @Mock
-    private ExcusalLetterRepository excusalLetterRepository;
-
-    @Mock
-    private ExcusalDeniedLetterRepository excusalDeniedLetterRepository;
 
     @Mock
     private ResponseMergeService mergeService;
@@ -190,7 +181,7 @@ public class ResponseExcusalServiceImplTest {
             verify(poolRepository, times(0)).save(poolDetails);
 
             verify(partHistRepository, times(0)).save(any(JurorHistory.class));
-            verify(excusalLetterRepository, times(0)).save(any(ExcusalLetter.class));
+            verifyNoInteractions(printDataService);
         }
     }
 
@@ -232,7 +223,7 @@ public class ResponseExcusalServiceImplTest {
             verify(poolRepository, times(0)).save(poolDetails);
 
             verify(partHistRepository, times(0)).save(any(JurorHistory.class));
-            verify(excusalLetterRepository, times(0)).save(any(ExcusalLetter.class));
+            verifyNoInteractions(printDataService);
         }
     }
 
@@ -324,7 +315,7 @@ public class ResponseExcusalServiceImplTest {
             verify(poolRepository, times(0)).save(poolDetails);
 
             verify(partHistRepository, times(0)).save(any(JurorHistory.class));
-            verify(excusalDeniedLetterRepository, times(0)).save(any(ExcusalDeniedLetter.class));
+            verifyNoInteractions(printDataService);
         }
     }
 
@@ -363,7 +354,7 @@ public class ResponseExcusalServiceImplTest {
             verify(poolRepository, times(0)).save(poolDetails);
 
             verify(partHistRepository, times(0)).save(any(JurorHistory.class));
-            verify(excusalDeniedLetterRepository, times(0)).save(any(ExcusalDeniedLetter.class));
+            verifyNoInteractions(printDataService);
         }
     }
 }

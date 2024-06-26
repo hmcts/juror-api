@@ -15,7 +15,6 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.StaffAssignmentResponse
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffRosterResponseDto;
 import uk.gov.hmcts.juror.api.bureau.domain.UserQueries;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
-import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.User;
@@ -73,9 +72,6 @@ public class UserServiceImplTest {
 
     @Mock
     private BureauTransformsService bureauTransformsService;
-
-    @Mock
-    private PoolRepository mockPoolDetailsRepository;
 
 
     @InjectMocks

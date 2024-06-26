@@ -21,7 +21,6 @@ import uk.gov.hmcts.juror.api.SpringBootErrorResponse;
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseExcusalController.ExcusalCodeDto;
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseExcusalController.ExcusalReasonsDto;
 import uk.gov.hmcts.juror.api.bureau.domain.IPoolStatus;
-import uk.gov.hmcts.juror.api.bureau.domain.PartHist;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 
@@ -760,7 +759,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
         softly.assertThat(jdbcTemplate.queryForObject("SELECT OTHER_INFORMATION FROM juror_mod.juror_history "
                 + "WHERE juror_number='644892530' AND HISTORY_CODE='RESP'", String.class))
             .as("Juror's PART_HIST RESP entry should have 'Responded' set as OTHER_INFORMATION")
-            .isEqualTo(PartHist.RESPONDED);
+            .isEqualTo("Responded");
         softly.assertThat(jdbcTemplate.queryForObject("SELECT pool_number FROM juror_mod.juror_history WHERE "
                 + "juror_number='644892530' AND HISTORY_CODE='PEXC'", String.class))
             .as("Juror's PART_HIST entry should have the appropriate pool code set as POOL_NO")

@@ -11,7 +11,6 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
 import uk.gov.hmcts.juror.api.juror.notify.EmailNotification;
 import uk.gov.hmcts.juror.api.juror.notify.NotifyTemplateType;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
@@ -32,8 +31,6 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     private static final String UUID_REGEX = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
     private static final String TEMPLATE_SQL = "SELECT VALUE FROM juror_mod.APP_SETTING WHERE SETTING = ?";
 
-    @Autowired
-    private JurorResponseRepository jurorResponseRepository;
     @Autowired
     private JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository;
 

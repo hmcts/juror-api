@@ -9,13 +9,13 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
-import uk.gov.hmcts.juror.api.juror.domain.QPool;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
@@ -104,7 +104,7 @@ class PostponedListByDateReportTest extends AbstractGroupedReportTestSupport<Pos
         verify(query).where(QJurorPool.jurorPool.owner.eq(SecurityUtil.getActiveOwner()));
 
         verify(query)
-            .orderBy(QPool.pool.poolNumber.asc(), QJuror.juror.jurorNumber.asc());
+            .orderBy(QPoolRequest.poolRequest.poolNumber.asc(), QJuror.juror.jurorNumber.asc());
     }
 
     @Test
@@ -126,7 +126,7 @@ class PostponedListByDateReportTest extends AbstractGroupedReportTestSupport<Pos
                 .and(QJurorPool.jurorPool.deferralCode.eq(ExcusalCodeEnum.P.getCode()))
         );
         verify(query)
-            .orderBy(QPool.pool.poolNumber.asc(), QJuror.juror.jurorNumber.asc());
+            .orderBy(QPoolRequest.poolRequest.poolNumber.asc(), QJuror.juror.jurorNumber.asc());
         verifyNoMoreInteractions(query);
     }
 

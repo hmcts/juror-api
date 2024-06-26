@@ -10,8 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import uk.gov.hmcts.juror.api.bureau.domain.AppSettingsRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.NotifyTemplateMapping;
 import uk.gov.hmcts.juror.api.bureau.service.JurorCommsNotificationServiceImpl;
 import uk.gov.hmcts.juror.api.bureau.service.JurorCommsNotifyPayLoadService;
 import uk.gov.hmcts.juror.api.juror.notify.EmailNotification;
@@ -73,11 +71,6 @@ class JurorCommsNotifyAdapterImplTest extends ContainerTest {
     @Autowired
     private ResponseInspector responseInspector;
 
-    /**
-     * mock provided to JurorCommsNotificationServiceImpl constructor only.
-     */
-    @Mock
-    private AppSettingsRepository appSettingRepository;
 
     /**
      * mock provided to JurorCommsNotificationServiceImpl constructor only.
@@ -147,13 +140,10 @@ class JurorCommsNotifyAdapterImplTest extends ContainerTest {
         payLoad.put(EMAIL_ADDRESS, email);
 
 
-        final NotifyTemplateMapping testNotifyTemplate = new NotifyTemplateMapping();
-        testNotifyTemplate.setTemplateId(DEV_CONFIRM_JUROR_ENG_TEMPLATE_ID);
-
         final EmailNotification emailNotification = utilJurorCommsService.createEmailNotification(
             jurorPool,
             JurorCommsNotifyTemplateType.LETTER_COMMS,
-            testNotifyTemplate.getTemplateId(),
+            DEV_CONFIRM_JUROR_ENG_TEMPLATE_ID,
             payLoad
         );
 
@@ -216,13 +206,10 @@ class JurorCommsNotifyAdapterImplTest extends ContainerTest {
         payLoad.put(LAST_NAME_VAL, VALUE_2);
         payLoad.put(EMAIL_ADDRESS, email);
 
-        final NotifyTemplateMapping testNotifyTemplate = new NotifyTemplateMapping();
-        testNotifyTemplate.setTemplateId(DEV_SENT_TO_COURT_EMAIL_ENG_TEMPLATE_ID);
-
         final EmailNotification emailNotification = utilJurorCommsService.createEmailNotification(
             jurorPool,
             JurorCommsNotifyTemplateType.SENT_TO_COURT,
-            testNotifyTemplate.getTemplateId(),
+            DEV_SENT_TO_COURT_EMAIL_ENG_TEMPLATE_ID,
             payLoad
         );
 
@@ -287,14 +274,10 @@ class JurorCommsNotifyAdapterImplTest extends ContainerTest {
         payLoad.put(EMAIL_ADDRESS, email);
         payLoad.put("phone number", phoneNumber);
 
-
-        final NotifyTemplateMapping testNotifyTemplate = new NotifyTemplateMapping();
-        testNotifyTemplate.setTemplateId(DEV_SENT_TO_COURT_SMS_ENG_TEMPLATE_ID);
-
         final SmsNotification smsNotification = utilJurorCommsService.createSmsNotification(
             jurorPool,
             JurorCommsNotifyTemplateType.SENT_TO_COURT,
-            testNotifyTemplate.getTemplateId(),
+            DEV_SENT_TO_COURT_SMS_ENG_TEMPLATE_ID,
             payLoad
         );
 

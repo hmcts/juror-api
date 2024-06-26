@@ -414,15 +414,4 @@ public class JurorResponse implements Serializable {
     @Convert(converter = org.hibernate.type.YesNoConverter.class)
     @Builder.Default
     private Boolean welsh = Boolean.FALSE;
-
-    public void addSpecialNeed(final BureauJurorSpecialNeed bureauJurorSpecialNeed) {
-        if (this.getSpecialNeeds().stream().filter(
-                sn -> bureauJurorSpecialNeed.getSpecialNeed().getCode().compareTo(sn.getSpecialNeed().getCode()) == 0)
-            .count() == 0) {
-            this.getSpecialNeeds().add(bureauJurorSpecialNeed);
-        } else {
-            throw new IllegalStateException("Juror can only have one special need of type");
-        }
-
-    }
 }

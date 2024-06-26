@@ -13,7 +13,6 @@ import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffDetailDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffListDto;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 
@@ -34,9 +33,6 @@ public class UserServiceImplIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private UserService userService;
-
-    @Autowired
-    private JurorResponseRepository jurorResponseRepository;
 
     @Autowired
     private JurorDigitalResponseRepositoryMod jurorDigitalResponseRepositoryMod;

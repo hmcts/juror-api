@@ -28,7 +28,6 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
-import uk.gov.hmcts.juror.api.juror.domain.DisqualificationLetterRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.ConfirmIdentityDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ContactLogRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.EditJurorRecordRequestDto;
@@ -183,9 +182,6 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     private JurorHistoryRepository jurorHistoryRepository;
     @Autowired
     private JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
-
-    @Autowired
-    private DisqualificationLetterRepository disqualificationLetterRepository;
     @Autowired
     private PoolTypeRepository poolTypeRepository;
     @Autowired

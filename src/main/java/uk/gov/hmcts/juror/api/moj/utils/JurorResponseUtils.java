@@ -1,15 +1,12 @@
 package uk.gov.hmcts.juror.api.moj.utils;
 
 import lombok.extern.slf4j.Slf4j;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.response.jurorresponse.IJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
-import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 
 import java.time.LocalDateTime;
@@ -25,20 +22,7 @@ public final class JurorResponseUtils {
         // an empty private constructor
     }
 
-    public static JurorResponse getDigitalResponseForJurorDisqualification(
-        String jurorNumber,
-        JurorResponseRepository jurorResponseRepository) {
-        log.trace("Juror {}: Enter getDigitalResponseForJuror", jurorNumber);
-        Optional<JurorResponse> jurorResponse = jurorResponseRepository.findById(jurorNumber);
 
-        if (!jurorResponse.isPresent()) {
-            String customErrorMessage = "Juror {}: Cannot find associated response record for " + jurorNumber;
-            throw new MojException.NotFound(customErrorMessage, null);
-        }
-
-        log.trace("Juror {}: Exit getDigitalResponseForJuror", jurorNumber);
-        return jurorResponse.get();
-    }
 
     /**
      * Creates a minimal paper response for age disqualification in cases where no response has

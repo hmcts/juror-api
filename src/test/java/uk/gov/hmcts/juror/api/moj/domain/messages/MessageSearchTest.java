@@ -3,12 +3,12 @@ package uk.gov.hmcts.juror.api.moj.domain.messages;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.ComparableExpressionBase;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPQLQuery;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 import uk.gov.hmcts.juror.api.TestConstants;
-import uk.gov.hmcts.juror.api.juror.domain.QPool;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorSearch;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
@@ -136,7 +136,7 @@ class MessageSearchTest {
 
         verify(query, times(1))
             .where(QJuror.juror.firstName.concat(" ").concat(QJuror.juror.lastName).toLowerCase()
-            .contains("abc a"));
+                .contains("abc a"));
         verifyNoMoreInteractions(query);
     }
 
@@ -172,7 +172,6 @@ class MessageSearchTest {
                 .eq(TestConstants.VALID_POSTCODE.toLowerCase()));
         verifyNoMoreInteractions(query);
     }
-
 
 
     @Test
@@ -308,7 +307,8 @@ class MessageSearchTest {
             sortFieldTest(MessageSearch.SortField.LAST_NAME, QJuror.juror.lastName),
             sortFieldTest(MessageSearch.SortField.EMAIL, QJuror.juror.email),
             sortFieldTest(MessageSearch.SortField.PHONE, QJuror.juror.phoneNumber),
-            sortFieldTest(MessageSearch.SortField.POOL_NUMBER, QPool.pool.poolNumber),
+            sortFieldTest(MessageSearch.SortField.POOL_NUMBER,
+                Expressions.asComparable(QJurorPool.jurorPool.pool.poolNumber)),
             sortFieldTest(MessageSearch.SortField.STATUS, QJurorPool.jurorPool.status.status),
             sortFieldTest(MessageSearch.SortField.TRIAL_NUMBER, QTrial.trial.trialNumber),
             sortFieldTest(MessageSearch.SortField.ON_CALL, QJurorPool.jurorPool.onCall),

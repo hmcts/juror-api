@@ -10,7 +10,6 @@ import java.util.List;
  * Repository for {@link SurveyResponse}.
  */
 @Repository
-@Deprecated(forRemoval = true)
 public interface SurveyResponseRepository extends CrudRepository<SurveyResponse, SurveyResponseKey> {
 
     List<SurveyResponse> findBySurveyResponseDateBetween(
