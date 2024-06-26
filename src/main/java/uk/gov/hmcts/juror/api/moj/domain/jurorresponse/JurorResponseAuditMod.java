@@ -2,6 +2,8 @@ package uk.gov.hmcts.juror.api.moj.domain.jurorresponse;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.PrePersist;
@@ -37,9 +39,11 @@ public class JurorResponseAuditMod {
     private String login;
 
     @Column(name = "old_processing_status")
+    @Enumerated(EnumType.STRING)
     private ProcessingStatus oldProcessingStatus;
 
     @Column(name = "new_processing_status")
+    @Enumerated(EnumType.STRING)
     private ProcessingStatus newProcessingStatus;
 
     @PrePersist
