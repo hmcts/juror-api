@@ -84,10 +84,8 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
 
     private HttpHeaders httpHeaders;
 
-    @Override
     @Before
     public void setUp() throws Exception {
-        super.setUp();
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }

@@ -26,6 +26,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.SummoningProgressResponseD
 import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.AvailablePoolsInCourtLocationDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.ReassignPoolMembersResultDto;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
+import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
@@ -35,21 +36,16 @@ import uk.gov.hmcts.juror.api.moj.domain.QPoolComment;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolHistory;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
-import uk.gov.hmcts.juror.api.moj.domain.letter.ConfirmationLetter;
-import uk.gov.hmcts.juror.api.moj.domain.letter.LetterId;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
-import uk.gov.hmcts.juror.api.moj.repository.ConfirmationLetterRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolCommentRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
-import uk.gov.hmcts.juror.api.moj.repository.letter.CertLetterRepository;
 import uk.gov.hmcts.juror.api.moj.service.CourtLocationService;
-import uk.gov.hmcts.juror.api.moj.service.PoolStatisticsService;
 import uk.gov.hmcts.juror.api.moj.service.poolmanagement.JurorManagementConstants;
 import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
 
@@ -64,6 +60,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static uk.gov.hmcts.juror.api.TestUtil.getValuesInJsonObject;
 
 /**
@@ -92,8 +89,6 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Autowired
     private TestRestTemplate restTemplate;
     @Autowired
-    private PoolStatisticsService poolStatisticsService;
-    @Autowired
     private PoolRequestRepository poolRequestRepository;
     @Autowired
     private CourtLocationService courtLocationService;
@@ -104,21 +99,15 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Autowired
     private PoolHistoryRepository poolHistoryRepository;
     @Autowired
-    private CertLetterRepository certLetterRepository;
-    @Autowired
     private JurorHistoryRepository jurorHistoryRepository;
     @Autowired
     private CourtLocationRepository courtLocationRepository;
     @Autowired
     private BulkPrintDataRepository bulkPrintDataRepository;
     private HttpHeaders httpHeaders;
-    @Autowired
-    private ConfirmationLetterRepository confirmationLetterRepository;
 
-    @Override
     @Before
     public void setUp() throws Exception {
-        super.setUp();
         initHeaders();
     }
 
@@ -1840,14 +1829,15 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         LocalDate serviceStartDate = LocalDate.now().plusDays(10);
         assertThat(newJurorPool.getNextDate()).isEqualTo(serviceStartDate);
 
-        LetterId letterId = new LetterId("400", jurorNumber);
         // check there is a cert letter queued, should be one only
-        Optional<ConfirmationLetter> confirmLetter = confirmationLetterRepository.findById(letterId);
+        Optional<BulkPrintData> confirmLetter = bulkPrintDataRepository.findLatestPendingLetterForJuror(jurorNumber,
+            FormCode.ENG_CONFIRMATION.getCode());
 
-        confirmLetter.ifPresent(letter -> {
-            assertThat(letter.getJurorNumber()).isEqualTo(jurorNumber);
-            assertThat(letter.getOwner()).isEqualTo("400");
-        });
+        if (confirmLetter.isPresent()) {
+            assertThat(confirmLetter.get().getJurorNo()).isEqualTo(jurorNumber);
+        } else {
+            fail("No confirmation letter found for juror: " + jurorNumber);
+        }
 
     }
 

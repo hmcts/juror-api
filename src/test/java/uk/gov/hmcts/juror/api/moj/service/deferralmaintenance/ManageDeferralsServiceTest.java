@@ -18,8 +18,6 @@ import org.mockito.Mock;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.TestUtils;
-import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAudit;
-import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAuditRepository;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
@@ -40,6 +38,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
@@ -53,6 +52,7 @@ import uk.gov.hmcts.juror.api.moj.repository.PoolHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.AssignOnUpdateServiceMod;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.PoolMemberSequenceService;
@@ -125,7 +125,7 @@ class ManageDeferralsServiceTest {
     @Mock
     private JurorPaperResponseRepositoryMod paperResponseRepository;
     @Mock
-    private JurorResponseAuditRepository auditRepository;
+    private JurorResponseAuditRepositoryMod auditRepository;
     @Mock
     private AssignOnUpdateServiceMod assignOnUpdateService;
     @Mock
@@ -997,7 +997,7 @@ class ManageDeferralsServiceTest {
 
         verifyMoveToActivePoolTest();
         verify(auditRepository, times(1))
-            .save(any(JurorResponseAudit.class));
+            .save(any(JurorResponseAuditMod.class));
 
     }
 
@@ -1159,7 +1159,7 @@ class ManageDeferralsServiceTest {
         verifyJurorToDeferralMaintenanceTest();
         verifyLettersHappyPathTest();
         verify(auditRepository, times(1))
-            .save(any(JurorResponseAudit.class));
+            .save(any(JurorResponseAuditMod.class));
     }
 
     @Test

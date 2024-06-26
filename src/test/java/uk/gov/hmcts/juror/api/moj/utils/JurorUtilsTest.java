@@ -277,12 +277,6 @@ public class JurorUtilsTest {
             JurorUtils.getJurorAgeAtHearingDate(null, null));
     }
 
-    private Juror createJuror(String jurorNumber) {
-        Juror juror = new Juror();
-        juror.setJurorNumber(jurorNumber);
-        return juror;
-    }
-
     private JurorPool createJurorPool(String jurorNumber, String owner) {
         JurorPool jurorPool = new JurorPool();
         jurorPool.setOwner(owner);

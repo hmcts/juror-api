@@ -48,10 +48,8 @@ class PoolSearchControllerITest extends AbstractIntegrationTest {
 
     private HttpHeaders httpHeaders;
 
-    @Override
     @BeforeEach
     public void setUp() throws Exception {
-        super.setUp();
         initHeaders();
     }
 

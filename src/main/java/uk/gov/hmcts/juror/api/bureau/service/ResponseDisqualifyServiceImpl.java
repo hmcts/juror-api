@@ -18,14 +18,13 @@ import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
-import uk.gov.hmcts.juror.api.moj.domain.letter.DisqualificationLetterMod;
 import uk.gov.hmcts.juror.api.moj.repository.DisqualifiedCodeRepository;
-import uk.gov.hmcts.juror.api.moj.repository.DisqualifyLetterModRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
+import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
 import java.time.LocalDate;
@@ -42,11 +41,11 @@ public class ResponseDisqualifyServiceImpl implements ResponseDisqualifyService 
     private final JurorPoolRepository detailsRepository;
     private final JurorStatusRepository jurorStatusRepository;
     private final DisqualifiedCodeRepository disqualifyCodeRepository;
-    private final DisqualifyLetterModRepository disqualificationLetterRepository;
     private final ResponseMergeService mergeService;
     private final EntityManager entityManager;
     private final AssignOnUpdateService assignOnUpdateService;
     private final JurorHistoryService jurorHistoryService;
+    private final PrintDataService printDataService;
 
     @Override
     public List<ResponseDisqualifyController.DisqualifyCodeDto> getDisqualifyReasons()
@@ -142,12 +141,7 @@ public class ResponseDisqualifyServiceImpl implements ResponseDisqualifyService 
             }
 
             // disq_lett table entry
-            DisqualificationLetterMod disqualificationLetter = new DisqualificationLetterMod();
-            disqualificationLetter.setOwner(jurorDetails.getOwner());
-            disqualificationLetter.setJurorNumber(jurorId);
-            disqualificationLetter.setDisqCode(disqualifyCodeDto.getDisqualifyCode());
-            disqualificationLetter.setDateDisq(LocalDate.now());
-            disqualificationLetterRepository.save(disqualificationLetter);
+            printDataService.printWithdrawalLetter(jurorDetails);
         } catch (DisqualifyException.JurorNotFound e) {
             log.debug("Error while attempting to disqualify Juror {}: {}", jurorId, e.getMessage());
             throw e;

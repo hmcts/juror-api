@@ -2,7 +2,6 @@ package uk.gov.hmcts.juror.api.moj.controller;
 
 import org.assertj.core.groups.Tuple;
 import org.json.JSONObject;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -103,12 +102,6 @@ class TrialControllerITest extends AbstractIntegrationTest {
 
     @Autowired
     JurorPoolRepository jurorPoolRepository;
-
-    @Override
-    @BeforeEach
-    public void setUp() throws Exception {
-        //Nothing to set up for the time being
-    }
 
     @Test
     void createTrialHappy() {

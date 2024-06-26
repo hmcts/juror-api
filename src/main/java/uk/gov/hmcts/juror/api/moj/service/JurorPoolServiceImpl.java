@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsDto;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
@@ -15,6 +16,7 @@ import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor(onConstructor = @__(@Autowired))
@@ -59,5 +61,12 @@ public class JurorPoolServiceImpl implements JurorPoolService {
         }
 
         return jurorDetailsDtoList;
+    }
+
+    @Override
+    public JurorPool getJurorPoolFromUser(String jurorNumber) {
+        return Optional.ofNullable(jurorPoolRepository.findByJurorJurorNumberAndIsActiveAndOwner(
+                jurorNumber, true, SecurityUtil.getActiveOwner()))
+            .orElseThrow(() -> new MojException.NotFound("Juror not found: " + jurorNumber, null));
     }
 }

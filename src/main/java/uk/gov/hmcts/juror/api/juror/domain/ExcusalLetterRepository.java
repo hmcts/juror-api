@@ -7,5 +7,6 @@ import org.springframework.stereotype.Repository;
  * Repository for {@link ExcusalLetter}.
  */
 @Repository
+@Deprecated(forRemoval = true)
 public interface ExcusalLetterRepository extends JpaRepository<ExcusalLetter, String> {
 }

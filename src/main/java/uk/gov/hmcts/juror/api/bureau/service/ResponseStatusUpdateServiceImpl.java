@@ -12,9 +12,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import uk.gov.hmcts.juror.api.JurorDigitalApplication;
-import uk.gov.hmcts.juror.api.bureau.domain.PartAmendment;
-import uk.gov.hmcts.juror.api.bureau.domain.PartAmendmentRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -38,8 +35,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Implementation of operations for updating the status of a Juror's response by a Bureau officer.
@@ -52,7 +47,6 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
     private final JurorResponseAuditRepositoryMod auditRepository;
     private final JurorPoolRepository jurorDetailsRepository;
     private final JurorStatusRepository jurorStatusRepository;
-    private final PartAmendmentRepository partAmendmentRepository;
     private final JurorHistoryRepository partHistRepository;
     private final EntityManager entityManager;
     private final JurorPoolRepository jurorPoolRepository;
@@ -293,27 +287,6 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
         if (updatedDetails.getProcessingComplete() != null
             && !updatedDetails.getProcessingComplete()) {
 
-            PartAmendment allAmendments = new PartAmendment();
-
-            // 1) copy the amendment values first!
-            mapJurorDetailsToAllAmendments(jurorDetails, allAmendments);
-
-            final String fullAddress = Stream.of(
-                    "",
-                    jurorDetails.getJuror().getAddressLine1(),
-                    jurorDetails.getJuror().getAddressLine2(),
-                    jurorDetails.getJuror().getAddressLine3(),
-                    jurorDetails.getJuror().getAddressLine4(),
-                    jurorDetails.getJuror().getAddressLine5()
-                )
-                .filter(string -> string != null && !string.isEmpty())
-                .map(","::concat)
-                .collect(Collectors.joining())
-                .replaceFirst(",", "");
-            allAmendments.setAddress(fullAddress);
-            allAmendments.setEditUserId(auditorUsername);
-            allAmendments.setOwner(JurorDigitalApplication.JUROR_OWNER);
-
             applyThirdPartyRules(updatedDetails);
 
             applyPhoneNumberRules(updatedDetails);
@@ -355,19 +328,6 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
                 titleHistory.setOtherInformation("Title Changed");
                 titleHistory.setCreatedBy(auditorUsername);
 
-                PartAmendment titleAmendments = new PartAmendment();
-                BeanUtils.copyProperties(allAmendments, titleAmendments);
-                if (titleAmendments.getTitle() == null) {
-                    log.debug("Title amendment recording a old null, setting to space.");
-                    titleAmendments.setTitle(" ");
-                }
-                titleAmendments.setFirstName(null);
-                titleAmendments.setLastName(null);
-                titleAmendments.setDateOfBirth(null);
-                titleAmendments.setAddress(null);
-                titleAmendments.setPostcode(null);
-
-                partAmendmentRepository.save(titleAmendments);
                 partHistRepository.save(titleHistory);
             }
 
@@ -379,15 +339,6 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
                 firstNameHistory.setOtherInformation("First Name Changed");
                 firstNameHistory.setCreatedBy(auditorUsername);
 
-                PartAmendment firstNameAmendments = new PartAmendment();
-                BeanUtils.copyProperties(allAmendments, firstNameAmendments);
-                firstNameAmendments.setTitle(null);
-                firstNameAmendments.setLastName(null);
-                firstNameAmendments.setDateOfBirth(null);
-                firstNameAmendments.setAddress(null);
-                firstNameAmendments.setPostcode(null);
-
-                partAmendmentRepository.save(firstNameAmendments);
                 partHistRepository.save(firstNameHistory);
             }
 
@@ -399,15 +350,6 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
                 lastNameHistory.setOtherInformation("Last Name Changed");
                 lastNameHistory.setCreatedBy(auditorUsername);
 
-                PartAmendment lastNameAmendments = new PartAmendment();
-                BeanUtils.copyProperties(allAmendments, lastNameAmendments);
-                lastNameAmendments.setTitle(null);
-                lastNameAmendments.setFirstName(null);
-                lastNameAmendments.setDateOfBirth(null);
-                lastNameAmendments.setAddress(null);
-                lastNameAmendments.setPostcode(null);
-
-                partAmendmentRepository.save(lastNameAmendments);
                 partHistRepository.save(lastNameHistory);
             }
 
@@ -419,19 +361,6 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
                 dobHistory.setOtherInformation("DOB Changed");
                 dobHistory.setCreatedBy(auditorUsername);
 
-                PartAmendment dobAmendments = new PartAmendment();
-                BeanUtils.copyProperties(allAmendments, dobAmendments);
-                dobAmendments.setTitle(null);
-                dobAmendments.setFirstName(null);
-                dobAmendments.setLastName(null);
-                if (dobAmendments.getDateOfBirth() == null) {
-                    log.debug("DOB amendment recording old null, setting to 01-01-1901");
-                    dobAmendments.setDateOfBirth(LocalDate.of(1901, 1, 1));
-                }
-                dobAmendments.setAddress(null);
-                dobAmendments.setPostcode(null);
-
-                partAmendmentRepository.save(dobAmendments);
                 partHistRepository.save(dobHistory);
             }
 
@@ -443,15 +372,6 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
                 addressHistory.setOtherInformation("Address Changed");
                 addressHistory.setCreatedBy(auditorUsername);
 
-                PartAmendment addressAmendments = new PartAmendment();
-                BeanUtils.copyProperties(allAmendments, addressAmendments);
-                addressAmendments.setTitle(null);
-                addressAmendments.setFirstName(null);
-                addressAmendments.setLastName(null);
-                addressAmendments.setDateOfBirth(null);
-                addressAmendments.setPostcode(null);
-
-                partAmendmentRepository.save(addressAmendments);
                 partHistRepository.save(addressHistory);
             }
 
@@ -463,30 +383,11 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
                 postcodeHistory.setOtherInformation("Postcode Changed");
                 postcodeHistory.setCreatedBy(auditorUsername);
 
-                PartAmendment postcodeAmendments = new PartAmendment();
-                BeanUtils.copyProperties(allAmendments, postcodeAmendments);
-                postcodeAmendments.setTitle(null);
-                postcodeAmendments.setFirstName(null);
-                postcodeAmendments.setLastName(null);
-                postcodeAmendments.setDateOfBirth(null);
-                postcodeAmendments.setAddress(null);
-
-                partAmendmentRepository.save(postcodeAmendments);
                 partHistRepository.save(postcodeHistory);
             }
         }
     }
 
-    private void mapJurorDetailsToAllAmendments(JurorPool jurorDetails, PartAmendment allAmendments) {
-        BeanUtils.copyProperties(jurorDetails, allAmendments, "poolNumber");
-        allAmendments.setPoolNumber(jurorDetails.getPoolNumber());
-        Juror juror = jurorDetails.getJuror();
-        allAmendments.setTitle(juror.getTitle());
-        allAmendments.setFirstName(juror.getFirstName());
-        allAmendments.setLastName(juror.getLastName());
-        allAmendments.setDateOfBirth(juror.getDateOfBirth());
-        allAmendments.setAddress(juror.getAddressLine1());
-    }
 
     private void mapDetailsToJuror(DigitalResponse updatedDetails, Juror juror,
                                    boolean includePhone, boolean includeEmail) {

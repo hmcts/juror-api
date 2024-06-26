@@ -13,8 +13,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNameDetailsDto;
 import uk.gov.hmcts.juror.api.moj.domain.ContactCode;
-import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryCode;
-import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryType;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
 import uk.gov.hmcts.juror.api.moj.domain.IContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
@@ -26,7 +24,6 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.enumeration.ApprovalDecision;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.repository.ContactCodeRepository;
-import uk.gov.hmcts.juror.api.moj.repository.ContactEnquiryTypeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactLogRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -48,8 +45,6 @@ public class JurorAuditChangeServiceTest {
     ContactCodeRepository contactCodeRepository;
     @Mock
     ContactLogRepository contactLogRepository;
-    @Mock
-    ContactEnquiryTypeRepository contactEnquiryTypeRepository;
     @Mock
     JurorPoolRepository jurorPoolRepository;
 
@@ -651,10 +646,6 @@ public class JurorAuditChangeServiceTest {
         final String notes = "Approved juror's change of name. Some additional information";
         final String enquiryCode = "CN";
 
-        ContactEnquiryType contactEnquiryType = new ContactEnquiryType(ContactEnquiryCode.CN, "Change of name");
-
-        Mockito.doReturn(Optional.of(contactEnquiryType)).when(contactEnquiryTypeRepository)
-            .findById(ContactEnquiryCode.CN);
         Mockito.doReturn(null).when(contactLogRepository).saveAndFlush(Mockito.any());
         Mockito.doReturn(jurorPools).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActive(juror.getJurorNumber(), true);

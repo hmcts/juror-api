@@ -23,8 +23,3 @@ INSERT INTO juror_mod.users (created_by, updated_by,username, name, active, emai
 VALUES ('AUTO', 'AUTO','AUTO','AUTO', true, 'AUTO@hmcts.gov.uk', 'SYSTEM');
 insert into juror_mod.user_courts (username, loc_code)
 values ('AUTO', '400');
--- Teams
-INSERT INTO JUROR_DIGITAL.TEAM (ID, TEAM_NAME, VERSION) VALUES (1, 'London ' || chr(38) || ' Wales', 0);
-INSERT INTO JUROR_DIGITAL.TEAM (ID, TEAM_NAME, VERSION)
-VALUES (2, 'South East, North East ' || chr(38) || ' North West', 0);
-INSERT INTO JUROR_DIGITAL.TEAM (ID, TEAM_NAME, VERSION) VALUES (3, 'Midlands ' || chr(38) || ' South West', 0);

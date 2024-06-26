@@ -9,6 +9,7 @@ import java.io.Serializable;
  *
  */
 @EqualsAndHashCode
+@Deprecated(forRemoval = true)
 public class MessagesKey implements Serializable {
     private String jurorNumber;
     private String fileDatetime;

@@ -11,7 +11,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.bureau.domain.AppSettingsRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetailRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.NotifyTemplateMapping;
 import uk.gov.hmcts.juror.api.bureau.service.JurorCommsNotificationServiceImpl;
 import uk.gov.hmcts.juror.api.bureau.service.JurorCommsNotifyPayLoadService;
@@ -79,9 +78,6 @@ class JurorCommsNotifyAdapterImplTest extends ContainerTest {
      */
     @Mock
     private AppSettingsRepository appSettingRepository;
-
-    @Mock
-    private BureauJurorDetailRepository bureauJurorDetailRepository;
 
     /**
      * mock provided to JurorCommsNotificationServiceImpl constructor only.

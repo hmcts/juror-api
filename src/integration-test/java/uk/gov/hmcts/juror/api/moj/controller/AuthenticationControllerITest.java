@@ -66,10 +66,8 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
 
     private final Clock clock;
 
-    @Override
     @BeforeEach
     public void setUp() throws Exception {
-        super.setUp();
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }

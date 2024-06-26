@@ -38,10 +38,8 @@ public class JudgeControllerITest extends AbstractIntegrationTest {
 
     private HttpHeaders httpHeaders;
 
-    @Override
     @Before
     public void setUp() throws Exception {
-        super.setUp();
         initHeadersCourt();
     }
 

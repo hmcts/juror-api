@@ -47,6 +47,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.POSTCODE_REG
 @Data
 @EqualsAndHashCode(exclude = {"poolExtend", "court"})
 @Slf4j
+@Deprecated(forRemoval = true)
 public class Pool implements Serializable {
 
     /**

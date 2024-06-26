@@ -1,7 +1,6 @@
 package uk.gov.hmcts.juror.api.bureau.domain;
 
 import com.google.common.collect.Lists;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,11 +37,6 @@ public class UserRepositoryTest extends AbstractIntegrationTest {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    @Override
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
-    }
 
     @Sql("/db/truncate.sql")
     @Sql("/db/standing_data.sql")

@@ -26,6 +26,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.ReplyTypeDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.SignatureDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorPaperResponseDetailDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.summonsmanagement.SaveJurorPaperReplyResponseDto;
+import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
@@ -34,10 +35,9 @@ import uk.gov.hmcts.juror.api.moj.domain.SummonsSnapshot;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
-import uk.gov.hmcts.juror.api.moj.domain.letter.DisqualificationLetterMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCode;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
-import uk.gov.hmcts.juror.api.moj.repository.DisqualifyLetterModRepository;
+import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
@@ -57,6 +57,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.BDDAssertions.within;
@@ -88,8 +89,6 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
     @Autowired
     private JurorHistoryRepository jurorHistoryRepository;
     @Autowired
-    private DisqualifyLetterModRepository disqualifyLetterRepository;
-    @Autowired
     private SummonsSnapshotRepository summonsSnapshotRepository;
     @Autowired
     private WelshCourtLocationRepository welshCourtLocationRepository;
@@ -98,11 +97,11 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
     private JurorRepository jurorRepository;
 
     private HttpHeaders httpHeaders;
+    @Autowired
+    private BulkPrintDataRepository bulkPrintDataRepository;
 
-    @Override
     @Before
     public void setUp() throws Exception {
-        super.setUp();
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
@@ -394,8 +393,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql",
-        "/db/JurorPaperResponse_initPoolMembers_ageDisqualification.sql",
-        "/db/JurorPaperResponse_initDisqualifyLetter_ageDisqualification.sql"})
+        "/db/JurorPaperResponse_initPoolMembers_ageDisqualification.sql"})
     public void respondToSummons_straightThrough_ageDisqualification_letterAlreadyExists() throws Exception {
         final String jurorNumber = "111111111";
         final String bureauOwner = "400";
@@ -443,9 +441,13 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             .as("Expect history record to be created for disqualification letter")
             .isTrue();
 
-        Iterable<DisqualificationLetterMod> disqualifyLetterIterator = disqualifyLetterRepository.findAll();
-        List<DisqualificationLetterMod> disqualificationLetters = new ArrayList<>();
-        disqualifyLetterIterator.forEach(disqualificationLetters::add);
+        Iterable<BulkPrintData> disqualifyLetterIterator = bulkPrintDataRepository.findAll();
+        List<BulkPrintData> disqualificationLetters = new ArrayList<>();
+        disqualifyLetterIterator.forEach(bulkPrintData -> {
+            if (Set.of("5224", "5224C").contains(bulkPrintData.getFormAttribute().getFormType())) {
+                disqualificationLetters.add(bulkPrintData);
+            }
+        });
 
         assertThat(disqualificationLetters.size())
             .as("Expect a single disqualification letter to exist (existing record updated)")
@@ -1654,7 +1656,6 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    @Sql(statements = "DELETE FROM JUROR_DIGITAL.PAPER_RESPONSE")
     public void updateJurorPaperResponseStatus_bureauUser_noResponseFound() throws Exception {
         final String bureauJwt = createJwtBureau("BUREAU_USER");
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/update-status/999999990/CLOSED");

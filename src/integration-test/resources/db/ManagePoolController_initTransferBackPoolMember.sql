@@ -50,10 +50,3 @@ INSERT INTO juror_mod.contact_log (juror_number, user_id, start_call, enquiry_ty
 ('111111111', '415_COURT_USER', '2023-06-09', 'RC', 'Some Contact Log related notes'),
 ('111111111', '457_COURT_USER', '2023-06-12', 'GE', 'Some additional Contact Log related notes');
 
--- Create certificate of attendance letter
-DELETE FROM JUROR.CERT_LETT;
-
-INSERT INTO JUROR.CERT_LETT
-(OWNER, PART_NO, PRINTED, DATE_PRINTED)
-VALUES('415', '111111111', NULL, NULL);
-

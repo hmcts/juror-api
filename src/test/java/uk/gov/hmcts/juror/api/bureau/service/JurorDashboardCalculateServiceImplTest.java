@@ -255,7 +255,7 @@ public class JurorDashboardCalculateServiceImplTest {
 
     @Test(expected = NullPointerException.class)
     public void responsesByMethodCountsZeroResponses() {
-        Map<String, Map<String, Integer>> responsesCounts = jurorDashboardCalculateService.reponsesByMethod(null);
+        jurorDashboardCalculateService.reponsesByMethod(null);
     }
 
 }

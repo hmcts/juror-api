@@ -18,6 +18,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Entity
 @Table(name = "LOGIN_ATTEMPTS", schema = "JUROR_DIGITAL_USER")
+@Deprecated(forRemoval = true)
 public class LoginAttempt implements Serializable {
     @Id
     @Column(name = "USERNAME")

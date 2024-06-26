@@ -88,10 +88,8 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Autowired
     private JurorPoolRepository jurorPoolRepository;
 
-    @Override
     @Before
     public void setUp() throws Exception {
-        super.setUp();
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
@@ -400,7 +398,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql(statements = "DELETE FROM JUROR_MOD.BULK_PRINT_DATA")
-    @Sql(statements = "UPDATE JUROR.COURT_LOCATION SET VOTERS_LOCK = 0")
     @Sql({"/db/mod/truncate.sql",
         "/db/CreatePoolController_loadVoters.sql",
         "/db/CreatePoolController_createPoolWithDeferral.sql"})
@@ -456,7 +453,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql(statements = "DELETE FROM JUROR_MOD.BULK_PRINT_DATA")
-    @Sql(statements = "UPDATE JUROR.COURT_LOCATION SET VOTERS_LOCK = 0")
     @Sql({"/db/mod/truncate.sql",
         "/db/CreatePoolController_loadVoters.sql",
         "/db/CreatePoolController_createPoolWithDeferral.sql"})

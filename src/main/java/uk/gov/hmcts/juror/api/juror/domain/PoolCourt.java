@@ -51,6 +51,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.POSTCODE_REG
 @Data
 @EqualsAndHashCode(exclude = {"poolExtend", "court"})
 @Slf4j
+@Deprecated(forRemoval = true)
 public class PoolCourt implements Serializable {
     /**
      * Default value for varchar fields if null.

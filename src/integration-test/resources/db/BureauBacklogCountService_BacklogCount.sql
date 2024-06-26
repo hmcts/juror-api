@@ -1,11 +1,3 @@
---Staff
-INSERT INTO JUROR_DIGITAL.STAFF (LOGIN, NAME, RANK, ACTIVE, TEAM_ID, VERSION) VALUES ('carneson', 'Chad Arneson', 0, 1, 1, 1);
-INSERT INTO JUROR_DIGITAL.STAFF (LOGIN, NAME, RANK, ACTIVE, TEAM_ID, VERSION) VALUES ('sgomez', 'Susie Gomez', 0, 1, 2, 1);
-INSERT INTO JUROR_DIGITAL.STAFF (LOGIN, NAME, RANK, ACTIVE, TEAM_ID, VERSION) VALUES ('mruby', 'Martin Ruby', 0, 1, 3, 1);
-INSERT INTO JUROR_DIGITAL.STAFF (LOGIN, NAME, RANK, ACTIVE, TEAM_ID, VERSION) VALUES ('cbeasley', 'Charles Beasley', 1, 1, 1, 1);
-INSERT INTO JUROR_DIGITAL.STAFF (LOGIN, NAME, RANK, ACTIVE, TEAM_ID, VERSION) VALUES ('tgarrett', 'Timothy Garrett', 1, 1, 2, 1);
-INSERT INTO JUROR_DIGITAL.STAFF (LOGIN, NAME, RANK, ACTIVE, TEAM_ID, VERSION) VALUES ('ksalazar', 'Kris Salazar', 1, 1, 3, 1);
-
 INSERT INTO juror_mod.pool (pool_no,"owner",return_date,no_requested,pool_type,loc_code,new_request,last_update,additional_summons,attend_time,nil_pool,total_no_required,date_created) VALUES
                                                                                                                                                                                             ('555','400','2022-05-03',5,'CRO','446','N',NULL,NULL,NULL,false,5,NULL),
                                                                                                                                                                                             ('101','400','2022-05-03',5,'CRO','448','N',NULL,NULL,NULL,false,5,NULL);

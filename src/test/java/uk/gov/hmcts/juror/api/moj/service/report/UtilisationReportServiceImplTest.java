@@ -578,8 +578,6 @@ class UtilisationReportServiceImplTest {
         void monthlyUtilisationReportInvalidCourtLocation() {
 
             final String locCode = "416";
-            final LocalDate reportDate = LocalDate.of(2024, 4, 20);
-
             setupCourt(locCode, "416", "415");
 
             assertThatExceptionOfType(MojException.Forbidden.class)

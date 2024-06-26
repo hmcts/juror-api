@@ -41,10 +41,3 @@ INSERT INTO juror_mod.juror_response (juror_number,date_received,title,first_nam
 INSERT INTO juror_mod.contact_log (juror_number,user_id,notes,last_update,start_call,end_call,enquiry_type,repeat_enquiry) VALUES
                                                                                                                                ('209092530','COURTDUDE1','Some court notes','2024-03-12 21:54:14','2024-03-10 00:00:00','2024-03-11 00:00:00','IN',false),
                                                                                                                                ('209092530','STAFF1','Some bureau notes','2024-03-12 21:54:14','2024-03-08 00:00:00','2024-03-09 00:00:00','IN',false);
-INSERT INTO JUROR_DIGITAL.CHANGE_LOG (ID, JUROR_NUMBER, TIMESTAMP, STAFF, TYPE, NOTES, VERSION) VALUES (1, '209092530', (SELECT current_date), 'STAFF1', 'JUROR_DETAILS', 'notes1', 0);
-INSERT INTO JUROR_DIGITAL.CHANGE_LOG_ITEM (ID, CHANGE_LOG, OLD_KEY, OLD_VALUE, NEW_KEY, NEW_VALUE, VERSION) VALUES (1, 1, 'firstName', null, 'firstName', 'Janey', 0);
-INSERT INTO JUROR_DIGITAL.CHANGE_LOG_ITEM (ID, CHANGE_LOG, OLD_KEY, OLD_VALUE, NEW_KEY, NEW_VALUE, VERSION) VALUES (2, 1, 'lastName', null, 'lastName', 'Castilio', 0);
---redundant phone log
-INSERT INTO JUROR.PHONE_LOG(OWNER, PART_NO, USER_ID, START_CALL, END_CALL, PHONE_CODE, NOTES, LAST_UPDATE) VALUES ('400', '209092530', 'STAFF1', (SELECT current_date) - 4, (SELECT current_date) - 3, 'IN', 'Some bureau notes', (SELECT current_date) - 3);
--- redundant phone log (with court owner)
-INSERT INTO JUROR.PHONE_LOG(OWNER, PART_NO, USER_ID, START_CALL, END_CALL, PHONE_CODE, NOTES, LAST_UPDATE) VALUES ('415', '209092530', 'COURTDUDE1', (SELECT current_date) - 2, (SELECT current_date) - 1, 'IN', 'Some court notes', (SELECT current_date) - 1);

@@ -24,6 +24,7 @@ import java.util.Date;
 @IdClass(ExcusalDeniedLetterKey.class)
 @Entity
 @Table(name = "EXC_DENIED_LETT", schema = "JUROR_DIGITAL_USER")
+@Deprecated(forRemoval = true)
 public class ExcusalDeniedLetter implements Serializable {
     @Id
     @Length(min = 3, max = 3)

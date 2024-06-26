@@ -53,20 +53,14 @@ public class BureauBacklogAllocateServiceImplTest {
 
     private BureauBacklogAllocateServiceImpl bureauBacklogAllocateService;
 
-    private User user1;
-    private User user2;
-    private User user3;
-
-    private List<DigitalResponse> backlog;
-    private List<DigitalResponse> urgentBacklog;
     private List<DigitalResponse> toBeAllocated;
 
     @Before
     public void setUp() {
         bureauBacklogAllocateService = new BureauBacklogAllocateServiceImpl(responseRepo, userRepo, auditRepo);
-        user1 = User.builder().name("Post Staff 1").username("staff1").active(true).build();
-        user2 = User.builder().name("Post Staff 2").username("staff2").active(true).build();
-        user3 = User.builder().name("Post Staff 3").username("staff3").active(true).build();
+        User user1 = User.builder().name("Post Staff 1").username("staff1").active(true).build();
+        User user2 = User.builder().name("Post Staff 2").username("staff2").active(true).build();
+        User user3 = User.builder().name("Post Staff 3").username("staff3").active(true).build();
 
         doReturn(Arrays.asList(user1, user2, user3)).when(userRepo).findAllByUsernameIn(anyList());
 
@@ -74,11 +68,11 @@ public class BureauBacklogAllocateServiceImplTest {
         toBeAllocated = Lists.newLinkedList();
 
         //nonurgent backlog
-        backlog = generateResponses(NON_URGENT_TO_ALLOCATE_TO_STAFF, false, false, now);
+        List<DigitalResponse> backlog = generateResponses(NON_URGENT_TO_ALLOCATE_TO_STAFF, false, now);
         Page<DigitalResponse> nonUrgentResponses = new PageImpl<>(backlog);
 
         //urgent backlog
-        urgentBacklog = generateResponses(URGENT_TO_ALLOCATE_TO_STAFF, true, false, now);
+        List<DigitalResponse> urgentBacklog = generateResponses(URGENT_TO_ALLOCATE_TO_STAFF, true, now);
         Page<DigitalResponse> urgentResponses = new PageImpl<>(urgentBacklog);
 
 
@@ -166,12 +160,11 @@ public class BureauBacklogAllocateServiceImplTest {
      *
      * @param responseCount No of responses to be allocated - requested.
      * @param urgent        urgent repsonse boolean.
-     * @param superUrgent   superurgent response boolean.
      * @param now           datetime stamp.
      *
      * @return List JurorResponses
      */
-    private List<DigitalResponse> generateResponses(int responseCount, Boolean urgent, Boolean superUrgent,
+    private List<DigitalResponse> generateResponses(int responseCount, Boolean urgent,
                                                     LocalDateTime now) {
 
         List<DigitalResponse> responses = Lists.newLinkedList();

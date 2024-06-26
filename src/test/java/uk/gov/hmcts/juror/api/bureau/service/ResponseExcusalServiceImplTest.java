@@ -28,6 +28,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -82,6 +83,9 @@ public class ResponseExcusalServiceImplTest {
 
     @InjectMocks
     private ResponseExcusalServiceImpl responseExcusalService;
+
+    @Mock
+    private PrintDataService printDataService;
 
     @Test
     public void getExcusalReasons_happy() throws Exception {
@@ -145,7 +149,7 @@ public class ResponseExcusalServiceImplTest {
         verify(poolRepository).save(poolDetails);
 
         verify(partHistRepository).save(any(JurorHistory.class));
-        verify(excusalLetterRepository).save(any(ExcusalLetter.class));
+        verify(printDataService).printExcusalLetter(poolDetails);
     }
 
     @Test
@@ -280,7 +284,7 @@ public class ResponseExcusalServiceImplTest {
         verify(poolRepository).save(poolDetails);
 
         verify(partHistRepository, times(2)).save(any(JurorHistory.class));
-        verify(excusalDeniedLetterRepository).save(any(ExcusalDeniedLetter.class));
+        verify(printDataService).printExcusalDeniedLetter(poolDetails);
     }
 
     @Test

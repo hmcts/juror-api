@@ -3,8 +3,6 @@ delete from juror_mod.juror_response_cjs_employment;
 delete from juror_mod.juror_response_aud;
 delete from juror_mod.juror_response;
 
-delete from juror_digital_user.disq_lett;
-
 
 delete from juror_mod.juror_history;
 delete from juror_mod.juror_pool;

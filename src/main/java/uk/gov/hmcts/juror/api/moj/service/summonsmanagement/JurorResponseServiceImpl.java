@@ -15,14 +15,16 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
-import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorCommonResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.StraightThroughProcessorService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.getJurorDigitalResponse;
 import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.getJurorPaperResponse;
@@ -33,14 +35,13 @@ import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.hasValueChanged;
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class JurorResponseServiceImpl implements JurorResponseService {
 
-    @NonNull
-    private final PoolRequestRepository poolRequestRepository;
 
     @NonNull
     private final JurorPoolRepository jurorPoolRepository;
 
     @NonNull
     private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
+    private final JurorCommonResponseRepositoryMod jurorCommonResponseRepository;
 
     @NonNull
     private JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository;
@@ -85,6 +86,13 @@ public class JurorResponseServiceImpl implements JurorResponseService {
 
         //Straight through processing
         processStraightThroughResponse(jurorResponse, jurorPool, payload);
+    }
+
+    @Override
+    public JurorCommonResponseRepositoryMod.AbstractResponse getCommonJurorResponse(String jurorNumber) {
+        return Optional.ofNullable(jurorCommonResponseRepository.findByJurorNumber(jurorNumber))
+            .orElseThrow(() -> new MojException.NotFound("Juror response not found for juror number: " + jurorNumber,
+                null));
     }
 
 

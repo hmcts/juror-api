@@ -63,7 +63,8 @@ import uk.gov.hmcts.juror.api.moj.controller.response.PendingJurorsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorHistoryResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorPaymentsResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
-import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryType;
+import uk.gov.hmcts.juror.api.moj.domain.ContactCode;
+import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
 import uk.gov.hmcts.juror.api.moj.domain.FilterJurorRecord;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
@@ -92,7 +93,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
-import uk.gov.hmcts.juror.api.moj.repository.ContactEnquiryTypeRepository;
+import uk.gov.hmcts.juror.api.moj.repository.ContactCodeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactLogRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
@@ -163,7 +164,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Autowired
     private ContactLogRepository contactLogRepository;
     @Autowired
-    private ContactEnquiryTypeRepository contactEnquiryTypeRepository;
+    private ContactCodeRepository contactEnquiryTypeRepository;
     @Autowired
     private JurorRepository jurorRepository;
     @Autowired
@@ -195,10 +196,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     private HttpHeaders httpHeaders;
 
 
-    @Override
     @BeforeEach
     public void setUp() throws Exception {
-        super.setUp();
         initHeaders();
     }
 
@@ -2082,14 +2081,14 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             .isEqualTo(HttpStatus.OK);
 
         assertThat(response.getBody()).isNotNull();
-        List<ContactEnquiryType> contactEnquiryTypes = response.getBody().getData();
+        List<ContactEnquiryTypeListDto.ContactEnquiry> contactEnquiryTypes = response.getBody().getData();
 
-        Iterable<ContactEnquiryType> dbData = contactEnquiryTypeRepository.findAll();
+        Iterable<ContactCode> dbData = contactEnquiryTypeRepository.findAll();
 
-        for (ContactEnquiryType contactEnquiryType : dbData) {
+        for (ContactCode contactEnquiryType : dbData) {
 
             assertThat(contactEnquiryTypes.stream().anyMatch(enquiryType ->
-                enquiryType.getEnquiryCode() == contactEnquiryType.getEnquiryCode()
+                enquiryType.getEnquiryCode() == ContactEnquiryCode.valueOf(contactEnquiryType.getCode())
                     && enquiryType.getDescription().equals(contactEnquiryType.getDescription())))
                 .as("Expect each record from the database to be correctly mapped in to the returned DTO")
                 .isTrue();
@@ -2196,7 +2195,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_courtOwned_NoNotes.sql"})
+    @Sql({"/db/mod/truncate.sql"})
     void testGetJurorNotesCourtUserNoNotes() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
             UserType.COURT));

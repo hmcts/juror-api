@@ -42,10 +42,8 @@ public class ETagConfigITest extends AbstractIntegrationTest {
 
     private final URI uri = URI.create("/api/v1/moj/pool-create/pool?poolNumber=415220110&owner=400");
 
-    @Override
     @Before
     public void setUp() throws Exception {
-        super.setUp();
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
         String bureauJwt = createJwt("rprice", "400");

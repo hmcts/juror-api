@@ -50,9 +50,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
     private HttpHeaders httpHeaders;
 
     @BeforeEach
-    @Override
     public void setUp() throws Exception {
-        super.setUp();
         initHeaders();
     }
 

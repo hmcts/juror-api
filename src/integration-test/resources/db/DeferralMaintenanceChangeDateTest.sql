@@ -5,8 +5,6 @@ delete from juror_mod.pool_history;
 DELETE FROM juror_mod.juror_history;
 DELETE FROM juror_mod.juror_audit;
 
-delete from juror_digital.staff;
-
 -- Create Pool records associated with Pool Member records
 delete from juror_mod.pool_comments;
 delete from juror_mod.juror_pool;
@@ -58,11 +56,3 @@ INSERT INTO juror_mod.juror_pool ("owner",juror_number,pool_number,user_edtq,sta
 	 ('400','555555557','415220504','BUREAU_USER_1',1,'Y','0109','415','N'),
 	 ('415','555555558','415220401','BUREAU_USER_1',1,'Y','0109','415','N'),
 	 ('415','555555559','415220401','BUREAU_USER_1',1,'Y','0109','415','N');
-
-INSERT INTO JUROR_DIGITAL.STAFF
-(ACTIVE, LOGIN, NAME, RANK, VERSION, COURT_1, COURT_2, COURT_3, COURT_4, COURT_5, COURT_6, COURT_7, COURT_8, COURT_9, COURT_10)
-VALUES (1, 'BUREAU_USER', 'Test User', 0, 0, '415', '121', '122', '123', '124', '125', '126', '127', '128', '129');
-
-INSERT INTO JUROR_DIGITAL.STAFF
-(ACTIVE, LOGIN, NAME, RANK, VERSION, COURT_1, COURT_2, COURT_3, COURT_4, COURT_5, COURT_6, COURT_7, COURT_8, COURT_9, COURT_10)
-VALUES (1, 'COURT_USER', 'Test User', 0, 0, '415', '121', '122', '123', '124', '125', '126', '127', '128', '129');

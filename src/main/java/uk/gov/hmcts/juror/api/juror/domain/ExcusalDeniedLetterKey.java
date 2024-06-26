@@ -8,6 +8,7 @@ import java.io.Serializable;
  * Composite key for {@link ExcusalDeniedLetter}.
  */
 @EqualsAndHashCode
+@Deprecated(forRemoval = true)
 public class ExcusalDeniedLetterKey implements Serializable {
     private String owner;
     private String jurorNumber;

@@ -22,7 +22,6 @@ import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.SpringBootErrorResponse;
 import uk.gov.hmcts.juror.api.bureau.controller.request.BureauResponseStatusUpdateDto;
-import uk.gov.hmcts.juror.api.bureau.domain.ChangeLogType;
 import uk.gov.hmcts.juror.api.bureau.exception.BureauOptimisticLockingException;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseNotesService;
 import uk.gov.hmcts.juror.api.bureau.service.ResponsePhoneLogService;
@@ -52,10 +51,8 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
 
     private HttpHeaders httpHeaders;
 
-    @Override
     @Before
     public void setUp() throws Exception {
-        super.setUp();
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
@@ -381,11 +378,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_history", Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
             0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class)).isEqualTo(0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class)).isEqualTo(
-            0);
         final Map<String, Object> originalPool =
             jdbcTemplate.queryForMap("SELECT * FROM juror_mod.juror WHERE juror_number = '352004504'");
         assertThat(jdbcTemplate.queryForObject(
@@ -448,8 +440,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             .isEqualTo(0);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_audit", Integer.class))
             .isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class))
-            .isEqualTo(1);
         softly.assertThat(jdbcTemplate.queryForMap("SELECT * FROM juror_mod.juror WHERE juror_number = '352004504'"))
             .containsAllEntriesOf(originalPool);
         //updated fields
@@ -498,30 +488,10 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             .as("Changed email column updated").isEqualTo(updatedEmailAddress);
 
         softly.assertThat(jdbcTemplate.queryForObject(
-                "SELECT VERSION FROM JUROR_DIGITAL.CHANGE_LOG WHERE JUROR_NUMBER = '" + jurorNumber + "'",
-                Integer.class))
-            .as("Version has been zeroed").isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject(
                 "SELECT STAFF_LOGIN FROM juror_mod.juror_response WHERE JUROR_NUMBER = '352004504'", String.class))
             .isEqualTo(loginName);
 
-        // assert changelog
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT STAFF FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(loginName);
-        softly.assertThat(
-                jdbcTemplate.queryForObject("SELECT JUROR_NUMBER FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(jurorNumber);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT TYPE FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(ChangeLogType.JUROR_DETAILS.name());
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT NOTES FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(changeLogNotes);
-        final Long changeLogId = jdbcTemplate.queryForObject("SELECT ID FROM JUROR_DIGITAL.CHANGE_LOG", Long.class);
-        softly.assertThat(jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM WHERE CHANGE_LOG_ITEM.CHANGE_LOG = " + changeLogId,
-            Integer.class)).as("Correct number of change log items were created").isEqualTo(13);
-        softly.assertThat(
-                jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class))
-            .as("Correct TOTAL number of change log items were created").isEqualTo(13);
+
         softly.assertAll();
     }
 
@@ -560,11 +530,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         assertThat(
             jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_history", Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
-            0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class)).isEqualTo(0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class)).isEqualTo(
             0);
         final Map<String, Object> originalPool =
             jdbcTemplate.queryForMap("SELECT * FROM juror_mod.juror WHERE juror_number = '352004504'");
@@ -628,11 +593,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             .isEqualTo(0);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_audit", Integer.class))
             .isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class))
-            .isEqualTo(1);
-        softly.assertThat(
-                jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class))
-            .isEqualTo(3);
         softly.assertThat(jdbcTemplate.queryForMap("SELECT * FROM juror_mod.juror WHERE juror_number = '352004504'"))
             .containsAllEntriesOf(originalPool);
 
@@ -640,27 +600,9 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
                 "SELECT TITLE FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'", String.class))
             .as("Changed title column updated").isEqualTo(updatedTitle);
         softly.assertThat(jdbcTemplate.queryForObject(
-                "SELECT VERSION FROM JUROR_DIGITAL.CHANGE_LOG WHERE JUROR_NUMBER = '" + jurorNumber + "'",
-                Integer.class))
-            .as("Version has been zeroed").isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject(
                 "SELECT STAFF_LOGIN FROM juror_mod.juror_response WHERE JUROR_NUMBER = '352004504'", String.class))
             .isEqualTo(loginName);
 
-        // assert changelog
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT STAFF FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(loginName);
-        softly.assertThat(
-                jdbcTemplate.queryForObject("SELECT JUROR_NUMBER FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(jurorNumber);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT TYPE FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(ChangeLogType.JUROR_DETAILS.name());
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT NOTES FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(changeLogNotes);
-        final Long changeLogId = jdbcTemplate.queryForObject("SELECT ID FROM JUROR_DIGITAL.CHANGE_LOG", Long.class);
-        softly.assertThat(jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM WHERE CHANGE_LOG_ITEM.CHANGE_LOG = " + changeLogId,
-            Integer.class)).as("Correct number of change log items were created").isEqualTo(3);
         softly.assertAll();
     }
 
@@ -696,11 +638,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_history", Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
             0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class)).isEqualTo(0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class)).isEqualTo(
-            0);
+
 
         final String updatedTitle = "Sir";//"Rev";
         final String updatedFirstName = "James";//"Jose";
@@ -738,11 +676,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         softly.assertThat(exchange.getBody()).isNotNull();
         softly.assertThat(exchange.getBody().getException())
             .isEqualTo(BureauOptimisticLockingException.class.getTypeName());
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class))
-            .isEqualTo(0);
-        softly.assertThat(
-                jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class))
-            .isEqualTo(0);
         softly.assertThat(jdbcTemplate.queryForObject(
                 "SELECT TITLE FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'", String.class))
             .as("Changed title column updated").isNotEqualTo(updatedTitle);
@@ -825,11 +758,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_history", Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
             0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class)).isEqualTo(0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class)).isEqualTo(
-            0);
         final Map<String, Object> originalPool =
             jdbcTemplate.queryForMap("SELECT * FROM juror_mod.juror WHERE juror_number = '352004504'");
 
@@ -894,11 +822,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             .isEqualTo(0);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_audit", Integer.class))
             .isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class))
-            .isEqualTo(0);
-        softly.assertThat(
-                jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class))
-            .isEqualTo(0);
         softly.assertThat(jdbcTemplate.queryForMap("SELECT * FROM juror_mod.juror WHERE juror_number = '352004504'"))
             .containsAllEntriesOf(originalPool);
         softly.assertThat(jdbcTemplate.queryForObject(
@@ -943,11 +866,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_history", Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
             0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class)).isEqualTo(0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class)).isEqualTo(
-            0);
         assertThat(jdbcTemplate.queryForObject(
             "SELECT STAFF_LOGIN FROM juror_mod.juror_response WHERE JUROR_NUMBER = '352004504'",
             String.class)).isNull();
@@ -990,8 +908,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             .isEqualTo(0);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_audit", Integer.class))
             .isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class))
-            .isEqualTo(1);
 
         softly.assertThat(jdbcTemplate.queryForObject(
             "SELECT DEFERRAL_REASON FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
@@ -1003,27 +919,10 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             "SELECT EXCUSAL_REASON FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
             String.class)).as("Excusal reason column blanked out").isNullOrEmpty();
         softly.assertThat(jdbcTemplate.queryForObject(
-                "SELECT VERSION FROM JUROR_DIGITAL.CHANGE_LOG WHERE JUROR_NUMBER = '" + jurorNumber + "'",
-                Integer.class))
-            .as("Version has been zeroed").isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject(
                 "SELECT STAFF_LOGIN FROM juror_mod.juror_response WHERE JUROR_NUMBER = '352004504'", String.class))
             .isEqualTo(loginName);
 
-        // assert changelog
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT STAFF FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(loginName);
-        softly.assertThat(
-                jdbcTemplate.queryForObject("SELECT JUROR_NUMBER FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(jurorNumber);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT TYPE FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(ChangeLogType.DEFERRAL_EXCUSAL.name());
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT NOTES FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(changeLogNotes);
-        final Long changeLogId = jdbcTemplate.queryForObject("SELECT ID FROM JUROR_DIGITAL.CHANGE_LOG", Long.class);
-        softly.assertThat(jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM WHERE CHANGE_LOG_ITEM.CHANGE_LOG = " + changeLogId,
-            Integer.class)).as("Correct number of change log items were created").isEqualTo(2);
+
         softly.assertAll();
     }
 
@@ -1062,11 +961,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         assertThat(
             jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_history", Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
-            0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class)).isEqualTo(0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class)).isEqualTo(
             0);
         assertThat(jdbcTemplate.queryForObject(
             "SELECT STAFF_LOGIN FROM juror_mod.juror_response WHERE JUROR_NUMBER = '352004504'",
@@ -1113,8 +1007,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             .isEqualTo(0);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_audit", Integer.class))
             .isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class))
-            .isEqualTo(1);
 
         softly.assertThat(jdbcTemplate.queryForObject(
             "SELECT DEFERRAL_REASON FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
@@ -1126,27 +1018,8 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             "SELECT EXCUSAL_REASON FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
             String.class)).as("Excusal reason column blanked out").isNullOrEmpty();
         softly.assertThat(jdbcTemplate.queryForObject(
-                "SELECT VERSION FROM JUROR_DIGITAL.CHANGE_LOG WHERE JUROR_NUMBER = '" + jurorNumber + "'",
-                Integer.class))
-            .as("Version has been zeroed").isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject(
                 "SELECT STAFF_LOGIN FROM juror_mod.juror_response WHERE JUROR_NUMBER = '352004504'", String.class))
             .isEqualTo(loginName);
-
-        // assert changelog
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT STAFF FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(loginName);
-        softly.assertThat(
-                jdbcTemplate.queryForObject("SELECT JUROR_NUMBER FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(jurorNumber);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT TYPE FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(ChangeLogType.DEFERRAL_EXCUSAL.name());
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT NOTES FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(changeLogNotes);
-        final Long changeLogId = jdbcTemplate.queryForObject("SELECT ID FROM JUROR_DIGITAL.CHANGE_LOG", Long.class);
-        softly.assertThat(jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM WHERE CHANGE_LOG_ITEM.CHANGE_LOG = " + changeLogId,
-            Integer.class)).as("Correct number of change log items were created").isEqualTo(2);
         softly.assertAll();
     }
 
@@ -1185,11 +1058,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         assertThat(
             jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_history", Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
-            0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class)).isEqualTo(0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class)).isEqualTo(
             0);
         assertThat(jdbcTemplate.queryForObject(
             "SELECT STAFF_LOGIN FROM juror_mod.juror_response WHERE JUROR_NUMBER = '352004504'",
@@ -1235,8 +1103,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             .isEqualTo(0);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_audit", Integer.class))
             .isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class))
-            .isEqualTo(1);
 
         softly.assertThat(jdbcTemplate.queryForObject(
             "SELECT DEFERRAL_REASON FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
@@ -1248,27 +1114,9 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             "SELECT EXCUSAL_REASON FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
             String.class)).as("Excusal reason column blanked out").isEqualTo(excusalReason);
         softly.assertThat(jdbcTemplate.queryForObject(
-                "SELECT VERSION FROM JUROR_DIGITAL.CHANGE_LOG WHERE JUROR_NUMBER = '" + jurorNumber + "'",
-                Integer.class))
-            .as("Version has been zeroed").isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject(
                 "SELECT STAFF_LOGIN FROM juror_mod.juror_response WHERE JUROR_NUMBER = '352004504'", String.class))
             .isEqualTo(loginName);
 
-        // assert changelog
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT STAFF FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(loginName);
-        softly.assertThat(
-                jdbcTemplate.queryForObject("SELECT JUROR_NUMBER FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(jurorNumber);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT TYPE FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(ChangeLogType.DEFERRAL_EXCUSAL.name());
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT NOTES FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(changeLogNotes);
-        final Long changeLogId = jdbcTemplate.queryForObject("SELECT ID FROM JUROR_DIGITAL.CHANGE_LOG", Long.class);
-        softly.assertThat(jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM WHERE CHANGE_LOG_ITEM.CHANGE_LOG = " + changeLogId,
-            Integer.class)).as("Correct number of change log items were created").isEqualTo(3);
         softly.assertAll();
     }
 
@@ -1307,11 +1155,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         assertThat(
             jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_history", Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
-            0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class)).isEqualTo(0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class)).isEqualTo(
             0);
 
         final String excusalReason = "Excusal reason text.";
@@ -1358,11 +1201,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             .isEqualTo(0);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_audit", Integer.class))
             .isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class))
-            .isEqualTo(0);
-        softly.assertThat(
-                jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class))
-            .isEqualTo(0);
         softly.assertAll();
     }
 
@@ -1402,11 +1240,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         assertThat(
             jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_history", Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
-            0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class)).isEqualTo(0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class)).isEqualTo(
             0);
         assertThat(jdbcTemplate.queryForObject(
             "SELECT STAFF_LOGIN FROM juror_mod.juror_response WHERE JUROR_NUMBER = '352004504'",
@@ -1459,8 +1292,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             .isEqualTo(0);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_audit", Integer.class))
             .isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class))
-            .isEqualTo(1);
         //updated fields
         softly.assertThat(jdbcTemplate.queryForObject(
             "SELECT reasonable_adjustments_arrangements FROM juror_mod.juror_response WHERE JUROR_NUMBER = '"
@@ -1472,28 +1303,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         softly.assertThat(jdbcTemplate.queryForObject(
                 "SELECT STAFF_LOGIN FROM juror_mod.juror_response WHERE JUROR_NUMBER = '352004504'", String.class))
             .isEqualTo(loginName);
-
-        // assert changelog
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT STAFF FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(loginName);
-        softly.assertThat(
-                jdbcTemplate.queryForObject("SELECT JUROR_NUMBER FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(jurorNumber);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT TYPE FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(ChangeLogType.REASONABLE_ADJUSTMENTS.name());
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT NOTES FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(changeLogNotes);
-        final Long changeLogId = jdbcTemplate.queryForObject("SELECT ID FROM JUROR_DIGITAL.CHANGE_LOG", Long.class);
-        softly.assertThat(jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM WHERE CHANGE_LOG_ITEM.CHANGE_LOG = " + changeLogId,
-            Integer.class)).as("Correct number of change log items were created").isEqualTo(5);
-        softly.assertThat(
-                jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class))
-            .as("Correct TOTAL number of change log items were created").isEqualTo(5);
-        softly.assertThat(jdbcTemplate.queryForObject(
-                "SELECT VERSION FROM JUROR_DIGITAL.CHANGE_LOG WHERE JUROR_NUMBER = '" + jurorNumber + "'",
-                Integer.class))
-            .as("Version has been zeroed").isEqualTo(0);
         softly.assertAll();
     }
 
@@ -1532,11 +1341,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         assertThat(
             jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_history", Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
-            0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class)).isEqualTo(0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class)).isEqualTo(
             0);
 
         final String specialNeedsRequirements = "Special needs requirements text.";
@@ -1584,11 +1388,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_history", Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
             0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class)).isEqualTo(0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class)).isEqualTo(
-            0);
     }
 
     @Test
@@ -1628,11 +1427,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_history", Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
             0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class)).isEqualTo(0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class)).isEqualTo(
-            0);
+
         final Map<String, Object> originalPool =
             jdbcTemplate.queryForMap("SELECT * FROM juror_mod.juror WHERE juror_number = '352004504'");
         assertThat(jdbcTemplate.queryForObject(
@@ -1687,11 +1482,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             .isEqualTo(0);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_audit", Integer.class))
             .isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class))
-            .isEqualTo(1);
-        softly.assertThat(
-                jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class))
-            .isEqualTo(8);
         softly.assertThat(jdbcTemplate.queryForMap("SELECT * FROM juror_mod.juror WHERE juror_number = '352004504'"))
             .containsAllEntriesOf(originalPool);
         softly.assertThat(jdbcTemplate.queryForObject(
@@ -1724,25 +1514,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         softly.assertThat(jdbcTemplate.queryForObject(
             "SELECT CONVICTIONS_DETAILS FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
             String.class)).as("Convictions details column should be updated").isEqualTo(convictionsDetails);
-        softly.assertThat(jdbcTemplate.queryForObject(
-                "SELECT VERSION FROM JUROR_DIGITAL.CHANGE_LOG WHERE JUROR_NUMBER = '" + jurorNumber + "'",
-                Integer.class))
-            .as("Version has been zeroed").isEqualTo(0);
-
-        // assert changelog
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT STAFF FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(loginName);
-        softly.assertThat(
-                jdbcTemplate.queryForObject("SELECT JUROR_NUMBER FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(jurorNumber);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT TYPE FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(ChangeLogType.ELIGIBILITY.name());
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT NOTES FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(changeLogNotes);
-        final Long changeLogId = jdbcTemplate.queryForObject("SELECT ID FROM JUROR_DIGITAL.CHANGE_LOG", Long.class);
-        softly.assertThat(jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM WHERE CHANGE_LOG_ITEM.CHANGE_LOG = " + changeLogId,
-            Integer.class)).as("Correct number of change log items were created").isEqualTo(8);
         softly.assertAll();
     }
 
@@ -1781,11 +1552,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         assertThat(
             jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_history", Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
-            0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class)).isEqualTo(0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class)).isEqualTo(
             0);
         final Map<String, Object> originalPool =
             jdbcTemplate.queryForMap("SELECT * FROM juror_mod.juror WHERE juror_number = '352004504'");
@@ -1844,11 +1610,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             .isEqualTo(0);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_audit", Integer.class))
             .isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class))
-            .isEqualTo(0);
-        softly.assertThat(
-                jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class))
-            .isEqualTo(0);
         softly.assertThat(jdbcTemplate.queryForMap("SELECT * FROM juror_mod.juror WHERE juror_number = '352004504'"))
             .containsAllEntriesOf(originalPool);
 
@@ -1877,13 +1638,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         softly.assertThat(jdbcTemplate.queryForObject(
             "SELECT CONVICTIONS_DETAILS FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
             String.class)).as("Convictions details column should not be updated").isEqualTo(null);
-
-        // assert changelog
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class))
-            .as("No change log entry should be created").isEqualTo(0);
-        softly.assertThat(
-                jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class))
-            .as("No change log items should be created").isEqualTo(0);
         softly.assertAll();
     }
 
@@ -1922,11 +1676,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         assertThat(
             jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_history", Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
-            0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class)).isEqualTo(0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class)).isEqualTo(
             0);
         assertThat(jdbcTemplate.queryForObject(
             "SELECT STAFF_LOGIN FROM juror_mod.juror_response WHERE JUROR_NUMBER = '352004504'",
@@ -1978,8 +1727,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             .isEqualTo(0);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_audit", Integer.class))
             .isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class))
-            .isEqualTo(1);
 
         //updated fields
         softly.assertThat(jdbcTemplate.queryForObject(
@@ -2013,24 +1760,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
                 "SELECT STAFF_LOGIN FROM juror_mod.juror_response WHERE JUROR_NUMBER = '352004504'", String.class))
             .isEqualTo(loginName);
 
-        // assert changelog
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT STAFF FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(loginName);
-        softly.assertThat(
-                jdbcTemplate.queryForObject("SELECT JUROR_NUMBER FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(jurorNumber);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT TYPE FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(ChangeLogType.CJS_EMPLOYMENTS.name());
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT NOTES FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(changeLogNotes);
-        final Long changeLogId = jdbcTemplate.queryForObject("SELECT ID FROM JUROR_DIGITAL.CHANGE_LOG", Long.class);
-        softly.assertThat(jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM WHERE CHANGE_LOG_ITEM.CHANGE_LOG = " + changeLogId,
-            Integer.class)).as("Correct number of change log items were created").isEqualTo(6);
-        softly.assertThat(jdbcTemplate.queryForObject(
-                "SELECT VERSION FROM JUROR_DIGITAL.CHANGE_LOG WHERE JUROR_NUMBER = '" + jurorNumber + "'",
-                Integer.class))
-            .as("Version has been zeroed").isEqualTo(0);
         softly.assertAll();
     }
 
@@ -2069,11 +1798,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         assertThat(
             jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_history", Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
-            0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class)).isEqualTo(0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class)).isEqualTo(
             0);
 
         final String policeDetails = null;
@@ -2122,8 +1846,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             .isEqualTo(0);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_audit", Integer.class))
             .isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class))
-            .isEqualTo(1);
 
         //updated fields
         softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_response_CJS_EMPLOYMENT"
@@ -2141,27 +1863,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
                     + " WHERE CJS_EMPLOYER = 'Other' AND JUROR_NUMBER = '" + jurorNumber + "'", String.class))
             .as("Other CJS employer details should be updated").isEqualTo(otherDetails);
 
-        // assert changelog
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT STAFF FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(loginName);
-        softly.assertThat(
-                jdbcTemplate.queryForObject("SELECT JUROR_NUMBER FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(jurorNumber);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT TYPE FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(ChangeLogType.CJS_EMPLOYMENTS.name());
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT NOTES FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(changeLogNotes);
-        final Long changeLogId = jdbcTemplate.queryForObject("SELECT ID FROM JUROR_DIGITAL.CHANGE_LOG", Long.class);
-        softly.assertThat(jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM WHERE CHANGE_LOG_ITEM.CHANGE_LOG = " + changeLogId,
-            Integer.class)).as("Correct number of change log items were created").isEqualTo(3);
-        softly.assertThat(
-                jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class))
-            .as("Correct TOTAL number of change log items were created").isEqualTo(3);
-        softly.assertThat(jdbcTemplate.queryForObject(
-                "SELECT VERSION FROM JUROR_DIGITAL.CHANGE_LOG WHERE JUROR_NUMBER = '" + jurorNumber + "'",
-                Integer.class))
-            .as("Version has been zeroed").isEqualTo(0);
         softly.assertAll();
     }
 
@@ -2200,11 +1901,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         assertThat(
             jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_history", Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
-            0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class)).isEqualTo(0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class)).isEqualTo(
             0);
 
         final String policeDetails = null;
@@ -2253,8 +1949,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             .isEqualTo(0);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_audit", Integer.class))
             .isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class))
-            .isEqualTo(1);
 
         //updated fields
         softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_response_CJS_EMPLOYMENT"
@@ -2270,28 +1964,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_response_CJS_EMPLOYMENT"
                 + " WHERE CJS_EMPLOYER = 'Other' AND JUROR_NUMBER = '" + jurorNumber + "'", Integer.class))
             .as("Other CJS employer details should be updated").isEqualTo(0);
-
-        // assert changelog
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT STAFF FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(loginName);
-        softly.assertThat(
-                jdbcTemplate.queryForObject("SELECT JUROR_NUMBER FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(jurorNumber);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT TYPE FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(ChangeLogType.CJS_EMPLOYMENTS.name());
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT NOTES FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(changeLogNotes);
-        final Long changeLogId = jdbcTemplate.queryForObject("SELECT ID FROM JUROR_DIGITAL.CHANGE_LOG", Long.class);
-        softly.assertThat(jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM WHERE CHANGE_LOG_ITEM.CHANGE_LOG = " + changeLogId,
-            Integer.class)).as("Correct number of change log items were created").isEqualTo(2);
-        softly.assertThat(
-                jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class))
-            .as("Correct TOTAL number of change log items were created").isEqualTo(2);
-        softly.assertThat(jdbcTemplate.queryForObject(
-                "SELECT VERSION FROM JUROR_DIGITAL.CHANGE_LOG WHERE JUROR_NUMBER = '" + jurorNumber + "'",
-                Integer.class))
-            .as("Version has been zeroed").isEqualTo(0);
         softly.assertAll();
     }
 
@@ -2331,11 +2003,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         assertThat(
             jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_history", Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
-            0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class)).isEqualTo(0);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class)).isEqualTo(
             0);
 
         final String policeDetails = "I worked for the police";
@@ -2386,11 +2053,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_history", Integer.class))
             .isEqualTo(0);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_audit", Integer.class))
-            .isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG", Integer.class))
-            .isEqualTo(0);
-        softly.assertThat(
-                jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class))
             .isEqualTo(0);
 
         //updated fields

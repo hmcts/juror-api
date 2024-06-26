@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
  * Repository for {@link LoginAttempt}.
  */
 @Repository
+@Deprecated(forRemoval = true)
 public interface LoginAttemptRepository extends CrudRepository<LoginAttempt, String> {
     LoginAttempt findByUsername(String username);
 }

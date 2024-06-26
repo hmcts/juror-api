@@ -78,7 +78,7 @@ public class BureauServiceImpl implements BureauService {
     @Override
     public BureauJurorDetailDto mapJurorDetailsToDto(ModJurorDetail jurorDetails) {
         // touch the collections to load lazy relationships within the transaction
-        jurorDetails.getPhoneLogs().size();
+        jurorDetails.getContactLogs().size();
         jurorDetails.getCjsEmployments().size();
         jurorDetails.getReasonableAdjustments().size();
 

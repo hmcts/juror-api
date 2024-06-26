@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.bureau.controller;
 
-import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,7 +22,6 @@ import uk.gov.hmcts.juror.api.SpringBootErrorResponse;
 import uk.gov.hmcts.juror.api.bureau.controller.request.BureauResponseStatusUpdateDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseSummaryWrapper;
-import uk.gov.hmcts.juror.api.bureau.domain.ChangeLogType;
 import uk.gov.hmcts.juror.api.bureau.exception.BureauOptimisticLockingException;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
@@ -53,10 +51,8 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
     @Value("${jwt.secret.bureau}")
     private String bureauSecret;
 
-    @Override
     @Before
     public void setUp() throws Exception {
-        super.setUp();
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
@@ -131,28 +127,8 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         assertThat(responseEntity.getBody()).extracting(
                 "jurorNumber", "firstName", "lastName", "version", "useJurorPhoneDetails", "useJurorEmailDetails")
             .contains("209092530", "Jane", "CASTILLO", 555, true, true);
-        assertThat(responseEntity.getBody().getChangeLog()).hasSize(1);
-        assertThat(responseEntity.getBody().getChangeLog().get(0).getItems()).hasSize(2);
-        assertThat(responseEntity.getBody().getPhoneLogs()).hasSize(1);
+        assertThat(responseEntity.getBody().getPhoneLogs()).hasSize(2);
 
-        final BureauJurorDetailDto.ChangeLogDto firstChangeLog = responseEntity.getBody().getChangeLog().get(0);
-        final SoftAssertions softly = new SoftAssertions();
-        softly.assertThat(firstChangeLog)
-            .isNotNull()
-            .extracting("type", "notes")
-            .containsExactly(ChangeLogType.JUROR_DETAILS.name(), "notes1")
-        ;
-        softly.assertThat(firstChangeLog.getItems().get(0))
-            .isNotNull()
-            .extracting("oldKeyName", "oldValue", "newKeyName", "newValue")
-            .containsExactly("lastName", null, "lastName", "Castilio")
-        ;
-        softly.assertThat(firstChangeLog.getItems().get(1))
-            .isNotNull()
-            .extracting("oldKeyName", "oldValue", "newKeyName", "newValue")
-            .containsExactly("firstName", null, "firstName", "Janey")
-        ;
-        softly.assertAll();
 
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.contact_log", Integer.class))
             .as("There is a redundant phone log entry that is not from Juror Digital that is not "

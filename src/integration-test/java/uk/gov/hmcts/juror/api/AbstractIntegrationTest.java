@@ -4,7 +4,6 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Before;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,9 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
-import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.test.context.ActiveProfiles;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
@@ -25,14 +21,12 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.testsupport.ContainerTest;
 
-import java.sql.SQLException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -61,39 +55,6 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
 
     @Value("${jwt.secret.hmac}")
     protected String hmacSecret;
-
-    /**
-     * Reset sequences in the database. This method must be called when overriding!
-     *
-     * @throws Exception Failed to reset sequences.
-     */
-    @Before
-    public void setUp() throws Exception {
-        // reset each sequence in oracle using a stored procedure.
-        bulkResetSequences(1000, "JUROR_DIGITAL.SPEC_NEED_SEQ", "JUROR_DIGITAL.CJS_EMPLOYMENT_SEQ",
-            "JUROR_DIGITAL.CHANGE_LOG_SEQ", "JUROR_DIGITAL.CHANGE_LOG_ITEM_SEQ");
-    }
-
-    /**
-     * Call the Oracle procedure "JUROR_DIGITAL.RESET_SEQ_BULK" to reset specific sequences in bulk.
-     * Note: The value supplied to this function will be the value returned by the first call to SEQUENCE.nextval
-     *
-     * @param resetToValue  Next val to be returned when the sequence is invoked.
-     * @param sequenceNames A list of all the sequences to be reset.
-     * @throws SQLException Failed to reset sequence
-     */
-    private void bulkResetSequences(final Integer resetToValue, final String... sequenceNames) throws SQLException {
-        final String sequenceNameCommaSeperated = String.join(",", sequenceNames);
-        final SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
-            .withSchemaName("JUROR_DIGITAL")
-            .withProcedureName("RESET_SEQ_BULK");
-        final HashMap<String, String> args = new HashMap<>();
-        args.put("P_NAME", sequenceNameCommaSeperated);
-        args.put("P_VAL", resetToValue.toString());
-        final SqlParameterSource params = new MapSqlParameterSource(args);
-        jdbcCall.execute(params);
-        log.info("Reset sequence {} to {}.", sequenceNameCommaSeperated, resetToValue);
-    }
 
     protected HttpHeaders initialiseHeaders(String loginUser, UserType userType, Set<Role> roles, String owner) {
         BureauJwtPayload payload = createBureauJwtPayload(loginUser, userType, roles, owner);

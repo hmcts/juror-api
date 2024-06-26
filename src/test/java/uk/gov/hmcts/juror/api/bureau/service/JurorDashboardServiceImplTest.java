@@ -297,9 +297,8 @@ public class JurorDashboardServiceImplTest {
 
     @Test(expected = DashboardException.InvalidDateRange.class)
     public void getCumulativeTotalsInvalidDateRange() {
-
         requestDto = DashboardRequestDto.builder().startDate(endDate).endDate(startDate).build();
-        DashboardResponseDto.CumulativeTotal cumulativeTotals = jurorDashboardService.getCumulativeTotals(requestDto);
+        jurorDashboardService.getCumulativeTotals(requestDto);
     }
 
     @Test

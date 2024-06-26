@@ -24,6 +24,7 @@ import java.util.Date;
 @IdClass(DisqualificationLetterKey.class)
 @Entity
 @Table(name = "DISQ_LETT", schema = "JUROR_DIGITAL_USER")
+@Deprecated(forRemoval = true)
 public class DisqualificationLetter implements Serializable {
     @Id
     @Length(min = 3, max = 3)

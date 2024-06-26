@@ -16,7 +16,6 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 
@@ -87,14 +86,6 @@ public class ResponseInspectorImplTest {
         assertThat(inspector.hasAdjustments(jurorResponseNoAdjustments)).isFalse();
         DigitalResponse jurorResponseWithAdjustments = new DigitalResponse();
         jurorResponseWithAdjustments.setReasonableAdjustmentsArrangements("special");
-        // jurorResponseWithAdjustments.setReasonableAdjustments(Collections.singletonList(JurorReasonableAdjustment
-        // .builder().build()));
-        JurorReasonableAdjustment jurorReasonableAdjustment = new JurorReasonableAdjustment();
-        //  jurorReasonableAdjustment.setReasonableAdjustment(new ReasonableAdjustments());
-        //  jurorResponseWithAdjustments.setReasonableAdjustments
-        //    (Collections.singletonList(jurorReasonableAdjustment.setReasonableAdjustment(new ReasonableAdjustments
-        //    ())));
-        //   jurorResponseWithAdjustments.setReasonableAdjustments(new ReasonableAdjustments().);
     }
 
     @Test

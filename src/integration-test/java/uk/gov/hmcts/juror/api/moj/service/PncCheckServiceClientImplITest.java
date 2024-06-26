@@ -53,10 +53,8 @@ class PncCheckServiceClientImplITest extends AbstractIntegrationTest {
     @Value("${jwt.secret.bureau}")
     protected String bureauSecret;
 
-    @Override
     @BeforeEach
     public void setUp() throws Exception {
-        super.setUp();
         initHeaders();
     }
 

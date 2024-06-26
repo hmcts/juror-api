@@ -1,8 +1,3 @@
-DELETE FROM JUROR.EXC_DENIED_LETT;
-DELETE FROM JUROR.EXC_LETT;
-
-DELETE FROM JUROR_DIGITAL.PAPER_RESPONSE;
-
 delete from juror_mod.juror_history;
 delete from juror_mod.juror_pool;
 delete from juror_mod.juror;

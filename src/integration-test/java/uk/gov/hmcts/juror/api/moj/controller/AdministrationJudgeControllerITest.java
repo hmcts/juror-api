@@ -54,10 +54,8 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
     @Autowired
     private final JudgeRepository judgeRepository;
 
-    @Override
     @BeforeEach
     public void setUp() throws Exception {
-        super.setUp();
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }

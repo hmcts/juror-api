@@ -117,10 +117,6 @@ public class JurorResponseUtilsTest {
         return jurorPool;
     }
 
-    private Object mockJurorPools() {
-        return null;
-    }
-
     private PaperResponse createMockPaperResponse(Juror juror, LocalDateTime mockLocalDate,
                                                   String disqualifiedComment) {
         PaperResponse mockPaperResponse = new PaperResponse();

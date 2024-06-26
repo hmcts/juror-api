@@ -36,10 +36,8 @@ public class BureauFrontendLogControllerTest extends AbstractIntegrationTest {
     private TestRestTemplate template;
     private HttpHeaders httpHeaders;
 
-    @Override
     @Before
     public void setUp() throws Exception {
-        super.setUp();
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }

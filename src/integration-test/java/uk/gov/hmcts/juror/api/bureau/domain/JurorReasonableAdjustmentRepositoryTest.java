@@ -28,10 +28,8 @@ public class JurorReasonableAdjustmentRepositoryTest extends AbstractIntegration
 
     private JurorReasonableAdjustment reasonableAdjustment;
 
-    @Override
     @Before
     public void setUp() throws Exception {
-        super.setUp();
         ReasonableAdjustments reasonableAdjustment1 = new ReasonableAdjustments("D", "ALLERGIES");
         reasonableAdjustment = new JurorReasonableAdjustment();
         reasonableAdjustment.setJurorNumber("209092530");

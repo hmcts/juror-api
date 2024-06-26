@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.bureau.service;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,11 +23,6 @@ public class AppSettingServiceImplTest extends AbstractIntegrationTest {
     @Autowired
     private AppSettingService appSettingService;
 
-    @Override
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
-    }
 
     @Test
     @Sql("/db/truncate.sql")

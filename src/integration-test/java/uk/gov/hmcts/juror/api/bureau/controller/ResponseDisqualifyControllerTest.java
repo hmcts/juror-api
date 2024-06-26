@@ -44,10 +44,8 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
 
     private HttpHeaders httpHeaders;
 
-    @Override
     @Before
     public void setUp() throws Exception {
-        super.setUp();
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
@@ -195,10 +193,10 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
                 + "juror_number='644892530' AND HISTORY_CODE='PDIS'", String.class))
             .as("Juror's PART_HIST entry should have the appropriate pool code set as POOL_NO")
             .isEqualTo("555");
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT DISQ_CODE FROM JUROR.DISQ_LETT WHERE "
-                + "PART_NO='644892530'", String.class))
-            .as("Juror's DISQ_LETT entry should have the appropriate disqualify code set as DISQ_CODE")
-            .isEqualTo(disqualifyCodeEntity.getDisqualifiedCode());
+        softly.assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.bulk_print_data WHERE "
+                + "juror_no='644892530' and form_type in ('5224','5224C')", Integer.class))
+            .as("Juror's has a disqualified letter")
+            .isEqualTo(1);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT STAFF_LOGIN FROM juror_mod.juror_response WHERE "
                 + "JUROR_NUMBER = '644892530'", String.class))
             .as("As response was in the backlog, it needs assigned to the logged in user changing it.")
@@ -291,10 +289,10 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
                 Integer.class))
             .as("The first entry in PART_HIST should say RDIS and 'Disqualify Letter Code A'")
             .isEqualTo(1);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT DISQ_CODE FROM JUROR.DISQ_LETT WHERE "
-                + "PART_NO='644892530'", String.class))
-            .as("Juror's DISQ_LETT entry should have the appropriate disqualify code set as DISQ_CODE")
-            .isEqualTo(disqualifyCodeEntity.getDisqualifiedCode());
+        softly.assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.bulk_print_data WHERE "
+                + "juror_no='644892530' and form_type in ('5224','5224C')", Integer.class))
+            .as("Juror's should have a disqualified letter")
+            .isEqualTo(1);
         softly.assertAll();
     }
 
@@ -375,8 +373,8 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
                 + "juror_number='644892530'", Integer.class))
             .as("Juror should not have a PART_HIST entry")
             .isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR.DISQ_LETT WHERE "
-                + "PART_NO='644892530'", Integer.class))
+        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.bulk_print_data WHERE "
+                + "juror_no='644892530' and form_type in ('5224','5224C')", Integer.class))
             .as("Juror should not have a DISQ_LETT entry")
             .isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject("SELECT STAFF_LOGIN FROM juror_mod.juror_response "
@@ -457,9 +455,9 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
                 + "juror_number='644892530'", Integer.class))
             .as("Juror should not have a PART_HIST entry")
             .isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR.DISQ_LETT WHERE "
-                + "PART_NO='644892530'", Integer.class))
-            .as("Juror should not have a DISQ_LETT entry")
+        softly.assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.bulk_print_data WHERE "
+                + "juror_no='644892530' and form_type in ('5224','5224C')", Integer.class))
+            .as("Juror's should not have a disqualified letter")
             .isEqualTo(0);
         softly.assertAll();
     }
@@ -537,9 +535,9 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
                 + "juror_number='644892530'", Integer.class))
             .as("Juror should not have a PART_HIST entry")
             .isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR.DISQ_LETT WHERE "
-                + "PART_NO='644892530'", Integer.class))
-            .as("Juror should not have a DISQ_LETT entry")
+        softly.assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.bulk_print_data WHERE "
+                + "juror_no='644892530' and form_type in ('5224','5224C')", Integer.class))
+            .as("Juror's should not have a disqualified letter")
             .isEqualTo(0);
         softly.assertAll();
     }
@@ -617,9 +615,10 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
                 + "juror_number='644892530'", Integer.class))
             .as("Juror should not have a PART_HIST entry")
             .isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR.DISQ_LETT WHERE "
-                + "PART_NO='644892530'", Integer.class))
-            .as("Juror should not have a DISQ_LETT entry")
+
+        softly.assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.bulk_print_data WHERE "
+                + "juror_no='644892530' and form_type in ('5224','5224C')", Integer.class))
+            .as("Juror's should not have a disqualified letter")
             .isEqualTo(0);
         softly.assertAll();
     }

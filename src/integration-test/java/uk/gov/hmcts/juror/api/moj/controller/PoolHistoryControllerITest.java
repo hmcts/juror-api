@@ -45,10 +45,8 @@ public class PoolHistoryControllerITest extends AbstractIntegrationTest {
 
     private HttpHeaders httpHeaders;
 
-    @Override
     @Before
     public void setUp() throws Exception {
-        super.setUp();
         initHeaders();
 
     }

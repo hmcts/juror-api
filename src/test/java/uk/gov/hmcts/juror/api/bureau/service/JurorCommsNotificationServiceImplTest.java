@@ -21,7 +21,6 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.repository.NotifyTemplateMappingRepositoryMod;
 import uk.gov.hmcts.juror.api.validation.ResponseInspectorImpl;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -120,8 +119,6 @@ public class JurorCommsNotificationServiceImplTest {
 
 
         notifyCommsTemplateMapping = NotifyTemplateMappingMod.builder().templateId(notifyTemplateId.toString()).build();
-
-        LocalDateTime now = LocalDateTime.now();
 
         payLoad = new HashMap<>() {
             {

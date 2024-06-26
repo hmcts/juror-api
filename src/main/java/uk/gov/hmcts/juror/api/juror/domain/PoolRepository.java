@@ -5,6 +5,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@Deprecated(forRemoval = true)
 public interface PoolRepository extends CrudRepository<Pool, String>, QuerydslPredicateExecutor<Pool> {
 
     Pool findByJurorNumber(String jurorNumber);

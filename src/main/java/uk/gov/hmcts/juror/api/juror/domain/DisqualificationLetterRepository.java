@@ -9,6 +9,7 @@ import java.util.List;
  * Repository for {@link DisqualificationLetter}.
  */
 @Repository
+@Deprecated(forRemoval = true)
 public interface DisqualificationLetterRepository extends JpaRepository<DisqualificationLetter, String> {
 
     List<DisqualificationLetter> findByJurorNumber(String jurorNumber);

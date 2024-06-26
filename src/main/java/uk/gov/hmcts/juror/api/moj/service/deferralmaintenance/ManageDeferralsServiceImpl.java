@@ -12,8 +12,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
-import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAudit;
-import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAuditRepository;
 import uk.gov.hmcts.juror.api.bureau.service.JurorResponseAlreadyCompletedException;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
@@ -39,6 +37,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription;
@@ -55,6 +54,7 @@ import uk.gov.hmcts.juror.api.moj.repository.PoolHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.AssignOnUpdateServiceMod;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.PoolMemberSequenceService;
@@ -129,7 +129,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     @NotNull
     private final SummonsReplyMergeService mergeService;
     @NotNull
-    private final JurorResponseAuditRepository auditRepository;
+    private final JurorResponseAuditRepositoryMod jurorResponseAuditRepositoryMod;
     @NonNull
     private final JurorHistoryService jurorHistoryService;
     @NonNull
@@ -147,7 +147,6 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
      * @param locationCode 3-digit numeric string unique identifier for the court location
      * @param deferredTo   the date the pool is being requested for to check if there are any jurors who have
      *                     deferred to this date
-     *
      * @return a count of deferral records matching the predicate criteria
      */
     @Override
@@ -169,7 +168,6 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
      *
      * @param newPool            a newly requested Pool instance
      * @param deferralsRequested the number of court deferrals requested to be used in a new Pool
-     *
      * @return the number of court deferrals actually used
      */
     @Override
@@ -382,7 +380,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                 setupDeferralEntry(request, auditorUsername, jurorPool);
             }
 
-            jurorHistoryService.createPostponementLetterHistory(jurorPool,"");
+            jurorHistoryService.createPostponementLetterHistory(jurorPool, "");
 
             if (payload.getUserType().equals(UserType.BUREAU)) {
                 printPostponementLetter(payload.getOwner(), jurorPool);
@@ -448,7 +446,6 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
      * @param deferralDatesRequestDto request DTO containing a list of requested dates - expect a minimum of 1 and a
      *                                maximum of 3 dates to be supplied. All dates should be a Monday (start of the
      *                                working week) even if it is a bank-holiday
-     *
      * @return a list of active pools within 5 working days of the requested deferral date(s)
      */
     @Override
@@ -780,12 +777,13 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
             assignOnUpdateService.assignToCurrentLogin(digitalResponse, auditorUsername);
 
-            final JurorResponseAudit responseAudit = auditRepository.save(JurorResponseAudit.builder()
-                .jurorNumber(jurorResponse.getJurorNumber())
-                .login(auditorUsername)
-                .oldProcessingStatus(auditStatus)
-                .newProcessingStatus(jurorResponse.getProcessingStatus())
-                .build());
+            final JurorResponseAuditMod responseAudit =
+                jurorResponseAuditRepositoryMod.save(JurorResponseAuditMod.builder()
+                    .jurorNumber(jurorResponse.getJurorNumber())
+                    .login(auditorUsername)
+                    .oldProcessingStatus(auditStatus)
+                    .newProcessingStatus(jurorResponse.getProcessingStatus())
+                    .build());
 
             log.trace("Audit entry: {}", responseAudit);
             mergeService.mergeDigitalResponse(digitalResponse, auditorUsername);

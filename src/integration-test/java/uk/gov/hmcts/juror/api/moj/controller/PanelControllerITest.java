@@ -74,10 +74,8 @@ class PanelControllerITest extends AbstractIntegrationTest {
     @Autowired
     private AppearanceRepository appearanceRepository;
 
-    @Override
     @BeforeEach
     public void setUp() throws Exception {
-        super.setUp();
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwt(COURT_USER_NAME, CHESTER_LOC_CODE,

@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,11 +42,6 @@ public class CourtroomControllerITest extends AbstractIntegrationTest {
 
     private HttpHeaders httpHeaders;
 
-    @Override
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
-    }
 
     @Test
     public void listOfCourtroomsForLocationHappy() {

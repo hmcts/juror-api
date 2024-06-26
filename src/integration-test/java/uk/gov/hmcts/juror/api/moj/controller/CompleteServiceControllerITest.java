@@ -61,10 +61,8 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
 
     private static final String BASE_URL = "/api/v1/moj/complete-service";
 
-    @Override
     @BeforeEach
     public void setUp() throws Exception {
-        super.setUp();
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }

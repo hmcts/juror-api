@@ -55,7 +55,6 @@ import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorPaymentsRespons
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.ContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryCode;
-import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryType;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.IContactCode;
@@ -82,7 +81,6 @@ import uk.gov.hmcts.juror.api.moj.enumeration.PendingJurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactCodeRepository;
-import uk.gov.hmcts.juror.api.moj.repository.ContactEnquiryTypeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactLogRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorDetailRepositoryMod;
@@ -186,8 +184,6 @@ class JurorRecordServiceTest {
     private CourtLocationService courtLocationService;
     @Mock
     private ContactLogRepository contactLogRepository;
-    @Mock
-    private ContactEnquiryTypeRepository contactEnquiryTypeRepository;
     @Mock
     private JurorDetailRepositoryMod jurorDetailRepositoryMod;
     @Mock
@@ -1048,14 +1044,11 @@ class JurorRecordServiceTest {
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER));
 
-        ContactEnquiryType contactEnquiryType = new ContactEnquiryType(ContactEnquiryCode.GE, "General Enquiry");
         ContactLog contactLog = new ContactLog();
         ContactLogRequestDto requestDto = createContactLogRequestDto(VALID_JUROR_NUMBER, IContactCode.GENERAL);
 
         doReturn(jurorPools).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActive(VALID_JUROR_NUMBER, true);
-        doReturn(Optional.of(contactEnquiryType)).when(contactEnquiryTypeRepository)
-            .findById(ContactEnquiryCode.GE);
         doReturn(contactLog).when(contactLogRepository)
             .saveAndFlush(any());
 
@@ -1071,14 +1064,11 @@ class JurorRecordServiceTest {
         String jurorNumber = "123456789";
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createValidJurorPool(jurorNumber, "416"));
-        ContactEnquiryType contactEnquiryType = new ContactEnquiryType(ContactEnquiryCode.GE, "General Enquiry");
         ContactLog contactLog = new ContactLog();
         ContactLogRequestDto requestDto = createContactLogRequestDto(jurorNumber, IContactCode.GENERAL);
 
         doReturn(jurorPools).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        doReturn(Optional.of(contactEnquiryType)).when(contactEnquiryTypeRepository)
-            .findById(ContactEnquiryCode.GE);
         doReturn(contactLog).when(contactLogRepository)
             .saveAndFlush(any());
 
@@ -1206,11 +1196,11 @@ class JurorRecordServiceTest {
     @Test
     void testGetContactEnquiryTypes() {
         ContactEnquiryCode[] enquiryCodes = ContactEnquiryCode.values();
-        List<ContactEnquiryType> enquiryTypes = new ArrayList<>();
+        List<ContactCode> enquiryTypes = new ArrayList<>();
         for (ContactEnquiryCode enquiryCode : enquiryCodes) {
-            enquiryTypes.add(new ContactEnquiryType(enquiryCode, enquiryCode.toString()));
+            enquiryTypes.add(new ContactCode(enquiryCode.name(), enquiryCode.toString()));
         }
-        doReturn(enquiryTypes).when(contactEnquiryTypeRepository).findAll();
+        doReturn(enquiryTypes).when(contactCodeRepository).findAll();
 
         ContactEnquiryTypeListDto dto = jurorRecordService.getContactEnquiryTypes();
 
@@ -3526,8 +3516,6 @@ class JurorRecordServiceTest {
 
             private void assertAndTrigger(FilterableJurorDetailsRequestDto request) {
                 Juror juror = mock(Juror.class);
-                JurorPool jurorPool = mock(JurorPool.class);
-
                 PaymentDetails paymentDetails = mock(PaymentDetails.class);
                 paymentDetailsMockedStatic = mockStatic(PaymentDetails.class);
                 paymentDetailsMockedStatic.when(() -> PaymentDetails.from(juror)).thenReturn(paymentDetails);

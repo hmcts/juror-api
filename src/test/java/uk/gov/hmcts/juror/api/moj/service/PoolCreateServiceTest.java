@@ -221,7 +221,7 @@ public class PoolCreateServiceTest {
         Mockito.when(poolRequestRepository.findById(Mockito.any()))
             .thenReturn(Optional.of(createValidPoolRequest("415220110")));
         Mockito.when(jurorStatusRepository.findById(Mockito.any()))
-            .thenReturn(Optional.of(createValidPoolStatus(1, "Summoned")));
+            .thenReturn(Optional.of(createValidPoolStatus()));
         Mockito.when(votersRepository.findByJurorNumber(Mockito.any())).thenReturn(createValidVoter());
         Mockito.doNothing().when(votersServiceImpl).markVoterAsSelected(Mockito.any(), Mockito.any());
 
@@ -802,34 +802,14 @@ public class PoolCreateServiceTest {
         return poolRequest;
     }
 
-    private JurorStatus createValidPoolStatus(int statusId, String description) {
+    private JurorStatus createValidPoolStatus() {
         JurorStatus jurorStatus = new JurorStatus();
-        jurorStatus.setStatus(statusId);
-        jurorStatus.setStatusDesc(description);
+        jurorStatus.setStatus(1);
+        jurorStatus.setStatusDesc("Summoned");
         jurorStatus.setActive(true);
         return jurorStatus;
     }
 
-    private JurorPool createJurorPool(String owner, String jurorNumber, String poolNumber) {
-        Juror juror = new Juror();
-        juror.setJurorNumber(jurorNumber);
-        juror.setFirstName("Test");
-        juror.setLastName("Person");
-        juror.setPostcode("CH1 2AN");
-        JurorStatus jurorStatus = new JurorStatus();
-        jurorStatus.setStatus(IJurorStatus.RESPONDED);
-        jurorStatus.setStatusDesc("Responded");
-
-        JurorPool jurorPool = new JurorPool();
-        jurorPool.setOwner(owner);
-        jurorPool.setIsActive(true);
-        jurorPool.setStatus(jurorStatus);
-
-        jurorPool.setJuror(juror);
-        jurorPool.setPool(createValidPoolRequest(poolNumber));
-
-        return jurorPool;
-    }
 
     private PoolMemberFilterRequestQuery createPoolFilterQuery(String poolNumber) {
         return PoolMemberFilterRequestQuery.builder()

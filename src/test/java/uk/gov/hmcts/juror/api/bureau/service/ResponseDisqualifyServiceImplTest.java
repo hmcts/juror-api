@@ -16,15 +16,14 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
-import uk.gov.hmcts.juror.api.moj.domain.letter.DisqualificationLetterMod;
 import uk.gov.hmcts.juror.api.moj.repository.DisqualifiedCodeRepository;
-import uk.gov.hmcts.juror.api.moj.repository.DisqualifyLetterModRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
+import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -62,9 +61,6 @@ public class ResponseDisqualifyServiceImplTest {
     private DisqualifiedCodeRepository disqualifyCodeRepository;
 
     @Mock
-    private DisqualifyLetterModRepository disqualificationLetterRepository;
-
-    @Mock
     private ResponseMergeService mergeService;
 
     @Mock
@@ -75,6 +71,9 @@ public class ResponseDisqualifyServiceImplTest {
 
     @Mock
     private AssignOnUpdateService assignOnUpdateService;
+
+    @Mock
+    private PrintDataService printDataService;
 
     @InjectMocks
     private ResponseDisqualifyServiceImpl responseDisqualifyService;
@@ -145,7 +144,7 @@ public class ResponseDisqualifyServiceImplTest {
         verify(poolRepository).save(poolDetails);
 
         verify(jurorHistoryService).createDisqualifyHistory(poolDetails,disqualifyCode);
-        verify(disqualificationLetterRepository).save(any(DisqualificationLetterMod.class));
+        verify(printDataService).printWithdrawalLetter(poolDetails);
     }
 
     @Test
@@ -186,7 +185,7 @@ public class ResponseDisqualifyServiceImplTest {
 
 
             verifyNoInteractions(jurorHistoryService);
-            verify(disqualificationLetterRepository, times(0)).save(any(DisqualificationLetterMod.class));
+            verify(printDataService, times(0)).printWithdrawalLetter(any(JurorPool.class));
         }
     }
 
@@ -227,7 +226,7 @@ public class ResponseDisqualifyServiceImplTest {
             verify(poolRepository, times(0)).save(poolDetails);
 
             verifyNoInteractions(jurorHistoryService);
-            verify(disqualificationLetterRepository, times(0)).save(any(DisqualificationLetterMod.class));
+            verify(printDataService, times(0)).printWithdrawalLetter(any(JurorPool.class));
         }
     }
 }

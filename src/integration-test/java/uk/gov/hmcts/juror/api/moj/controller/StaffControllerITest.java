@@ -55,10 +55,8 @@ public class StaffControllerITest extends AbstractIntegrationTest {
     private JurorDigitalResponseRepositoryMod digitalResponseRepositoryMod;
 
 
-    @Override
     @BeforeEach
     public void setUp() throws Exception {
-        super.setUp();
         initHeadersTeamLeader();
     }
 

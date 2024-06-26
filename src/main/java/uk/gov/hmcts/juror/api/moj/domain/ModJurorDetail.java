@@ -16,9 +16,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetail;
-import uk.gov.hmcts.juror.api.bureau.domain.ChangeLog;
-import uk.gov.hmcts.juror.api.bureau.domain.PhoneLog;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
 
@@ -27,12 +24,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
- * Clone of {@link BureauJurorDetail} entity - allows the same data structure to be utilised by the MOJ package but
+ * Allows the same data structure to be utilised by the MOJ package but
  * from a different source (JUROR_MOD.MOD_JUROR_DETAIL). A new view has been created to include the
  * {@link SummonsSnapshot} data, replacing the original data source for relevant fields (where applicable).
  * This will be used for viewing a digital summons reply for a juror record in the re-written modernisation app
@@ -291,7 +286,7 @@ public class ModJurorDetail implements Serializable {
     private Boolean assignmentAllowed = Boolean.FALSE;
 
     @OneToMany(mappedBy = "jurorNumber")
-    private List<PhoneLog> phoneLogs = new ArrayList<>();
+    private List<ContactLog> contactLogs = new ArrayList<>();
 
     @OneToMany(mappedBy = "jurorNumber")
     private List<JurorResponseCjsEmployment> cjsEmployments = new ArrayList<>();
@@ -310,9 +305,6 @@ public class ModJurorDetail implements Serializable {
 
     @Transient
     private Boolean slaOverdue = Boolean.FALSE;
-
-    @OneToMany(mappedBy = "jurorNumber")
-    private Set<ChangeLog> changeLogs = new HashSet<>();
 
     @Column(name = "is_active")
     private Boolean isActive;

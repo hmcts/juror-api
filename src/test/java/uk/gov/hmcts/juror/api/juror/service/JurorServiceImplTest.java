@@ -105,11 +105,9 @@ public class JurorServiceImplTest {
 
     private JurorPool jurorPoolDetails;
 
-    private Juror juror;
-
     @Before
     public void setup() {
-        juror = new Juror();
+        Juror juror = new Juror();
         PoolRequest poolRequest = new PoolRequest();
 
         jurorPoolDetails = new JurorPool();
@@ -357,7 +355,6 @@ public class JurorServiceImplTest {
 
 
         // ensure the processing of Straight-Through Acceptance is disabled
-        AppSetting appSettingAcceptanceTrue = new AppSetting(StraightThroughType.ACCEPTANCE.getDbName(), "TRUE");
         given(appSettingRepository.findById(StraightThroughType.ACCEPTANCE.getDbName()))
             .willReturn(any(Optional.class));
 

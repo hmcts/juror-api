@@ -119,10 +119,8 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
     private final UserRepository userRepository;
     private final JurorResponseCommonRepositoryMod jurorResponseCommonRepositoryMod;
 
-    @Override
     @BeforeEach
     public void setUp() throws Exception {
-        super.setUp();
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }

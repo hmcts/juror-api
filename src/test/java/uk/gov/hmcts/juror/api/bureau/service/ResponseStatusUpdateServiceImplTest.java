@@ -6,8 +6,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import uk.gov.hmcts.juror.api.bureau.domain.PartAmendment;
-import uk.gov.hmcts.juror.api.bureau.domain.PartAmendmentRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -50,9 +48,6 @@ public class ResponseStatusUpdateServiceImplTest {
 
     @Mock
     JurorPoolRepository poolDetailsRepository;
-
-    @Mock
-    PartAmendmentRepository partAmendmentRepository;
 
     @Mock
     JurorHistoryRepository partHistRepository;
@@ -101,7 +96,6 @@ public class ResponseStatusUpdateServiceImplTest {
         // as we're not setting the status to CLOSED, we should not be merging data to Juror
         verify(poolDetailsRepository, times(0)).findByJurorJurorNumber(any(String.class));
         verify(poolDetailsRepository, times(0)).save(any(JurorPool.class));
-        verify(partAmendmentRepository, times(0)).save(any(PartAmendment.class));
         verify(partHistRepository, times(0)).save(any(JurorHistory.class));
     }
 
@@ -134,7 +128,6 @@ public class ResponseStatusUpdateServiceImplTest {
         // as we're not setting the status to CLOSED, we should not be merging data to Juror
         verify(poolDetailsRepository, times(0)).findByJurorJurorNumber(any(String.class));
         verify(poolDetailsRepository, times(0)).save(any(JurorPool.class));
-        verify(partAmendmentRepository, times(0)).save(any(PartAmendment.class));
         verify(partHistRepository, times(0)).save(any(JurorHistory.class));
     }
 
@@ -167,7 +160,6 @@ public class ResponseStatusUpdateServiceImplTest {
         // as we're not setting the status to CLOSED, we should not be merging data to Juror
         verify(poolDetailsRepository, times(0)).findByJurorJurorNumber(any(String.class));
         verify(poolDetailsRepository, times(0)).save(any(JurorPool.class));
-        verify(partAmendmentRepository, times(0)).save(any(PartAmendment.class));
         verify(partHistRepository, times(0)).save(any(JurorHistory.class));
     }
 
@@ -197,7 +189,6 @@ public class ResponseStatusUpdateServiceImplTest {
         // as we're not setting the status to CLOSED, we should not be merging data to Juror
         verify(poolDetailsRepository, times(0)).findByJurorJurorNumber(any(String.class));
         verify(poolDetailsRepository, times(0)).save(any(JurorPool.class));
-        verify(partAmendmentRepository, times(0)).save(any(PartAmendment.class));
         verify(partHistRepository, times(0)).save(any(JurorHistory.class));
     }
 
@@ -239,7 +230,6 @@ public class ResponseStatusUpdateServiceImplTest {
         // and also setting RESPONDED to Y, so double the Pool interactions
         verify(poolDetailsRepository, times(2)).findByJurorJurorNumber(jurorNumber);
         verify(poolDetailsRepository, times(3)).save(any(JurorPool.class));
-        verify(partAmendmentRepository, times(1)).save(any(PartAmendment.class));
         verify(partHistRepository, times(2)).save(any(JurorHistory.class));
     }
 
@@ -270,7 +260,6 @@ public class ResponseStatusUpdateServiceImplTest {
         // as we're not setting the status to CLOSED, we should not be merging data to Juror
         verify(poolDetailsRepository, times(0)).findByJurorJurorNumber(any(String.class));
         verify(poolDetailsRepository, times(0)).save(any(JurorPool.class));
-        verify(partAmendmentRepository, times(0)).save(any(PartAmendment.class));
         verify(partHistRepository, times(0)).save(any(JurorHistory.class));
     }
 }

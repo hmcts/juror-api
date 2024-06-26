@@ -12,10 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
-import uk.gov.hmcts.juror.api.bureau.domain.ChangeLog;
-import uk.gov.hmcts.juror.api.bureau.domain.ChangeLogItem;
-import uk.gov.hmcts.juror.api.bureau.domain.ChangeLogRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.ChangeLogType;
 import uk.gov.hmcts.juror.api.bureau.exception.BureauOptimisticLockingException;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
@@ -44,7 +40,6 @@ import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -100,7 +95,6 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
     private final JurorPoolRepository jurorRepository;
     private final ContactLogRepository phoneLogRepository;
     private final JurorDigitalResponseRepositoryMod responseRepository;
-    private final ChangeLogRepository changeLogRepository;
     private final UserRepository userRepository;
     private final EntityManager entityManager;
     private final JurorReasonableAdjustmentRepository bureauJurorSpecialNeedsRepository;
@@ -219,45 +213,30 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
         validateResponseState(jurorId, login, domain, staff);
         applyOptimisticLocking(domain, dto.getVersion());
 
-        // empty changelog for the upserts
-        final ChangeLog changeLog = ChangeLog.builder()
-            .jurorNumber(jurorId)
-            .staff(staff)
-            .type(ChangeLogType.JUROR_DETAILS)
-            .notes(dto.getNotes())
-            .build();
-
         /*
          * Update the response domain with the information from the dto.
          */
-        updateAndLog(TITLE, domain, dto.getTitle(), changeLog);
-        updateAndLog(FIRST_NAME, domain, dto.getFirstName(), changeLog);
-        updateAndLog(LAST_NAME, domain, dto.getLastName(), changeLog);
-        updateAndLog("addressLine1", domain, dto.getAddress(), changeLog);
-        updateAndLog("addressLine2", domain, dto.getAddress2(), changeLog);
-        updateAndLog("addressLine3", domain, dto.getAddress3(), changeLog);
-        updateAndLog("addressLine4", domain, dto.getAddress4(), changeLog);
-        updateAndLog("addressLine5", domain, dto.getAddress5(), changeLog);
-        updateAndLog(POSTCODE, domain, dto.getPostcode(), changeLog);
-        updateAndLog(DOB, domain, dto.getDob(), changeLog);
-        updateAndLog(PHONE_NUMBER, domain, dto.getMainPhone(), changeLog);
-        updateAndLog(ALT_PHONE_NUMBER, domain, dto.getAltPhone(), changeLog);
-        updateAndLog(EMAIL, domain, dto.getEmailAddress(), changeLog);
+        updateAndLog(TITLE, domain, dto.getTitle());
+        updateAndLog(FIRST_NAME, domain, dto.getFirstName());
+        updateAndLog(LAST_NAME, domain, dto.getLastName());
+        updateAndLog("addressLine1", domain, dto.getAddress());
+        updateAndLog("addressLine2", domain, dto.getAddress2());
+        updateAndLog("addressLine3", domain, dto.getAddress3());
+        updateAndLog("addressLine4", domain, dto.getAddress4());
+        updateAndLog("addressLine5", domain, dto.getAddress5());
+        updateAndLog(POSTCODE, domain, dto.getPostcode());
+        updateAndLog(DOB, domain, dto.getDob());
+        updateAndLog(PHONE_NUMBER, domain, dto.getMainPhone());
+        updateAndLog(ALT_PHONE_NUMBER, domain, dto.getAltPhone());
+        updateAndLog(EMAIL, domain, dto.getEmailAddress());
 
         // JDB-2685: if no staff assigned, assign current login
         if (null == domain.getStaff()) {
             assignOnUpdateService.assignToCurrentLogin(domain, login);
         }
 
-        saveUpdatesOptimistically(changeLog, domain);
+        saveUpdatesOptimistically(domain);
 
-        if (log.isDebugEnabled()) {
-            int totalChanges = 0;
-            if (changeLog != null && changeLog.getChangeLogItems() != null) {
-                totalChanges = changeLog.getChangeLogItems().size();
-            }
-            log.debug(MESSAGE, login, totalChanges, jurorId);
-        }
         log.info("Bureau user {} updated juror details section for {}", login, jurorId);
     }
 
@@ -272,60 +251,41 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
         validateResponseState(jurorId, login, domain, staff);
         applyOptimisticLocking(domain, dto.getVersion());
 
-        // empty changelog for the upserts
-        final ChangeLog changeLog = ChangeLog.builder()
-            .jurorNumber(jurorId)
-            .staff(staff)
-            .type(ChangeLogType.JUROR_DETAILS)
-            .notes(dto.getNotes())
-            .build();
         /*
          * Update the response domain with the information from the dto.
          */
-        updateAndLog(TITLE, domain, dto.getTitle(), changeLog);
-        updateAndLog(FIRST_NAME, domain, dto.getFirstName(), changeLog);
-        updateAndLog(LAST_NAME, domain, dto.getLastName(), changeLog);
-        updateAndLog("addressLine1", domain, dto.getAddress(), changeLog);
-        updateAndLog("addressLine2", domain, dto.getAddress2(), changeLog);
-        updateAndLog("addressLine3", domain, dto.getAddress3(), changeLog);
-        updateAndLog("addressLine4", domain, dto.getAddress4(), changeLog);
-        updateAndLog("addressLine5", domain, dto.getAddress5(), changeLog);
-        updateAndLog(POSTCODE, domain, dto.getPostcode(), changeLog);
-        updateAndLog(DOB, domain, dto.getDob(), changeLog);
-        updateAndLog(PHONE_NUMBER, domain, dto.getMainPhone(), changeLog);
-        updateAndLog(ALT_PHONE_NUMBER, domain, dto.getAltPhone(), changeLog);
-        updateAndLog(EMAIL, domain, dto.getEmailAddress(), changeLog);
+        updateAndLog(TITLE, domain, dto.getTitle());
+        updateAndLog(FIRST_NAME, domain, dto.getFirstName());
+        updateAndLog(LAST_NAME, domain, dto.getLastName());
+        updateAndLog("addressLine1", domain, dto.getAddress());
+        updateAndLog("addressLine2", domain, dto.getAddress2());
+        updateAndLog("addressLine3", domain, dto.getAddress3());
+        updateAndLog("addressLine4", domain, dto.getAddress4());
+        updateAndLog("addressLine5", domain, dto.getAddress5());
+        updateAndLog(POSTCODE, domain, dto.getPostcode());
+        updateAndLog(DOB, domain, dto.getDob());
+        updateAndLog(PHONE_NUMBER, domain, dto.getMainPhone());
+        updateAndLog(ALT_PHONE_NUMBER, domain, dto.getAltPhone());
+        updateAndLog(EMAIL, domain, dto.getEmailAddress());
         //third party unique fields
-        updateAndLog(JUROR_PHONE_DETAILS, domain, dto.getUseJurorPhone(), changeLog);
-        updateAndLog(JUROR_EMAIL_DETAILS, domain, dto.getUseJurorEmail(), changeLog);
-        updateAndLog(THIRD_PARTY_FIRST_NAME, domain, dto.getThirdPartyFirstName(), changeLog);
-        updateAndLog(THIRD_PARTY_LAST_NAME, domain, dto.getThirdPartyLastName(), changeLog);
-        updateAndLog(RELATIONSHIP, domain, dto.getRelationship(), changeLog);
-        updateAndLog(THIRD_PARTY_REASON, domain, dto.getThirdPartyReason(), changeLog);
-        updateAndLog(THIRD_PARTY_OTHER_REASON, domain, dto.getThirdPartyOtherReason(), changeLog);
-        updateAndLog(THIRD_PARTY_MAIN_PHONE, domain, dto.getThirdPartyMainPhone(), changeLog);
-        updateAndLog(THIRD_PARTY_OTHER_PHONE, domain, dto.getThirdPartyAltPhone(), changeLog);
-        updateAndLog(THIRD_PARTY_EMAIL_ADDRESS, domain, dto.getThirdPartyEmail(), changeLog);
+        updateAndLog(JUROR_PHONE_DETAILS, domain, dto.getUseJurorPhone());
+        updateAndLog(JUROR_EMAIL_DETAILS, domain, dto.getUseJurorEmail());
+        updateAndLog(THIRD_PARTY_FIRST_NAME, domain, dto.getThirdPartyFirstName());
+        updateAndLog(THIRD_PARTY_LAST_NAME, domain, dto.getThirdPartyLastName());
+        updateAndLog(RELATIONSHIP, domain, dto.getRelationship());
+        updateAndLog(THIRD_PARTY_REASON, domain, dto.getThirdPartyReason());
+        updateAndLog(THIRD_PARTY_OTHER_REASON, domain, dto.getThirdPartyOtherReason());
+        updateAndLog(THIRD_PARTY_MAIN_PHONE, domain, dto.getThirdPartyMainPhone());
+        updateAndLog(THIRD_PARTY_OTHER_PHONE, domain, dto.getThirdPartyAltPhone());
+        updateAndLog(THIRD_PARTY_EMAIL_ADDRESS, domain, dto.getThirdPartyEmail());
 
         // JDB-2685: if no staff assigned, assign current login
         if (null == domain.getStaff()) {
             assignOnUpdateService.assignToCurrentLogin(domain, login);
         }
 
-        saveUpdatesOptimistically(changeLog, domain);
+        saveUpdatesOptimistically(domain);
 
-        if (log.isDebugEnabled()) {
-            log.debug(
-                MESSAGE,
-                login,
-                changeLog.getChangeLogItems() != null
-                    ?
-                    changeLog.getChangeLogItems().size()
-                    :
-                        0,
-                jurorId
-            );
-        }
         log.info("Bureau user {} updated juror details section for {}", login, jurorId);
     }
 
@@ -341,34 +301,26 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
         validateResponseState(jurorId, login, domain, staff);
         applyOptimisticLocking(domain, dto.getVersion());
 
-        // empty changelog for the updates
-        final ChangeLog changeLog = ChangeLog.builder()
-            .jurorNumber(jurorId)
-            .staff(staff)
-            .type(ChangeLogType.DEFERRAL_EXCUSAL)
-            .notes(dto.getNotes())
-            .build();
-
         /*
          * Update the response domain with the information from the dto.
          */
         log.debug("Updating {} as {}", jurorId, dto.getExcusal().name());
         switch (dto.getExcusal()) {
             case EXCUSAL:
-                updateAndLog(EXCUSAL_REASON, domain, dto.getReason(), changeLog);
-                updateAndLog(DEFERRAL_REASON, domain, null, changeLog);
-                updateAndLog(DEFERRAL_DATE, domain, null, changeLog);
+                updateAndLog(EXCUSAL_REASON, domain, dto.getReason());
+                updateAndLog(DEFERRAL_REASON, domain, null);
+                updateAndLog(DEFERRAL_DATE, domain, null);
                 break;
             case DEFERRAL:
-                updateAndLog(DEFERRAL_REASON, domain, dto.getReason(), changeLog);
-                updateAndLog(DEFERRAL_DATE, domain, dto.getDeferralDates(), changeLog);
-                updateAndLog(EXCUSAL_REASON, domain, null, changeLog);
+                updateAndLog(DEFERRAL_REASON, domain, dto.getReason());
+                updateAndLog(DEFERRAL_DATE, domain, dto.getDeferralDates());
+                updateAndLog(EXCUSAL_REASON, domain, null);
                 break;
             case CONFIRMATION:
                 log.debug("Removing excusal and deferral information");
-                updateAndLog(EXCUSAL_REASON, domain, null, changeLog);
-                updateAndLog(DEFERRAL_REASON, domain, null, changeLog);
-                updateAndLog(DEFERRAL_DATE, domain, null, changeLog);
+                updateAndLog(EXCUSAL_REASON, domain, null);
+                updateAndLog(DEFERRAL_REASON, domain, null);
+                updateAndLog(DEFERRAL_DATE, domain, null);
                 break;
             default:
                 log.error("Unsupported DeferralExcusalUpdateType!");
@@ -380,11 +332,8 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
             assignOnUpdateService.assignToCurrentLogin(domain, login);
         }
 
-        saveUpdatesOptimistically(changeLog, domain);
+        saveUpdatesOptimistically(domain);
 
-        if (log.isDebugEnabled() && null != changeLog.getChangeLogItems()) {
-            log.debug(MESSAGE, login, changeLog.getChangeLogItems().size(), jurorId);
-        }
         log.info("Bureau user {} updated excusal/deferral section for {}", login, jurorId);
     }
 
@@ -398,29 +347,21 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
         validateResponseState(jurorId, login, domain, staff);
         applyOptimisticLocking(domain, dto.getVersion());
 
-        // empty changelog for the updates
-        final ChangeLog changeLog = ChangeLog.builder()
-            .jurorNumber(jurorId)
-            .staff(staff)
-            .type(ChangeLogType.REASONABLE_ADJUSTMENTS)
-            .notes(dto.getNotes())
-            .build();
-
         // perform the updates
-        updateAndLog("reasonableAdjustmentsArrangements", domain, dto.getSpecialArrangements(), changeLog);
-        updateAndLogSpecialNeed(jurorId, SpecNeed.LIMITED_MOBILITY, dto.getLimitedMobility(), changeLog);
-        updateAndLogSpecialNeed(jurorId, SpecNeed.HEARING_IMPAIRMENT, dto.getHearingImpairment(), changeLog);
-        updateAndLogSpecialNeed(jurorId, SpecNeed.DIABETIC, dto.getDiabetes(), changeLog);
-        updateAndLogSpecialNeed(jurorId, SpecNeed.SIGHT_IMPAIRMENT, dto.getSightImpairment(), changeLog);
-        updateAndLogSpecialNeed(jurorId, SpecNeed.LEARNING_DISABILITY, dto.getLearningDisability(), changeLog);
-        updateAndLogSpecialNeed(jurorId, SpecNeed.OTHER, dto.getOther(), changeLog);
+        updateAndLog("reasonableAdjustmentsArrangements", domain, dto.getSpecialArrangements());
+        updateAndLogSpecialNeed(jurorId, SpecNeed.LIMITED_MOBILITY, dto.getLimitedMobility());
+        updateAndLogSpecialNeed(jurorId, SpecNeed.HEARING_IMPAIRMENT, dto.getHearingImpairment());
+        updateAndLogSpecialNeed(jurorId, SpecNeed.DIABETIC, dto.getDiabetes());
+        updateAndLogSpecialNeed(jurorId, SpecNeed.SIGHT_IMPAIRMENT, dto.getSightImpairment());
+        updateAndLogSpecialNeed(jurorId, SpecNeed.LEARNING_DISABILITY, dto.getLearningDisability());
+        updateAndLogSpecialNeed(jurorId, SpecNeed.OTHER, dto.getOther());
 
         // JDB-2685: if no staff assigned, assign current login
         if (null == domain.getStaff()) {
             assignOnUpdateService.assignToCurrentLogin(domain, login);
         }
 
-        saveUpdatesOptimistically(changeLog, domain);
+        saveUpdatesOptimistically(domain);
         log.info("Bureau user {} updated reasonable adjustments section for {}", login, jurorId);
     }
 
@@ -433,14 +374,6 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
 
         validateResponseState(jurorId, login, domain, staff);
         applyOptimisticLocking(domain, dto.getVersion());
-
-        // empty changelog for the updates
-        final ChangeLog changeLog = ChangeLog.builder()
-            .jurorNumber(jurorId)
-            .staff(staff)
-            .type(ChangeLogType.CJS_EMPLOYMENTS)
-            .notes(dto.getNotes())
-            .build();
 
         String ncaDatabaseValue = null;
         if (null != dto.getNcaEmployment() && dto.getNcaEmployment()) {
@@ -461,19 +394,19 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
         }
 
         // create CjsEmployment object
-        updateAndLogCjs(jurorId, CjsEmployment.POLICE, dto.getPoliceForceDetails(), changeLog);
-        updateAndLogCjs(jurorId, CjsEmployment.PRISON_SERVICE, dto.getPrisonServiceDetails(), changeLog);
-        updateAndLogCjs(jurorId, CjsEmployment.NCA, ncaDatabaseValue, changeLog);
-        updateAndLogCjs(jurorId, CjsEmployment.JUDICIARY, judiciaryDatabaseValue, changeLog);
-        updateAndLogCjs(jurorId, CjsEmployment.HMCTS, hmctsDatabaseValue, changeLog);
-        updateAndLogCjs(jurorId, CjsEmployment.OTHER, dto.getOtherDetails(), changeLog);
+        updateAndLogCjs(jurorId, CjsEmployment.POLICE, dto.getPoliceForceDetails());
+        updateAndLogCjs(jurorId, CjsEmployment.PRISON_SERVICE, dto.getPrisonServiceDetails());
+        updateAndLogCjs(jurorId, CjsEmployment.NCA, ncaDatabaseValue);
+        updateAndLogCjs(jurorId, CjsEmployment.JUDICIARY, judiciaryDatabaseValue);
+        updateAndLogCjs(jurorId, CjsEmployment.HMCTS, hmctsDatabaseValue);
+        updateAndLogCjs(jurorId, CjsEmployment.OTHER, dto.getOtherDetails());
 
         // JDB-2685: if no staff assigned, assign current login
         if (null == domain.getStaff()) {
             assignOnUpdateService.assignToCurrentLogin(domain, login);
         }
 
-        saveUpdatesOptimistically(changeLog, domain);
+        saveUpdatesOptimistically(domain);
         log.info("Bureau user {} updated CJS employments section for {}", login, jurorId);
     }
 
@@ -553,42 +486,31 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
         validateResponseState(jurorId, login, domain, staff);
         applyOptimisticLocking(domain, dto.getVersion());
 
-        // empty changelog for the upserts
-        final ChangeLog changeLog = ChangeLog.builder()
-            .jurorNumber(jurorId)
-            .staff(staff)
-            .type(ChangeLogType.ELIGIBILITY)
-            .notes(dto.getNotes())
-            .build();
         /*
          * Update the response domain with the information from the dto.
          */
-        updateAndLog(RESIDENCY, domain, dto.isResidency(), changeLog);
-        updateAndLog(RESIDENCY_DETAIL, domain, dto.getResidencyDetails(), changeLog);
-        updateAndLog(MENTAL_HEALTH_ACT, domain, dto.isMentalHealthAct(), changeLog);
-        updateAndLog(MENTAL_HEALTH_ACT_DETAILS, domain, dto.getMentalHealthActDetails(), changeLog);
-        updateAndLog(BAIL, domain, dto.isBail(), changeLog);
-        updateAndLog(BAIL_DETAILS, domain, dto.getBailDetails(), changeLog);
-        updateAndLog(CONVICTIONS, domain, dto.isConvictions(), changeLog);
-        updateAndLog(CONVICTIONS_DETAILS, domain, dto.getConvictionsDetails(), changeLog);
+        updateAndLog(RESIDENCY, domain, dto.isResidency());
+        updateAndLog(RESIDENCY_DETAIL, domain, dto.getResidencyDetails());
+        updateAndLog(MENTAL_HEALTH_ACT, domain, dto.isMentalHealthAct());
+        updateAndLog(MENTAL_HEALTH_ACT_DETAILS, domain, dto.getMentalHealthActDetails());
+        updateAndLog(BAIL, domain, dto.isBail());
+        updateAndLog(BAIL_DETAILS, domain, dto.getBailDetails());
+        updateAndLog(CONVICTIONS, domain, dto.isConvictions());
+        updateAndLog(CONVICTIONS_DETAILS, domain, dto.getConvictionsDetails());
 
         // JDB-2685: if no staff assigned, assign current login
         if (null == domain.getStaff()) {
             assignOnUpdateService.assignToCurrentLogin(domain, login);
         }
 
-        saveUpdatesOptimistically(changeLog, domain);
-
-        if (log.isDebugEnabled()) {
-            log.debug(MESSAGE, login, changeLog.getChangeLogItems().size(), jurorId);
-        }
+        saveUpdatesOptimistically(domain);
         log.info("Bureau user {} updated juror eligibility section for {}", login, jurorId);
     }
 
     /**
      * Enumerated data class for valid Reasonable adjustment types. Used for queries and audit during update.
      *
-     * @see #updateAndLogSpecialNeed(String, SpecNeed, String, ChangeLog)
+     * @see #updateAndLogSpecialNeed(String, SpecNeed, String)
      */
     private enum SpecNeed {
         LIMITED_MOBILITY("L", "Limited Mobility"),
@@ -632,7 +554,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
     /**
      * Enumerated data class for valid CJS Employment types. Used for queries and audit during update.
      *
-     * @see #updateAndLogCjs(String, CjsEmployment, String, ChangeLog)
+     * @see #updateAndLogCjs(String, CjsEmployment, String)
      */
     public enum CjsEmployment {
         POLICE("Police Force", "Police Force"),
@@ -678,10 +600,8 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
      * @param jurorId      Juror id whose special needs are being edited
      * @param specNeedType Enumerated type of the special need being updated
      * @param value        Value being set for the special need in the domain object
-     * @param changeLog    Change log to add a {@link ChangeLogItem} auditing the changes (if any)
      */
-    private void updateAndLogSpecialNeed(final String jurorId, final SpecNeed specNeedType, final String value,
-                                         final ChangeLog changeLog) {
+    private void updateAndLogSpecialNeed(final String jurorId, final SpecNeed specNeedType, final String value) {
         // find existing special need of type
         final String key = specNeedType.getCode();
         final String description = specNeedType.getDescription();
@@ -696,8 +616,6 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
                 final String oldValue = existingSpecNeed.getReasonableAdjustmentDetail();
                 existingSpecNeed.setReasonableAdjustmentDetail(value);
                 savedSpecialNeed = bureauJurorSpecialNeedsRepository.save(existingSpecNeed);
-                changeLog.addChangeLogItem(
-                    new ChangeLogItem(key, oldValue, key, savedSpecialNeed.getReasonableAdjustmentDetail()));
             } else {
                 // insert new need
 
@@ -706,8 +624,6 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
                     .jurorNumber(jurorId)
                     .reasonableAdjustment(reasonableAdjustmentsRepository.findByCode(key))
                     .build());
-                changeLog.addChangeLogItem(
-                    new ChangeLogItem(null, null, key, savedSpecialNeed.getReasonableAdjustmentDetail()));
             }
             log.debug("Saved {}", savedSpecialNeed);
         } else {
@@ -715,8 +631,6 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
                 log.debug("Deleting {}", description);
                 bureauJurorSpecialNeedsRepository.delete(existingSpecNeed);
                 log.info("Deleted existing {} '{}'", description, key);
-                changeLog.addChangeLogItem(
-                    new ChangeLogItem(key, existingSpecNeed.getReasonableAdjustmentDetail(), null, null));
             } else {
                 log.trace("No {} employer '{}' to update", description, key);
             }
@@ -730,10 +644,8 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
      * @param jurorId           Juror id whose CJS employment details are being edited
      * @param cjsEmploymentType Enumerated type of the special need being updated
      * @param value             Value being set for the CJS detail in the domain object
-     * @param changeLog         Change log to add a {@link ChangeLogItem} auditing the changes (if any)
      */
-    private void updateAndLogCjs(final String jurorId, final CjsEmployment cjsEmploymentType, final String value,
-                                 final ChangeLog changeLog) {
+    private void updateAndLogCjs(final String jurorId, final CjsEmployment cjsEmploymentType, final String value) {
         // find existing CJS entry
         final String key = cjsEmploymentType.getEmployer();
         final String description = cjsEmploymentType.getDescription();
@@ -751,7 +663,6 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
                 if (value.compareTo(oldValue) != 0) {
                     // value has changed
                     savedCjs = cjsRepository.save(existingCjs);
-                    changeLog.addChangeLogItem(new ChangeLogItem(key, oldValue, key, savedCjs.getCjsEmployerDetails()));
                     log.debug("Saved {}", savedCjs);
                 } else {
                     log.trace("No changes for {}", cjsEmploymentType);
@@ -763,14 +674,12 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
                     .cjsEmployerDetails(value)
                     .jurorNumber(jurorId)
                     .build());
-                changeLog.addChangeLogItem(new ChangeLogItem(null, null, key, savedCjs.getCjsEmployerDetails()));
             }
         } else {
             if (null != existingCjs) {
                 log.debug("Deleting {}", description);
                 cjsRepository.delete(existingCjs);
                 log.info("Deleted existing {} '{}'", description, key);
-                changeLog.addChangeLogItem(new ChangeLogItem(key, existingCjs.getCjsEmployerDetails(), null, null));
             } else {
                 log.trace("No {} employer '{}' to update", description, key);
             }
@@ -784,9 +693,8 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
      * @param fieldName Field name to apply possible change in value
      * @param domain    Domain object to apply changes to
      * @param value     New value for the fieldName in the domain object
-     * @param changeLog Change log to add a {@link ChangeLogItem} auditing the changes (if any)
      */
-    private void updateAndLog(String fieldName, DigitalResponse domain, Object value, ChangeLog changeLog) {
+    private void updateAndLog(String fieldName, DigitalResponse domain, Object value) {
         final Field field = ReflectionUtils.findField(domain.getClass(), fieldName);
         if (field == null) {
             log.error("Failed to find field '{}' on object {}", fieldName, domain);
@@ -815,57 +723,9 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
             //upsert the field value
             ReflectionUtils.setField(field, domain, value);
             // create a change log entry for the update
-            final ChangeLogItem logItem = getReadableChangeLogItem(field.getName(), oldValue, value);
-            changeLog.addChangeLogItem(logItem);
-            if (log.isDebugEnabled()) {
-                log.debug("Change audit: {}", logItem);
-            }
         } else {
             log.trace("No change found for {}", fieldName);
         }
-    }
-
-    /**
-     * Tweak entries in the ChangeLog so that they are more readable to Bureau Officers.
-     *
-     * @param fieldName Field name to apply change in value
-     * @param oldValue  Previous value for the fieldName in the domain object
-     * @param newValue  New value for the fieldName in the domain object
-     */
-    private ChangeLogItem getReadableChangeLogItem(String fieldName, Object oldValue, Object newValue) {
-        // we only want to tweak Strings and ignore Dates
-        if ((oldValue instanceof LocalDate) || newValue instanceof LocalDate) {
-            final DateTimeFormatter dobFormat = DateTimeFormatter.ISO_LOCAL_DATE;
-            if (oldValue instanceof LocalDate oldValueLocalDate) {
-                oldValue = dobFormat.format(oldValueLocalDate);
-            }
-            if (newValue instanceof LocalDate newValueLocalDate) {
-                newValue = dobFormat.format(newValueLocalDate);
-            }
-            return new ChangeLogItem(fieldName, oldValue, fieldName, newValue);
-        }
-
-        // JDB-2790/JDB-2813 - We want the Change Log to be more readable when juror can attend scheduled hearing date
-        if (EXCUSAL_REASON.equals(fieldName)) {
-            final String readableValue = "No excusal requested";
-            if (StringUtils.isEmpty(oldValue)) {
-                oldValue = readableValue;
-            } else if (StringUtils.isEmpty(newValue)) {
-                newValue = readableValue;
-            }
-        }
-
-        // JDB-2790/JDB-2813 - We want the Change Log to be more readable when juror can attend scheduled hearing date
-        if (DEFERRAL_REASON.equals(fieldName) || DEFERRAL_DATE.equals(fieldName)) {
-            final String readableValue = "No deferral requested";
-            if (StringUtils.isEmpty(oldValue)) {
-                oldValue = readableValue;
-            } else if (StringUtils.isEmpty(newValue)) {
-                newValue = readableValue;
-            }
-        }
-
-        return new ChangeLogItem(fieldName, oldValue, fieldName, newValue);
     }
 
     /**
@@ -930,14 +790,12 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
     /**
      * Save changelog and juror response to the database catching and wrapping a optimistic locking exception.
      *
-     * @param changeLog Populated change log
      * @param domain    Updated DETATCHED juror response entity
      */
-    private void saveUpdatesOptimistically(final ChangeLog changeLog, final DigitalResponse domain)
+    private void saveUpdatesOptimistically(final DigitalResponse domain)
         throws BureauOptimisticLockingException {
         try {
             log.debug("Saving updates.");
-            changeLogRepository.save(changeLog);
             responseRepository.save(domain);
         } catch (ObjectOptimisticLockingFailureException oolfe) {
             log.info("Failed to update response {}: {}", domain.getJurorNumber(), oolfe.getMessage());

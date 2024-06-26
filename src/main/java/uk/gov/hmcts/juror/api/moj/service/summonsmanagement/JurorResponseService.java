@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.moj.service.summonsmanagement;
 
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPersonalDetailsDto;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorCommonResponseRepositoryMod;
 
 public interface JurorResponseService {
     String TITLE = "title";
@@ -28,4 +29,5 @@ public interface JurorResponseService {
                                     String jurorNumber);
 
 
+    JurorCommonResponseRepositoryMod.AbstractResponse getCommonJurorResponse(String jurorNumber);
 }

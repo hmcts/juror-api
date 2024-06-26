@@ -608,12 +608,6 @@ public class CourtLetterServiceTest {
             Assertions.assertThat(response.getData()).isEmpty();
         }
 
-        private ExcusalGrantedLetterList createDeferralLetterList(String jurorNumber, LocalDate dateExcused,
-                                                                  String reason,
-                                                                  String poolNumber) {
-            return createExcusalLetterList(jurorNumber, dateExcused, reason, poolNumber, null);
-        }
-
         private ExcusalGrantedLetterList createExcusalLetterList(String jurorNumber, LocalDate dateExcused,
                                                                  String reason, String poolNumber,
                                                                  LocalDateTime datePrinted) {
