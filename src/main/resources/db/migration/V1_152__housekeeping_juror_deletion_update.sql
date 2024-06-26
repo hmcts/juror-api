@@ -110,13 +110,6 @@ BEGIN
 			EXIT Deletes;
 		END IF;
 
-		-- check if timeout has elapsed - if so exit loop
-	    SELECT juror_mod.check_time_expired(p_start_time_int,p_max_timeout) INTO v_timed_out;
-		IF v_timed_out THEN
-			p_print_msg := 'ERROR:-> TIMED OUT';
-			EXIT Deletes;
-		END IF;
-
 		DELETE FROM juror_mod.appearance a WHERE a.juror_number = p_juror_number;
 		-- check if timeout has elapsed - if so exit loop
 	    SELECT juror_mod.check_time_expired(p_start_time_int,p_max_timeout) INTO v_timed_out;
