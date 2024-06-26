@@ -67,7 +67,14 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
     public Map<String, String> generatePayLoadData(String templateId, String detailData, JurorPool juror) {
 
         SimpleDateFormat dateFormat = new SimpleDateFormat();
-        log.info("Letter Comms getting PAYLOAD STUFF : Started - {}", dateFormat.format(new Date()));
+        log.info("Letter Comms getting payload details : "
+                + "Template {},"
+                + " juror {},"
+                + " juror pool {},"
+                + " Started - {}", templateId,
+            juror.getJurorNumber(),
+            juror.getPoolNumber(),
+            dateFormat.format(new Date()));
 
         List<NotifyTemplateFieldMod> fields = getPayLoadFieldsForTemplate(templateId);
         NotifyTemplateMapperMod.Context context = NotifyTemplateMapperMod.Context.from(juror);
@@ -84,7 +91,12 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
                 context.setDetailData(detailData);
                 if (field.getTemplateField().equals(SERVICE_START_DATE)) {
                     fieldValue = invokeGetter(context, mapperObject);
-                    String formattedDate = ENGLISH_DATE_TIME_FORMATTER.format((LocalDate) fieldValue);
+                    String formattedDate;
+                    if (mapperObject == NotifyTemplateMapperMod.BULK_PRINT_DATA) {
+                        formattedDate = fieldValue.toString();
+                    } else {
+                        formattedDate = ENGLISH_DATE_TIME_FORMATTER.format((LocalDate) fieldValue);
+                    }
                     map.put(field.getTemplateField(), formattedDate);
                 } else if (field.getTemplateField().equals(SERVICE_START_TIME)) {
                     final String attendTime = getAttendTime(context.getJurorPool());
