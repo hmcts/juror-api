@@ -6,6 +6,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,7 +21,7 @@ import java.time.LocalDateTime;
 @Table(name = "juror_response_aud", schema = "juror_mod")
 @Data
 @Qualifier("NewJurorResponseAudit")
-@IdClass(JurorResponseAuditMod.JurorResponseAuditModId.class)
+@IdClass(JurorResponseAuditModKey.class)
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -45,8 +46,8 @@ public class JurorResponseAuditMod {
     @Enumerated(EnumType.STRING)
     private ProcessingStatus newProcessingStatus;
 
-    public static class JurorResponseAuditModId {
-        private String jurorNumber;
-        private LocalDateTime changed;
+    @PrePersist
+    void prePersist() {
+        this.changed = LocalDateTime.now();
     }
 }
