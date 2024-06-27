@@ -1094,6 +1094,7 @@ class JurorExpenseServiceTest {
         }
 
         @Test
+        @SuppressWarnings("LineLength")
         void positiveHasApplyToAll() {
             final String jurorNumber = TestConstants.VALID_JUROR_NUMBER;
             final String poolNumber = TestConstants.VALID_POOL_NUMBER;
@@ -1107,8 +1108,8 @@ class JurorExpenseServiceTest {
                 mock(Appearance.class));
 
             doReturn(appearances).when(appearanceRepository)
-                .findByCourtLocationLocCodeAndJurorNumberAndIsDraftExpenseTrue(TestConstants.VALID_COURT_LOCATION,
-                    jurorNumber);
+                .findByCourtLocationLocCodeAndJurorNumberAndIsDraftExpenseTrueAndAppearanceStageIn(TestConstants.VALID_COURT_LOCATION,
+                    jurorNumber,Set.of(AppearanceStage.EXPENSE_ENTERED));
             doNothing().when(jurorExpenseService).applyToAll(appearances, dailyExpense);
             Appearance appearance = mock(Appearance.class);
 
