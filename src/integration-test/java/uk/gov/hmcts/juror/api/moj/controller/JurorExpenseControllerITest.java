@@ -801,27 +801,37 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     appearanceRepository.findByCourtLocationLocCodeAndJurorNumberAndIsDraftExpenseTrue(
                         COURT_LOCATION, jurorNumber);
 
-                assertThat(appearances).size().isEqualTo(4);
+                assertThat(appearances).size().isEqualTo(7);
                 appearances.forEach(appearance1 -> {
-                    if (PayAttendanceType.HALF_DAY.equals(appearance1.getPayAttendanceType())) {
-                        assertThat(appearance1.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(1.01));
-                        assertThat(appearance1.getChildcareDue()).isEqualTo(doubleToBigDecimal(31.46));
-                        assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(0.00));
-                        assertThat(appearance1.getMiscDescription()).isEqualTo("Desc 3");
-                        assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(32.47));
-                    } else if (PayAttendanceType.FULL_DAY.equals(appearance1.getPayAttendanceType())) {
-                        assertThat(appearance1.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(1.01));
-                        assertThat(appearance1.getChildcareDue()).isEqualTo(doubleToBigDecimal(50.00));
-                        assertThat(appearance1.getMiscDescription()).isEqualTo("Desc 3");
-                        if (AttendanceType.NON_ATTENDANCE_LONG_TRIAL.equals(appearance1.getAttendanceType())) {
-                            assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(35.00));
-                            assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(86.01));
-                        } else {
-                            assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(13.94));
-                            assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(64.95));
-                        }
+                    if (appearance1.getAppearanceStage() == null
+                        || Set.of(AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT)
+                        .contains(appearance1.getAppearanceStage())) {
+                        assertThat(appearance1.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(90.00));
+                        assertThat(appearance1.getChildcareDue()).isEqualTo(doubleToBigDecimal(70.00));
+                        assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(80.00));
+                        assertThat(appearance1.getMiscDescription()).isNull();
+                        assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(525.00));
                     } else {
-                        fail("Not handled");
+                        if (PayAttendanceType.HALF_DAY.equals(appearance1.getPayAttendanceType())) {
+                            assertThat(appearance1.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(1.01));
+                            assertThat(appearance1.getChildcareDue()).isEqualTo(doubleToBigDecimal(31.46));
+                            assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(0.00));
+                            assertThat(appearance1.getMiscDescription()).isEqualTo("Desc 3");
+                            assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(32.47));
+                        } else if (PayAttendanceType.FULL_DAY.equals(appearance1.getPayAttendanceType())) {
+                            assertThat(appearance1.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(1.01));
+                            assertThat(appearance1.getChildcareDue()).isEqualTo(doubleToBigDecimal(50.00));
+                            assertThat(appearance1.getMiscDescription()).isEqualTo("Desc 3");
+                            if (AttendanceType.NON_ATTENDANCE_LONG_TRIAL.equals(appearance1.getAttendanceType())) {
+                                assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(35.00));
+                                assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(86.01));
+                            } else {
+                                assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(13.94));
+                                assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(64.95));
+                            }
+                        } else {
+                            fail("Not handled");
+                        }
                     }
                 });
             }
@@ -854,24 +864,34 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     appearanceRepository.findByCourtLocationLocCodeAndJurorNumberAndIsDraftExpenseTrue(
                         COURT_LOCATION, jurorNumber);
 
-                assertThat(appearances).size().isEqualTo(4);
+                assertThat(appearances).size().isEqualTo(7);
 
                 AtomicBoolean hasNonAttendanceDay = new AtomicBoolean(false);
                 appearances.forEach(appearance1 -> {
-                    if (AttendanceType.NON_ATTENDANCE.equals(appearance1.getAttendanceType())
-                        || AttendanceType.NON_ATTENDANCE_LONG_TRIAL.equals(appearance1.getAttendanceType())) {
-                        hasNonAttendanceDay.set(true);
-                        assertThat(appearance1.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(0.00));
-                        assertThat(appearance1.getChildcareDue()).isEqualTo(doubleToBigDecimal(0.00));
-                        assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(15.00));
-                        assertThat(appearance1.getMiscDescription()).isEqualTo("Desc 3");
-                        assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(15.00));
+                    if (appearance1.getAppearanceStage() == null
+                        || Set.of(AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT)
+                        .contains(appearance1.getAppearanceStage())) {
+                        assertThat(appearance1.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(90.00));
+                        assertThat(appearance1.getChildcareDue()).isEqualTo(doubleToBigDecimal(70.00));
+                        assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(80.00));
+                        assertThat(appearance1.getMiscDescription()).isNull();
+                        assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(525.00));
                     } else {
-                        assertThat(appearance1.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(0.00));
-                        assertThat(appearance1.getChildcareDue()).isEqualTo(doubleToBigDecimal(0.00));
-                        assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(15.00));
-                        assertThat(appearance1.getMiscDescription()).isEqualTo("Desc 3");
-                        assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(19.788));
+                        if (AttendanceType.NON_ATTENDANCE.equals(appearance1.getAttendanceType())
+                            || AttendanceType.NON_ATTENDANCE_LONG_TRIAL.equals(appearance1.getAttendanceType())) {
+                            hasNonAttendanceDay.set(true);
+                            assertThat(appearance1.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(0.00));
+                            assertThat(appearance1.getChildcareDue()).isEqualTo(doubleToBigDecimal(0.00));
+                            assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(15.00));
+                            assertThat(appearance1.getMiscDescription()).isEqualTo("Desc 3");
+                            assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(15.00));
+                        } else {
+                            assertThat(appearance1.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(0.00));
+                            assertThat(appearance1.getChildcareDue()).isEqualTo(doubleToBigDecimal(0.00));
+                            assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(15.00));
+                            assertThat(appearance1.getMiscDescription()).isEqualTo("Desc 3");
+                            assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(19.788));
+                        }
                     }
                 });
                 assertThat(hasNonAttendanceDay.get()).isTrue();
@@ -1088,11 +1108,20 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     appearanceRepository.findByCourtLocationLocCodeAndJurorNumberAndIsDraftExpenseTrue(
                         COURT_LOCATION, jurorNumber);
 
-                assertThat(appearances).size().isEqualTo(4);
+                assertThat(appearances).size().isEqualTo(7);
                 appearances.forEach(appearance1 -> {
-                    assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(5.00));
-                    assertThat(appearance1.getMiscDescription()).isEqualTo("Desc");
-                    assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(5.00));
+                    if (appearance1.getAppearanceStage() == null
+                        || Set.of(AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT)
+                        .contains(appearance1.getAppearanceStage())) {
+                        assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(80.00));
+                        assertThat(appearance1.getMiscDescription()).isNull();
+                        assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(525.00));
+                    } else {
+                        assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(5.00));
+                        assertThat(appearance1.getMiscDescription()).isEqualTo("Desc");
+                        assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(5.00));
+
+                    }
                 });
             }
 
@@ -1122,13 +1151,23 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         COURT_LOCATION, jurorNumber);
 
                 // ensure apply all is updated for all applicable expenses and to all days
-                assertThat(appearances).size().isEqualTo(4);
+                assertThat(appearances).size().isEqualTo(7);
                 appearances.forEach(appearance1 -> {
-                    assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(5.00));
-                    assertThat(appearance1.getChildcareDue()).isEqualTo(doubleToBigDecimal(10.00));
-                    assertThat(appearance1.getMiscDescription()).isEqualTo("Desc 2");
-                    assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(15.00));
-                    assertThat(appearance1.isPayCash()).isEqualTo(true);
+                    if (appearance1.getAppearanceStage() == null
+                        || Set.of(AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT)
+                        .contains(appearance1.getAppearanceStage())) {
+                        assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(80.00));
+                        assertThat(appearance1.getChildcareDue()).isEqualTo(doubleToBigDecimal(70.00));
+                        assertThat(appearance1.getMiscDescription()).isNull();
+                        assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(525.00));
+                        assertThat(appearance1.isPayCash()).isEqualTo(false);
+                    } else {
+                        assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(5.00));
+                        assertThat(appearance1.getChildcareDue()).isEqualTo(doubleToBigDecimal(10.00));
+                        assertThat(appearance1.getMiscDescription()).isEqualTo("Desc 2");
+                        assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(15.00));
+                        assertThat(appearance1.isPayCash()).isEqualTo(true);
+                    }
                 });
             }
         }

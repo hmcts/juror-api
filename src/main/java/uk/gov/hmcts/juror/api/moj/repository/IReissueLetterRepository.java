@@ -24,4 +24,6 @@ public interface IReissueLetterRepository {
 
     List<BulkPrintData> findByJurorNumberAndFormTypeAndCreationDateAndExtractedFlag(
         String jurorNumber, String formType, LocalDate creationDate, boolean extractedFlag);
+
+    Optional<BulkPrintData> findLatestPendingLetterForJuror(String jurorNumber, String formCode);
 }

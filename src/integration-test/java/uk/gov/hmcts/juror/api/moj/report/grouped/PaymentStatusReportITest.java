@@ -45,6 +45,12 @@ class PaymentStatusReportITest extends AbstractGroupedReportControllerITest {
     @Test
     void positiveTypical() {
         testBuilder()
+            .triggerInvalid()
+                .printResponse()
+            .printResponseBodyAsJson();
+
+
+        testBuilder()
             .triggerValid()
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(GroupedReportResponse.builder()

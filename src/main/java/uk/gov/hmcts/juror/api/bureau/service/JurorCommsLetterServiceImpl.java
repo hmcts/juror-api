@@ -75,13 +75,12 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
 
 
             for (BulkPrintDataNotifyComms printFile : bulkPrintDataNotifyCommsList) {
-
-                log.trace("LetterService :  jurorNumber {}", printFile.getJurorNo());
-                final JurorPool juror =
-                    jurorRepository.findByJurorJurorNumberAndIsActiveAndOwner(printFile.getJurorNo(), true,
-                        SecurityUtil.BUREAU_OWNER);
-
                 try {
+                    log.trace("LetterService :  jurorNumber {}", printFile.getJurorNo());
+                    final JurorPool juror =
+                        jurorRepository.findByJurorJurorNumberAndIsActiveAndOwner(printFile.getJurorNo(), true,
+                            SecurityUtil.BUREAU_OWNER);
+
 
                     jurorCommsNotificationService.sendJurorComms(
                         juror,
@@ -102,12 +101,8 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
                     );
                     commsfailed++;
                 } catch (Exception e) {
+                    commsfailed++;
                     log.error("Letter Comms Processing : Juror Comms failed : {}", e.getMessage());
-                    throw new JurorCommsNotificationServiceException(
-                        "Letter Comms Processing failed. " + e.getMessage(),
-                        e.getCause()
-                    );
-
                 }
 
             }
@@ -138,7 +133,7 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
             bulkPrintDataNotifyComms.getId(),
             bulkPrintDataNotifyComms.getCreationDate()
         );
-        if (bulkPrintDataDetail.isEmpty() || bulkPrintDataDetail.size() > 1) {
+        if (bulkPrintDataDetail.size() != 1) {
             throw new JurorCommsNotificationServiceException(
                 "updatePrintFiles: Unable to update printFiles after Juror Comms sent.");
         }

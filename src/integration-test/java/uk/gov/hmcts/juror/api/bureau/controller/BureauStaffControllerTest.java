@@ -5,7 +5,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpHeaders;
@@ -32,7 +31,6 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.StaffDetailDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffListDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffRosterResponseDto;
-import uk.gov.hmcts.juror.api.bureau.controller.response.TeamDto;
 import uk.gov.hmcts.juror.api.bureau.exception.BureauOptimisticLockingException;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
@@ -57,41 +55,30 @@ import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
 public class BureauStaffControllerTest extends AbstractIntegrationTest {
 
-    private static final TeamDto TEAM_1 = TeamDto.builder().id(1L).name("London & Wales").version(0).build();
-    private static final TeamDto TEAM_2 =
-        TeamDto.builder().id(2L).name("South East, North East & North West").version(0).build();
-    private static final TeamDto TEAM_3 = TeamDto.builder().id(3L).name("Midlands & South West").version(0).build();
-
     private static final List<StaffDto> ACTIVE_STAFF = Arrays.asList(
         StaffDto.builder()
             .login("jpowers").name("Joanna Powers")
             .isActive(true).isTeamLeader(false)
-            .team(TEAM_1)
             .build(),
         StaffDto.builder()
             .login("tsanchez").name("Todd Sanchez")
             .isActive(true).isTeamLeader(false)
-            .team(TEAM_2)
             .build(),
         StaffDto.builder()
             .login("gbeck").name("Grant Beck")
             .isActive(true).isTeamLeader(false)
-            .team(TEAM_3)
             .build(),
         StaffDto.builder()
             .login("rprice").name("Roxanne Price")
             .isActive(true).isTeamLeader(true)
-            .team(TEAM_1)
             .build(),
         StaffDto.builder()
             .login("pbrewer").name("Preston Brewer")
             .isActive(true).isTeamLeader(true)
-            .team(TEAM_2)
             .build(),
         StaffDto.builder()
             .login("acopeland").name("Amelia Copeland")
             .isActive(true).isTeamLeader(true)
-            .team(TEAM_3)
             .build()
     );
 
@@ -100,24 +87,18 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
             .login("jphillips")
             .name("Joan Phillips")
             .isActive(false).isTeamLeader(false)
-            .team(TEAM_1)
             .build(),
         StaffDto.builder()
             .login("srogers")
             .name("Shawn Rogers")
             .isActive(false).isTeamLeader(false)
-            .team(TEAM_2)
             .build(),
         StaffDto.builder()
             .login("pbrooks")
             .name("Paul Brooks")
             .isActive(false).isTeamLeader(false)
-            .team(TEAM_3)
             .build()
     );
-
-    @Value("${jwt.secret.bureau}")
-    private String bureauSecret;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;

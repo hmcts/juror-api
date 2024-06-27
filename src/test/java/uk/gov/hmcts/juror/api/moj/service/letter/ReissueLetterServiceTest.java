@@ -993,14 +993,14 @@ public class ReissueLetterServiceTest {
                 .build();
 
             doReturn(Optional.of(bulkPrintData)).when(bulkPrintDataRepository)
-                .findByJurorNumberFormCodeDatePrinted(reissueLetterRequestData.getJurorNumber(),
-                    reissueLetterRequestData.getFormCode(), reissueLetterRequestData.getDatePrinted());
+                .findLatestPendingLetterForJuror(reissueLetterRequestData.getJurorNumber(),
+                    reissueLetterRequestData.getFormCode());
 
             reissueLetterService.deletePendingLetter(reissueLetterRequestDto);
 
             verify(bulkPrintDataRepository, times(1))
-                .findByJurorNumberFormCodeDatePrinted(reissueLetterRequestData.getJurorNumber(),
-                    reissueLetterRequestData.getFormCode(), reissueLetterRequestData.getDatePrinted());
+                .findLatestPendingLetterForJuror(reissueLetterRequestData.getJurorNumber(),
+                    reissueLetterRequestData.getFormCode());
             verify(bulkPrintDataRepository, times(1)).delete(bulkPrintData);
 
         }
@@ -1020,15 +1020,15 @@ public class ReissueLetterServiceTest {
                 .build();
 
             doReturn(Optional.empty()).when(bulkPrintDataRepository)
-                .findByJurorNumberFormCodeDatePrinted(reissueLetterRequestData.getJurorNumber(),
-                    reissueLetterRequestData.getFormCode(), reissueLetterRequestData.getDatePrinted());
+                .findLatestPendingLetterForJuror(reissueLetterRequestData.getJurorNumber(),
+                    reissueLetterRequestData.getFormCode());
 
             assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
                 reissueLetterService.deletePendingLetter(reissueLetterRequestDto));
 
             verify(bulkPrintDataRepository, times(1))
-                .findByJurorNumberFormCodeDatePrinted(reissueLetterRequestData.getJurorNumber(),
-                    reissueLetterRequestData.getFormCode(), reissueLetterRequestData.getDatePrinted());
+                .findLatestPendingLetterForJuror(reissueLetterRequestData.getJurorNumber(),
+                    reissueLetterRequestData.getFormCode());
             verify(bulkPrintDataRepository, times(0)).save(Mockito.any());
 
         }

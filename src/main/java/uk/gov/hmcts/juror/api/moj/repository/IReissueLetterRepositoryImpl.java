@@ -132,8 +132,10 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
             .where(BULK_PRINT_DATA.formAttribute.formType.eq(formCode))
             .where(BULK_PRINT_DATA.creationDate.eq(datePrinted));
 
-        return Optional.ofNullable(query.fetchOne());
+        return Optional.ofNullable(query.fetchFirst());
     }
+
+
 
     @Override
     public Optional<BulkPrintData> findByJurorNumberFormCodeAndPending(String jurorNumber, String formCode) {
@@ -174,5 +176,18 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
             .where(BULK_PRINT_DATA.extractedFlag.eq(extractedFlag));
 
         return query.fetch();
+    }
+
+    @Override
+    public Optional<BulkPrintData> findLatestPendingLetterForJuror(String jurorNumber, String formCode) {
+        JPAQueryFactory queryFactory = getQueryFactory();
+
+        JPAQuery<BulkPrintData> query = queryFactory.selectFrom(BULK_PRINT_DATA)
+            .where(BULK_PRINT_DATA.jurorNo.eq(jurorNumber))
+            .where(BULK_PRINT_DATA.formAttribute.formType.eq(formCode))
+            .where(BULK_PRINT_DATA.extractedFlag.eq(false))
+            .orderBy(BULK_PRINT_DATA.creationDate.desc());
+
+        return Optional.ofNullable(query.fetchFirst());
     }
 }

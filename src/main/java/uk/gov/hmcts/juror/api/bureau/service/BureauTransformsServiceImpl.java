@@ -4,10 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseSummaryDto;
-import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseSummaryWrapper;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffDto;
-import uk.gov.hmcts.juror.api.bureau.controller.response.TeamDto;
-import uk.gov.hmcts.juror.api.bureau.domain.Team;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
@@ -42,11 +39,6 @@ public class BureauTransformsServiceImpl implements BureauTransformsService {
             .map(urgencyCalculator::flagSlaOverdueForResponse)
             .map(this::detailToDto)
             .collect(Collectors.toCollection(LinkedList::new));
-    }
-
-    @Override
-    public BureauResponseSummaryWrapper prepareOutput(Iterable<ModJurorDetail> details) {
-        return BureauResponseSummaryWrapper.builder().responses(convertToDtos(details)).build();
     }
 
     @Override
@@ -126,22 +118,8 @@ public class BureauTransformsServiceImpl implements BureauTransformsService {
 
         return StaffDto.builder().login(staffMember.getUsername())
             .name(staffMember.getName())
-            .team(toTeamDto(staffMember.getTeam()))
             .isActive(staffMember.isActive())
             .isTeamLeader(staffMember.isTeamLeader())
-            .build();
-    }
-
-    @Override
-    public TeamDto toTeamDto(Team teamEntity) {
-
-        if (teamEntity == null) {
-            return null;
-        }
-        return TeamDto.builder()
-            .id(teamEntity.getId())
-            .name(teamEntity.getTeamName())
-            .version(teamEntity.getVersion())
             .build();
     }
 }

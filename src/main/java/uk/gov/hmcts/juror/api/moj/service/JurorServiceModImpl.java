@@ -7,6 +7,8 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class JurorServiceModImpl implements JurorServiceMod {
@@ -15,7 +17,12 @@ public class JurorServiceModImpl implements JurorServiceMod {
 
     @Override
     public Juror getJurorFromJurorNumber(String jurorNumber) {
-        return jurorRepository.findById(jurorNumber).orElseThrow(() -> new MojException.NotFound(
+        return getJurorOptionalFromJurorNumber(jurorNumber).orElseThrow(() -> new MojException.NotFound(
             "Juror not found: " + jurorNumber, null));
+    }
+
+    @Override
+    public Optional<Juror> getJurorOptionalFromJurorNumber(String jurorNumber) {
+        return jurorRepository.findById(jurorNumber);
     }
 }

@@ -29,10 +29,6 @@ public class StaffDto implements Serializable {
     @Schema(description = "Staff member name", example = "Joanna Powers")
     private String name;
 
-    @JsonProperty("team")
-    @Schema(description = "Team the staff member is part of ")
-    private TeamDto team;
-
     @JsonProperty("isTeamLeader")
     @Schema(description = "Is the staff member a team leader?")
     private boolean isTeamLeader;
@@ -45,7 +41,6 @@ public class StaffDto implements Serializable {
         if (!Objects.isNull(user)) {
             this.login = user.getUsername();
             this.name = user.getName();
-            this.team = !Objects.isNull(user.getTeam()) ? new TeamDto(user.getTeam()) : null;
             this.isTeamLeader = user.isTeamLeader();
             this.isActive = user.isActive();
         }
