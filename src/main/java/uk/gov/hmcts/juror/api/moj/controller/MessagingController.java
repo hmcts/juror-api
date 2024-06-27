@@ -100,7 +100,7 @@ public class MessagingController {
 
     @PostMapping(value = "/csv/{loc_code}",
         consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = "text/csv;")
+        produces = {"text/csv;", MediaType.APPLICATION_JSON_VALUE})
     @Operation(summary = "Convert message to CSV")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize(SecurityUtil.LOC_CODE_AUTH + " or " + SecurityUtil.IS_BUREAU)
