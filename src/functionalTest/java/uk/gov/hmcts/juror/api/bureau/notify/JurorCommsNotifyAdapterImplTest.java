@@ -8,7 +8,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.bureau.service.JurorCommsNotificationServiceImpl;
 import uk.gov.hmcts.juror.api.bureau.service.JurorCommsNotifyPayLoadService;
@@ -108,7 +107,6 @@ class JurorCommsNotifyAdapterImplTest extends ContainerTest {
 
     @Test
     @Timeout(9)
-    @Sql("/db/notify_template_mapping.sql")
     void sendCommsEmailServiceConfirmationEnglish() {
         // create the notification data class
         final String jurorNumber = "111222333";
@@ -166,7 +164,6 @@ class JurorCommsNotifyAdapterImplTest extends ContainerTest {
 
     @Test
     @Timeout(9)
-    @Sql("/db/notify_template_mapping.sql")
     void sendCommsEmailSendToCourtEmailEnglish() {
         // create the notification data class
         final String jurorNumber = "111222333";
@@ -232,7 +229,6 @@ class JurorCommsNotifyAdapterImplTest extends ContainerTest {
 
     @Test
     @Timeout(9)
-    @Sql("/db/notify_template_mapping.sql")
     void sendCommsSmsSendToCourtSmsEnglish() {
         // create the notification data class
         final String jurorNumber = "111222333";

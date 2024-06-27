@@ -8,7 +8,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.juror.notify.EmailNotification;
 import uk.gov.hmcts.juror.api.juror.notify.EmailNotificationReceipt;
@@ -85,8 +84,6 @@ class NotifyAdapterImplTest extends ContainerTest {
 
     @Test
     @Timeout(9)
-    @Sql("/db/welsh_enabled.sql")
-    @Sql("/db/notify_adapter_pool.sql")
     void sendEmailFirstPersonResponse() {
         // create the notification data class
         final String jurorNumber = "888222011";
@@ -131,8 +128,6 @@ class NotifyAdapterImplTest extends ContainerTest {
 
     @Test
     @Timeout(9)
-    @Sql("/db/welsh_enabled.sql")
-    @Sql("/db/notify_adapter_pool.sql")
     void sendEmailFirstPersonResponseWelshLanguage() {
         // create the notification data class
         final String jurorNumber = "888222000";
@@ -183,8 +178,6 @@ class NotifyAdapterImplTest extends ContainerTest {
 
     @Test
     @Timeout(9)
-    @Sql("/db/welsh_enabled.sql")
-    @Sql("/db/notify_adapter_pool.sql")
     void sendEmailThirdPartyResponseJurorDetail() {
         // create the notification data class
         final String jurorNumber = "888222011";
@@ -234,8 +227,6 @@ class NotifyAdapterImplTest extends ContainerTest {
 
     @Test
     @Timeout(9)
-    @Sql("/db/welsh_enabled.sql")
-    @Sql("/db/notify_adapter_pool.sql")
     void sendEmailThirdPartyResponseJurorDetailWelshLanguage() {
         // create the notification data class
         final String jurorNumber = "888222000";
@@ -290,8 +281,6 @@ class NotifyAdapterImplTest extends ContainerTest {
 
     @Test
     @Timeout(9)
-    @Sql("/db/welsh_enabled.sql")
-    @Sql("/db/notify_adapter_pool.sql")
     void sendEmailThirdPartyResponseThirdPartyDetail() {
         // create the notification data class
         final String jurorNumber = "888222011";
