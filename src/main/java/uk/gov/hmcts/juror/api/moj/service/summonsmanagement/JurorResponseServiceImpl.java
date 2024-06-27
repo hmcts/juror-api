@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.service.summonsmanagement;
 
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -16,13 +15,14 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
-import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorCommonResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.StraightThroughProcessorService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.getJurorDigitalResponse;
 import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.getJurorPaperResponse;
@@ -33,20 +33,11 @@ import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.hasValueChanged;
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class JurorResponseServiceImpl implements JurorResponseService {
 
-    @NonNull
-    private final PoolRequestRepository poolRequestRepository;
-
-    @NonNull
     private final JurorPoolRepository jurorPoolRepository;
-
-    @NonNull
     private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
-
-    @NonNull
-    private JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository;
-
-    @NonNull
+    private final JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository;
     private final StraightThroughProcessorService straightThroughProcessorService;
+    private final JurorCommonResponseRepositoryMod jurorCommonResponseRepository;
 
     @Override
     @Transactional
@@ -87,6 +78,11 @@ public class JurorResponseServiceImpl implements JurorResponseService {
         processStraightThroughResponse(jurorResponse, jurorPool, payload);
     }
 
+    @Override
+    public Optional<JurorCommonResponseRepositoryMod.AbstractResponse> getCommonJurorResponseOptional(
+        String jurorNumber) {
+        return Optional.ofNullable(jurorCommonResponseRepository.findByJurorNumber(jurorNumber));
+    }
 
     private boolean hasSummonsReplyDataChanged(AbstractJurorResponse jurorResponse,
                                                JurorPersonalDetailsDto jurorPersonalDetailsDto) {
@@ -228,7 +224,7 @@ public class JurorResponseServiceImpl implements JurorResponseService {
     }
 
     private void processStraightThroughResponse(AbstractJurorResponse jurorResponse,
-        JurorPool jurorPool, BureauJwtPayload payload) {
+                                                JurorPool jurorPool, BureauJwtPayload payload) {
         log.debug(String.format("Juror: %s. Enter juror processStraightThroughResponse", jurorPool.getJurorNumber()));
         LocalDate poolRequestReturnDate = jurorPool.getPool().getReturnDate();
 
