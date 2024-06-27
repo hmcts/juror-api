@@ -1108,8 +1108,9 @@ class JurorExpenseServiceTest {
                 mock(Appearance.class));
 
             doReturn(appearances).when(appearanceRepository)
-                .findByCourtLocationLocCodeAndJurorNumberAndIsDraftExpenseTrueAndAppearanceStageIn(TestConstants.VALID_COURT_LOCATION,
-                    jurorNumber,Set.of(AppearanceStage.EXPENSE_ENTERED));
+                .findByCourtLocationLocCodeAndJurorNumberAndIsDraftExpenseTrueAndAppearanceStageIn(
+                    TestConstants.VALID_COURT_LOCATION,
+                    jurorNumber, Set.of(AppearanceStage.EXPENSE_ENTERED));
             doNothing().when(jurorExpenseService).applyToAll(appearances, dailyExpense);
             Appearance appearance = mock(Appearance.class);
 
@@ -2472,7 +2473,7 @@ class JurorExpenseServiceTest {
                     List.of(appearance1, appearance3));
 
             PaymentData paymentData = mock(PaymentData.class);
-            doReturn(paymentData).when(jurorExpenseService).createPaymentData(
+            doReturn(paymentData).when(jurorExpenseService).createAndSavePaymentDataWhereApplicable(
                 TestConstants.VALID_JUROR_NUMBER,
                 courtLocation,
                 List.of(appearance1, appearance3)
@@ -2484,7 +2485,7 @@ class JurorExpenseServiceTest {
             JurorPool jurorPool = mock(JurorPool.class);
             doReturn(List.of(jurorPool)).when(jurorPoolRepository)
                 .findByJurorJurorNumberAndIsActive(
-                TestConstants.VALID_JUROR_NUMBER, true);
+                    TestConstants.VALID_JUROR_NUMBER, true);
             when(jurorPool.getOwner()).thenReturn(TestConstants.VALID_COURT_LOCATION);
             when(jurorPool.getCourt()).thenReturn(courtLocation);
             jurorExpenseService.approveExpenses(
@@ -2513,9 +2514,7 @@ class JurorExpenseServiceTest {
                     LocalDate.of(2023, 1, 2),
                     new BigDecimal("4.02"));
 
-            verify(paymentDataRepository, times(1))
-                .save(paymentData);
-            verify(jurorExpenseService, times(1)).createPaymentData(
+            verify(jurorExpenseService, times(1)).createAndSavePaymentDataWhereApplicable(
                 TestConstants.VALID_JUROR_NUMBER,
                 courtLocation,
                 List.of(appearance1, appearance3)
@@ -3118,12 +3117,13 @@ class JurorExpenseServiceTest {
 
             when(juror.getName()).thenReturn("Jurorname asd");
             when(courtLocation.getCostCentre()).thenReturn("costCenter312");
-            PaymentData paymentData = jurorExpenseService.createPaymentData(
+
+            when(paymentDataRepository.save(any())).thenAnswer(invocation -> invocation.<PaymentData>getArgument(0));
+            PaymentData paymentData = jurorExpenseService.createAndSavePaymentDataWhereApplicable(
                 TestConstants.VALID_JUROR_NUMBER,
                 courtLocation,
                 List.of(appearance1, appearance2)
             );
-
             assertThat(paymentData.getCourtLocation()).isEqualTo(courtLocation);
             assertThat(paymentData.getCreationDateTime()).isEqualToIgnoringHours(LocalDateTime.now());
             assertThat(paymentData.getExpenseTotal()).isEqualTo(new BigDecimal("21.03"));
@@ -3145,6 +3145,52 @@ class JurorExpenseServiceTest {
             assertThat(paymentData.getSubsistenceTotal()).isEqualTo(new BigDecimal("6.99"));
             assertThat(paymentData.getFinancialLossTotal()).isEqualTo(new BigDecimal("9.02"));
             assertThat(paymentData.getExpenseFileName()).isNull();
+            verify(paymentDataRepository, times(1)).save(paymentData);
+        }
+
+        @Test
+        void positiveZeroTotal() {
+            Appearance appearance1 = mock(Appearance.class);
+            doReturn(new BigDecimal("1.01")).when(appearance1).getTravelTotalChanged();
+            doReturn(new BigDecimal("2.01")).when(appearance1).getSubsistenceTotalChanged();
+            doReturn(new BigDecimal("3.01")).when(appearance1).getFinancialLossTotalChanged();
+            doReturn(new BigDecimal("6.03")).when(appearance1).getSmartCardTotalChanged();
+            Appearance appearance2 = mock(Appearance.class);
+            doReturn(new BigDecimal("4.01")).when(appearance2).getTravelTotalChanged();
+            doReturn(new BigDecimal("5.01")).when(appearance2).getSubsistenceTotalChanged();
+            doReturn(new BigDecimal("6.01")).when(appearance2).getFinancialLossTotalChanged();
+            doReturn(new BigDecimal("15.03")).when(appearance2).getSmartCardTotalChanged();
+
+            Juror juror = mock(Juror.class);
+            doReturn(juror).when(jurorExpenseService).getJuror(TestConstants.VALID_JUROR_NUMBER);
+            CourtLocation courtLocation = mock(CourtLocation.class);
+
+            when(juror.getSortCode()).thenReturn("112233");
+            when(juror.getBankAccountName()).thenReturn("bankAccountName");
+            when(juror.getBankAccountNumber()).thenReturn("123456789");
+            when(juror.getSortCode()).thenReturn("112233");
+            when(juror.getBuildingSocietyRollNumber()).thenReturn("buildSocNum");
+            when(juror.getAddressLine1()).thenReturn("address1");
+            when(juror.getAddressLine2()).thenReturn("address2");
+            when(juror.getAddressLine3()).thenReturn("address3");
+            when(juror.getAddressLine4()).thenReturn("address4");
+            when(juror.getAddressLine5()).thenReturn("address5");
+            when(juror.getPostcode()).thenReturn("postCode12");
+
+            when(applicationSettingService.getAppSetting(ApplicationSettings.Setting.PAYMENT_AUTH_CODE))
+                .thenReturn(Optional.of(new ApplicationSettings(ApplicationSettings.Setting.PAYMENT_AUTH_CODE,
+                    "AuthCode321")));
+
+            when(juror.getName()).thenReturn("Jurorname asd");
+            when(courtLocation.getCostCentre()).thenReturn("costCenter312");
+
+            PaymentData paymentData = jurorExpenseService.createAndSavePaymentDataWhereApplicable(
+                TestConstants.VALID_JUROR_NUMBER,
+                courtLocation,
+                List.of(appearance1, appearance2)
+            );
+            assertNull(paymentData);
+            verify(paymentDataRepository, never()).save(any());
         }
 
         @Test
@@ -3161,7 +3207,7 @@ class JurorExpenseServiceTest {
             when(applicationSettingService.getAppSetting(ApplicationSettings.Setting.PAYMENT_AUTH_CODE))
                 .thenReturn(Optional.empty());
             MojException.InternalServerError exception = assertThrows(MojException.InternalServerError.class,
-                () -> jurorExpenseService.createPaymentData(
+                () -> jurorExpenseService.createAndSavePaymentDataWhereApplicable(
                     TestConstants.VALID_JUROR_NUMBER,
                     courtLocation,
                     List.of(appearance1)

@@ -418,7 +418,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
         applyToAll(appearanceRepository
             .findByCourtLocationLocCodeAndJurorNumberAndIsDraftExpenseTrueAndAppearanceStageIn(
-            locCode, jurorNumber, Set.of(AppearanceStage.EXPENSE_ENTERED)), request);
+                locCode, jurorNumber, Set.of(AppearanceStage.EXPENSE_ENTERED)), request);
         return new DailyExpenseResponse();
     }
 
@@ -1093,11 +1093,10 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 "User cannot approve expenses over " + BigDecimalUtils.currencyFormat(userLimit),
                 CAN_NOT_APPROVE_MORE_THAN_LIMIT);
         }
-        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository,dto.getJurorNumber(),
+        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, dto.getJurorNumber(),
             SecurityUtil.getActiveOwner());
         if (!PaymentMethod.CASH.equals(paymentMethod)) {
-            paymentDataRepository.save(createPaymentData(dto.getJurorNumber(),
-                jurorPool.getCourt(), appearances));
+            createAndSavePaymentDataWhereApplicable(dto.getJurorNumber(), jurorPool.getCourt(), appearances);
         }
         appearances.forEach(this::approveAppearance);
         saveAppearancesWithExpenseRateIdUpdate(appearances);
@@ -1147,8 +1146,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     }
 
 
-    PaymentData createPaymentData(String jurorNumber, CourtLocation courtLocation,
-                                  List<Appearance> appearances) {
+    PaymentData createAndSavePaymentDataWhereApplicable(String jurorNumber, CourtLocation courtLocation,
+                                                        List<Appearance> appearances) {
         Juror juror = getJuror(jurorNumber);
 
         BigDecimal travelTotal = appearances.stream()
@@ -1186,13 +1185,18 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         } else {
             substanceTotal = substanceTotal.add(smartCard.abs());
         }
+        final BigDecimal expenseTotal = travelTotal
+            .add(substanceTotal)
+            .add(financialLossTotal);
 
-        return PaymentData.builder()
+        if (BigDecimalUtils.isLessThanOrEqualTo(expenseTotal, BigDecimal.ZERO)) {
+            return null;
+        }
+
+        return paymentDataRepository.save(PaymentData.builder()
             .courtLocation(courtLocation)
             .creationDateTime(LocalDateTime.now())
-            .expenseTotal(travelTotal
-                .add(substanceTotal)
-                .add(financialLossTotal))
+            .expenseTotal(expenseTotal)
             .jurorNumber(jurorNumber)
             .bankSortCode(juror.getSortCode())
             .bankAccountName(juror.getBankAccountName())
@@ -1216,7 +1220,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             .subsistenceTotal(substanceTotal)
             .financialLossTotal(financialLossTotal)
             .expenseFileName(null)
-            .build();
+            .build());
     }
 
     Juror getJuror(String jurorNumber) {
