@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.service.summonsmanagement;
 
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -35,19 +34,11 @@ import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.hasValueChanged;
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class JurorResponseServiceImpl implements JurorResponseService {
 
-
-    @NonNull
     private final JurorPoolRepository jurorPoolRepository;
-
-    @NonNull
     private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
-    private final JurorCommonResponseRepositoryMod jurorCommonResponseRepository;
-
-    @NonNull
-    private JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository;
-
-    @NonNull
+    private final JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository;
     private final StraightThroughProcessorService straightThroughProcessorService;
+    private final JurorCommonResponseRepositoryMod jurorCommonResponseRepository;
 
     @Override
     @Transactional
@@ -90,11 +81,16 @@ public class JurorResponseServiceImpl implements JurorResponseService {
 
     @Override
     public JurorCommonResponseRepositoryMod.AbstractResponse getCommonJurorResponse(String jurorNumber) {
-        return Optional.ofNullable(jurorCommonResponseRepository.findByJurorNumber(jurorNumber))
+        return getCommonJurorResponseOptional(jurorNumber)
             .orElseThrow(() -> new MojException.NotFound("Juror response not found for juror number: " + jurorNumber,
                 null));
     }
 
+    @Override
+    public Optional<JurorCommonResponseRepositoryMod.AbstractResponse> getCommonJurorResponseOptional(
+        String jurorNumber) {
+        return Optional.ofNullable(jurorCommonResponseRepository.findByJurorNumber(jurorNumber));
+    }
 
     private boolean hasSummonsReplyDataChanged(AbstractJurorResponse jurorResponse,
                                                JurorPersonalDetailsDto jurorPersonalDetailsDto) {
@@ -236,7 +232,7 @@ public class JurorResponseServiceImpl implements JurorResponseService {
     }
 
     private void processStraightThroughResponse(AbstractJurorResponse jurorResponse,
-        JurorPool jurorPool, BureauJwtPayload payload) {
+                                                JurorPool jurorPool, BureauJwtPayload payload) {
         log.debug(String.format("Juror: %s. Enter juror processStraightThroughResponse", jurorPool.getJurorNumber()));
         LocalDate poolRequestReturnDate = jurorPool.getPool().getReturnDate();
 

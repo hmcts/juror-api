@@ -4,6 +4,8 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPersonalDetailsDto;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorCommonResponseRepositoryMod;
 
+import java.util.Optional;
+
 public interface JurorResponseService {
     String TITLE = "title";
     String FIRSTNAME = "first name";
@@ -28,6 +30,7 @@ public interface JurorResponseService {
     void updateJurorPersonalDetails(BureauJwtPayload payload, JurorPersonalDetailsDto jurorPersonalDetailsDto,
                                     String jurorNumber);
 
+    Optional<JurorCommonResponseRepositoryMod.AbstractResponse> getCommonJurorResponseOptional(String jurorNumber);
 
     JurorCommonResponseRepositoryMod.AbstractResponse getCommonJurorResponse(String jurorNumber);
 }

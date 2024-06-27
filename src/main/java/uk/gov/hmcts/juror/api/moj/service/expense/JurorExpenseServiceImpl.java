@@ -416,8 +416,9 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             return updateExpenseInternal(appearance, request);
         }
 
-        applyToAll(appearanceRepository.findByCourtLocationLocCodeAndJurorNumberAndIsDraftExpenseTrue(
-            locCode, jurorNumber), request);
+        applyToAll(appearanceRepository
+            .findByCourtLocationLocCodeAndJurorNumberAndIsDraftExpenseTrueAndAppearanceStageIn(
+            locCode, jurorNumber, Set.of(AppearanceStage.EXPENSE_ENTERED)), request);
         return new DailyExpenseResponse();
     }
 

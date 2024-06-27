@@ -42,6 +42,9 @@ public interface JurorPoolRepository extends IJurorPoolRepository, JpaRepository
 
     JurorPool findByJurorJurorNumberAndStatusAndIsActive(String jurorNumber, JurorStatus status, boolean isActive);
 
+    Optional<JurorPool> findByJurorJurorNumberAndStatusStatusAndIsActive(String jurorNumber, int status,
+                                                                        boolean isActive);
+
     JurorPool findByJurorJurorNumberAndPoolPoolNumberAndStatus(String jurorNumber, String poolNumber,
                                                                JurorStatus status);
 
