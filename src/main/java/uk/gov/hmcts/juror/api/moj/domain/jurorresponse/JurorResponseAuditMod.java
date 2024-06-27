@@ -2,15 +2,17 @@ package uk.gov.hmcts.juror.api.moj.domain.jurorresponse;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
-import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAudit;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 
 import java.time.LocalDateTime;
@@ -19,7 +21,7 @@ import java.time.LocalDateTime;
 @Table(name = "juror_response_aud", schema = "juror_mod")
 @Data
 @Qualifier("NewJurorResponseAudit")
-@IdClass(JurorResponseAudit.class)
+@IdClass(JurorResponseAuditModKey.class)
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -37,9 +39,15 @@ public class JurorResponseAuditMod {
     private String login;
 
     @Column(name = "old_processing_status")
+    @Enumerated(EnumType.STRING)
     private ProcessingStatus oldProcessingStatus;
 
     @Column(name = "new_processing_status")
+    @Enumerated(EnumType.STRING)
     private ProcessingStatus newProcessingStatus;
 
+    @PrePersist
+    void prePersist() {
+        this.changed = LocalDateTime.now();
+    }
 }
