@@ -70,7 +70,6 @@ public class PendingJuror extends Address implements Serializable {
     private String lastName;
 
     @Column(name = "dob")
-    @NotNull
     @LocalDateOfBirth
     private LocalDate dateOfBirth;
 
