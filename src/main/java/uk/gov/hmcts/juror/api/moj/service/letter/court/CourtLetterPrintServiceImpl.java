@@ -190,15 +190,15 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
 
                 if (DEFERRAL_GRANTED.equals(printLettersRequestDto.getLetterType())) {
                     jurorHistory.historyCode(HistoryCodeMod.DEFERRED_LETTER);
-                    jurorHistory.otherInformation("Reissued deferral letter");
+                    jurorHistory.otherInformation("Print deferral letter");
                 } else {
                     jurorHistory.historyCode(HistoryCodeMod.POSTPONED_LETTER);
-                    jurorHistory.otherInformation("Reissued postponed letter");
+                    jurorHistory.otherInformation("Print postponed letter");
                 }
             }
             case EXCUSAL_GRANTED -> {
                 jurorHistory.historyCode(HistoryCodeMod.EXCUSED_LETTER);
-                jurorHistory.otherInformation("Reissued excusal letter");
+                jurorHistory.otherInformation("Print excusal letter");
                 jurorHistory.otherInformationRef(data.get(JUROR.excusalCode));
                 jurorHistory.otherInformationDate(data.get(JUROR.excusalDate));
             }
@@ -209,13 +209,13 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
             }
             case WITHDRAWAL -> {
                 jurorHistory.historyCode(HistoryCodeMod.WITHDRAWAL_LETTER);
-                jurorHistory.otherInformation("Reissued withdrawal letter");
+                jurorHistory.otherInformation("Print withdrawal letter");
                 jurorHistory.otherInformationRef(data.get(JUROR.disqualifyCode));
                 jurorHistory.otherInformationDate(data.get(JUROR.disqualifyDate));
             }
             case EXCUSAL_REFUSED -> {
                 jurorHistory.historyCode(HistoryCodeMod.NON_EXCUSED_LETTER);
-                jurorHistory.otherInformation("Reissued excusal denied letter");
+                jurorHistory.otherInformation("Print excusal denied letter");
                 jurorHistory.otherInformationRef(data.get(JUROR_POOL.juror.excusalCode));
                 jurorHistory.otherInformationDate(data.get(JUROR_POOL.juror.excusalDate));
             }
