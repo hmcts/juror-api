@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.factory.annotation.Autowired;
-import uk.gov.hmcts.juror.api.bureau.service.ResponseExcusalService;
+import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PendingJurorRepository;
@@ -45,9 +45,9 @@ public class JurorSummonsReplyResponseDto {
     @Autowired
     public JurorSummonsReplyResponseDto(JurorPool jurorPool,
                                         JurorStatusRepository jurorStatusRepository,
-                                        ResponseExcusalService responseExcusalService,
+                                        WelshCourtLocationRepository welshCourtLocationRepository,
                                         PendingJurorRepository pendingJurorRepository) {
         this.commonDetails = new JurorDetailsCommonResponseDto(jurorPool, jurorStatusRepository,
-            pendingJurorRepository);
+            pendingJurorRepository, welshCourtLocationRepository);
     }
 }

@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.factory.annotation.Autowired;
-import uk.gov.hmcts.juror.api.bureau.service.ResponseExcusalService;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
+import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
@@ -122,13 +122,13 @@ public class JurorDetailsResponseDto {
     @Autowired
     public JurorDetailsResponseDto(JurorPool jurorPool,
                                    JurorStatusRepository jurorStatusRepository,
-                                   ResponseExcusalService responseExcusalService,
+                                   WelshCourtLocationRepository welshCourtLocationRepository,
                                    PendingJurorRepository pendingJurorRepository) {
 
         Juror juror = jurorPool.getJuror();
 
         this.commonDetails = new JurorDetailsCommonResponseDto(jurorPool, jurorStatusRepository,
-            pendingJurorRepository);
+            pendingJurorRepository, welshCourtLocationRepository);
 
         this.dateOfBirth = juror.getDateOfBirth();
 
@@ -163,7 +163,6 @@ public class JurorDetailsResponseDto {
      * if we have two numbers, mobile and either home/work, use mobile as primary and the other as secondary
      * if we have two numbers, home and work, use home as primary and work as secondary
      * otherwise we have just one number and use that as primary.
-     *
      */
     private void setPhoneNumbers(String homePhone, String mobilePhone, String workPhone) {
 
