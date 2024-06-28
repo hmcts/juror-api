@@ -413,7 +413,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     private JurorOverviewResponseDto getJurorOverviewResponseDto(JurorPool jurorPool) {
         return new JurorOverviewResponseDto(jurorPool,
-            jurorStatusRepository, panelRepository, appearanceRepository, pendingJurorRepository,welshCourtLocationRepository);
+            jurorStatusRepository, panelRepository, appearanceRepository,
+            pendingJurorRepository, welshCourtLocationRepository);
     }
 
     @Override
