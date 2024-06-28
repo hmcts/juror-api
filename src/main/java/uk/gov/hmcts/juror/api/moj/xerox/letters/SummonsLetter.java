@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.xerox.letters;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.xerox.LetterBase;
 
@@ -28,6 +29,16 @@ public class SummonsLetter extends LetterBase {
             .bureauLocation(bureauLocation)
             .build());
     }
+
+    @Override
+    protected void setup(Juror juror) {
+        if (ContextType.WELSH_COURT_LOCATION.validate(letterContext)) {
+            setupWelsh();
+        } else {
+            setupEnglish();
+        }
+    }
+
 
     @Override
     protected void setupWelsh() {

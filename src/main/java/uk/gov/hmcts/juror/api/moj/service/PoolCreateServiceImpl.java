@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocation;
+import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.CoronerPoolAddCitizenRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.CoronerPoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.NilPoolRequestDto;
@@ -124,6 +126,9 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     private final CoronerPoolDetailRepository coronerPoolDetailRepository;
     @NonNull
     private final CoronerPoolRepository coronerPoolRepository;
+
+    @NonNull
+    private final WelshCourtLocationRepository welshCourtLocationRepository;
 
     @Override
     public PoolRequestItemDto getPoolRequest(String poolNumber, String owner) {
@@ -517,6 +522,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         juror.setDateOfBirth(voter.getDateOfBirth());
         juror.setResponded(false);
         juror.setContactPreference(null);
+
         jurorPool.setIsActive(true);
 
         // pool sequence
