@@ -30,7 +30,7 @@ import static java.lang.String.format;
 @Slf4j
 public class LetterBase {
 
-    private final LetterContext letterContext;
+    protected final LetterContext letterContext;
     @Getter
     final List<LetterData> data;
     @Setter
@@ -228,7 +228,7 @@ public class LetterBase {
     }
 
 
-    private enum ContextType {
+    protected enum ContextType {
         JUROR_POOL(context -> context.getJurorPool() != null),
         COURT_LOCATION(context -> context.getCourtLocation() != null),
         BUREAU_LOCATION(context -> context.getBureauLocation() != null),

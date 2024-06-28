@@ -517,6 +517,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         juror.setDateOfBirth(voter.getDateOfBirth());
         juror.setResponded(false);
         juror.setContactPreference(null);
+
         jurorPool.setIsActive(true);
 
         // pool sequence
