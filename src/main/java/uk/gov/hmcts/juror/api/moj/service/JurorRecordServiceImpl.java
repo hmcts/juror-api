@@ -22,6 +22,7 @@ import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.ConfirmIdentityDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ContactLogRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.EditJurorRecordRequestDto;
@@ -185,6 +186,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     private final UserServiceModImpl userServiceModImpl;
     private final PanelRepository panelRepository;
     private final HistoryTemplateService historyTemplateService;
+    private final WelshCourtLocationRepository welshCourtLocationRepository;
 
     @Override
     @Transactional
@@ -314,7 +316,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         DigitalResponse jurorResponse = jurorResponseRepository.findByJurorNumber(jurorNumber);
         JurorDetailsResponseDto jurorDetailsResponseDto = new JurorDetailsResponseDto(jurorPool,
-            jurorStatusRepository, responseExcusalService, pendingJurorRepository);
+            jurorStatusRepository, welshCourtLocationRepository, pendingJurorRepository);
 
         // need to send reply method and status so front end can determine if edit should be from response or juror
         // record
@@ -408,7 +410,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     private JurorOverviewResponseDto getJurorOverviewResponseDto(JurorPool jurorPool) {
         return new JurorOverviewResponseDto(jurorPool,
-            jurorStatusRepository, panelRepository, appearanceRepository, pendingJurorRepository);
+            jurorStatusRepository, panelRepository, appearanceRepository,
+            pendingJurorRepository, welshCourtLocationRepository);
     }
 
     @Override
@@ -722,7 +725,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         }
 
         return new ContactLogListDto(contactLogDataList, new JurorDetailsCommonResponseDto(jurorPool,
-            jurorStatusRepository, pendingJurorRepository));
+            jurorStatusRepository, pendingJurorRepository, welshCourtLocationRepository));
     }
 
     /**
@@ -784,7 +787,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         Juror juror = jurorPool.getJuror();
 
         return new JurorNotesDto(juror.getNotes(), new JurorDetailsCommonResponseDto(jurorPool, jurorStatusRepository,
-            pendingJurorRepository));
+            pendingJurorRepository, welshCourtLocationRepository));
     }
 
     @Override
@@ -924,7 +927,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             && juror.getSummonsFile() != null
             && juror.getSummonsFile().equals("Disq. on selection")) {
             //return just the common details
-            return new JurorSummonsReplyResponseDto(jurorPool, jurorStatusRepository, responseExcusalService,
+            return new JurorSummonsReplyResponseDto(jurorPool, jurorStatusRepository, welshCourtLocationRepository,
                 pendingJurorRepository);
         }
 
@@ -936,13 +939,13 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         if (Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.SUMMONED)
             && jurorResponse == null && jurorPaperResponse == null) {
-            return new JurorSummonsReplyResponseDto(jurorPool, jurorStatusRepository, responseExcusalService,
+            return new JurorSummonsReplyResponseDto(jurorPool, jurorStatusRepository, welshCourtLocationRepository,
                 pendingJurorRepository);
         }
 
         if (jurorResponse != null) {
             JurorSummonsReplyResponseDto jurorSummonsReplyResponseDto = new JurorSummonsReplyResponseDto(jurorPool,
-                jurorStatusRepository, responseExcusalService, pendingJurorRepository);
+                jurorStatusRepository, welshCourtLocationRepository, pendingJurorRepository);
             jurorSummonsReplyResponseDto.setReplyMethod(REPLY_METHOD_ONLINE);
             jurorSummonsReplyResponseDto.setReplyDate(jurorResponse.getDateReceived().toLocalDate());
             jurorSummonsReplyResponseDto.setReplyStatus(jurorResponse.getProcessingStatus().getDescription());
@@ -951,7 +954,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         if (jurorPaperResponse != null) {
             JurorSummonsReplyResponseDto jurorSummonsReplyResponseDto = new JurorSummonsReplyResponseDto(jurorPool,
-                jurorStatusRepository, responseExcusalService, pendingJurorRepository);
+                jurorStatusRepository, welshCourtLocationRepository, pendingJurorRepository);
             jurorSummonsReplyResponseDto.setReplyMethod(REPLY_METHOD_PAPER);
             jurorSummonsReplyResponseDto.setReplyDate(jurorPaperResponse.getDateReceived().toLocalDate());
             jurorSummonsReplyResponseDto.setReplyStatus(jurorPaperResponse.getProcessingStatus().getDescription());
@@ -971,7 +974,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
             if (!jurorHistFiltered.isEmpty()) {
                 JurorSummonsReplyResponseDto jurorSummonsReplyResponseDto =
-                    new JurorSummonsReplyResponseDto(jurorPool, jurorStatusRepository, responseExcusalService,
+                    new JurorSummonsReplyResponseDto(jurorPool, jurorStatusRepository, welshCourtLocationRepository,
                         pendingJurorRepository);
                 jurorSummonsReplyResponseDto.setReplyMethod(REPLY_METHOD_PAPER);
                 return jurorSummonsReplyResponseDto;
@@ -980,7 +983,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         //send the default response
         JurorSummonsReplyResponseDto jurorSummonsReplyResponseDto = new JurorSummonsReplyResponseDto(jurorPool,
-            jurorStatusRepository, responseExcusalService, pendingJurorRepository);
+            jurorStatusRepository, welshCourtLocationRepository, pendingJurorRepository);
 
         jurorSummonsReplyResponseDto.setReplyMethod(REPLY_METHOD_NOT_AVAILABLE);
         return jurorSummonsReplyResponseDto;

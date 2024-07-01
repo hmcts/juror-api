@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.factory.annotation.Autowired;
+import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
@@ -80,6 +81,9 @@ public class JurorDetailsCommonResponseDto {
     @Schema(name = "Court name", description = "Name of court Juror will attend")
     private String courtName;
 
+    @JsonProperty("is_welsh_court")
+    private boolean isWelshCourt;
+
     @JsonProperty("excusalRejected")
     @Schema(name = "Excusal Rejected flag", description = "Flag to indicate if an excusal was rejected for juror")
     private String excusalRejected;
@@ -143,7 +147,8 @@ public class JurorDetailsCommonResponseDto {
     @Autowired
     public JurorDetailsCommonResponseDto(JurorPool jurorPool,
                                          JurorStatusRepository jurorStatusRepository,
-                                         PendingJurorRepository pendingJurorRepository) {
+                                         PendingJurorRepository pendingJurorRepository,
+                                         WelshCourtLocationRepository welshCourtLocationRepository) {
         Juror juror = jurorPool.getJuror();
         this.owner = jurorPool.getOwner();
         this.title = juror.getTitle();
@@ -160,6 +165,8 @@ public class JurorDetailsCommonResponseDto {
         this.deferralCode = jurorPool.getDeferralCode();
         this.disqualifyCode = juror.getDisqualifyCode();
         this.courtName = jurorPool.getCourt().getLocCourtName();
+        this.isWelshCourt =
+            welshCourtLocationRepository.existsByLocCode(jurorPool.getCourt().getLocCode());
         this.hasSummonsResponse = juror.getJurorResponse() != null;
 
         if (this.excusalCode != null) {

@@ -28,6 +28,7 @@ import uk.gov.hmcts.juror.api.bureau.service.ResponseExcusalService;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
+import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.ConfirmIdentityDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ContactLogRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.EditJurorRecordRequestDto;
@@ -166,6 +167,8 @@ class JurorRecordServiceTest {
     private PanelRepository panelRepository;
     @Mock
     private HistoryTemplateService historyTemplateService;
+    @Mock
+    private WelshCourtLocationRepository welshCourtLocationRepository;
     @Mock
     private JurorRepository jurorRepository;
     @Mock
