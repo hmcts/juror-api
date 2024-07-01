@@ -31,11 +31,6 @@ public class JurorCommsWeeklyInfoServiceImplTest {
 
     private static final String JUROR_TITLE = "JT";
 
-    private JurorPool pool1;
-    private JurorPool pool2;
-
-    private Juror juror1;
-    private Juror juror2;
     List<JurorPool> poolList = new LinkedList<>();
 
     @Mock
@@ -50,8 +45,8 @@ public class JurorCommsWeeklyInfoServiceImplTest {
     @Before
     public void setUp() throws Exception {
 
-        pool1 = new  JurorPool();
-        juror1 = new Juror();
+        JurorPool pool1 = new JurorPool();
+        Juror juror1 = new Juror();
         pool1.setJuror(juror1);
         juror1.setJurorNumber("987654321");
         juror1.setFirstName("Farah");
@@ -62,8 +57,8 @@ public class JurorCommsWeeklyInfoServiceImplTest {
         juror1.setPoliceCheck(PoliceCheck.ELIGIBLE);
         pool1.setNextDate(LocalDateTime.now().plusDays(20L).toLocalDate());
 
-        pool2 = new  JurorPool();
-        juror2 = new Juror();
+        JurorPool pool2 = new JurorPool();
+        Juror juror2 = new Juror();
         pool2.setJuror(juror2);
         juror2.setTitle(JUROR_TITLE);
         juror2.setJurorNumber("123456789");
