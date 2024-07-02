@@ -7,7 +7,7 @@ import java.util.List;
 
 public class PostgresqlContainer extends PostgreSQLContainer<PostgresqlContainer> {
 
-    private static final String IMAGE_VERSION = "postgres:16-alpine";
+    private static final String IMAGE_VERSION = "hmctspublic.azurecr.io/imported/bitnami/postgresql:16";
     private static PostgresqlContainer container;
 
     private PostgresqlContainer() {
