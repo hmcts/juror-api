@@ -2,16 +2,19 @@ package uk.gov.hmcts.juror.api.testsupport;
 
 import org.flywaydb.core.Flyway;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import java.util.List;
 
 public class PostgresqlContainer extends PostgreSQLContainer<PostgresqlContainer> {
-
-    private static final String IMAGE_VERSION = "hmctspublic.azurecr.io/imported/bitnami/postgresql:16";
+    
+    private static DockerImageName imageName = DockerImageName
+        .parse("hmctspublic.azurecr.io/imported/bitnami/postgresql:16")
+        .asCompatibleSubstituteFor("postgres");
     private static PostgresqlContainer container;
 
     private PostgresqlContainer() {
-        super(IMAGE_VERSION);
+        super(imageName);
         setup();
     }
 
