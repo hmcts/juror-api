@@ -11,6 +11,7 @@ import org.hibernate.validator.constraints.Length;
 @Table(name = "REQUEST_LETT", schema = "JUROR_DIGITAL_USER")
 @Getter
 @Setter
+@Deprecated(forRemoval = true)
 public class RequestLetter extends Letter {
     @Column(name = "REQ_INFO")
     @Length(max = 210)

@@ -18,9 +18,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
-import uk.gov.hmcts.juror.api.moj.domain.letter.DisqualificationLetterMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
-import uk.gov.hmcts.juror.api.moj.repository.DisqualifyLetterModRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
@@ -28,6 +26,7 @@ import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
+import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
@@ -52,11 +51,11 @@ public class StraightThroughProcessorImpl implements StraightThroughProcessor {
 
     private final JurorResponseAuditRepositoryMod jurorResponseAuditRepositoryMod;
 
-    private final DisqualifyLetterModRepository disqualifyLetterModRepository;
     private final UserRepository userRepository;
     private final ResponseInspector responseInspector;
     private final JurorStatusRepository jurorStatusRepository;
     private final JurorHistoryService jurorHistoryService;
+    private final PrintDataService printDataService;
 
     private static final String THIRD_PARTY_REASON_DECEASED = "deceased";
     private static final String MESSAGE = "Urgent response does not qualify for straight-through";
@@ -505,13 +504,7 @@ public class StraightThroughProcessorImpl implements StraightThroughProcessor {
             jurorHistoryService.createWithdrawHistory(jurorDetails,null,"A");
 
             // disq_lett table entry
-            DisqualificationLetterMod disqualificationLetter = new DisqualificationLetterMod();
-            disqualificationLetter.setOwner(jurorDetails.getOwner());
-            disqualificationLetter.setJurorNumber(savedDigitalResponse.getJurorNumber());
-            disqualificationLetter.setDisqCode(DisCode.AGE);
-            disqualificationLetter.setDateDisq(LocalDate.now());
-
-            disqualifyLetterModRepository.save(disqualificationLetter);
+            printDataService.printWithdrawalLetter(jurorDetails);
 
         } catch (StraightThroughProcessingServiceException.AgeExcusal stpse) {
             // log and rethrow that the response cannot be processed as a straight through.

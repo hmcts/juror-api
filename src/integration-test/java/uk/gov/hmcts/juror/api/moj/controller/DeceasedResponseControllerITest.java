@@ -59,10 +59,8 @@ public class DeceasedResponseControllerITest extends AbstractIntegrationTest {
     @Autowired
     private JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
 
-    @Override
     @Before
     public void setUp() throws Exception {
-        super.setUp();
         initHeaders();
 
     }

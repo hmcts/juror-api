@@ -7,7 +7,6 @@ import uk.gov.hmcts.juror.api.moj.domain.ExcusalCode;
  * Excusal Codes domain.
  */
 @Repository
-@Deprecated(forRemoval = true)
 public interface ExcusalCodeRepository extends ReadOnlyRepository<ExcusalCode, String> {
 
 }

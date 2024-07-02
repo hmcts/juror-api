@@ -4,12 +4,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -46,11 +43,6 @@ public class BureauJurorSpecialNeed implements Serializable {
         @Pattern(regexp = NO_PIPES_REGEX)
     })
     private String jurorNumber;
-
-    @ManyToOne
-    @NotNull
-    @JoinColumn(name = "SPEC_NEED")
-    private TSpecial specialNeed;
 
     @NotEmpty
     @Length(max = 1000)

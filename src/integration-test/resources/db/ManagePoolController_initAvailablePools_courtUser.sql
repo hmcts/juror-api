@@ -14,8 +14,6 @@ delete from juror_mod.juror_pool;
 delete from juror_mod.juror;
 delete from juror_mod.pool;
 
--- Clear Cert Letter
-delete from juror.cert_lett;
 
 INSERT INTO JUROR_MOD.POOL (OWNER, POOL_NO, ATTEND_TIME, LAST_UPDATE, LOC_CODE, NEW_REQUEST, RETURN_DATE, POOL_TYPE, TOTAL_NO_REQUIRED, NO_REQUESTED, ADDITIONAL_SUMMONS)
 VALUES('404', '404220506', TIMESTAMP '2023-06-23 13:31:06.000000', CURRENT_DATE,'404', 'N', TIMESTAMP '2023-07-04 13:31:06.000000', 'CRO', 4, 4, NULL);

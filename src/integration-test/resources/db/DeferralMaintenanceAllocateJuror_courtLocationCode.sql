@@ -1,7 +1,6 @@
 delete from juror_mod.pool_history;
 DELETE FROM juror_mod.juror_history;
 DELETE FROM juror_mod.juror_audit;
-delete from juror_digital.staff;
 
 -- Create pool request records associated with juror records
 delete from juror_mod.pool_comments;

@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.bureau.service;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +13,6 @@ import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffDetailDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffListDto;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 
@@ -37,16 +35,8 @@ public class UserServiceImplIntegrationTest extends AbstractIntegrationTest {
     private UserService userService;
 
     @Autowired
-    private JurorResponseRepository jurorResponseRepository;
-
-    @Autowired
     private JurorDigitalResponseRepositoryMod jurorDigitalResponseRepositoryMod;
 
-    @Override
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
-    }
 
     @Test
     @Sql("/db/truncate.sql")

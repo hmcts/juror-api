@@ -70,10 +70,8 @@ public class UserControllerITest extends AbstractIntegrationTest {
     private final PlatformTransactionManager transactionManager;
     private TransactionTemplate transactionTemplate;
 
-    @Override
     @BeforeEach
     public void setUp() throws Exception {
-        super.setUp();
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         httpHeaders.set(HttpHeaders.AUTHORIZATION, createHmacJwt());

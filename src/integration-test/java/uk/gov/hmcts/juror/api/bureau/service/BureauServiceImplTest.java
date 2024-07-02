@@ -11,7 +11,7 @@ import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseSummaryDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseSummaryWrapper;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetail;
+import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
 
 import java.util.Comparator;
 
@@ -28,19 +28,17 @@ public class BureauServiceImplTest extends AbstractIntegrationTest {
     @Autowired
     private BureauService bureauService;
 
-    private BureauJurorDetail bureauJurorDetail;
+    private ModJurorDetail modJurorDetail;
 
-    @Override
     @Before
     public void setUp() throws Exception {
-        super.setUp();
-        bureauJurorDetail = new BureauJurorDetail();
-        bureauJurorDetail.setJurorNumber("209092530");
-        bureauJurorDetail.setTitle("Dr");
-        bureauJurorDetail.setFirstName("Jane");
-        bureauJurorDetail.setLastName("CASTILLO");
-        bureauJurorDetail.setProcessingStatus("TODO");
-        bureauJurorDetail.setCourtName("PRESTON");
+        modJurorDetail = new ModJurorDetail();
+        modJurorDetail.setJurorNumber("209092530");
+        modJurorDetail.setTitle("Dr");
+        modJurorDetail.setFirstName("Jane");
+        modJurorDetail.setLastName("CASTILLO");
+        modJurorDetail.setProcessingStatus("TODO");
+        modJurorDetail.setCourtName("PRESTON");
     }
 
     @Test
@@ -49,12 +47,12 @@ public class BureauServiceImplTest extends AbstractIntegrationTest {
     @Sql("/db/standing_data.sql")
     @Sql("/db/BureauRepository_findByJurorNumber.sql")
     public void testGDetailsByJurorNumber_WithValidJurorNumber_ReturnsJustJurorDetailsNotEnriched() {
-        BureauJurorDetailDto actualDetails = bureauService.getDetailsByJurorNumber(bureauJurorDetail.getJurorNumber());
+        BureauJurorDetailDto actualDetails = bureauService.getDetailsByJurorNumber(modJurorDetail.getJurorNumber());
         assertThat(actualDetails).extracting("jurorNumber", "title", "firstName", "lastName", "processingStatus",
                 "courtName")
-            .contains(bureauJurorDetail.getJurorNumber(), bureauJurorDetail.getTitle(),
-                bureauJurorDetail.getFirstName(), bureauJurorDetail.getLastName(),
-                bureauJurorDetail.getProcessingStatus(), bureauJurorDetail.getCourtName());
+            .contains(modJurorDetail.getJurorNumber(), modJurorDetail.getTitle(),
+                modJurorDetail.getFirstName(), modJurorDetail.getLastName(),
+                modJurorDetail.getProcessingStatus(), modJurorDetail.getCourtName());
     }
 
     @Test
@@ -66,16 +64,16 @@ public class BureauServiceImplTest extends AbstractIntegrationTest {
     @Sql("/db/BureauJurorSpecialNeedsRepository_findByJurorNumber.sql")
     @Sql("/db/BureauJurorCJSRepository_findByCjsKey.sql")
     public void testGDetailsByJurorNumber_WithValidJurorNumber_ReturnsEnrichedDetails() {
-        BureauJurorDetailDto actualDetails = bureauService.getDetailsByJurorNumber(bureauJurorDetail.getJurorNumber());
-        assertThat(actualDetails.getPhoneLogs()).hasSize(2);
+        BureauJurorDetailDto actualDetails = bureauService.getDetailsByJurorNumber(modJurorDetail.getJurorNumber());
+        assertThat(actualDetails.getPhoneLogs()).hasSize(3);
         assertThat(actualDetails.getPhoneLogs().get(0)).extracting("jurorNumber")
-            .isEqualTo(bureauJurorDetail.getJurorNumber());
+            .isEqualTo(modJurorDetail.getJurorNumber());
         assertThat(actualDetails.getCjsEmployments()).hasSize(1);
         assertThat(actualDetails.getCjsEmployments().get(0)).extracting("jurorNumber")
-            .isEqualTo(bureauJurorDetail.getJurorNumber());
+            .isEqualTo(modJurorDetail.getJurorNumber());
         assertThat(actualDetails.getSpecialNeeds()).hasSize(1);
         assertThat(actualDetails.getSpecialNeeds().get(0)).extracting("jurorNumber")
-            .isEqualTo(bureauJurorDetail.getJurorNumber());
+            .isEqualTo(modJurorDetail.getJurorNumber());
     }
 
     @Test

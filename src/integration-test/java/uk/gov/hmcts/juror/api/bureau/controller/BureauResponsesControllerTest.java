@@ -54,10 +54,8 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     @Value("${jwt.secret.bureau}")
     private String bureauSecret;
 
-    @Override
     @Before
     public void setUp() throws Exception {
-        super.setUp();
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }

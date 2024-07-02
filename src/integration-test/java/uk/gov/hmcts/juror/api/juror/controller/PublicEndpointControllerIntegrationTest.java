@@ -80,10 +80,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     private int youngestJurorAgeAllowed;
     private int tooOldJurorAge;
 
-    @Override
     @Before
     public void setUp() throws Exception {
-        super.setUp();
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
@@ -582,8 +580,6 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             String.class)).isEqualTo(JurorDigitalApplication.AUTO_USER);
         assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_AUD",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_AMENDMENTS", Integer.class)).as(
-            "Only the DOB audits a change.").isEqualTo(1);
         assertNullExcusalDate();
 
         Mockito.verify(this.notificationClientApi).sendEmail(anyString(), anyString(), anyMap(), anyString());
@@ -1057,7 +1053,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 + "and other_info_reference='A' and juror_number='644892530'",
             Integer.class)).isEqualTo(1);
         assertThat(jdbcTemplate.queryForObject(
-            "select count(*) from JUROR.DISQ_LETT WHERE DISQ_CODE='A' and PART_NO='644892530'",
+            "select count(*) from juror_mod.bulk_print_data WHERE form_type in ('5224','5224C') "
+                + "and juror_no='644892530'",
             Integer.class)).isEqualTo(1);
     }
 
@@ -1233,7 +1230,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 + "Code A' and juror_number='644892530'",
             Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject(
-            "select count(*) from JUROR.DISQ_LETT WHERE DISQ_CODE='A' and PART_NO='644892530'",
+            "select count(*) from juror_mod.bulk_print_data WHERE juror_no='644892530' and form_type in ('5224',"
+                + "'5224C')",
             Integer.class)).isEqualTo(0);
     }
 
@@ -1413,7 +1411,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 + "Code A' and juror_number='644892530'",
             Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject(
-            "select count(*) from JUROR.DISQ_LETT WHERE DISQ_CODE='A' and PART_NO='644892530'",
+            "select count(*) from juror_mod.bulk_print_data WHERE form_type in ('5224','5224C') "
+                + "and juror_no='644892530'",
             Integer.class)).isEqualTo(0);
     }
 

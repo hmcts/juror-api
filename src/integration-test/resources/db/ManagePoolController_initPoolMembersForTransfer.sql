@@ -67,6 +67,3 @@ INSERT INTO juror_mod.juror_audit
 INSERT INTO juror_mod.contact_log
 (juror_number, user_id, start_call, enquiry_type, notes)
 VALUES('111111111', '415_COURT_USER', '2023-06-09', 'RC', 'Some Contact Log related notes');
-
--- Clear existing certificate of attendance letters
-DELETE FROM JUROR.CERT_LETT;

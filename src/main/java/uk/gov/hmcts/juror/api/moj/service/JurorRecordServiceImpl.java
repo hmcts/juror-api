@@ -53,7 +53,6 @@ import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorHistoryResponse
 import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorPaymentsResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.ContactCode;
-import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryType;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
 import uk.gov.hmcts.juror.api.moj.domain.FilterJurorRecord;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
@@ -86,7 +85,6 @@ import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactCodeRepository;
-import uk.gov.hmcts.juror.api.moj.repository.ContactEnquiryTypeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactLogRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorDetailRepositoryMod;
@@ -170,7 +168,6 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     private final CourtLocationService courtLocationService;
     private final ContactLogRepository contactLogRepository;
-    private final ContactEnquiryTypeRepository contactEnquiryTypeRepository;
     private final JurorDetailRepositoryMod jurorDetailRepositoryMod;
     private final BureauService bureauService;
     private final ResponseExcusalService responseExcusalService;
@@ -776,8 +773,9 @@ public class JurorRecordServiceImpl implements JurorRecordService {
      */
     @Override
     public ContactEnquiryTypeListDto getContactEnquiryTypes() {
-        List<ContactEnquiryType> enquiryTypes = new ArrayList<>();
-        contactEnquiryTypeRepository.findAll().forEach(enquiryTypes::add);
+        List<ContactEnquiryTypeListDto.ContactEnquiry> enquiryTypes = new ArrayList<>();
+        contactCodeRepository.findAll()
+            .forEach(code -> enquiryTypes.add(ContactEnquiryTypeListDto.ContactEnquiry.from(code)));
         return new ContactEnquiryTypeListDto(enquiryTypes);
     }
 

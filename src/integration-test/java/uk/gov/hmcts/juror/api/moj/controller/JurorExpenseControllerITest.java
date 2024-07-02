@@ -133,10 +133,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @Autowired
     private Clock clock;
 
-    @Override
     @BeforeEach
     public void setUp() throws Exception {
-        super.setUp();
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         transactionTemplate = new TransactionTemplate(transactionManager);

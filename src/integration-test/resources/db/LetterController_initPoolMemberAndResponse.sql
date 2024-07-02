@@ -4,11 +4,6 @@ DELETE FROM juror_mod.juror;
 DELETE FROM juror_mod.pool;
 DELETE FROM juror_mod.users;
 
-DELETE FROM JUROR_DIGITAL.PAPER_RESPONSE;
-DELETE FROM JUROR_DIGITAL.JUROR_RESPONSE;
-DELETE FROM JUROR.REQUEST_LETT;
-
-
 INSERT INTO juror_mod.pool
 (pool_no, "owner", return_date, total_no_required, no_requested, pool_type, loc_code, new_request)
 VALUES ('415220502', '400', CURRENT_DATE + interval '6 weeks', 14, 14, 'CRO', '415', 'N'),

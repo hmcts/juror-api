@@ -6,8 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
-import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAudit;
-import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAuditRepository;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.summonsmanagement.DisqualifyJurorDto;
@@ -17,6 +15,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
@@ -24,6 +23,7 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.AssignOnUpdateServiceMod;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
@@ -52,7 +52,7 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
     private final JurorPoolRepository jurorPoolRepository;
     private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
     private final JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository;
-    private final JurorResponseAuditRepository jurorResponseAuditRepository;
+    private final JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
     private final AssignOnUpdateServiceMod assignOnUpdateService;
     private final SummonsReplyMergeService summonsReplyMergeService;
     private final PrintDataService printDataService;
@@ -233,7 +233,7 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
         summonsReplyMergeService.mergeDigitalResponse(jurorResponse, officerUsername);
 
         //Create an audit entry to reflect a change to the digital response related to disqualification
-        jurorResponseAuditRepository.save(JurorResponseAudit.builder()
+        jurorResponseAuditRepository.save(JurorResponseAuditMod.builder()
             .jurorNumber(jurorResponse.getJurorNumber())
             .login(officerUsername)
             .oldProcessingStatus(oldProcessingStatus)

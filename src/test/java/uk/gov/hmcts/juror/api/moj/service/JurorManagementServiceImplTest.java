@@ -397,8 +397,6 @@ public class JurorManagementServiceImplTest {
         jurorStatus.setStatus(1);
         jurorStatus.setStatusDesc("Summoned");
 
-        List<JurorPool> poolMemberList = new ArrayList<>();
-
         when(poolRequestRepository.findByPoolNumber(anyString()))
             .thenReturn(Optional.of(new PoolRequest()));
         when(courtLocationRepository.findByLocCode(anyString()))

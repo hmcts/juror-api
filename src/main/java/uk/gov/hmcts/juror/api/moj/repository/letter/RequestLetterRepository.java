@@ -5,5 +5,6 @@ import uk.gov.hmcts.juror.api.moj.domain.letter.RequestLetter;
 import uk.gov.hmcts.juror.api.moj.repository.LetterRepository;
 
 @Repository
+@Deprecated(forRemoval = true)
 public interface RequestLetterRepository extends LetterRepository<RequestLetter> {
 }

@@ -1325,14 +1325,6 @@ public class StraightThroughProcessorServiceImplTest {
         return jurorPool;
     }
 
-    private PoolRequest mockPoolRequest(String poolNumber, String owner) {
-        PoolRequest mockPoolRequest = new PoolRequest();
-        mockPoolRequest.setPoolNumber(poolNumber);
-        mockPoolRequest.setOwner(owner);
-        mockPoolRequest.setReturnDate(LocalDate.now().plusWeeks(3));
-        return mockPoolRequest;
-    }
-
     private void setJurorPoolPersonalDetails(Juror juror) {
         juror.setTitle("Mr");
         juror.setFirstName("Test");

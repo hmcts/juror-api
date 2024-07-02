@@ -520,7 +520,6 @@ class PanelServiceImplTest {
     @Test
     void processEmpanelledNoAppearance() {
         final int totalPanelMembers = 10;
-        int totalUnusedJurors = 0;
         List<Panel> panelMembers = createPanelMembers(totalPanelMembers);
         BureauJwtPayload payload = buildPayload();
 
@@ -531,9 +530,6 @@ class PanelServiceImplTest {
             doReturn(Optional.empty()).when(appearanceRepository)
                 .findByJurorNumberAndAttendanceDateAndAppearanceStage(member.getJurorNumber(),
                     now(), AppearanceStage.CHECKED_IN);
-            if (member.getResult() != PanelResult.JUROR) {
-                totalUnusedJurors++;
-            }
         }
 
         doReturn(Optional.of(createTrial())).when(trialRepository).findByTrialNumberAndCourtLocationLocCode(anyString(),

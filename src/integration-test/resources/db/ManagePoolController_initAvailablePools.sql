@@ -14,7 +14,6 @@ delete from juror_mod.juror;
 delete from juror_mod.pool;
 
 -- Clear Confirm Letter
-delete from juror.confirm_lett;
 
 -- Pool 415220401 requested 2 jurors for 2023-05-30, 4 already supplied (2 surplus) - active with the bureau
 INSERT INTO JUROR_MOD.POOL (OWNER, POOL_NO, RETURN_DATE, TOTAL_NO_REQUIRED, NO_REQUESTED, POOL_TYPE, LOC_CODE, NEW_REQUEST, LAST_UPDATE)

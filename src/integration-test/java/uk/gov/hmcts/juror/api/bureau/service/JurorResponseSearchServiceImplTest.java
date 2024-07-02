@@ -1,7 +1,6 @@
 package uk.gov.hmcts.juror.api.bureau.service;
 
 import org.assertj.core.groups.Tuple;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,11 +37,6 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
     @Autowired
     private JurorResponseSearchService searchService;
 
-    @Override
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
-    }
 
     @Test
     @Sql("/db/truncate.sql")

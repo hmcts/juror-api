@@ -7,7 +7,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import uk.gov.hmcts.juror.api.bureau.domain.PartAmendmentRepository;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
@@ -47,8 +46,6 @@ public class ResponseStatusUpdateThirdPartyRulesTest {
     private JurorResponseAuditRepositoryMod auditRepository;
     @Mock
     private JurorPoolRepository poolDetailsRepository;
-    @Mock
-    private PartAmendmentRepository amendmentRepository;
     @Mock
     private JurorHistoryRepository historyRepository;
     @Mock

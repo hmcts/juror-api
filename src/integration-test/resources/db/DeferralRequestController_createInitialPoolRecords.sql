@@ -1,4 +1,3 @@
-delete from juror.def_denied;
 delete from juror_mod.juror_audit;
 delete from juror_mod.juror_history;
 delete from juror_mod.juror_pool;

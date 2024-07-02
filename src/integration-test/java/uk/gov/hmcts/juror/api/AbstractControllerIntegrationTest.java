@@ -63,7 +63,6 @@ public abstract class AbstractControllerIntegrationTest<P, R> extends AbstractIn
     }
 
     @BeforeEach
-    @Override
     public void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));

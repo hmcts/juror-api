@@ -51,10 +51,8 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
     private TestRestTemplate template;
     private HttpHeaders httpHeaders;
 
-    @Override
     @Before
     public void setUp() throws Exception {
-        super.setUp();
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
@@ -287,7 +285,7 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
             httpHeaders, HttpMethod.POST, uri);
 
         // there is no login counter for any user.
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL_USER.LOGIN_ATTEMPTS",
+        assertThat(jdbcTemplate.queryForObject("select sum(login_attempts) from juror_mod.juror",
             Integer.class)).isEqualTo(0);
 
         // failed login 1
@@ -360,7 +358,7 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
             httpHeaders, HttpMethod.POST, uri);
 
         ResponseEntity<SpringBootErrorResponse> exchangeLocked = template.exchange(requestEntity,
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
+            new ParameterizedTypeReference<>() {
             });
 
         assertThat(exchangeLocked).isNotNull();
@@ -372,7 +370,7 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
         assertThat(exchangeLocked.getBody().getMessage()).isEqualTo("Juror account is locked");
 
         // failed login count should have been cleared
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL_USER.LOGIN_ATTEMPTS",
+        assertThat(jdbcTemplate.queryForObject("select sum(login_attempts) from juror_mod.juror",
             Integer.class)).isEqualTo(0);
     }
 

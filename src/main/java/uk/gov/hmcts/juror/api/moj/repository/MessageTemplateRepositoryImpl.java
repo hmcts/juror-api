@@ -97,7 +97,6 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
                     .and(JUROR_POOL.status.status.in(IJurorStatus.PANEL, IJurorStatus.JUROR))
             );
         }
-
         search.apply(query);
 
         return PaginationUtil.toPaginatedList(query, search,
@@ -105,7 +104,6 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
             SortMethod.ASC,
             tuple -> {
                 JurorToSendMessageBase.JurorToSendMessageBaseBuilder<?, ?> builder;
-
                 if (isCourt) {
                     builder = JurorToSendMessageCourt.builder()
                         .trialNumber(tuple.get(TRIAL.trialNumber))

@@ -21,7 +21,6 @@ import uk.gov.hmcts.juror.api.SpringBootErrorResponse;
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseExcusalController.ExcusalCodeDto;
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseExcusalController.ExcusalReasonsDto;
 import uk.gov.hmcts.juror.api.bureau.domain.IPoolStatus;
-import uk.gov.hmcts.juror.api.bureau.domain.PartHist;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 
@@ -46,10 +45,8 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
 
     private HttpHeaders httpHeaders;
 
-    @Override
     @Before
     public void setUp() throws Exception {
-        super.setUp();
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
@@ -196,10 +193,12 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
                 + "juror_number='644892530' AND HISTORY_CODE='PEXC'", String.class))
             .as("Juror's PART_HIST entry should have the appropriate pool code set as POOL_NO")
             .isEqualTo("555");
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT EXC_CODE FROM JUROR.EXC_LETT WHERE PART_NO='644892530'",
-                String.class))
-            .as("Juror's EXC_LETT entry should have the appropriate excusal code set")
-            .isEqualTo(excusalDto.getExcusalCode());
+        softly.assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.bulk_print_data "
+                    + "WHERE juror_no='644892530' and form_type in ('5225','5225C')",
+                Integer.class))
+            .as("Juror's excusal letter should be queued for printing")
+            .isEqualTo(1);
+
         softly.assertThat(jdbcTemplate.queryForObject("SELECT STAFF_LOGIN FROM juror_mod.juror_response WHERE "
                 + "JUROR_NUMBER = '644892530'", String.class))
             .as("As response was in the backlog, it needs assigned to the logged in user changing it.")
@@ -319,9 +318,10 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
             .isEqualTo("555");
 
         // Deceased disqualifications should not have an excusal letter created
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR.EXC_LETT WHERE PART_NO='644892530'",
+        softly.assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.bulk_print_data "
+                    + "WHERE juror_no='644892530' and form_type in ('5225','5225C')",
                 Integer.class))
-            .as("Juror should not have an EXC_LETT entry as they are deceased")
+            .as("Juror's excusal letter should not be queued for printing")
             .isEqualTo(0);
         softly.assertAll();
     }
@@ -405,9 +405,10 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
                 + "juror_number='644892530'", Integer.class))
             .as("Juror should not have a PART_HIST entry")
             .isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR.EXC_LETT WHERE PART_NO='644892530'",
+        softly.assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.bulk_print_data "
+                    + "WHERE juror_no='644892530' and form_type in ('5225','5225C')",
                 Integer.class))
-            .as("Juror should not have an EXC_LETT entry")
+            .as("Juror's excusal letter should not be queued for printing")
             .isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject("SELECT STAFF_LOGIN FROM juror_mod.juror_response "
             + "WHERE JUROR_NUMBER='644892530'", String.class))
@@ -464,9 +465,10 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
                 + "juror_number='123456789'", Integer.class))
             .as("Juror should not have a PART_HIST entry")
             .isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR.EXC_LETT WHERE PART_NO='123456789'",
+        softly.assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.bulk_print_data "
+                    + "WHERE juror_no='644892530' and form_type in ('5225','5225C')",
                 Integer.class))
-            .as("Juror should not have an EXC_LETT entry")
+            .as("Juror's excusal letter should not be queued for printing")
             .isEqualTo(0);
         softly.assertAll();
     }
@@ -547,9 +549,10 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
                 + "juror_number='644892530'", Integer.class))
             .as("Juror should not have a PART_HIST entry")
             .isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR.EXC_LETT WHERE PART_NO='644892530'",
+        softly.assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.bulk_print_data "
+                    + "WHERE juror_no='644892530' and form_type in ('5225','5225C')",
                 Integer.class))
-            .as("Juror should not have an EXC_LETT entry")
+            .as("Juror's excusal letter should not be queued for printing")
             .isEqualTo(0);
         softly.assertAll();
     }
@@ -630,9 +633,10 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
                 + "juror_number='644892530'", Integer.class))
             .as("Juror should not have a PART_HIST entry")
             .isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR.EXC_LETT WHERE PART_NO='644892530'",
+        softly.assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.bulk_print_data "
+                    + "WHERE juror_no='644892530' and form_type in ('5225','5225C')",
                 Integer.class))
-            .as("Juror should not have an EXC_LETT entry")
+            .as("Juror's excusal letter should not be queued for printing")
             .isEqualTo(0);
         softly.assertAll();
     }
@@ -755,19 +759,17 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
         softly.assertThat(jdbcTemplate.queryForObject("SELECT OTHER_INFORMATION FROM juror_mod.juror_history "
                 + "WHERE juror_number='644892530' AND HISTORY_CODE='RESP'", String.class))
             .as("Juror's PART_HIST RESP entry should have 'Responded' set as OTHER_INFORMATION")
-            .isEqualTo(PartHist.RESPONDED);
+            .isEqualTo("Responded");
         softly.assertThat(jdbcTemplate.queryForObject("SELECT pool_number FROM juror_mod.juror_history WHERE "
                 + "juror_number='644892530' AND HISTORY_CODE='PEXC'", String.class))
             .as("Juror's PART_HIST entry should have the appropriate pool code set as POOL_NO")
             .isEqualTo("555");
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT EXC_CODE FROM JUROR.EXC_DENIED_LETT WHERE "
-                + "PART_NO='644892530'", String.class))
-            .as("Juror's EXC_DENIED_LETT entry should have the appropriate excusal code set")
-            .isEqualTo(excusalDto.getExcusalCode());
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT DATE_EXCUSED FROM JUROR.EXC_DENIED_LETT WHERE "
-                + "PART_NO='644892530'", String.class))
-            .as("Juror's EXC_DENIED_LETT entry should have a date set")
-            .isNotNull();
+
+        softly.assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.bulk_print_data "
+                    + "WHERE juror_no='644892530' and form_type in ('5226','5226C')",
+                Integer.class))
+            .as("Juror's excusal letter should be queued for printing")
+            .isEqualTo(1);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT STAFF_LOGIN FROM juror_mod.juror_response WHERE "
                 + "JUROR_NUMBER = '644892530'", String.class))
             .as("As response was in the backlog, it needs assigned to the logged in user changing it.")
@@ -836,9 +838,11 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
                 + "juror_number='644892530'", Integer.class))
             .as("Juror should not have a PART_HIST entry")
             .isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR.EXC_DENIED_LETT WHERE "
-                + "PART_NO='644892530'", Integer.class))
-            .as("Juror should not have a EXC_DENIED_LETT entry")
+
+        softly.assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.bulk_print_data "
+                    + "WHERE juror_no='644892530' and form_type in ('5225','5225C','5226','5226C')",
+                Integer.class))
+            .as("Juror's excusal letter should not be queued for printing")
             .isEqualTo(0);
         softly.assertAll();
     }
@@ -905,9 +909,10 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
                 + "juror_number='644892530'", Integer.class))
             .as("Juror should not have a PART_HIST entry")
             .isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR.EXC_DENIED_LETT WHERE "
-                + "PART_NO='644892530'", Integer.class))
-            .as("Juror should not have a EXC_DENIED_LETT entry")
+        softly.assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.bulk_print_data "
+                    + "WHERE juror_no='644892530' and form_type in ('5225','5225C','5226','5226C')",
+                Integer.class))
+            .as("Juror's excusal letter should not be queued for printing")
             .isEqualTo(0);
         softly.assertAll();
     }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPQLQuery;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -12,7 +13,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import uk.gov.hmcts.juror.api.config.Settings;
-import uk.gov.hmcts.juror.api.juror.domain.QPool;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorSearch;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
@@ -150,7 +150,7 @@ public class MessageSearch implements IsPageable {
         LAST_NAME(QJuror.juror.lastName),
         EMAIL(QJuror.juror.email),
         PHONE(QJuror.juror.phoneNumber),
-        POOL_NUMBER(QPool.pool.poolNumber),
+        POOL_NUMBER(Expressions.asComparable(QJurorPool.jurorPool.pool.poolNumber)),
         STATUS(QJurorPool.jurorPool.status.status),
         TRIAL_NUMBER(QTrial.trial.trialNumber),
         ON_CALL(QJurorPool.jurorPool.onCall),

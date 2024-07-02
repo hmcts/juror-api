@@ -58,10 +58,8 @@ public class PublicEndpointControllerTest extends AbstractIntegrationTest {
     private JurorResponseDto.Qualify validQualify;
 
     @SuppressWarnings("Duplicates")
-    @Override
     @Before
     public void setUp() throws Exception {
-        super.setUp();
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 

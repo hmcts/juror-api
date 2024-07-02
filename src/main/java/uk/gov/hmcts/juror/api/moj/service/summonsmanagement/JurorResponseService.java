@@ -31,4 +31,6 @@ public interface JurorResponseService {
                                     String jurorNumber);
 
     Optional<JurorCommonResponseRepositoryMod.AbstractResponse> getCommonJurorResponseOptional(String jurorNumber);
+
+    JurorCommonResponseRepositoryMod.AbstractResponse getCommonJurorResponse(String jurorNumber);
 }

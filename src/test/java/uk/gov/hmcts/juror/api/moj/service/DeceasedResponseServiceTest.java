@@ -10,8 +10,6 @@ import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.MarkAsDeceasedDto;
 import uk.gov.hmcts.juror.api.moj.domain.ContactCode;
-import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryCode;
-import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryType;
 import uk.gov.hmcts.juror.api.moj.domain.IContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
@@ -21,7 +19,6 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.ContactCodeRepository;
-import uk.gov.hmcts.juror.api.moj.repository.ContactEnquiryTypeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactLogRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -65,8 +62,6 @@ class DeceasedResponseServiceTest {
     @Mock
     private JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository;
     @Mock
-    private ContactEnquiryTypeRepository contactEnquiryTypeRepository;
-    @Mock
     private ContactLogRepository contactLogRepository;
 
     public static final String UNABLE_TO_ATTEND = "UA";
@@ -84,7 +79,6 @@ class DeceasedResponseServiceTest {
         jurorResponseCommonRepositoryMod = mock(JurorResponseCommonRepositoryMod.class);
         jurorPaperResponseRepository = mock(JurorPaperResponseRepositoryMod.class);
         jurorDigitalResponseRepository = mock(JurorDigitalResponseRepositoryMod.class);
-        contactEnquiryTypeRepository = mock(ContactEnquiryTypeRepository.class);
         contactLogRepository = mock(ContactLogRepository.class);
 
         this.deceasedResponseService = new DeceasedResponseServiceImpl(
@@ -167,14 +161,6 @@ class DeceasedResponseServiceTest {
         doReturn(jurorPools).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
 
-        ContactEnquiryType enquiryType = new ContactEnquiryType(ContactEnquiryCode.valueOf(UNABLE_TO_ATTEND),
-            "description");
-
-        Optional<ContactEnquiryType> enquiryTypeOpt = Optional.of(enquiryType);
-
-        doReturn(enquiryTypeOpt).when(contactEnquiryTypeRepository)
-            .findById(ContactEnquiryCode.valueOf(UNABLE_TO_ATTEND));
-
         ContactCode contactCode = new ContactCode(
             IContactCode.UNABLE_TO_ATTEND.getCode(),
             IContactCode.UNABLE_TO_ATTEND.getDescription());
@@ -209,13 +195,6 @@ class DeceasedResponseServiceTest {
         doReturn(jurorPools).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
 
-        ContactEnquiryType enquiryType = new ContactEnquiryType(ContactEnquiryCode.valueOf(UNABLE_TO_ATTEND),
-            "description");
-
-        Optional<ContactEnquiryType> enquiryTypeOpt = Optional.of(enquiryType);
-
-        doReturn(enquiryTypeOpt).when(contactEnquiryTypeRepository)
-            .findById(ContactEnquiryCode.valueOf(UNABLE_TO_ATTEND));
 
         ContactCode contactCode = new ContactCode(
             IContactCode.UNABLE_TO_ATTEND.getCode(),
@@ -286,14 +265,6 @@ class DeceasedResponseServiceTest {
 
         doReturn(jurorPools).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
-
-        ContactEnquiryType enquiryType = new ContactEnquiryType(ContactEnquiryCode.valueOf(UNABLE_TO_ATTEND),
-            "description");
-
-        Optional<ContactEnquiryType> enquiryTypeOpt = Optional.of(enquiryType);
-
-        doReturn(enquiryTypeOpt).when(contactEnquiryTypeRepository)
-            .findById(ContactEnquiryCode.valueOf(UNABLE_TO_ATTEND));
 
         ContactCode contactCode = new ContactCode(
             IContactCode.UNABLE_TO_ATTEND.getCode(),

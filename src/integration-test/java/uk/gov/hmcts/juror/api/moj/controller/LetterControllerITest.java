@@ -49,8 +49,6 @@ import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
-import uk.gov.hmcts.juror.api.moj.domain.letter.LetterId;
-import uk.gov.hmcts.juror.api.moj.domain.letter.RequestLetter;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
@@ -63,9 +61,6 @@ import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
-import uk.gov.hmcts.juror.api.moj.repository.letter.RequestLetterRepository;
-import uk.gov.hmcts.juror.api.moj.repository.letter.court.PostponementLetterListRepository;
-import uk.gov.hmcts.juror.api.moj.repository.letter.court.ShowCauseLetterListRepository;
 
 import java.math.BigDecimal;
 import java.net.URI;
@@ -117,24 +112,16 @@ class LetterControllerITest extends AbstractIntegrationTest {
     @Autowired
     private JurorDigitalResponseRepositoryMod jurorResponseRepository;
     @Autowired
-    private RequestLetterRepository requestLetterRepository;
-    @Autowired
     private BulkPrintDataRepository bulkPrintDataRepository;
     @Autowired
     private ExcusalCodeRepository excusalCodeRepository;
-    @Autowired
-    private PostponementLetterListRepository postponementLetterListRepository;
-    @Autowired
-    private ShowCauseLetterListRepository showCauseLetterListRepository;
     @Autowired
     private JurorHistoryRepository jurorHistoryRepository;
 
     private HttpHeaders httpHeaders;
 
-    @Override
     @BeforeEach
     public void setUp() throws Exception {
-        super.setUp();
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
@@ -206,13 +193,11 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Test
         void requestInformationBureauUserPaperAllCategoriesMissing() throws Exception {
             final String jurorNumber = "222222222";
-            final String owner = "400";
             final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/request-information");
-            final String expectedRequestString = "Part 1 Date of Birth, Part 1 Telephone No., Part 2 Section B, "
-                + "Part 2 Section C, Part 2 Section C, Part 2 Section E, Part 2 Section A, Part 3 Section A/B/C, Part"
-                + " 2 "
-                + "Section D, Part 4";
+            final String expectedRequestString = "PART 1 DATE OF BIRTH, PART 1 TELEPHONE NO., PART 2 SECTION B, "
+                + "PART 2 SECTION C, PART 2 SECTION C, PART 2 SECTION E, PART 2 SECTION A, PART 3 SECTION A/B/C, PART"
+                + " 2 SECTION D, PART 4";
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
@@ -239,12 +224,16 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getBody()).isEqualTo("Request Letter queued for juror number " + jurorNumber);
 
             // try to read back the saved request letter entry, there could be a race problem in saving/reading
-            LetterId letterId = new LetterId(owner, jurorNumber);
-            Optional<RequestLetter> requestLetterOpt = requestLetterRepository.findById(letterId);
+            Optional<BulkPrintData> requestLetterOpt =
+                bulkPrintDataRepository.findByJurorNumberFormCodeAndExtracted(jurorNumber,
+                    FormCode.ENG_REQUESTINFO.getCode(),
+                    false);
             if (requestLetterOpt.isPresent()) {
-                assertThat(requestLetterOpt.get().getRequiredInformation())
+                assertThat(requestLetterOpt.get().getDetailRec())
                     .as("Expect the request letter string to be queued for all info")
-                    .isEqualTo(expectedRequestString);
+                    .contains(expectedRequestString);
+            } else {
+                fail("Request letter not found");
             }
 
             verifyPaperResponse(jurorNumber, ProcessingStatus.AWAITING_CONTACT);
@@ -254,13 +243,11 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Test
         void requestInformationBureauUserPaperAllCategoriesMissingWelsh() throws Exception {
             final String jurorNumber = "222222223";
-            final String owner = "400";
             final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/request-information");
-            final String expectedRequestString = "Rhan 1 Dyddiad Geni, Rhan 1 Rhif FFon., Rhan 2 Adran B, "
-                + "Rhan 2 Adran C, Rhan 2 Adran C, Rhan 2 Adran E, Rhan 2 Adran A, Rhan 3 Adran A/B/C, Rhan 2 Adran D, "
-                + "Rhan"
-                + " 4";
+            final String expectedRequestString = "RHAN 1 DYDDIAD GENI, RHAN 1 RHIF FFON., RHAN 2 ADRAN B, "
+                + "RHAN 2 ADRAN C, RHAN 2 ADRAN C, RHAN 2 ADRAN E, RHAN 2 ADRAN A, RHAN 3 ADRAN A/B/C, RHAN 2 ADRAN D, "
+                + "RHAN 4";
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
@@ -287,12 +274,16 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getBody()).isEqualTo("Request Letter queued for juror number " + jurorNumber);
 
             // try to read back the saved request letter entry, there could be a race problem in saving/reading
-            LetterId letterId = new LetterId(owner, jurorNumber);
-            Optional<RequestLetter> requestLetterOpt = requestLetterRepository.findById(letterId);
+            Optional<BulkPrintData> requestLetterOpt =
+                bulkPrintDataRepository.findByJurorNumberFormCodeAndExtracted(jurorNumber,
+                    FormCode.ENG_REQUESTINFO.getCode(),
+                    false);
             if (requestLetterOpt.isPresent()) {
-                assertThat(requestLetterOpt.get().getRequiredInformation())
+                assertThat(requestLetterOpt.get().getDetailRec())
                     .as("Expect the request letter string to be queued for all info")
-                    .isEqualTo(expectedRequestString);
+                    .contains(expectedRequestString);
+            } else {
+                fail("Request letter not found");
             }
 
             verifyPaperResponse(jurorNumber, ProcessingStatus.AWAITING_CONTACT);
@@ -352,10 +343,9 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Test
         void requestInformationBureauUserDigitalHappyPath() throws Exception {
             final String jurorNumber = "111111000";
-            final String owner = "400";
             final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/request-information");
-            final String expectedRequestString = "Part 2 Section D, Part 2 Section A";
+            final String expectedRequestString = "PART 2 SECTION D, PART 2 SECTION A";
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
@@ -373,11 +363,17 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getBody()).isEqualTo("Request Letter queued for juror number " + jurorNumber);
 
             // try to read back the saved request letter entry, there could be a race problem in saving/reading
-            LetterId letterId = new LetterId(owner, jurorNumber);
-            Optional<RequestLetter> requestLetterOpt = requestLetterRepository.findById(letterId);
-            requestLetterOpt.ifPresent(requestLetter -> assertThat(requestLetter.getRequiredInformation())
-                .as("Expect the request letter string to be queued for all info")
-                .isEqualTo(expectedRequestString));
+            Optional<BulkPrintData> requestLetterOpt =
+                bulkPrintDataRepository.findByJurorNumberFormCodeAndExtracted(jurorNumber,
+                    FormCode.ENG_REQUESTINFO.getCode(),
+                    false);
+            if (requestLetterOpt.isPresent()) {
+                assertThat(requestLetterOpt.get().getDetailRec())
+                    .as("Expect the request letter string to be queued for all info")
+                    .contains(expectedRequestString);
+            } else {
+                fail("Request letter not found");
+            }
 
             verifyDigitalResponse(jurorNumber, ProcessingStatus.AWAITING_CONTACT);
         }
@@ -387,13 +383,11 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Test
         void requestInformationBureauUserDigitalAllCategoriesMissing() throws Exception {
             final String jurorNumber = "111111000";
-            final String owner = "400";
             final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/request-information");
-            final String expectedRequestString = "Part 1 Date of Birth, Part 1 Telephone No., Part 2 Section B, "
-                + "Part 2 Section C, Part 2 Section C, Part 2 Section E, Part 2 Section A, Part 3 Section A/B/C, Part"
-                + " 2 "
-                + "Section D, Part 4";
+            final String expectedRequestString = "PART 1 DATE OF BIRTH, PART 1 TELEPHONE NO., PART 2 SECTION B, "
+                + "PART 2 SECTION C, PART 2 SECTION C, PART 2 SECTION E, PART 2 SECTION A, PART 3 SECTION A/B/C, PART"
+                + " 2 SECTION D, PART 4";
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
@@ -420,12 +414,16 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getBody()).isEqualTo("Request Letter queued for juror number " + jurorNumber);
 
             // try to read back the saved request letter entry, there could be a race problem in saving/reading
-            LetterId letterId = new LetterId(owner, jurorNumber);
-            Optional<RequestLetter> requestLetterOpt = requestLetterRepository.findById(letterId);
+            Optional<BulkPrintData> requestLetterOpt =
+                bulkPrintDataRepository.findByJurorNumberFormCodeAndExtracted(jurorNumber,
+                    FormCode.ENG_REQUESTINFO.getCode(),
+                    false);
             if (requestLetterOpt.isPresent()) {
-                assertThat(requestLetterOpt.get().getRequiredInformation())
+                assertThat(requestLetterOpt.get().getDetailRec())
                     .as("Expect the request letter string to be queued for all info")
-                    .isEqualTo(expectedRequestString);
+                    .contains(expectedRequestString);
+            } else {
+                fail("Request letter not found");
             }
 
             verifyDigitalResponse(jurorNumber, ProcessingStatus.AWAITING_CONTACT);
@@ -435,12 +433,11 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Test
         void requestInformationBureauUserDigitalAllCategoriesMissingWelsh() throws Exception {
             final String jurorNumber = "111111001";
-            final String owner = "400";
             final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/request-information");
-            final String expectedRequestString = "Rhan 1 Dyddiad Geni, Rhan 1 Rhif FFon., Rhan 2 Adran B, "
-                + "Rhan 2 Adran C, Rhan 2 Adran C, Rhan 2 Adran E, Rhan 2 Adran A, Rhan 3 Adran A/B/C, Rhan 2 Adran D, "
-                + "Rhan" + " 4";
+            final String expectedRequestString = "RHAN 1 DYDDIAD GENI, RHAN 1 RHIF FFON., RHAN 2 ADRAN B, "
+                + "RHAN 2 ADRAN C, RHAN 2 ADRAN C, RHAN 2 ADRAN E, RHAN 2 ADRAN A, RHAN 3 ADRAN A/B/C, RHAN 2 ADRAN D, "
+                + "RHAN 4";
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
@@ -466,12 +463,16 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getBody()).isEqualTo("Request Letter queued for juror number " + jurorNumber);
 
             // try to read back the saved request letter entry, there could be a race problem in saving/reading
-            LetterId letterId = new LetterId(owner, jurorNumber);
-            Optional<RequestLetter> requestLetterOpt = requestLetterRepository.findById(letterId);
+            Optional<BulkPrintData> requestLetterOpt =
+                bulkPrintDataRepository.findByJurorNumberFormCodeAndExtracted(jurorNumber,
+                    FormCode.ENG_REQUESTINFO.getCode(),
+                    false);
             if (requestLetterOpt.isPresent()) {
-                assertThat(requestLetterOpt.get().getRequiredInformation())
+                assertThat(requestLetterOpt.get().getDetailRec())
                     .as("Expect the request letter string to be queued for all info")
-                    .isEqualTo(expectedRequestString);
+                    .contains(expectedRequestString);
+            } else {
+                fail("Request letter not found");
             }
 
             verifyDigitalResponse(jurorNumber, ProcessingStatus.AWAITING_CONTACT);

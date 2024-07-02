@@ -36,8 +36,6 @@ public class PoolRequestUtilsTest {
     @Test
     public void test_getActivePoolRecord_poolRecordDoesNotExist() {
         String poolNumber = "415230101";
-        String courtOwner = "415";
-
         Mockito.doReturn(Optional.empty()).when(poolRequestRepository)
             .findByPoolNumber(poolNumber);
 

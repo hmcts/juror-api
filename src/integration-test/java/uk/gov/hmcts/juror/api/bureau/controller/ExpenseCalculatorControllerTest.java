@@ -48,10 +48,8 @@ public class ExpenseCalculatorControllerTest extends AbstractIntegrationTest {
     private HttpHeaders httpHeaders;
     private String bureauJwt;
 
-    @Override
     @Before
     public void setUp() throws Exception {
-        super.setUp();
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 

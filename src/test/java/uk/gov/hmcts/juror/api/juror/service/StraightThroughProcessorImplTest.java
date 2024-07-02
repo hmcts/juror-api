@@ -15,8 +15,6 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
-import uk.gov.hmcts.juror.api.moj.domain.letter.DisqualificationLetterMod;
-import uk.gov.hmcts.juror.api.moj.repository.DisqualifyLetterModRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
@@ -24,6 +22,7 @@ import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
+import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.validation.ResponseInspectorImpl;
 
 import java.time.LocalDate;
@@ -64,9 +63,6 @@ public class StraightThroughProcessorImplTest {
     private JurorHistoryRepository partHistRepository;
 
     @Mock
-    private DisqualifyLetterModRepository disqualificationLetterRepository;
-
-    @Mock
     private UserRepository userRepository;
 
     @Mock
@@ -76,6 +72,9 @@ public class StraightThroughProcessorImplTest {
     private JurorHistoryService jurorHistoryService;
     @InjectMocks
     private StraightThroughProcessorImpl straightThroughProcessor;
+
+    @Mock
+    private PrintDataService printDataService;
 
     private static final String TEST_JUROR_NUMBER = "209092530";
 
@@ -242,9 +241,8 @@ public class StraightThroughProcessorImplTest {
         verify(partHistRepository, times(1)).save(any(JurorHistory.class));
         verify(jurorHistoryService).createWithdrawHistory(jurorPool,null,"A");
 
-        verify(disqualificationLetterRepository).save(any(DisqualificationLetterMod.class));
+        verify(printDataService).printWithdrawalLetter(any(JurorPool.class));
 
-        //verify(staffRepository).findOne(StaffQueries.byLogin(AUTO_USER));
         verify(userRepository).findByUsername(AUTO_USER);
     }
 
@@ -287,7 +285,7 @@ public class StraightThroughProcessorImplTest {
         verify(partHistRepository, times(1)).save(any(JurorHistory.class));
         verify(jurorHistoryService).createWithdrawHistory(jurorPool,null,"A");
 
-        verify(disqualificationLetterRepository).save(any(DisqualificationLetterMod.class));
+        verify(printDataService).printWithdrawalLetter(jurorPool);
 
         //verify(staffRepository).findOne(StaffQueries.byLogin(AUTO_USER));
         verify(userRepository).findByUsername(AUTO_USER);
@@ -320,7 +318,7 @@ public class StraightThroughProcessorImplTest {
             verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
             verify(poolRepository, times(0)).save(any(JurorPool.class));
             verify(partHistRepository, times(0)).save(any(JurorHistory.class));
-            verify(disqualificationLetterRepository, times(0)).save(any(DisqualificationLetterMod.class));
+            verify(printDataService, times(0)).printWithdrawalLetter(any(JurorPool.class));
         }
     }
 
@@ -351,7 +349,7 @@ public class StraightThroughProcessorImplTest {
             verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
             verify(poolRepository, times(0)).save(any(JurorPool.class));
             verify(partHistRepository, times(0)).save(any(JurorHistory.class));
-            verify(disqualificationLetterRepository, times(0)).save(any(DisqualificationLetterMod.class));
+            verify(printDataService, times(0)).printWithdrawalLetter(any(JurorPool.class));
         }
     }
 
@@ -371,7 +369,7 @@ public class StraightThroughProcessorImplTest {
             verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
             verify(poolRepository, times(0)).save(any(JurorPool.class));
             verify(partHistRepository, times(0)).save(any(JurorHistory.class));
-            verify(disqualificationLetterRepository, times(0)).save(any(DisqualificationLetterMod.class));
+            verify(printDataService, times(0)).printWithdrawalLetter(any(JurorPool.class));
         }
     }
 
@@ -394,7 +392,7 @@ public class StraightThroughProcessorImplTest {
             verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
             verify(poolRepository, times(0)).save(any(JurorPool.class));
             verify(partHistRepository, times(0)).save(any(JurorHistory.class));
-            verify(disqualificationLetterRepository, times(0)).save(any(DisqualificationLetterMod.class));
+            verify(printDataService, times(0)).printWithdrawalLetter(any(JurorPool.class));
         }
     }
 

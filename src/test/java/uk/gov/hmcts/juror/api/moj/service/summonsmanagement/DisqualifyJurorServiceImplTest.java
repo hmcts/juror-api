@@ -7,12 +7,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit4.SpringRunner;
-import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAudit;
-import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAuditRepository;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
-import uk.gov.hmcts.juror.api.juror.domain.DisqualificationLetter;
-import uk.gov.hmcts.juror.api.juror.domain.DisqualificationLetterRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.summonsmanagement.DisqualifyJurorDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.summonsmanagement.DisqualifyReasonsDto;
@@ -21,6 +17,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
@@ -28,6 +25,7 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.AssignOnUpdateServiceMod;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
@@ -62,11 +60,9 @@ public class DisqualifyJurorServiceImplTest {
     @Mock
     private JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository;
     @Mock
-    private JurorResponseAuditRepository jurorResponseAuditRepository;
+    private JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
     @Mock
     private JurorHistoryService jurorHistoryService;
-    @Mock
-    private DisqualificationLetterRepository disqualificationLetterRepository;
     @Mock
     private AssignOnUpdateServiceMod assignOnUpdateService;
     @Mock
@@ -96,7 +92,7 @@ public class DisqualifyJurorServiceImplTest {
         verify(jurorDigitalResponseRepository, never()).findByJurorNumber(any());
         verify(jurorResponseAuditRepository, never()).save(any());
         verifyNoInteractions(jurorHistoryService);
-        verify(disqualificationLetterRepository, never()).save(any());
+        verifyNoInteractions(printDataService);
         verify(assignOnUpdateService, never()).assignToCurrentLogin(any(), any());
 
         verify(summonsReplyMergeService, never()).mergeDigitalResponse(any(), any());
@@ -116,7 +112,7 @@ public class DisqualifyJurorServiceImplTest {
         verify(jurorDigitalResponseRepository, never()).findByJurorNumber(any());
         verify(jurorResponseAuditRepository, never()).save(any());
         verifyNoInteractions(jurorHistoryService);
-        verify(disqualificationLetterRepository, never()).save(any());
+        verifyNoInteractions(printDataService);
         verify(assignOnUpdateService, never()).assignToCurrentLogin(any(), any());
 
         verify(summonsReplyMergeService, never()).mergeDigitalResponse(any(), any());
@@ -199,7 +195,7 @@ public class DisqualifyJurorServiceImplTest {
         verify(jurorDigitalResponseRepository, never()).findByJurorNumber(any());
         verify(jurorResponseAuditRepository, never()).save(any());
         verifyNoInteractions(jurorHistoryService);
-        verify(disqualificationLetterRepository, never()).save(any());
+        verifyNoInteractions(printDataService);
         verify(assignOnUpdateService, never()).assignToCurrentLogin(any(), any());
 
         verify(summonsReplyMergeService, never()).mergeDigitalResponse(any(), any());
@@ -230,7 +226,6 @@ public class DisqualifyJurorServiceImplTest {
         doReturn(jurorPoolList).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(anyString(), anyBoolean());
         doReturn(null).when(jurorPoolRepository).save(any(JurorPool.class));
-        doReturn(null).when(disqualificationLetterRepository).save(any(DisqualificationLetter.class));
 
         disqualifyJurorService.disqualifyJuror(jurorNumber, disqualifyJurorDto, courtPayload);
 
@@ -267,7 +262,7 @@ public class DisqualifyJurorServiceImplTest {
         verify(assignOnUpdateService, never()).assignToCurrentLogin(any(DigitalResponse.class),
             anyString());
         verify(summonsReplyMergeService, never()).mergeDigitalResponse(any(DigitalResponse.class), anyString());
-        verify(jurorResponseAuditRepository, never()).save(any(JurorResponseAudit.class));
+        verify(jurorResponseAuditRepository, never()).save(any(JurorResponseAuditMod.class));
     }
 
     @Test
@@ -297,7 +292,6 @@ public class DisqualifyJurorServiceImplTest {
         doReturn(jurorPoolList).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(anyString(), anyBoolean());
         doReturn(null).when(jurorPoolRepository).save(any(JurorPool.class));
-        doReturn(null).when(disqualificationLetterRepository).save(any(DisqualificationLetter.class));
 
         disqualifyJurorService.disqualifyJuror(jurorNumber, disqualifyJurorDto, courtPayload);
 
@@ -353,14 +347,14 @@ public class DisqualifyJurorServiceImplTest {
         verify(jurorDigitalResponseRepository, never()).findByJurorNumber(anyString());
         verify(assignOnUpdateService, never()).assignToCurrentLogin(any(DigitalResponse.class), anyString());
         verify(summonsReplyMergeService, never()).mergeDigitalResponse(any(DigitalResponse.class), anyString());
-        verify(jurorResponseAuditRepository, never()).save(any(JurorResponseAudit.class));
+        verify(jurorResponseAuditRepository, never()).save(any(JurorResponseAuditMod.class));
 
         //Paper related
         verify(jurorPaperResponseRepository, never()).findById(anyString());
         verify(summonsReplyMergeService, never()).mergePaperResponse(any(PaperResponse.class), anyString());
 
         //Common
-        verify(disqualificationLetterRepository, never()).save(any(DisqualificationLetter.class));
+        verifyNoInteractions(printDataService);
         verifyNoInteractions(jurorHistoryService);
         verify(jurorPoolRepository, never()).save(any(JurorPool.class));
         verify(jurorPoolRepository, times(1))
@@ -384,14 +378,14 @@ public class DisqualifyJurorServiceImplTest {
         verify(jurorDigitalResponseRepository, never()).findByJurorNumber(anyString());
         verify(assignOnUpdateService, never()).assignToCurrentLogin(any(DigitalResponse.class), anyString());
         verify(summonsReplyMergeService, never()).mergeDigitalResponse(any(DigitalResponse.class), anyString());
-        verify(jurorResponseAuditRepository, never()).save(any(JurorResponseAudit.class));
+        verify(jurorResponseAuditRepository, never()).save(any(JurorResponseAuditMod.class));
 
         //Paper related
         verify(jurorPaperResponseRepository, times(1)).findByJurorNumber(anyString());
         verify(summonsReplyMergeService, never()).mergePaperResponse(any(PaperResponse.class), anyString());
 
         //Common
-        verify(disqualificationLetterRepository, never()).save(any(DisqualificationLetter.class));
+        verifyNoInteractions(printDataService);
         verifyNoInteractions(jurorHistoryService);
         verify(jurorPoolRepository, never()).save(any(JurorPool.class));
         verify(jurorPoolRepository, times(1))
@@ -415,14 +409,14 @@ public class DisqualifyJurorServiceImplTest {
         verify(jurorDigitalResponseRepository, times(1)).findByJurorNumber(anyString());
         verify(assignOnUpdateService, never()).assignToCurrentLogin(any(DigitalResponse.class), anyString());
         verify(summonsReplyMergeService, never()).mergeDigitalResponse(any(DigitalResponse.class), anyString());
-        verify(jurorResponseAuditRepository, never()).save(any(JurorResponseAudit.class));
+        verify(jurorResponseAuditRepository, never()).save(any(JurorResponseAuditMod.class));
 
         //Paper related
         verify(jurorPaperResponseRepository, never()).findById(anyString());
         verify(summonsReplyMergeService, never()).mergePaperResponse(any(PaperResponse.class), anyString());
 
         //Common
-        verify(disqualificationLetterRepository, never()).save(any(DisqualificationLetter.class));
+        verifyNoInteractions(printDataService);
         verifyNoInteractions(jurorHistoryService);
         verify(jurorPoolRepository, never()).save(any(JurorPool.class));
         verify(jurorPoolRepository, times(1))
@@ -450,7 +444,7 @@ public class DisqualifyJurorServiceImplTest {
         verify(jurorDigitalResponseRepository, times(1)).findByJurorNumber(anyString());
         verify(assignOnUpdateService, never()).assignToCurrentLogin(any(DigitalResponse.class), anyString());
         verify(summonsReplyMergeService, never()).mergeDigitalResponse(any(DigitalResponse.class), anyString());
-        verify(jurorResponseAuditRepository, never()).save(any(JurorResponseAudit.class));
+        verify(jurorResponseAuditRepository, never()).save(any(JurorResponseAuditMod.class));
 
         //Paper related
         verify(jurorPaperResponseRepository, never()).findById(anyString());

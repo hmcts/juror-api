@@ -83,10 +83,8 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     @Autowired
     private CurrentlyDeferredRepository currentlyDeferredRepository;
 
-    @Override
     @Before
     public void setUp() throws Exception {
-        super.setUp();
         initHeaders();
     }
 

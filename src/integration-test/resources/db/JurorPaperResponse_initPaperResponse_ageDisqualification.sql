@@ -5,8 +5,6 @@ DELETE FROM juror_mod.juror_pool;
 DELETE FROM juror_mod.juror;
 DELETE FROM juror_mod.pool;
 
-DELETE FROM JUROR.DISQ_LETT;
-
 -- Create Pool Members
 INSERT INTO juror_mod.pool
 (pool_no, "owner", return_date, total_no_required, no_requested, pool_type, loc_code, new_request)

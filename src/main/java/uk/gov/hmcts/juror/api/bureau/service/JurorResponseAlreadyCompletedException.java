@@ -6,5 +6,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(HttpStatus.CONFLICT)
 public class JurorResponseAlreadyCompletedException extends RuntimeException {
     public JurorResponseAlreadyCompletedException(String message) {
+        super(message);
     }
 }

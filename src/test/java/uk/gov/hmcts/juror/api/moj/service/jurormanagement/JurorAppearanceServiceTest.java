@@ -74,7 +74,6 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -1918,19 +1917,6 @@ class JurorAppearanceServiceTest {
             .build();
     }
 
-    private UpdateAttendanceDto.CommonData buildCommonData(LocalDate attendanceDate, LocalTime checkIn,
-                                                           LocalTime checkOut, Boolean singleJuror) {
-        UpdateAttendanceDto.CommonData commonData = new UpdateAttendanceDto.CommonData();
-        commonData.setLocationCode(VALID_COURT_LOCATION);
-        commonData.setAttendanceDate(attendanceDate);
-        commonData.setStatus(UpdateAttendanceStatus.CONFIRM_ATTENDANCE);
-        commonData.setCheckInTime(checkIn);
-        commonData.setCheckOutTime(checkOut);
-        commonData.setSingleJuror(singleJuror);
-
-        return commonData;
-    }
-
     private BureauJwtPayload buildPayload(String owner, List<String> courts) {
         return BureauJwtPayload.builder()
             .userLevel("99")
@@ -2310,38 +2296,16 @@ class JurorAppearanceServiceTest {
             Mockito.any());
     }
 
-    private Appearance deleteAttendanceMockSetup(Boolean noAttendanceRecord) {
-        when(courtLocationRepository.findById(anyString())).thenReturn(Optional.of(getCourtLocation()));
-
-        when(jurorRepository.findById(JUROR1)).thenReturn(Optional.of(createJuror(JUROR1, IJurorStatus.RESPONDED)));
-
-        JurorPool jurorPool1 = getJurorPool(createJuror(JUROR1, IJurorStatus.RESPONDED), IJurorStatus.RESPONDED);
-        when(jurorPoolRepository.findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR1, true))
-            .thenReturn(Collections.singletonList(jurorPool1));
-
-        Appearance appearance;
-        if (noAttendanceRecord) {
-            when(appearanceRepository.findById(any())).thenReturn(Optional.empty());
-            appearance = null;
-        } else {
-            appearance = buildAppearance(JUROR1, null, null, CHECKED_IN);
-            when(appearanceRepository.findById(any()))
-                .thenReturn(Optional.of(appearance));
-        }
-        doNothing().when(appearanceRepository).deleteById(any(AppearanceId.class));
-        return appearance;
-    }
-
 
     @DisplayName("public void addNonAttendance(JurorNonAttendanceDto request)")
     @Nested
     class NonAttendance {
 
-        private static String courtOwner = "415";
-        private static String courtLocationCode = "415";
-        private static String jurorNumber = "111111111";
-        private static String poolNumber = "415230101";
-        private static String username = "COURT_USER";
+        private static final String courtOwner = "415";
+        private static final String courtLocationCode = "415";
+        private static final String jurorNumber = "111111111";
+        private static final String poolNumber = "415230101";
+        private static final String username = "COURT_USER";
 
         @Test
         void positiveNonAttendanceAdded() {

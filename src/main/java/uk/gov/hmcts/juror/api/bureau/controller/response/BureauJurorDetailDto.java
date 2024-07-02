@@ -5,10 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uk.gov.hmcts.juror.api.bureau.domain.ChangeLogItem;
 import uk.gov.hmcts.juror.api.moj.controller.response.jurorresponse.IJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
 import uk.gov.hmcts.juror.api.moj.domain.User;
@@ -318,7 +316,7 @@ public class BureauJurorDetailDto implements Serializable, IJurorResponse {
     private Boolean assignmentAllowed = Boolean.FALSE;
 
     @Schema(description = "List of phone logs")
-    private List<PhoneLogDto> phoneLogs;
+    private List<ContactLogDto> phoneLogs;
 
     @Schema(description = "List of Jurors CJS Employments")
     private List<CjsEmploymentDto> cjsEmployments;
@@ -349,12 +347,6 @@ public class BureauJurorDetailDto implements Serializable, IJurorResponse {
      */
     @Schema(description = "Flag whether the pool member has been summoned to a Welsh court Location")
     private boolean welshCourt;
-
-    /**
-     * Change logs associated with the {@link #jurorNumber}.
-     */
-    @Schema(description = "List of change logs associated to Juror")
-    private List<ChangeLogDto> changeLog;
 
     @JsonProperty("current_owner")
     @Schema(name = "Current Owner", description = "Current owner (3 digit code) of the juror record")
@@ -435,7 +427,7 @@ public class BureauJurorDetailDto implements Serializable, IJurorResponse {
             ? new StaffDto(jurorDetails.getAssignedStaffMember()) : null;
         this.staffAssignmentDate = jurorDetails.getStaffAssignmentDate();
         this.assignmentAllowed = jurorDetails.getAssignmentAllowed();
-        this.phoneLogs = jurorDetails.getPhoneLogs().stream().map(PhoneLogDto::new).collect(Collectors.toList());
+        this.phoneLogs = jurorDetails.getContactLogs().stream().map(ContactLogDto::new).collect(Collectors.toList());
         this.cjsEmployments =
             jurorDetails.getCjsEmployments().stream().map(CjsEmploymentDto::new).collect(Collectors.toList());
         this.specialNeeds =
@@ -444,56 +436,6 @@ public class BureauJurorDetailDto implements Serializable, IJurorResponse {
         this.slaOverdue = jurorDetails.getSlaOverdue();
         this.welsh = jurorDetails.getWelsh();
         this.currentOwner = jurorDetails.getOwner();
-        this.changeLog = jurorDetails.getChangeLogs().stream().map(cl -> {
-            final List<ChangeLogItemDto> changeLogItemDtos = cl.getChangeLogItems()
-                .stream()
-                .map(ChangeLogItemDto::new)
-                .collect(Collectors.toList());
-            return new ChangeLogDto(
-                cl.getType().name(),
-                cl.getNotes(),
-                cl.getTimestamp(),
-                cl.getStaff().getName(),
-                changeLogItemDtos
-            );
-        }).collect(Collectors.toList());
     }
 
-    @Data
-    @Builder
-    @AllArgsConstructor
-    @Schema(description = "Request body for adding a change log entry to a juror response")
-    public static class ChangeLogDto implements Serializable {
-        private String type;
-        private String notes;
-        private Date timestamp;
-        private String staff;
-        private List<ChangeLogItemDto> items;
-    }
-
-    @Data
-    @Builder
-    @AllArgsConstructor
-    @Schema(description = "Request body for a single change log item")
-    public static class ChangeLogItemDto implements Serializable {
-        @Schema(description = "Old key name", requiredMode = Schema.RequiredMode.REQUIRED)
-        private String oldKeyName;
-
-        @Schema(description = "Old value", requiredMode = Schema.RequiredMode.REQUIRED)
-        private String oldValue;
-
-        @Schema(description = "New key name", requiredMode = Schema.RequiredMode.REQUIRED)
-        private String newKeyName;
-
-        @Schema(description = "New value", requiredMode = Schema.RequiredMode.REQUIRED)
-        private String newValue;
-
-        public ChangeLogItemDto(ChangeLogItem entity) {
-            this.oldKeyName = entity.getOldKeyName();
-            this.oldValue = entity.getOldValue();
-            this.newKeyName = entity.getNewKeyName();
-            this.newValue = entity.getNewValue();
-        }
-
-    }
 }

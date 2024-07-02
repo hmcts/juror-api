@@ -6,14 +6,10 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController;
-import uk.gov.hmcts.juror.api.bureau.domain.ChangeLog;
-import uk.gov.hmcts.juror.api.bureau.domain.ChangeLogRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.PhoneLogRepository;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
@@ -45,13 +41,7 @@ public class ResponseUpdateServiceImplTest {
     private JurorHistoryRepository partHistRepository;
 
     @Mock
-    private PhoneLogRepository phoneLogRepository;
-
-    @Mock
     private JurorDigitalResponseRepositoryMod responseRepository;
-
-    @Mock
-    private ChangeLogRepository changeLogRepository;
 
     @Mock
     private UserRepository userRepository;
@@ -86,7 +76,6 @@ public class ResponseUpdateServiceImplTest {
         given(domain.getProcessingComplete()).willReturn(false);
 
         User staff = mock(User.class);
-        given(staff.getUsername()).willReturn(login);
         ResponseUpdateController.JurorEligibilityDto dto = mock(ResponseUpdateController.JurorEligibilityDto.class);
         given(dto.getVersion()).willReturn(version);
 
@@ -100,12 +89,6 @@ public class ResponseUpdateServiceImplTest {
         verify(responseRepository).findByJurorNumber(jurorId);
         verify(userRepository).findByUsername(login);
         verify(domain, times(2)).getProcessingComplete();
-        // capture the changeLog delivered to the changeLogRepository
-        final ArgumentCaptor<ChangeLog> changeLogCaptor = ArgumentCaptor.forClass(ChangeLog.class);
-        verify(changeLogRepository).save(changeLogCaptor.capture());
-        final ChangeLog capturedChangeLog = changeLogCaptor.getValue();
-        assertThat(capturedChangeLog.getJurorNumber()).isEqualToIgnoringCase(jurorId);
-        assertThat(capturedChangeLog.getStaff().getUsername()).isEqualToIgnoringCase(login);
         verify(responseRepository).save(domain);
     }
 
@@ -121,8 +104,6 @@ public class ResponseUpdateServiceImplTest {
         given(domain.getProcessingComplete()).willReturn(false);
 
         JurorResponseCjsEmployment policeEntry = mock(JurorResponseCjsEmployment.class);
-        given(policeEntry.getCjsEmployerDetails()).willReturn("Original police details");
-
         given(cjsRepository.findByJurorNumberAndCjsEmployer(jurorId, "Police Force")).willReturn(policeEntry);
 
         // return our BureauJurorCJS on save just to avoid NullPointerExceptions
@@ -160,7 +141,6 @@ public class ResponseUpdateServiceImplTest {
         verify(cjsRepository, times(1)).delete(any(JurorResponseCjsEmployment.class));
 
         // verify save logic
-        verify(changeLogRepository, times(1)).save(any(ChangeLog.class));
         verify(responseRepository).save(domain);
     }
 

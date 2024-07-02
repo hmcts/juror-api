@@ -13,10 +13,6 @@ import uk.gov.hmcts.juror.api.bureau.controller.ResponseExcusalController;
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseExcusalController.ExcusalCodeDto;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeRepository;
 import uk.gov.hmcts.juror.api.bureau.exception.ExcusalException;
-import uk.gov.hmcts.juror.api.juror.domain.ExcusalDeniedLetter;
-import uk.gov.hmcts.juror.api.juror.domain.ExcusalDeniedLetterRepository;
-import uk.gov.hmcts.juror.api.juror.domain.ExcusalLetter;
-import uk.gov.hmcts.juror.api.juror.domain.ExcusalLetterRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
@@ -30,13 +26,11 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @SuppressWarnings("Duplicates")
@@ -52,11 +46,10 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
     private final JurorPoolRepository detailsRepository;
     private final JurorHistoryRepository historyRepository;
     private final ExcusalCodeRepository excusalCodeRepository;
-    private final ExcusalLetterRepository excusalLetterRepository;
-    private final ExcusalDeniedLetterRepository excusalDeniedLetterRepository;
     private final ResponseMergeService mergeService;
     private final EntityManager entityManager;
     private final AssignOnUpdateService assignOnUpdateService;
+    private final PrintDataService printDataService;
 
 
     @Override
@@ -159,11 +152,7 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
 
             if (!ExcusalCodeEnum.D.getCode().equalsIgnoreCase(excusalCodeDto.getExcusalCode())) {
                 // only non-deceased jurors get a letter
-                ExcusalLetter excusalLetter = new ExcusalLetter();
-                excusalLetter.setJurorNumber(jurorId);
-                excusalLetter.setExcusalCode(excusalCodeDto.getExcusalCode());
-                excusalLetter.setDateExcused(Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
-                excusalLetterRepository.save(excusalLetter);
+                printDataService.printExcusalLetter(poolDetails);
             }
         } catch (ExcusalException.JurorNotFound e) {
             log.debug("Error while attempting to excuse Juror {}: {}", jurorId, e.getMessage());
@@ -271,11 +260,7 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
             history.setOtherInformation(JurorHistory.RESPONDED);
             historyRepository.save(history);
 
-            ExcusalDeniedLetter excusalDeniedLetter = new ExcusalDeniedLetter();
-            excusalDeniedLetter.setJurorNumber(jurorId);
-            excusalDeniedLetter.setExcusalCode(excusalCodeDto.getExcusalCode());
-            excusalDeniedLetter.setDateExcused(Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
-            excusalDeniedLetterRepository.save(excusalDeniedLetter);
+            printDataService.printExcusalDeniedLetter(poolDetails);
 
         } catch (ExcusalException.JurorNotFound e) {
             log.debug("Error while attempting to reject excusal request from Juror {}: {}", jurorId, e.getMessage());
