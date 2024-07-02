@@ -40,7 +40,7 @@ public class PostponeLetterTest extends AbstractLetterTest {
         addEnglishField("641500541", 9);
         addEnglishField("JURY MANAGER", 30);
         addEnglishField("MONDAY 6 FEBRUARY, 2017", 32);
-        addEnglishField("10:00", 8);
+        addEnglishField("10:00AM", 8);
     }
 
     @Override
@@ -70,7 +70,7 @@ public class PostponeLetterTest extends AbstractLetterTest {
         addWelshField("641500541", 9);
         addWelshField("JURY MANAGER", 30);
         addWelshField("DYDD LLUN 6 CHWEFROR, 2017", 32);
-        addWelshField("10:00", 8);
+        addWelshField("10:00AM", 8);
     }
 
 

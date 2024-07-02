@@ -45,7 +45,7 @@ public class ExcusalLetterTest extends AbstractLetterTest {
     protected void setupWelshExpectedResult() {
         addWelshLetterDate();
         addWelshField("ABERTAWE", 40);
-        addWelshField("SWANSEA CROWN COURT", 35);
+        addWelshField("SWANSEA CROWN COURT", 40);
         addWelshField("JURY CENTRAL SUMMONING BUREAU", 35);
         addWelshField("THE COURT SERVICE", 35);
         addWelshField("FREEPOST LON 19669", 35);

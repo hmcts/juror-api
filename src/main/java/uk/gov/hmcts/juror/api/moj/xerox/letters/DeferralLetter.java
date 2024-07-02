@@ -35,7 +35,7 @@ public class DeferralLetter extends LetterBase {
         addData(LetterDataType.DATE_OF_LETTER, 18);
         addData(LetterDataType.WELSH_COURT_NAME, 40);
         addData(LetterDataType.COURT_NAME, 40);
-        addData(LetterDataType.BUREAU_NAME, 40);
+        addData(LetterDataType.BUREAU_NAME, 35);
         addData(LetterDataType.BUREAU_ADDRESS1, 35);
         addData(LetterDataType.BUREAU_ADDRESS2, 35);
         addData(LetterDataType.BUREAU_ADDRESS3, 35);

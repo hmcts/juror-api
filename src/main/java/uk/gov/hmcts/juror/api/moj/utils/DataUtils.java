@@ -104,6 +104,13 @@ public final class DataUtils {
         return localTime.format(DateTimeFormatter.ofPattern("HH:mm"));
     }
 
+    public static String asStringHHmmAmPm(LocalTime localTime) {
+        if (localTime == null) {
+            return null;
+        }
+        return localTime.format(DateTimeFormatter.ofPattern("h:mma"));
+    }
+
     public static Expression<?> asDate(DateTimePath<LocalDateTime> dateTimePath) {
         return dateTimePath.stringValue().substring(0, 10);
     }

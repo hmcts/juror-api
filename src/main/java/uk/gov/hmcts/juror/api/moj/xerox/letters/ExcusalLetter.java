@@ -35,7 +35,7 @@ public class ExcusalLetter extends LetterBase {
         setFormCode(FormCode.BI_EXCUSAL);
         addData(LetterDataType.DATE_OF_LETTER, 18);
         addData(LetterDataType.WELSH_COURT_NAME, 40);
-        addData(LetterDataType.COURT_NAME, 35);
+        addData(LetterDataType.COURT_NAME, 40);
         addData(LetterDataType.BUREAU_NAME, 35);
         sharedBureauSetup();
         addData(LetterDataType.BUREAU_POSTCODE, 10);

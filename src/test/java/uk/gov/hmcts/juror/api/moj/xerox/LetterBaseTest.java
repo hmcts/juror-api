@@ -9,8 +9,10 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.Month;
 import java.util.Calendar;
 import java.util.Locale;
@@ -387,23 +389,47 @@ class LetterBaseTest {
     }
 
     @Test
-    void timeOfAttendanceIsCorrect() {
+    void timeOfAttendanceIsCorrectAM() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
             .courtLocation(LetterTestUtils.testCourtLocation())
             .build());
 
         testLetter.addData(LetterBase.LetterDataType.TIME_OF_ATTENDANCE, 40);
-        assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("10:00", 40));
+        assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("10:00AM", 40));
     }
 
     @Test
-    void deferralTimeIsCorrect() {
+    void timeOfAttendanceIsCorrectPM() {
+        CourtLocation courtLocation = LetterTestUtils.testCourtLocation();
+        courtLocation.setCourtAttendTime(LocalTime.of(18, 1));
+        LetterBase testLetter = new LetterBase(testContextBuilder()
+            .courtLocation(courtLocation)
+            .build());
+
+        testLetter.addData(LetterBase.LetterDataType.TIME_OF_ATTENDANCE, 40);
+        assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("6:01PM", 40));
+    }
+
+    @Test
+    void deferralTimeIsCorrectAM() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
             .courtLocation(LetterTestUtils.testCourtLocation())
             .build());
 
         testLetter.addData(LetterBase.LetterDataType.DEFERRAL_TIME, 40);
-        assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("10:00", 40));
+        assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("10:00AM", 40));
+    }
+
+    @Test
+    void deferralTimeIsCorrectPM() {
+        CourtLocation courtLocation = LetterTestUtils.testCourtLocation();
+        courtLocation.setCourtAttendTime(LocalTime.of(18, 1));
+        LetterBase testLetter = new LetterBase(testContextBuilder()
+            .courtLocation(courtLocation)
+            .build());
+
+        testLetter.addData(LetterBase.LetterDataType.DEFERRAL_TIME, 40);
+        assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("6:01PM", 40));
     }
 
     @Test
