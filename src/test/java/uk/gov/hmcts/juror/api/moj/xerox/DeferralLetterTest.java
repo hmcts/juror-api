@@ -28,7 +28,7 @@ class DeferralLetterTest extends AbstractLetterTest {
         addEnglishField("0845 3555567", 12);
         addEnglishField("", 12);
         addEnglishField("MONDAY 6 FEBRUARY, 2017", 32);
-        addEnglishField("10:00", 8);
+        addEnglishField("10:00AM", 8);
         addEnglishField("MR", 10);
         addEnglishField("FNAMEEIGHTTHREEONE", 20);
         addEnglishField("LNAMEEIGHTTHREEONE", 20);
@@ -48,7 +48,7 @@ class DeferralLetterTest extends AbstractLetterTest {
         addWelshLetterDate();
         addWelshField("ABERTAWE", 40);
         addWelshField("SWANSEA CROWN COURT", 40);
-        addWelshField("JURY CENTRAL SUMMONING BUREAU", 40);
+        addWelshField("JURY CENTRAL SUMMONING BUREAU", 35);
         addWelshField("THE COURT SERVICE", 35);
         addWelshField("FREEPOST LON 19669", 35);
         addWelshField("POCOCK STREET", 35);
@@ -58,7 +58,7 @@ class DeferralLetterTest extends AbstractLetterTest {
         addWelshField("0845 3555567", 12);
         addWelshField("", 12);
         addWelshField("DYDD LLUN 6 CHWEFROR, 2017", 32);
-        addWelshField("10:00", 8);
+        addWelshField("10:00AM", 8);
         addWelshField("MR", 10);
         addWelshField("FNAMEEIGHTTHREEONE", 20);
         addWelshField("LNAMEEIGHTTHREEONE", 20);
