@@ -9,7 +9,7 @@ import java.util.List;
 public class PostgresqlContainer extends PostgreSQLContainer<PostgresqlContainer> {
     
     private static DockerImageName imageName = DockerImageName
-        .parse("hmctspublic.azurecr.io/imported/bitnami/postgresql:16")
+        .parse("hmctspublic.azurecr.io/imported/postgres:16-alpine")
         .asCompatibleSubstituteFor("postgres");
     private static PostgresqlContainer container;
 
