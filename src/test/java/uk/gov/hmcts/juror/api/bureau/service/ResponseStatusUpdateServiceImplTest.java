@@ -90,7 +90,7 @@ public class ResponseStatusUpdateServiceImplTest {
         // Verify mock interactions
         verify(entityManager).detach(mockJurorResponse);
         verify(mockJurorResponse).setVersion(version);
-        verify(mockJurorResponse).setProcessingStatus(statusToChangeTo);
+        verify(mockJurorResponse).setProcessingStatus(auditRepository, statusToChangeTo);
         verify(jurorResponseRepository).save(mockJurorResponse);
 
         // as we're not setting the status to CLOSED, we should not be merging data to Juror
@@ -122,7 +122,7 @@ public class ResponseStatusUpdateServiceImplTest {
         // Verify mock interactions
         verify(entityManager).detach(mockJurorResponse);
         verify(mockJurorResponse).setVersion(version);
-        verify(mockJurorResponse).setProcessingStatus(statusToChangeTo);
+        verify(mockJurorResponse).setProcessingStatus(auditRepository, statusToChangeTo);
         verify(jurorResponseRepository).save(mockJurorResponse);
 
         // as we're not setting the status to CLOSED, we should not be merging data to Juror
@@ -154,7 +154,7 @@ public class ResponseStatusUpdateServiceImplTest {
         // Verify mock interactions
         verify(entityManager).detach(mockJurorResponse);
         verify(mockJurorResponse).setVersion(version);
-        verify(mockJurorResponse).setProcessingStatus(statusToChangeTo);
+        verify(mockJurorResponse).setProcessingStatus(auditRepository, statusToChangeTo);
         verify(jurorResponseRepository).save(mockJurorResponse);
 
         // as we're not setting the status to CLOSED, we should not be merging data to Juror
@@ -183,7 +183,7 @@ public class ResponseStatusUpdateServiceImplTest {
         // Verify mock interactions
         verify(entityManager).detach(mockJurorResponse);
         verify(mockJurorResponse).setVersion(version);
-        verify(mockJurorResponse).setProcessingStatus(statusToChangeTo);
+        verify(mockJurorResponse).setProcessingStatus(auditRepository, statusToChangeTo);
         verify(jurorResponseRepository).save(mockJurorResponse);
 
         // as we're not setting the status to CLOSED, we should not be merging data to Juror
@@ -223,7 +223,7 @@ public class ResponseStatusUpdateServiceImplTest {
         // Verify mock interactions
         verify(entityManager).detach(mockJurorResponse);
         verify(mockJurorResponse).setVersion(version);
-        verify(mockJurorResponse).setProcessingStatus(statusToChangeTo);
+        verify(mockJurorResponse).setProcessingStatus(auditRepository, statusToChangeTo);
         verify(jurorResponseRepository).save(mockJurorResponse);
 
         // as we're setting the status to CLOSED, we should be merging data to Juror
@@ -254,7 +254,7 @@ public class ResponseStatusUpdateServiceImplTest {
         // Verify mock interactions
         verify(entityManager).detach(mockJurorResponse);
         verify(mockJurorResponse).setVersion(version);
-        verify(mockJurorResponse).setProcessingStatus(statusToChangeTo);
+        verify(mockJurorResponse).setProcessingStatus(auditRepository, statusToChangeTo);
         verify(jurorResponseRepository).save(mockJurorResponse);
 
         // as we're not setting the status to CLOSED, we should not be merging data to Juror

@@ -28,6 +28,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
 import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
@@ -67,6 +68,8 @@ public class StraightThroughProcessorServiceImplTest {
     private ResponseInspector responseInspector;
     @Mock
     private SummonsReplyMergeService mergeService;
+    @Mock
+    private JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
 
     @InjectMocks
     private StraightThroughProcessorServiceImpl straightThroughProcessorService;
@@ -525,7 +528,7 @@ public class StraightThroughProcessorServiceImplTest {
         setJurorPoolPersonalDetails(juror);
 
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
-        paperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
 
         Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
@@ -550,7 +553,7 @@ public class StraightThroughProcessorServiceImplTest {
         juror.setTitle(null);
 
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
-        paperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
 
         Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
@@ -574,7 +577,7 @@ public class StraightThroughProcessorServiceImplTest {
         setJurorPoolPersonalDetails(juror);
 
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
-        paperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
         paperResponse.setFirstName("");
 
@@ -599,7 +602,7 @@ public class StraightThroughProcessorServiceImplTest {
         setJurorPoolPersonalDetails(juror);
 
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
-        paperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
         paperResponse.setLastName(null);
 
@@ -625,7 +628,7 @@ public class StraightThroughProcessorServiceImplTest {
         juror.setAddressLine1("Some Address 1");
 
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
-        paperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
 
         Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
@@ -650,7 +653,7 @@ public class StraightThroughProcessorServiceImplTest {
         juror.setAddressLine2("Some Address 2");
 
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
-        paperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
 
         Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
@@ -674,7 +677,7 @@ public class StraightThroughProcessorServiceImplTest {
         setJurorPoolPersonalDetails(juror);
 
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
-        paperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
         paperResponse.setAddressLine3("Some Address 3");
 
@@ -699,7 +702,7 @@ public class StraightThroughProcessorServiceImplTest {
         setJurorPoolPersonalDetails(juror);
 
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
-        paperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
         paperResponse.setAddressLine4("Some Town/City");
 
@@ -725,7 +728,7 @@ public class StraightThroughProcessorServiceImplTest {
         juror.setAddressLine5("Some Address 5");
 
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
-        paperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
 
         Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
@@ -749,7 +752,7 @@ public class StraightThroughProcessorServiceImplTest {
         setJurorPoolPersonalDetails(juror);
 
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
-        paperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
         paperResponse.setPostcode(null);
 
@@ -774,7 +777,7 @@ public class StraightThroughProcessorServiceImplTest {
         setJurorPoolPersonalDetails(juror);
 
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
-        paperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
         paperResponse.setDateOfBirth(null);
 
@@ -799,7 +802,7 @@ public class StraightThroughProcessorServiceImplTest {
         setJurorPoolPersonalDetails(juror);
 
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
-        paperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
 
         Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
@@ -823,7 +826,7 @@ public class StraightThroughProcessorServiceImplTest {
         setJurorPoolPersonalDetails(juror);
 
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
-        paperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
         paperResponse.setRelationship("Brother");
 
@@ -852,7 +855,7 @@ public class StraightThroughProcessorServiceImplTest {
         jurorPool.setStatus(jurorStatus);
 
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
-        paperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
 
         Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
@@ -876,7 +879,7 @@ public class StraightThroughProcessorServiceImplTest {
         setJurorPoolPersonalDetails(juror);
 
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
-        paperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
         paperResponse.setResidency(false);
 
@@ -901,7 +904,7 @@ public class StraightThroughProcessorServiceImplTest {
         setJurorPoolPersonalDetails(juror);
 
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
-        paperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
         paperResponse.setResidency(null);
 
@@ -926,7 +929,7 @@ public class StraightThroughProcessorServiceImplTest {
         setJurorPoolPersonalDetails(juror);
 
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
-        paperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
         paperResponse.setMentalHealthAct(true);
 
@@ -951,7 +954,7 @@ public class StraightThroughProcessorServiceImplTest {
         setJurorPoolPersonalDetails(juror);
 
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
-        paperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
         paperResponse.setMentalHealthAct(null);
 
@@ -976,7 +979,7 @@ public class StraightThroughProcessorServiceImplTest {
         setJurorPoolPersonalDetails(juror);
 
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
-        paperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
         paperResponse.setMentalHealthCapacity(true);
 
@@ -1001,7 +1004,7 @@ public class StraightThroughProcessorServiceImplTest {
         setJurorPoolPersonalDetails(juror);
 
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
-        paperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
         paperResponse.setMentalHealthCapacity(null);
 
@@ -1026,7 +1029,7 @@ public class StraightThroughProcessorServiceImplTest {
         setJurorPoolPersonalDetails(juror);
 
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
-        paperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
         paperResponse.setBail(true);
 
@@ -1051,7 +1054,7 @@ public class StraightThroughProcessorServiceImplTest {
         setJurorPoolPersonalDetails(juror);
 
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
-        paperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
         paperResponse.setBail(null);
 
@@ -1076,7 +1079,7 @@ public class StraightThroughProcessorServiceImplTest {
         setJurorPoolPersonalDetails(juror);
 
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
-        paperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
         paperResponse.setConvictions(true);
 
@@ -1101,7 +1104,7 @@ public class StraightThroughProcessorServiceImplTest {
         setJurorPoolPersonalDetails(juror);
 
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
-        paperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
         paperResponse.setConvictions(null);
 
@@ -1126,7 +1129,7 @@ public class StraightThroughProcessorServiceImplTest {
         setJurorPoolPersonalDetails(juror);
 
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
-        paperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
         paperResponse.setSigned(false);
 
@@ -1151,7 +1154,7 @@ public class StraightThroughProcessorServiceImplTest {
         setJurorPoolPersonalDetails(juror);
 
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
-        paperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
         paperResponse.setSigned(null);
 
@@ -1176,7 +1179,7 @@ public class StraightThroughProcessorServiceImplTest {
         setJurorPoolPersonalDetails(juror);
 
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
-        paperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
         paperResponse.setExcusal(true);
 
@@ -1201,7 +1204,7 @@ public class StraightThroughProcessorServiceImplTest {
         setJurorPoolPersonalDetails(juror);
 
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
-        paperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
         paperResponse.setDeferral(true);
 
@@ -1226,7 +1229,7 @@ public class StraightThroughProcessorServiceImplTest {
         setJurorPoolPersonalDetails(juror);
 
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
-        paperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
         paperResponse.setDeferral(null);
         paperResponse.setExcusal(null);
@@ -1252,7 +1255,7 @@ public class StraightThroughProcessorServiceImplTest {
         setJurorPoolPersonalDetails(juror);
 
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
-        paperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
 
         JurorResponseCjsEmployment cjsEmployment = new JurorResponseCjsEmployment();
@@ -1282,7 +1285,7 @@ public class StraightThroughProcessorServiceImplTest {
         setJurorPoolPersonalDetails(juror);
 
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
-        paperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
 
         JurorReasonableAdjustment adjustment1 = new JurorReasonableAdjustment();

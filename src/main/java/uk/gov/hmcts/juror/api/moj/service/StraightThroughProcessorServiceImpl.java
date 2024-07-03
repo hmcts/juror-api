@@ -25,6 +25,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
@@ -51,6 +52,7 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
     private final SummonsReplyMergeService mergeService;
     private final PrintDataService printDataService;
     private final JurorHistoryService jurorHistoryService;
+    private final JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
 
 
     /**
@@ -214,7 +216,7 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
 
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, owner);
 
-        jurorResponse.setProcessingStatus(ProcessingStatus.CLOSED);
+        jurorResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.CLOSED);
 
         processJurorAgeDisqualification(jurorPool, jurorNumber, owner, username);
 

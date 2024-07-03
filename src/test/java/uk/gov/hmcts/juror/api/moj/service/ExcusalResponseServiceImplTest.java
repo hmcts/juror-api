@@ -33,6 +33,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -73,6 +74,8 @@ public class ExcusalResponseServiceImplTest {
     private JurorHistoryRepository jurorHistoryRepository;
     @Mock
     private PrintDataService printDataService;
+    @Mock
+    private JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
 
     @InjectMocks
     private ExcusalResponseServiceImpl excusalResponseService;
@@ -370,7 +373,7 @@ public class ExcusalResponseServiceImplTest {
         final ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
 
         PaperResponse jurorPaperResponse = createTestJurorPaperResponse(JUROR_NUMBER);
-        jurorPaperResponse.setProcessingStatus(ProcessingStatus.CLOSED);
+        jurorPaperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.CLOSED);
         excusalDecisionDto.setExcusalDecision(ExcusalDecision.GRANT);
 
         Mockito.doReturn(jurorPaperResponse).when(jurorPaperResponseRepository).findByJurorNumber(JUROR_NUMBER);
@@ -407,7 +410,7 @@ public class ExcusalResponseServiceImplTest {
         excusalDecisionDto.setExcusalDecision(ExcusalDecision.GRANT);
 
         DigitalResponse jurorResponse = createTestJurorDigitalResponse(JUROR_NUMBER);
-        jurorResponse.setProcessingStatus(ProcessingStatus.CLOSED);
+        jurorResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.CLOSED);
         Mockito.doReturn(jurorResponse).when(jurorResponseRepository).findByJurorNumber(JUROR_NUMBER);
 
         JurorPool jurorPool = new JurorPool();
@@ -785,7 +788,7 @@ public class ExcusalResponseServiceImplTest {
         response.setConvictions(false);
 
         response.setSigned(true);
-        response.setProcessingStatus(ProcessingStatus.TODO);
+        response.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
 
         return response;
     }
@@ -815,7 +818,7 @@ public class ExcusalResponseServiceImplTest {
         response.setBail(false);
         response.setConvictions(false);
 
-        response.setProcessingStatus(ProcessingStatus.TODO);
+        response.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
 
         return response;
     }

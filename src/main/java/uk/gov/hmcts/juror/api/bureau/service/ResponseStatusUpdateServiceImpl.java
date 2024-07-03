@@ -20,7 +20,6 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -54,6 +53,7 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
     private final AssignOnUpdateService assignOnUpdateService;
     private final JurorReasonableAdjustmentRepository specialNeedsRepository;
     private final WelshCourtLocationRepository welshCourtLocationRepository;
+    private final JurorResponseAuditRepositoryMod jurorResponseAuditRepositoryMod;
 
 
     /**
@@ -80,10 +80,8 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
             log.debug("Version: DB={}, UI={}", jurorResponse.getVersion(), version);
             jurorResponse.setVersion(version);
 
-            final ProcessingStatus auditProcessingStatus = jurorResponse.getProcessingStatus();
-
             //update response PROCESSING status
-            jurorResponse.setProcessingStatus(status);
+            jurorResponse.setProcessingStatus(jurorResponseAuditRepositoryMod, status);
 
             // JDB-2685: if no staff assigned, assign current login
             if (null == jurorResponse.getStaff()) {
@@ -125,17 +123,6 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
             }
             log.info("Updated juror '{}' processing status to '{}'", jurorNumber, jurorResponse.getProcessingStatus());
 
-            //audit response status change
-            JurorResponseAuditMod responseAudit = auditRepository.save(JurorResponseAuditMod.builder()
-                .jurorNumber(jurorResponse.getJurorNumber())
-                .login(auditorUsername)
-                .oldProcessingStatus(auditProcessingStatus)
-                .newProcessingStatus(jurorResponse.getProcessingStatus())
-                .build());
-
-            if (log.isTraceEnabled()) {
-                log.trace("Audit entry: {}", responseAudit);
-            }
         } else {
             log.error("No juror response found for juror number {}", jurorNumber);
             throw new JurorResponseNotFoundException("No juror response found");

@@ -37,7 +37,6 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription;
@@ -765,10 +764,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
         // there was code for digital to set up the optimistic locking, different from paper
         // this is not needed as it will be covered with e-tag header
-
-        final ProcessingStatus auditStatus = jurorResponse.getProcessingStatus();
-
-        jurorResponse.setProcessingStatus(ProcessingStatus.CLOSED);
+        jurorResponse.setProcessingStatus(jurorResponseAuditRepositoryMod, ProcessingStatus.CLOSED);
 
         // assign staff (digital)
         if (deferralReasonDto.getReplyMethod() == ReplyMethod.DIGITAL) {
@@ -777,15 +773,6 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
             assignOnUpdateService.assignToCurrentLogin(digitalResponse, auditorUsername);
 
-            final JurorResponseAuditMod responseAudit =
-                jurorResponseAuditRepositoryMod.save(JurorResponseAuditMod.builder()
-                    .jurorNumber(jurorResponse.getJurorNumber())
-                    .login(auditorUsername)
-                    .oldProcessingStatus(auditStatus)
-                    .newProcessingStatus(jurorResponse.getProcessingStatus())
-                    .build());
-
-            log.trace("Audit entry: {}", responseAudit);
             mergeService.mergeDigitalResponse(digitalResponse, auditorUsername);
         } else {
             assert jurorResponse instanceof PaperResponse;

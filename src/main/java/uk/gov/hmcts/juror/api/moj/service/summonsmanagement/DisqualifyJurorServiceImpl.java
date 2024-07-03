@@ -15,7 +15,6 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
@@ -28,6 +27,7 @@ import uk.gov.hmcts.juror.api.moj.service.AssignOnUpdateServiceMod;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.service.SummonsReplyMergeService;
+import uk.gov.hmcts.juror.api.moj.utils.JurorResponseUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -41,7 +41,6 @@ import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.getJurorDigitalResponse
 import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.getJurorPaperResponse;
 import static uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils.checkOwnershipForCurrentUser;
 import static uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils.getActiveJurorPoolForUser;
-import static uk.gov.hmcts.juror.api.moj.utils.JurorResponseUtils.createMinimalPaperSummonsRecord;
 
 @Slf4j
 @Service
@@ -109,18 +108,16 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
             }
 
             //Check the status of the juror response to ensure only responses in the correct status can be updated
-            if (Boolean.FALSE.equals(jurorResponse.getProcessingComplete())) {
+            if (jurorResponse.getProcessingComplete() == null
+                || Boolean.FALSE.equals(jurorResponse.getProcessingComplete())) {
 
                 log.debug("Juror {} - Juror response is not complete, updating response", jurorNumber);
-
-                //Set the new status - need to copy the old status as required for the auditing steps
-                final ProcessingStatus oldProcessingStatus = setJurorResponseProcessingStatus(jurorResponse);
-
                 //Save the updated juror response
-                if (ReplyMethod.PAPER.equals(disqualifyJurorDto.getReplyMethod())) {
-                    saveJurorPaperResponse(payload.getLogin(), (PaperResponse) jurorResponse);
-                } else if (ReplyMethod.DIGITAL.equals(disqualifyJurorDto.getReplyMethod())) {
-                    saveJurorDigitalResponse(payload.getLogin(), oldProcessingStatus, (DigitalResponse) jurorResponse);
+                jurorResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.CLOSED);
+                if (jurorResponse instanceof PaperResponse response) {
+                    saveJurorPaperResponse(payload.getLogin(), response);
+                } else if (jurorResponse instanceof DigitalResponse response) {
+                    saveJurorDigitalResponse(payload.getLogin(), response);
                 }
             }
         }
@@ -152,16 +149,16 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
 
         if (null != digitalResponse) {
             checkJurorResponseStatus(digitalResponse);
-            final ProcessingStatus oldProcessingStatus = setJurorResponseProcessingStatus(digitalResponse);
+            digitalResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.CLOSED);
             digitalResponse.setProcessingComplete(true);
             digitalResponse.setCompletedAt(LocalDateTime.now());
-            saveJurorDigitalResponse(bureauJwtPayload.getLogin(), oldProcessingStatus, digitalResponse);
+            saveJurorDigitalResponse(bureauJwtPayload.getLogin(), digitalResponse);
             processDisqualification(jurorPool, digitalResponse, bureauJwtPayload, DisqualifyCodeEnum.A);
 
         } else if (null != paperResponse) {
             checkJurorResponseStatus(paperResponse);
             paperResponse.setProcessingComplete(true);
-            paperResponse.setProcessingStatus(ProcessingStatus.CLOSED);
+            paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.CLOSED);
             paperResponse.setCompletedAt(LocalDateTime.now());
             saveJurorPaperResponse(bureauJwtPayload.getLogin(),
                 paperResponse);
@@ -169,8 +166,9 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
 
         } else {
             Juror juror = jurorPool.getJuror();
-            PaperResponse minimalPaperResponse = createMinimalPaperSummonsRecord(juror, "Disqualification due to age.");
-            jurorPaperResponseRepository.save(minimalPaperResponse);
+            PaperResponse minimalPaperResponse =
+                JurorResponseUtils.createMinimalPaperSummonsRecord(jurorPaperResponseRepository,
+                    jurorResponseAuditRepository, juror, "Disqualification due to age.");
             saveJurorPaperResponse(bureauJwtPayload.getLogin(),
                 minimalPaperResponse);
             processDisqualification(jurorPool, minimalPaperResponse, bureauJwtPayload, DisqualifyCodeEnum.A);
@@ -216,7 +214,6 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
     }
 
     private void saveJurorDigitalResponse(String officerUsername,
-                                          ProcessingStatus oldProcessingStatus,
                                           DigitalResponse jurorResponse) {
         log.trace("Juror {} - Service method saveJurorDigitalResponse() invoked", jurorResponse.getJurorNumber());
 
@@ -231,31 +228,11 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
 
         //Merge the updated juror digital response
         summonsReplyMergeService.mergeDigitalResponse(jurorResponse, officerUsername);
-
-        //Create an audit entry to reflect a change to the digital response related to disqualification
-        jurorResponseAuditRepository.save(JurorResponseAuditMod.builder()
-            .jurorNumber(jurorResponse.getJurorNumber())
-            .login(officerUsername)
-            .oldProcessingStatus(oldProcessingStatus)
-            .newProcessingStatus(jurorResponse.getProcessingStatus())
-            .build());
     }
 
     private void saveJurorPaperResponse(String officerUsername, PaperResponse paperResponse) {
         log.trace("Juror {} - Service method saveJurorPaperResponse() invoked", paperResponse.getJurorNumber());
         summonsReplyMergeService.mergePaperResponse(paperResponse, officerUsername);
-    }
-
-    private ProcessingStatus setJurorResponseProcessingStatus(AbstractJurorResponse jurorResponse) {
-        log.trace(
-            "Juror {} - Service method setJurorResponseProcessingStatus() invoked",
-            jurorResponse.getJurorNumber()
-        );
-
-        ProcessingStatus oldProcessingStatus = jurorResponse.getProcessingStatus();
-        jurorResponse.setProcessingStatus(ProcessingStatus.CLOSED);
-
-        return oldProcessingStatus;
     }
 
     private void checkJurorResponseStatus(AbstractJurorResponse jurorResponse) {

@@ -10,6 +10,7 @@ import uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 
 import java.time.LocalDateTime;
 import java.util.LinkedList;
@@ -25,11 +26,15 @@ public class BureauBacklogCountServiceImplTest {
     @Mock
     private JurorDigitalResponseRepositoryMod responseRepo;
 
+    @Mock
+    private JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
+
     @InjectMocks
     private BureauBacklogCountServiceImpl backlogCountService;
 
 
     private List<DigitalResponse> backlog;
+
 
 
     @Before
@@ -47,32 +52,32 @@ public class BureauBacklogCountServiceImplTest {
         }
         DigitalResponse  response1 = new DigitalResponse();
         response1.setUrgent(true);
-        response1.setProcessingStatus(ProcessingStatus.TODO);
+        response1.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         response1.setStaff(null);
         backlog.add(response1);
 
         DigitalResponse  response2 = new DigitalResponse();
         response2.setUrgent(true);
-        response2.setProcessingStatus(ProcessingStatus.TODO);
+        response2.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         response2.setStaff(null);
         backlog.add(response2);
 
         DigitalResponse  response3 = new DigitalResponse();
         response3.setUrgent(false);
-        response3.setProcessingStatus(ProcessingStatus.TODO);
+        response3.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         response3.setStaff(null);
 
         backlog.add(response3);
 
         DigitalResponse  response4 = new DigitalResponse();
         response4.setUrgent(false);
-        response4.setProcessingStatus(ProcessingStatus.TODO);
+        response4.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         response4.setStaff(null);
         backlog.add(response4);
 
         DigitalResponse  response5 = new DigitalResponse();
         response5.setUrgent(false);
-        response5.setProcessingStatus(ProcessingStatus.TODO);
+        response5.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         response5.setStaff(null);
         backlog.add(response5);
 

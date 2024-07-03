@@ -44,6 +44,7 @@ import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
 
 import java.time.LocalDate;
@@ -92,7 +93,8 @@ public class JurorPaperResponseServiceImplTest {
     private WelshCourtLocationRepository welshCourtLocationRepository;
     @Mock
     private StraightThroughProcessorService straightThroughProcessorService;
-
+    @Mock
+    private JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
     @InjectMocks
     private JurorPaperResponseServiceImpl jurorPaperResponseService;
 
@@ -1503,7 +1505,7 @@ public class JurorPaperResponseServiceImplTest {
         Mockito.doReturn(Collections.singletonList(adjustment)).when(response).getReasonableAdjustments();
 
         response.setSigned(true);
-        response.setProcessingStatus(ProcessingStatus.TODO);
+        response.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
 
         response.setStaff(User.builder().username("SOME_USER").build());
 

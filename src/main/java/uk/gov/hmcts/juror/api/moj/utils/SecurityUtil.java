@@ -15,6 +15,7 @@ import java.util.List;
 public final class SecurityUtil {
 
     public static final String BUREAU_OWNER = "400";
+    public static String AUTO_USER = "AUTO";
 
     public static final String IS_MANAGER = "hasRole('ROLE_MANAGER')";
     public static final String IS_SJO = "hasRole('ROLE_SENIOR_JUROR_OFFICER')";
@@ -64,6 +65,15 @@ public final class SecurityUtil {
         Authentication authentication = securityContext.getAuthentication();
         if (authentication instanceof BureauJwtAuthentication bureauJwtAuthentication) {
             return bureauJwtAuthentication;
+        }
+        throw new MojException.Forbidden("User must be authorised with BureauJwtAuthentication", null);
+    }
+
+    public static PublicJwtAuthentication getActiveUsersPublicJwtAuthentication() {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        Authentication authentication = securityContext.getAuthentication();
+        if (authentication instanceof PublicJwtAuthentication publicJwtAuthentication) {
+            return publicJwtAuthentication;
         }
         throw new MojException.Forbidden("User must be authorised with BureauJwtAuthentication", null);
     }

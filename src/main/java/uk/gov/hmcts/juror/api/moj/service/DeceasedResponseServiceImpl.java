@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +28,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCommonRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
@@ -45,22 +45,15 @@ public class DeceasedResponseServiceImpl implements DeceasedResponseService {
     private static final String DECEASED_CODE = "D";
     private static final String PAPER_RESPONSE_EXISTS_TEXT = "A Paper summons reply exists.";
 
-    @NonNull
     private final ContactCodeRepository contactCodeRepository;
-    @NonNull
     private final JurorHistoryRepository jurorHistoryRepository;
-    @NonNull
     private final JurorPoolRepository jurorPoolRepository;
-    @NonNull
     private final JurorRepository jurorRepository;
-    @NonNull
     private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
-    @NonNull
     private final JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository;
-    @NonNull
     private final JurorResponseCommonRepositoryMod jurorResponseCommonRepositoryMod;
-    @NonNull
     private final ContactLogRepository contactLogRepository;
+    private final JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
 
     @Transactional
     @Override
@@ -153,8 +146,8 @@ public class DeceasedResponseServiceImpl implements DeceasedResponseService {
         contactLogRepository.saveAndFlush(contactLog);
     }
 
-    private static void setResponseToClosed(AbstractJurorResponse jurorResponse) {
-        jurorResponse.setProcessingStatus(ProcessingStatus.CLOSED);
+    private void setResponseToClosed(AbstractJurorResponse jurorResponse) {
+        jurorResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.CLOSED);
         jurorResponse.setProcessingComplete(true);
         jurorResponse.setCompletedAt(LocalDateTime.now());
     }
@@ -178,7 +171,8 @@ public class DeceasedResponseServiceImpl implements DeceasedResponseService {
         jurorPaperResponse.setThirdPartyReason(deceasedComment);
 
         jurorPaperResponse.setProcessingComplete(true);
-        jurorPaperResponse.setProcessingStatus(ProcessingStatus.CLOSED);
+        jurorPaperResponse = jurorPaperResponseRepository.save(jurorPaperResponse);
+        jurorPaperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.CLOSED);
         jurorPaperResponse.setCompletedAt(LocalDateTime.now());
 
         jurorPaperResponseRepository.save(jurorPaperResponse);

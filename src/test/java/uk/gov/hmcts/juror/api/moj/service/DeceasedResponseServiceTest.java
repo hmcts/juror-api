@@ -1,10 +1,14 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
@@ -25,6 +29,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCommonRepositoryMod;
 
 import java.time.LocalDate;
@@ -46,6 +51,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(SpringExtension.class)
 class DeceasedResponseServiceTest {
     @Mock
     private JurorHistoryRepository jurorHistoryRepository;
@@ -63,8 +69,8 @@ class DeceasedResponseServiceTest {
     private JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository;
     @Mock
     private ContactLogRepository contactLogRepository;
-
-    public static final String UNABLE_TO_ATTEND = "UA";
+    @Mock
+    private JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
 
     @InjectMocks
     private DeceasedResponseServiceImpl deceasedResponseService;
@@ -72,25 +78,14 @@ class DeceasedResponseServiceTest {
 
     @BeforeEach
     void beforeEach() {
-        jurorHistoryRepository = mock(JurorHistoryRepository.class);
-        contactCodeRepository = mock(ContactCodeRepository.class);
-        jurorRepository = mock(JurorRepository.class);
-        jurorPoolRepository = mock(JurorPoolRepository.class);
-        jurorResponseCommonRepositoryMod = mock(JurorResponseCommonRepositoryMod.class);
-        jurorPaperResponseRepository = mock(JurorPaperResponseRepositoryMod.class);
-        jurorDigitalResponseRepository = mock(JurorDigitalResponseRepositoryMod.class);
-        contactLogRepository = mock(ContactLogRepository.class);
+        TestUtils.mockSecurityUtil(BureauJwtPayload.builder()
+            .login("TEST_LOGIN")
+            .build());
+    }
 
-        this.deceasedResponseService = new DeceasedResponseServiceImpl(
-            contactCodeRepository,
-            jurorHistoryRepository,
-            jurorPoolRepository,
-            jurorRepository,
-            jurorPaperResponseRepository,
-            jurorDigitalResponseRepository,
-            jurorResponseCommonRepositoryMod,
-            contactLogRepository
-        );
+    @AfterEach
+    void afterEach() {
+        TestUtils.afterAll();
     }
 
     @Test
@@ -141,6 +136,7 @@ class DeceasedResponseServiceTest {
         verify(jurorPoolRepository, never()).save(any());
     }
 
+
     @Test
     void markJurorAsDeceasedPaperResponseExistsFlagTrue() {
         String owner = "400";
@@ -166,14 +162,14 @@ class DeceasedResponseServiceTest {
             IContactCode.UNABLE_TO_ATTEND.getDescription());
         when(contactCodeRepository.findById(
             IContactCode.UNABLE_TO_ATTEND.getCode())).thenReturn(Optional.of(contactCode));
-
+        when(jurorPaperResponseRepository.save(any())).thenReturn(mock(PaperResponse.class));
         deceasedResponseService.markAsDeceased(buildPayload(owner), markAsDeceasedDto);
 
         verify(jurorPoolRepository, times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), anyBoolean());
         verify(jurorPoolRepository, times(1)).save(any());
         verify(contactCodeRepository, times(1)).findById(any());
-        verify(jurorPaperResponseRepository, times(1)).save(any());
+        verify(jurorPaperResponseRepository, times(2)).save(any());
         verify(contactLogRepository, times(1)).saveAndFlush(any());
     }
 
@@ -271,7 +267,7 @@ class DeceasedResponseServiceTest {
             IContactCode.UNABLE_TO_ATTEND.getDescription());
         when(contactCodeRepository.findById(
             IContactCode.UNABLE_TO_ATTEND.getCode())).thenReturn(Optional.of(contactCode));
-        
+
         DigitalResponse jurorResponse = new DigitalResponse();
         jurorResponse.setJurorNumber(jurorNumber);
 

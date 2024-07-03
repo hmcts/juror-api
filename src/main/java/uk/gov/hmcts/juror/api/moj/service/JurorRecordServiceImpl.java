@@ -16,7 +16,6 @@ import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
 import uk.gov.hmcts.juror.api.bureau.domain.DisCode;
 import uk.gov.hmcts.juror.api.bureau.service.BureauService;
-import uk.gov.hmcts.juror.api.bureau.service.ResponseExcusalService;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
@@ -101,6 +100,7 @@ import uk.gov.hmcts.juror.api.moj.repository.juror.JurorPaymentsSummaryRepositor
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCommonRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.ReasonableAdjustmentsRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
@@ -170,7 +170,6 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     private final ContactLogRepository contactLogRepository;
     private final JurorDetailRepositoryMod jurorDetailRepositoryMod;
     private final BureauService bureauService;
-    private final ResponseExcusalService responseExcusalService;
     private final JurorAuditChangeService jurorAuditChangeService;
     private final PrintDataService printDataService;
     private final GeneratePoolNumberService generatePoolNumberService;
@@ -187,6 +186,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     private final PanelRepository panelRepository;
     private final HistoryTemplateService historyTemplateService;
     private final WelshCourtLocationRepository welshCourtLocationRepository;
+    private final JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
 
     @Override
     @Transactional
@@ -833,7 +833,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         JurorUtils.checkOwnershipForCurrentUser(juror, owner);
         juror.setOpticRef(opticsRef);
         jurorRepository.save(juror);
-        response.setProcessingStatus(ProcessingStatus.AWAITING_COURT_REPLY);
+        response.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.AWAITING_COURT_REPLY);
 
         if (ReplyMethod.DIGITAL.getDescription().equals(response.getReplyType().getType())) {
             jurorResponseRepository.save((DigitalResponse) response);

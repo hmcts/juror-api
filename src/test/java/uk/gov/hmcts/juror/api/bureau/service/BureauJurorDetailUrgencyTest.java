@@ -12,6 +12,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.repository.AppSettingRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -53,6 +54,8 @@ public class BureauJurorDetailUrgencyTest {
 
     @Mock
     private AppSettingRepository mockAppSettingRepository;
+    @Mock
+    private JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
 
     @InjectMocks
     private UrgencyServiceImpl urgency;
@@ -77,7 +80,7 @@ public class BureauJurorDetailUrgencyTest {
         testDetail.setHearingDate(hearingDateValid.toLocalDate());
 
         jurorResponse = new DigitalResponse();
-        jurorResponse.setProcessingStatus(uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus.TODO);
+        jurorResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         jurorResponse.setDateReceived(responseReceived);
 
         poolDetails = new JurorPool();
@@ -107,7 +110,6 @@ public class BureauJurorDetailUrgencyTest {
         final LocalDate urgentHearingDate = (hearingDateUrgent.plusDays(1L).plusHours(1L).toLocalDate());
         testDetail.setHearingDate(urgentHearingDate);
         poolDetails.setNextDate(urgentHearingDate);
-        // poolDetails.setReadOnly(Boolean.FALSE);
         poolDetails.setOwner(OWNER_IS_BUREAU);
 
 
