@@ -30,6 +30,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
@@ -69,6 +70,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
     @NonNull
     private final PrintDataService printDataService;
     private final JurorHistoryService jurorHistoryService;
+    private final JurorResponseAuditRepositoryMod jurorResponseAuditRepositoryMod;
 
     @Override
     @Transactional
@@ -135,7 +137,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
 
         log.info(String.format("PAPER response found for Juror %s", jurorNumber));
 
-        jurorPaperResponse.setProcessingStatus(ProcessingStatus.CLOSED);
+        jurorPaperResponse.setProcessingStatus(jurorResponseAuditRepositoryMod, ProcessingStatus.CLOSED);
 
         if (jurorPaperResponse.getStaff() == null) {
             log.info(String.format("No staff assigned to PAPER response for Juror %s", jurorNumber));
@@ -160,7 +162,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
 
         log.info(String.format("DIGITAL response found for Juror %s", jurorNumber));
 
-        jurorResponse.setProcessingStatus(ProcessingStatus.CLOSED);
+        jurorResponse.setProcessingStatus(jurorResponseAuditRepositoryMod, ProcessingStatus.CLOSED);
 
         if (jurorResponse.getStaff() == null) {
             log.info(String.format("No staff assigned to DIGITAL response for Juror %s", jurorNumber));

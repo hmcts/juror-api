@@ -147,7 +147,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PaperResponse response = new PaperResponse();
         response.setJurorNumber(jurorNumber);
         response.setProcessingComplete(false);
-        response.setProcessingStatus(ProcessingStatus.TODO);
+        response.setProcessingStatus(auditRepository, ProcessingStatus.TODO);
 
         final BureauJwtPayload payload = buildPayload();
 
@@ -187,7 +187,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         String jurorNumber = "123456789";
         PaperResponse response = createPaperResponse(jurorNumber);
         response.setProcessingComplete(false);
-        response.setProcessingStatus(ProcessingStatus.CLOSED);
+        response.setProcessingStatus(auditRepository, ProcessingStatus.CLOSED);
         response.setPhoneNumber("07123456789");
         response.setAltPhoneNumber("01234567890");
 
@@ -238,7 +238,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
 
         PaperResponse response = createPaperResponseFromJurorPool(juror);
         response.setProcessingComplete(false);
-        response.setProcessingStatus(ProcessingStatus.CLOSED);
+        response.setProcessingStatus(auditRepository, ProcessingStatus.CLOSED);
         response.setPhoneNumber("01234567890");
         response.setAltPhoneNumber("07123456789");
 
@@ -271,7 +271,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         String jurorNumber = "123456789";
         PaperResponse response = createPaperResponse(jurorNumber);
         response.setProcessingComplete(true);
-        response.setProcessingStatus(ProcessingStatus.CLOSED);
+        response.setProcessingStatus(auditRepository, ProcessingStatus.CLOSED);
 
         final BureauJwtPayload payload = buildPayload();
 
@@ -302,7 +302,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         String jurorNumber = "123456789";
         PaperResponse response = createPaperResponse(jurorNumber);
         response.setProcessingComplete(false);
-        response.setProcessingStatus(ProcessingStatus.CLOSED);
+        response.setProcessingStatus(auditRepository, ProcessingStatus.CLOSED);
 
         BureauJwtPayload payload = buildPayload();
 
@@ -326,7 +326,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         String jurorNumber = "123456789";
         PaperResponse response = createPaperResponse(jurorNumber);
         response.setProcessingComplete(false);
-        response.setProcessingStatus(ProcessingStatus.CLOSED);
+        response.setProcessingStatus(auditRepository, ProcessingStatus.CLOSED);
 
         final BureauJwtPayload payload = buildPayload();
 
@@ -354,7 +354,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         String jurorNumber = "123456789";
         PaperResponse response = createPaperResponse(jurorNumber);
         response.setProcessingComplete(false);
-        response.setProcessingStatus(ProcessingStatus.TODO);
+        response.setProcessingStatus(auditRepository, ProcessingStatus.TODO);
 
         final BureauJwtPayload payload = buildPayload();
 
@@ -383,7 +383,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         String jurorNumber = "123456789";
         PaperResponse response = createPaperResponse(jurorNumber);
         response.setProcessingComplete(false);
-        response.setProcessingStatus(ProcessingStatus.TODO);
+        response.setProcessingStatus(auditRepository, ProcessingStatus.TODO);
 
         final BureauJwtPayload payload = buildPayload();
 
@@ -436,7 +436,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         String jurorNumber = "123456789";
         PaperResponse response = createPaperResponse(jurorNumber);
         response.setProcessingComplete(false);
-        response.setProcessingStatus(ProcessingStatus.TODO);
+        response.setProcessingStatus(auditRepository, ProcessingStatus.TODO);
 
         BureauJwtPayload payload = buildPayload();
         payload.setOwner("415");
@@ -470,7 +470,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         String jurorNumber = "123456789";
         PaperResponse response = createPaperResponse(jurorNumber);
         response.setProcessingComplete(false);
-        response.setProcessingStatus(ProcessingStatus.TODO);
+        response.setProcessingStatus(auditRepository, ProcessingStatus.TODO);
 
         BureauJwtPayload payload = buildPayload();
         payload.setOwner("415");
@@ -2275,7 +2275,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         String jurorNumber = "123456789";
         PaperResponse response = createPaperResponse(jurorNumber);
         response.setProcessingComplete(true);
-        response.setProcessingStatus(ProcessingStatus.CLOSED);
+        response.setProcessingStatus(auditRepository, ProcessingStatus.CLOSED);
         response.setPhoneNumber("07123456789");
         response.setAltPhoneNumber("01234567890");
 

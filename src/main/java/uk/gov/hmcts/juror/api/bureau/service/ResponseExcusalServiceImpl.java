@@ -18,7 +18,6 @@ import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
@@ -100,8 +99,7 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
             savedResponse.setVersion(excusalCodeDto.getVersion());
 
             //update response
-            final ProcessingStatus oldProcessingStatus = savedResponse.getProcessingStatus();
-            savedResponse.setProcessingStatus(ProcessingStatus.CLOSED);
+            savedResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.CLOSED);
 
             // JDB-2685: if no staff assigned, assign current login
             if (null == savedResponse.getStaff()) {
@@ -119,14 +117,6 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
                 }
                 throw new ExcusalException.OptimisticLockingFailure(jurorId, e);
             }
-
-            //audit response status change
-            jurorResponseAuditRepository.save(JurorResponseAuditMod.builder()
-                .jurorNumber(jurorId)
-                .login(login)
-                .oldProcessingStatus(oldProcessingStatus)
-                .newProcessingStatus(savedResponse.getProcessingStatus())
-                .build());
 
             // update juror pool entry
             JurorPool poolDetails = detailsRepository.findByJurorJurorNumber(savedResponse.getJurorNumber());
@@ -201,8 +191,7 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
             savedResponse.setVersion(excusalCodeDto.getVersion());
 
             //update response
-            final ProcessingStatus oldProcessingStatus = savedResponse.getProcessingStatus();
-            savedResponse.setProcessingStatus(ProcessingStatus.CLOSED);
+            savedResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.CLOSED);
 
             // JDB-2685: if no staff assigned, assign current login
             if (null == savedResponse.getStaff()) {
@@ -220,14 +209,6 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
                 }
                 throw new ExcusalException.OptimisticLockingFailure(jurorId, e);
             }
-
-            //audit response status change
-            jurorResponseAuditRepository.save(JurorResponseAuditMod.builder()
-                .jurorNumber(jurorId)
-                .login(login)
-                .oldProcessingStatus(oldProcessingStatus)
-                .newProcessingStatus(savedResponse.getProcessingStatus())
-                .build());
 
             // update juror pool entry
             JurorPool poolDetails = detailsRepository.findByJurorJurorNumber(savedResponse.getJurorNumber());

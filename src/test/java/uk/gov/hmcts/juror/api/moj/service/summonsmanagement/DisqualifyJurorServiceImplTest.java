@@ -262,7 +262,6 @@ public class DisqualifyJurorServiceImplTest {
         verify(assignOnUpdateService, never()).assignToCurrentLogin(any(DigitalResponse.class),
             anyString());
         verify(summonsReplyMergeService, never()).mergeDigitalResponse(any(DigitalResponse.class), anyString());
-        verify(jurorResponseAuditRepository, never()).save(any(JurorResponseAuditMod.class));
     }
 
     @Test
@@ -444,7 +443,6 @@ public class DisqualifyJurorServiceImplTest {
         verify(jurorDigitalResponseRepository, times(1)).findByJurorNumber(anyString());
         verify(assignOnUpdateService, never()).assignToCurrentLogin(any(DigitalResponse.class), anyString());
         verify(summonsReplyMergeService, never()).mergeDigitalResponse(any(DigitalResponse.class), anyString());
-        verify(jurorResponseAuditRepository, never()).save(any(JurorResponseAuditMod.class));
 
         //Paper related
         verify(jurorPaperResponseRepository, never()).findById(anyString());
@@ -498,7 +496,7 @@ public class DisqualifyJurorServiceImplTest {
         response.setConvictions(false);
 
         response.setSigned(true);
-        response.setProcessingStatus(ProcessingStatus.TODO);
+        response.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
 
         return response;
     }
@@ -528,7 +526,7 @@ public class DisqualifyJurorServiceImplTest {
         response.setBail(false);
         response.setConvictions(false);
 
-        response.setProcessingStatus(ProcessingStatus.TODO);
+        response.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
 
         return response;
     }

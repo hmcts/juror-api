@@ -17,7 +17,6 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -266,21 +265,13 @@ public class StraightThroughProcessorImpl implements StraightThroughProcessor {
                     "Response must be in summoned state to qualify for straight-through");
             }
 
-            savedDigitalResponse.setProcessingStatus(ProcessingStatus.CLOSED);
+            savedDigitalResponse.setProcessingStatus(jurorResponseAuditRepositoryMod, ProcessingStatus.CLOSED);
 
             savedDigitalResponse.setStaff(staffMember(AUTO_USER));
             savedDigitalResponse.setStaffAssignmentDate(LocalDate.now());
 
             // save the response
             mergeService.mergeResponse(savedDigitalResponse, AUTO_USER);
-
-            //audit response status change
-            jurorResponseAuditRepositoryMod.save(JurorResponseAuditMod.builder()
-                .jurorNumber(savedDigitalResponse.getJurorNumber())
-                .login(AUTO_USER)
-                .oldProcessingStatus(ProcessingStatus.TODO)
-                .newProcessingStatus(savedDigitalResponse.getProcessingStatus())
-                .build());
 
             // update juror entry
             //   final Pool updatedDetails = detailsRepository.findByJurorNumber(savedDigitalResponse.getJurorNumber());
@@ -363,20 +354,12 @@ public class StraightThroughProcessorImpl implements StraightThroughProcessor {
             }
 
             //update response
-            savedDigitalResponse.setProcessingStatus(ProcessingStatus.CLOSED);
+            savedDigitalResponse.setProcessingStatus(jurorResponseAuditRepositoryMod, ProcessingStatus.CLOSED);
             savedDigitalResponse.setStaff(staffMember(AUTO_USER));
             savedDigitalResponse.setStaffAssignmentDate(LocalDate.now());
 
             // save the response
             mergeService.mergeResponse(savedDigitalResponse, AUTO_USER);
-
-            //audit response status change
-            jurorResponseAuditRepositoryMod.save(JurorResponseAuditMod.builder()
-                .jurorNumber(savedDigitalResponse.getJurorNumber())
-                .login(AUTO_USER)
-                .oldProcessingStatus(ProcessingStatus.TODO)
-                .newProcessingStatus(savedDigitalResponse.getProcessingStatus())
-                .build());
 
             // update Juror
             jurorDetails.getJuror().setResponded(true);
@@ -464,20 +447,12 @@ public class StraightThroughProcessorImpl implements StraightThroughProcessor {
             }
 
             //update response
-            savedDigitalResponse.setProcessingStatus(ProcessingStatus.CLOSED);
+            savedDigitalResponse.setProcessingStatus(jurorResponseAuditRepositoryMod, ProcessingStatus.CLOSED);
             savedDigitalResponse.setStaff(staffMember(AUTO_USER));
             savedDigitalResponse.setStaffAssignmentDate(LocalDate.now());
 
             // save the response
             mergeService.mergeResponse(savedDigitalResponse, AUTO_USER);
-
-            //audit response status change
-            jurorResponseAuditRepositoryMod.save(JurorResponseAuditMod.builder()
-                .jurorNumber(savedDigitalResponse.getJurorNumber())
-                .login(AUTO_USER)
-                .oldProcessingStatus(ProcessingStatus.TODO)
-                .newProcessingStatus(savedDigitalResponse.getProcessingStatus())
-                .build());
 
             // update Juror
             jurorDetails.getJuror().setResponded(true);

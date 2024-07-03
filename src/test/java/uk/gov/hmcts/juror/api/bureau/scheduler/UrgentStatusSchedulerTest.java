@@ -17,6 +17,7 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 
 import java.time.LocalDateTime;
 import java.util.LinkedList;
@@ -39,6 +40,8 @@ public class UrgentStatusSchedulerTest {
     private JurorDigitalResponseRepositoryMod jurorResponseRepo;
     @Mock
     private JurorPaperResponseRepositoryMod paperJurorResponseRepo;
+    @Mock
+    private JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
 
     @Mock
     private UserService userService;
@@ -67,7 +70,7 @@ public class UrgentStatusSchedulerTest {
         jurorBureauDetail.setHearingDate(responseReceived.toLocalDate());
 
         DigitalResponse jurorResponse = new DigitalResponse();
-        jurorResponse.setProcessingStatus(uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus.TODO);
+        jurorResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         jurorResponse.setDateReceived(responseReceived);
 
         poolDetails = new JurorPool();
@@ -79,7 +82,7 @@ public class UrgentStatusSchedulerTest {
         DigitalResponse response = new DigitalResponse();
         response.setJurorNumber("12345678");
         response.setDateReceived(LocalDateTime.from(now.minusHours(1)));
-        response.setProcessingStatus(ProcessingStatus.TODO);
+        response.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         response.setUrgent(false);
         responseBacklog.add(response);
 

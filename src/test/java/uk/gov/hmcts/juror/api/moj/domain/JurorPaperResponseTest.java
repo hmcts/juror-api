@@ -11,12 +11,14 @@ import org.junit.runner.RunWith;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static uk.gov.hmcts.juror.api.TestUtils.buildStringToLength;
 
 @RunWith(SpringRunner.class)
@@ -572,7 +574,7 @@ public class JurorPaperResponseTest {
         response.setAddressLine1("Test");
         response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
-        response.setProcessingStatus(ProcessingStatus.AWAITING_CONTACT);
+        response.setProcessingStatus(mock(JurorResponseAuditRepositoryMod.class), ProcessingStatus.AWAITING_CONTACT);
 
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
         assertThat(violations).as("No validation violations expected").isEmpty();

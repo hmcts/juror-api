@@ -15,6 +15,7 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,6 +25,7 @@ import java.util.Arrays;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.BDDAssertions.within;
+import static org.mockito.ArgumentMatchers.any;
 
 @RunWith(SpringRunner.class)
 public class JurorResponseUtilsTest {
@@ -31,6 +33,8 @@ public class JurorResponseUtilsTest {
 
     @Mock
     JurorPaperResponseRepositoryMod jurorPaperResponseRepositoryMod;
+    @Mock
+    private JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
 
     @Mock
     JurorPoolRepository jurorPoolRepository;
@@ -38,18 +42,23 @@ public class JurorResponseUtilsTest {
     @Test
     public void test_createMinimalPaperSummonsRecord() {
         String disqualifiedComment = "Disqualified due to age.";
-        Juror mockJuror = createMockJuror(JUROR_NUMBER_123456789);
+        Juror mockJuror = createMockJuror();
         LocalDateTime mockLocalDate = LocalDateTime.now();
         PaperResponse mockPaperResponse = createMockPaperResponse(mockJuror, mockLocalDate, disqualifiedComment);
 
         Mockito.doReturn(mockPaperResponse).when(jurorPaperResponseRepositoryMod)
             .findByJurorNumber(JUROR_NUMBER_123456789);
+        Mockito.doReturn(mockPaperResponse).when(jurorPaperResponseRepositoryMod).save(any());
 
-        PaperResponse actualPaperResponse = JurorResponseUtils.createMinimalPaperSummonsRecord(mockJuror,
-            disqualifiedComment);
+        PaperResponse actualPaperResponse =
+            JurorResponseUtils.createMinimalPaperSummonsRecord(
+                jurorPaperResponseRepositoryMod, jurorResponseAuditRepository,
+                mockJuror, disqualifiedComment);
 
         Assertions.assertThatNoException().isThrownBy(() ->
-            JurorResponseUtils.createMinimalPaperSummonsRecord(mockJuror, disqualifiedComment));
+            JurorResponseUtils.createMinimalPaperSummonsRecord(
+                jurorPaperResponseRepositoryMod, jurorResponseAuditRepository,
+                mockJuror, disqualifiedComment));
         assertThat(actualPaperResponse.getJurorNumber()).isEqualTo(mockPaperResponse.getJurorNumber());
         assertThat(actualPaperResponse.getJurorNumber()).isEqualTo(mockPaperResponse.getJurorNumber());
         assertThat(actualPaperResponse.getTitle()).isEqualTo(mockPaperResponse.getTitle());
@@ -138,9 +147,9 @@ public class JurorResponseUtilsTest {
         return mockPaperResponse;
     }
 
-    private Juror createMockJuror(String jurorNumber) {
+    private Juror createMockJuror() {
         Juror juror = new Juror();
-        juror.setJurorNumber(jurorNumber);
+        juror.setJurorNumber(JurorResponseUtilsTest.JUROR_NUMBER_123456789);
         juror.setTitle(null);
         juror.setFirstName("FNAMEONE");
         juror.setLastName("LNAMEONE");
@@ -149,13 +158,12 @@ public class JurorResponseUtilsTest {
         return juror;
     }
 
-    private Juror setMockJurorAddress(Juror juror) {
+    private void setMockJurorAddress(Juror juror) {
         juror.setAddressLine1("1 ANY STREET");
         juror.setAddressLine2("ANY TOWN");
         juror.setAddressLine3("ANYWHERE");
         juror.setAddressLine4("ADDRESS4");
         juror.setAddressLine5("ADDRESS5");
         juror.setPostcode("CH1 2AN");
-        return juror;
     }
 }

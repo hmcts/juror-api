@@ -37,6 +37,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
@@ -44,15 +45,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.juror.api.moj.domain.IJurorStatus.DISQUALIFIED;
 
 @RunWith(SpringRunner.class)
 @SuppressWarnings("PMD.TooManyMethods")
 public class DisqualifyJurorDueToAgeServiceImplTest {
     private static final String BUREAU_USER = "400";
     private static final String JUROR_NUMBER = "123456789";
-    private static final String OTHER_INFORMATION = "Code A";
-    private static final String POOL_NUMBER = "416230101";
 
     @Mock
     private JurorPoolRepository jurorPoolRepository;
@@ -91,8 +89,8 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
         final ArgumentCaptor<JurorPool> jurorPoolEntityCaptor = ArgumentCaptor.forClass(JurorPool.class);
 
         BureauJwtPayload courtPayload = buildBureauPayload();
-        List<JurorPool> jurorPoolList = createJurorPoolList(JUROR_NUMBER, courtPayload.getOwner());
-        PaperResponse paperResponse = createPaperResponse(JUROR_NUMBER);
+        List<JurorPool> jurorPoolList = createJurorPoolList(courtPayload.getOwner());
+        PaperResponse paperResponse = createPaperResponse();
 
         when(jurorDigitalResponseRepository.findByJurorNumber(JUROR_NUMBER)).thenReturn(null);
         when(jurorPaperResponseRepository.findByJurorNumber(JUROR_NUMBER)).thenReturn(paperResponse);
@@ -117,7 +115,7 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
         verifySummonsReplyMergeService_Paper(jurorPaperResponseEntityCaptor, userCaptor);
 
         //verification of the JurorPoolRepository invocation
-        verifyJurorPoolRepository(jurorPoolEntityCaptor, Boolean.TRUE, BUREAU_USER, DISQUALIFIED);
+        verifyJurorPoolRepository(jurorPoolEntityCaptor);
 
         //verification of the JurorHistoryRepository invocation
         verify(jurorHistoryService).createDisqualifyHistory(jurorPoolList.get(0),"A");
@@ -129,7 +127,7 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
         verify(assignOnUpdateService, never()).assignToCurrentLogin(any(DigitalResponse.class),
             anyString());
         verify(summonsReplyMergeService, never()).mergeDigitalResponse(any(DigitalResponse.class), anyString());
-        verify(jurorResponseAuditRepository, never()).save(any(JurorResponseAuditMod.class));
+        assertThat(paperResponse.getProcessingStatus()).isEqualTo(ProcessingStatus.CLOSED);
     }
 
 
@@ -140,21 +138,19 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
             ArgumentCaptor.forClass(DigitalResponse.class);
         final ArgumentCaptor<String> userCaptor = ArgumentCaptor.forClass(String.class);
         final ArgumentCaptor<JurorPool> jurorPoolEntityCaptor = ArgumentCaptor.forClass(JurorPool.class);
-        //        final ArgumentCaptor<PrintDataService> printDataServiceArgumentCaptor =
-        //            ArgumentCaptor.forClass(PrintDataService.class);
         final ArgumentCaptor<JurorResponseAuditMod> jurorResponseAuditArgumentCaptor =
             ArgumentCaptor.forClass(JurorResponseAuditMod.class);
 
-        DigitalResponse digitalResponse = createDigitalResponse(JUROR_NUMBER);
+        DigitalResponse digitalResponse = createDigitalResponse();
         digitalResponse.setProcessingComplete(false);
         digitalResponse.setCompletedAt(null);
-        digitalResponse.setProcessingStatus(ProcessingStatus.TODO);
+        digitalResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
 
         when(jurorDigitalResponseRepository.findByJurorNumber(JUROR_NUMBER)).thenReturn(digitalResponse);
         when(jurorPaperResponseRepository.findByJurorNumber(JUROR_NUMBER)).thenReturn(null);
 
         BureauJwtPayload courtPayload = buildBureauPayload();
-        List<JurorPool> jurorPoolList = createJurorPoolList(JUROR_NUMBER, courtPayload.getOwner());
+        List<JurorPool> jurorPoolList = createJurorPoolList(courtPayload.getOwner());
 
         doReturn(jurorPoolList).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(anyString(), anyBoolean());
@@ -187,7 +183,7 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
         assertThat(userCaptor.getValue()).isEqualTo(BUREAU_USER);
 
         //verification of the JurorPoolRepository activity
-        verifyJurorPoolRepository(jurorPoolEntityCaptor, Boolean.TRUE, BUREAU_USER, DISQUALIFIED);
+        verifyJurorPoolRepository(jurorPoolEntityCaptor);
 
         //verification of the JurorHistoryRepository activity
 
@@ -197,9 +193,9 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
         // TODO - verify the printDataServiceArgumentCaptor and approach to letters for disqualification
 
         //verification of the JurorResponseAuditRepository
-        verify(jurorResponseAuditRepository, times(1))
+        verify(jurorResponseAuditRepository, times(3))
             .save(jurorResponseAuditArgumentCaptor.capture());
-        verify(jurorResponseAuditRepository, times(1)).save(any(JurorResponseAuditMod.class));
+        verify(jurorResponseAuditRepository, times(3)).save(any(JurorResponseAuditMod.class));
         assertThat(jurorResponseAuditArgumentCaptor.getValue().getJurorNumber()).isEqualTo(JUROR_NUMBER);
         assertThat(jurorResponseAuditArgumentCaptor.getValue().getNewProcessingStatus())
             .isEqualTo(ProcessingStatus.CLOSED);
@@ -217,13 +213,11 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
             ArgumentCaptor.forClass(PaperResponse.class);
         final ArgumentCaptor<String> userCaptor = ArgumentCaptor.forClass(String.class);
         final ArgumentCaptor<JurorPool> jurorPoolEntityCaptor = ArgumentCaptor.forClass(JurorPool.class);
-        //        final ArgumentCaptor<PrintDataService> printDataServiceArgumentCaptor =
-        //            ArgumentCaptor.forClass(PrintDataService.class);
         final ArgumentCaptor<JurorResponseAuditMod> jurorResponseAuditArgumentCaptor =
             ArgumentCaptor.forClass(JurorResponseAuditMod.class);
 
         BureauJwtPayload courtPayload = buildBureauPayload();
-        List<JurorPool> jurorPoolList = createJurorPoolList(JUROR_NUMBER, courtPayload.getOwner());
+        List<JurorPool> jurorPoolList = createJurorPoolList(courtPayload.getOwner());
 
         when(jurorDigitalResponseRepository.findByJurorNumber(JUROR_NUMBER)).thenReturn(null);
         when(jurorPaperResponseRepository.findByJurorNumber(JUROR_NUMBER)).thenReturn(null);
@@ -231,6 +225,9 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
         doReturn(jurorPoolList).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(anyString(), anyBoolean());
         doReturn(null).when(jurorPoolRepository).save(any(JurorPool.class));
+
+        doAnswer(invocation -> invocation.getArguments()[0])
+            .when(jurorPaperResponseRepository).save(any(PaperResponse.class));
 
         disqualifyJurorServiceImpl.disqualifyJurorDueToAgeOutOfRange(JUROR_NUMBER, courtPayload);
 
@@ -243,37 +240,33 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
         // verification of the JurorPaperResponseRepository
         verify(jurorPaperResponseRepository, times(1)).findByJurorNumber(jurorNumberCaptor.capture());
         assertThat(jurorNumberCaptor.getValue()).isEqualTo(JUROR_NUMBER);
-        verify(jurorPaperResponseRepository, times(1)).save(any());
+        verify(jurorPaperResponseRepository, times(2)).save(any());
 
         //verification of the SummonsReplyMergeService invocation
         verifySummonsReplyMergeService_Paper(jurorPaperResponseEntityCaptor, userCaptor);
 
         //verification of the JurorPoolRepository activity
-        verifyJurorPoolRepository(jurorPoolEntityCaptor, Boolean.TRUE, BUREAU_USER, DISQUALIFIED);
+        verifyJurorPoolRepository(jurorPoolEntityCaptor);
 
         //verification of the JurorHistoryRepository activity
         verify(jurorHistoryService).createDisqualifyHistory(jurorPoolList.get(0),"A");
 
         //verification of the DisqualificationLetterRepository invocation
         // TODO - verify the printDataServiceArgumentCaptor and approach to letters for disqualification
-
-        //verification of the JurorResponseAuditRepository
-        verify(jurorResponseAuditRepository, times(0)).save(jurorResponseAuditArgumentCaptor.capture());
-        verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
     }
 
     @Test
     public void disqualifyJurorDueToAge_bureau_completedDigitalResponse() {
-        DigitalResponse digitalResponse = createDigitalResponse(JUROR_NUMBER);
+        DigitalResponse digitalResponse = createDigitalResponse();
         digitalResponse.setProcessingComplete(true);
         digitalResponse.setCompletedAt(LocalDateTime.now());
-        digitalResponse.setProcessingStatus(ProcessingStatus.CLOSED);
+        digitalResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.CLOSED);
 
         when(jurorDigitalResponseRepository.findByJurorNumber(JUROR_NUMBER)).thenReturn(digitalResponse);
         when(jurorPaperResponseRepository.findByJurorNumber(JUROR_NUMBER)).thenReturn(null);
 
         BureauJwtPayload courtPayload = buildBureauPayload();
-        List<JurorPool> jurorPoolList = createJurorPoolList(JUROR_NUMBER, courtPayload.getOwner());
+        List<JurorPool> jurorPoolList = createJurorPoolList(courtPayload.getOwner());
 
         doReturn(jurorPoolList).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(anyString(), anyBoolean());
@@ -286,7 +279,7 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
         verify(jurorDigitalResponseRepository, times(1)).findByJurorNumber(anyString());
         verify(assignOnUpdateService, never()).assignToCurrentLogin(any(DigitalResponse.class), anyString());
         verify(summonsReplyMergeService, never()).mergeDigitalResponse(any(DigitalResponse.class), anyString());
-        verify(jurorResponseAuditRepository, never()).save(any(JurorResponseAuditMod.class));
+        assertThat(digitalResponse.getProcessingStatus()).isEqualTo(ProcessingStatus.CLOSED);
 
         //Paper related
         verify(jurorPaperResponseRepository, never()).findById(anyString());
@@ -302,16 +295,16 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
 
     @Test
     public void disqualifyJurorDueToAge_bureau_completedPaperResponse() {
-        PaperResponse paperResponse = createPaperResponse(JUROR_NUMBER);
+        PaperResponse paperResponse = createPaperResponse();
         paperResponse.setProcessingComplete(true);
         paperResponse.setCompletedAt(LocalDateTime.now());
-        paperResponse.setProcessingStatus(ProcessingStatus.CLOSED);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.CLOSED);
 
         when(jurorPaperResponseRepository.findByJurorNumber(JUROR_NUMBER)).thenReturn(paperResponse);
         when(jurorDigitalResponseRepository.findByJurorNumber(JUROR_NUMBER)).thenReturn(null);
 
         BureauJwtPayload courtPayload = buildBureauPayload();
-        List<JurorPool> jurorPoolList = createJurorPoolList(JUROR_NUMBER, courtPayload.getOwner());
+        List<JurorPool> jurorPoolList = createJurorPoolList(courtPayload.getOwner());
 
         doReturn(jurorPoolList).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(anyString(), anyBoolean());
@@ -328,8 +321,8 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
         verify(jurorDigitalResponseRepository, never()).findById(anyString());
         verify(assignOnUpdateService, never()).assignToCurrentLogin(any(DigitalResponse.class), anyString());
         verify(summonsReplyMergeService, never()).mergeDigitalResponse(any(DigitalResponse.class), anyString());
-        verify(jurorResponseAuditRepository, never()).save(any(JurorResponseAuditMod.class));
 
+        assertThat(paperResponse.getProcessingStatus()).isEqualTo(ProcessingStatus.CLOSED);
         //Common
         verifyNoInteractions(printDataService);
         verifyNoInteractions(jurorHistoryService);
@@ -377,21 +370,21 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
         assertThat(userCaptor.getValue()).isEqualTo(BUREAU_USER);
     }
 
-    private void verifyJurorPoolRepository(final ArgumentCaptor<JurorPool> jurorPoolEntityCaptor, boolean responded,
-                                           String bureauUser, int status) {
+    private void verifyJurorPoolRepository(final ArgumentCaptor<JurorPool> jurorPoolEntityCaptor) {
         verify(jurorPoolRepository, times(1)).save(jurorPoolEntityCaptor.capture());
         JurorPool capturedJurorPool = jurorPoolEntityCaptor.getValue();
         Juror capturedJuror = capturedJurorPool.getJuror();
-        assertThat(capturedJuror.isResponded()).isEqualTo(responded);
+        assertThat(capturedJuror.isResponded()).isEqualTo(true);
         assertThat(capturedJuror.getDisqualifyDate()).isNotNull();
-        assertThat(capturedJurorPool.getUserEdtq()).isEqualTo(bureauUser);
+        assertThat(capturedJurorPool.getUserEdtq()).isEqualTo(DisqualifyJurorDueToAgeServiceImplTest.BUREAU_USER);
         assertThat(capturedJurorPool.getNextDate()).isNull();
-        assertThat(capturedJurorPool.getStatus().getStatus()).isEqualTo(status);
+        assertThat(capturedJurorPool.getStatus().getStatus()).isEqualTo(
+            uk.gov.hmcts.juror.api.moj.domain.IJurorStatus.DISQUALIFIED);
     }
 
-    private PaperResponse createPaperResponse(String jurorNumber) {
+    private PaperResponse createPaperResponse() {
         PaperResponse response = new PaperResponse();
-        response.setJurorNumber(jurorNumber);
+        response.setJurorNumber(DisqualifyJurorDueToAgeServiceImplTest.JUROR_NUMBER);
         response.setDateReceived(LocalDateTime.now());
 
         response.setFirstName("FName");
@@ -415,15 +408,15 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
         response.setConvictions(false);
 
         response.setSigned(true);
-        response.setProcessingStatus(ProcessingStatus.TODO);
+        response.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
 
         return response;
     }
 
-    private DigitalResponse createDigitalResponse(String jurorNumber) {
+    private DigitalResponse createDigitalResponse() {
         DigitalResponse response = new DigitalResponse();
 
-        response.setJurorNumber(jurorNumber);
+        response.setJurorNumber(DisqualifyJurorDueToAgeServiceImplTest.JUROR_NUMBER);
         response.setDateReceived(LocalDateTime.now());
 
         response.setFirstName("FName");
@@ -444,7 +437,7 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
         response.setMentalHealthAct(false);
         response.setBail(false);
         response.setConvictions(false);
-        response.setProcessingStatus(ProcessingStatus.TODO);
+        response.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
 
         return response;
     }
@@ -457,7 +450,7 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
             .build();
     }
 
-    private List<JurorPool> createJurorPoolList(String jurorNumber, String owner) {
+    private List<JurorPool> createJurorPoolList(String owner) {
 
         final List<JurorPool> jurorPoolList = new ArrayList<>();
 
@@ -476,7 +469,7 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
         poolRequest.setCourtLocation(courtLocation);
 
         Juror juror = new Juror();
-        juror.setJurorNumber(jurorNumber);
+        juror.setJurorNumber(DisqualifyJurorDueToAgeServiceImplTest.JUROR_NUMBER);
         juror.setFirstName("FIRSTNAME");
         juror.setLastName("LASTNAME");
         juror.setPostcode("M24 4GT");

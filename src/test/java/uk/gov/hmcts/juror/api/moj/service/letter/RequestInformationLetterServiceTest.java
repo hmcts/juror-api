@@ -19,6 +19,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.MissingInformation;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.letter.RequestLetterRepository;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
@@ -56,6 +57,8 @@ public class RequestInformationLetterServiceTest {
     private PrintDataService printDataService;
     @Mock
     private JurorHistoryService jurorHistoryService;
+    @Mock
+    private JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
 
     @InjectMocks
     RequestInformationLetterServiceImpl requestInformationLetterService;
@@ -68,7 +71,7 @@ public class RequestInformationLetterServiceTest {
         String jurorNumber = "123456789";
 
         DigitalResponse jurorResponse = new DigitalResponse();
-        jurorResponse.setProcessingStatus(ProcessingStatus.TODO);
+        jurorResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
 
         final BureauJwtPayload payload = TestUtils.createJwt(owner, "BUREAU_USER");
 
@@ -104,7 +107,7 @@ public class RequestInformationLetterServiceTest {
         String jurorNumber = "123456789";
 
         PaperResponse jurorPaperResponse = new PaperResponse();
-        jurorPaperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        jurorPaperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
 
         BureauJwtPayload payload = TestUtils.createJwt(owner, "BUREAU_USER");
 
@@ -133,7 +136,7 @@ public class RequestInformationLetterServiceTest {
         String jurorNumber = "123456789";
 
         PaperResponse jurorPaperResponse = new PaperResponse();
-        jurorPaperResponse.setProcessingStatus(ProcessingStatus.TODO);
+        jurorPaperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
 
         final BureauJwtPayload payload = TestUtils.createJwt(owner, "BUREAU_USER");
 
@@ -172,7 +175,7 @@ public class RequestInformationLetterServiceTest {
         String jurorNumber = "123456789";
 
         PaperResponse jurorPaperResponse = new PaperResponse();
-        jurorPaperResponse.setProcessingStatus(ProcessingStatus.AWAITING_CONTACT);
+        jurorPaperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.AWAITING_CONTACT);
 
         // an empty list of pool members required for test
         List<JurorPool> jurorPools = new ArrayList<>();
@@ -202,7 +205,7 @@ public class RequestInformationLetterServiceTest {
         String jurorNumber = "123456789";
 
         PaperResponse jurorPaperResponse = new PaperResponse();
-        jurorPaperResponse.setProcessingStatus(ProcessingStatus.AWAITING_CONTACT);
+        jurorPaperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.AWAITING_CONTACT);
 
         // an empty list of pool members required for test
         Juror juror = new Juror();

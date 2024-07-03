@@ -6,6 +6,6 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditModKey;
 
 @Repository
-public interface JurorResponseAuditRepositoryMod extends CrudRepository<JurorResponseAuditMod,
-    JurorResponseAuditModKey> {
+public interface JurorResponseAuditRepositoryMod
+    extends CrudRepository<JurorResponseAuditMod, JurorResponseAuditModKey> {
 }

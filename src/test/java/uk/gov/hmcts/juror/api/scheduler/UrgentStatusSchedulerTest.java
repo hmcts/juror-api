@@ -19,6 +19,7 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -33,11 +34,7 @@ import static org.mockito.Mockito.verify;
 public class UrgentStatusSchedulerTest {
 
     private static final String NON_CLOSED_STATUS = ProcessingStatus.TODO.name();
-    private ModJurorDetail jurorBureauDetail;
-    private DigitalResponse jurorResponse;
     private JurorPool poolDetails;
-
-    private LocalDateTime responseReceived;
 
     @Mock
     private JurorDigitalResponseRepositoryMod jurorResponseRepo;
@@ -52,6 +49,8 @@ public class UrgentStatusSchedulerTest {
 
     @Mock
     private UrgencyService urgencyService;
+    @Mock
+    private JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
 
     @InjectMocks
     UrgentStatusScheduler urgentStatusScheduler;
@@ -62,18 +61,18 @@ public class UrgentStatusSchedulerTest {
     @Before
     public void setUp() {
 
-        responseReceived = LocalDateTime.now();
+        LocalDateTime responseReceived = LocalDateTime.now();
 
         //set up some known static dates relative to a start point
         final LocalDate hearingDateValid = LocalDate.now().plusDays(35);
 
-        jurorBureauDetail = new ModJurorDetail();
+        ModJurorDetail jurorBureauDetail = new ModJurorDetail();
         jurorBureauDetail.setProcessingStatus(NON_CLOSED_STATUS);
         jurorBureauDetail.setDateReceived(responseReceived.toLocalDate());
         jurorBureauDetail.setHearingDate(hearingDateValid);
 
-        jurorResponse = new DigitalResponse();
-        jurorResponse.setProcessingStatus(uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus.TODO);
+        DigitalResponse jurorResponse = new DigitalResponse();
+        jurorResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         jurorResponse.setDateReceived(responseReceived);
 
         poolDetails = new JurorPool();
@@ -87,7 +86,7 @@ public class UrgentStatusSchedulerTest {
         response.setJurorNumber("12345678");
 
         response.setDateReceived(LocalDateTime.now());
-        response.setProcessingStatus(ProcessingStatus.TODO);
+        response.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         responseBacklog.add(response);
 
     }

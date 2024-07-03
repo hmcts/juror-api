@@ -1,8 +1,11 @@
 package uk.gov.hmcts.juror.api.juror.domain;
 
+import lombok.Getter;
+
 /**
  * Enum of values of a juror response "processing status".
  */
+@Getter
 public enum ProcessingStatus {
     TODO("To Do"),
 
@@ -20,7 +23,4 @@ public enum ProcessingStatus {
         this.description = description;
     }
 
-    public String getDescription() {
-        return description;
-    }
 }

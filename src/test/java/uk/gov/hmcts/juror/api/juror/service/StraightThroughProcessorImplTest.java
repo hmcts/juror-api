@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.juror.api.bureau.domain.DisCode;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseMergeService;
+import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
@@ -117,7 +118,7 @@ public class StraightThroughProcessorImplTest {
 
         // check excusal was successful
         verify(mergeService).mergeResponse(any(DigitalResponse.class), eq(AUTO_USER));
-        verify(jurorResponseAuditRepository).save(any(JurorResponseAuditMod.class));
+        verify(jurorResponse).setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.CLOSED);
 
         verify(jurorPool, times(3)).getJuror();
         verify(juror, times(1)).setResponded(true);
@@ -224,9 +225,9 @@ public class StraightThroughProcessorImplTest {
         // process response
         straightThroughProcessor.processAgeExcusal(jurorResponse);
 
+        verify(jurorResponse).setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.CLOSED);
         // check excusal was successful
         verify(mergeService).mergeResponse(any(DigitalResponse.class), eq(AUTO_USER));
-        verify(jurorResponseAuditRepository).save(any(JurorResponseAuditMod.class));
 
         verify(jurorPool, times(3)).getJuror();
         verify(juror, times(1)).setResponded(true);
@@ -239,7 +240,7 @@ public class StraightThroughProcessorImplTest {
         verify(poolRepository).save(any(JurorPool.class));
 
         verify(partHistRepository, times(1)).save(any(JurorHistory.class));
-        verify(jurorHistoryService).createWithdrawHistory(jurorPool,null,"A");
+        verify(jurorHistoryService).createWithdrawHistory(jurorPool, null, "A");
 
         verify(printDataService).printWithdrawalLetter(any(JurorPool.class));
 
@@ -269,9 +270,9 @@ public class StraightThroughProcessorImplTest {
         // process response
         straightThroughProcessor.processAgeExcusal(jurorResponse);
 
-        // check excusal was successful
+        verify(jurorResponse).setProcessingStatus(jurorResponseAuditRepository,
+            ProcessingStatus.CLOSED);        // check excusal was successful
         verify(mergeService).mergeResponse(any(DigitalResponse.class), eq(AUTO_USER));
-        verify(jurorResponseAuditRepository).save(any(JurorResponseAuditMod.class));
 
         verify(jurorPool, times(3)).getJuror();
         verify(juror).setResponded(true);
@@ -283,7 +284,7 @@ public class StraightThroughProcessorImplTest {
         verify(poolRepository).save(any(JurorPool.class));
 
         verify(partHistRepository, times(1)).save(any(JurorHistory.class));
-        verify(jurorHistoryService).createWithdrawHistory(jurorPool,null,"A");
+        verify(jurorHistoryService).createWithdrawHistory(jurorPool, null, "A");
 
         verify(printDataService).printWithdrawalLetter(jurorPool);
 

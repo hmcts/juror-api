@@ -17,7 +17,6 @@ import uk.gov.hmcts.juror.api.moj.domain.DisqualifiedCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
 import uk.gov.hmcts.juror.api.moj.repository.DisqualifiedCodeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
@@ -93,8 +92,7 @@ public class ResponseDisqualifyServiceImpl implements ResponseDisqualifyService 
             savedResponse.setVersion(disqualifyCodeDto.getVersion());
 
             //update response
-            final ProcessingStatus oldProcessingStatus = savedResponse.getProcessingStatus();
-            savedResponse.setProcessingStatus(ProcessingStatus.CLOSED);
+            savedResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.CLOSED);
 
             // JDB-2685: if no staff assigned, assign current login
             if (null == savedResponse.getStaff()) {
@@ -112,14 +110,6 @@ public class ResponseDisqualifyServiceImpl implements ResponseDisqualifyService 
                 }
                 throw new DisqualifyException.OptimisticLockingFailure(jurorId);
             }
-
-            //audit response status change
-            jurorResponseAuditRepository.save(JurorResponseAuditMod.builder()
-                .jurorNumber(jurorId)
-                .login(login)
-                .oldProcessingStatus(oldProcessingStatus)
-                .newProcessingStatus(savedResponse.getProcessingStatus())
-                .build());
 
             // update juror pool entry
             JurorPool jurorDetails = detailsRepository.findByJurorJurorNumber(savedResponse.getJurorNumber());

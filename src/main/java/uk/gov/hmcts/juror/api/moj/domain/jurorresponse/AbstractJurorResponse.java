@@ -14,6 +14,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,6 +26,8 @@ import uk.gov.hmcts.juror.api.moj.domain.Address;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import uk.gov.hmcts.juror.api.validation.LocalDateOfBirth;
 import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
@@ -80,6 +83,7 @@ public class AbstractJurorResponse extends Address implements Serializable {
 
     @Column(name = "processing_status")
     @Enumerated(EnumType.STRING)
+    @Setter(AccessLevel.NONE)
     private ProcessingStatus processingStatus = ProcessingStatus.TODO;
 
     @LocalDateOfBirth
@@ -199,5 +203,22 @@ public class AbstractJurorResponse extends Address implements Serializable {
 
     public boolean isClosed() {
         return getProcessingStatus().equals(ProcessingStatus.CLOSED);
+    }
+
+    public void setProcessingStatus(JurorResponseAuditRepositoryMod jurorResponseAuditRepository,
+                                    ProcessingStatus processingStatus) {
+        String username;
+        if (SecurityUtil.hasBureauJwtPayload()) {
+            username = SecurityUtil.getActiveLogin();
+        } else {
+            username = SecurityUtil.AUTO_USER;
+        }
+        jurorResponseAuditRepository.save(JurorResponseAuditMod.builder()
+            .jurorNumber(jurorNumber)
+            .login(username)
+            .oldProcessingStatus(this.processingStatus)
+            .newProcessingStatus(processingStatus)
+            .build());
+        this.processingStatus = processingStatus;
     }
 }

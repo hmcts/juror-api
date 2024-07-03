@@ -21,7 +21,6 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
@@ -40,12 +39,9 @@ import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * Implementation of operations for updating the status of a Juror's response by a Bureau officer.
@@ -95,6 +91,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
     private static final String ADDRESS = "address";
 
     private static final String POSTCODE = "postcode";
+    private final JurorResponseAuditRepositoryMod jurorResponseAuditRepositoryMod;
 
     /**
      * Update the processing status of a Juror response within Juror Digital.
@@ -140,7 +137,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
         // store the current processing status (to be used as the "changed from" value in the audit/history table)
         final ProcessingStatus initialProcessingStatus = paperResponse.getProcessingStatus();
 
-        paperResponse.setProcessingStatus(status);
+        paperResponse.setProcessingStatus(jurorResponseAuditRepositoryMod, status);
 
         // merge the changes if required/allowed
         if (Boolean.TRUE.equals(paperResponse.getProcessingComplete())) {
@@ -207,7 +204,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
             assignOnUpdateService.assignToCurrentLogin(jurorResponse, auditorUsername);
         }
 
-        jurorResponse.setProcessingStatus(status);
+        jurorResponse.setProcessingStatus(jurorResponseAuditRepositoryMod, status);
 
         // merge the changes if required/allowed
         if (Boolean.TRUE.equals(jurorResponse.getProcessingComplete())) {
@@ -230,13 +227,6 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
         log.info("Updated juror '{}' processing status from '{}' to '{}'", jurorNumber, auditProcessingStatus,
             jurorResponse.getProcessingStatus()
         );
-        JurorResponseAuditMod responseAudit = auditRepository.save(JurorResponseAuditMod.builder()
-            .jurorNumber(jurorResponse.getJurorNumber())
-            .login(auditorUsername)
-            .oldProcessingStatus(auditProcessingStatus)
-            .newProcessingStatus(jurorResponse.getProcessingStatus())
-            .build());
-        log.trace("Audit entry: {}", responseAudit);
     }
 
     /**
@@ -445,110 +435,6 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
 
         jurorPoolRepository.save(jurorPool);
         log.trace("Juror: {}. Exit mergeReasonableAdjustments", jurorNumber);
-    }
-
-    /**
-     * Create a Map containing property names as keys and a boolean result indicating whether the value provided in the
-     * summons reply is different to the value currently stored in the juror record.
-     * <p></p>
-     * Property names are intentionally written in camelCase but with spaces separating individual words, for example,
-     * the lastName property is referenced by the key "last Name" - this makes it easier to utilise a single key for
-     * both property reference in code (remove space between words) and text descriptions in a more readable format
-     * for audit/history records (capitalise the first letter and maintain the spaces)
-     *
-     * @param juror                    the original juror record, to reference the existing juror details
-     * @param jurorResponse the transient paper/digital response pojo, to reference the newly provided
-     *                                 juror details from a summons reply
-     *
-     * @return a Map containing juror response property names as keys and a Boolean result indicating whether the
-     *     property values differ between the original juror record and the new juror summons reply, true means there
-     *     is a
-     *     difference, false means there is no difference
-     */
-    private Map<String, Boolean> initChangedPropertyMap(Juror juror,
-                                                        AbstractJurorResponse jurorResponse) {
-        // check for changes between the new/updated values and the juror record values
-        Map<String, Boolean> changedPropertiesMap = new HashMap<>();
-
-        // new title value CAN be null
-        changedPropertiesMap.put(TITLE, (juror.getTitle() != null && jurorResponse.getTitle() == null)
-            || hasPropertyChanged(jurorResponse.getTitle(), juror.getTitle()));
-        changedPropertiesMap.put(
-            "first Name",
-            hasPropertyChanged(jurorResponse.getFirstName(), juror.getFirstName())
-        );
-        changedPropertiesMap.put(
-            "last Name",
-            hasPropertyChanged(jurorResponse.getLastName(), juror.getLastName())
-        );
-
-        LocalDate originalDate = setOriginalDateOfBirth(juror.getDateOfBirth());
-        changedPropertiesMap.put("date Of Birth", hasPropertyChanged(jurorResponse.getDateOfBirth(),
-            originalDate));
-
-        changedPropertiesMap.put(ADDRESS, hasAddressChanged(jurorResponse, juror));
-        changedPropertiesMap.put(
-            POSTCODE,
-            hasPropertyChanged(jurorResponse.getPostcode(), juror.getPostcode())
-        );
-
-        return changedPropertiesMap;
-    }
-
-    /**
-     * In most cases the date of birth field will be empty (null) when the Juror record was initially created from the
-     * voters table - the part amendment table will insert a record when the date of birth is changed, in
-     * the event of the initial assignment (from null to a date value) a default date is used 1901-01-01 (YYYY-MM-DD)
-     * for comparison (to avoid a null pointer exception).
-     *
-     * @return LocalDate object with either the Juror's date of birth or a default date value to use for Part Amendments
-     */
-    private LocalDate setOriginalDateOfBirth(LocalDate jurorPoolDob) {
-        final LocalDate defaultNullReplacementDob = LocalDate.of(1901, 1, 1);
-        return jurorPoolDob != null ? jurorPoolDob : defaultNullReplacementDob;
-    }
-
-    private boolean hasPropertyChanged(String updatedValue, String originalValue) {
-        if (updatedValue != null) {
-            if (originalValue != null) {
-                return updatedValue.compareTo(originalValue) != 0;
-            } else {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean hasPropertyChanged(LocalDate updatedValue, LocalDate originalValue) {
-        if (updatedValue != null) {
-            if (originalValue != null) {
-                return !updatedValue.isEqual(originalValue);
-            } else {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean hasAddressChanged(AbstractJurorResponse updatedDetails, Juror juror) {
-        String newAddress = formatForConcat(updatedDetails.getAddressLine1())
-            + formatForConcat(updatedDetails.getAddressLine2())
-            + formatForConcat(updatedDetails.getAddressLine3())
-            + formatForConcat(updatedDetails.getAddressLine4())
-            + formatForConcat(updatedDetails.getAddressLine5());
-
-        String oldAddress = formatForConcat(juror.getAddressLine1())
-            + formatForConcat(juror.getAddressLine2())
-            + formatForConcat(juror.getAddressLine3())
-            + formatForConcat(juror.getAddressLine4())
-            + formatForConcat(juror.getAddressLine5());
-
-        return oldAddress.compareToIgnoreCase(newAddress) != 0;
-    }
-
-    private String formatForConcat(String property) {
-        String nullDefault = "";
-        return Objects.toString(property, nullDefault).trim();
     }
 
     private void applyPhoneNumberRules(Juror juror, AbstractJurorResponse summonsReply) {

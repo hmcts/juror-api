@@ -125,10 +125,8 @@ public class ResponseExcusalServiceImplTest {
         // assertions
         assertThat(result).isEqualTo(true);
         verify(jurorResponseRepository).findByJurorNumber(any(String.class));
-        verify(jurorResponse).setProcessingStatus(ProcessingStatus.CLOSED);
+        verify(jurorResponse).setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.CLOSED);
         verify(mergeService).mergeResponse(jurorResponse, login);
-
-        verify(jurorResponseAuditRepository).save(any(JurorResponseAuditMod.class));
 
         verify(poolDetails, times(3)).getJuror();
         verify(juror).setResponded(true);
@@ -168,7 +166,7 @@ public class ResponseExcusalServiceImplTest {
             // assertions
             assertThat(e.getClass()).isEqualTo(ExcusalException.RequestedCodeNotValid.class);
             verify(jurorResponseRepository, times(0)).findByJurorNumber(any(String.class));
-            verify(jurorResponse, times(0)).setProcessingStatus(ProcessingStatus.CLOSED);
+            verify(jurorResponse, times(0)).setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.CLOSED);
             verify(jurorResponseRepository, times(0)).save(jurorResponse);
 
             verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
@@ -210,7 +208,7 @@ public class ResponseExcusalServiceImplTest {
             // assertions
             assertThat(e.getClass()).isEqualTo(ExcusalException.JurorNotFound.class);
             verify(jurorResponseRepository, times(1)).findByJurorNumber(any(String.class));
-            verify(jurorResponse, times(0)).setProcessingStatus(ProcessingStatus.CLOSED);
+            verify(jurorResponse, times(0)).setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.CLOSED);
             verify(jurorResponseRepository, times(0)).save(jurorResponse);
 
             verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
@@ -259,10 +257,8 @@ public class ResponseExcusalServiceImplTest {
         // assertions
         assertThat(result).isEqualTo(true);
         verify(jurorResponseRepository).findByJurorNumber(any(String.class));
-        verify(jurorResponse).setProcessingStatus(ProcessingStatus.CLOSED);
+        verify(jurorResponse).setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.CLOSED);
         verify(mergeService).mergeResponse(jurorResponse, login);
-
-        verify(jurorResponseAuditRepository).save(any(JurorResponseAuditMod.class));
 
         verify(poolDetails, times(4)).getJuror();
         verify(juror).setResponded(true);
@@ -303,7 +299,7 @@ public class ResponseExcusalServiceImplTest {
             // assertions
             assertThat(e.getClass()).isEqualTo(ExcusalException.RequestedCodeNotValid.class);
             verify(jurorResponseRepository, times(0)).findByJurorNumber(any(String.class));
-            verify(jurorResponse, times(0)).setProcessingStatus(ProcessingStatus.CLOSED);
+            verify(jurorResponse, times(0)).setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.CLOSED);
             verify(mergeService, times(0)).mergeResponse(jurorResponse, login);
 
             verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
@@ -342,7 +338,7 @@ public class ResponseExcusalServiceImplTest {
         } catch (ExcusalException e) {
             // assertions
             assertThat(e.getClass()).isEqualTo(ExcusalException.JurorNotFound.class);
-            verify(jurorResponse, times(0)).setProcessingStatus(ProcessingStatus.CLOSED);
+            verify(jurorResponse, times(0)).setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.CLOSED);
             verify(mergeService, times(0)).mergeResponse(jurorResponse, login);
 
             verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));

@@ -22,7 +22,6 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
 import uk.gov.hmcts.juror.api.moj.repository.ContactCodeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactLogRepository;
@@ -103,7 +102,6 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
     private final AssignOnUpdateService assignOnUpdateService;
     private final JurorResponseAuditRepositoryMod responseAuditRepository;
     private final JurorHistoryService jurorHistoryService;
-
 
     @Override
     @Transactional(readOnly = true)
@@ -424,55 +422,28 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
 
         final DigitalResponse domain = responseRepository.findByJurorNumber(jurorId);
         final JurorPool juror = jurorRepository.findByJurorJurorNumber(jurorId);
-        DigitalResponse savedResponse = null;
-
-        if (jurorId != null) {
-
-            savedResponse = responseRepository.findByJurorNumber(jurorId);
-        }
-
         applyOptimisticLocking(domain, version);
 
         if (juror != null) {
             //update response if pool status = 2,5, 6 & 7
             if (poolStatus.contains(juror.getStatus().getStatus())) {
-                domain.setProcessingStatus(ProcessingStatus.CLOSED);
+                domain.setProcessingStatus(responseAuditRepository, ProcessingStatus.CLOSED);
                 domain.setProcessingComplete(Boolean.TRUE);
             } else if (juror.getStatus().getStatus() == IJurorStatus.ADDITIONAL_INFO) {
-
                 if (status.equals(ProcessingStatus.AWAITING_COURT_REPLY)) {
-                    domain.setProcessingStatus(ProcessingStatus.AWAITING_COURT_REPLY);
-
+                    domain.setProcessingStatus(responseAuditRepository, ProcessingStatus.AWAITING_COURT_REPLY);
                 } else if (status.equals(ProcessingStatus.AWAITING_CONTACT)) {
-                    domain.setProcessingStatus(ProcessingStatus.AWAITING_CONTACT);
+                    domain.setProcessingStatus(responseAuditRepository, ProcessingStatus.AWAITING_CONTACT);
 
                 } else if (status.equals(ProcessingStatus.AWAITING_TRANSLATION)) {
-                    domain.setProcessingStatus(ProcessingStatus.AWAITING_TRANSLATION);
+                    domain.setProcessingStatus(responseAuditRepository, ProcessingStatus.AWAITING_TRANSLATION);
                 }
             }
 
             log.trace("updating juror '{}' processing status to '{}'", jurorId, status.getDescription());
             responseRepository.save(domain);
             log.trace("Updated juror '{}' processing status to '{}'", jurorId, status.getDescription());
-
-            if (savedResponse != null) {
-                //audit response status change
-                responseAuditRepository.save(JurorResponseAuditMod.builder()
-                    .jurorNumber(jurorId)
-                    .login(login)
-                    .oldProcessingStatus(savedResponse.getProcessingStatus())
-                    .newProcessingStatus(status)
-                    .build());
-                log.debug("response audit updated  old processing status {}, new processing status {} for juror {}",
-                    jurorId, savedResponse.getProcessingStatus().getDescription(),
-                    domain.getProcessingStatus().getDescription()
-                );
-            } else {
-                log.error("SavedResponse is null");
-            }
-
         }
-
     }
 
     @Transactional
