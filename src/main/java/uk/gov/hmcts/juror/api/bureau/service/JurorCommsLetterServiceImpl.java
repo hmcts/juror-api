@@ -1,7 +1,7 @@
 package uk.gov.hmcts.juror.api.bureau.service;
 
 import com.google.common.collect.Lists;
-import io.jsonwebtoken.lang.Assert;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,6 +27,7 @@ import java.util.Map;
  */
 @Slf4j
 @Service
+@AllArgsConstructor(onConstructor = @__(@Autowired))
 public class JurorCommsLetterServiceImpl implements BureauProcessService {
 
 
@@ -34,24 +35,6 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
     private final BulkPrintDataNotifyCommsRepository bulkPrintDataNotifyCommsRepository;
     private final BulkPrintDataRepository bulkPrintDataRepository;
     private final JurorPoolRepository jurorRepository;
-
-    @Autowired
-    public JurorCommsLetterServiceImpl(
-        final JurorCommsNotificationService jurorCommsNotificationService,
-        final BulkPrintDataNotifyCommsRepository bulkPrintDataNotifyCommsRepository,
-        final BulkPrintDataRepository bulkPrintDataRepository,
-        final JurorPoolRepository jurorRepository) {
-        Assert.notNull(jurorCommsNotificationService, "JurorCommsNotificationService cannot be null.");
-        Assert.notNull(bulkPrintDataRepository, "BulkPrintDataRepository cannot be null.");
-        Assert.notNull(bulkPrintDataNotifyCommsRepository, "BulkPrintDataNotifyCommsRepository cannot be null.");
-        Assert.notNull(jurorRepository, "JurorRepository cannot be null.");
-
-        this.jurorCommsNotificationService = jurorCommsNotificationService;
-        this.bulkPrintDataRepository = bulkPrintDataRepository;
-        this.bulkPrintDataNotifyCommsRepository = bulkPrintDataNotifyCommsRepository;
-        this.jurorRepository = jurorRepository;
-
-    }
 
     /**
      * Implements a specific job execution.
@@ -72,8 +55,6 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
         int commsSent = 0;
         int commsfailed = 0;
         if (!bulkPrintDataNotifyCommsList.isEmpty()) {
-
-
             for (BulkPrintDataNotifyComms printFile : bulkPrintDataNotifyCommsList) {
                 try {
                     log.trace("LetterService :  jurorNumber {}", printFile.getJurorNo());
