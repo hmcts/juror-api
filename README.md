@@ -1,6 +1,6 @@
-# Juror Digital - API
+# Juror Backend API
 
-This is the API for the Juror Digital project. It is a Spring Boot application that provides RESTful endpoints for
+This is the API for the Juror Modernisation project. It is a Spring Boot application that provides RESTful endpoints for
 managing jurors.
 
 # Building and deploying the application
