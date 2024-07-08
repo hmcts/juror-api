@@ -61,14 +61,19 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
         int errorCount = 0;
         int successCountEmail = 0;
         int successCountSms = 0;
+        int errorCountEmail = 0;
+        int errorCountSms = 0;
         int successCount = 0;
         for (JurorPool jurorDetail : jurordetailList) {
 
             notificationsSent = jurorDetail.getJuror().getNotifications();
             log.trace("Sent To Court Comms Service :  jurorNumber {}", jurorDetail.getJurorNumber());
+            boolean isEmail = false;
+            boolean isSms = false;
             try {
                 //Email
                 if (jurorDetail.getJuror().getEmail() != null && !notificationsSent.equals(EMAIL_NOTIFICATION_SENT)) {
+                    isEmail = true;
                     jurorCommsNotificationService.sendJurorComms(jurorDetail,
                         JurorCommsNotifyTemplateType.SENT_TO_COURT,
                         null, null, false
@@ -81,7 +86,7 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
                 if (jurorDetail.getJuror().getAltPhoneNumber() != null
                     && !notificationsSent.equals(EMAIL_NOTIFICATION_SENT)
                     && Objects.equals(appSetting.getSendEmailOrSms(), SEND_EMAIL_OR_SMS)) {
-
+                    isSms = true;
                     jurorCommsNotificationService.sendJurorCommsSms(
                         jurorDetail,
                         JurorCommsNotifyTemplateType.SENT_TO_COURT,
@@ -95,7 +100,7 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
                 // Send SMS
                 if (jurorDetail.getJuror().getAltPhoneNumber() != null
                     && !Objects.equals(appSetting.getSendEmailOrSms(), SEND_EMAIL_OR_SMS)) {
-
+                    isSms = true;
                     jurorCommsNotificationService.sendJurorCommsSms(
                         jurorDetail,
                         JurorCommsNotifyTemplateType.SENT_TO_COURT,
@@ -120,6 +125,12 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
                     e.getCause().toString()
                 );
                 errorCount++;
+                if (isEmail) {
+                    errorCountEmail++;
+                }
+                if (isSms) {
+                    errorCountSms++;
+                }
                 if (notificationsSent.equals(EMAIL_NOTIFICATION_SENT)) {
                     jurorDetail.getJuror().setNotifications(notificationsSent);
                     update(jurorDetail);
@@ -127,6 +138,12 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
             } catch (Exception e) {
                 log.error("Sent To Court Comms Processing : Juror Comms failed : {}", e.getMessage(), e);
                 errorCount++;
+                if (isEmail) {
+                    errorCountEmail++;
+                }
+                if (isSms) {
+                    errorCountSms++;
+                }
             }
         }
         log.info("Sent To Court Comms Processing : Finished - {}", dateFormat.format(new Date()));
@@ -137,6 +154,9 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
             Map.of(
                 "SUCCESS_COUNT_EMAIL", "" + successCountEmail,
                 "SUCCESS_COUNT_SMS", "" + successCountSms,
+                "ERROR_COUNT_EMAIL", "" + errorCountEmail,
+                "ERROR_COUNT_SMS", "" + errorCountSms,
+
                 "SUCCESS_COUNT", "" + successCount,
                 "ERROR_COUNT", "" + errorCount,
                 "TOTAL_JURORS", "" + jurordetailList.size()
