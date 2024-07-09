@@ -35,8 +35,8 @@ public class ExcusalLetterTest extends AbstractLetterTest {
         addEnglishField("JUROR_ADDRESS_3", 35);
         addEnglishField("JUROR_ADDRESS_4", 35);
         addEnglishField("JUROR_ADDRESS_5", 35);
-        addEnglishField("", 35);
-        addEnglishField("SY2 6LU", 10);
+        addEnglishField("SY2 6LU", 35);
+        addEnglishField("", 10);
         addEnglishField("641500541", 9);
         addEnglishField("JURY MANAGER", 30);
     }
@@ -63,8 +63,8 @@ public class ExcusalLetterTest extends AbstractLetterTest {
         addWelshField("JUROR_ADDRESS_3", 35);
         addWelshField("JUROR_ADDRESS_4", 35);
         addWelshField("JUROR_ADDRESS_5", 35);
-        addWelshField("", 35);
-        addWelshField("SY2 6LU", 10);
+        addWelshField("SY2 6LU", 35);
+        addWelshField("", 10);
         addWelshField("641500541", 9);
         addWelshField("JURY MANAGER", 30);
 
@@ -87,9 +87,6 @@ public class ExcusalLetterTest extends AbstractLetterTest {
         // Fax number is always empty
         assertThat(excusalLetter.getData().get(11).getFormattedString())
             .isEqualTo(LetterTestUtils.emptyField(12));
-        // Juror address 6 is always empty
-        assertThat(excusalLetter.getData().get(20).getFormattedString())
-            .isEqualTo(LetterTestUtils.emptyField(35));
 
     }
 
@@ -112,9 +109,6 @@ public class ExcusalLetterTest extends AbstractLetterTest {
         // Fax number is always empty
         assertThat(excusalLetter.getData().get(11).getFormattedString())
             .isEqualTo(LetterTestUtils.emptyField(12));
-        // Juror address 6 is always empty
-        assertThat(excusalLetter.getData().get(20).getFormattedString())
-            .isEqualTo(LetterTestUtils.emptyField(35));
 
     }
 

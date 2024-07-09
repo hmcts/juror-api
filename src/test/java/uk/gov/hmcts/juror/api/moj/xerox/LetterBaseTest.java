@@ -21,7 +21,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -609,6 +611,187 @@ class LetterBaseTest {
 
         testLetter.addData(LetterBase.LetterDataType.WELSH_COURT_ADDRESS6, 40);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("WELSH_COURT_ADDRESS_6", 40));
+    }
+
+
+    @Test
+    void positiveAddDataShuffleSingle() {
+        LetterBase.LetterContext context = testContextBuilder().build();
+        LetterBase letterBase = spy(new LetterBase(context));
+
+        LetterBase.LetterDataType letterDataType = mock(LetterBase.LetterDataType.class);
+        doReturn("test").when(letterDataType).getValue(context);
+
+        LetterBase.DataShuffle dataShuffle = new LetterBase.DataShuffle(letterDataType, 10);
+
+        letterBase.addDataShuffle(dataShuffle);
+
+        verify(letterDataType, times(1)).validateContext(eq(context));
+
+        assertThat(letterBase.getData()).hasSize(1);
+        LetterBase.ILetterData actualLetterDataShuffle = letterBase.getData().get(0);
+
+        assertThat(actualLetterDataShuffle).isNotNull();
+        assertThat(actualLetterDataShuffle.getLength()).isEqualTo(10);
+        assertThat(actualLetterDataShuffle.getFormattedString()).isEqualTo("test      ");
+    }
+
+    @Test
+    void positiveAddDataShuffleMultiple() {
+        LetterBase.LetterContext context = testContextBuilder().build();
+
+        LetterBase.LetterDataType letterDataType1 = mock(LetterBase.LetterDataType.class);
+        doReturn("test 123").when(letterDataType1).getValue(context);
+        LetterBase.DataShuffle dataShuffle1 = new LetterBase.DataShuffle(letterDataType1, 20);
+
+        LetterBase.LetterDataType letterDataType2 = mock(LetterBase.LetterDataType.class);
+        doReturn("some value 2345").when(letterDataType2).getValue(context);
+        LetterBase.DataShuffle dataShuffle2 = new LetterBase.DataShuffle(letterDataType2, 15);
+
+        LetterBase.LetterDataType letterDataType3 = mock(LetterBase.LetterDataType.class);
+        doReturn("value 22 ").when(letterDataType3).getValue(context);
+        LetterBase.DataShuffle dataShuffle3 = new LetterBase.DataShuffle(letterDataType3, 10);
+
+        LetterBase letterBase = spy(new LetterBase(context));
+        letterBase.addDataShuffle(dataShuffle1, dataShuffle2, dataShuffle3);
+
+        verify(letterDataType1, times(1)).validateContext(eq(context));
+        verify(letterDataType2, times(1)).validateContext(eq(context));
+        verify(letterDataType3, times(1)).validateContext(eq(context));
+
+        assertThat(letterBase.getData()).hasSize(1);
+        LetterBase.ILetterData actualLetterDataShuffle = letterBase.getData().get(0);
+
+        assertThat(actualLetterDataShuffle).isNotNull();
+        assertThat(actualLetterDataShuffle.getLength()).isEqualTo(45);
+        assertThat(actualLetterDataShuffle.getFormattedString())
+            .isEqualTo("test 123            some value 2345value 22  ");
+    }
+
+    @Test
+    void positiveAddDataShuffleMultipleMissingFirstNull() {
+        LetterBase.LetterContext context = testContextBuilder().build();
+        LetterBase.LetterDataType letterDataType1 = mock(LetterBase.LetterDataType.class);
+        doReturn(null).when(letterDataType1).getValue(context);
+        LetterBase.DataShuffle dataShuffle1 = new LetterBase.DataShuffle(letterDataType1, 20);
+
+        LetterBase.LetterDataType letterDataType2 = mock(LetterBase.LetterDataType.class);
+        doReturn("some value 2345").when(letterDataType2).getValue(context);
+        LetterBase.DataShuffle dataShuffle2 = new LetterBase.DataShuffle(letterDataType2, 15);
+
+        LetterBase.LetterDataType letterDataType3 = mock(LetterBase.LetterDataType.class);
+        doReturn("value 22 ").when(letterDataType3).getValue(context);
+        LetterBase.DataShuffle dataShuffle3 = new LetterBase.DataShuffle(letterDataType3, 10);
+
+        LetterBase letterBase = spy(new LetterBase(context));
+        letterBase.addDataShuffle(dataShuffle1, dataShuffle2, dataShuffle3);
+
+        verify(letterDataType1, times(1)).validateContext(eq(context));
+        verify(letterDataType2, times(1)).validateContext(eq(context));
+        verify(letterDataType3, times(1)).validateContext(eq(context));
+
+        assertThat(letterBase.getData()).hasSize(1);
+        LetterBase.ILetterData actualLetterDataShuffle = letterBase.getData().get(0);
+
+        assertThat(actualLetterDataShuffle).isNotNull();
+        assertThat(actualLetterDataShuffle.getLength()).isEqualTo(45);
+        assertThat(actualLetterDataShuffle.getFormattedString())
+            .isEqualTo("some value 2345value 22                      ");
+    }
+
+    @Test
+    void positiveAddDataShuffleMultipleMissingFirstEmpty() {
+        LetterBase.LetterContext context = testContextBuilder().build();
+        LetterBase.LetterDataType letterDataType1 = mock(LetterBase.LetterDataType.class);
+        doReturn("").when(letterDataType1).getValue(context);
+        LetterBase.DataShuffle dataShuffle1 = new LetterBase.DataShuffle(letterDataType1, 20);
+
+        LetterBase.LetterDataType letterDataType2 = mock(LetterBase.LetterDataType.class);
+        doReturn("some value 2345").when(letterDataType2).getValue(context);
+        LetterBase.DataShuffle dataShuffle2 = new LetterBase.DataShuffle(letterDataType2, 15);
+
+        LetterBase.LetterDataType letterDataType3 = mock(LetterBase.LetterDataType.class);
+        doReturn("value 22 ").when(letterDataType3).getValue(context);
+        LetterBase.DataShuffle dataShuffle3 = new LetterBase.DataShuffle(letterDataType3, 10);
+
+        LetterBase letterBase = spy(new LetterBase(context));
+        letterBase.addDataShuffle(dataShuffle1, dataShuffle2, dataShuffle3);
+
+        verify(letterDataType1, times(1)).validateContext(eq(context));
+        verify(letterDataType2, times(1)).validateContext(eq(context));
+        verify(letterDataType3, times(1)).validateContext(eq(context));
+
+        assertThat(letterBase.getData()).hasSize(1);
+        LetterBase.ILetterData actualLetterDataShuffle = letterBase.getData().get(0);
+
+        assertThat(actualLetterDataShuffle).isNotNull();
+        assertThat(actualLetterDataShuffle.getLength()).isEqualTo(45);
+        assertThat(actualLetterDataShuffle.getFormattedString())
+            .isEqualTo("some value 2345value 22                      ");
+    }
+
+    @Test
+    void positiveAddDataShuffleMultipleMissingSecond() {
+        LetterBase.LetterContext context = testContextBuilder().build();
+
+        LetterBase.LetterDataType letterDataType1 = mock(LetterBase.LetterDataType.class);
+        doReturn("test 123").when(letterDataType1).getValue(context);
+        LetterBase.DataShuffle dataShuffle1 = new LetterBase.DataShuffle(letterDataType1, 20);
+
+        LetterBase.LetterDataType letterDataType2 = mock(LetterBase.LetterDataType.class);
+        doReturn(null).when(letterDataType2).getValue(context);
+        LetterBase.DataShuffle dataShuffle2 = new LetterBase.DataShuffle(letterDataType2, 15);
+
+        LetterBase.LetterDataType letterDataType3 = mock(LetterBase.LetterDataType.class);
+        doReturn("value 22 ").when(letterDataType3).getValue(context);
+        LetterBase.DataShuffle dataShuffle3 = new LetterBase.DataShuffle(letterDataType3, 10);
+
+        LetterBase letterBase = spy(new LetterBase(context));
+        letterBase.addDataShuffle(dataShuffle1, dataShuffle2, dataShuffle3);
+
+        verify(letterDataType1, times(1)).validateContext(eq(context));
+        verify(letterDataType2, times(1)).validateContext(eq(context));
+        verify(letterDataType3, times(1)).validateContext(eq(context));
+
+        assertThat(letterBase.getData()).hasSize(1);
+        LetterBase.ILetterData actualLetterDataShuffle = letterBase.getData().get(0);
+
+        assertThat(actualLetterDataShuffle).isNotNull();
+        assertThat(actualLetterDataShuffle.getLength()).isEqualTo(45);
+        assertThat(actualLetterDataShuffle.getFormattedString())
+            .isEqualTo("test 123            value 22                 ");
+    }
+
+    @Test
+    void positiveAddDataShuffleMultipleMissingFirstAndSecond() {
+        LetterBase.LetterContext context = testContextBuilder().build();
+
+        LetterBase.LetterDataType letterDataType1 = mock(LetterBase.LetterDataType.class);
+        doReturn(null).when(letterDataType1).getValue(context);
+        LetterBase.DataShuffle dataShuffle1 = new LetterBase.DataShuffle(letterDataType1, 20);
+
+        LetterBase.LetterDataType letterDataType2 = mock(LetterBase.LetterDataType.class);
+        doReturn(null).when(letterDataType2).getValue(context);
+        LetterBase.DataShuffle dataShuffle2 = new LetterBase.DataShuffle(letterDataType2, 15);
+
+        LetterBase.LetterDataType letterDataType3 = mock(LetterBase.LetterDataType.class);
+        doReturn("value 22 ").when(letterDataType3).getValue(context);
+        LetterBase.DataShuffle dataShuffle3 = new LetterBase.DataShuffle(letterDataType3, 10);
+
+        LetterBase letterBase = spy(new LetterBase(context));
+        letterBase.addDataShuffle(dataShuffle1, dataShuffle2, dataShuffle3);
+
+        verify(letterDataType1, times(1)).validateContext(eq(context));
+        verify(letterDataType2, times(1)).validateContext(eq(context));
+        verify(letterDataType3, times(1)).validateContext(eq(context));
+
+        assertThat(letterBase.getData()).hasSize(1);
+        LetterBase.ILetterData actualLetterDataShuffle = letterBase.getData().get(0);
+
+        assertThat(actualLetterDataShuffle).isNotNull();
+        assertThat(actualLetterDataShuffle.getLength()).isEqualTo(45);
+        assertThat(actualLetterDataShuffle.getFormattedString())
+            .isEqualTo("value 22                                     ");
     }
 
 }

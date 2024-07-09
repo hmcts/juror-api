@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.xerox;
 
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -32,7 +33,7 @@ public class LetterBase {
 
     protected final LetterContext letterContext;
     @Getter
-    final List<LetterData> data;
+    final List<ILetterData> data;
     @Setter
     private FormCode formCode;
     @Getter
@@ -69,11 +70,27 @@ public class LetterBase {
         this.data.add(new LetterData(length, letterDataType));
     }
 
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
+    public void addDataShuffle(DataShuffle... dataShuffle) {
+        LetterDataShuffle letterDataShuffle = new LetterDataShuffle();
+        for (DataShuffle shuffle : dataShuffle) {
+            shuffle.letterDataType.validateContext(letterContext);
+            letterDataShuffle.add(new LetterData(shuffle.length, shuffle.letterDataType));
+        }
+        this.data.add(letterDataShuffle);
+    }
+
+
+    public record DataShuffle(LetterDataType letterDataType, int length) {
+
+    }
+
+
     @SuppressWarnings("PMD.AvoidRethrowingException")
     public String getLetterString() {
         try {
             return this.data.stream()
-                .map(LetterData::getFormattedString)
+                .map(ILetterData::getFormattedString)
                 .collect(Collectors.joining())
                 .toUpperCase();
         } catch (MojException mojException) {
@@ -121,13 +138,69 @@ public class LetterBase {
     }
 
     @RequiredArgsConstructor
-    protected class LetterData {
+    protected class LetterData implements ILetterData {
         private final int length;
         private final LetterDataType type;
 
-        public String getFormattedString() {
-            return StringUtils.rightPad(Optional.ofNullable(type.getValue(letterContext)).orElse(""), length, " ");
+
+        @Override
+        public boolean hasData() {
+            return !StringUtils.isBlank(getValue());
         }
+
+        @Override
+        public String getValue() {
+            return Optional.ofNullable(type.getValue(letterContext)).orElse("");
+        }
+
+        @Override
+        public int getLength() {
+            return length;
+        }
+    }
+
+
+
+    @EqualsAndHashCode
+    protected static class LetterDataShuffle implements ILetterData {
+        private final List<ILetterData> letterDataShuffleList = new ArrayList<>();
+
+        @Override
+        public boolean hasData() {
+            return letterDataShuffleList.stream().anyMatch(ILetterData::hasData);
+        }
+
+        @Override
+        public String getValue() {
+            return letterDataShuffleList
+                .stream()
+                .filter(ILetterData::hasData)
+                .map(ILetterData::getFormattedString)
+                .collect(Collectors.joining());
+        }
+
+        @Override
+        public int getLength() {
+            return letterDataShuffleList.stream()
+                .mapToInt(data -> data.getFormattedString().length())
+                .sum();
+        }
+
+        public void add(ILetterData letterData) {
+            this.letterDataShuffleList.add(letterData);
+        }
+    }
+
+    protected interface ILetterData {
+        default String getFormattedString() {
+            return StringUtils.rightPad(getValue(), getLength(), " ");
+        }
+
+        boolean hasData();
+
+        String getValue();
+
+        int getLength();
     }
 
 

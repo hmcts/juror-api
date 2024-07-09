@@ -84,12 +84,14 @@ public class SummonsLetter extends LetterBase {
         addData(LetterDataType.JUROR_FIRST_NAME, 20);
         addData(LetterDataType.JUROR_LAST_NAME, 20);
         addData(LetterDataType.JUROR_ADDRESS1, 35);
-        addData(LetterDataType.JUROR_ADDRESS2, 35);
-        addData(LetterDataType.JUROR_ADDRESS3, 35);
-        addData(LetterDataType.JUROR_ADDRESS4, 35);
-        addData(LetterDataType.JUROR_ADDRESS5, 35);
-        addData(LetterDataType.JUROR_ADDRESS6, 35);
-        addData(LetterDataType.JUROR_POSTCODE, 10);
+        addDataShuffle(
+            new DataShuffle(LetterDataType.JUROR_ADDRESS2, 35),
+            new DataShuffle(LetterDataType.JUROR_ADDRESS3, 35),
+            new DataShuffle(LetterDataType.JUROR_ADDRESS4, 35),
+            new DataShuffle(LetterDataType.JUROR_ADDRESS5, 35),
+            new DataShuffle(LetterDataType.JUROR_ADDRESS6, 35),
+            new DataShuffle(LetterDataType.JUROR_POSTCODE, 10)
+        );
         addData(LetterDataType.JUROR_NUMBER, 9);
     }
 
@@ -115,5 +117,4 @@ public class SummonsLetter extends LetterBase {
         addData(LetterDataType.BUREAU_PHONE, 12);
         addData(LetterDataType.BUREAU_FAX, 12);
     }
-
 }

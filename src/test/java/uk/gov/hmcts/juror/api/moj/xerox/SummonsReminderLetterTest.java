@@ -36,8 +36,8 @@ class SummonsReminderLetterTest extends AbstractLetterTest {
         addEnglishField("JUROR_ADDRESS_3", 35);
         addEnglishField("JUROR_ADDRESS_4", 35);
         addEnglishField("JUROR_ADDRESS_5", 35);
-        addEnglishField("", 35);
-        addEnglishField("SY2 6LU", 10);
+        addEnglishField("SY2 6LU", 35);
+        addEnglishField("", 10);
         addEnglishField("641500541", 9);
         addEnglishField("JURY MANAGER", 30);
     }
@@ -65,8 +65,8 @@ class SummonsReminderLetterTest extends AbstractLetterTest {
         addWelshField("JUROR_ADDRESS_3", 35);
         addWelshField("JUROR_ADDRESS_4", 35);
         addWelshField("JUROR_ADDRESS_5", 35);
-        addWelshField("", 35);
-        addWelshField("SY2 6LU", 10);
+        addWelshField("SY2 6LU", 35);
+        addWelshField("", 10);
         addWelshField("641500541", 9);
         addWelshField("JURY MANAGER", 30);
     }
@@ -85,12 +85,9 @@ class SummonsReminderLetterTest extends AbstractLetterTest {
         assertThat(summonsReminderLetter.getFormCode()).isEqualTo(FormCode.ENG_SUMMONS_REMINDER.getCode());
         assertThat(summonsReminderLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testJuror().getJurorNumber());
 
-        // Juror address 6 is always empty
+        // Fax number is always empty
         assertThat(summonsReminderLetter.getData().get(11).getFormattedString())
             .isEqualTo(LetterTestUtils.emptyField(12));
-        // Fax number is always empty
-        assertThat(summonsReminderLetter.getData().get(20).getFormattedString())
-            .isEqualTo(LetterTestUtils.emptyField(35));
     }
 
     @Test
@@ -109,12 +106,9 @@ class SummonsReminderLetterTest extends AbstractLetterTest {
         assertThat(summonsReminderLetter.getJurorNumber()).isEqualTo(
             LetterTestUtils.testWelshJuror().getJurorNumber());
 
-        // Juror address 6 is always empty
+        // Fax number is always empty
         assertThat(summonsReminderLetter.getData().get(12).getFormattedString()).isEqualTo(
             LetterTestUtils.emptyField(12));
-        // Fax number is always empty
-        assertThat(summonsReminderLetter.getData().get(21).getFormattedString()).isEqualTo(
-            LetterTestUtils.emptyField(35));
     }
 
     @Test

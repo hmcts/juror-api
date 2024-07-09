@@ -9,14 +9,13 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
-import java.util.Calendar;
-import java.util.Locale;
 
+//False positive this class is used to set up test data instead of running tests
+@SuppressWarnings("PMD.JUnit4TestShouldUseTestAnnotation")
 public final class LetterTestUtils {
 
     private LetterTestUtils() {
@@ -25,27 +24,6 @@ public final class LetterTestUtils {
 
     static String pad(String data, Integer width) {
         return StringUtils.rightPad(data, width, " ");
-    }
-
-    static String generateLetterDate() {
-        SimpleDateFormat formatter = new SimpleDateFormat("dd MMMM yyyy", Locale.ENGLISH);
-        Calendar cal = Calendar.getInstance();
-
-        switch (cal.get(Calendar.DAY_OF_WEEK)) {
-            case Calendar.MONDAY:
-            case Calendar.TUESDAY:
-            case Calendar.WEDNESDAY:
-                cal.add(Calendar.DAY_OF_MONTH, 2);
-                break;
-            case Calendar.THURSDAY:
-            case Calendar.FRIDAY:
-                cal.add(Calendar.DAY_OF_MONTH, 4);
-                break;
-            default:
-                break;
-        }
-
-        return formatter.format(cal.getTime()).toUpperCase();
     }
 
     static String emptyField(Integer width) {

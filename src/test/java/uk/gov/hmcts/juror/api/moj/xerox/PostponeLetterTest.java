@@ -12,7 +12,7 @@ import java.time.Month;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
-public class PostponeLetterTest extends AbstractLetterTest {
+class PostponeLetterTest extends AbstractLetterTest {
     @Override
     protected void setupEnglishExpectedResult() {
         addEnglishLetterDate();
@@ -35,8 +35,8 @@ public class PostponeLetterTest extends AbstractLetterTest {
         addEnglishField("JUROR_ADDRESS_3", 35);
         addEnglishField("JUROR_ADDRESS_4", 35);
         addEnglishField("JUROR_ADDRESS_5", 35);
-        addEnglishField("", 35);
-        addEnglishField("SY2 6LU", 10);
+        addEnglishField("SY2 6LU", 35);
+        addEnglishField("", 10);
         addEnglishField("641500541", 9);
         addEnglishField("JURY MANAGER", 30);
         addEnglishField("MONDAY 6 FEBRUARY, 2017", 32);
@@ -65,8 +65,8 @@ public class PostponeLetterTest extends AbstractLetterTest {
         addWelshField("JUROR_ADDRESS_3", 35);
         addWelshField("JUROR_ADDRESS_4", 35);
         addWelshField("JUROR_ADDRESS_5", 35);
-        addWelshField("", 35);
-        addWelshField("SY2 6LU", 10);
+        addWelshField("SY2 6LU", 35);
+        addWelshField("", 10);
         addWelshField("641500541", 9);
         addWelshField("JURY MANAGER", 30);
         addWelshField("DYDD LLUN 6 CHWEFROR, 2017", 32);
@@ -90,8 +90,6 @@ public class PostponeLetterTest extends AbstractLetterTest {
 
         // Fax number is always empty
         assertThat(postponeLetter.getData().get(11).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
-        // Juror address 6 is always empty
-        assertThat(postponeLetter.getData().get(20).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(35));
     }
 
     @Test
@@ -111,8 +109,6 @@ public class PostponeLetterTest extends AbstractLetterTest {
 
         // Fax number is always empty
         assertThat(postponeLetter.getData().get(11).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
-        // Juror address 6 is always empty
-        assertThat(postponeLetter.getData().get(20).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(35));
 
     }
 
