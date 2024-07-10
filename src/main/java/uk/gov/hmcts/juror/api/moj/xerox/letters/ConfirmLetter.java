@@ -36,14 +36,13 @@ public class ConfirmLetter extends LetterBase {
         addData(LetterDataType.DATE_OF_LETTER, 18);
         addData(LetterDataType.COURT_LOCATION_CODE, 3);
         addData(LetterDataType.WELSH_COURT_NAME, 40);
-        addData(LetterDataType.COURT_NAME, 40);
-        addData(LetterDataType.BUREAU_NAME, 35);
-        sharedBureauSetup();
-        addData(LetterDataType.BUREAU_POSTCODE, 10);
+        addData(LetterDataType.BUREAU_NAME, 40);
+        addBureauAddress();
         addData(LetterDataType.BUREAU_PHONE, 12);
         addData(LetterDataType.BUREAU_FAX, 12);
         addData(LetterDataType.WELSH_DATE_OF_ATTENDANCE, 32);
         sharedSetup();
+        addData(LetterDataType.BUREAU_SIGNATORY, 30);
     }
 
     @Override
@@ -53,9 +52,7 @@ public class ConfirmLetter extends LetterBase {
         addData(LetterDataType.COURT_LOCATION_CODE, 3);
         addData(LetterDataType.COURT_NAME, 59);
         addData(LetterDataType.BUREAU_NAME, 40);
-        sharedBureauSetup();
-        addData(LetterDataType.BUREAU_ADDRESS6, 35);
-        addData(LetterDataType.BUREAU_POSTCODE, 10);
+        addBureauAddress();
         addData(LetterDataType.BUREAU_PHONE, 12);
         addData(LetterDataType.BUREAU_FAX, 12);
         addData(LetterDataType.DATE_OF_ATTENDANCE, 32);
@@ -63,28 +60,12 @@ public class ConfirmLetter extends LetterBase {
         addData(LetterDataType.BUREAU_SIGNATORY, 30);
     }
 
-    private void sharedBureauSetup() {
-        addData(LetterDataType.BUREAU_ADDRESS1, 35);
-        addData(LetterDataType.BUREAU_ADDRESS2, 35);
-        addData(LetterDataType.BUREAU_ADDRESS3, 35);
-        addData(LetterDataType.BUREAU_ADDRESS4, 35);
-        addData(LetterDataType.BUREAU_ADDRESS5, 35);
-    }
-
     private void sharedSetup() {
         addData(LetterDataType.TIME_OF_ATTENDANCE, 8);
         addData(LetterDataType.JUROR_TITLE, 10);
         addData(LetterDataType.JUROR_FIRST_NAME, 20);
         addData(LetterDataType.JUROR_LAST_NAME, 20);
-        addData(LetterDataType.JUROR_ADDRESS1, 35);
-        addDataShuffle(
-            new DataShuffle(LetterDataType.JUROR_ADDRESS2, 35),
-            new DataShuffle(LetterDataType.JUROR_ADDRESS3, 35),
-            new DataShuffle(LetterDataType.JUROR_ADDRESS4, 35),
-            new DataShuffle(LetterDataType.JUROR_ADDRESS5, 35),
-            new DataShuffle(LetterDataType.JUROR_ADDRESS6, 35),
-            new DataShuffle(LetterDataType.JUROR_POSTCODE, 10)
-        );
+        addJurorAddress();
         addData(LetterDataType.JUROR_NUMBER, 9);
     }
 }

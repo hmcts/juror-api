@@ -13,6 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
 class SummonsLetterTest extends AbstractLetterTest {
+
     @Override
     protected void setupEnglishExpectedResult() {
         addEnglishField("415221201", 9);
@@ -103,7 +104,7 @@ class SummonsLetterTest extends AbstractLetterTest {
         addWelshField("ABERTAWE", 35);
         addWelshField("WELSH_COURT_ADDRESS_4", 35);
         addWelshField("WELSH_COURT_ADDRESS_5", 35);
-        addWelshField("WELSH_COURT_ADDRESS_6", 35);
+        addWelshField("SY2 6LU", 35);
         // repeated field
         addWelshField("641500541", 9);
     }
@@ -124,8 +125,8 @@ class SummonsLetterTest extends AbstractLetterTest {
         assertThat(summonsLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testJuror().getJurorNumber());
 
         // Fax number is always empty
-        assertThat(summonsLetter.getData().get(22).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
-        assertThat(summonsLetter.getData().get(33).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
+        assertThat(summonsLetter.getData().get(16).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
+        assertThat(summonsLetter.getData().get(21).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
 
     }
 
@@ -144,9 +145,8 @@ class SummonsLetterTest extends AbstractLetterTest {
         assertThat(summonsLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testWelshJuror().getJurorNumber());
 
         // Fax number is always empty
-        assertThat(summonsLetter.getData().get(22).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
-        assertThat(summonsLetter.getData().get(33).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
-
+        assertThat(summonsLetter.getData().get(16).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
+        assertThat(summonsLetter.getData().get(21).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
     }
 
     @Test

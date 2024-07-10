@@ -86,7 +86,7 @@ class SummonsReminderLetterTest extends AbstractLetterTest {
         assertThat(summonsReminderLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testJuror().getJurorNumber());
 
         // Fax number is always empty
-        assertThat(summonsReminderLetter.getData().get(11).getFormattedString())
+        assertThat(summonsReminderLetter.getData().get(5).getFormattedString())
             .isEqualTo(LetterTestUtils.emptyField(12));
     }
 
@@ -107,7 +107,7 @@ class SummonsReminderLetterTest extends AbstractLetterTest {
             LetterTestUtils.testWelshJuror().getJurorNumber());
 
         // Fax number is always empty
-        assertThat(summonsReminderLetter.getData().get(12).getFormattedString()).isEqualTo(
+        assertThat(summonsReminderLetter.getData().get(6).getFormattedString()).isEqualTo(
             LetterTestUtils.emptyField(12));
     }
 

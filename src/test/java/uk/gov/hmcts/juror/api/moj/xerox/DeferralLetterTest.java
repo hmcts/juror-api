@@ -47,13 +47,13 @@ class DeferralLetterTest extends AbstractLetterTest {
     protected void setupWelshExpectedResult() {
         addWelshLetterDate();
         addWelshField("ABERTAWE", 40);
-        addWelshField("SWANSEA CROWN COURT", 40);
-        addWelshField("JURY CENTRAL SUMMONING BUREAU", 35);
+        addWelshField("JURY CENTRAL SUMMONING BUREAU", 40);
         addWelshField("THE COURT SERVICE", 35);
         addWelshField("FREEPOST LON 19669", 35);
         addWelshField("POCOCK STREET", 35);
         addWelshField("LONDON", 35);
         addWelshField("BUREAU_ADDRESS_5", 35);
+        addWelshField("BUREAU_ADDRESS_6", 35);
         addWelshField("SE1 0YG", 10);
         addWelshField("0845 3555567", 12);
         addWelshField("", 12);
@@ -89,7 +89,7 @@ class DeferralLetterTest extends AbstractLetterTest {
         assertThat(deferralLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testJuror().getJurorNumber());
 
         // Fax number is always empty
-        assertThat(deferralLetter.getData().get(11).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
+        assertThat(deferralLetter.getData().get(5).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
     }
 
     @Test
@@ -107,7 +107,7 @@ class DeferralLetterTest extends AbstractLetterTest {
         assertThat(deferralLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testWelshJuror().getJurorNumber());
 
         // Fax number is always empty
-        assertThat(deferralLetter.getData().get(11).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
+        assertThat(deferralLetter.getData().get(5).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
     }
 
     @Test

@@ -120,9 +120,20 @@ class LetterBaseTest {
         LetterBase testLetter = new LetterBase(testContextBuilder()
             .courtLocation(LetterTestUtils.testCourtLocation())
             .build());
-        testLetter.addData(LetterBase.LetterDataType.COURT_NAME, 15);
+        testLetter.addData(LetterBase.LetterDataType.COURT_NAME, 19);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad(
-            "SWANSEA CROWN COURT", 15
+            "SWANSEA CROWN COURT", 19
+        ));
+    }
+
+    @Test
+    void fieldLengthIsLimitedIsCorrect() {
+        LetterBase testLetter = new LetterBase(testContextBuilder()
+            .courtLocation(LetterTestUtils.testCourtLocation())
+            .build());
+        testLetter.addData(LetterBase.LetterDataType.COURT_NAME, 10);
+        assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad(
+            "SWANSEA CR", 10
         ));
     }
 

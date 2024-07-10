@@ -53,12 +53,15 @@ public class SummonsLetter extends LetterBase {
         addData(LetterDataType.COURT_NAME, 40);
         sharedCourtSetup();
         addData(LetterDataType.WELSH_COURT_NAME, 40);
-        addData(LetterDataType.WELSH_COURT_ADDRESS1, 35);
-        addData(LetterDataType.WELSH_COURT_ADDRESS2, 35);
-        addData(LetterDataType.WELSH_COURT_ADDRESS3, 35);
-        addData(LetterDataType.WELSH_COURT_ADDRESS4, 35);
-        addData(LetterDataType.WELSH_COURT_ADDRESS5, 35);
-        addData(LetterDataType.WELSH_COURT_ADDRESS6, 35);
+        addDataShuffle(
+            new DataShuffle(LetterDataType.WELSH_COURT_ADDRESS1, 35),
+            new DataShuffle(LetterDataType.WELSH_COURT_ADDRESS2, 35),
+            new DataShuffle(LetterDataType.WELSH_COURT_ADDRESS3, 35),
+            new DataShuffle(LetterDataType.WELSH_COURT_ADDRESS4, 35),
+            new DataShuffle(LetterDataType.WELSH_COURT_ADDRESS5, 35),
+            new DataShuffle(LetterDataType.COURT_POSTCODE, 35)
+        );
+
         // repeated field
         addData(LetterDataType.JUROR_NUMBER, 9);
     }
@@ -83,37 +86,17 @@ public class SummonsLetter extends LetterBase {
         addData(LetterDataType.JUROR_TITLE, 10);
         addData(LetterDataType.JUROR_FIRST_NAME, 20);
         addData(LetterDataType.JUROR_LAST_NAME, 20);
-        addData(LetterDataType.JUROR_ADDRESS1, 35);
-        addDataShuffle(
-            new DataShuffle(LetterDataType.JUROR_ADDRESS2, 35),
-            new DataShuffle(LetterDataType.JUROR_ADDRESS3, 35),
-            new DataShuffle(LetterDataType.JUROR_ADDRESS4, 35),
-            new DataShuffle(LetterDataType.JUROR_ADDRESS5, 35),
-            new DataShuffle(LetterDataType.JUROR_ADDRESS6, 35),
-            new DataShuffle(LetterDataType.JUROR_POSTCODE, 10)
-        );
+        addJurorAddress();
         addData(LetterDataType.JUROR_NUMBER, 9);
     }
 
     private void sharedCourtSetup() {
-        addData(LetterDataType.COURT_ADDRESS1, 35);
-        addData(LetterDataType.COURT_ADDRESS2, 35);
-        addData(LetterDataType.COURT_ADDRESS3, 35);
-        addData(LetterDataType.COURT_ADDRESS4, 35);
-        addData(LetterDataType.COURT_ADDRESS5, 35);
-        addData(LetterDataType.COURT_ADDRESS6, 35);
-        addData(LetterDataType.COURT_POSTCODE, 10);
+        addEnglishCourtAddress();
         addData(LetterDataType.COURT_PHONE, 12);
         addData(LetterDataType.COURT_FAX, 12);
         addData(LetterDataType.COURT_SIGNATORY, 30);
         addData(LetterDataType.BUREAU_NAME, 40);
-        addData(LetterDataType.BUREAU_ADDRESS1, 35);
-        addData(LetterDataType.BUREAU_ADDRESS2, 35);
-        addData(LetterDataType.BUREAU_ADDRESS3, 35);
-        addData(LetterDataType.BUREAU_ADDRESS4, 35);
-        addData(LetterDataType.BUREAU_ADDRESS5, 35);
-        addData(LetterDataType.BUREAU_ADDRESS6, 35);
-        addData(LetterDataType.BUREAU_POSTCODE, 10);
+        addBureauAddress();
         addData(LetterDataType.BUREAU_PHONE, 12);
         addData(LetterDataType.BUREAU_FAX, 12);
     }

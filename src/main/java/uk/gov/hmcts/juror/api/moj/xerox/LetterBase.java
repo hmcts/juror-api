@@ -150,7 +150,11 @@ public class LetterBase {
 
         @Override
         public String getValue() {
-            return Optional.ofNullable(type.getValue(letterContext)).orElse("");
+            String text = Optional.ofNullable(type.getValue(letterContext)).orElse("");
+            if (text.length() > length) {
+                return text.substring(0, length);
+            }
+            return text;
         }
 
         @Override
@@ -158,7 +162,6 @@ public class LetterBase {
             return length;
         }
     }
-
 
 
     @EqualsAndHashCode
@@ -327,6 +330,54 @@ public class LetterBase {
         private final CourtLocation bureauLocation;
         private final WelshCourtLocation welshCourtLocation;
         private final String additionalInformation;
+    }
+
+    protected void addBureauAddress() {
+        addDataShuffle(
+            new DataShuffle(LetterDataType.BUREAU_ADDRESS1, 35),
+            new DataShuffle(LetterDataType.BUREAU_ADDRESS2, 35),
+            new DataShuffle(LetterDataType.BUREAU_ADDRESS3, 35),
+            new DataShuffle(LetterDataType.BUREAU_ADDRESS4, 35),
+            new DataShuffle(LetterDataType.BUREAU_ADDRESS5, 35),
+            new DataShuffle(LetterDataType.BUREAU_ADDRESS6, 35),
+            new DataShuffle(LetterDataType.BUREAU_POSTCODE, 10)
+        );
+    }
+
+    protected void addJurorAddress() {
+        addData(LetterDataType.JUROR_ADDRESS1, 35);
+        addDataShuffle(
+            new DataShuffle(LetterDataType.JUROR_ADDRESS2, 35),
+            new DataShuffle(LetterDataType.JUROR_ADDRESS3, 35),
+            new DataShuffle(LetterDataType.JUROR_ADDRESS4, 35),
+            new DataShuffle(LetterDataType.JUROR_ADDRESS5, 35),
+            new DataShuffle(LetterDataType.JUROR_ADDRESS6, 35),
+            new DataShuffle(LetterDataType.JUROR_POSTCODE, 10)
+        );
+    }
+
+    protected void addWelshCourtAddress() {
+        addDataShuffle(
+            new DataShuffle(LetterDataType.WELSH_COURT_ADDRESS1, 35),
+            new DataShuffle(LetterDataType.WELSH_COURT_ADDRESS2, 35),
+            new DataShuffle(LetterDataType.WELSH_COURT_ADDRESS3, 35),
+            new DataShuffle(LetterDataType.WELSH_COURT_ADDRESS4, 35),
+            new DataShuffle(LetterDataType.WELSH_COURT_ADDRESS5, 35),
+            new DataShuffle(LetterDataType.WELSH_COURT_ADDRESS6, 35),
+            new DataShuffle(LetterDataType.COURT_POSTCODE, 10)
+        );
+    }
+
+    protected void addEnglishCourtAddress() {
+        addDataShuffle(
+            new DataShuffle(LetterDataType.COURT_ADDRESS1, 35),
+            new DataShuffle(LetterDataType.COURT_ADDRESS2, 35),
+            new DataShuffle(LetterDataType.COURT_ADDRESS3, 35),
+            new DataShuffle(LetterDataType.COURT_ADDRESS4, 35),
+            new DataShuffle(LetterDataType.COURT_ADDRESS5, 35),
+            new DataShuffle(LetterDataType.COURT_ADDRESS6, 35),
+            new DataShuffle(LetterDataType.COURT_POSTCODE, 10)
+        );
     }
 
 }

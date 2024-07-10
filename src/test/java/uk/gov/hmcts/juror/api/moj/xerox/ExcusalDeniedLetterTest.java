@@ -52,22 +52,22 @@ class ExcusalDeniedLetterTest extends AbstractLetterTest {
     protected void setupWelshExpectedResult() {
         addWelshLetterDate();
         addWelshField("ABERTAWE", 40);
-        addWelshField("SWANSEA CROWN COURT", 40);
-        addWelshField("JURY CENTRAL SUMMONING BUREAU", 35);
+        addWelshField("JURY CENTRAL SUMMONING BUREAU", 40);
         addWelshField("THE COURT SERVICE", 35);
         addWelshField("FREEPOST LON 19669", 35);
         addWelshField("POCOCK STREET", 35);
         addWelshField("LONDON", 35);
         addWelshField("BUREAU_ADDRESS_5", 35);
+        addWelshField("BUREAU_ADDRESS_6", 35);
         addWelshField("SE1 0YG", 10);
         addWelshField("0845 3555567", 12);
         addWelshField("", 12);
-        addWelshField("THE LAW COURTS", 35);
-        addWelshField("ST HELENS ROAD", 35);
-        addWelshField("SWANSEA", 35);
-        addWelshField("SHREWSBURY", 35);
-        addWelshField("COURT_ADDRESS_5", 35);
-        addWelshField("COURT_ADDRESS_6", 35);
+        addWelshField("Y LLYSOEDD BARN", 35);
+        addWelshField("LON SAN HELEN", 35);
+        addWelshField("ABERTAWE", 35);
+        addWelshField("WELSH_COURT_ADDRESS_4", 35);
+        addWelshField("WELSH_COURT_ADDRESS_5", 35);
+        addWelshField("WELSH_COURT_ADDRESS_6", 35);
         addWelshField("SY2 6LU", 10);
         addWelshField("MR", 10);
         addWelshField("FNAMEEIGHTTHREEONE", 20);
@@ -98,7 +98,7 @@ class ExcusalDeniedLetterTest extends AbstractLetterTest {
         assertThat(excusalDeniedLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testJuror().getJurorNumber());
 
         // Fax number is always empty
-        assertThat(excusalDeniedLetter.getData().get(11).getFormattedString())
+        assertThat(excusalDeniedLetter.getData().get(5).getFormattedString())
             .isEqualTo(LetterTestUtils.emptyField(12));
     }
 
@@ -118,7 +118,7 @@ class ExcusalDeniedLetterTest extends AbstractLetterTest {
             .isEqualTo(LetterTestUtils.testWelshJuror().getJurorNumber());
 
         // Fax number is always empty
-        assertThat(excusalDeniedLetter.getData().get(11).getFormattedString())
+        assertThat(excusalDeniedLetter.getData().get(5).getFormattedString())
             .isEqualTo(LetterTestUtils.emptyField(12));
     }
 

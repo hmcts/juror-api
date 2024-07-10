@@ -49,13 +49,13 @@ class ConfirmLetterTest extends AbstractLetterTest {
         addWelshLetterDate();
         addWelshField("457", 3);
         addWelshField("ABERTAWE", 40);
-        addWelshField("SWANSEA CROWN COURT", 40);
-        addWelshField("JURY CENTRAL SUMMONING BUREAU", 35);
+        addWelshField("JURY CENTRAL SUMMONING BUREAU", 40);
         addWelshField("THE COURT SERVICE", 35);
         addWelshField("FREEPOST LON 19669", 35);
         addWelshField("POCOCK STREET", 35);
         addWelshField("LONDON", 35);
         addWelshField("BUREAU_ADDRESS_5", 35);
+        addWelshField("BUREAU_ADDRESS_6", 35);
         addWelshField("SE1 0YG", 10);
         addWelshField("0845 3555567", 12);
         addWelshField("", 12);
@@ -72,6 +72,7 @@ class ConfirmLetterTest extends AbstractLetterTest {
         addWelshField("SY2 6LU", 35);
         addWelshField("", 10);
         addWelshField("641500541", 9);
+        addWelshField("JURY MANAGER", 30);
     }
 
 
@@ -89,7 +90,7 @@ class ConfirmLetterTest extends AbstractLetterTest {
         assertThat(confirmLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testJuror().getJurorNumber());
 
         // Fax number is always empty
-        assertThat(confirmLetter.getData().get(12).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
+        assertThat(confirmLetter.getData().get(6).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
 
     }
 
@@ -108,7 +109,7 @@ class ConfirmLetterTest extends AbstractLetterTest {
         assertThat(confirmLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testWelshJuror().getJurorNumber());
 
         // Fax number is always empty
-        assertThat(confirmLetter.getData().get(12).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
+        assertThat(confirmLetter.getData().get(6).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
 
     }
 
