@@ -7,6 +7,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.xerox.LetterBase;
 
 public class DeferralLetter extends LetterBase {
+
     public DeferralLetter(JurorPool jurorPool,
                           CourtLocation courtLocation,
                           CourtLocation bureauLocation) {
@@ -34,14 +35,8 @@ public class DeferralLetter extends LetterBase {
         setFormCode(FormCode.BI_DEFERRAL);
         addData(LetterDataType.DATE_OF_LETTER, 18);
         addData(LetterDataType.WELSH_COURT_NAME, 40);
-        addData(LetterDataType.COURT_NAME, 40);
-        addData(LetterDataType.BUREAU_NAME, 35);
-        addData(LetterDataType.BUREAU_ADDRESS1, 35);
-        addData(LetterDataType.BUREAU_ADDRESS2, 35);
-        addData(LetterDataType.BUREAU_ADDRESS3, 35);
-        addData(LetterDataType.BUREAU_ADDRESS4, 35);
-        addData(LetterDataType.BUREAU_ADDRESS5, 35);
-        addData(LetterDataType.BUREAU_POSTCODE, 10);
+        addData(LetterDataType.BUREAU_NAME, 40);
+        addBureauAddress();
         addData(LetterDataType.BUREAU_PHONE, 12);
         addData(LetterDataType.BUREAU_FAX, 12);
         addData(LetterDataType.WELSH_DEFERRAL_DATE, 32);
@@ -54,13 +49,7 @@ public class DeferralLetter extends LetterBase {
         addData(LetterDataType.DATE_OF_LETTER, 18);
         addData(LetterDataType.COURT_NAME, 59);
         addData(LetterDataType.BUREAU_NAME, 40);
-        addData(LetterDataType.BUREAU_ADDRESS1, 35);
-        addData(LetterDataType.BUREAU_ADDRESS2, 35);
-        addData(LetterDataType.BUREAU_ADDRESS3, 35);
-        addData(LetterDataType.BUREAU_ADDRESS4, 35);
-        addData(LetterDataType.BUREAU_ADDRESS5, 35);
-        addData(LetterDataType.BUREAU_ADDRESS6, 35);
-        addData(LetterDataType.BUREAU_POSTCODE, 10);
+        addBureauAddress();
         addData(LetterDataType.BUREAU_PHONE, 12);
         addData(LetterDataType.BUREAU_FAX, 12);
         addData(LetterDataType.DEFERRAL_DATE, 32);
@@ -72,13 +61,7 @@ public class DeferralLetter extends LetterBase {
         addData(LetterDataType.JUROR_TITLE, 10);
         addData(LetterDataType.JUROR_FIRST_NAME, 20);
         addData(LetterDataType.JUROR_LAST_NAME, 20);
-        addData(LetterDataType.JUROR_ADDRESS1, 35);
-        addData(LetterDataType.JUROR_ADDRESS2, 35);
-        addData(LetterDataType.JUROR_ADDRESS3, 35);
-        addData(LetterDataType.JUROR_ADDRESS4, 35);
-        addData(LetterDataType.JUROR_ADDRESS5, 35);
-        addData(LetterDataType.JUROR_ADDRESS6, 35);
-        addData(LetterDataType.JUROR_POSTCODE, 10);
+        addJurorAddress();
         addData(LetterDataType.JUROR_NUMBER, 9);
         addData(LetterDataType.BUREAU_SIGNATORY, 30);
 

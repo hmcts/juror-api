@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.xerox;
 
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -32,7 +33,7 @@ public class LetterBase {
 
     protected final LetterContext letterContext;
     @Getter
-    final List<LetterData> data;
+    final List<ILetterData> data;
     @Setter
     private FormCode formCode;
     @Getter
@@ -69,11 +70,27 @@ public class LetterBase {
         this.data.add(new LetterData(length, letterDataType));
     }
 
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
+    public void addDataShuffle(DataShuffle... dataShuffle) {
+        LetterDataShuffle letterDataShuffle = new LetterDataShuffle();
+        for (DataShuffle shuffle : dataShuffle) {
+            shuffle.letterDataType.validateContext(letterContext);
+            letterDataShuffle.add(new LetterData(shuffle.length, shuffle.letterDataType));
+        }
+        this.data.add(letterDataShuffle);
+    }
+
+
+    public record DataShuffle(LetterDataType letterDataType, int length) {
+
+    }
+
+
     @SuppressWarnings("PMD.AvoidRethrowingException")
     public String getLetterString() {
         try {
             return this.data.stream()
-                .map(LetterData::getFormattedString)
+                .map(ILetterData::getFormattedString)
                 .collect(Collectors.joining())
                 .toUpperCase();
         } catch (MojException mojException) {
@@ -121,13 +138,72 @@ public class LetterBase {
     }
 
     @RequiredArgsConstructor
-    protected class LetterData {
+    protected class LetterData implements ILetterData {
         private final int length;
         private final LetterDataType type;
 
-        public String getFormattedString() {
-            return StringUtils.rightPad(Optional.ofNullable(type.getValue(letterContext)).orElse(""), length, " ");
+
+        @Override
+        public boolean hasData() {
+            return !StringUtils.isBlank(getValue());
         }
+
+        @Override
+        public String getValue() {
+            String text = Optional.ofNullable(type.getValue(letterContext)).orElse("");
+            if (text.length() > length) {
+                return text.substring(0, length);
+            }
+            return text;
+        }
+
+        @Override
+        public int getLength() {
+            return length;
+        }
+    }
+
+
+    @EqualsAndHashCode
+    protected static class LetterDataShuffle implements ILetterData {
+        private final List<ILetterData> letterDataShuffleList = new ArrayList<>();
+
+        @Override
+        public boolean hasData() {
+            return letterDataShuffleList.stream().anyMatch(ILetterData::hasData);
+        }
+
+        @Override
+        public String getValue() {
+            return letterDataShuffleList
+                .stream()
+                .filter(ILetterData::hasData)
+                .map(ILetterData::getFormattedString)
+                .collect(Collectors.joining());
+        }
+
+        @Override
+        public int getLength() {
+            return letterDataShuffleList.stream()
+                .mapToInt(data -> data.getFormattedString().length())
+                .sum();
+        }
+
+        public void add(ILetterData letterData) {
+            this.letterDataShuffleList.add(letterData);
+        }
+    }
+
+    protected interface ILetterData {
+        default String getFormattedString() {
+            return StringUtils.rightPad(getValue(), getLength(), " ");
+        }
+
+        boolean hasData();
+
+        String getValue();
+
+        int getLength();
     }
 
 
@@ -254,6 +330,54 @@ public class LetterBase {
         private final CourtLocation bureauLocation;
         private final WelshCourtLocation welshCourtLocation;
         private final String additionalInformation;
+    }
+
+    protected void addBureauAddress() {
+        addDataShuffle(
+            new DataShuffle(LetterDataType.BUREAU_ADDRESS1, 35),
+            new DataShuffle(LetterDataType.BUREAU_ADDRESS2, 35),
+            new DataShuffle(LetterDataType.BUREAU_ADDRESS3, 35),
+            new DataShuffle(LetterDataType.BUREAU_ADDRESS4, 35),
+            new DataShuffle(LetterDataType.BUREAU_ADDRESS5, 35),
+            new DataShuffle(LetterDataType.BUREAU_ADDRESS6, 35),
+            new DataShuffle(LetterDataType.BUREAU_POSTCODE, 10)
+        );
+    }
+
+    protected void addJurorAddress() {
+        addData(LetterDataType.JUROR_ADDRESS1, 35);
+        addDataShuffle(
+            new DataShuffle(LetterDataType.JUROR_ADDRESS2, 35),
+            new DataShuffle(LetterDataType.JUROR_ADDRESS3, 35),
+            new DataShuffle(LetterDataType.JUROR_ADDRESS4, 35),
+            new DataShuffle(LetterDataType.JUROR_ADDRESS5, 35),
+            new DataShuffle(LetterDataType.JUROR_ADDRESS6, 35),
+            new DataShuffle(LetterDataType.JUROR_POSTCODE, 10)
+        );
+    }
+
+    protected void addWelshCourtAddress() {
+        addDataShuffle(
+            new DataShuffle(LetterDataType.WELSH_COURT_ADDRESS1, 35),
+            new DataShuffle(LetterDataType.WELSH_COURT_ADDRESS2, 35),
+            new DataShuffle(LetterDataType.WELSH_COURT_ADDRESS3, 35),
+            new DataShuffle(LetterDataType.WELSH_COURT_ADDRESS4, 35),
+            new DataShuffle(LetterDataType.WELSH_COURT_ADDRESS5, 35),
+            new DataShuffle(LetterDataType.WELSH_COURT_ADDRESS6, 35),
+            new DataShuffle(LetterDataType.COURT_POSTCODE, 10)
+        );
+    }
+
+    protected void addEnglishCourtAddress() {
+        addDataShuffle(
+            new DataShuffle(LetterDataType.COURT_ADDRESS1, 35),
+            new DataShuffle(LetterDataType.COURT_ADDRESS2, 35),
+            new DataShuffle(LetterDataType.COURT_ADDRESS3, 35),
+            new DataShuffle(LetterDataType.COURT_ADDRESS4, 35),
+            new DataShuffle(LetterDataType.COURT_ADDRESS5, 35),
+            new DataShuffle(LetterDataType.COURT_ADDRESS6, 35),
+            new DataShuffle(LetterDataType.COURT_POSTCODE, 10)
+        );
     }
 
 }

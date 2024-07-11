@@ -39,8 +39,8 @@ class RequestInfoLetterTest extends AbstractLetterTest {
         addEnglishField("JUROR_ADDRESS_3", 35);
         addEnglishField("JUROR_ADDRESS_4", 35);
         addEnglishField("JUROR_ADDRESS_5", 35);
-        addEnglishField("", 35);
-        addEnglishField("SY2 6LU", 10);
+        addEnglishField("SY2 6LU", 35);
+        addEnglishField("", 10);
         addEnglishField("641500541", 9);
         addEnglishField("JURY MANAGER", 30);
     }
@@ -49,13 +49,13 @@ class RequestInfoLetterTest extends AbstractLetterTest {
     protected void setupWelshExpectedResult() {
         addWelshLetterDate();
         addWelshField("ABERTAWE", 40);
-        addWelshField("SWANSEA CROWN COURT", 40);
-        addWelshField("JURY CENTRAL SUMMONING BUREAU", 35);
+        addWelshField("JURY CENTRAL SUMMONING BUREAU", 40);
         addWelshField("THE COURT SERVICE", 35);
         addWelshField("FREEPOST LON 19669", 35);
         addWelshField("POCOCK STREET", 35);
         addWelshField("LONDON", 35);
         addWelshField("BUREAU_ADDRESS_5", 35);
+        addWelshField("BUREAU_ADDRESS_6", 35);
         addWelshField("SE1 0YG", 10);
         addWelshField("0845 3555567", 12);
         addWelshField("", 12);
@@ -68,8 +68,8 @@ class RequestInfoLetterTest extends AbstractLetterTest {
         addWelshField("JUROR_ADDRESS_3", 35);
         addWelshField("JUROR_ADDRESS_4", 35);
         addWelshField("JUROR_ADDRESS_5", 35);
-        addWelshField("", 35);
-        addWelshField("SY2 6LU", 10);
+        addWelshField("SY2 6LU", 35);
+        addWelshField("", 10);
         addWelshField("641500541", 9);
         addWelshField("JURY MANAGER", 30);
     }
@@ -91,11 +91,8 @@ class RequestInfoLetterTest extends AbstractLetterTest {
         assertThat(requestInfoLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testJuror().getJurorNumber());
 
         // Fax number is always empty
-        assertThat(requestInfoLetter.getData().get(11).getFormattedString())
+        assertThat(requestInfoLetter.getData().get(5).getFormattedString())
             .isEqualTo(LetterTestUtils.emptyField(12));
-        // Juror address 6 is always empty
-        assertThat(requestInfoLetter.getData().get(21).getFormattedString())
-            .isEqualTo(LetterTestUtils.emptyField(35));
     }
 
     @Test
@@ -114,11 +111,8 @@ class RequestInfoLetterTest extends AbstractLetterTest {
         assertThat(requestInfoLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testWelshJuror().getJurorNumber());
 
         // Fax number is always empty
-        assertThat(requestInfoLetter.getData().get(11).getFormattedString())
+        assertThat(requestInfoLetter.getData().get(5).getFormattedString())
             .isEqualTo(LetterTestUtils.emptyField(12));
-        // Juror address 6 is always empty
-        assertThat(requestInfoLetter.getData().get(21).getFormattedString())
-            .isEqualTo(LetterTestUtils.emptyField(35));
     }
 
     @Test

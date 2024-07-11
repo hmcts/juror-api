@@ -42,8 +42,8 @@ class DeferralDeniedLetterTest extends AbstractLetterTest {
         addEnglishField("JUROR_ADDRESS_3", 35);
         addEnglishField("JUROR_ADDRESS_4", 35);
         addEnglishField("JUROR_ADDRESS_5", 35);
-        addEnglishField("", 35);
-        addEnglishField("SY2 6LU", 10);
+        addEnglishField("SY2 6LU", 35);
+        addEnglishField("", 10);
         addEnglishField("641500541", 9);
         addEnglishField("JURY MANAGER", 30);
     }
@@ -52,22 +52,22 @@ class DeferralDeniedLetterTest extends AbstractLetterTest {
     protected void setupWelshExpectedResult() {
         addWelshLetterDate();
         addWelshField("ABERTAWE", 40);
-        addWelshField("SWANSEA CROWN COURT", 40);
-        addWelshField("JURY CENTRAL SUMMONING BUREAU", 35);
+        addWelshField("JURY CENTRAL SUMMONING BUREAU", 40);
         addWelshField("THE COURT SERVICE", 35);
         addWelshField("FREEPOST LON 19669", 35);
         addWelshField("POCOCK STREET", 35);
         addWelshField("LONDON", 35);
         addWelshField("BUREAU_ADDRESS_5", 35);
+        addWelshField("BUREAU_ADDRESS_6", 35);
         addWelshField("SE1 0YG", 10);
         addWelshField("0845 3555567", 12);
         addWelshField("", 12);
-        addWelshField("THE LAW COURTS", 35);
-        addWelshField("ST HELENS ROAD", 35);
-        addWelshField("SWANSEA", 35);
-        addWelshField("SHREWSBURY", 35);
-        addWelshField("COURT_ADDRESS_5", 35);
-        addWelshField("COURT_ADDRESS_6", 35);
+        addWelshField("Y LLYSOEDD BARN", 35);
+        addWelshField("LON SAN HELEN", 35);
+        addWelshField("ABERTAWE", 35);
+        addWelshField("WELSH_COURT_ADDRESS_4", 35);
+        addWelshField("WELSH_COURT_ADDRESS_5", 35);
+        addWelshField("WELSH_COURT_ADDRESS_6", 35);
         addWelshField("SY2 6LU", 10);
         addWelshField("MR", 10);
         addWelshField("FNAMEEIGHTTHREEONE", 20);
@@ -77,8 +77,8 @@ class DeferralDeniedLetterTest extends AbstractLetterTest {
         addWelshField("JUROR_ADDRESS_3", 35);
         addWelshField("JUROR_ADDRESS_4", 35);
         addWelshField("JUROR_ADDRESS_5", 35);
-        addWelshField("", 35);
-        addWelshField("SY2 6LU", 10);
+        addWelshField("SY2 6LU", 35);
+        addWelshField("", 10);
         addWelshField("641500541", 9);
         addWelshField("JURY MANAGER", 30);
     }
@@ -98,12 +98,8 @@ class DeferralDeniedLetterTest extends AbstractLetterTest {
         assertThat(deferralDeniedLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testJuror().getJurorNumber());
 
         // Fax number is always empty
-        assertThat(deferralDeniedLetter.getData().get(11).getFormattedString())
+        assertThat(deferralDeniedLetter.getData().get(5).getFormattedString())
             .isEqualTo(LetterTestUtils.emptyField(12));
-        // Juror address 6 is always empty
-        assertThat(deferralDeniedLetter.getData().get(27).getFormattedString())
-            .isEqualTo(LetterTestUtils.emptyField(35));
-
     }
 
     @Test
@@ -122,12 +118,8 @@ class DeferralDeniedLetterTest extends AbstractLetterTest {
             .isEqualTo(LetterTestUtils.testWelshJuror().getJurorNumber());
 
         // Fax number is always empty
-        assertThat(deferralDeniedLetter.getData().get(11).getFormattedString())
+        assertThat(deferralDeniedLetter.getData().get(5).getFormattedString())
             .isEqualTo(LetterTestUtils.emptyField(12));
-        // Juror address 6 is always empty
-        assertThat(deferralDeniedLetter.getData().get(27).getFormattedString())
-            .isEqualTo(LetterTestUtils.emptyField(35));
-
     }
 
     @Test

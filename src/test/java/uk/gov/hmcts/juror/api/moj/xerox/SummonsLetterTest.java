@@ -13,6 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
 class SummonsLetterTest extends AbstractLetterTest {
+
     @Override
     protected void setupEnglishExpectedResult() {
         addEnglishField("415221201", 9);
@@ -24,8 +25,8 @@ class SummonsLetterTest extends AbstractLetterTest {
         addEnglishField("JUROR_ADDRESS_3", 35);
         addEnglishField("JUROR_ADDRESS_4", 35);
         addEnglishField("JUROR_ADDRESS_5", 35);
-        addEnglishField("", 35);
-        addEnglishField("SY2 6LU", 10);
+        addEnglishField("SY2 6LU", 35);
+        addEnglishField("", 10);
         addEnglishField("641500541", 9);
         addEnglishField("641500541", 9);
         addEnglishLetterDate();
@@ -67,8 +68,8 @@ class SummonsLetterTest extends AbstractLetterTest {
         addWelshField("JUROR_ADDRESS_3", 35);
         addWelshField("JUROR_ADDRESS_4", 35);
         addWelshField("JUROR_ADDRESS_5", 35);
-        addWelshField("", 35);
-        addWelshField("SY2 6LU", 10);
+        addWelshField("SY2 6LU", 35);
+        addWelshField("", 10);
         addWelshField("641500541", 9);
         addWelshLetterDate();
         addWelshField("MONDAY 6 FEBRUARY, 2017", 32);
@@ -103,7 +104,7 @@ class SummonsLetterTest extends AbstractLetterTest {
         addWelshField("ABERTAWE", 35);
         addWelshField("WELSH_COURT_ADDRESS_4", 35);
         addWelshField("WELSH_COURT_ADDRESS_5", 35);
-        addWelshField("WELSH_COURT_ADDRESS_6", 35);
+        addWelshField("SY2 6LU", 35);
         // repeated field
         addWelshField("641500541", 9);
     }
@@ -123,11 +124,9 @@ class SummonsLetterTest extends AbstractLetterTest {
         assertThat(summonsLetter.getFormCode()).isEqualTo(FormCode.ENG_SUMMONS.getCode());
         assertThat(summonsLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testJuror().getJurorNumber());
 
-        // Juror address 6 is always empty
-        assertThat(summonsLetter.getData().get(9).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(35));
         // Fax number is always empty
-        assertThat(summonsLetter.getData().get(27).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
-        assertThat(summonsLetter.getData().get(38).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
+        assertThat(summonsLetter.getData().get(16).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
+        assertThat(summonsLetter.getData().get(21).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
 
     }
 
@@ -145,12 +144,9 @@ class SummonsLetterTest extends AbstractLetterTest {
         assertThat(summonsLetter.getFormCode()).isEqualTo(FormCode.BI_SUMMONS.getCode());
         assertThat(summonsLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testWelshJuror().getJurorNumber());
 
-        // Juror address 6 is always empty
-        assertThat(summonsLetter.getData().get(9).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(35));
         // Fax number is always empty
-        assertThat(summonsLetter.getData().get(27).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
-        assertThat(summonsLetter.getData().get(38).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
-
+        assertThat(summonsLetter.getData().get(16).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
+        assertThat(summonsLetter.getData().get(21).getFormattedString()).isEqualTo(LetterTestUtils.emptyField(12));
     }
 
     @Test
