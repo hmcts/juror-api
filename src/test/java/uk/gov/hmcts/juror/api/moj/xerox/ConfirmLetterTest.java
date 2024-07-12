@@ -17,7 +17,7 @@ class ConfirmLetterTest extends AbstractLetterTest {
     protected void setupEnglishExpectedResult() {
         addEnglishLetterDate();
         addEnglishField("457", 3);
-        addEnglishField("SWANSEA CROWN COURT", 59);
+        addEnglishField("THE CROWN COURT AT SWANSEA", 59);
         addEnglishField("JURY CENTRAL SUMMONING BUREAU", 40);
         addEnglishField("THE COURT SERVICE", 35);
         addEnglishField("FREEPOST LON 19669", 35);

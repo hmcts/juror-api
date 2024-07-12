@@ -55,6 +55,7 @@ public class SummonsSnapshot implements Serializable {
     @Column(name = "court_name")
     @Length(max = 30)
     @NotNull
+    @Deprecated(forRemoval = true)
     private String courtName;
 
     @Column(name = "service_start_date")

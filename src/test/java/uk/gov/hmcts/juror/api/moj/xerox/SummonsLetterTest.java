@@ -34,7 +34,7 @@ class SummonsLetterTest extends AbstractLetterTest {
         addEnglishField("10:00AM", 8);
         addEnglishField("457", 3);
         addEnglishField("TWO WEEKS", 20);
-        addEnglishField("SWANSEA CROWN COURT", 59);
+        addEnglishField("THE CROWN COURT AT SWANSEA", 59);
         addEnglishField("THE LAW COURTS", 35);
         addEnglishField("ST HELENS ROAD", 35);
         addEnglishField("SWANSEA", 35);
@@ -77,7 +77,7 @@ class SummonsLetterTest extends AbstractLetterTest {
         addWelshField("10:00AM", 8);
         addWelshField("457", 3);
         addWelshField("TWO WEEKS", 20);
-        addWelshField("SWANSEA CROWN COURT", 40);
+        addWelshField("THE CROWN COURT AT SWANSEA", 40);
         addWelshField("THE LAW COURTS", 35);
         addWelshField("ST HELENS ROAD", 35);
         addWelshField("SWANSEA", 35);
