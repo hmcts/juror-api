@@ -122,7 +122,7 @@ class LetterBaseTest {
             .build());
         testLetter.addData(LetterBase.LetterDataType.COURT_NAME, 38);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad(
-            "THE CROWN COURT AT SWANSEA CROWN COURT", 38
+            "THE CROWN COURT AT SWANSEA", 38
         ));
     }
 
@@ -131,9 +131,9 @@ class LetterBaseTest {
         LetterBase testLetter = new LetterBase(testContextBuilder()
             .courtLocation(LetterTestUtils.testCourtLocation())
             .build());
-        testLetter.addData(LetterBase.LetterDataType.COURT_NAME, 30);
+        testLetter.addData(LetterBase.LetterDataType.COURT_NAME, 21);
         assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad(
-            "THE CROWN COURT AT SWANSEA CRO", 30
+            "THE CROWN COURT AT SW", 21
         ));
     }
 
