@@ -62,7 +62,7 @@ public class JurorOverviewResponseDto {
     @Schema(description = "Description of Reasonable adjustments")
     private String specialNeedDescription;
 
-    @Length(max = 60)
+    @Length(max = 120)
     @Schema(description = "Reasonable adjustments message")
     private String specialNeedMessage;
 

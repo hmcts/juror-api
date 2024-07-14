@@ -155,7 +155,7 @@ public class Juror extends Address implements Serializable {
     private String reasonableAdjustmentCode;
 
     @NotAudited
-    @Length(max = 60)
+    @Length(max = 120)
     @Column(name = "reasonable_adj_msg")
     private String reasonableAdjustmentMessage;
 
