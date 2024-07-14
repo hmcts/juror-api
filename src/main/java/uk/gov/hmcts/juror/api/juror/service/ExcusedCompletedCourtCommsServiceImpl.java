@@ -214,7 +214,7 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
     }
 
     public List<String> setUpRegionIds() {
-        List<CourtRegionMod> courtRegions = Lists.newLinkedList(courtRegionModRepository.findAll());
+        List<CourtRegionMod> courtRegions = courtRegionModRepository.findAllByOrderByRegionIdAsc();
         List<String> regionIds = new ArrayList<>();
 
         for (CourtRegionMod courtRegion : courtRegions) {
