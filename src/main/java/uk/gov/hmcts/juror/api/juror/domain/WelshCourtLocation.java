@@ -39,6 +39,12 @@ public class WelshCourtLocation implements Serializable, ICourtLocation {
     private String locCourtName;
 
     /**
+     * Court name.
+     */
+    @Column(name = "correspondence_name")
+    private String correspondenceName;
+
+    /**
      * Court address line 1.
      */
     @Column(name = "loc_address1")
