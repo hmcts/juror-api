@@ -35,7 +35,7 @@ public class TrialDto {
     @JsonProperty("defendant")
     @Schema(description = "Depending on the trial type, a defendant is one of two types, Defendant or Respondent.  "
         + "The data captured for either is the same, free text", requiredMode = Schema.RequiredMode.REQUIRED)
-    @Size(max = 16, message = "Defendant must have at least 1 alphanumeric value and maximum of 16")
+    @Size(max = 50, message = "Defendant must have at least 1 alphanumeric value and maximum of 50")
     @NotBlank
     private String defendant;
 
