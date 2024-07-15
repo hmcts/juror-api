@@ -62,7 +62,7 @@ public class JurorOverviewResponseDto {
     @Schema(description = "Description of Reasonable adjustments")
     private String specialNeedDescription;
 
-    @Length(max = 120)
+    @Length(max = ValidationConstants.REASONABLE_ADJUSTMENT_MESSAGE_LENGTH_MAX)
     @Schema(description = "Reasonable adjustments message")
     private String specialNeedMessage;
 
