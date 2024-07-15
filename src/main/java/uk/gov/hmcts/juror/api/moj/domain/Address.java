@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.validation.constraints.NotBlank;
@@ -59,7 +60,7 @@ public class Address implements Serializable {
     @Pattern(regexp = POSTCODE_REGEX)
     private String postcode;
 
-
+    @JsonIgnore
     public String getCombinedAddressExcludingPostcode() {
         return addressLine1 + ","
             + addressLine2 + ","
