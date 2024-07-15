@@ -61,6 +61,7 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
         returnFields.add(JUROR.email);
         returnFields.add(JUROR.phoneNumber);
         returnFields.add(JUROR.welsh);
+        returnFields.add(JUROR_POOL.pool.courtLocation.locCode);
 
         if (!simpleResponse) {
             returnFields.add(JUROR.firstName);
@@ -123,6 +124,7 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
                     .lastName(tuple.get(JUROR.lastName))
                     .status(tuple.get(JUROR_POOL.status) == null ? null : tuple.get(JUROR_POOL.status).getStatusDesc())
                     .dateDeferredTo(tuple.get(JUROR_POOL.deferralDate))
+                    .locCode(tuple.get(JUROR_POOL.pool.courtLocation.locCode))
                     .build();
             },
             maxItems);

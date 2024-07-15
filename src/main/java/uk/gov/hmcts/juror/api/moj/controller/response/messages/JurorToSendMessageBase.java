@@ -51,4 +51,7 @@ public abstract class JurorToSendMessageBase {
 
     @JsonProperty("welsh_language")
     private boolean welshLanguage;
+
+    @JsonProperty("loc_code")
+    private String locCode;
 }
