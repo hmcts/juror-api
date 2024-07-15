@@ -147,7 +147,8 @@ class MessageTemplateRepositoryImplTest {
                 JUROR_POOL.pool.poolNumber,
                 JUROR.email,
                 JUROR.phoneNumber,
-                JUROR.welsh
+                JUROR.welsh,
+                JUROR_POOL.pool.courtLocation.locCode
             );
         verify(messageSearch, times(1))
             .apply(jpaQuery);
@@ -229,6 +230,7 @@ class MessageTemplateRepositoryImplTest {
                 JUROR.email,
                 JUROR.phoneNumber,
                 JUROR.welsh,
+                JUROR_POOL.pool.courtLocation.locCode,
                 JUROR.firstName,
                 JUROR.lastName,
                 JUROR_POOL.status,
@@ -308,7 +310,8 @@ class MessageTemplateRepositoryImplTest {
                 JUROR_POOL.pool.poolNumber,
                 JUROR.email,
                 JUROR.phoneNumber,
-                JUROR.welsh
+                JUROR.welsh,
+                JUROR_POOL.pool.courtLocation.locCode
             );
         verify(messageSearch, times(1))
             .apply(jpaQuery);
@@ -394,6 +397,7 @@ class MessageTemplateRepositoryImplTest {
                 JUROR.email,
                 JUROR.phoneNumber,
                 JUROR.welsh,
+                JUROR_POOL.pool.courtLocation.locCode,
                 JUROR.firstName,
                 JUROR.lastName,
                 JUROR_POOL.status,
@@ -488,7 +492,8 @@ class MessageTemplateRepositoryImplTest {
                 JUROR_POOL.pool.poolNumber,
                 JUROR.email,
                 JUROR.phoneNumber,
-                JUROR.welsh
+                JUROR.welsh,
+                JUROR_POOL.pool.courtLocation.locCode
             );
         verify(messageSearch, times(1))
             .apply(jpaQuery);
