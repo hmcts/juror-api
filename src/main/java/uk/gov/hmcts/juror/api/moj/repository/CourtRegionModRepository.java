@@ -5,6 +5,8 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.juror.api.moj.domain.CourtRegionMod;
 
+import java.util.List;
+
 /**
  * Repository for {@Link CourtRegionMod} entities}.
  */
@@ -13,5 +15,5 @@ import uk.gov.hmcts.juror.api.moj.domain.CourtRegionMod;
 public interface CourtRegionModRepository extends CrudRepository<CourtRegionMod, Integer>,
     QuerydslPredicateExecutor<CourtRegionMod> {
 
-    CourtRegionMod findByRegionId(String regionId);
+    List<CourtRegionMod> findAllByOrderByRegionIdAsc();
 }
