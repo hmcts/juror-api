@@ -39,7 +39,7 @@ public class WelshCourtLocation implements Serializable, ICourtLocation {
     private String locCourtName;
 
     /**
-     * Court name.
+     * Correspondence name used for letters.
      */
     @Column(name = "correspondence_name")
     private String correspondenceName;
