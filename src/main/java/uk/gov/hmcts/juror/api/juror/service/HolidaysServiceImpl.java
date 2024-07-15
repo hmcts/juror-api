@@ -46,23 +46,15 @@ public class HolidaysServiceImpl implements HolidaysService {
             new JurorHolidaysResponseDto.MatchingHolidayDates();
         final List<Holidays> publicHolidaysDates = new ArrayList<>();
         final Date[] dates = new Date[]{firstCheckDate, secondCheckDate, thirdCheckDate};
-        for (int i = 0;
-             i < dates.length;
-             i++) {
-            for (Holidays holiday : holidaysDateService.getHolidayDates(dates[i])) {
-                publicHolidaysDates.add(holiday);
-            }
+        for (int i = 0; i < dates.length; i++) {
+            publicHolidaysDates.addAll(holidaysDateService.getHolidayDates(dates[i]));
         }
-        matchingHolidayDates.setPublicHolidayDates(publicHolidaysDates);
+        matchingHolidayDates.setPublicHolidayDates(JurorHolidaysResponseDto.Holidays.from(publicHolidaysDates));
 
         log.info("value of publicHolidaysDates {}:", publicHolidaysDates);
-
         log.info("count of publicHolidaysDates {}:", publicHolidaysDates.size());
-
         log.info("value of matchingHolidayDates {}:", matchingHolidayDates);
-
         return matchingHolidayDates;
-
 
     }
 
