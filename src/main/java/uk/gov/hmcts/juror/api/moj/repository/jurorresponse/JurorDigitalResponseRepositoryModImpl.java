@@ -49,6 +49,7 @@ public class JurorDigitalResponseRepositoryModImpl implements IJurorDigitalRespo
                 digitalResponse.count().as("allReplies")
             ).from(user)
             .where(user.userType.eq(UserType.BUREAU))
+            .where(user.active.isTrue())
             .leftJoin(digitalResponse)
             .on(user.eq(digitalResponse.staff).and(digitalResponse.processingStatus.eq(ProcessingStatus.TODO)))
             .groupBy(user.username, user.name);
