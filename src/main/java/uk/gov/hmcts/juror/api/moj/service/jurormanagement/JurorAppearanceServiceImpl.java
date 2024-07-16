@@ -235,7 +235,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
     @Override
     public boolean hasAttendances(String jurorNumber) {
-        return appearanceRepository.countByJurorNumberAndAppearanceStageNotNull(jurorNumber) > 0;
+        return appearanceRepository.countNoneAbsentAttendances(jurorNumber) > 0;
     }
 
     @Override
