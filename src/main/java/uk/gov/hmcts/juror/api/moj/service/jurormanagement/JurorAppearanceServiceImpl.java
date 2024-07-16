@@ -623,6 +623,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
             appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
             realignAttendanceType(appearance);
+            appearance.setAppearanceConfirmed(Boolean.TRUE);
 
             appearance.setAttendanceAuditNumber(juryAttendanceNumber);
             appearance.setSatOnJury(true);
@@ -867,6 +868,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         List<Appearance> checkedInAttendances = appearanceRepository.findAllById(appearanceIds);
         checkedInAttendances.forEach(appearance -> {
             appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
+            appearance.setAppearanceConfirmed(Boolean.TRUE);
             realignAttendanceType(appearance);
             appearance.setAttendanceAuditNumber(poolAttendanceNumber);
 
@@ -892,6 +894,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                 .courtLocation(courtLocation)
                 .noShow(Boolean.TRUE)
                 .attendanceType(AttendanceType.ABSENT)
+                .appearanceConfirmed(Boolean.TRUE)
                 .build();
             absentJurors.add(appearance);
         });
