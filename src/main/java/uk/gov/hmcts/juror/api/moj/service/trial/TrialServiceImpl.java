@@ -247,14 +247,16 @@ public class TrialServiceImpl implements TrialService {
         JurorStatus jurorStatus = new JurorStatus();
         jurorStatus.setStatus(IJurorStatus.RESPONDED);
 
+        // get the next available attendance number from the database sequence
+        final long attendanceAuditNumber = appearanceRepository.getNextAttendanceAuditNumber();
+
         for (Panel panel : juryMembersToBeReturned) {
 
             final String jurorNumber = panel.getJurorNumber();
             JurorPool jurorPool = PanelUtils.getAssociatedJurorPool(jurorPoolRepository, panel);
 
             if (StringUtils.isNotEmpty(returnJuryDto.getCheckIn())) {
-                // get the next available attendance number from the database sequence
-                final long attendanceAuditNumber = appearanceRepository.getNextAttendanceAuditNumber();
+
                 Appearance appearance = getJurorAppearanceForDate(jurorPool, returnJuryDto.getAttendanceDate());
 
                 // only apply check in time for those that have not been checked in yet
