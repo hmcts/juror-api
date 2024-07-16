@@ -50,9 +50,9 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;
@@ -705,7 +705,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
         List<Panel> panelList = panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(
             "T10000001", "415");
 
-        Map<String, Integer> auditNumberMap = new HashMap<>();
+        Map<String, Integer> auditNumberMap = new ConcurrentHashMap<>();
 
         for (Panel panel : panelList) {
             assertThat(panel.getResult()).as("Expect result to be Returned")
