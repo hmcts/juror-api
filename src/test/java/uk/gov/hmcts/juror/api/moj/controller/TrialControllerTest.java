@@ -110,7 +110,8 @@ class TrialControllerTest {
             .andExpect(jsonPath("$.courtroom.room_number").value("1"))
             .andExpect(jsonPath("$.courtroom.description").value("Large room for 100 guests"))
             .andExpect(jsonPath("$.protected").value("true"))
-            .andExpect(jsonPath("$.is_active").value("true"));
+            .andExpect(jsonPath("$.is_active").value("true"))
+            .andExpect(jsonPath("$.court_room_location_name").value("TEST COURTROOM LOCATION"));
 
         verify(trialService, times(1)).createTrial(jwtPayload, createTrialDto());
     }
@@ -192,7 +193,8 @@ class TrialControllerTest {
             .andExpect(jsonPath("$.courtroom.room_number").value("1"))
             .andExpect(jsonPath("$.courtroom.description").value("Large room for 100 guests"))
             .andExpect(jsonPath("$.protected").value("true"))
-            .andExpect(jsonPath("$.is_active").value("true"));
+            .andExpect(jsonPath("$.is_active").value("true"))
+            .andExpect(jsonPath("$.court_room_location_name").value("TEST COURTROOM LOCATION"));
 
         verify(trialService, times(1)).getTrialSummary(jwtPayload,
             "TEST000001", "415");
@@ -290,6 +292,7 @@ class TrialControllerTest {
             .courtroomsDto(courtroomsDto)
             .protectedTrial(Boolean.TRUE)
             .isActive(Boolean.TRUE)
+            .courtRoomLocationName("TEST COURTROOM LOCATION")
             .build();
     }
 

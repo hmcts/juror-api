@@ -457,6 +457,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
             verifyTrialEndDate(responseBody, null);
             verifyTrialEndDate(responseBody, null);
             verifyIsActive(responseBody, true);
+            verifyCourtRoomLocationName(responseBody, "CHESTER");
             verifyJudge(responseBody.getJudge(), 22L, "4321", "Judge Test");
             verifyCourtRooms(responseBody.getCourtroomsDto(), 66L, "415", "1",
                 "large room fits 100 people");
@@ -477,6 +478,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
             verifyTrialEndDate(responseBody, null);
             verifyTrialEndDate(responseBody, null);
             verifyIsActive(responseBody, true);
+            verifyCourtRoomLocationName(responseBody, "CHESTER");
             verifyJudge(responseBody.getJudge(), 21L, "1234", "Test judge");
             verifyCourtRooms(responseBody.getCourtroomsDto(), 66L, "415", "1",
                 "large room fits 100 people");
@@ -497,6 +499,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
             verifyTrialEndDate(responseBody, null);
             verifyTrialEndDate(responseBody, null);
             verifyIsActive(responseBody, true);
+            verifyCourtRoomLocationName(responseBody, "WARRINGTON");
             verifyJudge(responseBody.getJudge(), 22L, "4321", "Judge Test");
             verifyCourtRooms(responseBody.getCourtroomsDto(), 67L, "415", "2",
                 "large room fits 100 people");
@@ -516,6 +519,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
             verifyProtectedTrial(responseBody, false);
             verifyTrialEndDate(responseBody, LocalDate.now());
             verifyIsActive(responseBody, false);
+            verifyCourtRoomLocationName(responseBody, "WARRINGTON");
             verifyJudge(responseBody.getJudge(), 22L, "4321", "Judge Test");
             verifyCourtRooms(responseBody.getCourtroomsDto(), 67L, "415", "2",
                 "large room fits 100 people");
@@ -615,6 +619,12 @@ class TrialControllerITest extends AbstractIntegrationTest {
             assertThat(requireNonNull(responseBody).getIsActive())
                 .as("Expect is active to be " + isActive)
                 .isEqualTo(isActive);
+        }
+
+        private void verifyCourtRoomLocationName(TrialSummaryDto responseBody, String locationName) {
+            assertThat(requireNonNull(responseBody).getCourtRoomLocationName())
+                .as("Expect court room location name to be " + locationName)
+                .isEqualTo(locationName);
         }
 
         private void verifyJudge(JudgeDto judge, long id, String code, String description) {
