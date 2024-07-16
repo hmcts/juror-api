@@ -82,5 +82,9 @@ public class JurorAppearanceResponseDto {
         @JsonProperty("police_check")
         @Schema(description = "Police check details")
         private PoliceCheck policeCheck;
+
+        @JsonProperty("appearance_confirmed")
+        @Schema(description = "Flag to indicate if juror appearance has been confirmed for the day")
+        private Boolean appearanceConfirmed;
     }
 }

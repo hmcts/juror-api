@@ -274,6 +274,14 @@ public class Appearance implements Serializable {
     @Column(name = "attendance_audit_number")
     private String attendanceAuditNumber;
 
+    /**
+     * flag indicating if the appearance has been confirmed for the day via the juror management screen.
+     */
+    @Column(name = "appearance_confirmed")
+    @NotAudited
+    @Builder.Default
+    private Boolean appearanceConfirmed = false;
+
 
     //Does not include smart card reduction
     public BigDecimal getTotalDue() {
