@@ -364,7 +364,7 @@ public class TrialServiceImpl implements TrialService {
         dto.setTrialStartDate(trial.getTrialStartDate());
         dto.setIsActive(trial.getTrialEndDate() == null);
         dto.setTrialEndDate(trial.getTrialEndDate());
-        dto.setCourtLocationName(trial.getCourtroom().getCourtLocation().getName());
+        dto.setCourtRoomLocationName(trial.getCourtroom().getCourtLocation().getName());
 
         if (panelCheck) {
             boolean isJuryEmpanelled = isJuryEmpanelledOnTrial(trial);
