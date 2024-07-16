@@ -1,13 +1,16 @@
 package uk.gov.hmcts.juror.api.juror.controller.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uk.gov.hmcts.juror.api.juror.domain.Holidays;
+import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -42,4 +45,29 @@ public class JurorHolidaysResponseDto implements Serializable {
 
     }
 
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    @Data
+    public static class Holidays implements Serializable {
+        @JsonProperty("date")
+        @JsonFormat(pattern = ValidationConstants.DATE_FORMAT)
+        private LocalDate date;
+
+        @JsonProperty("is_public_holiday")
+        private boolean publicHoliday;
+
+        @JsonProperty("loc_code")
+        private String locCode;
+
+        public static List<Holidays> from(List<uk.gov.hmcts.juror.api.juror.domain.Holidays> publicHolidaysDates) {
+            return publicHolidaysDates.stream()
+                .map(holiday -> Holidays.builder()
+                    .date(holiday.getHoliday())
+                    .publicHoliday(holiday.getPublicHoliday())
+                    .locCode(holiday.getCourtLocation().getLocCode())
+                    .build())
+                .toList();
+        }
+    }
 }
