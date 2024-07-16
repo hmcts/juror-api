@@ -16,6 +16,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurorresponse.ReasonableAdjustmentsEnum;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PendingJurorRepository;
+import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -105,7 +106,7 @@ public class JurorDetailsResponseDto {
     @Schema(description = "Description of Reasonable adjustments")
     private String specialNeedDescription;
 
-    @Length(max = 60)
+    @Length(max = ValidationConstants.REASONABLE_ADJUSTMENT_MESSAGE_LENGTH_MAX)
     @Schema(description = "Reasonable adjustments message")
     private String specialNeedMessage;
 

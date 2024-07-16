@@ -48,7 +48,7 @@ class RequestInfoLetterTest extends AbstractLetterTest {
     @Override
     protected void setupWelshExpectedResult() {
         addWelshLetterDate();
-        addWelshField("ABERTAWE", 40);
+        addWelshField("YN ABERTAWE", 40);
         addWelshField("JURY CENTRAL SUMMONING BUREAU", 40);
         addWelshField("THE COURT SERVICE", 35);
         addWelshField("FREEPOST LON 19669", 35);

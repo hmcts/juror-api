@@ -41,6 +41,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryServiceImpl;
+import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
 import uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
@@ -76,6 +77,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     private final JurorExpenseService jurorExpenseService;
     private final JurorHistoryServiceImpl jurorHistoryService;
     private final PanelRepository panelRepository;
+    private final JurorPoolService jurorPoolService;
 
     @Override
     public void addAttendanceDay(BureauJwtPayload payload, AddAttendanceDayDto dto) {
@@ -235,7 +237,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
     @Override
     public boolean hasAttendances(String jurorNumber) {
-        return appearanceRepository.countByJurorNumberAndAppearanceStageNotNull(jurorNumber) > 0;
+        return appearanceRepository.countNoneAbsentAttendances(jurorNumber) > 0;
     }
 
     @Override
@@ -1133,8 +1135,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     }
 
     private JurorPool validateJurorStatus(Juror juror, boolean isCompleted) {
-        JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository,
-            juror.getJurorNumber());
+        JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(juror.getJurorNumber());
 
         final int status = jurorPool.getStatus().getStatus();
 

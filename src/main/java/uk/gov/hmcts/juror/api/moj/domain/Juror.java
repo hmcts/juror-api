@@ -33,6 +33,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCommon;
+import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -155,7 +156,7 @@ public class Juror extends Address implements Serializable {
     private String reasonableAdjustmentCode;
 
     @NotAudited
-    @Length(max = 60)
+    @Length(max = ValidationConstants.REASONABLE_ADJUSTMENT_MESSAGE_LENGTH_MAX)
     @Column(name = "reasonable_adj_msg")
     private String reasonableAdjustmentMessage;
 

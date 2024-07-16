@@ -272,6 +272,8 @@ public class LetterBase {
         JUROR_NUMBER(context -> context.getJurorPool().getJuror().getJurorNumber(), ContextType.JUROR_POOL),
         POOL_NUMBER(context -> context.getJurorPool().getPoolNumber(), ContextType.JUROR_POOL),
         ADDITIONAL_INFORMATION(LetterContext::getAdditionalInformation, ContextType.ADDITIONAL_INFORMATION),
+        WELSH_CORRESPONDENCE_NAME(context -> context.getWelshCourtLocation().getCorrespondenceName(),
+            ContextType.WELSH_COURT_LOCATION),
         WELSH_COURT_NAME(context -> context.getWelshCourtLocation().getLocCourtName(),
             ContextType.WELSH_COURT_LOCATION),
         WELSH_COURT_ADDRESS1(context -> context.getWelshCourtLocation().getAddress1(),
