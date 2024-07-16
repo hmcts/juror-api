@@ -279,8 +279,7 @@ public class Appearance implements Serializable {
      */
     @Column(name = "appearance_confirmed")
     @NotAudited
-    @Builder.Default
-    private Boolean appearanceConfirmed = false;
+    private boolean appearanceConfirmed;
 
 
     //Does not include smart card reduction

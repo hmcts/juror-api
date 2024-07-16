@@ -1113,7 +1113,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                     new MojException.NotFound("No appearance record found", null));
             assertThat(appearance1.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
             assertThat(appearance1.getAttendanceAuditNumber()).isEqualTo("P10000000");
-            assertThat(appearance1.getAppearanceConfirmed()).isTrue();
+            assertThat(appearance1.isAppearanceConfirmed()).isTrue();
 
             Appearance appearance2 =
                 appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR6, request.getCommonData()
@@ -1121,7 +1121,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                     new MojException.NotFound("No appearance record found", null));
             assertThat(appearance2.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
             assertThat(appearance2.getAttendanceAuditNumber()).isEqualTo("P10000000");
-            assertThat(appearance2.getAppearanceConfirmed()).isTrue();
+            assertThat(appearance2.isAppearanceConfirmed()).isTrue();
         }
 
         @Test
@@ -1932,7 +1932,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
             assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J10123456");
             assertThat(appearance.getSatOnJury()).isTrue();
-            assertThat(appearance.getAppearanceConfirmed()).isTrue();
+            assertThat(appearance.isAppearanceConfirmed()).isTrue();
 
             appearanceOpt = appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(
                 "333333333", "415230101", now().minusDays(2));
@@ -1943,7 +1943,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
             assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J10123456");
             assertThat(appearance.getSatOnJury()).isTrue();
-            assertThat(appearance.getAppearanceConfirmed()).isTrue();
+            assertThat(appearance.isAppearanceConfirmed()).isTrue();
 
             // verify juror history records have been created
             assertThat(jurorHistoryRepository.findByJurorNumberOrderById("222222222")
