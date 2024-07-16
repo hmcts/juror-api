@@ -27,6 +27,8 @@ public interface AppearanceRepository extends IAppearanceRepository, JpaReposito
 
     List<Appearance> findAllByCourtLocationLocCodeAndJurorNumber(String locCode, String jurorNumber);
 
+    List<Appearance> findAllByJurorNumber(String jurorNumber);
+
     List<Appearance> findAllByCourtLocationLocCodeAndJurorNumberAndAppearanceStageAndIsDraftExpenseTrueOrderByAttendanceDate(
         String locCode,
         String jurorNumber,

@@ -2628,7 +2628,6 @@ class JurorAppearanceServiceTest {
             when(appearance.getCourtLocation()).thenReturn(courtLocation);
 
             when(jurorExpenseService.isLongTrialDay(
-                locCode,
                 TestConstants.VALID_JUROR_NUMBER,
                 localDate
             )).thenReturn(isLongTrialDay);
