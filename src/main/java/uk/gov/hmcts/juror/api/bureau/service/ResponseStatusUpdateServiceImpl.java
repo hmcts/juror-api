@@ -27,7 +27,9 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
+import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -168,10 +170,23 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
             //if multiple set need to M
             if (specialNeedsByJurorNumber.size() > 1) {
                 jurorDetails.getJuror().setReasonableAdjustmentCode("M");
+                jurorDetails.getJuror()
+                    .setReasonableAdjustmentMessage(
+                        DataUtils.trimToLength(
+                            specialNeedsByJurorNumber
+                                .stream()
+                                .reduce(
+                                    "",
+                                    (acc, item) -> acc + item.getReasonableAdjustmentDetail() + ", ",
+                                    String::concat
+                                ).trim(),
+                            ValidationConstants.REASONABLE_ADJUSTMENT_MESSAGE_LENGTH_MAX));
             } else if (specialNeedsByJurorNumber.size() == 1
                 && specialNeedsByJurorNumber.get(0) != null) {
                 jurorDetails.getJuror()
                     .setReasonableAdjustmentCode(specialNeedsByJurorNumber.get(0).getReasonableAdjustment().getCode());
+                jurorDetails.getJuror()
+                    .setReasonableAdjustmentMessage(specialNeedsByJurorNumber.get(0).getReasonableAdjustmentDetail());
             }
 
             log.debug("Merging special need information  for juror {}, Special need {}", jurorDetails.getJurorNumber(),
