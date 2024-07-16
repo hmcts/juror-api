@@ -116,6 +116,9 @@ public final class DataUtils {
     }
 
     public static String trimToLength(String trim, int maxLength) {
-        return null;
+        if (trim == null) {
+            return null;
+        }
+        return trim.length() > maxLength ? trim.substring(0, maxLength) : trim;
     }
 }
