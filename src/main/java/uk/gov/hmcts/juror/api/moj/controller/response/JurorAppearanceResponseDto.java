@@ -85,6 +85,6 @@ public class JurorAppearanceResponseDto {
 
         @JsonProperty("appearance_confirmed")
         @Schema(description = "Flag to indicate if juror appearance has been confirmed for the day")
-        private Boolean appearanceConfirmed;
+        private boolean appearanceConfirmed;
     }
 }
