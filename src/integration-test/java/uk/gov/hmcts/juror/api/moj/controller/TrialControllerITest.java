@@ -50,7 +50,9 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;
@@ -703,6 +705,8 @@ class TrialControllerITest extends AbstractIntegrationTest {
         List<Panel> panelList = panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(
             "T10000001", "415");
 
+        Map<String, Integer> auditNumberMap = new HashMap<>();
+
         for (Panel panel : panelList) {
             assertThat(panel.getResult()).as("Expect result to be Returned")
                 .isEqualTo(PanelResult.RETURNED);
@@ -725,6 +729,9 @@ class TrialControllerITest extends AbstractIntegrationTest {
 
             assertThat(appearance.getAttendanceAuditNumber()).isNotNull();
 
+            auditNumberMap.putIfAbsent(appearance.getAttendanceAuditNumber(), 0);
+            auditNumberMap.computeIfPresent(appearance.getAttendanceAuditNumber(), (k, v) -> v + 1);
+
             assertThat(appearance.getTimeIn()).as("Expect time in to not be null").isNotNull();
             assertThat(appearance.getTimeIn()).as("Expect time in to be 09:00").isEqualTo(LocalTime.parse(
                 "09:00"));
@@ -742,6 +749,9 @@ class TrialControllerITest extends AbstractIntegrationTest {
                 .as("Expect attendance type to be HALF_DAY")
                 .isEqualTo(AttendanceType.HALF_DAY);
         }
+
+        // check we have the same audit number for all the jurors
+        assertThat(auditNumberMap.values().stream().findFirst().orElse(0)).isEqualTo(4);
     }
 
     @Test
