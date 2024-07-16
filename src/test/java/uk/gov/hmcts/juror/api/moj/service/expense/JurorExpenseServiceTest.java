@@ -5380,23 +5380,21 @@ class JurorExpenseServiceTest {
             LocalDate searchDate = baseDay.plusDays(offset);
 
             List<Appearance> appearances = new ArrayList<>();
-            for (int i = 0; i < 15; i++) {
+            for (int i = 0; i < 16; i++) {
                 Appearance appearance = mock(Appearance.class);
                 doReturn(baseDay.plusDays(i)).when(appearance).getAttendanceDate();
                 appearances.add(appearance);
             }
-            when(appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumber(
-                TestConstants.VALID_COURT_LOCATION,
+            when(appearanceRepository.findAllByJurorNumber(
                 TestConstants.VALID_JUROR_NUMBER
             )).thenReturn(appearances);
 
             assertThat(jurorExpenseService.isLongTrialDay(
-                TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, searchDate))
+                TestConstants.VALID_JUROR_NUMBER, searchDate))
                 .isEqualTo(expectedValue);
 
             verify(appearanceRepository, times(
-                1)).findAllByCourtLocationLocCodeAndJurorNumber(
-                TestConstants.VALID_COURT_LOCATION,
+                1)).findAllByJurorNumber(
                 TestConstants.VALID_JUROR_NUMBER
             );
         }

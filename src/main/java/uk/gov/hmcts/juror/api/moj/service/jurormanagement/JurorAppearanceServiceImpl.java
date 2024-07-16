@@ -513,7 +513,6 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             .nonAttendanceDay(Boolean.TRUE)
             .attendanceType(
                 jurorExpenseService.isLongTrialDay(
-                    locationCode,
                     request.getJurorNumber(), nonAttendanceDate)
                     ? AttendanceType.NON_ATTENDANCE_LONG_TRIAL
                     : AttendanceType.NON_ATTENDANCE)
@@ -1221,7 +1220,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         }
 
         boolean isLongTrialDay =
-            jurorExpenseService.isLongTrialDay(appearance.getCourtLocation().getLocCode(),
+            jurorExpenseService.isLongTrialDay(
                 appearance.getJurorNumber(),
                 appearance.getAttendanceDate());
 

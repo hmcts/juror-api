@@ -1271,19 +1271,14 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         appearance.setSmartCardAmountDue(foodAndDrink.getSmartCardAmount());
     }
 
-
     @Override
     @Transactional(readOnly = true)
-    public boolean isLongTrialDay(String locCode, String jurorNumber, LocalDate localDate) {
-        List<LocalDate> localDates = new ArrayList<>();
-        localDates.add(localDate);
-        localDates.addAll(
-            appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumber(locCode, jurorNumber)
-                .stream()
-                .map(Appearance::getAttendanceDate)
-                .distinct()
-                .toList());
-        return localDates.stream().distinct().sorted(Comparator.naturalOrder())
+    public boolean isLongTrialDay(String jurorNumber, LocalDate localDate) {
+        return appearanceRepository.findAllByJurorNumber(jurorNumber)
+            .stream()
+            .map(Appearance::getAttendanceDate)
+            .distinct()
+            .sorted(Comparator.naturalOrder())
             .toList()
             .indexOf(localDate) >= 10;//>= as 0 indexed
     }

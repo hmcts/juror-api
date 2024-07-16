@@ -444,7 +444,7 @@ public class TrialServiceImpl implements TrialService {
         }
 
         boolean isLongTrialDay =
-            jurorExpenseService.isLongTrialDay(appearance.getCourtLocation().getLocCode(),
+            jurorExpenseService.isLongTrialDay(
                 appearance.getJurorNumber(),
                 appearance.getAttendanceDate());
 
