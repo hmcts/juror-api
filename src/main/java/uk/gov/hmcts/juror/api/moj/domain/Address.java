@@ -17,7 +17,6 @@ import org.hibernate.validator.constraints.Length;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 
 import java.io.Serializable;
-import java.util.Locale;
 
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REGEX;
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.POSTCODE_REGEX;
@@ -74,6 +73,6 @@ public class Address implements Serializable {
     }
 
     public void setPostcode(String postcode) {
-       this.postcode = DataUtils.toUppercase(postcode);
+        this.postcode = DataUtils.toUppercase(postcode);
     }
 }

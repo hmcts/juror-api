@@ -1,7 +1,6 @@
 package uk.gov.hmcts.juror.api.juror.service;
 
 import io.jsonwebtoken.lang.Collections;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
