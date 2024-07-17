@@ -48,4 +48,7 @@ public class TrialSummaryDto {
 
     @JsonProperty("trial_end_date")
     private LocalDate trialEndDate;
+
+    @JsonProperty("court_room_location_name")
+    private String courtRoomLocationName;
 }

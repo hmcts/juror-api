@@ -33,7 +33,7 @@ public class SummonsReminderLetter extends LetterBase {
     protected void setupWelsh() {
         setFormCode(FormCode.BI_SUMMONS_REMINDER);
         addData(LetterDataType.DATE_OF_LETTER, 18);
-        addData(LetterDataType.WELSH_COURT_NAME, 40);
+        addData(LetterDataType.WELSH_CORRESPONDENCE_NAME, 40);
         addData(LetterDataType.COURT_NAME, 40);
         sharedSetup();
     }

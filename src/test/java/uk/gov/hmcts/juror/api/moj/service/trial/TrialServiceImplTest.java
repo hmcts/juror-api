@@ -318,7 +318,7 @@ class TrialServiceImplTest {
                 appearance.setTimeOut(LocalTime.parse(checkInTime));
             }
 
-            when(jurorExpenseService.isLongTrialDay("415", panel.getJurorNumber(), now()))
+            when(jurorExpenseService.isLongTrialDay(panel.getJurorNumber(), now()))
                 .thenReturn(false);
             when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
                 now())).thenReturn(Optional.of(appearance));
@@ -332,7 +332,7 @@ class TrialServiceImplTest {
         verify(panelRepository, times(1))
             .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
         verify(panelRepository, times(panelMembers.size())).saveAndFlush(any());
-        verify(jurorHistoryService, times(panelMembers.size())).createJuryAttendanceHistory(any(),any(),any());
+        verify(jurorHistoryService, times(panelMembers.size())).createJuryAttendanceHistory(any(), any(), any());
         verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(appearanceArgumentCaptor.capture());
         Appearance appearance = appearanceArgumentCaptor.getValue();
         assertThat(appearance.getSatOnJury()).as("Sat on Jury").isTrue();
@@ -354,7 +354,7 @@ class TrialServiceImplTest {
             appearance.setTimeIn(null);
             appearance.setTimeOut(null);
 
-            when(jurorExpenseService.isLongTrialDay("415", panel.getJurorNumber(), now()))
+            when(jurorExpenseService.isLongTrialDay(panel.getJurorNumber(), now()))
                 .thenReturn(false);
             when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
                 now())).thenReturn(Optional.of(appearance));
@@ -390,7 +390,7 @@ class TrialServiceImplTest {
             appearance.setTimeIn(null);
             appearance.setTimeOut(null);
 
-            when(jurorExpenseService.isLongTrialDay("415", panel.getJurorNumber(), now()))
+            when(jurorExpenseService.isLongTrialDay(panel.getJurorNumber(), now()))
                 .thenReturn(true);
             when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
                 now())).thenReturn(Optional.of(appearance));
@@ -426,7 +426,7 @@ class TrialServiceImplTest {
             appearance.setTimeIn(null);
             appearance.setTimeOut(null);
 
-            when(jurorExpenseService.isLongTrialDay("415", panel.getJurorNumber(), now()))
+            when(jurorExpenseService.isLongTrialDay(panel.getJurorNumber(), now()))
                 .thenReturn(true);
             when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
                 now())).thenReturn(Optional.of(appearance));

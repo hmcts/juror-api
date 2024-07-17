@@ -41,6 +41,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryServiceImpl;
+import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
 import uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
@@ -76,6 +77,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     private final JurorExpenseService jurorExpenseService;
     private final JurorHistoryServiceImpl jurorHistoryService;
     private final PanelRepository panelRepository;
+    private final JurorPoolService jurorPoolService;
 
     @Override
     public void addAttendanceDay(BureauJwtPayload payload, AddAttendanceDayDto dto) {
@@ -235,7 +237,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
     @Override
     public boolean hasAttendances(String jurorNumber) {
-        return appearanceRepository.countByJurorNumberAndAppearanceStageNotNull(jurorNumber) > 0;
+        return appearanceRepository.countNoneAbsentAttendances(jurorNumber) > 0;
     }
 
     @Override
@@ -511,7 +513,6 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             .nonAttendanceDay(Boolean.TRUE)
             .attendanceType(
                 jurorExpenseService.isLongTrialDay(
-                    locationCode,
                     request.getJurorNumber(), nonAttendanceDate)
                     ? AttendanceType.NON_ATTENDANCE_LONG_TRIAL
                     : AttendanceType.NON_ATTENDANCE)
@@ -621,6 +622,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
             appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
             realignAttendanceType(appearance);
+            appearance.setAppearanceConfirmed(Boolean.TRUE);
 
             appearance.setAttendanceAuditNumber(juryAttendanceNumber);
             appearance.setSatOnJury(true);
@@ -865,6 +867,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         List<Appearance> checkedInAttendances = appearanceRepository.findAllById(appearanceIds);
         checkedInAttendances.forEach(appearance -> {
             appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
+            appearance.setAppearanceConfirmed(Boolean.TRUE);
             realignAttendanceType(appearance);
             appearance.setAttendanceAuditNumber(poolAttendanceNumber);
 
@@ -890,6 +893,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                 .courtLocation(courtLocation)
                 .noShow(Boolean.TRUE)
                 .attendanceType(AttendanceType.ABSENT)
+                .appearanceConfirmed(Boolean.TRUE)
                 .build();
             absentJurors.add(appearance);
         });
@@ -1133,8 +1137,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     }
 
     private JurorPool validateJurorStatus(Juror juror, boolean isCompleted) {
-        JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository,
-            juror.getJurorNumber());
+        JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(juror.getJurorNumber());
 
         final int status = jurorPool.getStatus().getStatus();
 
@@ -1217,7 +1220,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         }
 
         boolean isLongTrialDay =
-            jurorExpenseService.isLongTrialDay(appearance.getCourtLocation().getLocCode(),
+            jurorExpenseService.isLongTrialDay(
                 appearance.getJurorNumber(),
                 appearance.getAttendanceDate());
 

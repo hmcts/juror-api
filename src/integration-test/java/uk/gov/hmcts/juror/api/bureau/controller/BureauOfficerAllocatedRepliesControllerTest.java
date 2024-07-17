@@ -125,5 +125,11 @@ public class BureauOfficerAllocatedRepliesControllerTest extends AbstractIntegra
                 assertThat(bureauOfficerAllocatedData.getUrgent()).isEqualTo(0);
                 assertThat(bureauOfficerAllocatedData.getNonUrgent()).isEqualTo(0);
             });
+
+        List<BureauOfficerAllocatedData> inactiveUser =
+            exchange.getBody().getData().stream().filter(r -> "inactiveuser".equals(r.getLogin()))
+                .toList();
+        assertThat(inactiveUser.size()).as("Inactive user should not be included").isEqualTo(0);
+
     }
 }

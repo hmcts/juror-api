@@ -5,7 +5,8 @@ VALUES ('carneson','carneson','carneson','BUREAU','carneson@email.gov.uk','Chad 
        ('carneson','carneson','mruby','BUREAU','mruby@email.gov.uk','Martin Ruby',true,3),
        ('carneson','carneson','cbeasley','BUREAU','cbeasley@email.gov.uk','Charles Beasley',true,1),
        ('carneson','carneson','tgarrett','BUREAU','tgarrett@email.gov.uk','Timothy Garrett',true,2),
-       ('carneson','carneson','ksalazar','BUREAU','ksalazar@email.gov.uk','Kris Salazar',true,3);
+       ('carneson','carneson','ksalazar','BUREAU','ksalazar@email.gov.uk','Kris Salazar',true,3),
+       ('carneson','carneson','inactiveuser','BUREAU','inactiveuser@email.gov.uk','Inactive User',false,3);
 
 insert into juror_mod.user_courts (username, loc_code)
 values ('carneson', '400'),
@@ -13,7 +14,8 @@ values ('carneson', '400'),
        ('mruby', '400'),
        ('cbeasley', '400'),
        ('tgarrett', '400'),
-       ('ksalazar', '400');
+       ('ksalazar', '400'),
+       ('inactiveuser', '400');
 
 
 INSERT INTO juror_mod.user_roles (username, role)

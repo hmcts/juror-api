@@ -32,6 +32,8 @@ public final class ValidationConstants {
     public static final String DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
     public static final String TIME_FORMAT = "HH:mm";
 
+    public static final int REASONABLE_ADJUSTMENT_MESSAGE_LENGTH_MAX = 2000;
+
     private ValidationConstants() {
 
     }

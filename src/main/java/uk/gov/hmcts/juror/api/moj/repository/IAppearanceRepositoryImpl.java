@@ -146,7 +146,8 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
                 APPEARANCE.timeOut.as("time_out"),
                 APPEARANCE.noShow.as("no_show"),
                 APPEARANCE.appearanceStage.as("app_stage"),
-                JUROR.policeCheck.as("police_check")
+                JUROR.policeCheck.as("police_check"),
+                APPEARANCE.appearanceConfirmed.as("appearance_confirmed")
             )
             .from(JUROR)
             .join(JUROR_POOL)
@@ -181,6 +182,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
                 .noShow(tuple.get(6, Boolean.class))
                 .appStage(tuple.get(7, AppearanceStage.class))
                 .policeCheck(tuple.get(8, PoliceCheck.class))
+                .appearanceConfirmed(tuple.get(9, Boolean.class))
                 .build();
             appearanceDataList.add(appearanceData);
         }

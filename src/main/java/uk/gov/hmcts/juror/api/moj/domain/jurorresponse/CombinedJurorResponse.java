@@ -119,7 +119,7 @@ public class CombinedJurorResponse extends Address implements Serializable {
 
 
     @Column(name = "reasonable_adjustments_arrangements")
-    @Length(max = 1000)
+    @Length(max = ValidationConstants.REASONABLE_ADJUSTMENT_MESSAGE_LENGTH_MAX)
     @Pattern(regexp = NO_PIPES_REGEX)
     private String reasonableAdjustmentsArrangements;
 
