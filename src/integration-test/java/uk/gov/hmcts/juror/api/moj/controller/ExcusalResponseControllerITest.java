@@ -474,7 +474,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
-        validateExcusal(jurorPool, excusalDecisionDto, Ïlogin);
+        validateExcusal(jurorPool, excusalDecisionDto, login);
         validateExcusalLetter(excusalDecisionDto.getExcusalReasonCode());
     }
 
