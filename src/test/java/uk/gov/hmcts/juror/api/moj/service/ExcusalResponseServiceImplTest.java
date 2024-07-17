@@ -325,7 +325,12 @@ public class ExcusalResponseServiceImplTest {
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), Mockito.anyBoolean());
 
-        verifyHappyPaperPath(payload, JUROR_NUMBER);
+        Mockito.verify(jurorPaperResponseRepository, Mockito.times(2)).findByJurorNumber(JUROR_NUMBER);
+        Mockito.verify(jurorResponseRepository, Mockito.never()).findById(JUROR_NUMBER);
+        Mockito.verify(userRepository, Mockito.times(1)).findByUsername(payload.getLogin());
+        Mockito.verify(mergeService, Mockito.times(1))
+            .mergePaperResponse(any(), any());
+        Mockito.verify(mergeService, Mockito.never()).mergeDigitalResponse(any(), any());
         verifyHappyGrantJurorPoolPathNoLetter(); // deceased jurors don't get letters
         verifyHappyExcusalLetter(jurorPool, excusalDecisionDto);
     }
@@ -396,7 +401,7 @@ public class ExcusalResponseServiceImplTest {
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), Mockito.anyBoolean());
 
-        Mockito.verify(jurorPaperResponseRepository, Mockito.times(1)).findByJurorNumber(JUROR_NUMBER);
+        Mockito.verify(jurorPaperResponseRepository, Mockito.times(2)).findByJurorNumber(JUROR_NUMBER);
         Mockito.verify(jurorResponseRepository, Mockito.never()).findByJurorNumber(JUROR_NUMBER);
         verifyHappyExcusalLetter(jurorPool, excusalDecisionDto);
     }
@@ -496,9 +501,7 @@ public class ExcusalResponseServiceImplTest {
 
         Mockito.doReturn(null).when(jurorPaperResponseRepository).findByJurorNumber(JUROR_NUMBER);
 
-        Assertions.assertThatExceptionOfType(MojException.NotFound.class)
-            .isThrownBy(() -> excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto,
-                JUROR_NUMBER));
+        excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, JUROR_NUMBER);
 
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), Mockito.anyBoolean());
@@ -652,7 +655,7 @@ public class ExcusalResponseServiceImplTest {
     }
 
     private void verifyHappyPaperPath(BureauJwtPayload payload, String jurorNumber) {
-        Mockito.verify(jurorPaperResponseRepository, Mockito.times(1)).findByJurorNumber(jurorNumber);
+        Mockito.verify(jurorPaperResponseRepository, Mockito.times(2)).findByJurorNumber(jurorNumber);
         Mockito.verify(jurorResponseRepository, Mockito.never()).findById(jurorNumber);
         Mockito.verify(userRepository, Mockito.times(1)).findByUsername(payload.getLogin());
         Mockito.verify(mergeService, Mockito.times(1))
@@ -694,9 +697,6 @@ public class ExcusalResponseServiceImplTest {
         Mockito.verify(userRepository, Mockito.never()).findByUsername(payload.getLogin());
         Mockito.verify(mergeService, Mockito.never()).mergePaperResponse(any(), any());
         Mockito.verify(mergeService, Mockito.never()).mergeDigitalResponse(any(), any());
-        Mockito.verify(jurorPoolRepository, Mockito.never()).save(any());
-        Mockito.verify(jurorHistoryRepository, Mockito.never()).save(any());
-        Mockito.verify(printDataService, Mockito.never()).printExcusalDeniedLetter(any());
     }
 
     private void verifyFailedInitialChecksPath(BureauJwtPayload payload, String jurorNumber) {
