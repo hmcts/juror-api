@@ -5,6 +5,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -15,6 +16,7 @@ import org.hibernate.envers.Audited;
 import org.hibernate.validator.constraints.Length;
 
 import java.io.Serializable;
+import java.util.Locale;
 
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REGEX;
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.POSTCODE_REGEX;
@@ -58,6 +60,7 @@ public class Address implements Serializable {
     @Column(name = "postcode")
     @Length(max = 10)
     @Pattern(regexp = POSTCODE_REGEX)
+    @Setter(AccessLevel.NONE)
     private String postcode;
 
     @JsonIgnore
@@ -67,5 +70,13 @@ public class Address implements Serializable {
             + addressLine3 + ","
             + addressLine4 + ","
             + addressLine5;
+    }
+
+    public void setPostcode(String postcode) {
+        if (postcode == null) {
+            this.postcode = null;
+        } else {
+            this.postcode = postcode.toUpperCase(Locale.getDefault());
+        }
     }
 }
