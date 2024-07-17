@@ -14,6 +14,7 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.envers.Audited;
 import org.hibernate.validator.constraints.Length;
+import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 
 import java.io.Serializable;
 import java.util.Locale;
@@ -73,10 +74,6 @@ public class Address implements Serializable {
     }
 
     public void setPostcode(String postcode) {
-        if (postcode == null) {
-            this.postcode = null;
-        } else {
-            this.postcode = postcode.toUpperCase(Locale.getDefault());
-        }
+       this.postcode = DataUtils.toUppercase(postcode);
     }
 }
