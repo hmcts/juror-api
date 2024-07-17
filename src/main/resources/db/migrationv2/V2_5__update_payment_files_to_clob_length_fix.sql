@@ -19,7 +19,7 @@ BEGIN
     SELECT NEXTVAL('juror_mod.payment_file_count')
     INTO v_revision;
 
-    SELECT TO_CHAR(p_creation_date, 'FMDDMONYYYY') || LPAD(v_revision::VARCHAR(20), 7, '0') || '.dat',
+    SELECT TO_CHAR(p_creation_date, 'FMDDMONYYYY') || LPAD(v_revision::VARCHAR(20), 9, '0') || '.dat',
            'HEADER' || '|' || LPAD(v_revision::VARCHAR(20), 9, '0') || '|' || LPAD(TO_CHAR(p_total, '9999990.90'), 11)
     INTO p_file_name, v_header;
 
@@ -61,7 +61,7 @@ BEGIN
           and pd.expense_file_name IS NULL
 
         LOOP
-            out_rec := c_extract.loc_code || lpad(c_extract.unique_id, 9, '0') || '|'
+            out_rec := c_extract.loc_code || lpad(c_extract.unique_id, 7, '0') || '|'
                            || to_char(c_extract.creation_date, 'DD-Mon-YYYY') || '|'
                            || lpad(to_char(c_extract.expense_total, '9999990.90'), 11) || '|' ||
                        rpad(c_extract.loc_code || c_extract.part_invoice, 50) || '|'
