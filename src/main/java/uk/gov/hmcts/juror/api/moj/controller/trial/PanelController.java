@@ -107,6 +107,16 @@ public class PanelController {
         return ResponseEntity.ok(dto);
     }
 
+    @GetMapping("/jury-list")
+    @Operation(summary = "Gets the jury list for a given trial")
+    public ResponseEntity<List<PanelListDto>> getJury(
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
+        @RequestParam("trial_number") @PathVariable("trialNumber") String trialNumber,
+        @RequestParam("court_location_code") @PathVariable("courtLocationCode") String courtLocationCode) {
+        List<PanelListDto> dto = panelService.getJurySummary(trialNumber, courtLocationCode);
+        return ResponseEntity.ok(dto);
+    }
+
     @GetMapping("/status")
     @Operation(summary = "Gets the panel creation status")
     public ResponseEntity<Boolean> getPanelCreationStatus(
