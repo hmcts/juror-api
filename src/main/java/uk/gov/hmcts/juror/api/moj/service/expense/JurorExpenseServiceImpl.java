@@ -1061,7 +1061,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     @Override
     @Transactional
     @PreAuthorize(SecurityUtil.IS_MANAGER)
-    public void approveExpenses(String locCode, PaymentMethod paymentMethod, ApproveExpenseDto dto) {
+    public String approveExpenses(String locCode, PaymentMethod paymentMethod, ApproveExpenseDto dto) {
         ApproveExpenseDto.ApprovalType approvalType = dto.getApprovalType();
         List<Appearance> appearances = appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumber(
                 locCode, dto.getJurorNumber())
@@ -1128,6 +1128,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 totalToApprove
             );
         }
+
+        return financialAuditDetails.getFinancialAuditNumber();
     }
 
     void approveAppearance(Appearance appearance) {
