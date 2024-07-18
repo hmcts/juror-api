@@ -1,9 +1,11 @@
 -- DROP PROCEDURE juror_mod.payment_files_to_clob_write_to_clob(in date, in numeric, inout varchar);
 
-CREATE OR REPLACE PROCEDURE juror_mod.payment_files_to_clob_write_to_clob(IN p_creation_date date, IN p_total numeric, INOUT p_file_name character varying)
+CREATE OR REPLACE PROCEDURE juror_mod.payment_files_to_clob_write_to_clob(IN p_creation_date date, IN p_total numeric,
+                                                                          INOUT p_file_name character varying)
     LANGUAGE plpgsql
     SECURITY DEFINER
-AS $procedure$
+AS
+$procedure$
 DECLARE
     v_header   VARCHAR(255);
     out_rec    varchar(450);
@@ -30,32 +32,33 @@ BEGIN
                pd.unique_id,
                pd.creation_date,
                pd.expense_total,
-               pd.juror_number || pd.invoice_id AS                                                          part_invoice,
-               rpad(coalesce(pd.bank_sort_code, ''), 6)                                                     bank_sort_code,
+               pd.juror_number || pd.invoice_id AS                                                                 part_invoice,
+               rpad(coalesce(pd.bank_sort_code, ''), 6)                                                            bank_sort_code,
                UPPER(coalesce(REPLACE(REPLACE(REPLACE(pd.bank_ac_name, '|', ' '), chr(10), ' '), chr(13), ' '),
                               ''))                                                                                 bank_ac_name,
-               coalesce(REPLACE(REPLACE(REPLACE(pd.bank_ac_number, '|', ' '), chr(10), ' '), chr(13), ' '),
-                        '')                                                                                 bank_ac_number,
-               coalesce(REPLACE(REPLACE(REPLACE(pd.build_soc_number, '|', ' '), chr(10), ' '), chr(13), ' '),
-                        '')                                                                                 build_soc_number,
-               coalesce(REPLACE(REPLACE(REPLACE(pd.address_line_1, '|', ' '), chr(10), ' '), chr(13), ' '),
-                        '')                                                                                 address_line1,
-               coalesce(REPLACE(REPLACE(REPLACE(pd.address_line_2, '|', ' '), chr(10), ' '), chr(13), ' '),
-                        '')                                                                                 address_line2,
-               coalesce(REPLACE(REPLACE(REPLACE(pd.address_line_3, '|', ' '), chr(10), ' '), chr(13), ' '),
-                        '')                                                                                 address_line3,
-               coalesce(REPLACE(REPLACE(REPLACE(pd.address_line_4, '|', ' '), chr(10), ' '), chr(13), ' '),
-                        '')                                                                                 address_line4,
-               coalesce(REPLACE(REPLACE(REPLACE(pd.address_line_5, '|', ' '), chr(10), ' '), chr(13), ' '),
-                        '')                                                                                 address_line5,
-               coalesce(REPLACE(REPLACE(REPLACE(pd.postcode, '|', ' '), chr(10), ' '), chr(13), ' '), '')   postcode,
+               UPPER(coalesce(REPLACE(REPLACE(REPLACE(pd.bank_ac_number, '|', ' '), chr(10), ' '), chr(13), ' '),
+                              ''))                                                                                 bank_ac_number,
+               UPPER(coalesce(REPLACE(REPLACE(REPLACE(pd.build_soc_number, '|', ' '), chr(10), ' '), chr(13), ' '),
+                              ''))                                                                                 build_soc_number,
+               UPPER(coalesce(REPLACE(REPLACE(REPLACE(pd.address_line_1, '|', ' '), chr(10), ' '), chr(13), ' '),
+                              ''))                                                                                 address_line1,
+               UPPER(coalesce(REPLACE(REPLACE(REPLACE(pd.address_line_2, '|', ' '), chr(10), ' '), chr(13), ' '),
+                              ''))                                                                                 address_line2,
+               UPPER(coalesce(REPLACE(REPLACE(REPLACE(pd.address_line_3, '|', ' '), chr(10), ' '), chr(13), ' '),
+                              ''))                                                                                 address_line3,
+               UPPER(coalesce(REPLACE(REPLACE(REPLACE(pd.address_line_4, '|', ' '), chr(10), ' '), chr(13), ' '),
+                              ''))                                                                                 address_line4,
+               UPPER(coalesce(REPLACE(REPLACE(REPLACE(pd.address_line_5, '|', ' '), chr(10), ' '), chr(13), ' '),
+                              ''))                                                                                 address_line5,
+               UPPER(coalesce(REPLACE(REPLACE(REPLACE(pd.postcode, '|', ' '), chr(10), ' '), chr(13), ' '),
+                              ''))                                                                                 postcode,
                pd.auth_code,
-               coalesce(REPLACE(REPLACE(REPLACE(pd.juror_name, '|', ' '), chr(10), ' '), chr(13), ' '), '') name,
-               rpad(coalesce(pd.loc_cost_centre, ''), 5)                                                    loc_cost_centre,
+               UPPER(coalesce(REPLACE(REPLACE(REPLACE(pd.juror_name, '|', ' '), chr(10), ' '), chr(13), ' '), '')) name,
+               UPPER(rpad(coalesce(pd.loc_cost_centre, ''), 5))                                                    loc_cost_centre,
                pd.travel_total,
-               pd.subsistence_total             as                                                          sub_total,
-               pd.financial_loss_total          as                                                          floss_total,
-               pd.creation_date                 as                                                          sub_date
+               pd.subsistence_total             as                                                                 sub_total,
+               pd.financial_loss_total          as                                                                 floss_total,
+               pd.creation_date                 as                                                                 sub_date
         FROM juror_mod.payment_data pd
         WHERE date_trunc('day', pd.creation_date) = p_creation_date
           and pd.expense_file_name IS NULL
