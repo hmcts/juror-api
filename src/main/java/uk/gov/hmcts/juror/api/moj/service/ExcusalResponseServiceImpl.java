@@ -89,7 +89,14 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
 
         if (excusalDecisionDto.getReplyMethod() != null) {
             if (excusalDecisionDto.getReplyMethod().equals(ReplyMethod.PAPER)) {
-                setPaperResponseProcessingStatusToClosed(payload, jurorNumber);
+                if (null == jurorPaperResponseRepository.findByJurorNumber(jurorNumber)) {
+                    // There are scenarios where a juror may not have a paper response when excused from the juror
+                    // record
+                    log.info(String.format("No Paper response found for Juror %s when processing excusal request",
+                        jurorNumber));
+                } else {
+                    setPaperResponseProcessingStatusToClosed(payload, jurorNumber);
+                }
             } else {
                 setDigitalResponseProcessingStatusToClosed(payload, jurorNumber);
             }
