@@ -51,7 +51,7 @@ class PersonAttendingSummaryReportITest extends AbstractStandardReportController
     void positiveIncludeSummons() {
         StandardReportRequest request = getValidPayload();
         request.setIncludeSummoned(true);
-        request.setDate(LocalDate.now().plusDays(2));
+        request.setDate(LocalDate.now().plusDays(1));
         testBuilder()
             .payload(request)
             .triggerValid()
@@ -150,12 +150,12 @@ class PersonAttendingSummaryReportITest extends AbstractStandardReportController
                           .add("attendance_date", StandardReportResponse.DataTypeValue.builder()
                               .displayName("Attendance date")
                               .dataType("LocalDate")
-                              .value(DateTimeFormatter.ISO_DATE.format(LocalDate.now().plusDays(2)))
+                              .value(DateTimeFormatter.ISO_DATE.format(LocalDate.now().plusDays(1)))
                               .build())
                           .add("total_due", StandardReportResponse.DataTypeValue.builder()
                               .displayName("Total due to attend")
                               .dataType("Integer")
-                              .value(2)
+                              .value(4)
                               .build())
                           .add("court_name", StandardReportResponse.DataTypeValue.builder()
                               .displayName("Court Name")
@@ -185,13 +185,21 @@ class PersonAttendingSummaryReportITest extends AbstractStandardReportController
                             .build()))
                     .data(StandardTableData.of(
                         new ReportLinkedMap<String, Object>()
-                            .add("juror_number", "641500004")
-                            .add("first_name", "FNAMEFOUR")
-                            .add("last_name", "LNAMEFOUR"),
+                            .add("juror_number", "641500003")
+                            .add("first_name", "FNAMETHREE")
+                            .add("last_name", "LNAMETHREE"),
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number", "641500007")
                             .add("first_name", "FNAMESEVEN")
-                            .add("last_name", "LNAMESEVEN")))
+                            .add("last_name", "LNAMESEVEN"),
+                        new ReportLinkedMap<String, Object>()
+                            .add("juror_number", "641500011")
+                            .add("first_name", "FNAMEONEONE")
+                            .add("last_name", "LNAMEONEONE"),
+                        new ReportLinkedMap<String, Object>()
+                            .add("juror_number", "641500021")
+                            .add("first_name", "FNAMETWOONE")
+                            .add("last_name", "LNAMETWOONE")))
                     .build())
             .build();
     }

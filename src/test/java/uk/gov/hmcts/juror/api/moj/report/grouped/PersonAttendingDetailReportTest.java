@@ -95,9 +95,7 @@ class PersonAttendingDetailReportTest extends AbstractGroupedReportTestSupport<P
         verify(query, times(1))
             .where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(locCode));
         verify(query, times(1))
-            .where(QJurorPool.jurorPool.status.status.in(IJurorStatus.RESPONDED,
-                                                         IJurorStatus.PANEL,
-                                                         IJurorStatus.JUROR));
+            .where(QJurorPool.jurorPool.status.status.in(IJurorStatus.RESPONDED));
         verify(query, times(1)).orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
     }
 
@@ -123,9 +121,7 @@ class PersonAttendingDetailReportTest extends AbstractGroupedReportTestSupport<P
             .where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(locCode));
         verify(query, times(1))
             .where(QJurorPool.jurorPool.status.status.in(IJurorStatus.SUMMONED,
-                                                         IJurorStatus.RESPONDED,
-                                                         IJurorStatus.PANEL,
-                                                         IJurorStatus.JUROR));
+                                                         IJurorStatus.RESPONDED));
         verify(query, times(1)).orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
 
         verifyNoMoreInteractions(query);
