@@ -81,7 +81,7 @@ class CompleteServiceServiceImplTest {
             JurorPool jurorPool = mock(JurorPool.class);
 
             createJurorPoolMock(TestConstants.VALID_POOL_NUMBER, poolStatus, TestConstants.VALID_JUROR_NUMBER,
-                                firstName, lastName, jurorPool, juror);
+                firstName, lastName, jurorPool, juror);
 
             CompleteServiceJurorNumberListDto completeServiceJurorNumberListDto =
                 createCompleteServiceJurorNumberListDto(localDate, TestConstants.VALID_JUROR_NUMBER);
@@ -89,7 +89,7 @@ class CompleteServiceServiceImplTest {
             MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
                 () -> completeServiceService
                     .completeService(TestConstants.VALID_POOL_NUMBER, completeServiceJurorNumberListDto),
-                        "Expected exception to be thrown when juror pool not in resolved status");
+                "Expected exception to be thrown when juror pool not in resolved status");
 
             assertEquals("Unable to complete the service for the following juror number(s) due to "
                     + "invalid state: " + TestConstants.VALID_JUROR_NUMBER, exception.getMessage(),
@@ -99,13 +99,13 @@ class CompleteServiceServiceImplTest {
 
             verify(jurorPoolRepository, times(1))
                 .findByJurorJurorNumberAndPoolPoolNumber(TestConstants.VALID_JUROR_NUMBER,
-                                                         TestConstants.VALID_POOL_NUMBER);
+                    TestConstants.VALID_POOL_NUMBER);
 
             verify(jurorPool, times(1)).getStatus();
 
 
             verifyNoMoreInteractions(jurorPoolRepository, jurorPoolRepository, jurorRepository, jurorHistoryService,
-                                     juror, jurorPool);
+                juror, jurorPool);
         }
 
         void assertValidStatus(int poolStatus) {
@@ -118,7 +118,7 @@ class CompleteServiceServiceImplTest {
             JurorPool jurorPool = mock(JurorPool.class);
 
             createJurorPoolMock(TestConstants.VALID_POOL_NUMBER, poolStatus, TestConstants.VALID_JUROR_NUMBER,
-                                firstName, lastName, jurorPool, juror);
+                firstName, lastName, jurorPool, juror);
 
             CompleteServiceJurorNumberListDto completeServiceJurorNumberListDto =
                 createCompleteServiceJurorNumberListDto(localDate, TestConstants.VALID_JUROR_NUMBER);
@@ -128,7 +128,7 @@ class CompleteServiceServiceImplTest {
 
             verify(jurorPoolRepository, times(1))
                 .findByJurorJurorNumberAndPoolPoolNumber(TestConstants.VALID_JUROR_NUMBER,
-                                                         TestConstants.VALID_POOL_NUMBER);
+                    TestConstants.VALID_POOL_NUMBER);
 
             validateCompleteWasSuccess(jurorPool, juror, localDate);
 
@@ -197,7 +197,7 @@ class CompleteServiceServiceImplTest {
             verify(jurorPool, times(1)).getStatus();
             verify(jurorPool, times(1)).setStatus(completedStatus);
             verify(jurorPool, never()).setIsActive(anyBoolean());
-
+            verify(jurorPool, times(1)).setOnCall(false);
 
             verify(juror, times(1))
                 .setCompletionDate(completionDate);
@@ -638,7 +638,6 @@ class CompleteServiceServiceImplTest {
                     + " not found in pool " + TestConstants.VALID_POOL_NUMBER);
         }
     }
-
 
 
     @Nested
