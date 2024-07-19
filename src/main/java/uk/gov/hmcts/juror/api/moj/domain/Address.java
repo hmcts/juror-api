@@ -61,6 +61,7 @@ public class Address implements Serializable {
     @Length(max = 10)
     @Pattern(regexp = POSTCODE_REGEX)
     @Setter(AccessLevel.NONE)
+    //Must be uppercase
     private String postcode;
 
     @JsonIgnore

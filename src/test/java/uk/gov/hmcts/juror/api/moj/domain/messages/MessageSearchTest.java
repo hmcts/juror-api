@@ -168,8 +168,8 @@ class MessageSearchTest {
         messageSearch.applyJurorSearch(query, messageSearch.getJurorSearch());
 
         verify(query, times(1))
-            .where(QJuror.juror.postcode.toLowerCase()
-                .eq(TestConstants.VALID_POSTCODE.toLowerCase()));
+            .where(QJuror.juror.postcode
+                .eq(TestConstants.VALID_POSTCODE));
         verifyNoMoreInteractions(query);
     }
 
