@@ -17,7 +17,7 @@ GROUP BY jp.pool_number;
 -- This is significantly more performance then using the view and joining on the pool table
 CREATE OR REPLACE VIEW juror_mod.pool_stats_with_pool_join
 AS
-SELECT pr1_0.pool_no as pool_number,
+SELECT pr1_0.pool_no                                                            as pool_number,
        pr1_0.return_date,
        pr1_0.owner,
        pr1_0.loc_code,
@@ -31,10 +31,9 @@ SELECT pr1_0.pool_no as pool_number,
 FROM juror_mod.juror_pool jp
          JOIN juror_mod.juror j ON jp.juror_number::text = j.juror_number::text
          JOIN juror_mod.pool pr1_0 ON pr1_0.pool_no = jp.pool_number
-GROUP BY
-    pr1_0.pool_no,
-    pr1_0.return_date,
-    pr1_0.owner,
-    pr1_0.loc_code,
-    pr1_0.pool_type,
-    pr1_0.no_requested;
+GROUP BY pr1_0.pool_no,
+         pr1_0.return_date,
+         pr1_0.owner,
+         pr1_0.loc_code,
+         pr1_0.pool_type,
+         pr1_0.no_requested;

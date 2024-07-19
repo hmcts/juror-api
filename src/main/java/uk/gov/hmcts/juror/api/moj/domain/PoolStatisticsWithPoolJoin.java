@@ -34,7 +34,6 @@ public class PoolStatisticsWithPoolJoin implements Serializable {
     @Column(name = "return_date")
     private LocalDate returnDate;
 
-
     @Column(name = "owner")
     private String owner;
 
