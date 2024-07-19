@@ -149,11 +149,12 @@ public class JurorServiceImpl implements JurorService {
             throw new NoPhoneNumberProvided();
         }
 
+        JurorPool jurorDetails = jurorRepository.findByJurorJurorNumber(responseDto.getJurorNumber());
+
         if (!ObjectUtils.isEmpty(responseDto.getThirdParty()) && !ObjectUtils.isEmpty(
             responseDto.getThirdParty().getThirdPartyReason())
             && "deceased".equalsIgnoreCase(responseDto.getThirdParty().getThirdPartyReason())) {
             log.debug("Juror {} third party response for deceased.");
-            final JurorPool jurorDetails = jurorRepository.findByJurorJurorNumber(responseDto.getJurorNumber());
             Juror juror = jurorDetails.getJuror();
             //copy fields from jurorDetails into jurorResponse as they are not supplied by the frontend!
             responseDto.setTitle(juror.getTitle());
@@ -184,6 +185,8 @@ public class JurorServiceImpl implements JurorService {
                 jurorReasonableAdjustmentRepository.saveAll(savedJurorResponse.getReasonableAdjustments());
             }
 
+            jurorDetails.setResponseEntered(true);
+            jurorRepository.save(jurorDetails);
 
             log.info("Juror response saved for juror {}", responseEntity.getJurorNumber());
             return savedJurorResponse;

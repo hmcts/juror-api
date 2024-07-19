@@ -136,6 +136,9 @@ public class JurorPool implements Serializable {
     @Column(name = "date_created")
     private LocalDateTime dateCreated;
 
+    @Column(name = "response_entered")
+    private Boolean responseEntered;
+
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumns({
         @JoinColumn(name = "juror_number", referencedColumnName = "juror_number"),

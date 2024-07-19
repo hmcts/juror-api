@@ -526,6 +526,8 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         jurorPool.setUserEdtq(login);
         jurorPool.setLastUpdate(LocalDateTime.now());
 
+        jurorPool.setResponseEntered(false);
+
         jurorPool.setJuror(juror);
         log.info("Pool member {} added to the Pool Member table", juror.getJurorNumber());
 

@@ -139,6 +139,9 @@ public class JurorDetailsCommonResponseDto {
 
     private boolean hasSummonsResponse;
 
+    @JsonProperty("response_entered")
+    private boolean responseEntered;
+
     /**
      * Initialise an instance of this DTO class using a JurorPool object to populate its properties.
      *
@@ -168,6 +171,7 @@ public class JurorDetailsCommonResponseDto {
         this.isWelshCourt =
             welshCourtLocationRepository.existsByLocCode(jurorPool.getCourt().getLocCode());
         this.hasSummonsResponse = juror.getJurorResponse() != null;
+        this.responseEntered = jurorPool.getResponseEntered();
 
         if (this.excusalCode != null) {
             this.excusalDescription = ExcusalCodeEnum.fromCode(this.excusalCode).getDescription();
