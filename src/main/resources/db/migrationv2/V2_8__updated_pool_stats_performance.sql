@@ -31,6 +31,8 @@ SELECT pr1_0.pool_no                                                            
 FROM juror_mod.juror_pool jp
          JOIN juror_mod.juror j ON jp.juror_number::text = j.juror_number::text
          JOIN juror_mod.pool pr1_0 ON pr1_0.pool_no = jp.pool_number
+WHERE j.summons_file IS NULL
+   OR j.summons_file::text <> 'Disq. on selection'::text
 GROUP BY pr1_0.pool_no,
          pr1_0.return_date,
          pr1_0.owner,
