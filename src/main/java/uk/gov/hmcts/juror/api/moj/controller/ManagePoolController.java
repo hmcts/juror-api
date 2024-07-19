@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.config.security.IsBureauUser;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorManagementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolEditRequestDto;
@@ -173,15 +174,11 @@ public class ManagePoolController {
 
     @GetMapping(path = "/summoning-progress/{courtLocCode}/{poolType}")
     @Operation(summary = "Get pool monitoring stats")
+    @IsBureauUser
     public ResponseEntity<SummoningProgressResponseDto> getPoolMonitoringStats(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Parameter @PathVariable("courtLocCode") String courtLocationCode,
         @Parameter @PathVariable("poolType") String poolType) {
-
-        if (!payload.getOwner().equals(JUROR_OWNER)) {
-            throw new MojException.Forbidden("Authorisation access denied, bureau user only",
-                null);
-        }
 
         return ResponseEntity.ok()
             .body(managePoolsService.getPoolMonitoringStats(payload, courtLocationCode, poolType));
