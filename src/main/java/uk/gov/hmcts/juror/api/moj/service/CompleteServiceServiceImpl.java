@@ -68,9 +68,9 @@ public class CompleteServiceServiceImpl implements CompleteServiceService {
 
     private void completeService(JurorPool jurorPool, LocalDate completionDate) {
         jurorPool.setStatus(RepositoryUtils.retrieveFromDatabase(IJurorStatus.COMPLETED, jurorStatusRepository));
+        jurorPool.setOnCall(false);
         Juror juror = jurorPool.getJuror();
         juror.setCompletionDate(completionDate);
-
         jurorHistoryService.createCompleteServiceHistory(jurorPool);
         jurorRepository.save(juror);
         jurorPoolRepository.save(jurorPool);
