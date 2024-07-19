@@ -107,6 +107,7 @@ import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAuditChangeService;
 import uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils;
+import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorResponseUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
@@ -517,7 +518,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             .addressLine3(jurorAddress.getLineThree())
             .addressLine4(jurorAddress.getTown())
             .addressLine5(jurorAddress.getCounty())
-            .postcode(jurorAddress.getPostcode())
+            .postcode(DataUtils.toUppercase(jurorAddress.getPostcode()))
             .phoneNumber(jurorCreateRequestDto.getPrimaryPhone())
             .altPhoneNumber(jurorCreateRequestDto.getAlternativePhone())
             .email(jurorCreateRequestDto.getEmailAddress())
@@ -631,7 +632,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             .addressLine3(pendingJuror.getAddressLine3())
             .addressLine4(pendingJuror.getAddressLine4())
             .addressLine5(pendingJuror.getAddressLine5())
-            .postcode(pendingJuror.getPostcode())
+            .postcode(DataUtils.toUppercase(pendingJuror.getPostcode()))
             .phoneNumber(pendingJuror.getPhoneNumber())
             .altPhoneNumber(pendingJuror.getAltPhoneNumber())
             .email(pendingJuror.getEmail())
