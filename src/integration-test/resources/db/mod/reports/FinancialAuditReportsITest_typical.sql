@@ -42,20 +42,20 @@ VALUES ('200106974', NULL, 'Ms', 'Gallus', 'Josh', '1976-06-05 00:00:00.000', '6
         'Canterbury', 'Shetland (Zetland)', NULL, 'BB2 2TG', NULL, NULL, NULL, true, NULL, NULL, NULL, NULL, NULL, NULL,
         NULL, NULL, NULL, 'N', 'Sample Details 1', NULL, '2024-04-08 00:00:00.000', '901234', 'Josh Gallus', '12345678',
         NULL, NULL, 'ELIGIBLE', '2024-04-16 18:18:03.000', NULL, NULL, NULL, NULL, 0, '2024-04-12 23:58:34.224', NULL,
-        NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, 0, false);
+        NULL, NULL, NULL, 9, NULL, NULL, NULL, false, NULL, 0, false);
 
 
 INSERT INTO juror_mod.juror_audit
 (revision, juror_number, rev_type, title, first_name, last_name, dob, address_line_1, address_line_2, address_line_3,
  address_line_4, address_line_5, address6, postcode, h_email, h_phone, m_phone, w_phone, w_ph_local, bank_acct_name,
  bank_acct_no, bldg_soc_roll_no, sort_code, pending_title, pending_first_name, pending_last_name,
- claiming_subsistence_allowance, smart_card_number)
+ claiming_subsistence_allowance, smart_card_number, mileage)
 VALUES (42180, '200106974', 0, 'Ms', 'Josh', 'Gallus', NULL, '68 EWP Junction', 'Box Number 0', 'Canterbury',
         'Shetland (Zetland)', NULL, NULL, 'BB2 2TG', NULL, NULL, NULL, NULL, NULL, 'Josh Gallus', '12345678', NULL,
-        '901234', NULL, NULL, NULL, false, NULL),
+        '901234', NULL, NULL, NULL, false, NULL, 10),
        (42257, '200106974', 1, 'Ms', 'Josh', 'Gallus', '1976-06-05', '68 EWP Junction', 'Box Number 0', 'Canterbury',
         'Shetland (Zetland)', NULL, NULL, 'BB2 2TG', NULL, NULL, NULL, NULL, NULL, 'Josh Gallus', '12345678', NULL,
-        '901234', NULL, NULL, NULL, false, NULL);
+        '901234', NULL, NULL, NULL, false, NULL, 11);
 
 INSERT INTO juror_mod.juror_pool
 (juror_number, pool_number, "owner", user_edtq, is_active, status, times_sel, def_date, "location", no_attendances,
