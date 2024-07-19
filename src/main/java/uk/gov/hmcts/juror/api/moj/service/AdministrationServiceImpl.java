@@ -23,6 +23,7 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.CourtroomRepository;
+import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -90,7 +91,7 @@ public class AdministrationServiceImpl implements AdministrationService {
                     .addressLine3(courtLocation.getAddress3())
                     .addressLine4(courtLocation.getAddress4())
                     .addressLine5(courtLocation.getAddress5())
-                    .postcode(courtLocation.getPostcode())
+                    .postcode(DataUtils.toUppercase(courtLocation.getPostcode()))
                     .build()
             )
             .mainPhone(courtLocation.getLocPhone())

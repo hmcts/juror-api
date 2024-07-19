@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
+import java.util.Locale;
 
 @Slf4j
 public final class DataUtils {
@@ -120,5 +121,12 @@ public final class DataUtils {
             return null;
         }
         return trim.length() > maxLength ? trim.substring(0, maxLength) : trim;
+    }
+
+    public static String toUppercase(String postcode) {
+        if (postcode == null) {
+            return null;
+        }
+        return postcode.toUpperCase(Locale.getDefault());
     }
 }

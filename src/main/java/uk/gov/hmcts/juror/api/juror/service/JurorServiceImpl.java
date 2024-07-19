@@ -31,6 +31,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjust
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.ReasonableAdjustmentsRepository;
 import uk.gov.hmcts.juror.api.moj.service.PoolRequestService;
+import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
@@ -277,7 +278,7 @@ public class JurorServiceImpl implements JurorService {
             .addressLine3(dto.getAddressLineThree())
             .addressLine4(dto.getAddressTown())
             .addressLine5(dto.getAddressCounty())
-            .postcode(dto.getAddressPostcode())
+            .postcode(DataUtils.toUppercase(dto.getAddressPostcode()))
             .residency(livedConsecutive != null && livedConsecutive.isAnswer())
             .residencyDetail(livedConsecutive != null ? livedConsecutive.getDetails() : null)
             .bail(onBail != null && onBail.isAnswer())
