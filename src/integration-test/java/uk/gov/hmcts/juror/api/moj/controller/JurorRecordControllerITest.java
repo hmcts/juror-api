@@ -5246,7 +5246,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         void markJurorAsRespondedCourtHappyPath() throws Exception {
 
             String jurorNumber = "111111111";
-            final String url = BASE_URL + "/mark-responded/" + jurorNumber; ;
+            final String url = BASE_URL + "/mark-responded/" + jurorNumber;
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
                 UserType.COURT));
@@ -5270,7 +5270,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         void markJurorAsRespondedBureauHappyPath() throws Exception {
 
             String jurorNumber = "222222222";
-            final String url = BASE_URL + "/mark-responded/" + jurorNumber; ;
+            final String url = BASE_URL + "/mark-responded/" + jurorNumber;
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("400", Collections.singletonList("400"),
                 UserType.BUREAU));
@@ -5294,7 +5294,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         void markJurorAsRespondedBureauJurorNotFound() throws Exception {
 
             String jurorNumber = "333333333";
-            final String url = BASE_URL + "/mark-responded/" + jurorNumber; ;
+            final String url = BASE_URL + "/mark-responded/" + jurorNumber;
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("400", Collections.singletonList("400"),
                 UserType.BUREAU));
