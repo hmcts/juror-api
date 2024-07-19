@@ -5269,7 +5269,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         @Test
         void markJurorAsRespondedBureauHappyPath() throws Exception {
 
-            String jurorNumber = "111111111";
+            String jurorNumber = "222222222";
             final String url = BASE_URL + "/mark-responded/" + jurorNumber; ;
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("400", Collections.singletonList("400"),
