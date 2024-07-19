@@ -20,6 +20,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
 import uk.gov.hmcts.juror.api.moj.service.IsPageable;
+import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.validation.CourtLocationCode;
 
 import java.time.LocalDate;
@@ -112,8 +113,8 @@ public class MessageSearch implements IsPageable {
             }
 
             if (jurorSearch.getPostcode() != null) {
-                query.where(QJuror.juror.postcode.toLowerCase()
-                    .eq(jurorSearch.getPostcode().toLowerCase(Settings.LOCALE)));
+                query.where(QJuror.juror.postcode //Postcode is forced to be uppercase on the DB
+                    .eq(DataUtils.toUppercase(jurorSearch.getPostcode())));
             }
         }
     }

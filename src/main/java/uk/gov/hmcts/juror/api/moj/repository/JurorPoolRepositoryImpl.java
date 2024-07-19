@@ -30,6 +30,7 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.NumberUtils;
 import uk.gov.hmcts.juror.api.moj.utils.PaginationUtil;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
@@ -222,7 +223,7 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
         }
 
         if (search.getPostcode() != null) {
-            query.where(JUROR.postcode.eq(search.getPostcode()));
+            query.where(JUROR.postcode.eq(DataUtils.toUppercase(search.getPostcode())));
         }
 
         if (search.getPoolNumber() != null) {
