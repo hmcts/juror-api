@@ -29,14 +29,11 @@ import uk.gov.hmcts.juror.api.moj.controller.response.PoolSummaryResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.SummoningProgressResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.AvailablePoolsInCourtLocationDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.ReassignPoolMembersResultDto;
-import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.DeletePoolService;
 import uk.gov.hmcts.juror.api.moj.service.EditPoolService;
 import uk.gov.hmcts.juror.api.moj.service.PoolStatisticsService;
 import uk.gov.hmcts.juror.api.moj.service.poolmanagement.JurorManagementService;
 import uk.gov.hmcts.juror.api.moj.service.poolmanagement.ManagePoolsService;
-
-import static uk.gov.hmcts.juror.api.JurorDigitalApplication.JUROR_OWNER;
 
 @RestController
 @RequestMapping(value = "/api/v1/moj/manage-pool", produces = MediaType.APPLICATION_JSON_VALUE)

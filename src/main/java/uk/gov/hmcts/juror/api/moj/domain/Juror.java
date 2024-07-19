@@ -258,7 +258,7 @@ public class Juror extends Address implements Serializable {
     private BigDecimal financialLoss;
 
     @Column(name = "mileage")
-    @NotAudited
+    @Audited
     private Integer mileage;
 
     @Column(name = "claiming_subsistence_allowance")
