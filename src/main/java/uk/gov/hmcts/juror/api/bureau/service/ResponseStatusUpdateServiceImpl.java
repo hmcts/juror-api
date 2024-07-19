@@ -170,24 +170,13 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
             //if multiple set need to M
             if (specialNeedsByJurorNumber.size() > 1) {
                 jurorDetails.getJuror().setReasonableAdjustmentCode("M");
-                jurorDetails.getJuror()
-                    .setReasonableAdjustmentMessage(
-                        DataUtils.trimToLength(
-                            specialNeedsByJurorNumber
-                                .stream()
-                                .reduce(
-                                    "",
-                                    (acc, item) -> acc + item.getReasonableAdjustmentDetail() + ", ",
-                                    String::concat
-                                ).trim(),
-                            ValidationConstants.REASONABLE_ADJUSTMENT_MESSAGE_LENGTH_MAX));
             } else if (specialNeedsByJurorNumber.size() == 1
                 && specialNeedsByJurorNumber.get(0) != null) {
                 jurorDetails.getJuror()
                     .setReasonableAdjustmentCode(specialNeedsByJurorNumber.get(0).getReasonableAdjustment().getCode());
-                jurorDetails.getJuror()
-                    .setReasonableAdjustmentMessage(specialNeedsByJurorNumber.get(0).getReasonableAdjustmentDetail());
             }
+            jurorDetails.getJuror()
+                .setReasonableAdjustmentMessage(jurorDetails.getJuror().getJurorResponse().getReasonableAdjustmentsArrangements());
 
             log.debug("Merging special need information  for juror {}, Special need {}", jurorDetails.getJurorNumber(),
                 //   poolDetails.getSpecialNeed()
