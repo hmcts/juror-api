@@ -653,6 +653,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             .owner(poolRequest.getOwner())
             .nextDate(pendingJuror.getNextDate())
             .userEdtq(SecurityUtil.getActiveLogin())
+            .responseEntered(true)
             .build();
 
         jurorPoolRepository.save(jurorPool);
