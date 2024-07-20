@@ -140,7 +140,8 @@ public class JurorDetailsCommonResponseDto {
     private boolean hasSummonsResponse;
 
     @JsonProperty("response_entered")
-    private boolean responseEntered;
+    @Schema(name = "Response Entered", description = "Flag to indicate if a response has been entered for the juror")
+    private Boolean responseEntered;
 
     /**
      * Initialise an instance of this DTO class using a JurorPool object to populate its properties.
