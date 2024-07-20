@@ -23,10 +23,10 @@ true, null, null, null, null, null),
 ('641600095', null, 'LNAMEFIVEFOURFIVE', 'FNAMEFIVEFOURFIVE', '1989-03-31', '543 STREET NAME', 'ANYTOWN', 'CH1 2AN',
 true, null, null, null, null, null);
 
-INSERT INTO juror_mod.juror_pool (owner, juror_number, pool_number, is_active, status)
-VALUES ('416', '641600090', '416220901', true, 3),
-('416', '641600091', '416220901', true, 2),
-('400', '641600092', '416220901', true, 1),
-('416', '641600093', '416220901', true, 6),
-('416', '641600094', '416220901', true, 2),
-('416', '641600095', '416220901', true, 6);
+INSERT INTO juror_mod.juror_pool (owner, juror_number, pool_number, is_active, status, response_entered)
+VALUES ('416', '641600090', '416220901', true, 3, true),
+('416', '641600091', '416220901', true, 2, true),
+('400', '641600092', '416220901', true, 1, true),
+('416', '641600093', '416220901', true, 6, null),
+('416', '641600094', '416220901', true, 2, null),
+('416', '641600095', '416220901', true, 6, null);
