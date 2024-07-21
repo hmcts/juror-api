@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = {@Autowired})
 @Slf4j
 @Primary
 public class CourtLetterServiceImpl implements CourtLetterService {
@@ -54,13 +54,8 @@ public class CourtLetterServiceImpl implements CourtLetterService {
     private final MojExcusalCodeRepository excusalCodeRepository;
     private final ShowCauseLetterListRepository showCauseLetterListRepository;
 
-    @Autowired
     private final CourtPostponementLetterServiceImpl courtPostponementLetterService;
-
-    @Autowired
     private final CourtExcusalRefusedLetterServiceImpl courtExcusalRefusedLetterService;
-
-    @Autowired
     private final CourtFailedToAttendLetterServiceImpl courtFailedToAttendLetterService;
 
     // String constants for response headings
@@ -217,7 +212,7 @@ public class CourtLetterServiceImpl implements CourtLetterService {
     }
 
     private List<DeferralLetterData> serialiseDeferralLetterData(List<DeferralGrantedLetterList> eligibleJurorRecords,
-         boolean isIncludePrinted) {
+                                                                 boolean isIncludePrinted) {
         List<DeferralLetterData> deferralLetterDataList = new ArrayList<>();
         for (DeferralGrantedLetterList result : eligibleJurorRecords) {
 
@@ -329,7 +324,7 @@ public class CourtLetterServiceImpl implements CourtLetterService {
     }
 
     private List<WithdrawalLetterData> serialiseWithdrawalLetterData(List<WithdrawalLetterList> eligibleJurorRecords,
-         boolean isIncludePrinted) {
+                                                                     boolean isIncludePrinted) {
         List<WithdrawalLetterData> withdrawalLetterDataList = new ArrayList<>();
         for (WithdrawalLetterList result : eligibleJurorRecords) {
 

@@ -114,6 +114,8 @@ public class CourtLetterPrintServiceTest {
         securityUtilMockedStatic = Mockito.mockStatic(SecurityUtil.class);
         securityUtilMockedStatic.when(SecurityUtil::getActiveOwner)
             .thenReturn(owner);
+        securityUtilMockedStatic.when(SecurityUtil::getLocCode)
+            .thenReturn(owner);
     }
 
     @Nested
@@ -218,7 +220,7 @@ public class CourtLetterPrintServiceTest {
 
             verify(systemParameterRepositoryMod, times(1)).findById(anyInt());
             verify(jurorRepository, times(1)).findByJurorNumber(anyString());
-            verify(welshCourtLocationRepository, times(1)).findById(anyString());
+            verify(welshCourtLocationRepository, times(0)).findById(anyString());
             verify(jurorHistoryRepository, times(1)).save(any());
             verify(courtPrintLetterRepository, times(1))
                 .retrievePrintInformation(anyString(), any(), anyBoolean(), anyString());
@@ -433,7 +435,7 @@ public class CourtLetterPrintServiceTest {
 
             verify(systemParameterRepositoryMod, times(1)).findById(anyInt());
             verify(jurorRepository, times(1)).findByJurorNumber(anyString());
-            verify(welshCourtLocationRepository, times(1)).findById(anyString());
+            verify(welshCourtLocationRepository, times(0)).findById(anyString());
             verify(jurorHistoryRepository, times(1)).save(any());
             verify(courtPrintLetterRepository, times(1))
                 .retrievePrintInformation(anyString(), any(), anyBoolean(), anyString());
@@ -732,7 +734,7 @@ public class CourtLetterPrintServiceTest {
 
             verify(systemParameterRepositoryMod, times(1)).findById(ENGLISH_URL_PARAM);
             verify(jurorRepository, times(1)).findByJurorNumber(jurorNumber);
-            verify(welshCourtLocationRepository, times(1)).findById(anyString());
+            verify(welshCourtLocationRepository, times(0)).findById(anyString());
             verify(jurorHistoryRepository, times(1)).save(any());
             verify(courtPrintLetterRepository, times(1))
                 .retrievePrintInformation(anyString(), any(), anyBoolean(), anyString());
@@ -936,7 +938,7 @@ public class CourtLetterPrintServiceTest {
 
             verify(systemParameterRepositoryMod, times(1)).findById(anyInt());
             verify(jurorRepository, times(1)).findByJurorNumber(anyString());
-            verify(welshCourtLocationRepository, times(1)).findById(anyString());
+            verify(welshCourtLocationRepository, times(0)).findById(anyString());
             verify(jurorHistoryRepository, times(1)).save(any());
             verify(courtPrintLetterRepository, times(1))
                 .retrievePrintInformation(anyString(), any(), anyBoolean(), anyString());
@@ -1041,7 +1043,7 @@ public class CourtLetterPrintServiceTest {
 
             verify(systemParameterRepositoryMod, times(1)).findById(anyInt());
             verify(jurorRepository, times(1)).findByJurorNumber(anyString());
-            verify(welshCourtLocationRepository, times(1)).findById(anyString());
+            verify(welshCourtLocationRepository, times(0)).findById(anyString());
             verify(jurorHistoryRepository, times(1)).save(any());
             verify(courtPrintLetterRepository, times(1))
                 .retrievePrintInformation(anyString(), any(), anyBoolean(), anyString());
@@ -1260,7 +1262,7 @@ public class CourtLetterPrintServiceTest {
 
             verify(systemParameterRepositoryMod, times(1)).findById(ENGLISH_URL_PARAM);
             verify(jurorRepository, times(1)).findByJurorNumber(jurorNumber);
-            verify(welshCourtLocationRepository, times(1)).findById(courtOwner);
+            verify(welshCourtLocationRepository, times(0)).findById(courtOwner);
             verify(jurorHistoryRepository, times(1)).save(jurorHistoryArgumentCaptor.capture());
 
             JurorHistory history = jurorHistoryArgumentCaptor.getValue();
@@ -1401,7 +1403,7 @@ public class CourtLetterPrintServiceTest {
 
             verify(systemParameterRepositoryMod, times(1)).findById(ENGLISH_URL_PARAM);
             verify(jurorRepository, times(1)).findByJurorNumber(jurorNumber);
-            verify(welshCourtLocationRepository, times(1)).findById(courtOwner);
+            verify(welshCourtLocationRepository, times(0)).findById(courtOwner);
             verify(jurorHistoryRepository, times(1)).save(jurorHistoryArgumentCaptor.capture());
             JurorHistory history = jurorHistoryArgumentCaptor.getValue();
 
@@ -1837,7 +1839,7 @@ public class CourtLetterPrintServiceTest {
 
             verify(systemParameterRepositoryMod, times(1)).findById(102);
             verify(jurorRepository, times(1)).findByJurorNumber(jurorNumber);
-            verify(welshCourtLocationRepository, times(1)).findById("435");
+            verify(welshCourtLocationRepository, times(0)).findById(anyString());
             verify(jurorHistoryRepository, times(1)).save(jurorHistoryArgumentCaptor.capture());
             verify(courtPrintLetterRepository, times(1))
                 .retrievePrintInformation(jurorNumber, CourtLetterType.CERTIFICATE_OF_ATTENDANCE, false,
@@ -1992,7 +1994,7 @@ public class CourtLetterPrintServiceTest {
 
             verify(systemParameterRepositoryMod, times(1)).findById(102);
             verify(jurorRepository, times(1)).findByJurorNumber(jurorNumber);
-            verify(welshCourtLocationRepository, times(1)).findById(anyString());
+            verify(welshCourtLocationRepository, times(0)).findById(anyString());
             verify(jurorHistoryRepository, times(1)).save(jurorHistoryArgumentCaptor.capture());
             verify(courtPrintLetterRepository, times(1))
                 .retrievePrintInformation(jurorNumber, CourtLetterType.CERTIFICATE_OF_ATTENDANCE, false,
@@ -2035,7 +2037,7 @@ public class CourtLetterPrintServiceTest {
 
             verify(systemParameterRepositoryMod, times(1)).findById(102);
             verify(jurorRepository, times(1)).findByJurorNumber(jurorNumber);
-            verify(welshCourtLocationRepository, times(1)).findById(anyString());
+            verify(welshCourtLocationRepository, times(0)).findById(anyString());
             verify(jurorHistoryRepository, times(1)).save(jurorHistoryArgumentCaptor.capture());
             verify(courtPrintLetterRepository, times(1))
                 .retrievePrintInformation(jurorNumber, CourtLetterType.CERTIFICATE_OF_ATTENDANCE, false,

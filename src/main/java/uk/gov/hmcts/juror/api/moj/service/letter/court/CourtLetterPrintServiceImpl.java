@@ -3,7 +3,6 @@ package uk.gov.hmcts.juror.api.moj.service.letter.court;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.querydsl.core.Tuple;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
