@@ -105,12 +105,6 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
 
         String currentPoolOwner = jurorPool.getPool().getOwner();
 
-        if (!currentPoolOwner.equals(jurorPool.getOwner())) {
-            log.info("The ownership of the pool {} has changed since the deferral request was made for juror {}",
-                jurorPool.getPoolNumber(), jurorPool.getJurorNumber());
-            jurorPool.setOwner(currentPoolOwner);
-        }
-
         JurorStatus jurorStatus = new JurorStatus();
         jurorStatus.setStatus(IJurorStatus.RESPONDED);
         jurorPool.setStatus(jurorStatus);
