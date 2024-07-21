@@ -82,6 +82,9 @@ public class UserServiceModImpl implements UserService {
             user.setName(updateUserDto.getName());
             user.setApprovalLimit(BigDecimalUtils.getOrZero(updateUserDto.getApprovalLimit()));
         }
+        if (SecurityUtil.isManager() && (SecurityUtil.isManager() && SecurityUtil.isCourt())) {
+            user.setApprovalLimit(updateUserDto.getApprovalLimit());
+        }
         user.setActive(updateUserDto.getIsActive());
         user.setRoles(updateUserDto.getRoles());
         userRepository.save(user);

@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.domain.authentication;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -20,6 +21,13 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 class UserDetailsDtoTest extends AbstractValidatorTest<UserDetailsDto> {
+
+    private static MockedStatic<SecurityUtil> securityUtilMockedStatic;
+
+    @AfterAll
+    static void afterAll() {
+        securityUtilMockedStatic.close();
+    }
 
     @Override
     protected UserDetailsDto createValidObject() {
@@ -75,8 +83,8 @@ class UserDetailsDtoTest extends AbstractValidatorTest<UserDetailsDto> {
         when(user.getUserType()).thenReturn(UserType.COURT);
         when(user.getRoles()).thenReturn(Set.of(Role.MANAGER, Role.SENIOR_JUROR_OFFICER));
 
-        MockedStatic<SecurityUtil> securityUtilMockedStatic = mockStatic(SecurityUtil.class);
-        securityUtilMockedStatic.when(SecurityUtil::isAdministration).thenReturn(false);
+        securityUtilMockedStatic = mockStatic(SecurityUtil.class);
+        securityUtilMockedStatic.when(SecurityUtil::isManager).thenReturn(true);
 
         List<UserCourtDto> courts = List.of(
             UserCourtDtoTest.getValidObject(),
