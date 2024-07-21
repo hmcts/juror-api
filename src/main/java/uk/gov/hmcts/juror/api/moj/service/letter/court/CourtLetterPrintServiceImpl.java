@@ -3,7 +3,6 @@ package uk.gov.hmcts.juror.api.moj.service.letter.court;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.querydsl.core.Tuple;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
@@ -27,11 +26,11 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
-import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.SystemParameterRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.letter.CourtPrintLetterRepository;
+import uk.gov.hmcts.juror.api.moj.repository.letter.court.CertificateOfAttendanceListRepository;
 import uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
@@ -54,24 +53,11 @@ import static uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType.DEFE
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
 
-    @NonNull
     private final SystemParameterRepositoryMod systemParameterRepository;
-
-    @NonNull
     private final JurorRepository jurorRepository;
-
-    @NonNull
     private final WelshCourtLocationRepository welshCourtLocationRepository;
-
-    @NonNull
     private final JurorHistoryRepository jurorHistoryRepository;
-
-    @NonNull
     private final CourtPrintLetterRepository courtPrintLetterRepository;
-
-    @NonNull
-    private final AppearanceRepository appearanceRepository;
-
 
     private static final QJurorPool JUROR_POOL = QJurorPool.jurorPool;
     private static final QPoolRequest POOL_REQUEST = QPoolRequest.poolRequest;
@@ -88,6 +74,7 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
 
     private static final String ROYAL_COURTS_OF_JUSTICE = "626";
     private static final String NEW_LINE = "\n";
+    private final CertificateOfAttendanceListRepository certificateOfAttendanceListRepository;
 
     @Override
     public List<PrintLetterDataResponseDto> getPrintLettersData(PrintLettersRequestDto printLettersRequestDto,
@@ -103,14 +90,15 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
 
             Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
             if (juror == null) {
-                log.error("Cannot find juror number " + jurorNumber);
+                log.error("Cannot find juror number {}", jurorNumber);
                 throw new MojException.NotFound("Cannot find juror number: " + jurorNumber, null);
             }
 
             JurorUtils.checkOwnershipForCurrentUser(juror, owner);
 
             // retrieve print information
-            boolean welsh = BooleanUtils.toBoolean(juror.getWelsh());
+            boolean welsh = BooleanUtils.toBoolean(juror.getWelsh())
+                && CourtLocationUtils.isWelshCourtLocation(welshCourtLocationRepository, SecurityUtil.getLocCode());
             Tuple data;
             if (printLettersRequestDto.getLetterType().equals(CERTIFICATE_OF_EXEMPTION)) {
                 CertificateOfExemptionRequestDto exemptionRequestDto =
@@ -131,23 +119,19 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
                 continue;
             }
 
-            // add history item
-            addHistoryItem(printLettersRequestDto, login, jurorNumber, data);
-
             // create the print letter response
-            boolean welshInformation = CourtLocationUtils
-                .isWelshCourtLocation(welshCourtLocationRepository,
-                    Objects.requireNonNull(data).get(COURT_LOCATION.locCode));
-
             PrintLetterDataResponseDto dto;
             if (!printLettersRequestDto.getLetterType().equals(CERTIFICATE_OF_EXEMPTION)) {
-                dto = createPrintLetterDataResponseDto(data, welshInformation, printLettersRequestDto);
+                dto = createPrintLetterDataResponseDto(data, welsh, printLettersRequestDto);
             } else {
                 CertificateOfExemptionRequestDto exemptionRequestDto =
                     (CertificateOfExemptionRequestDto) printLettersRequestDto;
-                dto = createPrintLetterDataResponseDto(data, welshInformation, exemptionRequestDto);
+                dto = createPrintLetterDataResponseDto(data, welsh, exemptionRequestDto);
             }
             letters.add(dto);
+            // add history item
+            addHistoryItem(printLettersRequestDto, login, jurorNumber, data);
+
         }
 
         if (letters.isEmpty()) {
@@ -255,7 +239,7 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
             String welshUrl = RepositoryUtils.unboxOptionalRecord(systemParameterRepository.findById(WELSH_URL_PARAM),
                 Integer.toString(WELSH_URL_PARAM)).getValue();
             builder.courtName(
-                formatWelshCourtName(Objects.requireNonNull(data.get(WELSH_COURT_LOCATION.locCourtName))));
+                formatWelshCourtName(data.get(WELSH_COURT_LOCATION.locCourtName)));
             builder.courtAddressLine1(data.get(WELSH_COURT_LOCATION.address1));
             builder.courtAddressLine2(data.get(WELSH_COURT_LOCATION.address2));
             builder.courtAddressLine3(data.get(WELSH_COURT_LOCATION.address3));
@@ -310,17 +294,18 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
                 List<PrintLetterDataResponseDto.AttendanceData> attendanceDataList = new ArrayList<>();
 
                 //run query to return appearance list
-                List<Appearance> appearanceList =
-                    appearanceRepository.findAllByJurorNumberAndPoolNumber(data.get(JUROR_POOL.juror.jurorNumber),
-                        data.get(POOL_REQUEST.poolNumber));
+                List<Appearance> appearanceList = certificateOfAttendanceListRepository.getAttendances(
+                    SecurityUtil.getLocCode(), data.get(JUROR_POOL.juror.jurorNumber));
 
                 appearanceList.sort(Comparator.comparing(Appearance::getAttendanceDate));
 
                 //from appearance list create attendance data
                 for (Appearance appearance : appearanceList) {
                     attendanceDataList.add(PrintLetterDataResponseDto.AttendanceData.builder()
-                        .nonAttendance(appearance.getNonAttendanceDay()).misc(appearance.getMiscAmountDue())
-                        .lossOfEarnings(appearance.getLossOfEarningsDue()).childCare(appearance.getChildcareDue())
+                        .nonAttendance(appearance.getNonAttendanceDay())
+                        .misc(appearance.getMiscAmountPaid())
+                        .lossOfEarnings(appearance.getLossOfEarningsPaid())
+                        .childCare(appearance.getChildcarePaid())
                         .attendanceDate(appearance.getAttendanceDate())
                         .build());
                 }

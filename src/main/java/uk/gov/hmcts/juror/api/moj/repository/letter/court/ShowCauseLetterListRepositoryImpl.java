@@ -27,7 +27,7 @@ public class ShowCauseLetterListRepositoryImpl implements ShowCauseLetterListRep
 
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         JPAQuery<ShowCauseLetterList> jpaQuery =
-            queryFactory.selectFrom(SHOW_CAUSE_LETTER_LIST).where(SHOW_CAUSE_LETTER_LIST.owner.equalsIgnoreCase(owner));
+            queryFactory.selectFrom(SHOW_CAUSE_LETTER_LIST).where(SHOW_CAUSE_LETTER_LIST.owner.eq(owner));
 
         filterEligibleLetterSearchCriteria(jpaQuery, searchCriteria);
 

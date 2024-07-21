@@ -27,7 +27,7 @@ public class DeferralDeniedLetterListRepositoryImpl implements IDeferralDeniedLe
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         JPAQuery<DeferralDeniedLetterList> jpaQuery =
             queryFactory.selectFrom(NON_DEFERRAL_LETTER_LIST)
-                .where(NON_DEFERRAL_LETTER_LIST.owner.equalsIgnoreCase(owner));
+                .where(NON_DEFERRAL_LETTER_LIST.owner.eq(owner));
 
         filterEligibleLetterSearchCriteria(jpaQuery, searchCriteria);
 
@@ -57,12 +57,12 @@ public class DeferralDeniedLetterListRepositoryImpl implements IDeferralDeniedLe
             jpaQuery.where(NON_DEFERRAL_LETTER_LIST.poolNumber.startsWith(courtLetterSearchCriteria.poolNumber()));
         }
 
-        if (!courtLetterSearchCriteria.includePrinted()) {
-            jpaQuery.where(NON_DEFERRAL_LETTER_LIST.datePrinted.isNull())
-                .where(NON_DEFERRAL_LETTER_LIST.rowNumber.eq(1));
-        } else {
+        if (courtLetterSearchCriteria.includePrinted()) {
             jpaQuery.where(NON_DEFERRAL_LETTER_LIST.rowNumber.eq(1)
                 .or(NON_DEFERRAL_LETTER_LIST.datePrinted.isNotNull()));
+        } else {
+            jpaQuery.where(NON_DEFERRAL_LETTER_LIST.datePrinted.isNull())
+                .where(NON_DEFERRAL_LETTER_LIST.rowNumber.eq(1));
         }
     }
 

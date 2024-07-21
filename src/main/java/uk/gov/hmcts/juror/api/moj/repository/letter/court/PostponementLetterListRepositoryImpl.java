@@ -28,7 +28,7 @@ public class PostponementLetterListRepositoryImpl implements PostponementLetterL
 
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         JPAQuery<PostponedLetterList> jpaQuery =
-            queryFactory.selectFrom(POSTPONED_LETTER_LIST).where(POSTPONED_LETTER_LIST.owner.equalsIgnoreCase(owner));
+            queryFactory.selectFrom(POSTPONED_LETTER_LIST).where(POSTPONED_LETTER_LIST.owner.eq(owner));
 
         filterEligibleLetterSearchCriteria(jpaQuery, searchCriteria);
 

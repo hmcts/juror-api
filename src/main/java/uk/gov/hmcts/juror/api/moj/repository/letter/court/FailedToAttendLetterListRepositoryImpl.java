@@ -28,7 +28,7 @@ public class FailedToAttendLetterListRepositoryImpl implements IFailedToAttendLe
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         JPAQuery<FailedToAttendLetterList> jpaQuery =
             queryFactory.selectFrom(FAIL_TO_ATTEND_LETTER_LIST)
-                .where(FAIL_TO_ATTEND_LETTER_LIST.owner.equalsIgnoreCase(owner));
+                .where(FAIL_TO_ATTEND_LETTER_LIST.owner.eq(owner));
 
         filterEligibleLetterSearchCriteria(jpaQuery, searchCriteria);
 
