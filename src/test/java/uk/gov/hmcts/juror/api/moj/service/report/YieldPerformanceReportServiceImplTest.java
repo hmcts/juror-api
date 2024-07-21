@@ -83,7 +83,7 @@ class YieldPerformanceReportServiceImplTest {
                 .thenReturn(null);
 
             when(jurorPoolRepository.getYieldPerformanceReportStats("415,416", reportFromDate, reportToDate))
-                .thenReturn(null);
+                .thenReturn(List.of());
 
             YieldPerformanceReportResponse response = yieldPerformanceReportService.viewYieldPerformanceReport(
                 yieldPerformanceReportRequest

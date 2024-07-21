@@ -43,7 +43,7 @@ public interface JurorPoolRepository extends IJurorPoolRepository, JpaRepository
     JurorPool findByJurorJurorNumberAndStatusAndIsActive(String jurorNumber, JurorStatus status, boolean isActive);
 
     Optional<JurorPool> findByJurorJurorNumberAndStatusStatusAndIsActive(String jurorNumber, int status,
-                                                                        boolean isActive);
+                                                                         boolean isActive);
 
     JurorPool findByJurorJurorNumberAndPoolPoolNumberAndStatus(String jurorNumber, String poolNumber,
                                                                JurorStatus status);
@@ -67,7 +67,8 @@ public interface JurorPoolRepository extends IJurorPoolRepository, JpaRepository
 
     @Query(value = "SELECT * from juror_mod.yield_performance_report(:locCodes, :fromDate, :toDate)",
         nativeQuery = true)
-    List<String> getYieldPerformanceReportStats(@Param("locCodes") String locCodes,
-                                                @Param("fromDate") LocalDate fromDate,
-                                                @Param("toDate") LocalDate toDate) throws SQLException;
+    List<JurorPoolRepositoryImpl.YieldPerformanceData> getYieldPerformanceReportStats(
+        @Param("locCodes") String locCodes,
+        @Param("fromDate") LocalDate fromDate,
+        @Param("toDate") LocalDate toDate) throws SQLException;
 }

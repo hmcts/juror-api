@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.service.report;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -143,27 +144,21 @@ public class YieldPerformanceReportServiceImpl implements YieldPerformanceReport
         );
     }
 
+    @Getter
     public enum ReportHeading {
         DATE_FROM("Date from", LocalDate.class.getSimpleName()),
         DATE_TO("Date to", LocalDate.class.getSimpleName()),
         REPORT_CREATED("Report created", LocalDateTime.class.getSimpleName());
 
-        private String displayName;
+        private final String displayName;
 
-        private String dataType;
+        private final String dataType;
 
         ReportHeading(String displayName, String dataType) {
             this.displayName = displayName;
             this.dataType = dataType;
         }
 
-        public String getDisplayName() {
-            return displayName;
-        }
-
-        public String getDataType() {
-            return dataType;
-        }
     }
 
 }
