@@ -24,7 +24,7 @@ insert into juror_mod.juror_history (juror_number, date_created, history_code, u
 
 -- add appearance values for cert of attendance values
 INSERT INTO juror_mod.appearance (attendance_date,juror_number,pool_number,loc_code,time_in,time_out,
-travel_time,appearance_stage, loss_of_earnings_due, childcare_total_due, misc_total_due, non_attendance, no_show,
+travel_time,appearance_stage, loss_of_earnings_paid, childcare_total_paid, misc_total_paid, non_attendance, no_show,
 attendance_type)
 VALUES
 	(current_date + 10,'555555561','415220401','415','09:30:00','16:30:00','01:12','CHECKED_OUT', 40,10, 10, false, false, 'FULL_DAY'),
