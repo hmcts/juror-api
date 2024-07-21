@@ -45,7 +45,6 @@ import uk.gov.hmcts.juror.api.moj.service.letter.RequestInformationLetterService
 import uk.gov.hmcts.juror.api.moj.service.letter.court.CourtLetterPrintService;
 import uk.gov.hmcts.juror.api.moj.service.letter.court.CourtLetterService;
 import uk.gov.hmcts.juror.api.moj.service.trial.ExemptionCertificateService;
-import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import uk.gov.hmcts.juror.api.validation.CourtLocationCode;
 
@@ -176,15 +175,9 @@ public class LetterController {
     @IsCourtUser
     public ResponseEntity<List<PrintLetterDataResponseDto>> printCourtLetters(
         @RequestBody @Valid PrintLettersRequestDto lettersRequestDto) {
-        try {
-            List<PrintLetterDataResponseDto> dto = courtLetterPrintService.getPrintLettersData(lettersRequestDto,
-                SecurityUtil.getActiveLogin());
-            System.out.println("TMP: " + DataUtils.asJsonString(dto));
-            return ResponseEntity.ok().body(dto);
-        }catch (Throwable throwable){
-            throwable.printStackTrace();
-            throw throwable;
-        }
+        List<PrintLetterDataResponseDto> dto = courtLetterPrintService.getPrintLettersData(lettersRequestDto,
+            SecurityUtil.getActiveLogin());
+        return ResponseEntity.ok().body(dto);
     }
 
     @GetMapping(path = "/trials-exemption-list")

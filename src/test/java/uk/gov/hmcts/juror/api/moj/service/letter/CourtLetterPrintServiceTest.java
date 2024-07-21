@@ -30,13 +30,11 @@ import uk.gov.hmcts.juror.api.moj.domain.system.SystemParameterMod;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType;
-import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.SystemParameterRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.letter.CourtPrintLetterRepository;
 import uk.gov.hmcts.juror.api.moj.repository.letter.court.CertificateOfAttendanceListRepository;
-import uk.gov.hmcts.juror.api.moj.repository.letter.court.CertificateOfAttendanceListRepositoryImpl;
 import uk.gov.hmcts.juror.api.moj.service.letter.court.CourtLetterPrintServiceImpl;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 

@@ -32,9 +32,9 @@ public class CertificateOfAttendanceListRepositoryImpl implements ICertificateOf
     @Override
     @SuppressWarnings("unchecked")
     public List<CertificateOfAttendanceLetterList> findJurorsEligibleForCertificateOfAcceptanceLetter(
-        CourtLetterSearchCriteria searchCriteria, String owner) {
-        JPAQuery<Tuple> jpaQuery = buildBaseQuery();
-        filterEligibleLetterSearchCriteria(jpaQuery, searchCriteria, owner);
+        CourtLetterSearchCriteria searchCriteria, String locCode) {
+        JPAQuery<Tuple> jpaQuery = buildBaseQuery(locCode);
+        filterEligibleLetterSearchCriteria(jpaQuery, searchCriteria, locCode);
 
         orderCertificateOfAttendanceQueryResults(jpaQuery, searchCriteria.includePrinted());
 
@@ -55,7 +55,7 @@ public class CertificateOfAttendanceListRepositoryImpl implements ICertificateOf
                 .build()).toList();
     }
 
-    private JPAQuery<Tuple> buildBaseQuery() {
+    private JPAQuery<Tuple> buildBaseQuery(String locCode) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         return queryFactory.select(
                 QJurorPool.jurorPool.owner,
@@ -79,6 +79,7 @@ public class CertificateOfAttendanceListRepositoryImpl implements ICertificateOf
                 JPAExpressions.selectOne()
                     .from(QAppearance.appearance)
                     .where(QAppearance.appearance.jurorNumber.eq(QJurorPool.jurorPool.juror.jurorNumber)
+                        .and(QAppearance.appearance.locCode.eq(locCode))
                         .and(getAttendancesFilter()))
                     .exists()
             );
@@ -95,14 +96,15 @@ public class CertificateOfAttendanceListRepositoryImpl implements ICertificateOf
         return new JPAQueryFactory(entityManager)
             .selectFrom(QAppearance.appearance)
             .where(QAppearance.appearance.jurorNumber.eq(jurorNumber)
-                    .and(QAppearance.appearance.locCode.eq(locCode))
-                    .and(getAttendancesFilter()))
+                .and(QAppearance.appearance.locCode.eq(locCode))
+                .and(getAttendancesFilter()))
             .fetch();
     }
 
     private void filterEligibleLetterSearchCriteria(JPAQuery<Tuple> jpaQuery,
-                                                    CourtLetterSearchCriteria courtLetterSearchCriteria, String owner) {
-        jpaQuery.where(QJurorPool.jurorPool.owner.eq(owner));
+                                                    CourtLetterSearchCriteria courtLetterSearchCriteria,
+                                                    String locCode) {
+        jpaQuery.where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(locCode));
 
         if (!StringUtils.isEmpty(courtLetterSearchCriteria.jurorNumber())) {
             jpaQuery.where(

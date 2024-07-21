@@ -119,15 +119,15 @@ public class CourtLetterServiceImpl implements CourtLetterService {
 
     private LetterListResponseDto getEligibleCertificateOfAttendanceList(CourtLetterListRequestDto
                                                                              courtLetterListRequestDto) {
-        String owner = SecurityUtil.getActiveOwner();
+        String locCode = SecurityUtil.getLocCode();
 
         CourtLetterSearchCriteria searchCriteria = buildSearchCriteria(courtLetterListRequestDto);
 
-        log.debug("Find jurors eligible for a court certificate of attendance letter for the primary court: {}",
-            owner);
+        log.debug("Find jurors eligible for a court certificate of attendance letter for court: {}",
+            locCode);
         List<CertificateOfAttendanceLetterList> eligibleJurorRecords =
             certificateOfAttendanceListRepository.findJurorsEligibleForCertificateOfAcceptanceLetter(searchCriteria,
-                owner);
+                locCode);
         log.debug("{} records found", eligibleJurorRecords.size());
 
         List<String> headings =
