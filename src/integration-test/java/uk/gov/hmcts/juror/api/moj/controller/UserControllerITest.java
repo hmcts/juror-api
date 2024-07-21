@@ -1219,7 +1219,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                     .payload(payload)
                     .triggerValid()
                     .assertValidNoBody();
-                assertUserUpdated(userBeforeUpdate, payload, true, false, username, "test_admin_standard");
+                assertUserUpdated(userBeforeUpdate, payload, true, true, username, "test_admin_standard");
             }
 
             @Test
@@ -1233,7 +1233,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                     .payload(payload)
                     .triggerValid()
                     .assertValidNoBody();
-                assertUserUpdated(userBeforeUpdate, payload, true, false, username, "test_admin_standard");
+                assertUserUpdated(userBeforeUpdate, payload, true, true, username, "test_admin_standard");
             }
         }
 
