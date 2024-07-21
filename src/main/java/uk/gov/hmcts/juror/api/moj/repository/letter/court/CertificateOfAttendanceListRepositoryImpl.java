@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.repository.letter.court;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.jpa.JPAExpressions;
@@ -9,6 +10,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.micrometer.common.util.StringUtils;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
@@ -77,12 +79,26 @@ public class CertificateOfAttendanceListRepositoryImpl implements ICertificateOf
                 JPAExpressions.selectOne()
                     .from(QAppearance.appearance)
                     .where(QAppearance.appearance.jurorNumber.eq(QJurorPool.jurorPool.juror.jurorNumber)
-                        .and(QAppearance.appearance.attendanceType.ne(AttendanceType.ABSENT))
-                        .and(QAppearance.appearance.noShow.isNull().or(QAppearance.appearance.noShow.isFalse())))
+                        .and(getAttendancesFilter()))
                     .exists()
             );
     }
 
+
+    private BooleanExpression getAttendancesFilter() {
+        return QAppearance.appearance.attendanceType.ne(AttendanceType.ABSENT)
+            .and(QAppearance.appearance.noShow.isNull().or(QAppearance.appearance.noShow.isFalse()));
+    }
+
+    @Override
+    public List<Appearance> getAttendances(String locCode, String jurorNumber) {
+        return new JPAQueryFactory(entityManager)
+            .selectFrom(QAppearance.appearance)
+            .where(QAppearance.appearance.jurorNumber.eq(jurorNumber)
+                    .and(QAppearance.appearance.locCode.eq(locCode))
+                    .and(getAttendancesFilter()))
+            .fetch();
+    }
 
     private void filterEligibleLetterSearchCriteria(JPAQuery<Tuple> jpaQuery,
                                                     CourtLetterSearchCriteria courtLetterSearchCriteria, String owner) {

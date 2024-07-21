@@ -35,6 +35,8 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.SystemParameterRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.letter.CourtPrintLetterRepository;
+import uk.gov.hmcts.juror.api.moj.repository.letter.court.CertificateOfAttendanceListRepository;
+import uk.gov.hmcts.juror.api.moj.repository.letter.court.CertificateOfAttendanceListRepositoryImpl;
 import uk.gov.hmcts.juror.api.moj.service.letter.court.CourtLetterPrintServiceImpl;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -70,7 +72,7 @@ public class CourtLetterPrintServiceTest {
     private WelshCourtLocationRepository welshCourtLocationRepository;
     private SystemParameterRepositoryMod systemParameterRepositoryMod;
     private CourtPrintLetterRepository courtPrintLetterRepository;
-    private AppearanceRepository appearanceRepository;
+    private CertificateOfAttendanceListRepository certificateOfAttendanceListRepository;
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
@@ -91,10 +93,10 @@ public class CourtLetterPrintServiceTest {
         this.systemParameterRepositoryMod = mock(SystemParameterRepositoryMod.class);
         this.jurorHistoryRepository = mock(JurorHistoryRepository.class);
         this.courtPrintLetterRepository = mock(CourtPrintLetterRepository.class);
-        this.appearanceRepository = mock(AppearanceRepository.class);
+        this.certificateOfAttendanceListRepository = mock(CertificateOfAttendanceListRepository.class);
         this.courtLetterPrintServiceImpl = new CourtLetterPrintServiceImpl(
             systemParameterRepositoryMod, jurorRepository, welshCourtLocationRepository, jurorHistoryRepository,
-            courtPrintLetterRepository, appearanceRepository);
+            courtPrintLetterRepository, certificateOfAttendanceListRepository);
 
         Authentication auth = mock(Authentication.class);
         SecurityContext securityContext = mock(SecurityContext.class);
