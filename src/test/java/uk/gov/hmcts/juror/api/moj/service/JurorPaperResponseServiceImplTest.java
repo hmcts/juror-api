@@ -1,12 +1,14 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
 import org.assertj.core.api.Assertions;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
@@ -29,6 +31,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.SummonsSnapshot;
 import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
@@ -46,6 +49,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRep
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -98,8 +102,17 @@ public class JurorPaperResponseServiceImplTest {
     @InjectMocks
     private JurorPaperResponseServiceImpl jurorPaperResponseService;
 
+    private MockedStatic<SecurityUtil> securityUtilMockedStatic;
+
+    @After
+    public void after() {
+        securityUtilMockedStatic.close();
+    }
+
     @Before
     public void setUpMocks() {
+        securityUtilMockedStatic = Mockito.mockStatic(SecurityUtil.class);
+
         JurorPool bureauOwnerJurorPool = createTestJurorPool("400", VALID_JUROR_NUMBER_BUREAU);
         JurorPool courtOwnerJurorPool = createTestJurorPool("415", VALID_JUROR_NUMBER_COURT);
 
@@ -138,6 +151,8 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_getJurorPaperResponse_happyPath_bureauUser_bureauOwner() {
+        securityUtilMockedStatic.when(SecurityUtil::getUserType).thenReturn(UserType.BUREAU);
+
         BureauJwtPayload payload = buildPayload();
         PaperResponse jurorPaperResponse = createTestJurorResponse("123456789");
         Mockito.doReturn(jurorPaperResponse).when(jurorPaperResponseRepository).findByJurorNumber("123456789");
@@ -158,6 +173,8 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_getJurorPaperResponse_happyPath_bureauUser_bureauOwner_welsh() {
+        securityUtilMockedStatic.when(SecurityUtil::getUserType).thenReturn(UserType.BUREAU);
+
         BureauJwtPayload payload = buildPayload();
         PaperResponse jurorPaperResponse = createTestJurorResponse(VALID_JUROR_NUMBER_BUREAU);
         Mockito.doReturn(jurorPaperResponse).when(jurorPaperResponseRepository)
@@ -178,6 +195,8 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_getJurorPaperResponse_happyPath_summonsSnapshotPresent() {
+        securityUtilMockedStatic.when(SecurityUtil::getUserType).thenReturn(UserType.BUREAU);
+
         BureauJwtPayload payload = buildPayload();
         String jurorNumber = VALID_JUROR_NUMBER_BUREAU;
         PaperResponse jurorPaperResponse = createTestJurorResponse(jurorNumber);
@@ -203,6 +222,8 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_getJurorPaperResponse_happyPath_bureauUser_courtOwner() {
+        securityUtilMockedStatic.when(SecurityUtil::getUserType).thenReturn(UserType.COURT);
+
         BureauJwtPayload payload = buildPayload();
         PaperResponse jurorPaperResponse = createTestJurorResponse(VALID_JUROR_NUMBER_COURT);
         Mockito.doReturn(jurorPaperResponse).when(jurorPaperResponseRepository)
