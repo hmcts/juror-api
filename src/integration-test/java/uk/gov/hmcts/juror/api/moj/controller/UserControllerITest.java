@@ -1155,7 +1155,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                 User oldUser,
                 UpdateUserDto userDto,
                 boolean isAdmin,
-                boolean isManager,
+                boolean isCourtManager,
                 String username,
                 String updatedBy
             ) {
@@ -1172,7 +1172,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                         assertThat(user.getName()).isEqualTo(oldUser.getName());
                         assertThat(user.isActive()).isEqualTo(oldUser.isActive());
                         assertThat(user.getApprovalLimit()).isEqualTo(
-                            isManager ? userDto.getApprovalLimit() : oldUser.getApprovalLimit());
+                            isCourtManager ? userDto.getApprovalLimit() : oldUser.getApprovalLimit());
                     }
                     assertThat(user.getRoles()).isEqualTo(Optional.ofNullable(userDto.getRoles()).orElse(Set.of()));
                     assertThat(user.getUpdatedBy()).isEqualTo(updatedBy);

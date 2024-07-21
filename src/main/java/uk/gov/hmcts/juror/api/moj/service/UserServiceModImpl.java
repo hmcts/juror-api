@@ -80,20 +80,13 @@ public class UserServiceModImpl implements UserService {
             }
             user.setEmail(email);
             user.setName(updateUserDto.getName());
-            user.setApprovalLimit(BigDecimalUtils.getOrZero(updateUserDto.getApprovalLimit()));
         }
 
-        updateApprovalLimit(user, updateUserDto);
+        updateUserApprovalLimit(user, updateUserDto);
 
         user.setActive(updateUserDto.getIsActive());
         user.setRoles(updateUserDto.getRoles());
         userRepository.save(user);
-    }
-
-    private void updateApprovalLimit(User user, UpdateUserDto updateUserDto) {
-        if (SecurityUtil.isManager() || SecurityUtil.isManager() && SecurityUtil.isCourt()) {
-            user.setApprovalLimit(updateUserDto.getApprovalLimit());
-        }
     }
 
     @Override
@@ -265,5 +258,11 @@ public class UserServiceModImpl implements UserService {
 
     boolean doesUserExistWithEmail(String email) {
         return userRepository.existsByEmail(email.trim());
+    }
+
+    private void updateUserApprovalLimit(User user, UpdateUserDto updateUserDto) {
+        if (SecurityUtil.isAdministration() || SecurityUtil.isManager() && SecurityUtil.isCourt()) {
+            user.setApprovalLimit(BigDecimalUtils.getOrZero(updateUserDto.getApprovalLimit()));
+        }
     }
 }
