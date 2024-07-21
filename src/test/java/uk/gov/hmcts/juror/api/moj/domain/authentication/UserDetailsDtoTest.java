@@ -84,7 +84,7 @@ class UserDetailsDtoTest extends AbstractValidatorTest<UserDetailsDto> {
         when(user.getRoles()).thenReturn(Set.of(Role.MANAGER, Role.SENIOR_JUROR_OFFICER));
 
         securityUtilMockedStatic = mockStatic(SecurityUtil.class);
-        securityUtilMockedStatic.when(SecurityUtil::isManager).thenReturn(true);
+        securityUtilMockedStatic.when(SecurityUtil::canEditApprovalLimit).thenReturn(true);
 
         List<UserCourtDto> courts = List.of(
             UserCourtDtoTest.getValidObject(),

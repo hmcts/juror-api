@@ -54,7 +54,7 @@ public class UserDetailsDto extends UserDetailsSimpleDto {
         this.roles = user.getRoles();
         this.courts = courts;
 
-        if (SecurityUtil.isAdministration() || SecurityUtil.isManager() && SecurityUtil.isCourt()) {
+        if (SecurityUtil.canEditApprovalLimit()) {
             this.approvalLimit = user.getApprovalLimit();
         }
     }

@@ -106,7 +106,9 @@ public class JurorPaperResponseServiceImplTest {
 
     @After
     public void after() {
-        securityUtilMockedStatic.close();
+        if (securityUtilMockedStatic != null) {
+            securityUtilMockedStatic.close();
+        }
     }
 
     @Before

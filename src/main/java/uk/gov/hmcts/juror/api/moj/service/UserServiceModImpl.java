@@ -261,7 +261,7 @@ public class UserServiceModImpl implements UserService {
     }
 
     private void updateUserApprovalLimit(User user, UpdateUserDto updateUserDto) {
-        if (SecurityUtil.isAdministration() || SecurityUtil.isManager() && SecurityUtil.isCourt()) {
+        if (SecurityUtil.canEditApprovalLimit()) {
             user.setApprovalLimit(BigDecimalUtils.getOrZero(updateUserDto.getApprovalLimit()));
         }
     }
