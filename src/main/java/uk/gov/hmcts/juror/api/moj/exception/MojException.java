@@ -17,7 +17,7 @@ public class MojException extends RuntimeException {
 
     private MojException(String customErrorMessage, Throwable rootException) {
         super(customErrorMessage, rootException);
-        log.error(customErrorMessage);
+        log.error(customErrorMessage, rootException);
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
