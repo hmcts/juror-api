@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.service;
 import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -31,7 +32,6 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.SummonsSnapshot;
 import uk.gov.hmcts.juror.api.moj.domain.User;
-import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
@@ -113,6 +113,10 @@ public class JurorPaperResponseServiceImplTest {
 
     @Before
     public void setUpMocks() {
+        if (Mockito.mockingDetails(securityUtilMockedStatic).isMock()) {
+            Mockito.reset(securityUtilMockedStatic);
+        }
+
         securityUtilMockedStatic = Mockito.mockStatic(SecurityUtil.class);
 
         JurorPool bureauOwnerJurorPool = createTestJurorPool("400", VALID_JUROR_NUMBER_BUREAU);
@@ -153,7 +157,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_getJurorPaperResponse_happyPath_bureauUser_bureauOwner() {
-        securityUtilMockedStatic.when(SecurityUtil::getUserType).thenReturn(UserType.BUREAU);
+        securityUtilMockedStatic.when(SecurityUtil::canEditApprovalLimit).thenReturn(false);
 
         BureauJwtPayload payload = buildPayload();
         PaperResponse jurorPaperResponse = createTestJurorResponse("123456789");
@@ -175,7 +179,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_getJurorPaperResponse_happyPath_bureauUser_bureauOwner_welsh() {
-        securityUtilMockedStatic.when(SecurityUtil::getUserType).thenReturn(UserType.BUREAU);
+        securityUtilMockedStatic.when(SecurityUtil::canEditApprovalLimit).thenReturn(false);
 
         BureauJwtPayload payload = buildPayload();
         PaperResponse jurorPaperResponse = createTestJurorResponse(VALID_JUROR_NUMBER_BUREAU);
@@ -197,7 +201,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_getJurorPaperResponse_happyPath_summonsSnapshotPresent() {
-        securityUtilMockedStatic.when(SecurityUtil::getUserType).thenReturn(UserType.BUREAU);
+        securityUtilMockedStatic.when(SecurityUtil::canEditApprovalLimit).thenReturn(false);
 
         BureauJwtPayload payload = buildPayload();
         String jurorNumber = VALID_JUROR_NUMBER_BUREAU;
@@ -224,7 +228,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_getJurorPaperResponse_happyPath_bureauUser_courtOwner() {
-        securityUtilMockedStatic.when(SecurityUtil::getUserType).thenReturn(UserType.COURT);
+        securityUtilMockedStatic.when(SecurityUtil::canEditApprovalLimit).thenReturn(false);
 
         BureauJwtPayload payload = buildPayload();
         PaperResponse jurorPaperResponse = createTestJurorResponse(VALID_JUROR_NUMBER_COURT);
@@ -244,6 +248,8 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_getJurorPaperResponse_happyPath_courtUser_courtOwner() {
+        securityUtilMockedStatic.when(SecurityUtil::canEditApprovalLimit).thenReturn(false);
+
         BureauJwtPayload payload = buildPayload();
         payload.setOwner("415");
         PaperResponse jurorPaperResponse = createTestJurorResponse(VALID_JUROR_NUMBER_COURT);
