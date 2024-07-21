@@ -54,24 +54,12 @@ import static uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType.DEFE
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
 
-    @NonNull
     private final SystemParameterRepositoryMod systemParameterRepository;
-
-    @NonNull
     private final JurorRepository jurorRepository;
-
-    @NonNull
     private final WelshCourtLocationRepository welshCourtLocationRepository;
-
-    @NonNull
     private final JurorHistoryRepository jurorHistoryRepository;
-
-    @NonNull
     private final CourtPrintLetterRepository courtPrintLetterRepository;
-
-    @NonNull
     private final AppearanceRepository appearanceRepository;
-
 
     private static final QJurorPool JUROR_POOL = QJurorPool.jurorPool;
     private static final QPoolRequest POOL_REQUEST = QPoolRequest.poolRequest;
@@ -103,14 +91,15 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
 
             Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
             if (juror == null) {
-                log.error("Cannot find juror number " + jurorNumber);
+                log.error("Cannot find juror number {}", jurorNumber);
                 throw new MojException.NotFound("Cannot find juror number: " + jurorNumber, null);
             }
 
             JurorUtils.checkOwnershipForCurrentUser(juror, owner);
 
             // retrieve print information
-            boolean welsh = BooleanUtils.toBoolean(juror.getWelsh());
+            boolean welsh = BooleanUtils.toBoolean(juror.getWelsh())
+                && CourtLocationUtils.isWelshCourtLocation(welshCourtLocationRepository, SecurityUtil.getLocCode());
             Tuple data;
             if (printLettersRequestDto.getLetterType().equals(CERTIFICATE_OF_EXEMPTION)) {
                 CertificateOfExemptionRequestDto exemptionRequestDto =
@@ -135,17 +124,13 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
             addHistoryItem(printLettersRequestDto, login, jurorNumber, data);
 
             // create the print letter response
-            boolean welshInformation = CourtLocationUtils
-                .isWelshCourtLocation(welshCourtLocationRepository,
-                    Objects.requireNonNull(data).get(COURT_LOCATION.locCode));
-
             PrintLetterDataResponseDto dto;
             if (!printLettersRequestDto.getLetterType().equals(CERTIFICATE_OF_EXEMPTION)) {
-                dto = createPrintLetterDataResponseDto(data, welshInformation, printLettersRequestDto);
+                dto = createPrintLetterDataResponseDto(data, welsh, printLettersRequestDto);
             } else {
                 CertificateOfExemptionRequestDto exemptionRequestDto =
                     (CertificateOfExemptionRequestDto) printLettersRequestDto;
-                dto = createPrintLetterDataResponseDto(data, welshInformation, exemptionRequestDto);
+                dto = createPrintLetterDataResponseDto(data, welsh, exemptionRequestDto);
             }
             letters.add(dto);
         }
@@ -255,7 +240,7 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
             String welshUrl = RepositoryUtils.unboxOptionalRecord(systemParameterRepository.findById(WELSH_URL_PARAM),
                 Integer.toString(WELSH_URL_PARAM)).getValue();
             builder.courtName(
-                formatWelshCourtName(Objects.requireNonNull(data.get(WELSH_COURT_LOCATION.locCourtName))));
+                formatWelshCourtName(data.get(WELSH_COURT_LOCATION.locCourtName)));
             builder.courtAddressLine1(data.get(WELSH_COURT_LOCATION.address1));
             builder.courtAddressLine2(data.get(WELSH_COURT_LOCATION.address2));
             builder.courtAddressLine3(data.get(WELSH_COURT_LOCATION.address3));
