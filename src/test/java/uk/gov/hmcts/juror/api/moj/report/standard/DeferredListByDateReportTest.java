@@ -18,6 +18,7 @@ import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
+import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -74,6 +75,8 @@ class DeferredListByDateReportTest extends AbstractStandardReportTestSupport<Def
             .orderBy(QJurorPool.jurorPool.deferralDate.asc());
         verify(query, times(1))
             .where(QJurorPool.jurorPool.owner.eq(TestConstants.VALID_COURT_LOCATION));
+        verify(query,times(1))
+            .where(QJurorPool.jurorPool.deferralDate.goe(LocalDate.now()));
         verifyNoMoreInteractions(query);
     }
 
@@ -95,6 +98,8 @@ class DeferredListByDateReportTest extends AbstractStandardReportTestSupport<Def
         );
         verify(query, times(1))
             .orderBy(QJurorPool.jurorPool.deferralDate.asc());
+        verify(query,times(1))
+            .where(QJurorPool.jurorPool.deferralDate.goe(LocalDate.now()));
         verifyNoMoreInteractions(query);
     }
 

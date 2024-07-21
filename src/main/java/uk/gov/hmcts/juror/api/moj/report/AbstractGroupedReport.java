@@ -53,11 +53,11 @@ public abstract class AbstractGroupedReport extends AbstractReport<GroupedTableD
 
 
     private GroupedTableData subGroup(IReportGroupBy groupBy, List<GroupedTableData> data) {
-        Map<String, List<GroupedTableData>> groupedData = data
+        Map<String, List<GroupedTableData>> groupedData = groupBy.sortData(data
             .stream()
             .collect(Collectors.groupingBy(groupBy::getGroupFunction,
                 LinkedHashMap::new,
-                Collectors.toList()));
+                Collectors.toList())));
 
         GroupedTableData response = new GroupedTableData();
         response.putAll(groupedData);

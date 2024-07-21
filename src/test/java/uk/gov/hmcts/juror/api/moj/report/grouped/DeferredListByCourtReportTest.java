@@ -20,6 +20,7 @@ import uk.gov.hmcts.juror.api.moj.report.ReportGroupBy;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -77,6 +78,8 @@ class DeferredListByCourtReportTest extends AbstractGroupedReportTestSupport<Def
             .where(QJurorPool.jurorPool.deferralDate.isNotNull());
         verify(query, times(1))
             .orderBy(QJurorPool.jurorPool.deferralDate.asc());
+        verify(query,times(1))
+            .where(QJurorPool.jurorPool.deferralDate.goe(LocalDate.now()));
         verify(query, times(1))
             .where(QJurorPool.jurorPool.owner.eq(TestConstants.VALID_COURT_LOCATION));
         verify(query, times(1)).groupBy(
@@ -106,6 +109,8 @@ class DeferredListByCourtReportTest extends AbstractGroupedReportTestSupport<Def
         );
         verify(query, times(1))
             .orderBy(QJurorPool.jurorPool.deferralDate.asc());
+        verify(query,times(1))
+            .where(QJurorPool.jurorPool.deferralDate.goe(LocalDate.now()));
         verifyNoMoreInteractions(query);
     }
 
