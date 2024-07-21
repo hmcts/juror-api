@@ -2,11 +2,13 @@ package uk.gov.hmcts.juror.api.moj.domain.authentication;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.moj.AbstractValidatorTest;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,6 +16,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 class UserDetailsDtoTest extends AbstractValidatorTest<UserDetailsDto> {
@@ -72,6 +75,8 @@ class UserDetailsDtoTest extends AbstractValidatorTest<UserDetailsDto> {
         when(user.getUserType()).thenReturn(UserType.COURT);
         when(user.getRoles()).thenReturn(Set.of(Role.MANAGER, Role.SENIOR_JUROR_OFFICER));
 
+        MockedStatic<SecurityUtil> securityUtilMockedStatic = mockStatic(SecurityUtil.class);
+        securityUtilMockedStatic.when(SecurityUtil::isAdministration).thenReturn(false);
 
         List<UserCourtDto> courts = List.of(
             UserCourtDtoTest.getValidObject(),
