@@ -103,8 +103,6 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
 
         String username = payload.getLogin();
 
-        String currentPoolOwner = jurorPool.getPool().getOwner();
-
         JurorStatus jurorStatus = new JurorStatus();
         jurorStatus.setStatus(IJurorStatus.RESPONDED);
         jurorPool.setStatus(jurorStatus);
