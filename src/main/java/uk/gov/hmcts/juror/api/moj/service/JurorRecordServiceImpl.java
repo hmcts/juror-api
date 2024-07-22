@@ -638,6 +638,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             .email(pendingJuror.getEmail())
             .notes(pendingJuror.getNotes())
             .responded(true)
+            .responseEntered(true)
             .build();
 
         jurorRepository.save(juror);
@@ -653,7 +654,6 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             .owner(poolRequest.getOwner())
             .nextDate(pendingJuror.getNextDate())
             .userEdtq(SecurityUtil.getActiveLogin())
-            .responseEntered(true)
             .build();
 
         jurorPoolRepository.save(jurorPool);

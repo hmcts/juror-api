@@ -334,8 +334,9 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
         paperResponseRepository.save(jurorPaperResponse);
 
-        jurorPool.setResponseEntered(true);
-        jurorPoolRepository.save(jurorPool);
+        Juror juror = jurorPool.getJuror();
+        juror.setResponseEntered(true);
+        jurorRepository.save(juror);
 
         log.info(String.format("Saved paper response for Juror %s", jurorNumber));
 

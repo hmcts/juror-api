@@ -312,7 +312,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             "select reasonable_adjustment from juror_mod.juror_reasonable_adjustment WHERE JUROR_NUMBER = '644892530'",
             String.class)).isEqualTo("V");
         assertThat(jdbcTemplate.queryForObject(
-           "select response_entered from juror_mod.juror_pool where juror_number = '644892530'",
+           "select response_entered from juror_mod.juror where juror_number = '644892530'",
             boolean.class)).isTrue();
     }
 
