@@ -113,11 +113,12 @@ public class JurorPaperResponseServiceImplTest {
 
     @Before
     public void setUpMocks() {
-        if (Mockito.mockingDetails(securityUtilMockedStatic).isMock()) {
-            Mockito.reset(securityUtilMockedStatic);
+        if (Mockito.mockingDetails(SecurityUtil.class).isMock()) {
+            securityUtilMockedStatic =
+                (MockedStatic<SecurityUtil>) Mockito.mockingDetails(securityUtilMockedStatic).getMock();
+        } else {
+            securityUtilMockedStatic = Mockito.mockStatic(SecurityUtil.class);
         }
-
-        securityUtilMockedStatic = Mockito.mockStatic(SecurityUtil.class);
 
         JurorPool bureauOwnerJurorPool = createTestJurorPool("400", VALID_JUROR_NUMBER_BUREAU);
         JurorPool courtOwnerJurorPool = createTestJurorPool("415", VALID_JUROR_NUMBER_COURT);
