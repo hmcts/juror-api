@@ -16,6 +16,10 @@ import uk.gov.hmcts.juror.api.moj.report.ReportGroupBy;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -29,6 +33,13 @@ public class DeferredListByCourtReport extends AbstractGroupedReport {
             ReportGroupBy.builder()
                 .dataType(DataType.COURT_LOCATION_NAME_AND_CODE)
                 .removeGroupByFromResponse(true)
+                .sortDataFunction(data -> {
+                    List<String> keys = new ArrayList<>(data.keySet());
+                    keys.sort(String::compareTo);
+                    LinkedHashMap<String, List<GroupedTableData>> sortedData = new LinkedHashMap<>();
+                    keys.forEach(key -> sortedData.put(key, data.get(key)));
+                    return sortedData;
+                })
                 .build(),
             DataType.DEFERRED_TO,
             DataType.NUMBER_DEFERRED);
@@ -38,6 +49,7 @@ public class DeferredListByCourtReport extends AbstractGroupedReport {
     @Override
     public void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QJurorPool.jurorPool.deferralDate.isNotNull());
+        query.where(QJurorPool.jurorPool.deferralDate.goe(LocalDate.now()));
         if (SecurityUtil.isCourt()) {
             query.where(QJurorPool.jurorPool.owner.eq(SecurityUtil.getActiveOwner()));
         }
