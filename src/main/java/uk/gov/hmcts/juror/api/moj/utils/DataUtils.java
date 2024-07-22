@@ -136,4 +136,11 @@ public final class DataUtils {
     public static String asJsonString(Object value) {
         return new ObjectMapper().findAndRegisterModules().writeValueAsString(value);
     }
+
+    public static String trim(String sortCode) {
+        if (sortCode == null) {
+            return null;
+        }
+        return sortCode.trim();
+    }
 }
