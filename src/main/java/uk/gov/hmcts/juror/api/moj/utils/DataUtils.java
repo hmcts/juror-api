@@ -137,10 +137,10 @@ public final class DataUtils {
         return new ObjectMapper().findAndRegisterModules().writeValueAsString(value);
     }
 
-    public static String trim(String sortCode) {
-        if (sortCode == null) {
+    public static String trim(String value) {
+        if (value == null) {
             return null;
         }
-        return sortCode.trim();
+        return value.trim();
     }
 }
