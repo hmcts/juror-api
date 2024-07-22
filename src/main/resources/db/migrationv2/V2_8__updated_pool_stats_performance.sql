@@ -1,4 +1,3 @@
-CREATE INDEX juror_summons_file_idx ON juror_mod.juror (summons_file);
 
 CREATE OR REPLACE VIEW juror_mod.pool_stats
 AS
