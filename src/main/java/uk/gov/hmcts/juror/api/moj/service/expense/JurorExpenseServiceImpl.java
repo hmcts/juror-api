@@ -65,6 +65,7 @@ import uk.gov.hmcts.juror.api.moj.service.FinancialAuditService;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.ValidationService;
 import uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils;
+import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
@@ -1061,7 +1062,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     @Override
     @Transactional
     @PreAuthorize(SecurityUtil.IS_MANAGER)
-    public void approveExpenses(String locCode, PaymentMethod paymentMethod, ApproveExpenseDto dto) {
+    public String approveExpenses(String locCode, PaymentMethod paymentMethod, ApproveExpenseDto dto) {
         ApproveExpenseDto.ApprovalType approvalType = dto.getApprovalType();
         List<Appearance> appearances = appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumber(
                 locCode, dto.getJurorNumber())
@@ -1128,6 +1129,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 totalToApprove
             );
         }
+
+        return financialAuditDetails.getFinancialAuditNumber();
     }
 
     void approveAppearance(Appearance appearance) {
@@ -1198,16 +1201,16 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             .creationDateTime(LocalDateTime.now())
             .expenseTotal(expenseTotal)
             .jurorNumber(jurorNumber)
-            .bankSortCode(juror.getSortCode())
-            .bankAccountName(juror.getBankAccountName())
-            .bankAccountNumber(juror.getBankAccountNumber())
-            .buildingSocietyNumber(juror.getBuildingSocietyRollNumber())
-            .addressLine1(juror.getAddressLine1())
-            .addressLine2(juror.getAddressLine2())
-            .addressLine3(juror.getAddressLine3())
-            .addressLine4(juror.getAddressLine4())
-            .addressLine5(juror.getAddressLine5())
-            .postcode(juror.getPostcode())
+            .bankSortCode(DataUtils.trim(juror.getSortCode()))
+            .bankAccountName(DataUtils.trim(juror.getBankAccountName()))
+            .bankAccountNumber(DataUtils.trim(juror.getBankAccountNumber()))
+            .buildingSocietyNumber(DataUtils.trim(juror.getBuildingSocietyRollNumber()))
+            .addressLine1(DataUtils.trim(juror.getAddressLine1()))
+            .addressLine2(DataUtils.trim(juror.getAddressLine2()))
+            .addressLine3(DataUtils.trim(juror.getAddressLine3()))
+            .addressLine4(DataUtils.trim(juror.getAddressLine4()))
+            .addressLine5(DataUtils.trim(juror.getAddressLine5()))
+            .postcode(DataUtils.trim(juror.getPostcode()))
             .authCode(applicationSettingService.getAppSetting(ApplicationSettings.Setting.PAYMENT_AUTH_CODE)
                 .orElseThrow(
                     () -> new MojException.InternalServerError(

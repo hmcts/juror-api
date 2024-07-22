@@ -49,7 +49,7 @@ public interface JurorExpenseService {
 
     CombinedSimplifiedExpenseDetailDto getSimplifiedExpense(String locCode, String jurorNumber, ExpenseType type);
 
-    void approveExpenses(String locCode, PaymentMethod paymentMethod, ApproveExpenseDto dto);
+    String approveExpenses(String locCode, PaymentMethod paymentMethod, ApproveExpenseDto dto);
 
     CombinedExpenseDetailsDto<ExpenseDetailsDto> getDraftExpenses(String locCode, String jurorNumber);
 

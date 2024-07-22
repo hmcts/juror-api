@@ -30,6 +30,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings("PMD.TooManyMethods")
 public class UserServiceModImpl implements UserService {
 
 
@@ -80,8 +81,10 @@ public class UserServiceModImpl implements UserService {
             }
             user.setEmail(email);
             user.setName(updateUserDto.getName());
-            user.setApprovalLimit(BigDecimalUtils.getOrZero(updateUserDto.getApprovalLimit()));
         }
+
+        updateUserApprovalLimit(user, updateUserDto);
+
         user.setActive(updateUserDto.getIsActive());
         user.setRoles(updateUserDto.getRoles());
         userRepository.save(user);
@@ -128,7 +131,7 @@ public class UserServiceModImpl implements UserService {
                 activeUserType = UserType.ADMINISTRATOR;
                 locCode = "400";
             } else {
-                activeUserType = (SecurityUtil.BUREAU_OWNER.equals(locCode) ? UserType.BUREAU : UserType.COURT);
+                activeUserType = SecurityUtil.BUREAU_OWNER.equals(locCode) ? UserType.BUREAU : UserType.COURT;
             }
         } else {
             activeUserType = user.getUserType();
@@ -256,5 +259,11 @@ public class UserServiceModImpl implements UserService {
 
     boolean doesUserExistWithEmail(String email) {
         return userRepository.existsByEmail(email.trim());
+    }
+
+    private void updateUserApprovalLimit(User user, UpdateUserDto updateUserDto) {
+        if (SecurityUtil.canEditApprovalLimit()) {
+            user.setApprovalLimit(BigDecimalUtils.getOrZero(updateUserDto.getApprovalLimit()));
+        }
     }
 }

@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.domain;
 
+import io.micrometer.common.util.StringUtils;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -258,7 +259,7 @@ public class Juror extends Address implements Serializable {
     private BigDecimal financialLoss;
 
     @Column(name = "mileage")
-    @NotAudited
+    @Audited
     private Integer mileage;
 
     @Column(name = "claiming_subsistence_allowance")
@@ -304,10 +305,10 @@ public class Juror extends Address implements Serializable {
 
     public String getName() {
         String buildName = "";
-        if (title != null) {
+        if (StringUtils.isNotBlank(title)) {
             buildName = title + " ";
         }
-        return buildName + firstName + " " + lastName;
+        return (buildName + firstName + " " + lastName).trim();
     }
 
     public void setPoliceCheck(PoliceCheck policeCheck) {

@@ -109,6 +109,7 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
         jurorPool.setUserEdtq(username);
         jurorPool.setDeferralCode(deferralRequestDto.getDeferralReason());
         jurorPool.setDeferralDate(null);
+        jurorPool.setNextDate(jurorPool.getPool().getReturnDate());
         jurorPoolRepository.save(jurorPool);
 
         Juror juror = jurorPool.getJuror();

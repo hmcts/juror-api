@@ -171,4 +171,7 @@ public final class SecurityUtil {
         return getActiveUsersBureauPayload().getRoles().contains(role);
     }
 
+    public static boolean canEditApprovalLimit() {
+        return isAdministration() || isManager() && isCourt();
+    }
 }

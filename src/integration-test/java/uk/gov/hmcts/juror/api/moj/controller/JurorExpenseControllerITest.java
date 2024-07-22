@@ -2438,21 +2438,22 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
         @Nested
         class Positive {
-            protected ResponseEntity<String> triggerValid(
+            protected ResponseEntity<List<String>> triggerValid(
                 PaymentMethod paymentMethod,
                 ApproveExpenseDto... expenseDto) throws Exception {
                 final String jwt = createJwt(COURT_USER, Set.of(Role.MANAGER), COURT_LOCATION, COURT_LOCATION);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
-                ResponseEntity<String> response = template.exchange(
+                ResponseEntity<List<String>> response = template.exchange(
                     new RequestEntity<>(List.of(expenseDto), httpHeaders, POST,
                         URI.create(toUrl(COURT_LOCATION, paymentMethod))),
-                    String.class);
+                    new ParameterizedTypeReference<>() {});
                 assertThat(response.getStatusCode())
                     .as("Expect the HTTP GET request to be successful")
                     .isEqualTo(HttpStatus.OK);
                 assertThat(response.getBody())
-                    .as("Expect no body")
-                    .isEqualTo(null);
+                    .as("Expect a financial audit number")
+                    .isNotNull()
+                    .isEqualTo(List.of("F2"));
                 return response;
             }
 

@@ -9,10 +9,9 @@ import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.Column;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import lombok.Builder;
-import lombok.Data;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
@@ -30,12 +29,12 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.NumberUtils;
 import uk.gov.hmcts.juror.api.moj.utils.PaginationUtil;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -222,7 +221,7 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
         }
 
         if (search.getPostcode() != null) {
-            query.where(JUROR.postcode.eq(search.getPostcode()));
+            query.where(JUROR.postcode.eq(DataUtils.toUppercase(search.getPostcode())));
         }
 
         if (search.getPoolNumber() != null) {
@@ -399,49 +398,47 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
     public static List<YieldPerformanceData> getYieldPerformanceData(JurorPoolRepository jurorPoolRepository,
                                                                      String courtLocCodes, LocalDate fromDate,
                                                                      LocalDate toDate) {
-        List<YieldPerformanceData> yieldPerformanceReportStats = new ArrayList<>();
-
         try {
-            List<String> yieldPerformanceReportResults =
-                jurorPoolRepository.getYieldPerformanceReportStats(courtLocCodes,
-                    fromDate, toDate);
-
-            if (yieldPerformanceReportResults != null) {
-
-                for (String result : yieldPerformanceReportResults) {
-                    List<String> values = List.of(result.split(","));
-
-                    final int requested = Integer.parseInt(values.get(2));
-                    final int confirmed = Integer.parseInt(values.get(3));
-                    final int balance = confirmed - requested;
-
-                    YieldPerformanceData yieldPerformanceData =
-                        YieldPerformanceData.builder()
-                            .locCode(values.get(0))
-                            .court(values.get(1))
-                            .requested(requested)
-                            .confirmed(confirmed)
-                            .balance(confirmed - requested)
-                            .difference(NumberUtils.calculatePercentage(balance, requested))
-                            .build();
-                    yieldPerformanceReportStats.add(yieldPerformanceData);
-                }
-            }
-
+            return jurorPoolRepository.getYieldPerformanceReportStats(courtLocCodes,
+                fromDate, toDate);
         } catch (Exception e) {
             throw new MojException.InternalServerError("Error getting yield performance report by court", e);
         }
-        return yieldPerformanceReportStats;
     }
 
-    @Builder
-    @Data
-    public static class YieldPerformanceData {
-        private String court;
-        private String locCode;
-        private int requested;
-        private int confirmed;
-        private int balance;
-        private double difference;
+
+    public interface YieldPerformanceData {
+        @Column(name = "loc_code")
+        String getLocCode();
+
+        @Column(name = "court_name")
+        String getCourtName();
+
+        @Column(name = "no_requested")
+        int getNoRequested();
+
+        @Column(name = "supplied")
+        int getSupplied();
+
+
+        default String getCourt() {
+            return getCourtName();
+        }
+
+        default int getBalance() {
+            return getConfirmed() - getNoRequested();
+        }
+
+        default int getConfirmed() {
+            return this.getSupplied();
+        }
+
+        default double getDifference() {
+            return NumberUtils.calculatePercentage(getBalance(), getNoRequested());
+        }
+
+        default int getRequested() {
+            return getNoRequested();
+        }
     }
 }

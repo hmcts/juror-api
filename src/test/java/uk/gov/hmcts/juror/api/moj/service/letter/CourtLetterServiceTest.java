@@ -124,6 +124,8 @@ public class CourtLetterServiceTest {
         securityUtilMockedStatic = Mockito.mockStatic(SecurityUtil.class);
         securityUtilMockedStatic.when(SecurityUtil::getActiveOwner)
             .thenReturn(owner);
+        securityUtilMockedStatic.when(SecurityUtil::getLocCode)
+            .thenReturn(owner);
     }
 
     @Nested

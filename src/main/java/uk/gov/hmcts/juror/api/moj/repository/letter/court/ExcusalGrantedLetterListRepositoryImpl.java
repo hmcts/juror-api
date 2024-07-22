@@ -27,7 +27,7 @@ public class ExcusalGrantedLetterListRepositoryImpl implements IExcusalGrantedLe
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         JPAQuery<ExcusalGrantedLetterList> jpaQuery =
             queryFactory.selectFrom(EXCUSAL_GRANTED_LETTER_LIST)
-                .where(EXCUSAL_GRANTED_LETTER_LIST.owner.equalsIgnoreCase(owner));
+                .where(EXCUSAL_GRANTED_LETTER_LIST.owner.eq(owner));
 
         filterEligibleLetterSearchCriteria(jpaQuery, searchCriteria);
 

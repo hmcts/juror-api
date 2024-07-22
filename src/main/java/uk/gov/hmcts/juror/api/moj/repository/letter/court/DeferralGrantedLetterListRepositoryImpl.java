@@ -28,7 +28,7 @@ public class DeferralGrantedLetterListRepositoryImpl implements IDeferralGranted
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         JPAQuery<DeferralGrantedLetterList> jpaQuery =
             queryFactory.selectFrom(DEFERRAL_LETTER_LIST)
-                .where(DEFERRAL_LETTER_LIST.owner.equalsIgnoreCase(owner));
+                .where(DEFERRAL_LETTER_LIST.owner.eq(owner));
 
         filterEligibleLetterSearchCriteria(jpaQuery, searchCriteria);
 

@@ -373,6 +373,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
 
         jurorPool.setUserEdtq(auditorUsername);
         jurorPool.setStatus(RepositoryUtils.retrieveFromDatabase(IJurorStatus.RESPONDED, jurorStatusRepository));
+        jurorPool.setNextDate(jurorPool.getPool().getReturnDate());
         jurorPoolRepository.save(jurorPool);
 
         recordJurorPoolRespondedHistory(jurorNumber, auditorUsername, jurorPool.getPoolNumber());

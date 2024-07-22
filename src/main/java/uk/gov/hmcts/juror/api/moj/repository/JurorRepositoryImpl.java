@@ -11,6 +11,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.List;
@@ -87,7 +88,7 @@ public class JurorRepositoryImpl implements IJurorRepository {
         }
 
         if (null != query.getPostcode()) {
-            partialQuery.where(JUROR.postcode.startsWith(query.getPostcode()));
+            partialQuery.where(JUROR.postcode.startsWith(DataUtils.toUppercase(query.getPostcode())));
         }
 
         if (null != query.getPoolNumber()) {

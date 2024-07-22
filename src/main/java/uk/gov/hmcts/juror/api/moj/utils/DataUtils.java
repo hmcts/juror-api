@@ -1,7 +1,9 @@
 package uk.gov.hmcts.juror.api.moj.utils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.DateTimePath;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
@@ -128,5 +130,17 @@ public final class DataUtils {
             return null;
         }
         return postcode.toUpperCase(Locale.getDefault());
+    }
+
+    @SneakyThrows
+    public static String asJsonString(Object value) {
+        return new ObjectMapper().findAndRegisterModules().writeValueAsString(value);
+    }
+
+    public static String trim(String value) {
+        if (value == null) {
+            return null;
+        }
+        return value.trim();
     }
 }
