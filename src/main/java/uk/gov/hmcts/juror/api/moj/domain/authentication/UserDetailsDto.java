@@ -13,8 +13,10 @@ import lombok.experimental.SuperBuilder;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +38,8 @@ public class UserDetailsDto extends UserDetailsSimpleDto {
     private Set<Role> roles;
     private List<UserCourtDto> courts;
 
+    private BigDecimal approvalLimit;
+
     // use this constructor to create a UserDetailsDto object from a User object when returning
     // Paper or Digital response or there will be an infinite recursion
     public UserDetailsDto(User user) {
@@ -49,5 +53,9 @@ public class UserDetailsDto extends UserDetailsSimpleDto {
         this.userType = user.getUserType();
         this.roles = user.getRoles();
         this.courts = courts;
+
+        if (SecurityUtil.canEditApprovalLimit()) {
+            this.approvalLimit = user.getApprovalLimit();
+        }
     }
 }

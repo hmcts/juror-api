@@ -963,6 +963,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                         .isActive(true)
                         .lastSignIn(null)
                         .userType(UserType.COURT)
+                        .approvalLimit(new BigDecimal("0.00"))
                         .roles(Set.of())
                         .courts(List.of(UserCourtDto.builder()
                             .primaryCourt(CourtDto.builder()
@@ -1016,6 +1017,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                         .isActive(false)
                         .lastSignIn(null)
                         .userType(UserType.ADMINISTRATOR)
+                        .approvalLimit(new BigDecimal("0.00"))
                         .roles(Set.of())
                         .courts(List.of(UserCourtDto.builder()
                             .primaryCourt(CourtDto.builder()
@@ -1039,6 +1041,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                         .isActive(true)
                         .lastSignIn(null)
                         .userType(UserType.COURT)
+                        .approvalLimit(new BigDecimal("0.00"))
                         .roles(Set.of())
                         .courts(List.of(UserCourtDto.builder()
                             .primaryCourt(CourtDto.builder()
@@ -1152,6 +1155,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                 User oldUser,
                 UpdateUserDto userDto,
                 boolean isAdmin,
+                boolean isCourtManager,
                 String username,
                 String updatedBy
             ) {
@@ -1167,7 +1171,8 @@ public class UserControllerITest extends AbstractIntegrationTest {
                         assertThat(user.getEmail()).isEqualTo(oldUser.getEmail());
                         assertThat(user.getName()).isEqualTo(oldUser.getName());
                         assertThat(user.isActive()).isEqualTo(oldUser.isActive());
-                        assertThat(user.getApprovalLimit()).isEqualTo(oldUser.getApprovalLimit());
+                        assertThat(user.getApprovalLimit()).isEqualTo(
+                            isCourtManager ? userDto.getApprovalLimit() : oldUser.getApprovalLimit());
                     }
                     assertThat(user.getRoles()).isEqualTo(Optional.ofNullable(userDto.getRoles()).orElse(Set.of()));
                     assertThat(user.getUpdatedBy()).isEqualTo(updatedBy);
@@ -1186,7 +1191,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                     .payload(payload)
                     .triggerValid()
                     .assertValidNoBody();
-                assertUserUpdated(userBeforeUpdate, payload, false, username, "test_court_manager");
+                assertUserUpdated(userBeforeUpdate, payload, false, true, username, "test_court_manager");
             }
 
             @Test
@@ -1200,7 +1205,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                     .payload(payload)
                     .triggerValid()
                     .assertValidNoBody();
-                assertUserUpdated(userBeforeUpdate, payload, false, username, "test_bureau_lead");
+                assertUserUpdated(userBeforeUpdate, payload, false, false, username, "test_bureau_lead");
             }
 
             @Test
@@ -1214,7 +1219,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                     .payload(payload)
                     .triggerValid()
                     .assertValidNoBody();
-                assertUserUpdated(userBeforeUpdate, payload, true, username, "test_admin_standard");
+                assertUserUpdated(userBeforeUpdate, payload, true, true, username, "test_admin_standard");
             }
 
             @Test
@@ -1228,7 +1233,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                     .payload(payload)
                     .triggerValid()
                     .assertValidNoBody();
-                assertUserUpdated(userBeforeUpdate, payload, true, username, "test_admin_standard");
+                assertUserUpdated(userBeforeUpdate, payload, true, true, username, "test_admin_standard");
             }
         }
 

@@ -7,8 +7,10 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.test.context.junit4.SpringRunner;
+import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
@@ -46,6 +48,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRep
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -63,7 +66,8 @@ import static org.mockito.ArgumentMatchers.any;
     "PMD.ExcessiveImports",
     "PMD.CouplingBetweenObjects",
     "PMD.ExcessivePublicCount",
-    "PMD.TooManyMethods"
+    "PMD.TooManyMethods",
+    "PMD.CyclomaticComplexity"
 })
 @RunWith(SpringRunner.class)
 public class JurorPaperResponseServiceImplTest {
@@ -138,6 +142,9 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_getJurorPaperResponse_happyPath_bureauUser_bureauOwner() {
+        MockedStatic<SecurityUtil> securityUtilMockedStatic = TestUtils.getSecurityUtilMock();
+        securityUtilMockedStatic.when(SecurityUtil::canEditApprovalLimit).thenReturn(false);
+
         BureauJwtPayload payload = buildPayload();
         PaperResponse jurorPaperResponse = createTestJurorResponse("123456789");
         Mockito.doReturn(jurorPaperResponse).when(jurorPaperResponseRepository).findByJurorNumber("123456789");
@@ -158,6 +165,9 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_getJurorPaperResponse_happyPath_bureauUser_bureauOwner_welsh() {
+        MockedStatic<SecurityUtil> securityUtilMockedStatic = TestUtils.getSecurityUtilMock();
+        securityUtilMockedStatic.when(SecurityUtil::canEditApprovalLimit).thenReturn(false);
+
         BureauJwtPayload payload = buildPayload();
         PaperResponse jurorPaperResponse = createTestJurorResponse(VALID_JUROR_NUMBER_BUREAU);
         Mockito.doReturn(jurorPaperResponse).when(jurorPaperResponseRepository)
@@ -178,6 +188,9 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_getJurorPaperResponse_happyPath_summonsSnapshotPresent() {
+        MockedStatic<SecurityUtil> securityUtilMockedStatic = TestUtils.getSecurityUtilMock();
+        securityUtilMockedStatic.when(SecurityUtil::canEditApprovalLimit).thenReturn(false);
+
         BureauJwtPayload payload = buildPayload();
         String jurorNumber = VALID_JUROR_NUMBER_BUREAU;
         PaperResponse jurorPaperResponse = createTestJurorResponse(jurorNumber);
@@ -203,6 +216,9 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_getJurorPaperResponse_happyPath_bureauUser_courtOwner() {
+        MockedStatic<SecurityUtil> securityUtilMockedStatic = TestUtils.getSecurityUtilMock();
+        securityUtilMockedStatic.when(SecurityUtil::canEditApprovalLimit).thenReturn(false);
+
         BureauJwtPayload payload = buildPayload();
         PaperResponse jurorPaperResponse = createTestJurorResponse(VALID_JUROR_NUMBER_COURT);
         Mockito.doReturn(jurorPaperResponse).when(jurorPaperResponseRepository)
@@ -221,6 +237,9 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_getJurorPaperResponse_happyPath_courtUser_courtOwner() {
+        MockedStatic<SecurityUtil> securityUtilMockedStatic = TestUtils.getSecurityUtilMock();
+        securityUtilMockedStatic.when(SecurityUtil::canEditApprovalLimit).thenReturn(false);
+
         BureauJwtPayload payload = buildPayload();
         payload.setOwner("415");
         PaperResponse jurorPaperResponse = createTestJurorResponse(VALID_JUROR_NUMBER_COURT);
