@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.service;
 import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -10,7 +11,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.test.context.junit4.SpringRunner;
+import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
@@ -61,6 +64,8 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @SuppressWarnings({
     "PMD.ExcessiveImports",
@@ -102,24 +107,8 @@ public class JurorPaperResponseServiceImplTest {
     @InjectMocks
     private JurorPaperResponseServiceImpl jurorPaperResponseService;
 
-    private MockedStatic<SecurityUtil> securityUtilMockedStatic;
-
-    @After
-    public void after() {
-        if (securityUtilMockedStatic != null) {
-            securityUtilMockedStatic.close();
-        }
-    }
-
     @Before
     public void setUpMocks() {
-        if (Mockito.mockingDetails(SecurityUtil.class).isMock()) {
-            securityUtilMockedStatic =
-                (MockedStatic<SecurityUtil>) Mockito.mockingDetails(securityUtilMockedStatic).getMock();
-        } else {
-            securityUtilMockedStatic = Mockito.mockStatic(SecurityUtil.class);
-        }
-
         JurorPool bureauOwnerJurorPool = createTestJurorPool("400", VALID_JUROR_NUMBER_BUREAU);
         JurorPool courtOwnerJurorPool = createTestJurorPool("415", VALID_JUROR_NUMBER_COURT);
 
@@ -158,6 +147,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_getJurorPaperResponse_happyPath_bureauUser_bureauOwner() {
+        MockedStatic<SecurityUtil> securityUtilMockedStatic = TestUtils.getSecurityUtilMock();
         securityUtilMockedStatic.when(SecurityUtil::canEditApprovalLimit).thenReturn(false);
 
         BureauJwtPayload payload = buildPayload();
@@ -180,6 +170,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_getJurorPaperResponse_happyPath_bureauUser_bureauOwner_welsh() {
+        MockedStatic<SecurityUtil> securityUtilMockedStatic = TestUtils.getSecurityUtilMock();
         securityUtilMockedStatic.when(SecurityUtil::canEditApprovalLimit).thenReturn(false);
 
         BureauJwtPayload payload = buildPayload();
@@ -202,6 +193,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_getJurorPaperResponse_happyPath_summonsSnapshotPresent() {
+        MockedStatic<SecurityUtil> securityUtilMockedStatic = TestUtils.getSecurityUtilMock();
         securityUtilMockedStatic.when(SecurityUtil::canEditApprovalLimit).thenReturn(false);
 
         BureauJwtPayload payload = buildPayload();
@@ -229,6 +221,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_getJurorPaperResponse_happyPath_bureauUser_courtOwner() {
+        MockedStatic<SecurityUtil> securityUtilMockedStatic = TestUtils.getSecurityUtilMock();
         securityUtilMockedStatic.when(SecurityUtil::canEditApprovalLimit).thenReturn(false);
 
         BureauJwtPayload payload = buildPayload();
@@ -249,6 +242,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_getJurorPaperResponse_happyPath_courtUser_courtOwner() {
+        MockedStatic<SecurityUtil> securityUtilMockedStatic = TestUtils.getSecurityUtilMock();
         securityUtilMockedStatic.when(SecurityUtil::canEditApprovalLimit).thenReturn(false);
 
         BureauJwtPayload payload = buildPayload();
