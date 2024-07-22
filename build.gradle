@@ -204,7 +204,7 @@ flyway {
     def dbUserName = System.getenv("DB_USERNAME") ?: "system"
     def dbPassword = System.getenv("DB_PASSWORD") ?: "postgres"
     def flywayLocations = System.getenv("FLYWAY_LOC_OVERRIDE") ?: "db/**/*.sql"
-    
+
     url = "$dbUrl"
     user = "$dbUserName"
     password = "$dbPassword"
@@ -281,7 +281,7 @@ pmdTest {
     maxFailures = 298
 }
 pmdMain {
-    maxFailures = 799
+    maxFailures = 798
 }
 pmd {
     maxFailures = 0

@@ -3,7 +3,6 @@ package uk.gov.hmcts.juror.api.moj.service;
 import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -67,7 +66,8 @@ import static org.mockito.ArgumentMatchers.any;
     "PMD.ExcessiveImports",
     "PMD.CouplingBetweenObjects",
     "PMD.ExcessivePublicCount",
-    "PMD.TooManyMethods"
+    "PMD.TooManyMethods",
+    "PMD.CyclomaticComplexity"
 })
 @RunWith(SpringRunner.class)
 public class JurorPaperResponseServiceImplTest {

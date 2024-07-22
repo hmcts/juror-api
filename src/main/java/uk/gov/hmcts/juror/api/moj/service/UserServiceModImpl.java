@@ -30,6 +30,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings("PMD.TooManyMethods")
 public class UserServiceModImpl implements UserService {
 
 
@@ -130,7 +131,7 @@ public class UserServiceModImpl implements UserService {
                 activeUserType = UserType.ADMINISTRATOR;
                 locCode = "400";
             } else {
-                activeUserType = (SecurityUtil.BUREAU_OWNER.equals(locCode) ? UserType.BUREAU : UserType.COURT);
+                activeUserType = SecurityUtil.BUREAU_OWNER.equals(locCode) ? UserType.BUREAU : UserType.COURT;
             }
         } else {
             activeUserType = user.getUserType();
