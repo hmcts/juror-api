@@ -41,7 +41,6 @@ import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.Attendance
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
-import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.validation.CourtLocationCode;
 
 import java.time.LocalDate;
