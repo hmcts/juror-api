@@ -88,7 +88,6 @@ public class JurorManagementController {
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid RetrieveAttendanceDetailsDto request) {
         validateOwner(payload);
-        System.out.println("TMP: " + DataUtils.asJsonString(request));
         return ResponseEntity.ok(jurorAppearanceService.retrieveAttendanceDetails(payload, request));
     }
 
