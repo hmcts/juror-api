@@ -77,7 +77,7 @@ public interface JurorExpenseService {
 
     SummaryExpenseDetailsDto calculateSummaryTotals(String locCode, String jurorNumber);
 
-    void realignExpenseDetails(Appearance appearance, boolean isDeleted);
+    void realignExpenseDetails(Appearance appearance);
 
     PaginatedList<UnpaidExpenseSummaryResponseDto> getUnpaidExpensesForCourtLocation(
         String locCode, UnpaidExpenseSummaryRequestDto search);
