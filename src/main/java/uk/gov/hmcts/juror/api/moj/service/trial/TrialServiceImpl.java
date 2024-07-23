@@ -27,7 +27,6 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.Judge;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
-import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
@@ -53,7 +52,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_EDIT_COMPLETED_TRIAL;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_EDIT_TRIAL_WITH_JURORS;
@@ -271,9 +269,8 @@ public class TrialServiceImpl implements TrialService {
                     appearance.setTimeOut(LocalTime.parse(returnJuryDto.getCheckOut()));
                     log.debug("setting time out for juror %s".formatted(jurorNumber));
                 }
+                appearanceRepository.save(appearance);
                 jurorAppearanceService.realignAttendanceType(appearance);
-
-                realignAttendanceType(appearance);
                 appearance.setAttendanceAuditNumber("J" + attendanceAuditNumber);
 
                 jurorHistoryService.createJuryAttendanceHistory(jurorPool, appearance, panel);
@@ -435,38 +432,4 @@ public class TrialServiceImpl implements TrialService {
                 .poolNumber(jurorPool.getPool().getPoolNumber())
                 .build());
     }
-
-
-    void realignAttendanceType(Appearance appearance) {
-        if (appearance.getTimeIn() == null
-            || appearance.getTimeOut() == null
-            || Boolean.TRUE.equals(appearance.getNoShow())
-            || AttendanceType.ABSENT.equals(appearance.getAttendanceType())) {
-            return;
-        }
-
-        boolean isLongTrialDay =
-            jurorExpenseService.isLongTrialDay(
-                appearance.getJurorNumber(),
-                appearance.getAttendanceDate());
-
-        if (appearance.getAttendanceType() != null && Set.of(AttendanceType.NON_ATTENDANCE,
-                AttendanceType.NON_ATTENDANCE_LONG_TRIAL)
-            .contains(appearance.getAttendanceType())) {
-            appearance.setAttendanceType(isLongTrialDay
-                ? AttendanceType.NON_ATTENDANCE_LONG_TRIAL
-                : AttendanceType.NON_ATTENDANCE
-            );
-        } else if (appearance.isFullDay()) {
-            appearance.setAttendanceType(isLongTrialDay
-                ? AttendanceType.FULL_DAY_LONG_TRIAL
-                : AttendanceType.FULL_DAY
-            );
-        } else {
-            appearance.setAttendanceType(isLongTrialDay
-                ? AttendanceType.HALF_DAY_LONG_TRIAL
-                : AttendanceType.HALF_DAY);
-        }
-    }
-
 }
