@@ -448,7 +448,8 @@ public class Appearance implements Serializable {
     }
 
     public void setPayAttendanceType(PayAttendanceType payAttendanceType) {
-        if (Set.of(AttendanceType.ABSENT, AttendanceType.NON_ATTENDANCE, AttendanceType.NON_ATTENDANCE_LONG_TRIAL)
+        if (this.getAttendanceType() == null
+            || Set.of(AttendanceType.ABSENT, AttendanceType.NON_ATTENDANCE, AttendanceType.NON_ATTENDANCE_LONG_TRIAL)
             .contains(this.getAttendanceType())) {
             return;
         }
@@ -508,8 +509,8 @@ public class Appearance implements Serializable {
 
     private void validateCanClearExpenses() {
         if (BigDecimalUtils.isGreaterThan(getTotalPaid(), BigDecimal.ZERO)
-            || Set.of(AppearanceStage.EXPENSE_EDITED, AppearanceStage.EXPENSE_AUTHORISED)
-            .contains(getAppearanceStage())) {
+            || (appearanceStage != null && Set.of(AppearanceStage.EXPENSE_EDITED, AppearanceStage.EXPENSE_AUTHORISED)
+            .contains(getAppearanceStage()))) {
             throw new MojException.InternalServerError(
                 "Cannot clear expenses for appearance that has authorised values", null);
         }

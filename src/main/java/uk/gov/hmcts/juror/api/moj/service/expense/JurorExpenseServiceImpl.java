@@ -736,8 +736,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
      */
     @Override
     @Transactional
-    public void realignExpenseDetails(Appearance appearance, boolean isDeleted) {
-        if (isDeleted || AttendanceType.ABSENT.equals(appearance.getAttendanceType())) {
+    public void realignExpenseDetails(Appearance appearance) {
+        if (AttendanceType.ABSENT.equals(appearance.getAttendanceType())) {
             appearance.clearExpenses(true);
         } else if (!isAttendanceDay(appearance)) {
             appearance.clearTravelExpenses(true);
