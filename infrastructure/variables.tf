@@ -51,7 +51,7 @@ variable "pgsql_storage_tier" {
 }
 
 variable "trigger_password_reset" {
-  description = "Set this to true in the environment specific .tfvars file to cause a password reset - then set to false afterwards"
+  description = "Set this to true in the environment specific .tfvars file to cause a password reset - then set to empty string afterwards"
   type        = string
   default     = ""
 }
