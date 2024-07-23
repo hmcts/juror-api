@@ -7,8 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
+import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.FormAttributeRepository;
@@ -26,6 +28,7 @@ import uk.gov.hmcts.juror.api.moj.xerox.letters.SummonsReminderLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.WithdrawalLetter;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -227,6 +230,21 @@ public class PrintDataServiceImpl implements PrintDataService {
             throw new MojException.BusinessRuleViolation(
                 "Letter already exists in bulk print queue for the same day", DAY_ALREADY_EXISTS);
         }
+    }
+
+    @Override
+    public void removeQueuedLetterForJuror(JurorPool jurorPool) {
+
+        // determine form codes for juror status
+        List<FormCode> formCodes = FormCode.getFormCodesForJurorStatus(jurorPool.getStatus().getStatus());
+
+        List<BulkPrintData> bulkPrintDataList = bulkPrintDataRepository
+            .findByJurorNoAndCreationDateAndFormAttributeFormTypeIn(
+            jurorPool.getJuror().getJurorNumber(), LocalDate.now(),
+            formCodes.stream().map(FormCode::getCode).toList()
+        );
+
+        bulkPrintDataRepository.deleteAll(bulkPrintDataList);
     }
 
     public void commitData(LetterBase letter) {

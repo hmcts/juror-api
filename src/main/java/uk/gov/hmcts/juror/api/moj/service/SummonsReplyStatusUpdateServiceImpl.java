@@ -81,6 +81,8 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
     private final JurorRecordService jurorRecordService;
     @NonNull
     private final JurorAuditChangeService jurorAuditChangeService;
+    @NonNull
+    private final PrintDataService printDataService;
 
     private static final String TITLE = "title";
     private static final String FIRST_NAME = "firstName";
@@ -366,6 +368,12 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
         log.trace("Enter updateJurorPoolAsResponded for Juror Number: {}", jurorNumber);
 
         JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
+
+        int currentStatus = jurorPool.getStatus().getStatus();
+        if (currentStatus == IJurorStatus.DEFERRED
+            || currentStatus == IJurorStatus.EXCUSED) {
+            printDataService.removeQueuedLetterForJuror(jurorPool);
+        }
 
         Juror juror = jurorPool.getJuror();
         juror.setResponded(true);

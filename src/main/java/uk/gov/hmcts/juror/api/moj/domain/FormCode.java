@@ -4,7 +4,10 @@ import lombok.Getter;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 @Getter
 public enum FormCode {
@@ -49,6 +52,12 @@ public enum FormCode {
             }
         }
         throw new MojException.InternalServerError("Unknown form code '" + code + "'", null);
+    }
+
+    public static List<FormCode> getFormCodesForJurorStatus(int jurorStatus) {
+        return Arrays.stream(FormCode.values())
+            .filter(formCode -> formCode.getJurorStatus() == jurorStatus)
+            .collect(Collectors.toList());
     }
 
 }

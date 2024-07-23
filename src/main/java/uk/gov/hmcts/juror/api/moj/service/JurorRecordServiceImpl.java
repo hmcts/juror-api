@@ -60,6 +60,7 @@ import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PendingJuror;
@@ -1373,6 +1374,12 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             SecurityUtil.getActiveOwner());
         final Juror juror = jurorPool.getJuror();
 
+        int currentStatus = jurorPool.getStatus().getStatus();
+        if (currentStatus == IJurorStatus.DEFERRED
+            || currentStatus == IJurorStatus.EXCUSED) {
+            printDataService.removeQueuedLetterForJuror(jurorPool);
+        }
+
         if (null == juror.getDateOfBirth()) {
             throw new MojException.BusinessRuleViolation("Juror date of birth is required to mark as responded",
                 JUROR_DATE_OF_BIRTH_REQUIRED);
@@ -1395,6 +1402,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             .dateCreated(LocalDateTime.now())
             .build();
         jurorHistoryRepository.save(history);
+
     }
 
     @Override
