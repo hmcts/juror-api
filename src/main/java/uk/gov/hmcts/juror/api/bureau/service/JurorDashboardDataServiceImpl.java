@@ -23,7 +23,6 @@ import uk.gov.hmcts.juror.api.bureau.domain.StatsWelshOnlineResponse;
 import uk.gov.hmcts.juror.api.bureau.domain.StatsWelshOnlineResponseRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.SurveyResponse;
 import uk.gov.hmcts.juror.api.bureau.domain.SurveyResponseRepository;
-import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 
 import java.util.Date;
 import java.util.List;
@@ -53,7 +52,6 @@ public class JurorDashboardDataServiceImpl implements JurorDashboardDataService 
         final StatsUnprocessedResponseRepository statsUnprocessedResponseRepository,
         final StatsWelshOnlineResponseRepository statsWelshOnlineResponseRepository,
         final StatsAutoProcessedRepository statsAutoProcessedRepository,
-        final AppSettingService appSettingService,
         final StatsThirdPartyOnlineResponseRepository statsThirdPartyOnlineResponseRepository,
         final SurveyResponseRepository surveyResponseRepository,
         final StatsResponseTimesTotalRepository statsResponseTimesTotalRepository) {
