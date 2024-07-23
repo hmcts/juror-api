@@ -139,6 +139,8 @@ public class JurorDetailsCommonResponseDto {
 
     private boolean hasSummonsResponse;
 
+    private LocalDate bureauTransferDate;
+
     /**
      * Initialise an instance of this DTO class using a JurorPool object to populate its properties.
      *
@@ -168,6 +170,7 @@ public class JurorDetailsCommonResponseDto {
         this.isWelshCourt =
             welshCourtLocationRepository.existsByLocCode(jurorPool.getCourt().getLocCode());
         this.hasSummonsResponse = juror.getJurorResponse() != null;
+        this.bureauTransferDate = juror.getBureauTransferDate();
 
         if (this.excusalCode != null) {
             this.excusalDescription = ExcusalCodeEnum.fromCode(this.excusalCode).getDescription();
