@@ -31,6 +31,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseR
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.ReasonableAdjustmentsRepository;
+import uk.gov.hmcts.juror.api.moj.service.JurorPoolServiceImpl;
 import uk.gov.hmcts.juror.api.moj.service.PoolRequestService;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
@@ -59,6 +60,7 @@ public class JurorServiceImpl implements JurorService {
     private final PoolRequestService poolRequestService;
     private final ReasonableAdjustmentsRepository reasonableAdjustmentsRepository;
     private final JurorRepository jurorRepository;
+    private final JurorPoolServiceImpl jurorPoolServiceImpl;
 
 
     @Override
@@ -152,7 +154,7 @@ public class JurorServiceImpl implements JurorService {
         }
 
         JurorPool jurorDetails = jurorPoolRepository.findByJurorJurorNumber(responseDto.getJurorNumber());
-        Juror juror = jurorDetails.getJuror();
+        Juror juror = jurorPoolServiceImpl.getJurorPoolFromUser(jurorDetails.getJurorNumber()).getJuror();
 
         if (!ObjectUtils.isEmpty(responseDto.getThirdParty()) && !ObjectUtils.isEmpty(
             responseDto.getThirdParty().getThirdPartyReason())

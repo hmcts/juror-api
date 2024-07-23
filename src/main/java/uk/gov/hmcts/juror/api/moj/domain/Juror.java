@@ -283,7 +283,7 @@ public class Juror extends Address implements Serializable {
 
     @Column(name = "response_entered")
     @NotAudited
-    private Boolean responseEntered;
+    private boolean responseEntered;
 
     @NotAudited
     @OneToMany(mappedBy = "juror", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)

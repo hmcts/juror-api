@@ -1,5 +1,5 @@
 ALTER TABLE juror_mod.juror
-  ADD COLUMN response_entered BOOLEAN;
+  ADD COLUMN response_entered BOOLEAN DEFAULT FALSE;
 
 UPDATE juror_mod.juror j
 SET response_entered = TRUE

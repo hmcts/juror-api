@@ -961,7 +961,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         assertThat(jurorDetails.getOpticReference())
             .as("Expect the optic reference to be 18273645")
             .isEqualTo("18273645");
-        assertThat(jurorDetails.getCommonDetails().getResponseEntered())
+        assertThat(jurorDetails.getCommonDetails().isResponseEntered())
             .as("Expect the response entered flag to be true")
             .isTrue();
     }

@@ -278,7 +278,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
         JurorPool jurorPool = jurorPoolOpt.get();
 
-        assertThat(jurorPool.getJuror().getResponseEntered()).isTrue();
+        assertThat(jurorPool.getJuror().isResponseEntered()).isTrue();
 
         validateMergedJurorRecord(jurorPool, jurorPaperResponse, IJurorStatus.DISQUALIFIED);
         verifyAgeDisqualification(jurorPool);
@@ -320,7 +320,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
         JurorPool jurorPool = jurorPoolOpt.get();
 
-        assertThat(jurorPool.getJuror().getResponseEntered()).isTrue();
+        assertThat(jurorPool.getJuror().isResponseEntered()).isTrue();
 
         validateMergedJurorRecord(jurorPool, jurorPaperResponse, IJurorStatus.DISQUALIFIED);
         verifyAgeDisqualification(jurorPool);
@@ -357,7 +357,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
         assertThat(jurorPool.isPresent()).isTrue();
 
-        assertThat(jurorPool.get().getJuror().getResponseEntered()).isTrue();
+        assertThat(jurorPool.get().getJuror().isResponseEntered()).isTrue();
 
         verifyStraightThroughAgeDisqualificationNotProcessed(jurorPaperResponse, jurorPool.get(),
             IJurorStatus.DEFERRED);
@@ -395,7 +395,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
         assertThat(jurorPool.isPresent()).isTrue();
 
-        assertThat(jurorPool.get().getJuror().getResponseEntered()).isTrue();
+        assertThat(jurorPool.get().getJuror().isResponseEntered()).isTrue();
 
         verifyStraightThroughAgeDisqualificationNotProcessed(jurorPaperResponse, jurorPool.get(),
             IJurorStatus.SUMMONED);
@@ -437,7 +437,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         assertThat(jurorPoolOpt.isPresent()).isTrue();
         JurorPool jurorPool = jurorPoolOpt.get();
 
-        assertThat(jurorPool.getJuror().getResponseEntered()).isTrue();
+        assertThat(jurorPool.getJuror().isResponseEntered()).isTrue();
 
         validateMergedJurorRecord(jurorPool, jurorPaperResponse, IJurorStatus.DISQUALIFIED);
         verifyAgeDisqualification(jurorPool);
@@ -495,7 +495,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
         assertThat(jurorPool.getJuror().getJurorNumber()).isEqualTo(jurorNumber);
 
-        assertThat(jurorPool.getJuror().getResponseEntered()).isTrue();
+        assertThat(jurorPool.getJuror().isResponseEntered()).isTrue();
     }
 
     @Test
