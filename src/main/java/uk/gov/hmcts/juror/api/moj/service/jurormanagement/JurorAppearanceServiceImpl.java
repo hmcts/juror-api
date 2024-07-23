@@ -414,6 +414,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
         if (ModifyConfirmedAttendanceDto.ModifyAttendanceType.DELETE.equals(modifyAttendanceType)) {
             appearanceRepository.delete(appearance);
+            realignAttendanceType(appearance.getJurorNumber());
         } else {
             appearanceRepository.saveAndFlush(appearance);
             jurorExpenseService.realignExpenseDetails(appearance);
@@ -1214,7 +1215,12 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
     @Override
     public void realignAttendanceType(Appearance appearance) {
-        List<Appearance> appearances = getAllAppearances(appearance.getJurorNumber());
+        realignAttendanceType(appearance.getJurorNumber());
+    }
+
+    @Override
+    public void realignAttendanceType(String jurorNumber) {
+        List<Appearance> appearances = getAllAppearances(jurorNumber);
 
         List<LocalDate> localDates = appearances
             .stream()
