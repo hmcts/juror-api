@@ -219,6 +219,8 @@ class JurorRecordServiceTest {
     private UserServiceModImpl userServiceMod;
     @Mock
     private JurorPaymentsSummaryRepository jurorPaymentsSummaryRepository;
+    @Mock
+    private JurorPoolService jurorPoolService;
 
     @Mock
     private Clock clock;
@@ -3024,10 +3026,8 @@ class JurorRecordServiceTest {
             //test scenario where juror has attended
             final JurorPool jurorPool = createValidJurorPool(TestConstants.VALID_POOL_NUMBER, owner);
 
-            doReturn(jurorPool).when(jurorPoolRepository)
-                .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue(
-                    TestConstants.VALID_COURT_LOCATION,
-                    TestConstants.VALID_JUROR_NUMBER);
+            doReturn(jurorPool).when(jurorPoolService)
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
 
             List<Appearance> appearances = new ArrayList<>();
             Appearance appearance =
@@ -3053,8 +3053,8 @@ class JurorRecordServiceTest {
             assertEquals(1, jurorAttendanceDetailsResponseDto.getData().size(),
                 "One attendance record should be returned");
 
-            verify(jurorPoolRepository, times(1)).findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue(
-                TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER);
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
 
             verify(appearanceRepository, times(1))
                 .findAllByCourtLocationLocCodeAndJurorNumber(TestConstants.VALID_COURT_LOCATION,
@@ -3069,9 +3069,8 @@ class JurorRecordServiceTest {
             final String owner = "415";
             final JurorPool jurorPool = createValidJurorPool(TestConstants.VALID_POOL_NUMBER, owner);
 
-            doReturn(jurorPool).when(jurorPoolRepository)
-                .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue(
-                    TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER);
+            doReturn(jurorPool).when(jurorPoolService)
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
 
             MojException.Forbidden exception =
                 assertThrows(MojException.Forbidden.class,
@@ -3082,8 +3081,8 @@ class JurorRecordServiceTest {
                 exception.getMessage(),
                 "Exception message must match");
 
-            verify(jurorPoolRepository, times(1))
-                .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue(anyString(), anyString());
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
             verifyNoInteractions(appearanceRepository);
 
         }
@@ -3094,9 +3093,8 @@ class JurorRecordServiceTest {
             String owner = "415";
             final JurorPool jurorPool = createValidJurorPool(TestConstants.VALID_POOL_NUMBER, owner);
 
-            doReturn(jurorPool).when(jurorPoolRepository)
-                .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue(
-                    anyString(), anyString());
+            doReturn(jurorPool).when(jurorPoolService)
+                .getJurorPoolFromUser(anyString());
 
             List<Appearance> appearances = new ArrayList<>();
 
@@ -3111,9 +3109,8 @@ class JurorRecordServiceTest {
             assertEquals(0, jurorAttendanceDetailsResponseDto.getData().size(),
                 "No attendance records should be returned");
 
-            verify(jurorPoolRepository, times(1)).findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue(
-                anyString(),
-                anyString());
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(anyString());
             verify(appearanceRepository, times(1))
                 .findAllByCourtLocationLocCodeAndJurorNumber(TestConstants.VALID_COURT_LOCATION,
                     TestConstants.VALID_JUROR_NUMBER);
@@ -3125,9 +3122,8 @@ class JurorRecordServiceTest {
 
             final JurorPool jurorPool = createValidJurorPool(TestConstants.VALID_POOL_NUMBER, owner);
 
-            doReturn(jurorPool).when(jurorPoolRepository)
-                .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue(TestConstants.VALID_COURT_LOCATION,
-                    TestConstants.VALID_JUROR_NUMBER);
+            doReturn(jurorPool).when(jurorPoolService)
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
 
             List<Appearance> appearances = new ArrayList<>();
             Appearance appearance1 = buildAppearance();
@@ -3151,8 +3147,8 @@ class JurorRecordServiceTest {
             assertEquals(1, jurorAttendanceDetailsResponseDto.getData().size(),
                 "One attendance record should be returned");
 
-            verify(jurorPoolRepository, times(1)).findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue(
-                TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER);
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
 
             verify(appearanceRepository, times(1))
                 .findAllByCourtLocationLocCodeAndJurorNumber(TestConstants.VALID_COURT_LOCATION,
@@ -3165,9 +3161,8 @@ class JurorRecordServiceTest {
 
             final JurorPool jurorPool = createValidJurorPool(TestConstants.VALID_POOL_NUMBER, owner);
 
-            doReturn(jurorPool).when(jurorPoolRepository)
-                .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue(
-                    TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER);
+            doReturn(jurorPool).when(jurorPoolService)
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
 
             List<Appearance> appearances = new ArrayList<>();
             Appearance appearance1 = buildAppearance();
@@ -3188,10 +3183,8 @@ class JurorRecordServiceTest {
             assertEquals(2, jurorAttendanceDetailsResponseDto.getData().size(),
                 "Two attendance record should be returned");
 
-            verify(jurorPoolRepository, times(1))
-                .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue(
-                    TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER);
-
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
             verify(appearanceRepository, times(1))
                 .findAllByCourtLocationLocCodeAndJurorNumber(
                     TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER);
