@@ -518,6 +518,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
                 Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
                 juror.setReasonableAdjustmentCode(type);
                 juror.setReasonableAdjustmentMessage(message);
+                jurorPaperResponse.setReasonableAdjustmentsArrangements(message);
             });
 
 
