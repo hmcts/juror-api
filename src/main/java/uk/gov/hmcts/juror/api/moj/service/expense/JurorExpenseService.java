@@ -64,8 +64,6 @@ public interface JurorExpenseService {
     void updateExpense(String locCode, String jurorNumber, ExpenseType type, List<DailyExpense> request);
 
 
-    boolean isLongTrialDay(String jurorNumber, LocalDate localDate);
-
     void apportionSmartCard(String locCode, String jurorNumber, ApportionSmartCardRequest request);
 
     ExpenseRates getCurrentExpenseRates(boolean onlyFinancialLossLimit);

@@ -5356,49 +5356,6 @@ class JurorExpenseServiceTest {
         }
     }
 
-    @Nested
-    @DisplayName("public boolean isLongTrialDay(String jurorNumber, String poolNumber, LocalDate localDate)")
-    class IsLongTrialDay {
-        @ParameterizedTest
-        @ValueSource(ints = {
-            0, 1, 2, 3, 4, 5, 6, 7, 8, 9
-        })
-        void positiveFalse(int offset) {
-            assertTest(offset, false);
-        }
-
-        @ParameterizedTest
-        @ValueSource(ints = {
-            10, 11, 12, 13, 14, 15
-        })
-        void positiveTrue(int offset) {
-            assertTest(offset, true);
-        }
-
-        private void assertTest(int offset, boolean expectedValue) {
-            final LocalDate baseDay = LocalDate.of(2023, 1, 1);
-            LocalDate searchDate = baseDay.plusDays(offset);
-
-            List<Appearance> appearances = new ArrayList<>();
-            for (int i = 0; i < 16; i++) {
-                Appearance appearance = mock(Appearance.class);
-                doReturn(baseDay.plusDays(i)).when(appearance).getAttendanceDate();
-                appearances.add(appearance);
-            }
-            when(appearanceRepository.findAllByJurorNumber(
-                TestConstants.VALID_JUROR_NUMBER
-            )).thenReturn(appearances);
-
-            assertThat(jurorExpenseService.isLongTrialDay(
-                TestConstants.VALID_JUROR_NUMBER, searchDate))
-                .isEqualTo(expectedValue);
-
-            verify(appearanceRepository, times(
-                1)).findAllByJurorNumber(
-                TestConstants.VALID_JUROR_NUMBER
-            );
-        }
-    }
 
     @Test
     void positiveValidateExpenseTest() {

@@ -52,6 +52,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -517,21 +518,15 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             .courtLocation(courtLocation)
             .poolNumber(request.getPoolNumber())
             .nonAttendanceDay(Boolean.TRUE)
-            .attendanceType(
-                jurorExpenseService.isLongTrialDay(
-                    request.getJurorNumber(), nonAttendanceDate)
-                    ? AttendanceType.NON_ATTENDANCE_LONG_TRIAL
-                    : AttendanceType.NON_ATTENDANCE)
+            .attendanceType(AttendanceType.NON_ATTENDANCE)
             .appearanceStage(AppearanceStage.EXPENSE_ENTERED)
             .isDraftExpense(true)
             .createdBy(payload.getLogin())
             .build();
-
+        realignAttendanceType(appearance);
         jurorExpenseService.applyDefaultExpenses(appearance, jurorPool.getJuror());
-
         appearanceRepository.saveAndFlush(appearance);
-
-        log.debug("Completed adding a non attendance day for juror " + request.getJurorNumber());
+        log.debug("Completed adding a non attendance day for juror {}", request.getJurorNumber());
     }
 
     @Override
@@ -627,6 +622,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             }
 
             appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
+            appearanceRepository.save(appearance);
             realignAttendanceType(appearance);
             appearance.setAppearanceConfirmed(Boolean.TRUE);
 
@@ -1218,17 +1214,30 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
     @Override
     public void realignAttendanceType(Appearance appearance) {
+        List<Appearance> appearances = getAllAppearances(appearance.getJurorNumber());
+
+        List<LocalDate> localDates = appearances
+            .stream()
+            .map(Appearance::getAttendanceDate)
+            .distinct()
+            .sorted(Comparator.naturalOrder())
+            .toList();
+
+        appearances
+            .forEach(appearance1 -> realignAttendanceTypeInternal(appearance1,
+                isLongTrialDay(localDates, appearance1.getAttendanceDate())));
+
+        appearanceRepository.saveAll(appearances);
+    }
+
+
+    private void realignAttendanceTypeInternal(Appearance appearance, boolean isLongTrialDay) {
         if ((!Boolean.TRUE.equals(appearance.getNonAttendanceDay())
             && (appearance.getTimeIn() == null || appearance.getTimeOut() == null))
             || Boolean.TRUE.equals(appearance.getNoShow())
             || AttendanceType.ABSENT.equals(appearance.getAttendanceType())) {
             return;
         }
-
-        boolean isLongTrialDay =
-            jurorExpenseService.isLongTrialDay(
-                appearance.getJurorNumber(),
-                appearance.getAttendanceDate());
 
         if (appearance.getAttendanceType() != null
             && Set.of(AttendanceType.NON_ATTENDANCE, AttendanceType.NON_ATTENDANCE_LONG_TRIAL)
@@ -1244,5 +1253,13 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             appearance.setAttendanceType(isLongTrialDay
                 ? AttendanceType.HALF_DAY_LONG_TRIAL : AttendanceType.HALF_DAY);
         }
+    }
+
+    List<Appearance> getAllAppearances(String jurorNumber) {
+        return appearanceRepository.findAllByJurorNumber(jurorNumber);
+    }
+
+    boolean isLongTrialDay(List<LocalDate> appearanceDates, LocalDate dateToCheck) {
+        return appearanceDates.indexOf(dateToCheck) >= 10;
     }
 }
