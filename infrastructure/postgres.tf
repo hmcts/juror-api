@@ -19,7 +19,7 @@ module "postgresql_flexible" {
   pgsql_sku           = "GP_Standard_D4s_v3"
   pgsql_storage_mb    = var.pgsql_storage_mb
   pgsql_storage_tier  = var.pgsql_storage_tier
-  
+
   #Set the environment specific value to cause a password reset
   trigger_password_reset = var.trigger_password_reset
 
