@@ -227,6 +227,11 @@ class JurorRecordServiceTest {
     @InjectMocks
     JurorRecordServiceImpl jurorRecordService;
 
+    @AfterEach
+    void afterEach() {
+        TestUtils.afterAll();
+    }
+
     @Nested
     @DisplayName("void editJurorsBankDetails(RequestBankDetailsDto)")
     class EditJurorsBankDetails {
@@ -614,6 +619,7 @@ class JurorRecordServiceTest {
     @ValueSource(booleans = {true, false})
     void testJurorOverviewResponseDtoContainsWelshFlag(Boolean welshFlag) {
         final String jurorNumber = "111111111";
+        setupBureauUser();
         CourtLocation courtLocation = new CourtLocation();
         courtLocation.setLocCode(LOC_CODE);
         final List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, "400");
@@ -1490,6 +1496,7 @@ class JurorRecordServiceTest {
     void testBureauGetJurorOverviewPoliceCheckStatusNotChecked(PoliceCheck policeCheck) {
         final String jurorNumber = "111111111";
         final String locCode = "415";
+        setupBureauUser();
         CourtLocation courtLocation = new CourtLocation();
         courtLocation.setLocCode(locCode);
         List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, "400");
@@ -1514,6 +1521,7 @@ class JurorRecordServiceTest {
     void testBureauGetJurorOverviewPoliceCheckStatusNotCheckedThereWasAProblem() {
         final String jurorNumber = "111111111";
         final String locCode = "415";
+        setupBureauUser();
 
         CourtLocation courtLocation = new CourtLocation();
         courtLocation.setLocCode(locCode);
@@ -1544,7 +1552,7 @@ class JurorRecordServiceTest {
     void testBureauGetJurorOverviewPoliceCheckStatusInProgress(PoliceCheck policeCheck) {
         final String jurorNumber = "111111111";
         final String locCode = "415";
-
+        setupBureauUser();
         CourtLocation courtLocation = new CourtLocation();
         courtLocation.setLocCode(locCode);
 
@@ -1568,10 +1576,19 @@ class JurorRecordServiceTest {
             + "Progress'").isEqualTo(PoliceCheck.IN_PROGRESS);
     }
 
+    private void setupBureauUser() {
+        TestUtils.mockSecurityUtil(
+            BureauJwtPayload.builder()
+                .locCode("400")
+                .build()
+        );
+    }
+
     @Test
     void testBureauGetJurorOverviewPoliceCheckStatusPassed() {
         final String jurorNumber = "111111111";
         final String locCode = "415";
+        setupBureauUser();
 
         CourtLocation courtLocation = new CourtLocation();
         courtLocation.setLocCode(locCode);
@@ -1601,7 +1618,7 @@ class JurorRecordServiceTest {
     void testBureauGetJurorOverviewJurorResponded() {
         final String jurorNumber = "111111111";
         final String locCode = "415";
-
+        setupBureauUser();
         CourtLocation courtLocation = new CourtLocation();
         courtLocation.setLocCode(locCode);
 
@@ -1634,6 +1651,7 @@ class JurorRecordServiceTest {
     void testBureauGetJurorOverviewPoliceCheckStatusFailed() {
         final String jurorNumber = "111111111";
         final String locCode = "415";
+        setupBureauUser();
         CourtLocation courtLocation = new CourtLocation();
         courtLocation.setLocCode(locCode);
         List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, "400");
@@ -1658,6 +1676,7 @@ class JurorRecordServiceTest {
     void testBureauGetJurorSummonsReplyPaperResponse() {
         final String jurorNumber = "111111111";
         final String locCode = "415";
+        setupBureauUser();
         CourtLocation courtLocation = new CourtLocation();
         courtLocation.setLocCode(locCode);
         final List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, "400");

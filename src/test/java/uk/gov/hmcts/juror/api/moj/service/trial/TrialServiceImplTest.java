@@ -326,7 +326,7 @@ class TrialServiceImplTest {
             Appearance appearance = invocationOnMock.getArgument(0);
             appearance.setAttendanceType(AttendanceType.HALF_DAY);
             return null;
-        }).when(jurorAppearanceService).realignAttendanceType(any());
+        }).when(jurorAppearanceService).realignAttendanceType(any(Appearance.class));
 
         trialService.returnJury(payload, trialNumber, "415",
             createReturnJuryDto(false, "09:00", "10:00"));
@@ -366,7 +366,7 @@ class TrialServiceImplTest {
             Appearance appearance = invocationOnMock.getArgument(0);
             appearance.setAttendanceType(AttendanceType.FULL_DAY);
             return null;
-        }).when(jurorAppearanceService).realignAttendanceType(any());
+        }).when(jurorAppearanceService).realignAttendanceType(any(Appearance.class));
 
         trialService.returnJury(payload, trialNumber, "415",
             createReturnJuryDto(false, "09:00", "17:30"));
@@ -405,7 +405,7 @@ class TrialServiceImplTest {
             Appearance appearance = invocationOnMock.getArgument(0);
             appearance.setAttendanceType(AttendanceType.FULL_DAY_LONG_TRIAL);
             return null;
-        }).when(jurorAppearanceService).realignAttendanceType(any());
+        }).when(jurorAppearanceService).realignAttendanceType(any(Appearance.class));
 
         trialService.returnJury(payload, trialNumber, "415",
             createReturnJuryDto(false, "09:00", "17:30"));
@@ -444,7 +444,7 @@ class TrialServiceImplTest {
             Appearance appearance = invocationOnMock.getArgument(0);
             appearance.setAttendanceType(AttendanceType.HALF_DAY_LONG_TRIAL);
             return null;
-        }).when(jurorAppearanceService).realignAttendanceType(any());
+        }).when(jurorAppearanceService).realignAttendanceType(any(Appearance.class));
 
         trialService.returnJury(payload, trialNumber, "415",
             createReturnJuryDto(false, "09:00", "11:30"));
