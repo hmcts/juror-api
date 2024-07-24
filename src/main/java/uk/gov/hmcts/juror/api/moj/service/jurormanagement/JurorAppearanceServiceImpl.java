@@ -524,7 +524,6 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             .isDraftExpense(true)
             .createdBy(payload.getLogin())
             .build();
-        appearanceRepository.save(appearance);
         realignAttendanceType(appearance);
         jurorExpenseService.applyDefaultExpenses(appearance, jurorPool.getJuror());
         appearanceRepository.saveAndFlush(appearance);
@@ -624,7 +623,6 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             }
 
             appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
-            appearanceRepository.save(appearance);
             realignAttendanceType(appearance);
             appearance.setAppearanceConfirmed(Boolean.TRUE);
 
@@ -1216,6 +1214,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
     @Override
     public void realignAttendanceType(Appearance appearance) {
+        appearanceRepository.save(appearance);
         realignAttendanceType(appearance.getJurorNumber());
     }
 
