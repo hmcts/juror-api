@@ -524,6 +524,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             .isDraftExpense(true)
             .createdBy(payload.getLogin())
             .build();
+        appearanceRepository.save(appearance);
         realignAttendanceType(appearance);
         jurorExpenseService.applyDefaultExpenses(appearance, jurorPool.getJuror());
         appearanceRepository.saveAndFlush(appearance);
