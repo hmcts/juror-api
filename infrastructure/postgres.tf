@@ -20,6 +20,9 @@ module "postgresql_flexible" {
   pgsql_storage_mb    = var.pgsql_storage_mb
   pgsql_storage_tier  = var.pgsql_storage_tier
 
+  #Set the environment specific value to cause a password reset
+  trigger_password_reset = var.trigger_password_reset
+
   common_tags          = var.common_tags
   admin_user_object_id = var.jenkins_AAD_objectId
   pgsql_databases = [
