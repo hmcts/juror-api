@@ -56,4 +56,6 @@ public interface JurorAppearanceService {
     boolean hasAttendances(String jurorNumber);
 
     void realignAttendanceType(Appearance appearance);
+
+    void realignAttendanceType(String jurorNumber);
 }
