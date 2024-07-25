@@ -17,11 +17,11 @@ VALUES ('641600090', null, 'LNAMEFIVEFOURZERO', 'FNAMEFIVEFOURZERO', '1989-03-31
 ('641600092', null, 'LNAMEFIVEFOURTWO', 'FNAMEFIVEFOURTWO', '1989-03-31', '543 STREET NAME', 'ANYTOWN', 'CH1 2AN', true,
  null, 'M', 'Reasonable adjustment test message', null, null, true),
 ('641600093', null, 'LNAMEFIVEFOURTHREE', 'FNAMEFIVEFOURTHREE', '1989-03-31', '543 STREET NAME', 'ANYTOWN', 'CH1 2AN',
-true, 'Disq. on selection', null, null, false, null, null),
+true, 'Disq. on selection', null, null, false, null, false),
 ('641600094', null, 'LNAMEFIVEFOURFOUR', 'FNAMEFIVEFOURFOUR', '1989-03-31', '543 STREET NAME', 'ANYTOWN', 'CH1 2AN',
-true, null, null, null, null, null, null),
+true, null, null, null, null, null, false),
 ('641600095', null, 'LNAMEFIVEFOURFIVE', 'FNAMEFIVEFOURFIVE', '1989-03-31', '543 STREET NAME', 'ANYTOWN', 'CH1 2AN',
-true, null, null, null, null, null, null);
+true, null, null, null, null, null, false);
 
 INSERT INTO juror_mod.juror_pool (owner, juror_number, pool_number, is_active, status)
 VALUES ('416', '641600090', '416220901', true, 3),

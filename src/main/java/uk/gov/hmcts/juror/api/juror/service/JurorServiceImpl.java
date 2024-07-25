@@ -35,6 +35,7 @@ import uk.gov.hmcts.juror.api.moj.service.JurorPoolServiceImpl;
 import uk.gov.hmcts.juror.api.moj.service.PoolRequestService;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
+import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
 import java.time.LocalDateTime;
@@ -66,7 +67,7 @@ public class JurorServiceImpl implements JurorService {
     @Override
     public JurorDetailDto getJurorByJurorNumber(final String number) {
         log.debug("Getting juror {} details", number);
-        JurorPool jurorDetails = jurorPoolRepository.findByJurorJurorNumber(number);
+        JurorPool jurorDetails = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, number);
 
         JurorDetailDto.JurorDetailDtoBuilder builder = JurorDetailDto.builder();
         JurorStatus jurorStatus = new JurorStatus();
@@ -153,8 +154,9 @@ public class JurorServiceImpl implements JurorService {
             throw new NoPhoneNumberProvided();
         }
 
-        JurorPool jurorDetails = jurorPoolRepository.findByJurorJurorNumber(responseDto.getJurorNumber());
-        Juror juror = jurorPoolServiceImpl.getJurorPoolFromUser(jurorDetails.getJurorNumber()).getJuror();
+        JurorPool jurorDetails =
+            JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, responseDto.getJurorNumber());
+        Juror juror = jurorDetails.getJuror();
 
         if (!ObjectUtils.isEmpty(responseDto.getThirdParty()) && !ObjectUtils.isEmpty(
             responseDto.getThirdParty().getThirdPartyReason())
@@ -271,7 +273,7 @@ public class JurorServiceImpl implements JurorService {
             );
         }
 
-        final JurorPool jurorDetails = jurorPoolRepository.findByJurorJurorNumber(jurorNumber);
+        final JurorPool jurorDetails = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
         DigitalResponse.DigitalResponseBuilder<?, ?> builder = DigitalResponse.builder()
             .jurorNumber(dto.getJurorNumber())
             .dateOfBirth(dto.getDateOfBirth())
