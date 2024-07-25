@@ -1,10 +1,12 @@
 package uk.gov.hmcts.juror.api.juror.service;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.juror.api.bureau.service.UrgencyService;
@@ -29,6 +31,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjust
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.ReasonableAdjustmentsRepository;
 import uk.gov.hmcts.juror.api.moj.service.PoolRequestService;
+import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.validation.ResponseInspectorImpl;
 
 import java.time.LocalDate;
@@ -44,6 +47,7 @@ import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -105,6 +109,13 @@ public class JurorServiceImplTest {
 
     private JurorPool jurorPoolDetails;
 
+    MockedStatic<JurorPoolUtils> jurorPoolUtilsMockedStatic = mockStatic(JurorPoolUtils.class);
+
+    @After
+    public void after() {
+        jurorPoolUtilsMockedStatic.close();
+    }
+
     @Before
     public void setup() {
         Juror juror = new Juror();
@@ -131,7 +142,8 @@ public class JurorServiceImplTest {
     @Test
     public void getJurorByByJurorNumber_WithJurorNumber_ReturnsJurorDetails() {
 
-        doReturn(jurorPoolDetails).when(poolDetailsRepository).findByJurorJurorNumber(TEST_JUROR_NUMBER);
+        jurorPoolUtilsMockedStatic.when(() -> JurorPoolUtils
+            .getSingleActiveJurorPool(poolDetailsRepository, TEST_JUROR_NUMBER)).thenReturn(jurorPoolDetails);
 
         final JurorDetailDto jurorDto = defaultService.getJurorByJurorNumber(TEST_JUROR_NUMBER);
         assertThat(jurorDto)
@@ -151,7 +163,9 @@ public class JurorServiceImplTest {
     public void getJurorByJurorNumber_alternatePath_uniquePoolAttendTime() {
         doReturn(LocalDateTime.of(2024,1,1,8,0,0))
             .when(mockUniquePoolService).getPoolAttendanceTime("101");
-        doReturn(jurorPoolDetails).when(poolDetailsRepository).findByJurorJurorNumber(TEST_JUROR_NUMBER);
+
+        jurorPoolUtilsMockedStatic.when(() -> JurorPoolUtils
+            .getSingleActiveJurorPool(poolDetailsRepository, TEST_JUROR_NUMBER)).thenReturn(jurorPoolDetails);
 
         final JurorDetailDto jurorDto = defaultService.getJurorByJurorNumber(TEST_JUROR_NUMBER);
         assertThat(jurorDto.getCourtAttendTime()).isEqualTo("08:00");
@@ -317,8 +331,8 @@ public class JurorServiceImplTest {
 
         assertThat(entity.getVersion()).isEqualTo(version);
 
-
-        verify(poolDetailsRepository, times(1)).findByJurorJurorNumber(jurorNumber);
+        jurorPoolUtilsMockedStatic.verify(() -> JurorPoolUtils
+            .getSingleActiveJurorPool(poolDetailsRepository, jurorNumber), times(1));
         verify(urgencyService, times(1)).setUrgencyFlags(eq(entity), Mockito.isNull());
     }
 
