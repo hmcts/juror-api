@@ -333,6 +333,11 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         jurorPaperResponse = updateWelshFlagBasedOnResponse(jurorPaperResponse, jurorPool);
 
         paperResponseRepository.save(jurorPaperResponse);
+
+        Juror juror = jurorPool.getJuror();
+        juror.setResponseEntered(true);
+        jurorRepository.save(juror);
+
         log.info(String.format("Saved paper response for Juror %s", jurorNumber));
 
         jurorResponseCjsEmploymentRepository.saveAll(jurorPaperResponse.getCjsEmployments());
