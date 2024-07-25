@@ -91,6 +91,7 @@ public class WelshCourtLocation implements Serializable, ICourtLocation {
     private LocalDateTime lastUpdate;
 
     @PrePersist
+    @SuppressWarnings("PMD.UnusedPrivateMethod")
     private void prePersist() {
         preUpdate();
     }

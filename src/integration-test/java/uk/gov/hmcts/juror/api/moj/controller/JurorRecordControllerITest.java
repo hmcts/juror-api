@@ -961,6 +961,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         assertThat(jurorDetails.getOpticReference())
             .as("Expect the optic reference to be 18273645")
             .isEqualTo("18273645");
+        assertThat(jurorDetails.getCommonDetails().isResponseEntered())
+            .as("Expect the response entered flag to be true")
+            .isTrue();
     }
 
     @Test
@@ -3359,7 +3362,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, getCourtJwt("415"));
             ResponseEntity<JurorAttendanceDetailsResponseDto> response =
                 restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/attendance-detail/415/111111111")),
+                        URI.create("/api/v1/moj/juror-record/attendance-detail/111111111")),
                     JurorAttendanceDetailsResponseDto.class);
 
             assertThat(response.getStatusCode())
@@ -3430,7 +3433,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, getCourtJwt("415"));
             ResponseEntity<JurorAttendanceDetailsResponseDto> response =
                 restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/attendance-detail/415/222222222")),
+                        URI.create("/api/v1/moj/juror-record/attendance-detail/222222222")),
                     JurorAttendanceDetailsResponseDto.class);
 
             assertThat(response.getStatusCode())

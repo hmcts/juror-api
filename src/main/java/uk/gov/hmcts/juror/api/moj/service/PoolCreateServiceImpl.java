@@ -400,7 +400,9 @@ public class PoolCreateServiceImpl implements PoolCreateService {
 
             // throw an exception if we couldn't find the required number of voters
             if (size < poolCreateRequestDto.getCitizensToSummon()) {
-                throw new RuntimeException();
+                throw new MojException.BusinessRuleViolation(
+                    "Not enough voters found to create a pool",
+                    MojException.BusinessRuleViolation.ErrorCode.COULD_NOT_FIND_ENOUGH_VOTERS);
             }
 
             int sequenceNumber =
@@ -435,7 +437,9 @@ public class PoolCreateServiceImpl implements PoolCreateService {
             }
 
             if (jurorsFound < poolCreateRequestDto.getCitizensToSummon()) {
-                throw new RuntimeException(); // we were unable to find the required number of jurors who can serve.
+                throw new MojException.BusinessRuleViolation(
+                    "Not enough eligible voters found to create a pool",
+                    MojException.BusinessRuleViolation.ErrorCode.COULD_NOT_FIND_ENOUGH_ELIGIBLE_VOTERS);
             }
 
             // Saving records (bulk)

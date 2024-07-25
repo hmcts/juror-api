@@ -281,6 +281,10 @@ public class Juror extends Address implements Serializable {
     @NotAudited
     private String serviceCompCommsStatus;
 
+    @Column(name = "response_entered")
+    @NotAudited
+    private boolean responseEntered;
+
     @NotAudited
     @OneToMany(mappedBy = "juror", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
     private Set<JurorPool> associatedPools;
@@ -293,6 +297,7 @@ public class Juror extends Address implements Serializable {
 
 
     @PrePersist
+    @SuppressWarnings("PMD.UnusedPrivateMethod")
     private void prePersist() {
         dateCreated = LocalDateTime.now();
         preUpdate();

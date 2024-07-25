@@ -46,7 +46,7 @@ public class PoolCreateITest extends ContainerTest {
                 "CH1,CH2,CH3",
                 "N");
             assertThat(resultSet).isNotEmpty();
-            assertThat(resultSet.size()).isEqualTo(6); // should be 5 * 1.2 = 6
+            assertThat(resultSet.size()).isEqualTo(7); // should be 5 * 1.4 = 7
         } catch (SQLException e) {
             log.error("Unexpected error", e);
             fail("Unexpected error", e);

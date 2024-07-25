@@ -63,6 +63,7 @@ import uk.gov.hmcts.juror.api.moj.repository.PaymentDataRepository;
 import uk.gov.hmcts.juror.api.moj.service.ApplicationSettingService;
 import uk.gov.hmcts.juror.api.moj.service.FinancialAuditService;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
+import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.ValidationService;
 import uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
@@ -115,6 +116,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     private final ApplicationSettingService applicationSettingService;
     private final EntityManager entityManager;
     private final ExpenseRatesRepository expenseRatesRepository;
+    private final JurorPoolService jurorPoolService;
 
     Integer getJurorDefaultMileage(String jurorNumber) {
         Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
@@ -736,8 +738,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
      */
     @Override
     @Transactional
-    public void realignExpenseDetails(Appearance appearance, boolean isDeleted) {
-        if (isDeleted || AttendanceType.ABSENT.equals(appearance.getAttendanceType())) {
+    public void realignExpenseDetails(Appearance appearance) {
+        if (AttendanceType.ABSENT.equals(appearance.getAttendanceType())) {
             appearance.clearExpenses(true);
         } else if (!isAttendanceDay(appearance)) {
             appearance.clearTravelExpenses(true);
@@ -1019,7 +1021,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
         return PendingApproval.builder()
             .jurorNumber(jurorNumber)
-            .poolNumber(getActiveJurorPool(locCode, juror.getJurorNumber()).getPoolNumber())
+            .poolNumber(jurorPoolService.getLastJurorPoolForJuror(locCode, jurorNumber).getPoolNumber())
             .firstName(juror.getFirstName())
             .lastName(juror.getLastName())
             .amountDue(appearances.stream()
@@ -1034,16 +1036,6 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                         .version(appearance.getVersion())
                         .build()).toList()
             ).build();
-    }
-
-    private JurorPool getActiveJurorPool(String locCode, String jurorNumber) {
-        JurorPool jurorPool =
-            jurorPoolRepository.findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue(locCode,
-                jurorNumber);
-        if (jurorPool == null) {
-            throw new MojException.NotFound("No active pool found for juror: " + jurorNumber, null);
-        }
-        return jurorPool;
     }
 
     //This method is here to support unit testing
@@ -1272,18 +1264,6 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         }
         updateFoodDrinkClaimType(appearance, foodAndDrink.getFoodAndDrinkClaimType());
         appearance.setSmartCardAmountDue(foodAndDrink.getSmartCardAmount());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public boolean isLongTrialDay(String jurorNumber, LocalDate localDate) {
-        return appearanceRepository.findAllByJurorNumber(jurorNumber)
-            .stream()
-            .map(Appearance::getAttendanceDate)
-            .distinct()
-            .sorted(Comparator.naturalOrder())
-            .toList()
-            .indexOf(localDate) >= 10;//>= as 0 indexed
     }
 
 

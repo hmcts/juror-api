@@ -160,8 +160,11 @@ public class JurorManagementServiceImpl implements JurorManagementService {
                 jurorHistoryService.createReassignPoolMemberHistory(sourceJurorPool, targetPoolNumber,
                     receivingCourtLocation);
 
-                // queue a summons confirmation letter (Bureau only!)
-                if (JurorDigitalApplication.JUROR_OWNER.equals(payload.getOwner())) {
+                // queue a summons confirmation letter only if juror is Bureau owned, has responded and is police
+                // checked
+                if (JurorDigitalApplication.JUROR_OWNER.equals(payload.getOwner())
+                    && targetJurorPool.getStatus().getStatus() == IJurorStatus.RESPONDED
+                    && targetJurorPool.getJuror().getPoliceCheck().isChecked()) {
                     printDataService.printConfirmationLetter(targetJurorPool);
                 }
 
