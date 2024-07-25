@@ -18,6 +18,7 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -26,6 +27,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.Generated;
 import org.hibernate.envers.AuditOverride;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
@@ -97,6 +99,10 @@ public class Juror extends Address implements Serializable {
     @Column(name = "h_phone")
     @Length(max = 20)
     private String phoneNumber;
+
+    @Column(name = "m_phone")
+    @Length(max = 20)
+    private String altPhoneNumber;
 
     @Column(name = "w_phone")
     @Length(max = 20)
@@ -204,9 +210,7 @@ public class Juror extends Address implements Serializable {
     @Column(name = "summons_file")
     private String summonsFile;
 
-    @Column(name = "m_phone")
-    @Length(max = 20)
-    private String altPhoneNumber;
+
 
     @Length(max = 254)
     @Column(name = "h_email")
@@ -290,6 +294,12 @@ public class Juror extends Address implements Serializable {
     @JoinColumn(name = "juror_number", referencedColumnName = "juror_number")
     @NotAudited
     private JurorResponseCommon jurorResponse;
+
+    @Column(name = "phone_number_combined")
+    @Setter(AccessLevel.NONE)
+    @NotAudited
+    @Generated
+    private String phoneNumberCombined;
 
 
     @PrePersist
