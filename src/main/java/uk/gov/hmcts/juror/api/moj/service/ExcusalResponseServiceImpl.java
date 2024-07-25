@@ -218,13 +218,14 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
         log.info(String.format("Processing officer decision to refuse excusal for Juror %s", juror.getJurorNumber()));
 
         juror.setResponded(true);
-        juror.setExcusalDate(LocalDate.now());
-        juror.setExcusalCode(excusalDecisionDto.getExcusalReasonCode());
+        if(jurorPool.getStatus().getStatus() != IJurorStatus.EXCUSED) {
+            juror.setExcusalRejected(excusalDecisionDto.getExcusalReasonCode());
+            juror.setExcusalDate(null);
+        }
         juror.setUserEdtq(payload.getLogin());
         juror.setExcusalRejected("Y");
         jurorRepository.save(juror);
 
-        jurorPool.setStatus(getPoolStatus(IJurorStatus.RESPONDED));
         jurorPool.setUserEdtq(payload.getLogin());
         jurorPoolRepository.save(jurorPool);
 

@@ -106,9 +106,6 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
         String username = payload.getLogin();
         //If juror is in deferral maintenance, we should not revert the existing (granted) deferral
         if (!isInDeferralMaintenance) {
-            JurorStatus jurorStatus = new JurorStatus();
-            jurorStatus.setStatus(IJurorStatus.RESPONDED);
-            jurorPool.setStatus(jurorStatus);
             jurorPool.setUserEdtq(username);
             jurorPool.setDeferralCode(deferralRequestDto.getDeferralReason());
             jurorPool.setDeferralDate(null);
