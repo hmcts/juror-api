@@ -1,12 +1,5 @@
 drop function juror_mod.get_voters(bigint,text, text, text, text, text);
 
-alter table juror_mod.voters
-    drop column postcode_start,
-    add column postcode_start VARCHAR(10) generated always as (split_part(zip, ' ', 1)) stored;
-
-CREATE INDEX voters_postcode_start_idx ON juror_mod.voters (postcode_start,loc_code,perm_disqual,flags,dob);
-
-
 
 CREATE OR REPLACE FUNCTION juror_mod.get_voters(p_required bigint, p_mindate date, p_maxdate date, p_loccode text, p_areacode_list text, p_pool_type text)
  RETURNS TABLE(part_number character varying, juror_flags character varying)
