@@ -64,8 +64,6 @@ public interface JurorExpenseService {
     void updateExpense(String locCode, String jurorNumber, ExpenseType type, List<DailyExpense> request);
 
 
-    boolean isLongTrialDay(String jurorNumber, LocalDate localDate);
-
     void apportionSmartCard(String locCode, String jurorNumber, ApportionSmartCardRequest request);
 
     ExpenseRates getCurrentExpenseRates(boolean onlyFinancialLossLimit);
@@ -77,7 +75,7 @@ public interface JurorExpenseService {
 
     SummaryExpenseDetailsDto calculateSummaryTotals(String locCode, String jurorNumber);
 
-    void realignExpenseDetails(Appearance appearance, boolean isDeleted);
+    void realignExpenseDetails(Appearance appearance);
 
     PaginatedList<UnpaidExpenseSummaryResponseDto> getUnpaidExpensesForCourtLocation(
         String locCode, UnpaidExpenseSummaryRequestDto search);

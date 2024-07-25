@@ -59,6 +59,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -318,11 +319,14 @@ class TrialServiceImplTest {
                 appearance.setTimeOut(LocalTime.parse(checkInTime));
             }
 
-            when(jurorExpenseService.isLongTrialDay(panel.getJurorNumber(), now()))
-                .thenReturn(false);
             when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
                 now())).thenReturn(Optional.of(appearance));
         }
+        doAnswer(invocationOnMock -> {
+            Appearance appearance = invocationOnMock.getArgument(0);
+            appearance.setAttendanceType(AttendanceType.HALF_DAY);
+            return null;
+        }).when(jurorAppearanceService).realignAttendanceType(any(Appearance.class));
 
         trialService.returnJury(payload, trialNumber, "415",
             createReturnJuryDto(false, "09:00", "10:00"));
@@ -354,11 +358,15 @@ class TrialServiceImplTest {
             appearance.setTimeIn(null);
             appearance.setTimeOut(null);
 
-            when(jurorExpenseService.isLongTrialDay(panel.getJurorNumber(), now()))
-                .thenReturn(false);
             when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
                 now())).thenReturn(Optional.of(appearance));
         }
+
+        doAnswer(invocationOnMock -> {
+            Appearance appearance = invocationOnMock.getArgument(0);
+            appearance.setAttendanceType(AttendanceType.FULL_DAY);
+            return null;
+        }).when(jurorAppearanceService).realignAttendanceType(any(Appearance.class));
 
         trialService.returnJury(payload, trialNumber, "415",
             createReturnJuryDto(false, "09:00", "17:30"));
@@ -390,11 +398,14 @@ class TrialServiceImplTest {
             appearance.setTimeIn(null);
             appearance.setTimeOut(null);
 
-            when(jurorExpenseService.isLongTrialDay(panel.getJurorNumber(), now()))
-                .thenReturn(true);
             when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
                 now())).thenReturn(Optional.of(appearance));
         }
+        doAnswer(invocationOnMock -> {
+            Appearance appearance = invocationOnMock.getArgument(0);
+            appearance.setAttendanceType(AttendanceType.FULL_DAY_LONG_TRIAL);
+            return null;
+        }).when(jurorAppearanceService).realignAttendanceType(any(Appearance.class));
 
         trialService.returnJury(payload, trialNumber, "415",
             createReturnJuryDto(false, "09:00", "17:30"));
@@ -426,11 +437,14 @@ class TrialServiceImplTest {
             appearance.setTimeIn(null);
             appearance.setTimeOut(null);
 
-            when(jurorExpenseService.isLongTrialDay(panel.getJurorNumber(), now()))
-                .thenReturn(true);
             when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
                 now())).thenReturn(Optional.of(appearance));
         }
+        doAnswer(invocationOnMock -> {
+            Appearance appearance = invocationOnMock.getArgument(0);
+            appearance.setAttendanceType(AttendanceType.HALF_DAY_LONG_TRIAL);
+            return null;
+        }).when(jurorAppearanceService).realignAttendanceType(any(Appearance.class));
 
         trialService.returnJury(payload, trialNumber, "415",
             createReturnJuryDto(false, "09:00", "11:30"));

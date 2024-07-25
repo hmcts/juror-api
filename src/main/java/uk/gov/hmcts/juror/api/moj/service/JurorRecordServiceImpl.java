@@ -188,6 +188,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     private final HistoryTemplateService historyTemplateService;
     private final WelshCourtLocationRepository welshCourtLocationRepository;
     private final JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
+    private final JurorPoolService jurorPoolService;
 
     @Override
     @Transactional
@@ -1197,7 +1198,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         log.info("Juror {} attendance record requested by user {}", jurorNumber, payload.getLogin());
 
         SecurityUtil.validateCourtLocationPermitted(locCode);
-        JurorPool jurorPool = getJurorPoolByLocCode(locCode, jurorNumber);
+        JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
         JurorPoolUtils.checkReadAccessForCurrentUser(jurorPool, payload.getOwner());
 
         JurorAttendanceDetailsResponseDto responseDto = new JurorAttendanceDetailsResponseDto();
@@ -1227,6 +1228,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         return responseDto;
     }
+
 
     private List<JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData> getAttendanceData(String locCode,
                                                                                                   String jurorNumber) {
@@ -1425,16 +1427,6 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, poolNumber);
         if (jurorPool == null) {
             throw new MojException.NotFound("Juror number " + jurorNumber + " not found in pool " + poolNumber, null);
-        }
-        return jurorPool;
-    }
-
-    private JurorPool getJurorPoolByLocCode(String locCode, String jurorNumber) {
-        JurorPool jurorPool = jurorPoolRepository
-            .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue(locCode, jurorNumber);
-        if (jurorPool == null) {
-            throw new MojException.NotFound("No active pools found for juror number "
-                + jurorNumber + " at location " + locCode, null);
         }
         return jurorPool;
     }

@@ -42,8 +42,12 @@ public class FinancialAuditReportServiceImpl implements FinancialAuditReportServ
         SecurityUtil.validateCourtLocationPermitted(financialAuditDetails.getLocCode());
 
         FinancialAuditDetails forApprovalFinancialAuditDetails =
-            financialAuditService.getLastFinancialAuditDetailsWithType(
-                financialAuditDetails, FinancialAuditDetails.Type.GenericType.FOR_APPROVAL);
+            financialAuditService.getLastFinancialAuditDetailsFromTypes(
+                financialAuditDetails, Set.of(
+                    FinancialAuditDetails.Type.FOR_APPROVAL,
+                    FinancialAuditDetails.Type.FOR_APPROVAL_EDIT,
+                    FinancialAuditDetails.Type.APPROVED_EDIT
+                ));
 
         FinancialAuditReportResponse.FinancialAuditReportResponseBuilder builder =
             FinancialAuditReportResponse.builder()

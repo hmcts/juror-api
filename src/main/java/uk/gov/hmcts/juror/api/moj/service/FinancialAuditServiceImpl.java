@@ -115,14 +115,14 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
 
 
     @Override
-    public FinancialAuditDetails getLastFinancialAuditDetailsWithType(
-        FinancialAuditDetails financialAuditDetails,
-        FinancialAuditDetails.Type.GenericType genericType) {
-        return getFinancialAuditDetailsWithType(
+    public FinancialAuditDetails getLastFinancialAuditDetailsFromTypes(FinancialAuditDetails financialAuditDetails,
+                                                                       Set<FinancialAuditDetails.Type> types) {
+        return financialAuditDetailsRepository.findLastFinancialAuditDetailsWithAnyTypeWithin(
             financialAuditDetails,
-            genericType,
-            SortMethod.ASC);
+            types,
+            SortMethod.DESC);
     }
+
 
     @Override
     public Appearance getPreviousAppearance(FinancialAuditDetails financialAuditDetails, Appearance appearance) {
@@ -146,15 +146,6 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
         return getFinancialAuditDetails(appearance.getFinancialAudit(), appearance.getLocCode());
     }
 
-
-    private FinancialAuditDetails getFinancialAuditDetailsWithType(FinancialAuditDetails financialAuditDetails,
-                                                                   FinancialAuditDetails.Type.GenericType genericType,
-                                                                   SortMethod sortMethod) {
-        return financialAuditDetailsRepository.findLastFinancialAuditDetailsWithType(
-            financialAuditDetails,
-            genericType,
-            sortMethod);
-    }
 
     FinancialAuditDetailsAppearances getPreviousFinancialAuditDetailsAppearances(
         FinancialAuditDetails financialAuditDetails, Appearance appearance) {

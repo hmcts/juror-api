@@ -736,8 +736,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
      */
     @Override
     @Transactional
-    public void realignExpenseDetails(Appearance appearance, boolean isDeleted) {
-        if (isDeleted || AttendanceType.ABSENT.equals(appearance.getAttendanceType())) {
+    public void realignExpenseDetails(Appearance appearance) {
+        if (AttendanceType.ABSENT.equals(appearance.getAttendanceType())) {
             appearance.clearExpenses(true);
         } else if (!isAttendanceDay(appearance)) {
             appearance.clearTravelExpenses(true);
@@ -1272,18 +1272,6 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         }
         updateFoodDrinkClaimType(appearance, foodAndDrink.getFoodAndDrinkClaimType());
         appearance.setSmartCardAmountDue(foodAndDrink.getSmartCardAmount());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public boolean isLongTrialDay(String jurorNumber, LocalDate localDate) {
-        return appearanceRepository.findAllByJurorNumber(jurorNumber)
-            .stream()
-            .map(Appearance::getAttendanceDate)
-            .distinct()
-            .sorted(Comparator.naturalOrder())
-            .toList()
-            .indexOf(localDate) >= 10;//>= as 0 indexed
     }
 
 

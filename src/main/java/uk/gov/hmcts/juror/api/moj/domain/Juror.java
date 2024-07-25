@@ -297,6 +297,7 @@ public class Juror extends Address implements Serializable {
 
 
     @PrePersist
+    @SuppressWarnings("PMD.UnusedPrivateMethod")
     private void prePersist() {
         dateCreated = LocalDateTime.now();
         preUpdate();
