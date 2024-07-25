@@ -66,6 +66,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.PendingJurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.BulkService;
 import uk.gov.hmcts.juror.api.moj.service.JurorRecordService;
+import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import uk.gov.hmcts.juror.api.validation.JurorNumber;
 
@@ -98,6 +99,7 @@ public class JurorRecordController {
         @Size(min = 3, max = 3) @PathVariable("locCode")
         @Valid String locCode) {
         JurorDetailsResponseDto jurorDetails = jurorRecordService.getJurorDetails(payload, jurorNumber, locCode);
+        System.out.println("TMP: " + DataUtils.asJsonString(jurorDetails));
         return ResponseEntity.ok().body(jurorDetails);
     }
 
@@ -371,6 +373,7 @@ public class JurorRecordController {
                                  @Parameter(description = "Valid juror number", required = true)
                                  @JurorNumber @PathVariable("jurorNumber")
                                  @Valid String jurorNumber) {
+        System.out.println("TMP: " + DataUtils.asJsonString(requestDto));
         jurorRecordService.editJurorDetails(payload, requestDto, jurorNumber);
     }
 
