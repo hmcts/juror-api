@@ -99,7 +99,6 @@ public class JurorRecordController {
         @Size(min = 3, max = 3) @PathVariable("locCode")
         @Valid String locCode) {
         JurorDetailsResponseDto jurorDetails = jurorRecordService.getJurorDetails(payload, jurorNumber, locCode);
-        System.out.println("TMP: " + DataUtils.asJsonString(jurorDetails));
         return ResponseEntity.ok().body(jurorDetails);
     }
 
@@ -373,7 +372,6 @@ public class JurorRecordController {
                                  @Parameter(description = "Valid juror number", required = true)
                                  @JurorNumber @PathVariable("jurorNumber")
                                  @Valid String jurorNumber) {
-        System.out.println("TMP: " + DataUtils.asJsonString(requestDto));
         jurorRecordService.editJurorDetails(payload, requestDto, jurorNumber);
     }
 
