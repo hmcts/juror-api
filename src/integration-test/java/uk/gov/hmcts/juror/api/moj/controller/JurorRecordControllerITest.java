@@ -776,7 +776,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             UserType.COURT));
         ResponseEntity<JurorDetailsResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/detail/641600090/416")), JurorDetailsResponseDto.class);
+                URI.create("/api/v1/moj/juror-record/detail/641600090")), JurorDetailsResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -796,7 +796,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             UserType.COURT));
         ResponseEntity<JurorDetailsResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/detail/641600090/416")), JurorDetailsResponseDto.class);
+                URI.create("/api/v1/moj/juror-record/detail/641600090")), JurorDetailsResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -814,7 +814,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<JurorDetailsResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/detail/641600090/416")), JurorDetailsResponseDto.class);
+                URI.create("/api/v1/moj/juror-record/detail/641600090")), JurorDetailsResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -833,7 +833,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<JurorDetailsResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/detail/641600092/416")), JurorDetailsResponseDto.class);
+                URI.create("/api/v1/moj/juror-record/detail/641600092")), JurorDetailsResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -858,7 +858,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<JurorDetailsResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/detail/641600096/416")), JurorDetailsResponseDto.class);
+                URI.create("/api/v1/moj/juror-record/detail/641600096")), JurorDetailsResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -921,7 +921,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<JurorDetailsResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/detail/641600090/416")), JurorDetailsResponseDto.class);
+                URI.create("/api/v1/moj/juror-record/detail/641600090")), JurorDetailsResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -974,11 +974,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             UserType.COURT));
         ResponseEntity<JurorDetailsResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/detail/641600090/416")), JurorDetailsResponseDto.class);
+                URI.create("/api/v1/moj/juror-record/detail/641600090")), JurorDetailsResponseDto.class);
 
         assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be forbidden as its a Bureau only record")
-            .isEqualTo(HttpStatus.FORBIDDEN);
+            .as("Expect the HTTP GET request to be not found as its a Bureau only record")
+            .isEqualTo(HttpStatus.NOT_FOUND);
 
     }
 
@@ -990,11 +990,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             UserType.COURT));
         ResponseEntity<JurorDetailsResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/detail/641600090/416")), JurorDetailsResponseDto.class);
+                URI.create("/api/v1/moj/juror-record/detail/641600090")), JurorDetailsResponseDto.class);
 
         assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be forbidden as its a different court record")
-            .isEqualTo(HttpStatus.FORBIDDEN);
+            .as("Expect the HTTP GET request to be not found as its a different court record")
+            .isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test
@@ -1005,7 +1005,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             UserType.COURT));
         ResponseEntity<JurorDetailsResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/detail/641600099/416")), JurorDetailsResponseDto.class);
+                URI.create("/api/v1/moj/juror-record/detail/641600099")), JurorDetailsResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP Status for request to be NOT_FOUND")
@@ -1021,7 +1021,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<JurorOverviewResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/641600090/416")), JurorOverviewResponseDto.class);
+                URI.create("/api/v1/moj/juror-record/overview/641600090")), JurorOverviewResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1062,7 +1062,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<JurorOverviewResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/641600091/416")), JurorOverviewResponseDto.class);
+                URI.create("/api/v1/moj/juror-record/overview/641600091")), JurorOverviewResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1099,7 +1099,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<JurorOverviewResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/641600092/416")), JurorOverviewResponseDto.class);
+                URI.create("/api/v1/moj/juror-record/overview/641600092")), JurorOverviewResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1140,7 +1140,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<JurorOverviewResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/641600093/416")), JurorOverviewResponseDto.class);
+                URI.create("/api/v1/moj/juror-record/overview/641600093")), JurorOverviewResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1166,7 +1166,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<JurorOverviewResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/641600095/416")), JurorOverviewResponseDto.class);
+                URI.create("/api/v1/moj/juror-record/overview/641600095")), JurorOverviewResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1189,7 +1189,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<JurorOverviewResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/641600094/416")), JurorOverviewResponseDto.class);
+                URI.create("/api/v1/moj/juror-record/overview/641600094")), JurorOverviewResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1215,11 +1215,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             UserType.COURT));
         ResponseEntity<JurorDetailsResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/641600092/416")), JurorDetailsResponseDto.class);
+                URI.create("/api/v1/moj/juror-record/overview/641600092")), JurorDetailsResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be forbidden as its a summoned user")
-            .isEqualTo(HttpStatus.FORBIDDEN);
+            .isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNull();//Should not have a body as was not found
     }
 
     /**
@@ -1232,7 +1233,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<JurorSummonsReplyResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/summons-reply/641600090/416")),
+                    URI.create("/api/v1/moj/juror-record/summons-reply/641600090")),
                 JurorSummonsReplyResponseDto.class);
 
         assertThat(response.getStatusCode())
@@ -1265,7 +1266,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<JurorSummonsReplyResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/summons-reply/641600096/416")),
+                    URI.create("/api/v1/moj/juror-record/summons-reply/641600096")),
                 JurorSummonsReplyResponseDto.class);
 
         assertThat(response.getStatusCode())
@@ -1309,7 +1310,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<JurorSummonsReplyResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/summons-reply/641600097/416")),
+                    URI.create("/api/v1/moj/juror-record/summons-reply/641600097")),
                 JurorSummonsReplyResponseDto.class);
 
         assertThat(response.getStatusCode())
@@ -1352,7 +1353,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<JurorSummonsReplyResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/summons-reply/641600091/416")),
+                    URI.create("/api/v1/moj/juror-record/summons-reply/641600091")),
                 JurorSummonsReplyResponseDto.class);
 
         assertThat(response.getStatusCode())
@@ -1385,7 +1386,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<JurorSummonsReplyResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/summons-reply/641600092/416")),
+                    URI.create("/api/v1/moj/juror-record/summons-reply/641600092")),
                 JurorSummonsReplyResponseDto.class);
 
         assertThat(response.getStatusCode())
@@ -1413,7 +1414,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<JurorSummonsReplyResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/summons-reply/641600093/416")),
+                    URI.create("/api/v1/moj/juror-record/summons-reply/641600093")),
                 JurorSummonsReplyResponseDto.class);
 
         assertThat(response.getStatusCode())
@@ -1440,7 +1441,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<JurorSummonsReplyResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/summons-reply/641600095/416")),
+                    URI.create("/api/v1/moj/juror-record/summons-reply/641600095")),
                 JurorSummonsReplyResponseDto.class);
 
         assertThat(response.getStatusCode())
@@ -1464,7 +1465,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<JurorSummonsReplyResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/summons-reply/641600094/416")),
+                    URI.create("/api/v1/moj/juror-record/summons-reply/641600094")),
                 JurorSummonsReplyResponseDto.class);
 
         assertThat(response.getStatusCode())
@@ -1493,12 +1494,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             UserType.COURT));
         ResponseEntity<JurorSummonsReplyResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/summons-reply/641600092/416")),
+                    URI.create("/api/v1/moj/juror-record/summons-reply/641600092")),
                 JurorSummonsReplyResponseDto.class);
 
         assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be forbidden as its a summoned user")
-            .isEqualTo(HttpStatus.FORBIDDEN);
+            .as("Expect the HTTP GET request to be not found as its a summoned user")
+            .isEqualTo(HttpStatus.NOT_FOUND);
 
     }
 
@@ -1782,16 +1783,17 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_transferredRecord.sql"})
     void testGJurorContactLogsCourtsUserDifferentCourtLogs() throws Exception {
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", List.of("416"),
             UserType.COURT));
         ResponseEntity<JurorDetailsResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/123456789/415")), JurorDetailsResponseDto.class);
+                URI.create("/api/v1/moj/juror-record/overview/123456789")), JurorDetailsResponseDto.class);
 
         assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be forbidden as the juror is owned by a court this user does "
+            .as("Expect the HTTP GET request to be ok as the juror is owned by a court this user does "
                 + "not have access to")
-            .isEqualTo(HttpStatus.FORBIDDEN);
+            .isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNull();
     }
 
     private ContactLogRequestDto createContactLogRequestDto(String jurorNumber, String enquiryCode,
@@ -2587,7 +2589,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGetJurorOverviewBureauUserHappyPathPoliceCheckStatusNotChecked(String jurorNumber) {
         ResponseEntity<JurorOverviewResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber + "/415")),
+                    URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber)),
                 JurorOverviewResponseDto.class);
 
         assertThat(response.getStatusCode())
@@ -2604,7 +2606,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGetJurorOverviewBureauUserHappyPathPoliceCheckStatusInsufficientInformation(String jurorNumber) {
         ResponseEntity<JurorOverviewResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber + "/415")),
+                    URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber)),
                 JurorOverviewResponseDto.class);
 
         assertThat(response.getStatusCode())
@@ -2620,7 +2622,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGetJurorOverviewBureauUserHappyPathPoliceCheckStatusNotCheckedThereWasAproblem() {
         ResponseEntity<JurorOverviewResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/111111112/415")), JurorOverviewResponseDto.class);
+                URI.create("/api/v1/moj/juror-record/overview/111111112")), JurorOverviewResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -2636,7 +2638,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGetJurorOverviewBureauUserHappyPathPoliceCheckStatusInProgress(String jurorNumber) {
         ResponseEntity<JurorOverviewResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber + "/415")),
+                    URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber)),
                 JurorOverviewResponseDto.class);
 
         assertThat(response.getStatusCode())
@@ -2660,7 +2662,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             final String jurorNumber = "111111117";
             ResponseEntity<JurorOverviewResponseDto> response =
                 restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber + "/415")),
+                        URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber)),
                     JurorOverviewResponseDto.class);
 
             assertThat(response.getStatusCode())
@@ -2682,7 +2684,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             final String jurorNumber = "111111118";
             ResponseEntity<JurorOverviewResponseDto> response =
                 restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber + "/415")),
+                        URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber)),
                     JurorOverviewResponseDto.class);
 
             assertThat(response.getStatusCode())
@@ -2704,7 +2706,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             final String jurorNumber = "111111119";
             ResponseEntity<JurorOverviewResponseDto> response =
                 restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber + "/415")),
+                        URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber)),
                     JurorOverviewResponseDto.class);
 
             assertThat(response.getStatusCode())
@@ -2726,7 +2728,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             final String jurorNumber = "111111120";
             ResponseEntity<JurorOverviewResponseDto> response =
                 restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber + "/415")),
+                        URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber)),
                     JurorOverviewResponseDto.class);
 
             assertThat(response.getStatusCode())
@@ -2748,7 +2750,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             final String jurorNumber = "111111121";
             ResponseEntity<JurorOverviewResponseDto> response =
                 restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber + "/415")),
+                        URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber)),
                     JurorOverviewResponseDto.class);
 
             assertThat(response.getStatusCode())
@@ -2769,7 +2771,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGetJurorOverviewBureauUserHappyPathPoliceCheckStatusPassed() {
         ResponseEntity<JurorOverviewResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/111111114/415")), JurorOverviewResponseDto.class);
+                URI.create("/api/v1/moj/juror-record/overview/111111114")), JurorOverviewResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -2784,7 +2786,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGetJurorOverviewBureauUserHappyPathPoliceCheckStatusFailed() {
         ResponseEntity<JurorOverviewResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/111111115/415")), JurorOverviewResponseDto.class);
+                URI.create("/api/v1/moj/juror-record/overview/111111115")), JurorOverviewResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")

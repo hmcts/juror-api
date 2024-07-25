@@ -14,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.parameters.P;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -51,7 +50,6 @@ import uk.gov.hmcts.juror.api.moj.enumeration.PaymentMethod;
 import uk.gov.hmcts.juror.api.moj.service.BulkService;
 import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
-import uk.gov.hmcts.juror.api.validation.CourtLocationCode;
 import uk.gov.hmcts.juror.api.validation.JurorNumber;
 import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
@@ -60,10 +58,10 @@ import java.util.List;
 
 @RestController
 @Validated
-@RequestMapping(value = "/api/v1/moj/expenses/{loc_code}", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1/moj/expenses", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Expenses")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
-@PreAuthorize("(" + SecurityUtil.LOC_CODE_AUTH + " and " + SecurityUtil.IS_COURT + ")")
+@PreAuthorize(SecurityUtil.IS_COURT)
 @SuppressWarnings("PMD.ExcessiveImports")
 public class JurorExpenseController {
 
@@ -75,28 +73,26 @@ public class JurorExpenseController {
     @Operation(summary = "Get a jurors entered simplified expense detail for a given day and type.")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<CombinedSimplifiedExpenseDetailDto> getSimplifiedExpenseDetails(
-        @PathVariable("loc_code") @CourtLocationCode @Valid @P("loc_code") String locCode,
         @PathVariable(name = "juror_number") @JurorNumber @Valid String jurorNumber,
         @Valid @Parameter(description = "Valid expense type", required = true)
         @PathVariable("type") @NotNull ExpenseType type
     ) {
-        return ResponseEntity.ok(jurorExpenseService.getSimplifiedExpense(locCode, jurorNumber, type));
+        return ResponseEntity.ok(jurorExpenseService.getSimplifiedExpense(jurorNumber, type));
     }
 
     @PutMapping("/{juror_number}/{type}/edit")
     @Operation(summary = "Updates a jurors expenses for a given day.")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<List<DailyExpenseResponse>> postEditDailyExpense(
-        @PathVariable("loc_code") @CourtLocationCode @Valid @P("loc_code") String locCode,
         @PathVariable("type") @NotNull ExpenseType type,
         @PathVariable(name = "juror_number") @JurorNumber @Valid String jurorNumber,
         @Valid @RequestBody @NotNull List<DailyExpense> request
     ) {
         if (ExpenseType.DRAFT.equals(type)) {
             return ResponseEntity.ok(bulkService.process(request,
-                dailyExpense -> jurorExpenseService.updateDraftExpense(locCode, jurorNumber, dailyExpense)));
+                dailyExpense -> jurorExpenseService.updateDraftExpense(jurorNumber, dailyExpense)));
         } else {
-            jurorExpenseService.updateExpense(locCode, jurorNumber, type, request);
+            jurorExpenseService.updateExpense(jurorNumber, type, request);
         }
         return ResponseEntity.ok().build();
     }
@@ -106,13 +102,11 @@ public class JurorExpenseController {
         description = "POST (acting as GET as has request body)")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<List<GetEnteredExpenseResponse>> getEnteredExpenseDetails(
-        @PathVariable("loc_code") @CourtLocationCode @Valid @P("loc_code") String locCode,
         @PathVariable(name = "juror_number") @JurorNumber @Valid String jurorNumber,
         @Valid @RequestBody @NotNull GetEnteredExpenseRequest request
     ) {
         return ResponseEntity.ok(bulkService.process(request.getExpenseDates(),
             localDate -> jurorExpenseService.getEnteredExpense(
-                locCode,
                 jurorNumber,
                 localDate)));
     }
@@ -121,11 +115,10 @@ public class JurorExpenseController {
     @Operation(summary = "Apportion a smartcard value across a number of days.")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<Void> apportionSmartCard(
-        @PathVariable("loc_code") @CourtLocationCode @Valid @P("loc_code") String locCode,
         @PathVariable(name = "juror_number") @JurorNumber @Valid String jurorNumber,
         @Valid @RequestBody @NotNull ApportionSmartCardRequest request
     ) {
-        jurorExpenseService.apportionSmartCard(locCode, jurorNumber, request);
+        jurorExpenseService.apportionSmartCard(jurorNumber, request);
         return ResponseEntity.accepted().build();
     }
 
@@ -133,10 +126,9 @@ public class JurorExpenseController {
     @Operation(summary = "submit one or many draft expense records for approval (for a single juror)")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Void> submitDraftExpensesForApproval(
-        @PathVariable("loc_code") @CourtLocationCode @Valid @P("loc_code") String locCode,
         @PathVariable(name = "juror_number") @JurorNumber @Valid String jurorNumber,
         @Valid @RequestBody DateDto dto) {
-        jurorExpenseService.submitDraftExpensesForApproval(locCode, jurorNumber, dto.getDates());
+        jurorExpenseService.submitDraftExpensesForApproval(jurorNumber, dto.getDates());
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -145,11 +137,9 @@ public class JurorExpenseController {
     @Operation(summary = "Get a list of all of a jurors draft expenses")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<CombinedExpenseDetailsDto<ExpenseDetailsDto>> getDraftExpenses(
-        @PathVariable("loc_code") @CourtLocationCode @Valid @P("loc_code") String locCode,
         @PathVariable(name = "juror_number") @JurorNumber @Valid String jurorNumber
     ) {
         return ResponseEntity.ok(jurorExpenseService.getDraftExpenses(
-            locCode,
             jurorNumber));
     }
 
@@ -158,14 +148,12 @@ public class JurorExpenseController {
         description = "POST (acting as GET as has request body)")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<CombinedExpenseDetailsDto<ExpenseDetailsDto>> getExpenses(
-        @PathVariable("loc_code") @CourtLocationCode @Valid @P("loc_code") String locCode,
         @PathVariable(name = "juror_number") @JurorNumber @Valid String jurorNumber,
         @JsonFormat(pattern = ValidationConstants.DATE_FORMAT)
         @RequestBody @Valid @NotEmpty
         List<@NotNull LocalDate> dates
     ) {
         return ResponseEntity.ok(jurorExpenseService.getExpenses(
-            locCode,
             jurorNumber,
             dates));
     }
@@ -174,11 +162,9 @@ public class JurorExpenseController {
     @Operation(summary = "Get the count of each type of expense for a juror at a given court location.")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<ExpenseCount> getCounts(
-        @PathVariable("loc_code") @CourtLocationCode @Valid @P("loc_code") String locCode,
         @PathVariable(name = "juror_number") @JurorNumber @Valid String jurorNumber
     ) {
         return ResponseEntity.ok(jurorExpenseService.countExpenseTypes(
-            locCode,
             jurorNumber));
     }
 
@@ -186,40 +172,35 @@ public class JurorExpenseController {
     @Operation(summary = "Calculate the total expenses for a juror for the given input")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<CombinedExpenseDetailsDto<ExpenseDetailsForTotals>> calculateTotals(
-        @PathVariable("loc_code") @CourtLocationCode @Valid @P("loc_code") String locCode,
         @PathVariable(name = "juror_number") @JurorNumber @Valid String jurorNumber,
         @Validated(DailyExpense.CalculateTotals.class)
         @Valid @RequestBody CalculateTotalExpenseRequestDto dto) {
-        return ResponseEntity.ok(jurorExpenseService.calculateTotals(locCode, jurorNumber, dto));
+        return ResponseEntity.ok(jurorExpenseService.calculateTotals(jurorNumber, dto));
     }
 
     @GetMapping("/{payment_method}/pending-approval")
     @Operation(summary = "Get a list of all of a jurors expenses that are pending approval/re-approval")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<PendingApprovalList> getExpensesForApproval(
-        @PathVariable("loc_code") @CourtLocationCode @Valid @P("loc_code") String locCode,
         @PathVariable("payment_method") @Valid @NotNull PaymentMethod paymentMethod,
         @JsonFormat(pattern = "yyyy-MM-dd") @RequestParam(value = "from", required = false) LocalDate fromInclusive,
         @JsonFormat(pattern = "yyyy-MM-dd") @RequestParam(value = "to", required = false) LocalDate toInclusive
     ) {
         return ResponseEntity.ok(jurorExpenseService.getExpensesForApproval(
-            locCode,
             paymentMethod,
             fromInclusive, toInclusive));
     }
 
     @PostMapping("/{payment_method}/approve")
     @Operation(summary = "Approve all expense records of a given type (for a single juror)")
-    @PreAuthorize("(" + SecurityUtil.LOC_CODE_AUTH
-        + " and " + SecurityUtil.IS_COURT
+    @PreAuthorize("(" + SecurityUtil.IS_COURT
         + " and " + SecurityUtil.IS_MANAGER + ")")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<List<String>> approveExpenses(
-        @PathVariable("loc_code") @CourtLocationCode @Valid @P("loc_code") String locCode,
         @PathVariable("payment_method") @Valid @NotNull PaymentMethod paymentMethod,
         @Valid @RequestBody List<ApproveExpenseDto> dto) {
         List<String> financialAuditNumbers = bulkService.process(dto,
-            approveExpenseDto -> jurorExpenseService.approveExpenses(locCode, paymentMethod, approveExpenseDto));
+            approveExpenseDto -> jurorExpenseService.approveExpenses(paymentMethod, approveExpenseDto));
         return ResponseEntity.ok(financialAuditNumbers);
     }
 
@@ -228,9 +209,8 @@ public class JurorExpenseController {
         + "expense status (draft, for approval and approved)")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<SummaryExpenseDetailsDto> calculateSummaryTotals(
-        @PathVariable("loc_code") @CourtLocationCode @Valid @P("loc_code") String locCode,
         @PathVariable("juror_number") @Valid @NotBlank @JurorNumber String jurorNumber) {
-        return ResponseEntity.ok(jurorExpenseService.calculateSummaryTotals(locCode, jurorNumber));
+        return ResponseEntity.ok(jurorExpenseService.calculateSummaryTotals(jurorNumber));
     }
 
     @PostMapping("/unpaid-summary")
@@ -240,11 +220,10 @@ public class JurorExpenseController {
         + "date range")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<PaginatedList<UnpaidExpenseSummaryResponseDto>> getUnpaidExpenses(
-        @PathVariable("loc_code") @CourtLocationCode @Valid @P("loc_code") String locCode,
         @RequestBody @Valid @NotNull UnpaidExpenseSummaryRequestDto search) {
 
         PaginatedList<UnpaidExpenseSummaryResponseDto> responseDto =
-            jurorExpenseService.getUnpaidExpensesForCourtLocation(locCode, search);
+            jurorExpenseService.getUnpaidExpensesForCourtLocation(search);
 
         return ResponseEntity.ok().body(responseDto);
     }
@@ -254,7 +233,6 @@ public class JurorExpenseController {
     @Operation(summary = "Retrieve default expenses details and persists them to juror and appearance tables ")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<DefaultExpenseResponseDto> getDefaultExpenses(
-        @PathVariable("loc_code") @CourtLocationCode @Valid @P("loc_code") String locCode,
         @Valid @JurorNumber @Parameter(description = "Valid juror number", required = true)
         @PathVariable("juror_number") String jurorNumber) {
         DefaultExpenseResponseDto responseDto = jurorExpenseService.getDefaultExpensesForJuror(jurorNumber);
@@ -265,7 +243,6 @@ public class JurorExpenseController {
     @Operation(summary = "Update default expense details for juror and appearance and persists them to database ")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Void> setDefaultExpenses(
-        @PathVariable("loc_code") @CourtLocationCode @Valid @P("loc_code") String locCode,
         @PathVariable("juror_number") @Valid @NotBlank @JurorNumber String jurorNumber,
         @Valid @RequestBody RequestDefaultExpensesDto dto) {
         jurorExpenseService.setDefaultExpensesForJuror(jurorNumber, dto);

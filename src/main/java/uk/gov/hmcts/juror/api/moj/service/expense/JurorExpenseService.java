@@ -39,44 +39,44 @@ public interface JurorExpenseService {
 
     void setDefaultExpensesForJuror(String jurorNumber, RequestDefaultExpensesDto dto);
 
-    void submitDraftExpensesForApproval(String locCode, String jurorNumber, List<LocalDate> attendanceDates);
+    void submitDraftExpensesForApproval(String jurorNumber, List<LocalDate> attendanceDates);
 
-    DailyExpenseResponse updateDraftExpense(String locCode, String jurorNumber, DailyExpense dailyExpenseRequest);
+    DailyExpenseResponse updateDraftExpense(String jurorNumber, DailyExpense dailyExpenseRequest);
 
-    GetEnteredExpenseResponse getEnteredExpense(String locCode, String jurorNumber, LocalDate dateOfExpense);
+    GetEnteredExpenseResponse getEnteredExpense(String jurorNumber, LocalDate dateOfExpense);
 
     FinancialLossWarning validateAndUpdateFinancialLossExpenseLimit(Appearance appearance);
 
-    CombinedSimplifiedExpenseDetailDto getSimplifiedExpense(String locCode, String jurorNumber, ExpenseType type);
+    CombinedSimplifiedExpenseDetailDto getSimplifiedExpense(String jurorNumber, ExpenseType type);
 
-    String approveExpenses(String locCode, PaymentMethod paymentMethod, ApproveExpenseDto dto);
+    String approveExpenses(PaymentMethod paymentMethod, ApproveExpenseDto dto);
 
-    CombinedExpenseDetailsDto<ExpenseDetailsDto> getDraftExpenses(String locCode, String jurorNumber);
+    CombinedExpenseDetailsDto<ExpenseDetailsDto> getDraftExpenses(String jurorNumber);
 
     CombinedExpenseDetailsDto<ExpenseDetailsForTotals> calculateTotals(
-        String locCode, String jurorNumber, CalculateTotalExpenseRequestDto dto);
+        String jurorNumber, CalculateTotalExpenseRequestDto dto);
 
-    ExpenseCount countExpenseTypes(String locCode, String jurorNumber);
+    ExpenseCount countExpenseTypes(String jurorNumber);
 
-    PendingApprovalList getExpensesForApproval(String locCode, PaymentMethod paymentMethod,
+    PendingApprovalList getExpensesForApproval(PaymentMethod paymentMethod,
                                                LocalDate fromInclusive, LocalDate toInclusive);
 
-    void updateExpense(String locCode, String jurorNumber, ExpenseType type, List<DailyExpense> request);
+    void updateExpense(String jurorNumber, ExpenseType type, List<DailyExpense> request);
 
 
-    void apportionSmartCard(String locCode, String jurorNumber, ApportionSmartCardRequest request);
+    void apportionSmartCard(String jurorNumber, ApportionSmartCardRequest request);
 
     ExpenseRates getCurrentExpenseRates(boolean onlyFinancialLossLimit);
 
     void updateExpenseRates(ExpenseRatesDto expenseRatesDto);
 
     CombinedExpenseDetailsDto<ExpenseDetailsDto> getExpenses(
-        String locCode, String jurorNumber, List<LocalDate> dates);
+        String jurorNumber, List<LocalDate> dates);
 
-    SummaryExpenseDetailsDto calculateSummaryTotals(String locCode, String jurorNumber);
+    SummaryExpenseDetailsDto calculateSummaryTotals(String jurorNumber);
 
     void realignExpenseDetails(Appearance appearance);
 
     PaginatedList<UnpaidExpenseSummaryResponseDto> getUnpaidExpensesForCourtLocation(
-        String locCode, UnpaidExpenseSummaryRequestDto search);
+        UnpaidExpenseSummaryRequestDto search);
 }

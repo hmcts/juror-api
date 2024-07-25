@@ -37,11 +37,11 @@ import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 
 public interface JurorRecordService {
 
-    JurorDetailsResponseDto getJurorDetails(BureauJwtPayload payload, String jurorNumber, String locCode);
+    JurorDetailsResponseDto getJurorDetails(BureauJwtPayload payload, String jurorNumber);
 
     FilterableJurorDetailsResponseDto getJurorDetails(FilterableJurorDetailsRequestDto request);
 
-    JurorOverviewResponseDto getJurorOverview(BureauJwtPayload payload, String jurorNumber, String locCode);
+    JurorOverviewResponseDto getJurorOverview(BureauJwtPayload payload, String jurorNumber);
 
     JurorRecordSearchDto searchJurorRecord(BureauJwtPayload payload, String jurorNumber);
 
@@ -63,7 +63,7 @@ public interface JurorRecordService {
 
     BureauJurorDetailDto getBureauDetailsByJurorNumber(String jurorNumber, String owner);
 
-    JurorSummonsReplyResponseDto getJurorSummonsReply(BureauJwtPayload payload, String jurorNumber, String locCode);
+    JurorSummonsReplyResponseDto getJurorSummonsReply(BureauJwtPayload payload, String jurorNumber);
 
     @Transactional
     void setPendingNameChange(Juror juror, String pendingTitle,

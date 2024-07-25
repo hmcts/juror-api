@@ -459,7 +459,7 @@ class JurorRecordServiceTest {
             .findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(), any());
 
         JurorDetailsResponseDto jurorDetailsResponseDto = jurorRecordService
-            .getJurorDetails(buildPayload(COURT_OWNER), jurorNumber, LOC_CODE);
+            .getJurorDetails(buildPayload(COURT_OWNER), jurorNumber);
 
         assertThat(jurorDetailsResponseDto.getPrimaryPhone())
             .as("Expect the primary phone number to be the mobile number")
@@ -481,7 +481,7 @@ class JurorRecordServiceTest {
             .findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(), any());
 
         JurorDetailsResponseDto jurorDetailsResponseDto = jurorRecordService.getJurorDetails(buildPayload(COURT_OWNER),
-            jurorNumber, LOC_CODE);
+            jurorNumber);
 
         assertThat(jurorDetailsResponseDto.getPrimaryPhone())
             .as("Expect the primary phone number to be the mobile number")
@@ -503,7 +503,7 @@ class JurorRecordServiceTest {
             .findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(), any());
 
         JurorDetailsResponseDto jurorDetailsResponseDto = jurorRecordService.getJurorDetails(buildPayload(COURT_OWNER),
-            jurorNumber, LOC_CODE);
+            jurorNumber);
 
         assertThat(jurorDetailsResponseDto.getPrimaryPhone())
             .as("Expect the primary phone number to be the home number")
@@ -524,7 +524,7 @@ class JurorRecordServiceTest {
             .findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(), any());
 
         JurorDetailsResponseDto jurorDetailsResponseDto = jurorRecordService.getJurorDetails(buildPayload(COURT_OWNER),
-            jurorNumber, LOC_CODE);
+            jurorNumber);
 
         assertThat(jurorDetailsResponseDto.getPrimaryPhone())
             .as("Expect the primary phone number to be the mobile number")
@@ -545,7 +545,7 @@ class JurorRecordServiceTest {
             .findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(), any());
 
         JurorDetailsResponseDto jurorDetailsResponseDto = jurorRecordService.getJurorDetails(buildPayload(COURT_OWNER),
-            jurorNumber, LOC_CODE);
+            jurorNumber);
 
         assertThat(jurorDetailsResponseDto.getPrimaryPhone())
             .as("Expect the primary phone number to be the home number")
@@ -566,7 +566,7 @@ class JurorRecordServiceTest {
             .findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(), any());
 
         JurorDetailsResponseDto jurorDetailsResponseDto = jurorRecordService.getJurorDetails(buildPayload(COURT_OWNER),
-            jurorNumber, LOC_CODE);
+            jurorNumber);
 
         assertThat(jurorDetailsResponseDto.getPrimaryPhone())
             .as("Expect the primary phone number to be the work number")
@@ -592,7 +592,7 @@ class JurorRecordServiceTest {
         doReturn(Optional.of(pendingJuror)).when(pendingJurorRepository).findById(jurorPool.getJurorNumber());
 
         JurorDetailsResponseDto jurorDetailsResponseDto = jurorRecordService.getJurorDetails(buildPayload(COURT_OWNER),
-            jurorNumber, LOC_CODE);
+            jurorNumber);
 
         assertThat(jurorDetailsResponseDto.getCommonDetails().isManuallyCreated())
             .as("Expect juror to be manually created")
@@ -607,7 +607,7 @@ class JurorRecordServiceTest {
             .findByJurorJurorNumberAndIsActive(any(), anyBoolean());
 
         JurorOverviewResponseDto jurorOverviewResponseDto = jurorRecordService.getJurorOverview(buildPayload("415"),
-            jurorNumber, LOC_CODE);
+            jurorNumber);
 
         assertThat(jurorOverviewResponseDto)
             .as("No Juror record matched the juror number")
@@ -642,7 +642,7 @@ class JurorRecordServiceTest {
         expectedResponse.setWelshLanguageRequired(welshFlag);
 
         JurorOverviewResponseDto actualResponse =
-            jurorRecordService.getJurorOverview(buildPayload("400"), jurorNumber, LOC_CODE);
+            jurorRecordService.getJurorOverview(buildPayload("400"), jurorNumber);
 
         verify(jurorPoolRepository, times(1))
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
@@ -662,7 +662,7 @@ class JurorRecordServiceTest {
         when(courtLocationService.getCourtLocation(any())).thenReturn(getCourtLocation());
 
         assertThatExceptionOfType(MojException.Forbidden.class)
-            .isThrownBy(() -> jurorRecordService.getJurorOverview(buildPayload("415"), jurorNumber, locCode));
+            .isThrownBy(() -> jurorRecordService.getJurorOverview(buildPayload("415"), jurorNumber));
 
         verify(jurorPoolRepository, times(1))
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, getCourtLocation());
@@ -1509,7 +1509,7 @@ class JurorRecordServiceTest {
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
 
         JurorOverviewResponseDto jurorOverviewResponseDto = jurorRecordService.getJurorOverview(buildPayload("400"),
-            jurorNumber, locCode);
+            jurorNumber);
 
         verify(jurorPoolRepository, times(1))
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
@@ -1538,7 +1538,7 @@ class JurorRecordServiceTest {
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
 
         JurorOverviewResponseDto jurorOverviewResponseDto = jurorRecordService.getJurorOverview(buildPayload("400"),
-            jurorNumber, locCode);
+            jurorNumber);
 
         verify(jurorPoolRepository, times(1))
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
@@ -1568,7 +1568,7 @@ class JurorRecordServiceTest {
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
 
         JurorOverviewResponseDto jurorOverviewResponseDto = jurorRecordService.getJurorOverview(buildPayload("400"),
-            jurorNumber, locCode);
+            jurorNumber);
 
         verify(jurorPoolRepository, times(1))
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
@@ -1606,7 +1606,7 @@ class JurorRecordServiceTest {
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
 
         JurorOverviewResponseDto jurorOverviewResponseDto = jurorRecordService.getJurorOverview(buildPayload("400"),
-            jurorNumber, locCode);
+            jurorNumber);
 
         verify(jurorPoolRepository, times(1))
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
@@ -1640,7 +1640,7 @@ class JurorRecordServiceTest {
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
 
         jurorRecordService.getJurorOverview(buildPayload("400"),
-            jurorNumber, locCode);
+            jurorNumber);
 
         verify(jurorPoolRepository, times(1))
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
@@ -1664,7 +1664,7 @@ class JurorRecordServiceTest {
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
 
         JurorOverviewResponseDto jurorOverviewResponseDto = jurorRecordService.getJurorOverview(buildPayload("400"),
-            jurorNumber, locCode);
+            jurorNumber);
 
         verify(jurorPoolRepository, times(1))
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
@@ -1701,7 +1701,7 @@ class JurorRecordServiceTest {
         doReturn(jurorPools.get(0)).when(jurorPoolRepository)
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
 
-        jurorRecordService.getJurorOverview(buildPayload("400"), jurorNumber, locCode);
+        jurorRecordService.getJurorOverview(buildPayload("400"), jurorNumber);
 
         verify(jurorPoolRepository, times(1))
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);

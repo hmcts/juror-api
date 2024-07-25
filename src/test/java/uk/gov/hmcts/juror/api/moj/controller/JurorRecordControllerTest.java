@@ -133,9 +133,9 @@ class JurorRecordControllerTest {
         JurorOverviewResponseDto dto = new JurorOverviewResponseDto();
         dto.setCommonDetails(commonDto);
 
-        doReturn(dto).when(jurorRecordService).getJurorOverview(bureauJwtPayload, JUROR_NUMBER, LOC_CODE);
+        doReturn(dto).when(jurorRecordService).getJurorOverview(bureauJwtPayload, JUROR_NUMBER);
 
-        mockMvc.perform(get("/api/v1/moj/juror-record/overview/" + JUROR_NUMBER + "/" + LOC_CODE)
+        mockMvc.perform(get("/api/v1/moj/juror-record/overview/" + JUROR_NUMBER)
                 .principal(mockPrincipal)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(TestUtils.asJsonString(commonDto)))
@@ -146,7 +146,7 @@ class JurorRecordControllerTest {
             .andExpect(jsonPath("$['commonDetails']['policeCheck']", CoreMatchers.is("Not Checked")));
 
         verify(jurorRecordService, times(1))
-            .getJurorOverview(bureauJwtPayload, JUROR_NUMBER, LOC_CODE);
+            .getJurorOverview(bureauJwtPayload, JUROR_NUMBER);
     }
 
     /**
@@ -165,9 +165,9 @@ class JurorRecordControllerTest {
         JurorOverviewResponseDto dto = createJurorOverviewResponseDto(commonDto, overviewResponseLocalDate);
 
         doReturn(dto).when(jurorRecordService)
-            .getJurorOverview(bureauJwtPayload, JUROR_NUMBER, LOC_CODE);
+            .getJurorOverview(bureauJwtPayload, JUROR_NUMBER);
 
-        mockMvc.perform(get("/api/v1/moj/juror-record/overview/" + JUROR_NUMBER + "/" + LOC_CODE)
+        mockMvc.perform(get("/api/v1/moj/juror-record/overview/" + JUROR_NUMBER)
                 .principal(mockPrincipal)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(TestUtils.asJsonString(dto)))
@@ -207,7 +207,7 @@ class JurorRecordControllerTest {
             .andExpect(jsonPath("$['welshLanguageRequired']", CoreMatchers.is(true)));
 
         verify(jurorRecordService, times(1))
-            .getJurorOverview(bureauJwtPayload, JUROR_NUMBER, LOC_CODE);
+            .getJurorOverview(bureauJwtPayload, JUROR_NUMBER);
     }
 
 
@@ -225,9 +225,9 @@ class JurorRecordControllerTest {
         dto.setWelshLanguageRequired(true);
 
         doReturn(dto).when(jurorRecordService)
-            .getJurorOverview(bureauJwtPayload, JUROR_NUMBER, LOC_CODE);
+            .getJurorOverview(bureauJwtPayload, JUROR_NUMBER);
 
-        mockMvc.perform(get("/api/v1/moj/juror-record/overview/" + JUROR_NUMBER + "/" + LOC_CODE)
+        mockMvc.perform(get("/api/v1/moj/juror-record/overview/" + JUROR_NUMBER)
                 .principal(mockPrincipal)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(TestUtils.asJsonString(commonDto)))
@@ -238,7 +238,7 @@ class JurorRecordControllerTest {
             .andExpect(jsonPath("$['commonDetails']['policeCheck']", CoreMatchers.nullValue()));
 
         verify(jurorRecordService, times(1))
-            .getJurorOverview(bureauJwtPayload, JUROR_NUMBER, LOC_CODE);
+            .getJurorOverview(bureauJwtPayload, JUROR_NUMBER);
     }
 
     public class PrincipalDetailsArgumentResolver implements HandlerMethodArgumentResolver {

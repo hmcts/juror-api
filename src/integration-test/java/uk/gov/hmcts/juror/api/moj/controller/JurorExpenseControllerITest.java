@@ -114,7 +114,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     private static final String COURT_USER = "COURT_USER";
     private static final String BUREAU_USER = "BUREAU_USER";
 
-    public static final String BASE_URL = "/api/v1/moj/expenses/{loc_code}";
+    public static final String BASE_URL = "/api/v1/moj/expenses";
     private static final String URL_UNPAID_SUMMARY = BASE_URL + "/unpaid-summary";
 
 
@@ -185,16 +185,12 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @DisplayName("POST " + URL_UNPAID_SUMMARY)
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_setUp.sql"})
     class GetUnpaidExpenses {
-        public String toUrl(String courtLocation) {
-            return URL_UNPAID_SUMMARY.replace("{loc_code}", courtLocation);
-        }
 
         @Test
         @DisplayName("Valid court user - first page of results")
         void happyPathNoDateRangeFirstPage() throws Exception {
-            final String courtLocation = COURT_LOCATION;
-            final String jwt = createJwt(COURT_USER, courtLocation);
-            final URI uri = URI.create(toUrl(courtLocation));
+            final String jwt = createJwt(COURT_USER, COURT_LOCATION);
+            final URI uri = URI.create(URL_UNPAID_SUMMARY);
 
             UnpaidExpenseSummaryRequestDto requestDto =
                 UnpaidExpenseSummaryRequestDto.builder()
@@ -224,9 +220,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         @Test
         @DisplayName("Valid court user - last page of results")
         void happyPathNoDateRangeLastPage() {
-            final String courtLocation = COURT_LOCATION;
-            final String jwt = createJwt(COURT_USER, courtLocation);
-            final URI uri = URI.create(toUrl(courtLocation));
+            final String jwt = createJwt(COURT_USER, COURT_LOCATION);
+            final URI uri = URI.create(URL_UNPAID_SUMMARY);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
@@ -255,11 +250,10 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         @Test
         @DisplayName("Valid court user - filter by date range")
         void happyPathWithDateRange() {
-            final String courtLocation = COURT_LOCATION;
-            final String jwt = createJwt(COURT_USER, courtLocation);
+            final String jwt = createJwt(COURT_USER, COURT_LOCATION);
             final LocalDate minDate = LocalDate.of(2023, 1, 5);
             final LocalDate maxDate = LocalDate.of(2023, 1, 10);
-            final URI uri = URI.create(toUrl(courtLocation));
+            final URI uri = URI.create(URL_UNPAID_SUMMARY);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
@@ -293,7 +287,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             final String jwt = createJwtBureau(COURT_USER);
             final LocalDate minDate = LocalDate.of(2023, 1, 5);
             final LocalDate maxDate = LocalDate.of(2023, 1, 10);
-            final URI uri = URI.create(toUrl(COURT_LOCATION));
+            final URI uri = URI.create(URL_UNPAID_SUMMARY);
 
             UnpaidExpenseSummaryRequestDto requestDto =
                 UnpaidExpenseSummaryRequestDto.builder()
@@ -322,8 +316,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
         public static final String URL = BASE_URL + "/{juror_number}/default-expenses";
 
-        public String toUrl(String courtLocation, String jurorNumber) {
-            return URL.replace("{loc_code}", courtLocation)
+        public String toUrl(String jurorNumber) {
+            return URL
                 .replace("{juror_number}", jurorNumber);
         }
 
@@ -331,7 +325,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         @DisplayName("200 Ok - Happy Path")
         void retrieveDefaultExpensesHappyPath() throws Exception {
             final String jwt = createJwt(COURT_USER, COURT_LOCATION);
-            final URI uri = URI.create(toUrl(COURT_LOCATION, JUROR_NUMBER));
+            final URI uri = URI.create(toUrl(JUROR_NUMBER));
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
@@ -361,7 +355,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         @DisplayName("404 Not Found - Missing Juror Number")
         void invalidUrl() throws Exception {
             final String jwt = createJwt(COURT_USER, COURT_LOCATION);
-            final URI uri = URI.create(toUrl(COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER));
+            final URI uri = URI.create(toUrl(TestConstants.VALID_JUROR_NUMBER));
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
@@ -386,8 +380,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             return new BigDecimal(String.format("%.2f", value));
         }
 
-        public String toUrl(String courtLocation, String jurorNumber) {
-            return URL.replace("{loc_code}", courtLocation)
+        public String toUrl(String jurorNumber) {
+            return URL
                 .replace("{juror_number}", jurorNumber);
         }
 
@@ -406,7 +400,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             payload.setOverwriteExistingDraftExpenses(false);
 
             RequestEntity<RequestDefaultExpensesDto> request = new RequestEntity<>(payload, httpHeaders, POST,
-                URI.create(toUrl(COURT_LOCATION, JUROR_NUMBER)));
+                URI.create(toUrl(JUROR_NUMBER)));
             ResponseEntity<Void> response = template.exchange(request, Void.class);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -427,7 +421,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             payload.setOverwriteExistingDraftExpenses(true);
 
             RequestEntity<RequestDefaultExpensesDto> request = new RequestEntity<>(payload, httpHeaders, POST,
-                URI.create(toUrl(COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER)));
+                URI.create(toUrl(TestConstants.VALID_JUROR_NUMBER)));
             ResponseEntity<Void> response = template.exchange(request, Void.class);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
@@ -440,9 +434,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         public static final String URL = BASE_URL + "/{juror_number}/DRAFT/edit";
         public static final String METHOD_NAME = "postEditDailyExpense";
 
-        public String toUrl(String locCode, String jurorNumber) {
+        public String toUrl(String jurorNumber) {
             return URL
-                .replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
         }
 
@@ -527,7 +520,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(List.of(request), httpHeaders, PUT,
-                        URI.create(toUrl(COURT_LOCATION, jurorNumber))),
+                        URI.create(toUrl(jurorNumber))),
                     String.class);
             }
 
@@ -565,7 +558,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     .build();
 
                 ResponseEntity<String> response = triggerInvalid(jurorNumber, request);
-                assertNotFound(response, toUrl(COURT_LOCATION, jurorNumber),
+                assertNotFound(response, toUrl(jurorNumber),
                     "No draft appearance record found for juror: 123456789 on day: 2023-01-05");
             }
         }
@@ -580,7 +573,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<DailyExpenseResponse[]> response = template.exchange(
                     new RequestEntity<>(List.of(request), httpHeaders, PUT,
-                        URI.create(toUrl(COURT_LOCATION, jurorNumber))),
+                        URI.create(toUrl(jurorNumber))),
                     DailyExpenseResponse[].class);
                 assertThat(response.getStatusCode())
                     .as("Expect the HTTP GET request to be successful")
@@ -1179,9 +1172,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     class GetEnteredExpenseDetails {
         public static final String URL = BASE_URL + "/{juror_number}/entered";
 
-        public String toUrl(String locCode, String jurorNumber) {
+        public String toUrl(String jurorNumber) {
             return URL
-                .replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
         }
 
@@ -1202,7 +1194,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
                 ResponseEntity<List<GetEnteredExpenseResponse>> response = template.exchange(
                     new RequestEntity<>(request, httpHeaders, POST,
-                        URI.create(toUrl(COURT_LOCATION, JUROR_NUMBER))),
+                        URI.create(toUrl(JUROR_NUMBER))),
                     new ParameterizedTypeReference<>() {
                     });
                 assertThat(response.getStatusCode())
@@ -1395,7 +1387,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(request, httpHeaders, POST, URI.create(
-                        toUrl(COURT_LOCATION, jurorNumber)
+                        toUrl(jurorNumber)
                     )),
                     String.class);
             }
@@ -1415,7 +1407,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 LocalDate dateOfExpense = LocalDate.of(2024, 1, 11);
                 GetEnteredExpenseRequest request = buildRequest(dateOfExpense);
                 assertNotFound(triggerInvalid(JUROR_NUMBER, request),
-                    toUrl(COURT_LOCATION, JUROR_NUMBER), "No appearance record found for juror: "
+                    toUrl(JUROR_NUMBER), "No appearance record found for juror: "
                         + JUROR_NUMBER + " on day: 2024-01-11");
             }
 
@@ -1427,8 +1419,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 assertForbiddenResponse(template.exchange(
                         new RequestEntity<>(request, httpHeaders, POST, URI.create(
-                            toUrl(COURT_LOCATION, JUROR_NUMBER))), String.class),
-                    toUrl(COURT_LOCATION, JUROR_NUMBER));
+                            toUrl(JUROR_NUMBER))), String.class),
+                    toUrl(JUROR_NUMBER));
             }
         }
     }
@@ -1442,9 +1434,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
         public static final String URL = BASE_URL + "/{juror_number}/submit-for-approval";
 
-        public String toUrl(String locCode, String jurorNumber) {
+        public String toUrl(String jurorNumber) {
             return URL
-                .replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
         }
 
@@ -1462,7 +1453,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             payload.setDates(appearanceDates);
 
             RequestEntity<DateDto> request = new RequestEntity<>(payload, httpHeaders, POST,
-                URI.create(toUrl(COURT_LOCATION, JUROR_NUMBER)));
+                URI.create(toUrl(JUROR_NUMBER)));
             ResponseEntity<Void> response = template.exchange(request, Void.class);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -1500,7 +1491,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             payload.setDates(appearanceDates);
 
             RequestEntity<DateDto> request = new RequestEntity<>(payload, httpHeaders, POST,
-                URI.create(toUrl(COURT_LOCATION, JUROR_NUMBER)));
+                URI.create(toUrl(JUROR_NUMBER)));
             ResponseEntity<Void> response = template.exchange(request, Void.class);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -1536,7 +1527,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             payload.setDates(appearanceDates);
 
             RequestEntity<DateDto> request = new RequestEntity<>(payload, httpHeaders, POST,
-                URI.create(toUrl(COURT_LOCATION, JUROR_NUMBER)));
+                URI.create(toUrl(JUROR_NUMBER)));
             ResponseEntity<Void> response = template.exchange(request, Void.class);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
@@ -1556,26 +1547,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             payload.setDates(appearanceDates);
 
             RequestEntity<DateDto> request = new RequestEntity<>(payload, httpHeaders, POST,
-                URI.create(toUrl(COURT_LOCATION, "INVALID")));
-            ResponseEntity<Void> response = template.exchange(request, Void.class);
-
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        }
-
-        @Test
-        @DisplayName("Bad Request - Invalid Loc Code")
-        @SneakyThrows
-        void invalidLocCode() {
-            final String jwt = createJwt(COURT_USER, "INVALID");
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
-
-            DateDto payload = new DateDto();
-            List<LocalDate> appearanceDates = List.of(LocalDate.of(2024, 1, 1));
-            payload.setDates(appearanceDates);
-
-            RequestEntity<DateDto> request = new RequestEntity<>(payload, httpHeaders, POST,
-                URI.create(toUrl("INVALID", JUROR_NUMBER)));
+                URI.create(toUrl("INVALID")));
             ResponseEntity<Void> response = template.exchange(request, Void.class);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -1594,7 +1566,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             payload.setDates(appearanceDates);
 
             RequestEntity<DateDto> request = new RequestEntity<>(payload, httpHeaders, POST,
-                URI.create(toUrl(COURT_LOCATION, JUROR_NUMBER)));
+                URI.create(toUrl(JUROR_NUMBER)));
             ResponseEntity<String> response = template.exchange(request, String.class);
 
             assertBusinessRuleViolation(response,
@@ -1616,7 +1588,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             payload.setDates(new ArrayList<>());
 
             RequestEntity<DateDto> request = new RequestEntity<>(payload, httpHeaders, POST,
-                URI.create(toUrl(COURT_LOCATION, JUROR_NUMBER)));
+                URI.create(toUrl(JUROR_NUMBER)));
             ResponseEntity<Void> response = template.exchange(request, Void.class);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -1635,7 +1607,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             payload.setDates(appearanceDates);
 
             RequestEntity<DateDto> request = new RequestEntity<>(payload, httpHeaders, POST,
-                URI.create(toUrl("400", JUROR_NUMBER)));
+                URI.create(toUrl(JUROR_NUMBER)));
             ResponseEntity<Void> response = template.exchange(request, Void.class);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
@@ -1715,22 +1687,13 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         }
 
         public String toUrl(String jurorNumber, String expenseType) {
-            return toUrl(COURT_LOCATION, jurorNumber, expenseType);
-        }
-
-        public String toUrl(String locCode, String jurorNumber, String expenseType) {
             return URL
-                .replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber)
                 .replace("{type}", expenseType);
         }
 
         public URI toUri(String jurorNumber, String expenseType) {
             return URI.create(toUrl(jurorNumber, expenseType));
-        }
-
-        public URI toUri(String owner, String jurorNumber, String expenseType) {
-            return URI.create(toUrl(owner, jurorNumber, expenseType));
         }
 
         @Nested
@@ -2061,7 +2024,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
-                        toUri(owner, jurorNumber, type)),
+                        toUri(jurorNumber, type)),
                     String.class);
             }
 
@@ -2069,7 +2032,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void forbiddenIsBureauUser() throws Exception {
                 final String type = ExpenseType.FOR_APPROVAL.name();
                 assertForbiddenResponse(triggerInvalid("641500021", type, "400"),
-                    toUrl("400", "641500021", type));
+                    toUrl("641500021", type));
             }
         }
     }
@@ -2082,14 +2045,13 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     class GetDraftExpenses {
         public static final String URL = BASE_URL + "/{juror_number}/DRAFT/view";
 
-        public String toUrl(String locCode, String jurorNumber) {
+        public String toUrl(String jurorNumber) {
             return URL
-                .replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
         }
 
-        public URI toUri(String locCode, String jurorNumber) {
-            return URI.create(toUrl(locCode, jurorNumber));
+        public URI toUri(String jurorNumber) {
+            return URI.create(toUrl(jurorNumber));
         }
 
         @Nested
@@ -2101,7 +2063,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<CombinedExpenseDetailsDto<ExpenseDetailsDto>> response = template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
-                        toUri(locCode, jurorNumber)),
+                        toUri(jurorNumber)),
                     new ParameterizedTypeReference<>() {
                     });
 
@@ -2228,24 +2190,24 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             protected ResponseEntity<String> triggerInvalid(String locCode,
                                                             String jurorNumber,
                                                             String owner) throws Exception {
-                final String jwt = createJwt(COURT_USER, owner);
+                final String jwt = createJwt(COURT_USER, owner, locCode);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
-                        toUri(locCode, jurorNumber)),
+                        toUri(jurorNumber)),
                     String.class);
             }
 
             @Test
             void canNotAccessJurorPool() throws Exception {
-                assertForbiddenResponse(triggerInvalid("415", JUROR_NUMBER, "414"),
-                    toUrl("415", JUROR_NUMBER));
+                assertMojForbiddenResponse(triggerInvalid("415", JUROR_NUMBER, "414"),
+                    toUrl(JUROR_NUMBER), "User cannot access this juror pool");
             }
 
             @Test
             void isBureauUser() throws Exception {
                 assertForbiddenResponse(triggerInvalid("400", JUROR_NUMBER, "400"),
-                    toUrl("400", JUROR_NUMBER));
+                    toUrl(JUROR_NUMBER));
             }
         }
     }
@@ -2257,14 +2219,13 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     class GetExpenses {
         public static final String URL = BASE_URL + "/{juror_number}/view";
 
-        public String toUrl(String locCode, String jurorNumber) {
+        public String toUrl(String jurorNumber) {
             return URL
-                .replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
         }
 
-        public URI toUri(String locCode, String jurorNumber) {
-            return URI.create(toUrl(locCode, jurorNumber));
+        public URI toUri(String jurorNumber) {
+            return URI.create(toUrl(jurorNumber));
         }
 
         @Nested
@@ -2276,7 +2237,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<CombinedExpenseDetailsDto<ExpenseDetailsDto>> response = template.exchange(
                     new RequestEntity<>(payload, httpHeaders, POST,
-                        toUri(COURT_LOCATION, jurorNumber)),
+                        toUri(jurorNumber)),
                     new ParameterizedTypeReference<>() {
                     });
 
@@ -2381,20 +2342,19 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                                             String jurorNumber,
                                                             String owner,
                                                             List<LocalDate> payload) throws Exception {
-                final String jwt = createJwt(COURT_USER, owner);
+                final String jwt = createJwt(COURT_USER, owner, locCode);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(payload, httpHeaders, POST,
-                        toUri(locCode, jurorNumber)),
+                        toUri(jurorNumber)),
                     String.class);
             }
 
             @Test
             void canNotAccessJurorPool() throws Exception {
-                assertForbiddenResponse(triggerInvalid(COURT_LOCATION, JUROR_NUMBER, "414", List.of(
-                        LocalDate.of(2023, 1, 5)
-                    )),
-                    toUrl(COURT_LOCATION, JUROR_NUMBER));
+                assertMojForbiddenResponse(triggerInvalid(COURT_LOCATION, JUROR_NUMBER, "414", List.of(
+                    LocalDate.of(2023, 1, 5)
+                )), toUrl(JUROR_NUMBER), "User cannot access this juror pool");
             }
 
             @Test
@@ -2402,7 +2362,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertForbiddenResponse(triggerInvalid("400", JUROR_NUMBER, "400", List.of(
                         LocalDate.of(2023, 1, 5)
                     )),
-                    toUrl("400", JUROR_NUMBER));
+                    toUrl(JUROR_NUMBER));
             }
 
             @Test
@@ -2410,7 +2370,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertNotFound(triggerInvalid(COURT_LOCATION, JUROR_NUMBER, COURT_LOCATION, List.of(
                         LocalDate.of(2023, 1, 5),
                         LocalDate.of(2020, 1, 8))),
-                    toUrl(COURT_LOCATION, JUROR_NUMBER),
+                    toUrl(JUROR_NUMBER),
                     "Not all dates found");
             }
         }
@@ -2426,14 +2386,13 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     class ApproveExpenses {
         public static final String URL = BASE_URL + "/{payment_method}/approve";
 
-        public String toUrl(String locCode, String paymentMethod) {
+        public String toUrl(String paymentMethod) {
             return URL
-                .replace("{loc_code}", locCode)
                 .replace("{payment_method}", paymentMethod);
         }
 
-        public String toUrl(String locCode, PaymentMethod paymentMethod) {
-            return toUrl(locCode, paymentMethod.name());
+        public String toUrl(PaymentMethod paymentMethod) {
+            return toUrl(paymentMethod.name());
         }
 
         @Nested
@@ -2445,8 +2404,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<List<String>> response = template.exchange(
                     new RequestEntity<>(List.of(expenseDto), httpHeaders, POST,
-                        URI.create(toUrl(COURT_LOCATION, paymentMethod))),
-                    new ParameterizedTypeReference<>() {});
+                        URI.create(toUrl(paymentMethod))),
+                    new ParameterizedTypeReference<>() {
+                    });
                 assertThat(response.getStatusCode())
                     .as("Expect the HTTP GET request to be successful")
                     .isEqualTo(HttpStatus.OK);
@@ -2701,13 +2661,13 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                                             String username,
                                                             UserType userType, Set<Role> roles,
                                                             ApproveExpenseDto... expenseDto) throws Exception {
-                final String jwt = createJwt(username, owner, userType, roles, owner);
+                final String jwt = createJwt(username, owner, userType, roles, locCode);
 
 
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(List.of(expenseDto), httpHeaders, POST,
-                        URI.create(toUrl(locCode, paymentMethod))),
+                        URI.create(toUrl(paymentMethod))),
                     String.class);
             }
 
@@ -2726,7 +2686,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                         .version(1L)
                                         .build()
                                 )
-                            ).build()), toUrl(COURT_LOCATION, PaymentMethod.CASH),
+                            ).build()), toUrl(PaymentMethod.CASH),
                     "No appearance records found for Loc code: 415, Juror Number: 641500021 and approval type "
                         + "FOR_REAPPROVAL");
             }
@@ -2874,7 +2834,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                         .build()
                                 )
                             )
-                            .build()), toUrl("400", PaymentMethod.BACS));
+                            .build()), toUrl(PaymentMethod.BACS));
             }
 
             @Test
@@ -2903,7 +2863,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                         .build()
                                 )
                             )
-                            .build()), toUrl(COURT_LOCATION, PaymentMethod.CASH));
+                            .build()), toUrl(PaymentMethod.CASH));
             }
         }
     }
@@ -2921,10 +2881,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             return toUrl(jurorNumber, type.name());
         }
 
-        @Override
         public String toUrl(String jurorNumber, String type) {
             return URL
-                .replace("{loc_code}", COURT_LOCATION)
                 .replace("{juror_number}", jurorNumber)
                 .replace("{type}", type);
         }
@@ -3320,14 +3278,10 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
         private static final String JUROR_NUMBER = "641500020";
 
-        public String toUrl(String jurorNumber) {
-            return toUrl(COURT_LOCATION, jurorNumber);
-        }
 
         @Override
-        public String toUrl(String locCode, String jurorNumber) {
+        public String toUrl(String jurorNumber) {
             return URL
-                .replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
         }
 
@@ -3685,11 +3639,11 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                                             String jurorNumber,
                                                             CalculateTotalExpenseRequestDto request) throws
                 Exception {
-                final String jwt = createJwt(COURT_USER, owner);
+                final String jwt = createJwt(COURT_USER, owner, locCode);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(request, httpHeaders, POST,
-                        URI.create(toUrl(locCode, jurorNumber))),
+                        URI.create(toUrl(jurorNumber))),
                     String.class);
             }
 
@@ -3730,7 +3684,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                 )
                                 .build()
                         ))
-                        .build()), toUrl("400", JUROR_NUMBER));
+                        .build()), toUrl(JUROR_NUMBER));
             }
 
             @Test
@@ -3749,7 +3703,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                     )
                                     .build()
                             ))
-                            .build()), toUrl(COURT_LOCATION, JUROR_NUMBER),
+                            .build()), toUrl(JUROR_NUMBER),
                     "No appearance record found for juror: 641500020 on day: 2024-01-17");
             }
 
@@ -3820,9 +3774,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
         public static final String URL = BASE_URL + "/{juror_number}/counts";
 
-        private String toUrl(String locCode, String jurorNumber) {
+        private String toUrl(String jurorNumber) {
             return URL
-                .replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
         }
 
@@ -3831,11 +3784,11 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         class Positive {
             protected ExpenseCount triggerValid(String locCode,
                                                 String jurorNumber) throws Exception {
-                final String jwt = createJwt(COURT_USER, COURT_LOCATION);
+                final String jwt = createJwt(COURT_USER, COURT_LOCATION, locCode);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<ExpenseCount> response = template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
-                        URI.create(toUrl(locCode, jurorNumber))),
+                        URI.create(toUrl(jurorNumber))),
                     ExpenseCount.class);
                 assertThat(response.getStatusCode())
                     .as("Expect the HTTP GET request to be successful")
@@ -3876,36 +3829,30 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             protected ResponseEntity<String> triggerInvalid(String locCode,
                                                             String jurorNumber,
                                                             String owner) throws Exception {
-                final String jwt = createJwt(COURT_USER, owner);
+                final String jwt = createJwt(COURT_USER, owner, locCode);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
-                        URI.create(toUrl(locCode, jurorNumber))),
+                        URI.create(toUrl(jurorNumber))),
                     String.class);
             }
 
             @Test
             void canNotAccessJurorPool() throws Exception {
-                assertForbiddenResponse(triggerInvalid(COURT_LOCATION, "641500020", "414"),
-                    toUrl(COURT_LOCATION, "641500020"));
+                assertMojForbiddenResponse(triggerInvalid(COURT_LOCATION, "641500020", "414"),
+                    toUrl("641500020"), "User cannot access this juror pool");
             }
 
             @Test
             void isBureauUser() throws Exception {
                 assertForbiddenResponse(triggerInvalid("400", "641500020", "400"),
-                    toUrl("400", "641500020"));
+                    toUrl("641500020"));
             }
 
             @Test
             void invalidJurorNumber() throws Exception {
                 assertInvalidPathParam(triggerInvalid(COURT_LOCATION, "INVALID", COURT_LOCATION),
                     "getCounts.jurorNumber: must match \"^\\d{9}$\"");
-            }
-
-            @Test
-            void invalidLocCode() throws Exception {
-                assertInvalidPathParam(triggerInvalid("INVALID", "641500020", "INVALID"),
-                    "getCounts.locCode: must match \"^\\d{3}$\"");
             }
         }
     }
@@ -3917,8 +3864,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     class GetExpensesForApproval {
         public static final String URL = BASE_URL + "/{payment_method}/pending-approval";
 
-        private String toUrl(String locCode, PaymentMethod paymentMethod, LocalDate from, LocalDate to) {
-            return toUrl(locCode, paymentMethod.name(),
+        private String toUrl(PaymentMethod paymentMethod, LocalDate from, LocalDate to) {
+            return toUrl(paymentMethod.name(),
                 from == null
                     ? null
                     : from.format(DateTimeFormatter.ISO_DATE),
@@ -3927,8 +3874,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     : to.format(DateTimeFormatter.ISO_DATE));
         }
 
-        private String toUrl(String locCode, String paymentMethod, String from, String to) {
-            StringBuilder builder = new StringBuilder(URL.replace("{loc_code}", locCode)
+        private String toUrl(String paymentMethod, String from, String to) {
+            StringBuilder builder = new StringBuilder(URL
                 .replace("{payment_method}", paymentMethod));
 
             if (from != null) {
@@ -3962,7 +3909,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<PendingApprovalList> response = template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
-                        URI.create(toUrl(locCode, paymentMethod, from, to))),
+                        URI.create(toUrl(paymentMethod, from, to))),
                     PendingApprovalList.class);
                 assertThat(response.getStatusCode())
                     .as("Expect the HTTP GET request to be successful")
@@ -4344,11 +4291,11 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                                             String from,
                                                             String to,
                                                             String paymentMethod) throws Exception {
-                final String jwt = createJwt(COURT_USER, owner);
+                final String jwt = createJwt(COURT_USER, owner, locCode);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
-                        URI.create(toUrl(locCode, paymentMethod, from, to))),
+                        URI.create(toUrl(paymentMethod, from, to))),
                     String.class);
             }
 
@@ -4365,21 +4312,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            void invalidLocCode() throws Exception {
-                assertInvalidPathParam(triggerInvalid("INVALID", "INVALID", null, null, PaymentMethod.BACS.name()),
-                    "getExpensesForApproval.locCode: must match \"^\\d{3}$\"");
-            }
-
-            @Test
             void invalidPaymentType() throws Exception {
                 assertInvalidPathParam(triggerInvalid(null, null, "INVALID"),
                     "INVALID is the incorrect data type or is not in the expected format (payment_method)");
-            }
-
-            @Test
-            void unauthorizedLocCodeNotPartOfUser() throws Exception {
-                assertForbiddenResponse(triggerInvalid(COURT_LOCATION, "414", null, null, PaymentMethod.BACS.name()),
-                    toUrl("414", PaymentMethod.BACS.name(), null, null));
             }
         }
     }
@@ -4400,9 +4335,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             LocalDate.of(2023, 1, 7)
         );
 
-        public String toUrl(String locCode, String jurorNumber) {
+        public String toUrl(String jurorNumber) {
             return URL
-                .replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
         }
 
@@ -4423,7 +4357,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<Void> response = template.exchange(
                     new RequestEntity<>(request, httpHeaders, PATCH,
-                        URI.create(toUrl(COURT_LOCATION, jurorNumber))),
+                        URI.create(toUrl(jurorNumber))),
                     Void.class);
                 assertThat(response.getStatusCode())
                     .as("Expect the HTTP GET request to be successful")
@@ -4473,11 +4407,11 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 String jurorNumber,
                 ApportionSmartCardRequest request,
                 String owner) throws Exception {
-                final String jwt = createJwt(COURT_USER, owner);
+                final String jwt = createJwt(COURT_USER, owner, locCode);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(request, httpHeaders, PATCH,
-                        URI.create(toUrl(locCode, jurorNumber))),
+                        URI.create(toUrl(jurorNumber))),
                     String.class);
             }
 
@@ -4493,21 +4427,21 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void forbiddenIsBureauUser() throws Exception {
                 assertForbiddenResponse(triggerInvalid(
                         COURT_LOCATION, JUROR_NUMBER, getValidPayload(new BigDecimal("90.00")), "400"),
-                    toUrl(COURT_LOCATION, JUROR_NUMBER));
+                    toUrl(JUROR_NUMBER));
             }
 
             @Test
             void forbiddenNotPartOfPoolCourt() throws Exception {
-                assertForbiddenResponse(triggerInvalid(
+                assertMojForbiddenResponse(triggerInvalid(
                         COURT_LOCATION, JUROR_NUMBER, getValidPayload(new BigDecimal("90.00")), "414"),
-                    toUrl(COURT_LOCATION, JUROR_NUMBER));
+                    toUrl(JUROR_NUMBER), "User cannot access this juror pool");
             }
 
             @Test
             void jurorNotFound() throws Exception {
                 assertNotFound(triggerInvalid(COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER,
                         getValidPayload(new BigDecimal("90.00")), COURT_LOCATION),
-                    toUrl(COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER),
+                    toUrl(TestConstants.VALID_JUROR_NUMBER),
                     "One or more appearance records not found for Loc code: 415, "
                         + "Juror Number: 123456789 and Attendance Dates provided");
             }

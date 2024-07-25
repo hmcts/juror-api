@@ -66,9 +66,35 @@ public class JurorPoolServiceImpl implements JurorPoolService {
 
     @Override
     public JurorPool getJurorPoolFromUser(String jurorNumber) {
-        return Optional.ofNullable(jurorPoolRepository.findByJurorJurorNumberAndIsActiveAndOwner(
-                jurorNumber, true, SecurityUtil.getActiveOwner()))
+        return getJurorPoolFromUser(jurorNumber, false);
+    }
+
+    @Override
+    public JurorPool getJurorPoolFromUser(String jurorNumber, boolean allowBureauByPass) {
+        return getJurorPoolFromUserOptional(jurorNumber, allowBureauByPass)
             .orElseThrow(() -> new MojException.NotFound("Juror not found: " + jurorNumber, null));
+    }
+
+    public List<JurorPool> getActiveJurorPools(String jurorNumber) {
+        return jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true);
+    }
+
+    @Override
+    public Optional<JurorPool> getJurorPoolFromUserOptional(String jurorNumber) {
+        return getJurorPoolFromUserOptional(jurorNumber, false);
+    }
+
+    @Override
+    public Optional<JurorPool> getJurorPoolFromUserOptional(String jurorNumber, boolean allowBureauByPass) {
+        if (allowBureauByPass && SecurityUtil.isBureau()) {
+            List<JurorPool> jurorPools = getActiveJurorPools(jurorNumber);
+            if (jurorPools.isEmpty()) {
+                return Optional.empty();
+            }
+            return Optional.ofNullable(jurorPools.get(0));
+        }
+        return Optional.ofNullable(jurorPoolRepository.findByJurorJurorNumberAndIsActiveAndOwner(
+            jurorNumber, true, SecurityUtil.getActiveOwner()));
     }
 
     @Override

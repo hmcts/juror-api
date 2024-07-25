@@ -151,11 +151,29 @@ class JurorExpenseServiceTest {
     @InjectMocks
     private JurorExpenseServiceImpl jurorExpenseService;
 
+    private static final String USER_NAME = "exampleUser";
+
     @BeforeEach
     void beforeEach() {
         jurorExpenseService = spy(jurorExpenseService);
+        securityUtilMockedStatic = mockStatic(SecurityUtil.class);
+        securityUtilMockedStatic.when(SecurityUtil::getActiveOwner)
+            .thenReturn(TestConstants.VALID_COURT_LOCATION);
+        securityUtilMockedStatic.when(SecurityUtil::getLocCode)
+            .thenReturn(TestConstants.VALID_COURT_LOCATION);
+        securityUtilMockedStatic.when(SecurityUtil::getActiveLogin)
+            .thenReturn(USER_NAME);
     }
 
+    @AfterEach
+    void afterEach() {
+        if (securityUtilMockedStatic != null) {
+            securityUtilMockedStatic.close();
+        }
+        if (jurorUtilsMockedStatic != null) {
+            jurorUtilsMockedStatic.close();
+        }
+    }
 
     @Nested
     @DisplayName("public PaginatedList<UnpaidExpenseSummaryResponseDto> getUnpaidExpensesForCourtLocation")
@@ -171,7 +189,6 @@ class JurorExpenseServiceTest {
 
             UnpaidExpenseSummaryRequestDto request = mock(UnpaidExpenseSummaryRequestDto.class);
             assertThat(jurorExpenseService.getUnpaidExpensesForCourtLocation(
-                TestConstants.VALID_COURT_LOCATION,
                 request
             )).isEqualTo(paginatedList);
 
@@ -313,27 +330,11 @@ class JurorExpenseServiceTest {
     @Nested
     @DisplayName("RequestDefaultExpensesDto setDefaultExpenses")
     class SetDefaultExpenses {
-        @BeforeEach
-        void mockCurrentUser() {
-            jurorUtilsMockedStatic = mockStatic(JurorUtils.class);
-            securityUtilMockedStatic = mockStatic(SecurityUtil.class);
-            securityUtilMockedStatic.when(SecurityUtil::getActiveOwner)
-                .thenReturn(TestConstants.VALID_COURT_LOCATION);
-        }
-
-        @AfterEach
-        void afterEach() {
-            if (jurorUtilsMockedStatic != null) {
-                jurorUtilsMockedStatic.close();
-            }
-            if (securityUtilMockedStatic != null) {
-                securityUtilMockedStatic.close();
-            }
-        }
 
         @Test
         @DisplayName("Successfully set default values without overriding appearance")
         void setDefaultExpensesHappyPathNotOverrideDraftExpenses() {
+            jurorUtilsMockedStatic = mockStatic(JurorUtils.class);
             RequestDefaultExpensesDto dto = new RequestDefaultExpensesDto();
             dto.setTravelTime(LocalTime.of(4, 30));
             dto.setFinancialLoss(new BigDecimal("123.321"));
@@ -369,6 +370,7 @@ class JurorExpenseServiceTest {
         @DisplayName("Successfully set default values with overriding appearance")
         @SuppressWarnings("LineLength")
         void setDefaultExpensesHappyPathOverrideDraftExpenses() {
+            jurorUtilsMockedStatic = mockStatic(JurorUtils.class);
             RequestDefaultExpensesDto dto = new RequestDefaultExpensesDto();
             dto.setTravelTime(LocalTime.of(4, 30));
             dto.setFinancialLoss(new BigDecimal("123.321"));
@@ -456,7 +458,6 @@ class JurorExpenseServiceTest {
                     attendanceDates);
 
             jurorExpenseService.submitDraftExpensesForApproval(
-                TestConstants.VALID_COURT_LOCATION,
                 TestConstants.VALID_JUROR_NUMBER,
                 attendanceDates);
 
@@ -519,7 +520,6 @@ class JurorExpenseServiceTest {
 
             ArgumentCaptor<List<Appearance>> appearanceArgumentCaptor = ArgumentCaptor.forClass(List.class);
             jurorExpenseService.submitDraftExpensesForApproval(
-                TestConstants.VALID_COURT_LOCATION,
                 TestConstants.VALID_JUROR_NUMBER,
                 attendanceDates);
 
@@ -557,7 +557,6 @@ class JurorExpenseServiceTest {
 
             assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
                 jurorExpenseService.submitDraftExpensesForApproval(
-                    TestConstants.VALID_COURT_LOCATION,
                     TestConstants.VALID_JUROR_NUMBER,
                     attendanceDates));
 
@@ -1035,7 +1034,6 @@ class JurorExpenseServiceTest {
 
 
             DailyExpenseResponse response = jurorExpenseService.updateDraftExpense(
-                TestConstants.VALID_COURT_LOCATION,
                 jurorNumber, dailyExpense);
 
             assertThat(response).isNotNull();
@@ -1050,7 +1048,7 @@ class JurorExpenseServiceTest {
                 TestConstants.VALID_COURT_LOCATION, jurorNumber, dateOfExpense);
             verify(jurorExpenseService, times(1)).updateExpenseInternal(appearance, dailyExpense);
             verify(jurorExpenseService, times(1)).updateDraftExpense(
-                TestConstants.VALID_COURT_LOCATION, jurorNumber, dailyExpense);
+                jurorNumber, dailyExpense);
 
             verify(validationService, times(1))
                 .validate(dailyExpense, DailyExpense.NonAttendanceDay.class);
@@ -1076,7 +1074,7 @@ class JurorExpenseServiceTest {
             doReturn(responseMock).when(jurorExpenseService).updateExpenseInternal(appearance, dailyExpense);
 
             DailyExpenseResponse response = jurorExpenseService.updateDraftExpense(
-                TestConstants.VALID_COURT_LOCATION, jurorNumber, dailyExpense);
+                jurorNumber, dailyExpense);
 
             assertThat(response).isNotNull();
             assertThat(response.getFinancialLossWarning()).isEqualTo(responseMock.getFinancialLossWarning());
@@ -1088,7 +1086,7 @@ class JurorExpenseServiceTest {
             verify(jurorExpenseService, times(1)).getDraftAppearance(TestConstants.VALID_COURT_LOCATION,
                 jurorNumber, dateOfExpense);
             verify(jurorExpenseService, times(1)).updateExpenseInternal(appearance, dailyExpense);
-            verify(jurorExpenseService, times(1)).updateDraftExpense(TestConstants.VALID_COURT_LOCATION,
+            verify(jurorExpenseService, times(1)).updateDraftExpense(
                 jurorNumber, dailyExpense);
             verify(validationService, times(1))
                 .validate(dailyExpense, DailyExpense.AttendanceDay.class);
@@ -1123,7 +1121,7 @@ class JurorExpenseServiceTest {
             doReturn(responseMock).when(jurorExpenseService).updateExpenseInternal(appearance, dailyExpense);
 
             DailyExpenseResponse response =
-                jurorExpenseService.updateDraftExpense(TestConstants.VALID_COURT_LOCATION, jurorNumber, dailyExpense);
+                jurorExpenseService.updateDraftExpense(jurorNumber, dailyExpense);
 
             assertThat(response).isNotNull();
             assertThat(response.getFinancialLossWarning()).isEqualTo(responseMock.getFinancialLossWarning());
@@ -1131,7 +1129,7 @@ class JurorExpenseServiceTest {
             verify(dailyExpense, times(2)).getApplyToAllDays();
 
 
-            verify(jurorExpenseService, times(1)).updateDraftExpense(TestConstants.VALID_COURT_LOCATION, jurorNumber,
+            verify(jurorExpenseService, times(1)).updateDraftExpense(jurorNumber,
                 dailyExpense);
             verify(jurorExpenseService, times(1)).applyToAll(appearances, dailyExpense);
             verifyNoMoreInteractions(appearance, dailyExpense, jurorExpenseService, validationService);
@@ -2267,7 +2265,7 @@ class JurorExpenseServiceTest {
         LocalDate date = LocalDate.now();
         Appearance appearance = mock(Appearance.class);
         doReturn(appearance).when(jurorExpenseService).getAppearance(
-            TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER, date
+            TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, date
         );
         when(appearance.getAttendanceDate()).thenReturn(date);
         AppearanceStage stage = AppearanceStage.EXPENSE_ENTERED;
@@ -2295,7 +2293,6 @@ class JurorExpenseServiceTest {
 
         GetEnteredExpenseResponse data = jurorExpenseService.getEnteredExpense(
             TestConstants.VALID_JUROR_NUMBER,
-            TestConstants.VALID_POOL_NUMBER,
             date
         );
 
@@ -2313,11 +2310,10 @@ class JurorExpenseServiceTest {
 
         verify(jurorExpenseService, times(1))
             .getEnteredExpense(TestConstants.VALID_JUROR_NUMBER,
-                TestConstants.VALID_POOL_NUMBER,
                 date);
         verify(jurorExpenseService, times(1))
-            .getAppearance(TestConstants.VALID_JUROR_NUMBER,
-                TestConstants.VALID_POOL_NUMBER,
+            .getAppearance(TestConstants.VALID_COURT_LOCATION,
+                TestConstants.VALID_JUROR_NUMBER,
                 date);
         verify(appearance, times(1)).getAttendanceDate();
         verify(appearance, times(1)).getAppearanceStage();
@@ -2389,20 +2385,6 @@ class JurorExpenseServiceTest {
     @Nested
     @DisplayName("public void approveExpenses(ApproveExpenseDto dto)")
     class ApproveExpenses {
-
-        @BeforeEach
-        void beforeEach() {
-            securityUtilMockedStatic = mockStatic(SecurityUtil.class);
-            securityUtilMockedStatic.when(SecurityUtil::getActiveOwner)
-                .thenReturn(TestConstants.VALID_COURT_LOCATION);
-        }
-
-        @AfterEach
-        void afterEach() {
-            if (securityUtilMockedStatic != null) {
-                securityUtilMockedStatic.close();
-            }
-        }
 
         private User mockUser(String username) {
             securityUtilMockedStatic.when(SecurityUtil::getActiveLogin)
@@ -2492,7 +2474,6 @@ class JurorExpenseServiceTest {
             when(jurorPool.getOwner()).thenReturn(TestConstants.VALID_COURT_LOCATION);
             when(jurorPool.getCourt()).thenReturn(courtLocation);
             jurorExpenseService.approveExpenses(
-                TestConstants.VALID_COURT_LOCATION,
                 PaymentMethod.BACS,
                 approveExpenseDto);
 
@@ -2593,7 +2574,6 @@ class JurorExpenseServiceTest {
             when(jurorPool.getCourt()).thenReturn(courtLocation);
 
             jurorExpenseService.approveExpenses(
-                TestConstants.VALID_COURT_LOCATION,
                 PaymentMethod.CASH,
                 approveExpenseDto);
 
@@ -2648,7 +2628,6 @@ class JurorExpenseServiceTest {
             MojException.NotFound exception =
                 assertThrows(MojException.NotFound.class,
                     () -> jurorExpenseService.approveExpenses(
-                        TestConstants.VALID_COURT_LOCATION,
                         PaymentMethod.CASH,
                         approveExpenseDto),
                     "Expect exception to be thrown when no appearances are found");
@@ -2701,7 +2680,6 @@ class JurorExpenseServiceTest {
             MojException.NotFound exception =
                 assertThrows(MojException.NotFound.class,
                     () -> jurorExpenseService.approveExpenses(
-                        TestConstants.VALID_COURT_LOCATION,
                         PaymentMethod.CASH,
                         approveExpenseDto),
                     "Expect exception to be thrown when no appearances are found");
@@ -2754,7 +2732,6 @@ class JurorExpenseServiceTest {
             MojException.NotFound exception =
                 assertThrows(MojException.NotFound.class,
                     () -> jurorExpenseService.approveExpenses(
-                        TestConstants.VALID_COURT_LOCATION,
                         PaymentMethod.CASH,
                         approveExpenseDto),
                     "Expect exception to be thrown when no appearances are found");
@@ -2808,7 +2785,6 @@ class JurorExpenseServiceTest {
             MojException.NotFound exception =
                 assertThrows(MojException.NotFound.class,
                     () -> jurorExpenseService.approveExpenses(
-                        TestConstants.VALID_COURT_LOCATION,
                         PaymentMethod.BACS,
                         approveExpenseDto),
                     "Expect exception to be thrown when no appearances are found");
@@ -2876,7 +2852,6 @@ class JurorExpenseServiceTest {
             MojException.BusinessRuleViolation exception =
                 assertThrows(MojException.BusinessRuleViolation.class,
                     () -> jurorExpenseService.approveExpenses(
-                        TestConstants.VALID_COURT_LOCATION,
                         PaymentMethod.BACS,
                         approveExpenseDto),
                     "Expect exception to be thrown when user tries to approve his own expense");
@@ -2933,7 +2908,6 @@ class JurorExpenseServiceTest {
             MojException.BusinessRuleViolation exception =
                 assertThrows(MojException.BusinessRuleViolation.class,
                     () -> jurorExpenseService.approveExpenses(
-                        TestConstants.VALID_COURT_LOCATION,
                         PaymentMethod.BACS,
                         approveExpenseDto),
                     "Expect exception to be thrown when user tries to approve his own expense");
@@ -2995,7 +2969,6 @@ class JurorExpenseServiceTest {
             MojException.BusinessRuleViolation exception =
                 assertThrows(MojException.BusinessRuleViolation.class,
                     () -> jurorExpenseService.approveExpenses(
-                        TestConstants.VALID_COURT_LOCATION,
                         PaymentMethod.BACS,
                         approveExpenseDto),
                     "Expect exception to be thrown when user tries to approve his own expense");
@@ -3225,21 +3198,6 @@ class JurorExpenseServiceTest {
     @Nested
     @DisplayName("private boolean validateUserCanApprove(List<Appearance> appearances)")
     class ValidateUserCanApprove {
-        private static final String USER_NAME = "exampleUser";
-
-        @BeforeEach
-        void beforeEach() {
-            securityUtilMockedStatic = mockStatic(SecurityUtil.class);
-            securityUtilMockedStatic.when(SecurityUtil::getActiveLogin)
-                .thenReturn(USER_NAME);
-        }
-
-        @AfterEach
-        void afterEach() {
-            if (securityUtilMockedStatic != null) {
-                securityUtilMockedStatic.close();
-            }
-        }
 
         @Test
         void positiveTypicalTrue() {
@@ -3380,19 +3338,6 @@ class JurorExpenseServiceTest {
     @DisplayName("public CombinedSimplifiedExpenseDetailDto getSimplifiedExpense(JurorNumberAndPoolNumberDto request,\n"
         + "                                                                   ExpenseType type)")
     class GetSimplifiedExpense {
-        @BeforeEach
-        void mockCurrentUser() {
-            securityUtilMockedStatic = mockStatic(SecurityUtil.class);
-            securityUtilMockedStatic.when(SecurityUtil::getActiveOwner)
-                .thenReturn(TestConstants.VALID_COURT_LOCATION);
-        }
-
-        @AfterEach
-        void afterEach() {
-            if (securityUtilMockedStatic != null) {
-                securityUtilMockedStatic.close();
-            }
-        }
 
         @Test
         @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
@@ -3437,7 +3382,7 @@ class JurorExpenseServiceTest {
             )).thenReturn(List.of(appearance1, appearance2, appearance3));
 
             CombinedSimplifiedExpenseDetailDto data = jurorExpenseService.getSimplifiedExpense(
-                TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, expenseType
+                TestConstants.VALID_JUROR_NUMBER, expenseType
             );
             assertThat(data).isNotNull();
             assertThat(data.getExpenseDetails())
@@ -3456,7 +3401,7 @@ class JurorExpenseServiceTest {
             )).thenReturn(List.of());
 
             CombinedSimplifiedExpenseDetailDto result = jurorExpenseService.getSimplifiedExpense(
-                TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, expenseType
+                TestConstants.VALID_JUROR_NUMBER, expenseType
             );
             assertThat(result).isNotNull();
             assertThat(result.getExpenseDetails()).hasSize(0);
@@ -3510,7 +3455,7 @@ class JurorExpenseServiceTest {
             )).thenReturn(List.of(appearance1, appearance2, appearance3));
 
             CombinedSimplifiedExpenseDetailDto result = jurorExpenseService.getSimplifiedExpense(
-                TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, expenseType
+                TestConstants.VALID_JUROR_NUMBER, expenseType
             );
             assertThat(result).isNotNull();
             assertThat(result.getExpenseDetails()).hasSize(0);
@@ -3564,7 +3509,7 @@ class JurorExpenseServiceTest {
 
             MojException.Forbidden exception = assertThrows(MojException.Forbidden.class,
                 () -> jurorExpenseService.getSimplifiedExpense(
-                    TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, expenseType
+                    TestConstants.VALID_JUROR_NUMBER, expenseType
                 ),
                 "Should throw exception when juror tries to access a pool they do not have access to");
             assertThat(exception).isNotNull();
@@ -3649,7 +3594,7 @@ class JurorExpenseServiceTest {
                 mock(ExpenseDetailsDto.class), mock(ExpenseDetailsDto.class)));
 
             assertThat(jurorExpenseService.getExpenses(
-                TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, localDates))
+                TestConstants.VALID_JUROR_NUMBER, localDates))
                 .isEqualTo(result);
 
             verify(appearanceRepository, times(1))
@@ -3676,7 +3621,7 @@ class JurorExpenseServiceTest {
 
             MojException.NotFound exception = assertThrows(MojException.NotFound.class,
                 () -> jurorExpenseService.getExpenses(
-                    TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, localDates),
+                    TestConstants.VALID_JUROR_NUMBER, localDates),
                 "Should throw exception when dates size is not equal to 3");
             assertThat(exception).isNotNull();
             assertThat(exception.getCause()).isNull();
@@ -3687,19 +3632,6 @@ class JurorExpenseServiceTest {
     @Nested
     @DisplayName("CombinedExpenseDetailsDto<ExpenseDetailsDto> getExpenses(List<Appearance> appearances)")
     class GetExpensesList {
-        @BeforeEach
-        void mockCurrentUser() {
-            securityUtilMockedStatic = mockStatic(SecurityUtil.class);
-            securityUtilMockedStatic.when(SecurityUtil::getActiveOwner)
-                .thenReturn(TestConstants.VALID_COURT_LOCATION);
-        }
-
-        @AfterEach
-        void afterEach() {
-            if (securityUtilMockedStatic != null) {
-                securityUtilMockedStatic.close();
-            }
-        }
 
         @Test
         void positiveTypical() {
@@ -3830,7 +3762,7 @@ class JurorExpenseServiceTest {
             doReturn(combinedExpenseDetailsDto).when(jurorExpenseService).getExpenses(any());
 
             CombinedExpenseDetailsDto<ExpenseDetailsDto> result = jurorExpenseService.getDraftExpenses(
-                TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER
+                TestConstants.VALID_JUROR_NUMBER
             );
             assertThat(result).isNotNull();
             assertThat(result).isEqualTo(combinedExpenseDetailsDto);
@@ -3990,7 +3922,6 @@ class JurorExpenseServiceTest {
                 .createFinancialAuditDetail(any(), any(), any(), any());
 
             jurorExpenseService.updateExpense(
-                TestConstants.VALID_COURT_LOCATION,
                 TestConstants.VALID_JUROR_NUMBER,
                 expenseType,
                 List.of(dailyExpense1, dailyExpense2, dailyExpense3)
@@ -4036,7 +3967,6 @@ class JurorExpenseServiceTest {
 
             MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
                 () -> jurorExpenseService.updateExpense(
-                    TestConstants.VALID_COURT_LOCATION,
                     TestConstants.VALID_JUROR_NUMBER,
                     expenseType,
                     List.of(dailyExpense1)
@@ -4099,8 +4029,7 @@ class JurorExpenseServiceTest {
                 .updateExpenseInternal(appearance3, dailyExpense3);
 
             CombinedExpenseDetailsDto<ExpenseDetailsForTotals> result =
-                jurorExpenseService.calculateTotals(TestConstants.VALID_COURT_LOCATION,
-                    TestConstants.VALID_JUROR_NUMBER, request);
+                jurorExpenseService.calculateTotals(TestConstants.VALID_JUROR_NUMBER, request);
 
             assertThat(result).isNotNull();
             assertThat(result.getExpenseDetails()).contains(
@@ -4185,7 +4114,6 @@ class JurorExpenseServiceTest {
 
             CombinedExpenseDetailsDto<ExpenseDetailsForTotals> result =
                 jurorExpenseService.calculateTotals(
-                    TestConstants.VALID_COURT_LOCATION,
                     TestConstants.VALID_JUROR_NUMBER,
                     request);
 
@@ -4241,20 +4169,6 @@ class JurorExpenseServiceTest {
             when(COURT_LOCATION.getOwner()).thenReturn(TestConstants.VALID_COURT_LOCATION);
         }
 
-        @BeforeEach
-        void mockCurrentUser() {
-            securityUtilMockedStatic = mockStatic(SecurityUtil.class);
-            securityUtilMockedStatic.when(SecurityUtil::getActiveOwner)
-                .thenReturn(TestConstants.VALID_COURT_LOCATION);
-        }
-
-        @AfterEach
-        void afterEach() {
-            if (securityUtilMockedStatic != null) {
-                securityUtilMockedStatic.close();
-            }
-        }
-
         private Appearance mockAppearance(boolean isDraft, AppearanceStage stage) {
             Appearance appearance = mock(Appearance.class);
             when(appearance.getAppearanceStage()).thenReturn(stage);
@@ -4287,7 +4201,7 @@ class JurorExpenseServiceTest {
             )).thenReturn(appearances);
 
             assertThat(jurorExpenseService.countExpenseTypes(
-                TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER
+                TestConstants.VALID_JUROR_NUMBER
             )).isEqualTo(
                 new ExpenseCount(3, 4, 1, 2));
         }
@@ -4295,11 +4209,11 @@ class JurorExpenseServiceTest {
         @Test
         void positiveNotFound() {
             when(appearanceRepository.findAllByJurorNumberAndPoolNumber(
-                TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER
+                TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_JUROR_NUMBER
             )).thenReturn(List.of());
 
             assertThat(jurorExpenseService.countExpenseTypes(
-                TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER
+                TestConstants.VALID_JUROR_NUMBER
             )).isEqualTo(
                 new ExpenseCount(0, 0, 0, 0));
         }
@@ -4321,7 +4235,7 @@ class JurorExpenseServiceTest {
 
             MojException.Forbidden exception = assertThrows(MojException.Forbidden.class,
                 () -> jurorExpenseService.countExpenseTypes(
-                    TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER
+                    TestConstants.VALID_JUROR_NUMBER
                 ),
                 "Should throw exception user tries to access a pool they do not have access too");
             assertThat(exception).isNotNull();
@@ -4404,7 +4318,7 @@ class JurorExpenseServiceTest {
                     forReApprovedAppearances, true, from, to);
 
             PendingApprovalList pendingApprovalList = jurorExpenseService.getExpensesForApproval(
-                TestConstants.VALID_COURT_LOCATION, paymentMethod,
+                paymentMethod,
                 from, to
             );
             assertThat(pendingApprovalList.getPendingApproval()).containsExactly(
@@ -5379,21 +5293,6 @@ class JurorExpenseServiceTest {
     @DisplayName("public void apportionSmartCard(ApportionSmartCardRequest dto)")
     class ApportionSmartCard {
 
-        @BeforeEach
-        void mockCurrentUser() {
-            securityUtilMockedStatic = mockStatic(SecurityUtil.class);
-            securityUtilMockedStatic.when(SecurityUtil::getActiveOwner)
-                .thenReturn(TestConstants.VALID_COURT_LOCATION);
-        }
-
-        @AfterEach
-        void afterEach() {
-            if (securityUtilMockedStatic != null) {
-                securityUtilMockedStatic.close();
-            }
-        }
-
-
         private Appearance mockAppearance(CourtLocation courtLocation, boolean isDraft) {
             Appearance appearance = mock(Appearance.class);
             doReturn(courtLocation).when(appearance).getCourtLocation();
@@ -5428,8 +5327,7 @@ class JurorExpenseServiceTest {
             doNothing().when(jurorExpenseService).validateExpense(any());
             doNothing().when(jurorExpenseService).saveAppearancesWithExpenseRateIdUpdate(anyCollection());
 
-            jurorExpenseService.apportionSmartCard(TestConstants.VALID_COURT_LOCATION,
-                TestConstants.VALID_JUROR_NUMBER, dto);
+            jurorExpenseService.apportionSmartCard(TestConstants.VALID_JUROR_NUMBER, dto);
 
             verify(jurorExpenseService, times(1)).getAppearances(
                 TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, attendanceDates
@@ -5472,8 +5370,7 @@ class JurorExpenseServiceTest {
             doNothing().when(jurorExpenseService).validateExpense(any());
             doNothing().when(jurorExpenseService).saveAppearancesWithExpenseRateIdUpdate(anyCollection());
 
-            jurorExpenseService.apportionSmartCard(TestConstants.VALID_COURT_LOCATION,
-                TestConstants.VALID_JUROR_NUMBER, dto);
+            jurorExpenseService.apportionSmartCard(TestConstants.VALID_JUROR_NUMBER, dto);
 
             verify(jurorExpenseService, times(1)).getAppearances(
                 TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, attendanceDates);
@@ -5519,7 +5416,7 @@ class JurorExpenseServiceTest {
 
             MojException.Forbidden exception = assertThrows(MojException.Forbidden.class,
                 () -> jurorExpenseService.apportionSmartCard(
-                    TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, dto),
+                    TestConstants.VALID_JUROR_NUMBER, dto),
                 "Should throw exception when juror tries to access a pool they do not have access to");
             assertThat(exception).isNotNull();
             assertThat(exception.getCause()).isNull();
@@ -5554,8 +5451,7 @@ class JurorExpenseServiceTest {
                 TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, attendanceDates);
 
             MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
-                () -> jurorExpenseService.apportionSmartCard(TestConstants.VALID_COURT_LOCATION,
-                    TestConstants.VALID_JUROR_NUMBER, dto),
+                () -> jurorExpenseService.apportionSmartCard(TestConstants.VALID_JUROR_NUMBER, dto),
                 "Should throw exception when juror tries apportion non draft expenses");
             assertThat(exception).isNotNull();
             assertThat(exception.getCause()).isNull();

@@ -307,11 +307,10 @@ public class JurorRecordServiceImpl implements JurorRecordService {
      */
     @Override
     @Transactional(readOnly = true)
-    public JurorDetailsResponseDto getJurorDetails(BureauJwtPayload payload, String jurorNumber, String locCode) {
+    public JurorDetailsResponseDto getJurorDetails(BureauJwtPayload payload, String jurorNumber) {
         log.info("Retrieving juror record details for juror {} by user {}", jurorNumber, payload.getLogin());
-        CourtLocation courtLocation = courtLocationService.getCourtLocation(locCode);
         // should be only one active and editable record
-        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPool(jurorPoolRepository, jurorNumber, courtLocation);
+        JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber, true);
 
         // do a check to see if a court user should be able to view this record
         JurorPoolUtils.checkReadAccessForCurrentUser(jurorPool, payload.getOwner());
@@ -344,19 +343,17 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     @Override
     @Transactional(readOnly = true)
-    public JurorOverviewResponseDto getJurorOverview(BureauJwtPayload payload, String jurorNumber, String locCode) {
+    public JurorOverviewResponseDto getJurorOverview(BureauJwtPayload payload, String jurorNumber) {
         log.info("Retrieving juror record overview for juror {} by user {}", jurorNumber, payload.getLogin());
-        CourtLocation courtLocation = courtLocationService.getCourtLocation(locCode);
 
         // should be only one active and editable record
-        JurorPool jurorPool =
-            jurorPoolRepository.findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
-
+        Optional<JurorPool> jurorPoolOpt = jurorPoolService.getJurorPoolFromUserOptional(jurorNumber, true);
         //check if juror pool exists
-        if (jurorPool == null) {
+        if (jurorPoolOpt.isEmpty()) {
             log.debug("No active juror record found for juror {}", jurorNumber);
             return null;
         }
+        JurorPool jurorPool = jurorPoolOpt.get();
 
         // do a check to see if a court user should be able to view this record
         JurorPoolUtils.checkReadAccessForCurrentUser(jurorPool, payload.getOwner());
@@ -913,13 +910,11 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     @Override
     @Transactional
-    public JurorSummonsReplyResponseDto getJurorSummonsReply(BureauJwtPayload payload, String jurorNumber,
-                                                             String locCode) {
+    public JurorSummonsReplyResponseDto getJurorSummonsReply(BureauJwtPayload payload, String jurorNumber) {
         log.info("Retrieving juror summons reply info for juror {} by user {}", jurorNumber, payload.getLogin());
-        CourtLocation courtLocation = courtLocationService.getCourtLocation(locCode);
 
         // Can be multiple active court records if juror was transferred, filter by location
-        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPool(jurorPoolRepository, jurorNumber, courtLocation);
+        JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber, true);
 
         JurorPoolUtils.checkReadAccessForCurrentUser(jurorPool, payload.getOwner());
 

@@ -7,6 +7,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface JurorPoolService {
     PoolRequest getPoolRequest(String poolNumber);
@@ -16,6 +17,12 @@ public interface JurorPoolService {
     PaginatedList<JurorDetailsDto> search(JurorPoolSearch request);
 
     JurorPool getJurorPoolFromUser(String jurorNumber);
+
+    JurorPool getJurorPoolFromUser(String jurorNumber, boolean allowBureauByPass);
+
+    Optional<JurorPool> getJurorPoolFromUserOptional(String jurorNumber);
+
+    Optional<JurorPool> getJurorPoolFromUserOptional(String jurorNumber, boolean allowBureau);
 
     JurorPool getLastJurorPoolForJuror(String locCode, String jurorNumber);
 }

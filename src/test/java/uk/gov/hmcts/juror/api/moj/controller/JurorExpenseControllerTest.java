@@ -85,7 +85,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayName("Controller: " + JurorExpenseControllerTest.BASE_URL)
 @SuppressWarnings("PMD.ExcessiveImports")
 class JurorExpenseControllerTest {
-    public static final String BASE_URL = "/api/v1/moj/expenses/{loc_code}";
+    public static final String BASE_URL = "/api/v1/moj/expenses/";
 
     @Autowired
     private MockMvc mockMvc;
@@ -105,11 +105,6 @@ class JurorExpenseControllerTest {
     class UnpaidExpensesForCourtLocation {
 
         public static final String URL = BASE_URL + "/unpaid-summary";
-
-        public String toUrl(String locCode) {
-            return URL.replace("{loc_code}", locCode);
-        }
-
 
         private UnpaidExpenseSummaryRequestDto getValidRequest() {
             return UnpaidExpenseSummaryRequestDto.builder()
@@ -134,12 +129,12 @@ class JurorExpenseControllerTest {
 
             Mockito.doReturn(paginatedList)
                 .when(jurorExpenseService)
-                .getUnpaidExpensesForCourtLocation(any(), any());
+                .getUnpaidExpensesForCourtLocation(any());
 
             UnpaidExpenseSummaryRequestDto request = getValidRequest();
 
             mockMvc.perform(
-                    post(toUrl(TestConstants.VALID_COURT_LOCATION))
+                    post(URL)
                         .content(TestUtils.asJsonString(request))
                         .contentType(MediaType.APPLICATION_JSON)
                         .principal(mockPrincipal))
@@ -147,20 +142,8 @@ class JurorExpenseControllerTest {
                 .andExpect(status().isOk());
 
             verify(jurorExpenseService, times(1))
-                .getUnpaidExpensesForCourtLocation(TestConstants.VALID_COURT_LOCATION, request);
+                .getUnpaidExpensesForCourtLocation(request);
         }
-
-        @Test
-        @DisplayName("Invalid court location")
-        void invalidCourtLocation() throws Exception {
-            mockMvc.perform(
-                    post(toUrl(TestConstants.INVALID_COURT_LOCATION))
-                        .content(TestUtils.asJsonString(getValidRequest()))
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(status().isBadRequest());
-        }
-
 
         @Test
         @DisplayName("Invalid page number")
@@ -168,7 +151,7 @@ class JurorExpenseControllerTest {
             UnpaidExpenseSummaryRequestDto requestDto = getValidRequest();
             requestDto.setPageNumber(-1);
             mockMvc.perform(
-                    post(toUrl(TestConstants.VALID_COURT_LOCATION))
+                    post(URL)
                         .content(TestUtils.asJsonString(requestDto))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
@@ -181,7 +164,7 @@ class JurorExpenseControllerTest {
             UnpaidExpenseSummaryRequestDto requestDto = getValidRequest();
             requestDto.setPageLimit(-1);
             mockMvc.perform(
-                    post(toUrl(TestConstants.VALID_COURT_LOCATION))
+                    post(URL)
                         .content(TestUtils.asJsonString(requestDto))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
@@ -207,8 +190,8 @@ class JurorExpenseControllerTest {
 
         public static final String URL = BASE_URL + "/{juror_number}/default-expenses";
 
-        public String toUrl(String locCode, String jurorNumber) {
-            return URL.replace("{loc_code}", locCode)
+        public String toUrl(String jurorNumber) {
+            return URL
                 .replace("{juror_number}", jurorNumber);
         }
 
@@ -240,7 +223,7 @@ class JurorExpenseControllerTest {
             when(jurorExpenseService.getDefaultExpensesForJuror(jurorNumber)).thenReturn(responseItem);
 
             mockMvc.perform(get(
-                    toUrl(TestConstants.VALID_COURT_LOCATION, "111111111"))
+                    toUrl("111111111"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .principal(mockPrincipal))
                 .andDo(MockMvcResultHandlers.print())
@@ -259,8 +242,8 @@ class JurorExpenseControllerTest {
 
         public static final String URL = BASE_URL + "/{juror_number}/default-expenses";
 
-        public String toUrl(String locCode, String jurorNumber) {
-            return URL.replace("{loc_code}", locCode)
+        public String toUrl(String jurorNumber) {
+            return URL
                 .replace("{juror_number}", jurorNumber);
         }
 
@@ -276,7 +259,7 @@ class JurorExpenseControllerTest {
             payload.setOverwriteExistingDraftExpenses(false);
 
 
-            mockMvc.perform(post(toUrl(TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER))
+            mockMvc.perform(post(toUrl(TestConstants.VALID_JUROR_NUMBER))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(TestUtils.asJsonString(payload)))
                 .andDo(MockMvcResultHandlers.print())
@@ -296,8 +279,8 @@ class JurorExpenseControllerTest {
     class SubmitForApproval {
         private static final String URL = BASE_URL + "/{juror_number}/submit-for-approval";
 
-        public String toUrl(String locCode, String jurorNumber) {
-            return URL.replace("{loc_code}", locCode)
+        public String toUrl(String jurorNumber) {
+            return URL
                 .replace("{juror_number}", jurorNumber);
         }
 
@@ -307,9 +290,9 @@ class JurorExpenseControllerTest {
             DateDto payload = new DateDto();
             payload.setDates(List.of(LocalDate.of(2024, 1, 2)));
 
-            Mockito.doNothing().when(jurorExpenseService).submitDraftExpensesForApproval(any(), any(), any());
+            Mockito.doNothing().when(jurorExpenseService).submitDraftExpensesForApproval(any(), any());
 
-            mockMvc.perform(post(toUrl(TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER))
+            mockMvc.perform(post(toUrl(TestConstants.VALID_JUROR_NUMBER))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(TestUtils.asJsonString(payload)))
                 .andDo(MockMvcResultHandlers.print())
@@ -317,7 +300,6 @@ class JurorExpenseControllerTest {
 
             verify(jurorExpenseService, times(1))
                 .submitDraftExpensesForApproval(
-                    eq(TestConstants.VALID_COURT_LOCATION),
                     eq(TestConstants.VALID_JUROR_NUMBER),
                     eq(payload.getDates())
                 );
@@ -335,9 +317,9 @@ class JurorExpenseControllerTest {
                 TestConstants.VALID_JUROR_NUMBER,
                 TestConstants.VALID_POOL_NUMBER), null);
 
-            Mockito.doThrow(exception).when(jurorExpenseService).submitDraftExpensesForApproval(any(), any(), any());
+            Mockito.doThrow(exception).when(jurorExpenseService).submitDraftExpensesForApproval(any(), any());
 
-            mockMvc.perform(post(toUrl(TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER))
+            mockMvc.perform(post(toUrl(TestConstants.VALID_JUROR_NUMBER))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(TestUtils.asJsonString(payload)))
                 .andDo(MockMvcResultHandlers.print())
@@ -345,7 +327,6 @@ class JurorExpenseControllerTest {
 
             verify(jurorExpenseService, times(1))
                 .submitDraftExpensesForApproval(
-                    eq(TestConstants.VALID_COURT_LOCATION),
                     eq(TestConstants.VALID_JUROR_NUMBER),
                     eq(payload.getDates())
                 );
@@ -358,8 +339,8 @@ class JurorExpenseControllerTest {
     class GetEnteredExpenseDetails {
         public static final String URL = BASE_URL + "/{juror_number}/entered";
 
-        public String toUrl(String locCode, String jurorNumber) {
-            return URL.replace("{loc_code}", locCode)
+        public String toUrl(String jurorNumber) {
+            return URL
                 .replace("{juror_number}", jurorNumber);
         }
 
@@ -372,7 +353,7 @@ class JurorExpenseControllerTest {
                 GetEnteredExpenseRequest request = GetEnteredExpenseRequest.builder()
                     .expenseDates(List.of(LocalDate.now()))
                     .build();
-                mockMvc.perform(post(toUrl(TestConstants.VALID_COURT_LOCATION, TestConstants.INVALID_JUROR_NUMBER))
+                mockMvc.perform(post(toUrl(TestConstants.INVALID_JUROR_NUMBER))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(TestUtils.asJsonString(request)))
                     .andDo(MockMvcResultHandlers.print())
@@ -391,20 +372,19 @@ class JurorExpenseControllerTest {
                     .expenseDates(List.of(LocalDate.now(), LocalDate.now().plusDays(1)))
                     .build();
                 when(jurorExpenseService
-                    .getEnteredExpense(TestConstants.VALID_COURT_LOCATION,
-                        TestConstants.VALID_JUROR_NUMBER,
+                    .getEnteredExpense(TestConstants.VALID_JUROR_NUMBER,
                         request.getExpenseDates().get(0))
                 ).thenReturn(GetEnteredExpenseResponse.builder()
                     .totalPaid(new BigDecimal("1.23"))
                     .build());
                 when(jurorExpenseService
-                    .getEnteredExpense(TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER,
+                    .getEnteredExpense(TestConstants.VALID_JUROR_NUMBER,
                         request.getExpenseDates().get(1))
                 ).thenReturn(GetEnteredExpenseResponse.builder()
                     .totalPaid(new BigDecimal("2.34"))
                     .build());
 
-                mockMvc.perform(post(toUrl(TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER))
+                mockMvc.perform(post(toUrl(TestConstants.VALID_JUROR_NUMBER))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(TestUtils.asJsonString(request)))
                     .andDo(MockMvcResultHandlers.print())
@@ -414,8 +394,7 @@ class JurorExpenseControllerTest {
                     .andExpect(jsonPath("$.[1].total_paid", CoreMatchers.is(2.34)));
 
                 verify(jurorExpenseService, times(1))
-                    .getEnteredExpense(TestConstants.VALID_COURT_LOCATION,
-                        TestConstants.VALID_JUROR_NUMBER,
+                    .getEnteredExpense(TestConstants.VALID_JUROR_NUMBER,
                         request.getExpenseDates().get(0));
             }
         }
@@ -430,8 +409,8 @@ class JurorExpenseControllerTest {
 
         }
 
-        public String toUrl(String locCode, PaymentMethod paymentMethod) {
-            return URL.replace("{loc_code}", locCode)
+        public String toUrl(PaymentMethod paymentMethod) {
+            return URL
                 .replace("{payment_method}", paymentMethod.name());
         }
 
@@ -450,7 +429,7 @@ class JurorExpenseControllerTest {
                             .version(1L).build()
                     ))
                     .build();
-                mockMvc.perform(post(toUrl(TestConstants.VALID_COURT_LOCATION, PaymentMethod.CASH))
+                mockMvc.perform(post(toUrl(PaymentMethod.CASH))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(TestUtils.asJsonString(request)))
                     .andDo(MockMvcResultHandlers.print())
@@ -484,16 +463,16 @@ class JurorExpenseControllerTest {
                             .version(1L).build()
                     ))
                     .build();
-                mockMvc.perform(post(toUrl(TestConstants.VALID_COURT_LOCATION, PaymentMethod.BACS))
+                mockMvc.perform(post(toUrl(PaymentMethod.BACS))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(TestUtils.asJsonString(List.of(request1, request2))))
                     .andDo(MockMvcResultHandlers.print())
                     .andExpect(status().isOk());
 
                 verify(jurorExpenseService, times(1))
-                    .approveExpenses(TestConstants.VALID_COURT_LOCATION, PaymentMethod.BACS, request1);
+                    .approveExpenses(PaymentMethod.BACS, request1);
                 verify(jurorExpenseService, times(1))
-                    .approveExpenses(TestConstants.VALID_COURT_LOCATION, PaymentMethod.BACS, request2);
+                    .approveExpenses(PaymentMethod.BACS, request2);
             }
         }
     }
@@ -503,12 +482,12 @@ class JurorExpenseControllerTest {
     class GetSimplifiedExpenseDetails {
         public static final String URL = BASE_URL + "/{juror_number}/{type}/view/simplified";
 
-        public String toUrl(String locCode, String jurorNumber, ExpenseType expenseType) {
-            return toUrl(locCode, jurorNumber, expenseType.name());
+        public String toUrl(String jurorNumber, ExpenseType expenseType) {
+            return toUrl(jurorNumber, expenseType.name());
         }
 
-        public String toUrl(String locCode, String jurorNumber, String expenseType) {
-            return URL.replace("{loc_code}", locCode)
+        public String toUrl(String jurorNumber, String expenseType) {
+            return URL
                 .replace("{juror_number}", jurorNumber)
                 .replace("{type}", expenseType);
         }
@@ -520,8 +499,7 @@ class JurorExpenseControllerTest {
 
             @Test
             void invalidType() throws Exception {
-                mockMvc.perform(get(toUrl(TestConstants.VALID_COURT_LOCATION,
-                        TestConstants.VALID_JUROR_NUMBER, "INVALID")))
+                mockMvc.perform(get(toUrl(TestConstants.VALID_JUROR_NUMBER, "INVALID")))
                     .andDo(MockMvcResultHandlers.print())
                     .andExpect(status().isBadRequest());
                 verifyNoInteractions(jurorExpenseService);
@@ -529,17 +507,7 @@ class JurorExpenseControllerTest {
 
             @Test
             void invalidJurorNumber() throws Exception {
-                mockMvc.perform(get(toUrl(TestConstants.VALID_COURT_LOCATION,
-                        TestConstants.INVALID_JUROR_NUMBER, ExpenseType.FOR_APPROVAL)))
-                    .andDo(MockMvcResultHandlers.print())
-                    .andExpect(status().isBadRequest());
-                verifyNoInteractions(jurorExpenseService);
-            }
-
-            @Test
-            void invalidPoolNumber() throws Exception {
-                mockMvc.perform(get(toUrl(TestConstants.INVALID_COURT_LOCATION,
-                        TestConstants.VALID_JUROR_NUMBER, ExpenseType.FOR_APPROVAL)))
+                mockMvc.perform(get(toUrl(TestConstants.INVALID_JUROR_NUMBER, ExpenseType.FOR_APPROVAL)))
                     .andDo(MockMvcResultHandlers.print())
                     .andExpect(status().isBadRequest());
                 verifyNoInteractions(jurorExpenseService);
@@ -568,20 +536,17 @@ class JurorExpenseControllerTest {
                         .auditCreatedOn(LocalDateTime.of(2023, 1, 11, 9, 31, 1))
                         .build()
                 );
-                when(jurorExpenseService.getSimplifiedExpense(TestConstants.VALID_COURT_LOCATION,
-                    TestConstants.VALID_JUROR_NUMBER,
+                when(jurorExpenseService.getSimplifiedExpense(TestConstants.VALID_JUROR_NUMBER,
                     ExpenseType.FOR_APPROVAL))
                     .thenReturn(combinedExpenseDetailsDto);
 
-                mockMvc.perform(get(toUrl(TestConstants.VALID_COURT_LOCATION,
-                        TestConstants.VALID_JUROR_NUMBER, ExpenseType.FOR_APPROVAL.name())))
+                mockMvc.perform(get(toUrl(TestConstants.VALID_JUROR_NUMBER, ExpenseType.FOR_APPROVAL.name())))
                     .andDo(MockMvcResultHandlers.print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.expense_details[0].attendance_date", CoreMatchers.is("2023-01-05")));
 
                 verify(jurorExpenseService, times(1))
-                    .getSimplifiedExpense(TestConstants.VALID_COURT_LOCATION,
-                        TestConstants.VALID_JUROR_NUMBER,
+                    .getSimplifiedExpense(TestConstants.VALID_JUROR_NUMBER,
                         ExpenseType.FOR_APPROVAL);
             }
         }
@@ -593,8 +558,8 @@ class JurorExpenseControllerTest {
         public static final String URL = BASE_URL + "/{juror_number}/DRAFT/view";
 
 
-        public String toUrl(String locCode, String jurorNumber) {
-            return URL.replace("{loc_code}", locCode)
+        public String toUrl(String jurorNumber) {
+            return URL
                 .replace("{juror_number}", jurorNumber);
         }
 
@@ -604,15 +569,7 @@ class JurorExpenseControllerTest {
 
             @Test
             void invalidJurorNumber() throws Exception {
-                mockMvc.perform(get(toUrl(TestConstants.VALID_COURT_LOCATION, TestConstants.INVALID_JUROR_NUMBER)))
-                    .andDo(MockMvcResultHandlers.print())
-                    .andExpect(status().isBadRequest());
-                verifyNoInteractions(jurorExpenseService);
-            }
-
-            @Test
-            void invalidLocCode() throws Exception {
-                mockMvc.perform(get(toUrl(TestConstants.INVALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER)))
+                mockMvc.perform(get(toUrl(TestConstants.INVALID_JUROR_NUMBER)))
                     .andDo(MockMvcResultHandlers.print())
                     .andExpect(status().isBadRequest());
                 verifyNoInteractions(jurorExpenseService);
@@ -646,18 +603,17 @@ class JurorExpenseControllerTest {
                         .paymentMethod(PaymentMethod.BACS)
                         .build());
 
-                when(jurorExpenseService.getDraftExpenses(TestConstants.VALID_COURT_LOCATION,
-                    TestConstants.VALID_JUROR_NUMBER)).thenReturn(combinedExpenseDetailsDto);
+                when(jurorExpenseService.getDraftExpenses(TestConstants.VALID_JUROR_NUMBER))
+                    .thenReturn(combinedExpenseDetailsDto);
 
-                mockMvc.perform(get(toUrl(TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER))
+                mockMvc.perform(get(toUrl(TestConstants.VALID_JUROR_NUMBER))
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                     .andDo(MockMvcResultHandlers.print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.expense_details[0].attendance_date", CoreMatchers.is("2023-01-05")));
 
                 verify(jurorExpenseService, times(1))
-                    .getDraftExpenses(TestConstants.VALID_COURT_LOCATION,
-                        TestConstants.VALID_JUROR_NUMBER);
+                    .getDraftExpenses(TestConstants.VALID_JUROR_NUMBER);
             }
         }
     }
@@ -667,8 +623,8 @@ class JurorExpenseControllerTest {
     class GetExpenses {
         public static final String URL = BASE_URL + "/{juror_number}/view";
 
-        public String toUrl(String locCode, String jurorNumber) {
-            return URL.replace("{loc_code}", locCode)
+        public String toUrl(String jurorNumber) {
+            return URL
                 .replace("{juror_number}", jurorNumber);
         }
 
@@ -686,17 +642,7 @@ class JurorExpenseControllerTest {
 
             @Test
             void invalidJurorNumber() throws Exception {
-                mockMvc.perform(post(toUrl(TestConstants.VALID_COURT_LOCATION, TestConstants.INVALID_JUROR_NUMBER))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(TestUtils.asJsonString(getValidPayload())))
-                    .andDo(MockMvcResultHandlers.print())
-                    .andExpect(status().isBadRequest());
-                verifyNoInteractions(jurorExpenseService);
-            }
-
-            @Test
-            void invalidLocCode() throws Exception {
-                mockMvc.perform(post(toUrl(TestConstants.INVALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER))
+                mockMvc.perform(post(toUrl(TestConstants.INVALID_JUROR_NUMBER))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(TestUtils.asJsonString(getValidPayload())))
                     .andDo(MockMvcResultHandlers.print())
@@ -706,7 +652,7 @@ class JurorExpenseControllerTest {
 
             @Test
             void invalidPayload() throws Exception {
-                mockMvc.perform(post(toUrl(TestConstants.INVALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER))
+                mockMvc.perform(post(toUrl(TestConstants.VALID_JUROR_NUMBER))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(TestUtils.asJsonString(List.of())))
                     .andDo(MockMvcResultHandlers.print())
@@ -743,19 +689,17 @@ class JurorExpenseControllerTest {
                         .build());
 
                 List<LocalDate> payload = getValidPayload();
-                when(jurorExpenseService.getExpenses(TestConstants.VALID_COURT_LOCATION,
-                    TestConstants.VALID_JUROR_NUMBER, payload))
+                when(jurorExpenseService.getExpenses(TestConstants.VALID_JUROR_NUMBER, payload))
                     .thenReturn(combinedExpenseDetailsDto);
 
-                mockMvc.perform(post(toUrl(TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER))
+                mockMvc.perform(post(toUrl(TestConstants.VALID_JUROR_NUMBER))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(TestUtils.asJsonString(payload)))
                     .andExpect(status().isOk())
                     .andExpect(content().json(TestUtils.asJsonString(combinedExpenseDetailsDto)));
 
                 verify(jurorExpenseService, times(1))
-                    .getExpenses(TestConstants.VALID_COURT_LOCATION,
-                        TestConstants.VALID_JUROR_NUMBER, payload);
+                    .getExpenses(TestConstants.VALID_JUROR_NUMBER, payload);
             }
         }
     }
@@ -766,15 +710,14 @@ class JurorExpenseControllerTest {
     class GetExpensesForApproval {
         public static final String URL = BASE_URL + "/{payment_method}/pending-approval";
 
-        private String toUrl(String locCode, PaymentMethod paymentMethod, LocalDate from, LocalDate to) {
-            return toUrl(locCode, paymentMethod.name(),
+        private String toUrl(PaymentMethod paymentMethod, LocalDate from, LocalDate to) {
+            return toUrl(paymentMethod.name(),
                 from == null ? null : from.format(DateTimeFormatter.ISO_DATE),
                 to == null ? null : to.format(DateTimeFormatter.ISO_DATE));
         }
 
-        private String toUrl(String locCode, String paymentMethod, String from, String to) {
-            String urlTmp = URL.replace("{loc_code}", locCode)
-                .replace("{payment_method}", paymentMethod);
+        private String toUrl(String paymentMethod, String from, String to) {
+            String urlTmp = URL.replace("{payment_method}", paymentMethod);
             StringBuilder builder = new StringBuilder(urlTmp);
             if (from != null) {
                 builder.append("?from=").append(from);
@@ -791,18 +734,8 @@ class JurorExpenseControllerTest {
         class Negative {
 
             @Test
-            void invalidLocCode() throws Exception {
-                mockMvc.perform(get(toUrl(TestConstants.INVALID_COURT_LOCATION, PaymentMethod.BACS,
-                        null, null)))
-                    .andDo(MockMvcResultHandlers.print())
-                    .andExpect(status().isBadRequest());
-                verifyNoInteractions(jurorExpenseService);
-            }
-
-            @Test
             void invalidPaymentMethod() throws Exception {
-                mockMvc.perform(get(toUrl(TestConstants.VALID_COURT_LOCATION, "INVALID",
-                        null, null)))
+                mockMvc.perform(get(toUrl("INVALID", null, null)))
                     .andDo(MockMvcResultHandlers.print())
                     .andExpect(status().isBadRequest());
                 verifyNoInteractions(jurorExpenseService);
@@ -811,8 +744,7 @@ class JurorExpenseControllerTest {
 
             @Test
             void invalidFromDate() throws Exception {
-                mockMvc.perform(get(toUrl(TestConstants.VALID_COURT_LOCATION, PaymentMethod.BACS.name(),
-                        "INVALID", null)))
+                mockMvc.perform(get(toUrl(PaymentMethod.BACS.name(), "INVALID", null)))
                     .andDo(MockMvcResultHandlers.print())
                     .andExpect(status().isBadRequest());
                 verifyNoInteractions(jurorExpenseService);
@@ -821,8 +753,7 @@ class JurorExpenseControllerTest {
 
             @Test
             void invalidToDate() throws Exception {
-                mockMvc.perform(get(toUrl(TestConstants.VALID_COURT_LOCATION, PaymentMethod.BACS.name(),
-                        null, "INVALID")))
+                mockMvc.perform(get(toUrl(PaymentMethod.BACS.name(), null, "INVALID")))
                     .andDo(MockMvcResultHandlers.print())
                     .andExpect(status().isBadRequest());
                 verifyNoInteractions(jurorExpenseService);
@@ -838,36 +769,33 @@ class JurorExpenseControllerTest {
             void typicalWithoutDates() throws Exception {
                 PendingApprovalList pendingApprovalList = new PendingApprovalList();
                 pendingApprovalList.setTotalPendingBacs(2L);
-                when(jurorExpenseService.getExpensesForApproval(TestConstants.VALID_COURT_LOCATION,
-                    PaymentMethod.BACS, null, null)).thenReturn(pendingApprovalList);
+                when(jurorExpenseService.getExpensesForApproval(PaymentMethod.BACS, null, null))
+                    .thenReturn(pendingApprovalList);
 
-                mockMvc.perform(get(toUrl(TestConstants.VALID_COURT_LOCATION, PaymentMethod.BACS.name(),
-                        null, null)))
+                mockMvc.perform(get(toUrl(PaymentMethod.BACS.name(), null, null)))
                     .andDo(MockMvcResultHandlers.print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.total_pending_bacs", CoreMatchers.is(2)));
 
                 verify(jurorExpenseService, times(1))
-                    .getExpensesForApproval(TestConstants.VALID_COURT_LOCATION,
-                        PaymentMethod.BACS, null, null);
+                    .getExpensesForApproval(PaymentMethod.BACS, null, null);
             }
 
             @Test
             void typicalWithDates() throws Exception {
                 PendingApprovalList pendingApprovalList = new PendingApprovalList();
                 pendingApprovalList.setTotalPendingBacs(3L);
-                when(jurorExpenseService.getExpensesForApproval(TestConstants.VALID_COURT_LOCATION,
-                    PaymentMethod.BACS, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 2, 1))).thenReturn(
-                    pendingApprovalList);
+                when(jurorExpenseService.getExpensesForApproval(PaymentMethod.BACS, LocalDate.of(2023, 1, 1),
+                    LocalDate.of(2023, 2, 1))).thenReturn(pendingApprovalList);
 
-                mockMvc.perform(get(toUrl(TestConstants.VALID_COURT_LOCATION, PaymentMethod.BACS,
+                mockMvc.perform(get(toUrl(PaymentMethod.BACS,
                         LocalDate.of(2023, 1, 1), LocalDate.of(2023, 2, 1))))
                     .andDo(MockMvcResultHandlers.print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.total_pending_bacs", CoreMatchers.is(3)));
 
                 verify(jurorExpenseService, times(1))
-                    .getExpensesForApproval(TestConstants.VALID_COURT_LOCATION,
+                    .getExpensesForApproval(
                         PaymentMethod.BACS, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 2, 1));
             }
         }
@@ -878,8 +806,8 @@ class JurorExpenseControllerTest {
     class GetCounts {
         public static final String URL = BASE_URL + "/{juror_number}/counts";
 
-        public String toUrl(String locCode, String jurorNumber) {
-            return URL.replace("{loc_code}", locCode)
+        public String toUrl(String jurorNumber) {
+            return URL
                 .replace("{juror_number}", jurorNumber);
         }
 
@@ -889,15 +817,7 @@ class JurorExpenseControllerTest {
 
             @Test
             void invalidJurorNumber() throws Exception {
-                mockMvc.perform(get(toUrl(TestConstants.VALID_COURT_LOCATION, TestConstants.INVALID_JUROR_NUMBER)))
-                    .andDo(MockMvcResultHandlers.print())
-                    .andExpect(status().isBadRequest());
-                verifyNoInteractions(jurorExpenseService);
-            }
-
-            @Test
-            void invalidLocCode() throws Exception {
-                mockMvc.perform(get(toUrl(TestConstants.INVALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER)))
+                mockMvc.perform(get(toUrl(TestConstants.INVALID_JUROR_NUMBER)))
                     .andDo(MockMvcResultHandlers.print())
                     .andExpect(status().isBadRequest());
                 verifyNoInteractions(jurorExpenseService);
@@ -917,10 +837,10 @@ class JurorExpenseControllerTest {
                     .totalForReapproval(4)
                     .build();
 
-                when(jurorExpenseService.countExpenseTypes(TestConstants.VALID_COURT_LOCATION,
-                    TestConstants.VALID_JUROR_NUMBER)).thenReturn(expenseCount);
+                when(jurorExpenseService.countExpenseTypes(TestConstants.VALID_JUROR_NUMBER))
+                    .thenReturn(expenseCount);
 
-                mockMvc.perform(get(toUrl(TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER))
+                mockMvc.perform(get(toUrl(TestConstants.VALID_JUROR_NUMBER))
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                     .andDo(MockMvcResultHandlers.print())
                     .andExpect(status().isOk())
@@ -930,8 +850,7 @@ class JurorExpenseControllerTest {
                     .andExpect(jsonPath("$.total_for_reapproval", CoreMatchers.is(4)));
 
                 verify(jurorExpenseService, times(1))
-                    .countExpenseTypes(TestConstants.VALID_COURT_LOCATION,
-                        TestConstants.VALID_JUROR_NUMBER);
+                    .countExpenseTypes(TestConstants.VALID_JUROR_NUMBER);
             }
         }
     }
@@ -941,9 +860,8 @@ class JurorExpenseControllerTest {
     class PostEditDailyExpense {
         public static final String URL = BASE_URL + "/{juror_number}/{type}/edit";
 
-        public String toUrl(String locCode, String jurorNumber, String type) {
+        public String toUrl(String jurorNumber, String type) {
             return URL
-                .replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber)
                 .replace("{type}", type);
         }
@@ -954,7 +872,7 @@ class JurorExpenseControllerTest {
         class Negative {
             @Test
             void invalidJurorNumber() throws Exception {
-                mockMvc.perform(put(toUrl(TestConstants.VALID_COURT_LOCATION, TestConstants.INVALID_JUROR_NUMBER,
+                mockMvc.perform(put(toUrl(TestConstants.INVALID_JUROR_NUMBER,
                         ExpenseType.FOR_APPROVAL.name()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(TestUtils.asJsonString(List.of(mockDailyExpense(LocalDate.now())))))
@@ -966,7 +884,7 @@ class JurorExpenseControllerTest {
             @Test
             void invalidType() throws Exception {
                 mockMvc.perform(
-                        put(toUrl(TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, "INVALID"))
+                        put(toUrl(TestConstants.VALID_JUROR_NUMBER, "INVALID"))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(TestUtils.asJsonString(List.of(mockDailyExpense(LocalDate.now())))))
                     .andDo(MockMvcResultHandlers.print())
@@ -987,7 +905,7 @@ class JurorExpenseControllerTest {
                 DailyExpense dailyExpense3 = mockDailyExpense(LocalDate.now().plusDays(3));
 
 
-                mockMvc.perform(put(toUrl(TestConstants.VALID_COURT_LOCATION,
+                mockMvc.perform(put(toUrl(
                         TestConstants.VALID_JUROR_NUMBER, ExpenseType.APPROVED.name()))
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(TestUtils.asJsonString(List.of(dailyExpense1, dailyExpense2, dailyExpense3))))
@@ -996,7 +914,6 @@ class JurorExpenseControllerTest {
 
                 verify(jurorExpenseService, times(1))
                     .updateExpense(
-                        TestConstants.VALID_COURT_LOCATION,
                         TestConstants.VALID_JUROR_NUMBER,
                         ExpenseType.APPROVED,
                         List.of(dailyExpense1, dailyExpense2, dailyExpense3));
@@ -1008,7 +925,7 @@ class JurorExpenseControllerTest {
 
                 DailyExpense dailyExpense1 = mockDailyExpense(LocalDate.now().plusDays(1));
 
-                mockMvc.perform(put(toUrl(TestConstants.VALID_COURT_LOCATION,
+                mockMvc.perform(put(toUrl(
                         TestConstants.VALID_JUROR_NUMBER, ExpenseType.DRAFT.name()))
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(TestUtils.asJsonString(List.of(dailyExpense1))))
@@ -1017,7 +934,6 @@ class JurorExpenseControllerTest {
 
                 verify(jurorExpenseService, times(1))
                     .updateDraftExpense(
-                        TestConstants.VALID_COURT_LOCATION,
                         TestConstants.VALID_JUROR_NUMBER,
                         dailyExpense1);
             }
@@ -1052,8 +968,8 @@ class JurorExpenseControllerTest {
 
         }
 
-        public String toUrl(String locCode, String jurorNumber) {
-            return URL.replace("{loc_code}", locCode)
+        public String toUrl(String jurorNumber) {
+            return URL
                 .replace("{juror_number}", jurorNumber);
         }
 
@@ -1062,7 +978,7 @@ class JurorExpenseControllerTest {
         class Negative {
             @Test
             void invalidPayload() throws Exception {
-                mockMvc.perform(post(toUrl(TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER))
+                mockMvc.perform(post(toUrl(TestConstants.VALID_JUROR_NUMBER))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(TestUtils.asJsonString(CalculateTotalExpenseRequestDto.builder()
                             .expenseList(List.of(
@@ -1104,7 +1020,7 @@ class JurorExpenseControllerTest {
                             .build()))
                     .build();
 
-                mockMvc.perform(post(toUrl(TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER))
+                mockMvc.perform(post(toUrl(TestConstants.VALID_JUROR_NUMBER))
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(TestUtils.asJsonString(requestDto)))
                     .andDo(MockMvcResultHandlers.print())
@@ -1112,7 +1028,6 @@ class JurorExpenseControllerTest {
 
                 verify(jurorExpenseService, times(1))
                     .calculateTotals(
-                        TestConstants.VALID_COURT_LOCATION,
                         TestConstants.VALID_JUROR_NUMBER,
                         requestDto);
             }
@@ -1124,8 +1039,8 @@ class JurorExpenseControllerTest {
     class ApportionSmartCard {
         public static final String URL = BASE_URL + "/{juror_number}/smartcard";
 
-        public String toUrl(String locCode, String jurorNumber) {
-            return URL.replace("{loc_code}", locCode)
+        public String toUrl(String jurorNumber) {
+            return URL
                 .replace("{juror_number}", jurorNumber);
         }
 
@@ -1143,7 +1058,7 @@ class JurorExpenseControllerTest {
             @Test
             void typical() throws Exception {
                 ApportionSmartCardRequest payload = getValidPayload();
-                mockMvc.perform(patch(toUrl(TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER))
+                mockMvc.perform(patch(toUrl(TestConstants.VALID_JUROR_NUMBER))
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(TestUtils.asJsonString(payload)))
                     .andDo(MockMvcResultHandlers.print())
@@ -1151,7 +1066,7 @@ class JurorExpenseControllerTest {
 
                 verify(jurorExpenseService, times(1))
                     .apportionSmartCard(
-                        TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER,
+                        TestConstants.VALID_JUROR_NUMBER,
                         payload);
             }
         }
@@ -1163,7 +1078,7 @@ class JurorExpenseControllerTest {
             void invalidPayload() throws Exception {
                 ApportionSmartCardRequest payload = getValidPayload();
                 payload.setSmartCardAmount(new BigDecimal("-1"));
-                mockMvc.perform(patch(toUrl(TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER))
+                mockMvc.perform(patch(toUrl(TestConstants.VALID_JUROR_NUMBER))
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(TestUtils.asJsonString(payload)))
                     .andDo(MockMvcResultHandlers.print())

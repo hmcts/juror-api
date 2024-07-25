@@ -84,7 +84,7 @@ public class JurorRecordController {
 
     private final BulkService bulkService;
 
-    @GetMapping("/detail/{jurorNumber}/{locCode}")
+    @GetMapping("/detail/{jurorNumber}")
     @Operation(summary = "Get juror details by juror number and location code",
         description = "Retrieve details of a single juror by his/her juror number")
     public ResponseEntity<JurorDetailsResponseDto> getJurorDetails(
@@ -92,12 +92,8 @@ public class JurorRecordController {
         @Parameter(description = "Valid juror number",
             required = true)
         @Size(min = 9, max = 9) @PathVariable("jurorNumber")
-        @Valid String jurorNumber,
-        @Parameter(description = "Valid location Code",
-            required = true)
-        @Size(min = 3, max = 3) @PathVariable("locCode")
-        @Valid String locCode) {
-        JurorDetailsResponseDto jurorDetails = jurorRecordService.getJurorDetails(payload, jurorNumber, locCode);
+        @Valid String jurorNumber) {
+        JurorDetailsResponseDto jurorDetails = jurorRecordService.getJurorDetails(payload, jurorNumber);
         return ResponseEntity.ok().body(jurorDetails);
     }
 
@@ -116,7 +112,7 @@ public class JurorRecordController {
     }
 
 
-    @GetMapping("/overview/{jurorNumber}/{locCode}")
+    @GetMapping("/overview/{jurorNumber}")
     @Operation(summary = "Get juror overview by juror number and location code",
         description = "Retrieve overview of a single juror by his/her juror number")
     public ResponseEntity<JurorOverviewResponseDto> getJurorOverview(
@@ -125,30 +121,22 @@ public class JurorRecordController {
             required = true)
         @Size(min = 9, max = 9) @PathVariable(
             "jurorNumber")
-        @Valid String jurorNumber,
-        @Parameter(description = "Valid location Code",
-            required = true)
-        @Size(min = 3, max = 3) @PathVariable("locCode")
-        @Valid String locCode) {
-        JurorOverviewResponseDto jurorOverview = jurorRecordService.getJurorOverview(payload, jurorNumber, locCode);
+        @Valid String jurorNumber) {
+        JurorOverviewResponseDto jurorOverview = jurorRecordService.getJurorOverview(payload, jurorNumber);
         return ResponseEntity.ok().body(jurorOverview);
     }
 
-    @GetMapping("/summons-reply/{jurorNumber}/{locCode}")
+    @GetMapping("/summons-reply/{jurorNumber}")
     @Operation(summary = "Get summons reply information of a juror",
         description = "Retrieve summons reply information of a juror by juror number and location code")
     public ResponseEntity<JurorSummonsReplyResponseDto> getJurorSummonsReply(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Parameter(description = "Valid juror number", required = true)
         @Size(min = 9, max = 9) @PathVariable("jurorNumber")
-        @Valid String jurorNumber,
-        @Parameter(description = "Valid location Code", required = true)
-        @Size(min = 3, max = 3) @PathVariable("locCode")
-        @Valid String locCode) {
+        @Valid String jurorNumber) {
         JurorSummonsReplyResponseDto jurorSummonsReply = jurorRecordService.getJurorSummonsReply(
             payload,
-            jurorNumber,
-            locCode
+            jurorNumber
         );
         return ResponseEntity.ok().body(jurorSummonsReply);
     }
