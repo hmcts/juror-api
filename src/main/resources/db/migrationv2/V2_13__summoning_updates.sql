@@ -4,7 +4,6 @@ alter table juror_mod.voters
     drop column postcode_start,
     add column postcode_start VARCHAR(10) generated always as (split_part(zip, ' ', 1)) stored;
 
-DROP INDEX juror_mod.voters_postcode_start_idx;
 CREATE INDEX voters_postcode_start_idx ON juror_mod.voters (postcode_start,loc_code,perm_disqual,flags,dob);
 
 
