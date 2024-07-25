@@ -102,7 +102,7 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
                                              JurorPool jurorPool) {
 
         boolean isInDeferralMaintenance = jurorPool.getStatus().getStatus() == IJurorStatus.DEFERRED;
-
+        final Juror juror = jurorPool.getJuror();
         String username = payload.getLogin();
         //If juror is in deferral maintenance, we should not revert the existing (granted) deferral
         if (!isInDeferralMaintenance) {
@@ -115,13 +115,13 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
             jurorPool.setNextDate(jurorPool.getPool().getReturnDate());
             jurorPoolRepository.save(jurorPool);
 
-            Juror juror = jurorPool.getJuror();
             juror.setResponded(true);
             juror.setUserEdtq(username);
-            juror.setExcusalRejected(DEFERRAL_REJECTED_CODE);
             juror.setExcusalDate(null);
-            jurorRepository.save(juror);
         }
+        juror.setExcusalRejected(DEFERRAL_REJECTED_CODE);
+        jurorRepository.save(juror);
+
         // update Juror History - create deferral denied status event
         JurorHistory jurorHistory = JurorHistory.builder()
             .jurorNumber(jurorPool.getJurorNumber())
