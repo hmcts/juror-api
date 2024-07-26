@@ -21,6 +21,9 @@ public interface JurorPoolRepository extends IJurorPoolRepository, JpaRepository
     Optional<JurorPool> findByJurorJurorNumberAndOwnerAndDeferralDate(String jurorNumber, String owner,
                                                                       LocalDate deferralDate);
 
+    Optional<JurorPool> findByJurorJurorNumberAndOwnerAndDeferralDateAndIsActive(String jurorNumber, String owner,
+                                                                                 LocalDate deferralDate, boolean isActive);
+
     List<JurorPool> findByPoolPoolNumberAndIsActive(String poolNumber, boolean isActive);
 
     Optional<JurorPool> findByJurorJurorNumberAndPoolPoolNumberAndIsActive(String jurorNumber, String poolNumber,
