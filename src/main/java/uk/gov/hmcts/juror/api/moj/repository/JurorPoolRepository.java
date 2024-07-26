@@ -22,7 +22,8 @@ public interface JurorPoolRepository extends IJurorPoolRepository, JpaRepository
                                                                       LocalDate deferralDate);
 
     Optional<JurorPool> findByJurorJurorNumberAndOwnerAndDeferralDateAndIsActive(String jurorNumber, String owner,
-                                                                                 LocalDate deferralDate, boolean isActive);
+                                                                                 LocalDate deferralDate,
+                                                                                 boolean isActive);
 
     List<JurorPool> findByPoolPoolNumberAndIsActive(String poolNumber, boolean isActive);
 
