@@ -1086,8 +1086,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 "User cannot approve expenses over " + BigDecimalUtils.currencyFormat(userLimit),
                 CAN_NOT_APPROVE_MORE_THAN_LIMIT);
         }
-        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, dto.getJurorNumber(),
-            SecurityUtil.getActiveOwner());
+        JurorPool jurorPool =  jurorPoolService.getLastJurorPoolForJuror(locCode, dto.getJurorNumber());
         if (!PaymentMethod.CASH.equals(paymentMethod)) {
             createAndSavePaymentDataWhereApplicable(dto.getJurorNumber(), jurorPool.getCourt(), appearances);
         }
