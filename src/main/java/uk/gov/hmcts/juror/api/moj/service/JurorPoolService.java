@@ -16,4 +16,6 @@ public interface JurorPoolService {
     PaginatedList<JurorDetailsDto> search(JurorPoolSearch request);
 
     JurorPool getJurorPoolFromUser(String jurorNumber);
+
+    JurorPool getLastJurorPoolForJuror(String locCode, String jurorNumber);
 }

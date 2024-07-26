@@ -101,22 +101,20 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
     private void declineDeferralForJurorPool(BureauJwtPayload payload, DeferralRequestDto deferralRequestDto,
                                              JurorPool jurorPool) {
 
+        final Juror juror = jurorPool.getJuror();
         String username = payload.getLogin();
+        if (jurorPool.getStatus().getStatus() != IJurorStatus.DEFERRED) {
+            jurorPool.setUserEdtq(username);
+            jurorPool.setDeferralCode(deferralRequestDto.getDeferralReason());
+            jurorPool.setDeferralDate(null);
+            jurorPool.setNextDate(jurorPool.getPool().getReturnDate());
+            jurorPoolRepository.save(jurorPool);
 
-        JurorStatus jurorStatus = new JurorStatus();
-        jurorStatus.setStatus(IJurorStatus.RESPONDED);
-        jurorPool.setStatus(jurorStatus);
-        jurorPool.setUserEdtq(username);
-        jurorPool.setDeferralCode(deferralRequestDto.getDeferralReason());
-        jurorPool.setDeferralDate(null);
-        jurorPool.setNextDate(jurorPool.getPool().getReturnDate());
-        jurorPoolRepository.save(jurorPool);
-
-        Juror juror = jurorPool.getJuror();
-        juror.setResponded(true);
+            juror.setResponded(true);
+            juror.setExcusalDate(null);
+        }
         juror.setUserEdtq(username);
         juror.setExcusalRejected(DEFERRAL_REJECTED_CODE);
-        juror.setExcusalDate(null);
         jurorRepository.save(juror);
 
         // update Juror History - create deferral denied status event

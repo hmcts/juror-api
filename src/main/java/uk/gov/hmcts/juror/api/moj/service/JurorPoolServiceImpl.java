@@ -15,6 +15,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -68,5 +69,23 @@ public class JurorPoolServiceImpl implements JurorPoolService {
         return Optional.ofNullable(jurorPoolRepository.findByJurorJurorNumberAndIsActiveAndOwner(
                 jurorNumber, true, SecurityUtil.getActiveOwner()))
             .orElseThrow(() -> new MojException.NotFound("Juror not found: " + jurorNumber, null));
+    }
+
+    @Override
+    public JurorPool getLastJurorPoolForJuror(String locCode, String jurorNumber) {
+        List<JurorPool> jurorPools = getJurorPools(locCode, jurorNumber).stream().sorted(
+            Comparator.comparing(JurorPool::getDateCreated).reversed()).toList();
+
+        Optional<JurorPool> jurorPool = jurorPools.stream().filter(JurorPool::getIsActive).findFirst();
+        if (jurorPool.isPresent()) {
+            return jurorPool.orElse(null);
+        } else if (!jurorPools.isEmpty()) {
+            return jurorPools.get(0);
+        }
+        throw new MojException.NotFound("Juror not found: " + jurorNumber, null);
+    }
+
+    private List<JurorPool> getJurorPools(String locCode, String jurorNumber) {
+        return jurorPoolRepository.findByPoolCourtLocationLocCodeAndJurorJurorNumber(locCode, jurorNumber);
     }
 }

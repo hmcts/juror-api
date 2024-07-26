@@ -70,6 +70,7 @@ import uk.gov.hmcts.juror.api.moj.repository.PaymentDataRepository;
 import uk.gov.hmcts.juror.api.moj.service.ApplicationSettingService;
 import uk.gov.hmcts.juror.api.moj.service.FinancialAuditService;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
+import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.ValidationService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
@@ -111,7 +112,7 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 
 @ExtendWith(SpringExtension.class)
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects", "PMD.NcssCount",
-    "PMD.TooManyMethods", "unchecked"})
+    "PMD.TooManyMethods", "PMD.TooManyFields", "unchecked"})
 class JurorExpenseServiceTest {
 
     @Mock
@@ -141,6 +142,8 @@ class JurorExpenseServiceTest {
 
     @Mock
     private EntityManager entityManager;
+    @Mock
+    private JurorPoolService jurorPoolService;
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
     private MockedStatic<JurorUtils> jurorUtilsMockedStatic;
@@ -2483,9 +2486,9 @@ class JurorExpenseServiceTest {
             doNothing().when(jurorExpenseService).saveAppearancesWithExpenseRateIdUpdate(any());
 
             JurorPool jurorPool = mock(JurorPool.class);
-            doReturn(List.of(jurorPool)).when(jurorPoolRepository)
-                .findByJurorJurorNumberAndIsActive(
-                    TestConstants.VALID_JUROR_NUMBER, true);
+            doReturn(jurorPool).when(jurorPoolService).getLastJurorPoolForJuror(
+                TestConstants.VALID_COURT_LOCATION,
+                TestConstants.VALID_JUROR_NUMBER);
             when(jurorPool.getOwner()).thenReturn(TestConstants.VALID_COURT_LOCATION);
             when(jurorPool.getCourt()).thenReturn(courtLocation);
             jurorExpenseService.approveExpenses(
@@ -2584,8 +2587,10 @@ class JurorExpenseServiceTest {
             doNothing().when(jurorExpenseService).saveAppearancesWithExpenseRateIdUpdate(any());
             JurorPool jurorPool = mock(JurorPool.class);
 
-            doReturn(List.of(jurorPool)).when(jurorPoolRepository).findByJurorJurorNumberAndIsActive(
-                TestConstants.VALID_JUROR_NUMBER, true);
+
+            doReturn(jurorPool).when(jurorPoolService).getLastJurorPoolForJuror(
+                TestConstants.VALID_COURT_LOCATION,
+                TestConstants.VALID_JUROR_NUMBER);
             when(jurorPool.getOwner()).thenReturn(TestConstants.VALID_COURT_LOCATION);
             when(jurorPool.getCourt()).thenReturn(courtLocation);
 
@@ -4787,6 +4792,9 @@ class JurorExpenseServiceTest {
         doReturn(jurorPool)
             .when(jurorPoolRepository)
             .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue(locCode, jurorNumber);
+        doReturn(jurorPool)
+            .when(jurorPoolService)
+            .getLastJurorPoolForJuror(locCode, jurorNumber);
     }
 
     @Nested

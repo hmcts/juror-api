@@ -63,6 +63,7 @@ import uk.gov.hmcts.juror.api.moj.repository.PaymentDataRepository;
 import uk.gov.hmcts.juror.api.moj.service.ApplicationSettingService;
 import uk.gov.hmcts.juror.api.moj.service.FinancialAuditService;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
+import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.ValidationService;
 import uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
@@ -115,6 +116,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     private final ApplicationSettingService applicationSettingService;
     private final EntityManager entityManager;
     private final ExpenseRatesRepository expenseRatesRepository;
+    private final JurorPoolService jurorPoolService;
 
     Integer getJurorDefaultMileage(String jurorNumber) {
         Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
@@ -1019,7 +1021,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
         return PendingApproval.builder()
             .jurorNumber(jurorNumber)
-            .poolNumber(getActiveJurorPool(locCode, juror.getJurorNumber()).getPoolNumber())
+            .poolNumber(jurorPoolService.getLastJurorPoolForJuror(locCode, jurorNumber).getPoolNumber())
             .firstName(juror.getFirstName())
             .lastName(juror.getLastName())
             .amountDue(appearances.stream()
@@ -1034,16 +1036,6 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                         .version(appearance.getVersion())
                         .build()).toList()
             ).build();
-    }
-
-    private JurorPool getActiveJurorPool(String locCode, String jurorNumber) {
-        JurorPool jurorPool =
-            jurorPoolRepository.findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue(locCode,
-                jurorNumber);
-        if (jurorPool == null) {
-            throw new MojException.NotFound("No active pool found for juror: " + jurorNumber, null);
-        }
-        return jurorPool;
     }
 
     //This method is here to support unit testing
@@ -1094,8 +1086,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 "User cannot approve expenses over " + BigDecimalUtils.currencyFormat(userLimit),
                 CAN_NOT_APPROVE_MORE_THAN_LIMIT);
         }
-        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, dto.getJurorNumber(),
-            SecurityUtil.getActiveOwner());
+        JurorPool jurorPool =  jurorPoolService.getLastJurorPoolForJuror(locCode, dto.getJurorNumber());
         if (!PaymentMethod.CASH.equals(paymentMethod)) {
             createAndSavePaymentDataWhereApplicable(dto.getJurorNumber(), jurorPool.getCourt(), appearances);
         }
