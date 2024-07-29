@@ -215,6 +215,9 @@ flyway {
     cleanDisabled = false
 }
 
+task migratePostgresDatabase(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
+}
+
 springBoot {
     buildInfo {
         properties {
