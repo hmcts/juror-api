@@ -50,6 +50,7 @@ java:
         - name: pnc-SECRET
           alias: PNC_CHECK_SERVICE_SECRET
   environment:
+    RUN_DB_MIGRATION_ON_STARTUP: false
     SCHEDULER_SERVICE_SUBJECT: external-api@juror-scheduler-api.hmcts.net
     SCHEDULER_SERVICE_HOST: juror-scheduler-api.{{ .Values.global.environment }}.platform.hmcts.net
     SCHEDULER_SERVICE_PORT: 443
