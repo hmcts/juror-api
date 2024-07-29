@@ -632,8 +632,8 @@ class ManageDeferralsServiceTest {
 
         JurorPool deferredJuror = createDeferredJuror(courtLocation);
         doReturn(Optional.of(deferredJuror)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndOwnerAndDeferralDate(
-                any(), any(), any());
+            .findByJurorJurorNumberAndOwnerAndDeferralDateAndIsActive(
+                any(), any(), any(), anyBoolean());
         doReturn(Optional.of(createJurorStatus(2, "Responded"))).when(jurorStatusRepository)
             .findById(2);
         doReturn(1).when(poolMemberSequenceService).getPoolMemberSequenceNumber(any());
@@ -655,7 +655,7 @@ class ManageDeferralsServiceTest {
             .isEqualTo(false);
 
         verify(jurorPoolRepository, times(deferralsUsed))
-            .findByJurorJurorNumberAndOwnerAndDeferralDate(any(), any(), any());
+            .findByJurorJurorNumberAndOwnerAndDeferralDateAndIsActive(any(), any(), any(), anyBoolean());
         verify(jurorPoolRepository, times(deferralsUsed * 2))
             .saveAndFlush(any());
         verify(poolRequestRepository, times(deferralsUsed)).save(any());
@@ -693,11 +693,11 @@ class ManageDeferralsServiceTest {
 
         JurorPool deferredJuror = createDeferredJuror(courtLocation);
         doReturn(Optional.of(deferredJuror)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndOwnerAndDeferralDate(
-                "111111111", courtLocation, newAttendanceDate);
+            .findByJurorJurorNumberAndOwnerAndDeferralDateAndIsActive(
+                "111111111", courtLocation, newAttendanceDate, true);
         doReturn(Optional.empty()).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndOwnerAndDeferralDate(
-                "222222222", courtLocation, newAttendanceDate);
+            .findByJurorJurorNumberAndOwnerAndDeferralDateAndIsActive(
+                "222222222", courtLocation, newAttendanceDate, true);
 
         int deferralsUsed = courtDeferrals.size();
         int actualDeferralsUsed = manageDeferralsService.useCourtDeferrals(newPoolRequest, deferralsUsed,
@@ -738,8 +738,8 @@ class ManageDeferralsServiceTest {
 
         JurorPool deferredJuror = createDeferredJuror(courtLocation);
         doReturn(Optional.of(deferredJuror)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndOwnerAndDeferralDate(
-                any(), any(), any());
+            .findByJurorJurorNumberAndOwnerAndDeferralDateAndIsActive(
+                any(), any(), any(), anyBoolean());
         doReturn(Optional.of(createJurorStatus(2, "Responded"))).when(jurorStatusRepository)
             .findById(2);
         doReturn(1).when(poolMemberSequenceService).getPoolMemberSequenceNumber(any());
@@ -791,8 +791,8 @@ class ManageDeferralsServiceTest {
 
         JurorPool deferredJuror = createDeferredJuror(BUREAU_OWNER);
         doReturn(Optional.of(deferredJuror)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndOwnerAndDeferralDate(
-                any(), any(), any());
+            .findByJurorJurorNumberAndOwnerAndDeferralDateAndIsActive(
+                any(), any(), any(), anyBoolean());
         doReturn(Optional.of(createJurorStatus(2, "Responded"))).when(jurorStatusRepository)
             .findById(2);
         doReturn(1).when(poolMemberSequenceService).getPoolMemberSequenceNumber(any());
@@ -815,7 +815,7 @@ class ManageDeferralsServiceTest {
         verify(poolRequestRepository, times(deferralsUsed)).save(newPoolRequest);
         verify(jurorHistoryRepository, times(deferralsUsed)).save(any());
         verify(jurorPoolRepository, times(deferralsUsed))
-            .findByJurorJurorNumberAndOwnerAndDeferralDate(any(), any(), any());
+            .findByJurorJurorNumberAndOwnerAndDeferralDateAndIsActive(any(), any(), any(), anyBoolean());
         verify(jurorPoolRepository, times(deferralsUsed * 2))
             .saveAndFlush(any());
         verify(poolHistoryRepository, times(1)).save(any());
@@ -853,11 +853,11 @@ class ManageDeferralsServiceTest {
 
         JurorPool deferredJuror = createDeferredJuror(BUREAU_OWNER);
         doReturn(Optional.of(deferredJuror)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndOwnerAndDeferralDate(
-                "111111111", BUREAU_OWNER, newAttendanceDate);
+            .findByJurorJurorNumberAndOwnerAndDeferralDateAndIsActive(
+                "111111111", BUREAU_OWNER, newAttendanceDate, true);
         doReturn(Optional.empty()).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndOwnerAndDeferralDate("222222222", BUREAU_OWNER,
-                newAttendanceDate);
+            .findByJurorJurorNumberAndOwnerAndDeferralDateAndIsActive("222222222", BUREAU_OWNER,
+                newAttendanceDate, true);
 
         manageDeferralsService.useBureauDeferrals(newPoolRequest, deferralsUsed, "SOME_USER");
 
