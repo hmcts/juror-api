@@ -73,4 +73,7 @@ public class UpdateAttendanceDto {
         @NotNull
         private Boolean singleJuror;
     }
+
+    @JsonProperty("juror_in_waiting")
+    private boolean jurorInWaiting;
 }

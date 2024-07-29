@@ -154,7 +154,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         checkOwnershipForCurrentUser(juror, payload.getOwner());
 
         // check juror status to make sure they can be checked in
-        final JurorPool jurorPool = validateJurorStatus(juror, isCompleted);
+        final JurorPool jurorPool = validateJurorStatus(juror, isCompleted,
+            appearanceStage, jurorAppearanceDto.isJurorInWaiting());
 
         Optional<Appearance> appearanceOpt = appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber,
             appearanceDate);
@@ -192,16 +193,9 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         jurorPoolRepository.saveAndFlush(jurorPool);
 
         // now read the data back and send to front end
-        List<JurorAppearanceResponseDto.JurorAppearanceResponseData> appearanceDataList;
-
-        if (!isCompleted) {
-            appearanceDataList = appearanceRepository.getAppearanceRecords(locCode, appearanceDate, jurorNumber,
-                JurorStatusGroup.AT_COURT);
-
-        } else {
-            appearanceDataList = appearanceRepository.getAppearanceRecords(locCode, appearanceDate, jurorNumber,
-                JurorStatusGroup.COMPLETED);
-        }
+        List<JurorAppearanceResponseDto.JurorAppearanceResponseData> appearanceDataList =
+            appearanceRepository.getAppearanceRecords(locCode, appearanceDate, jurorNumber,
+            JurorStatusGroup.ALL);
 
         if (appearanceDataList.size() != 1) {
             throw new MojException.InternalServerError("Error checking in juror " + jurorNumber, null);
@@ -838,6 +832,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
         RetrieveAttendanceDetailsDto request = RetrieveAttendanceDetailsDto.builder()
             .commonData(retrieveCommonData)
+            .jurorInWaiting(true)
             .build();
 
         List<Tuple> checkedInJurors = appearanceRepository.retrieveAttendanceDetails(request);
@@ -969,12 +964,12 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         List<Appearance> checkedOutJurors = new ArrayList<>();
 
         request.getJuror().forEach(jurorNumber -> {
-            validateJuror(owner, jurorNumber);
+            validateJuror(owner, jurorNumber, AppearanceStage.CHECKED_OUT, request.isJurorInWaiting());
 
             // retrieve the current attendance details
             List<JurorAppearanceResponseDto.JurorAppearanceResponseData> currentAttendanceDetails =
                 appearanceRepository.getAppearanceRecords(locCode, appearanceDate, jurorNumber,
-                    JurorStatusGroup.AT_COURT);
+                    JurorStatusGroup.ALL);
 
             // if the status of the juror is panelled, the record is not updated.
             if (currentAttendanceDetails.get(0).getJurorStatus().equals(IJurorStatus.PANEL)) {
@@ -1095,6 +1090,14 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         validateJurorStatus(activeJurorRecord, false);
     }
 
+    private void validateJuror(String owner, String jurorNumber, AppearanceStage appearanceStage, Boolean jurorInWaiting) {
+        // validate the juror record exists, and user has ownership of the record
+        Juror activeJurorRecord = validateOwnership(owner, jurorNumber);
+
+        // check juror status to make sure they can be checked in or out
+        validateJurorStatus(activeJurorRecord, false, appearanceStage, jurorInWaiting);
+    }
+
     private Juror validateOwnership(String owner, String jurorNumber) {
         // validate the juror record exists, and user has ownership of the record
         Juror activeJurorRecord = getActiveJurorRecord(jurorRepository, jurorNumber);
@@ -1140,13 +1143,30 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
     private JurorPool validateJurorStatus(Juror juror, boolean isCompleted) {
         JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(juror.getJurorNumber());
+        validateJurorStatus(jurorPool.getStatus().getStatus(), isCompleted);
+        return jurorPool;
+    }
 
-        final int status = jurorPool.getStatus().getStatus();
-
+    private void validateJurorStatus(int status, boolean isCompleted) {
         if (status != IJurorStatus.RESPONDED && status != IJurorStatus.PANEL && status != IJurorStatus.JUROR
             && !(status == IJurorStatus.COMPLETED && isCompleted)) {
             throw new MojException.BadRequest("Cannot check in or out a juror with an invalid status",
                 null);
+        }
+    }
+
+    private JurorPool validateJurorStatus(Juror juror, boolean isCompleted,
+                                          AppearanceStage appearanceStage, boolean jurorInWaiting) {
+        JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(juror.getJurorNumber());
+
+        final int status = jurorPool.getStatus().getStatus();
+        if (jurorInWaiting && appearanceStage == AppearanceStage.CHECKED_OUT) {
+            if (status == IJurorStatus.JUROR) {
+                throw new MojException.BadRequest("Can not check out juror in waiting "
+                    + "with an juror status of JUROR", null);
+            }
+        } else {
+            validateJurorStatus(status, isCompleted);
         }
         return jurorPool;
     }
