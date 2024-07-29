@@ -195,7 +195,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         // now read the data back and send to front end
         List<JurorAppearanceResponseDto.JurorAppearanceResponseData> appearanceDataList =
             appearanceRepository.getAppearanceRecords(locCode, appearanceDate, jurorNumber,
-            JurorStatusGroup.ALL);
+                JurorStatusGroup.ALL);
 
         if (appearanceDataList.size() != 1) {
             throw new MojException.InternalServerError("Error checking in juror " + jurorNumber, null);
@@ -1090,7 +1090,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         validateJurorStatus(activeJurorRecord, false);
     }
 
-    private void validateJuror(String owner, String jurorNumber, AppearanceStage appearanceStage, Boolean jurorInWaiting) {
+    private void validateJuror(String owner, String jurorNumber,
+                               AppearanceStage appearanceStage, Boolean jurorInWaiting) {
         // validate the juror record exists, and user has ownership of the record
         Juror activeJurorRecord = validateOwnership(owner, jurorNumber);
 
@@ -1163,7 +1164,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         if (jurorInWaiting && appearanceStage == AppearanceStage.CHECKED_OUT) {
             if (status == IJurorStatus.JUROR) {
                 throw new MojException.BadRequest("Can not check out juror in waiting "
-                    + "with an juror status of JUROR", null);
+                    + "with a juror status of JUROR", null);
             }
         } else {
             validateJurorStatus(status, isCompleted);
