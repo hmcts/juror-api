@@ -216,6 +216,9 @@ flyway {
 }
 
 task migratePostgresDatabase(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
+    if (project.hasProperty("dburl")) {
+        url = "jdbc:postgresql://${dburl}"
+    }
 }
 
 springBoot {
