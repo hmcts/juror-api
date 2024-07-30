@@ -32,6 +32,9 @@ public class RetrieveAttendanceDetailsDto {
     @Schema(description = "List of jurors to retrieve attendance details of")
     private List<String> juror;
 
+    @JsonProperty("juror_in_waiting")
+    private boolean jurorInWaiting;
+
     @AllArgsConstructor
     @NoArgsConstructor
     @Getter

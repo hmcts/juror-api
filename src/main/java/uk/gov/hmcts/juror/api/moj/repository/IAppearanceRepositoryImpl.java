@@ -79,7 +79,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
         final RetrieveAttendanceDetailsDto.CommonData commonData = request.getCommonData();
 
         // depending on what is to be updated, filter the query based on juror status
-        List<Integer> jurorStatuses = sqlFilterQueryJurorStatus(commonData.getTag());
+        List<Integer> jurorStatuses = sqlFilterQueryJurorStatus(commonData.getTag(), request.isJurorInWaiting());
 
         // start building the query
         JPAQuery<Tuple> query = sqlFetchAppearanceRecords(commonData.getLocationCode(), commonData.getAttendanceDate(),
@@ -124,13 +124,18 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .orderBy(JUROR.jurorNumber.asc()).fetch();
     }
 
-    private List<Integer> sqlFilterQueryJurorStatus(@NotNull RetrieveAttendanceDetailsTag tag) {
+    private List<Integer> sqlFilterQueryJurorStatus(@NotNull RetrieveAttendanceDetailsTag tag,
+                                                    boolean isJurorInWaiting) {
         if (tag.equals(RetrieveAttendanceDetailsTag.CONFIRM_ATTENDANCE)) {
-            return List.of(IJurorStatus.RESPONDED, IJurorStatus.PANEL);
+            return IJurorStatus.getAllExcluding(IJurorStatus.JUROR);
         } else if (tag.equals(RetrieveAttendanceDetailsTag.PANELLED)) {
             return List.of(IJurorStatus.PANEL);
         } else {
-            return Arrays.asList(IJurorStatus.RESPONDED, IJurorStatus.PANEL, IJurorStatus.JUROR);
+            if (isJurorInWaiting) {
+                return IJurorStatus.getAllExcluding(IJurorStatus.JUROR);
+            } else {
+                return Arrays.asList(IJurorStatus.RESPONDED, IJurorStatus.PANEL, IJurorStatus.JUROR);
+            }
         }
     }
 
