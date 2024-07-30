@@ -171,4 +171,27 @@ public final class TestUtils {
         MockedStatic<SecurityUtil> securityUtil = getSecurityUtilMock();
         securityUtil.when(SecurityUtil::getActiveUsersBureauPayload).thenReturn(payload);
     }
+
+    public static void mockBureauUser() {
+        mockSecurityUtil(BureauJwtPayload.builder()
+            .owner("400")
+            .locCode("400")
+            .userType(UserType.BUREAU)
+            .activeUserType(UserType.BUREAU)
+            .build());
+
+    }
+
+    public static void mockCourtUser(String owner) {
+        mockCourtUser(owner, owner);
+    }
+
+    public static void mockCourtUser(String owner, String locCode) {
+        mockSecurityUtil(BureauJwtPayload.builder()
+            .owner(owner)
+            .locCode(locCode)
+            .userType(UserType.COURT)
+            .activeUserType(UserType.COURT)
+            .build());
+    }
 }
