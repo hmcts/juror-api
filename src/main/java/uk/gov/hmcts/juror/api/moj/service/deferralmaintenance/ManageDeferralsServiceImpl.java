@@ -3,8 +3,6 @@ package uk.gov.hmcts.juror.api.moj.service.deferralmaintenance;
 import com.querydsl.core.Tuple;
 import io.micrometer.common.util.StringUtils;
 import jakarta.transaction.Transactional;
-import jakarta.validation.constraints.NotNull;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
@@ -119,6 +117,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     private final JurorHistoryService jurorHistoryService;
     private final PrintDataService printDataService;
     private final JurorPoolService jurorPoolService;
+
     /**
      * When Jurors defer their service to a future date, a record gets added to the currently_deferred table.
      * Both Court officers and Bureau officers can process a deferral, creating two types:

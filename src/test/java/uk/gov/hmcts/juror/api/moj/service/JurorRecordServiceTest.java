@@ -72,6 +72,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolHistory;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.PoolType;
 import uk.gov.hmcts.juror.api.moj.domain.QReportsJurorPayments;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.ApprovalDecision;
@@ -135,6 +136,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
@@ -2065,9 +2067,10 @@ class JurorRecordServiceTest {
         String jurorNumber = "111111111";
 
         String pendingTitle = "Mr";
-        String pendingFirstName = "First";
+        final String pendingFirstName = "First";
         final String pendingLastName = "Last";
 
+        TestUtils.mockCourtUser(courtOwner);
         final BureauJwtPayload payload = TestUtils.createJwt(courtOwner, username);
 
         JurorPool jurorPool = createValidJurorPool(jurorNumber, courtOwner);
@@ -2083,8 +2086,8 @@ class JurorRecordServiceTest {
 
         ProcessNameChangeRequestDto dto = new ProcessNameChangeRequestDto(ApprovalDecision.APPROVE, notes);
 
-        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
+        doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         doReturn(null).when(jurorPoolRepository)
             .save(any());
         doReturn(null).when(jurorPoolRepository)
@@ -2133,9 +2136,10 @@ class JurorRecordServiceTest {
         String jurorNumber = "111111111";
 
         String pendingTitle = "Mr";
-        String pendingFirstName = "First";
+        final String pendingFirstName = "First";
         final String pendingLastName = "Last";
 
+        TestUtils.mockCourtUser(courtOwner);
         final BureauJwtPayload payload = TestUtils.createJwt(courtOwner, username);
 
         JurorPool jurorPool = createValidJurorPool(jurorNumber, courtOwner);
@@ -2151,8 +2155,8 @@ class JurorRecordServiceTest {
 
         ProcessNameChangeRequestDto dto = new ProcessNameChangeRequestDto(ApprovalDecision.REJECT, notes);
 
-        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
+        doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         doReturn(null).when(jurorPoolRepository)
             .save(any());
         doReturn(null).when(jurorPoolRepository)
@@ -2195,17 +2199,16 @@ class JurorRecordServiceTest {
         String courtOwner = "415";
         String username = "COURT_USER";
         String jurorNumber = "111111111";
-
+        TestUtils.mockBureauUser();
         BureauJwtPayload payload = TestUtils.createJwt("416", username);
-
 
         JurorPool jurorPool = createValidJurorPool(jurorNumber, courtOwner);
         String notes = "Their name has not been legally changed";
 
         ProcessNameChangeRequestDto dto = new ProcessNameChangeRequestDto(ApprovalDecision.REJECT, notes);
 
-        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
 
         assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
             jurorRecordService.processPendingNameChange(payload, jurorNumber, dto));
@@ -2232,14 +2235,14 @@ class JurorRecordServiceTest {
         String username = "COURT_USER";
         String jurorNumber = "111111111";
 
+        TestUtils.mockCourtUser(courtOwner);
         BureauJwtPayload payload = TestUtils.createJwt(courtOwner, username);
 
         String notes = "Their name has not been legally changed";
 
         ProcessNameChangeRequestDto dto = new ProcessNameChangeRequestDto(ApprovalDecision.REJECT, notes);
 
-        doReturn(new ArrayList<>()).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doThrow(MojException.NotFound.class).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
 
         assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
             jurorRecordService.processPendingNameChange(payload, jurorNumber, dto));
@@ -2430,6 +2433,7 @@ class JurorRecordServiceTest {
 
             when(clock.getZone())
                 .thenReturn(ZoneId.systemDefault());
+            TestUtils.mockSystemUser();
         }
 
         private JurorPool setupJurorPool(PoliceCheck policeCheck) {
@@ -2830,6 +2834,7 @@ class JurorRecordServiceTest {
 
         @Test
         void positiveTypicalExistingPool() {
+            TestUtils.mockCourtUser("415");
             final BureauJwtPayload payload = createBureauJwtPayload("415", "COURT_USER");
             JurorCreateRequestDto dto = JurorCreateRequestDtoTest.createValidJurorCreateRequestExistingPoolDto();
             PoolRequest poolRequest = mock(PoolRequest.class);
@@ -2864,6 +2869,7 @@ class JurorRecordServiceTest {
 
         @Test
         void positiveTypicalNewPool() {
+            TestUtils.mockCourtUser("415");
             final BureauJwtPayload payload = createBureauJwtPayload("415", "COURT_USER");
 
             JurorCreateRequestDto dto = JurorCreateRequestDtoTest.createValidJurorCreateRequestNewPoolDto();
@@ -3041,6 +3047,7 @@ class JurorRecordServiceTest {
         @ParameterizedTest
         @ValueSource(strings = {"416", "400"})
         void positiveJurorAttendanceTab(String owner) {
+            TestUtils.mockCourtUser("415");
 
             //test scenario where juror has attended
             final JurorPool jurorPool = createValidJurorPool(TestConstants.VALID_POOL_NUMBER, owner);
@@ -3084,7 +3091,7 @@ class JurorRecordServiceTest {
         @ParameterizedTest
         @ValueSource(strings = {"416", "100"})
         void negativeWrongOwner(String userOwner) {
-
+            TestUtils.mockCourtUser("415");
             final String owner = "415";
             final JurorPool jurorPool = createValidJurorPool(TestConstants.VALID_POOL_NUMBER, owner);
 
@@ -3108,7 +3115,7 @@ class JurorRecordServiceTest {
 
         @Test
         void negativeJurorAttendanceTabNoRecords() {
-
+            TestUtils.mockCourtUser("415");
             String owner = "415";
             final JurorPool jurorPool = createValidJurorPool(TestConstants.VALID_POOL_NUMBER, owner);
 
@@ -3138,7 +3145,7 @@ class JurorRecordServiceTest {
         @Test
         void jurorAttendanceDetailsExcludeCheckInAndCheckOutFromFilter() {
             String owner = "415";
-
+            TestUtils.mockCourtUser(owner);
             final JurorPool jurorPool = createValidJurorPool(TestConstants.VALID_POOL_NUMBER, owner);
 
             doReturn(jurorPool).when(jurorPoolService)
@@ -3177,6 +3184,7 @@ class JurorRecordServiceTest {
         @Test
         void jurorAttendanceDetailsAppearanceStageIsNull() {
             String owner = "415";
+            TestUtils.mockCourtUser(owner);
 
             final JurorPool jurorPool = createValidJurorPool(TestConstants.VALID_POOL_NUMBER, owner);
 
@@ -3263,11 +3271,6 @@ class JurorRecordServiceTest {
             return tuple;
         }
 
-        @AfterEach
-        void afterEach() {
-            TestUtils.afterAll();
-        }
-
         @Test
         void positiveGetPayments() {
             String jurorNumber = "641500094";
@@ -3335,11 +3338,6 @@ class JurorRecordServiceTest {
             return historyItem;
         }
 
-        @AfterEach
-        void afterEach() {
-            TestUtils.afterAll();
-        }
-
         @Test
         void positiveGetHistory() {
             String jurorNumber = "641500094";
@@ -3385,7 +3383,7 @@ class JurorRecordServiceTest {
         @Test
         void positiveApprovePendingJuror() {
 
-            TestUtils.setupAuthentication("415", "SENIORJURORUSER", "9");
+            TestUtils.mockCourtUser("415", "415", Set.of(Role.SENIOR_JUROR_OFFICER));
 
             ProcessPendingJurorRequestDto processPendingJurorRequestDto =
                 getProcessPendingJurorRequestDto(ApprovalDecision.APPROVE);
@@ -3422,8 +3420,7 @@ class JurorRecordServiceTest {
 
         @Test
         void positiveRejectPendingJuror() {
-
-            TestUtils.setupAuthentication("415", "SENIORJURORUSER", "9");
+            TestUtils.mockCourtUser("415", "415", Set.of(Role.SENIOR_JUROR_OFFICER));
 
             ProcessPendingJurorRequestDto processPendingJurorRequestDto =
                 getProcessPendingJurorRequestDto(ApprovalDecision.REJECT);
@@ -3454,8 +3451,7 @@ class JurorRecordServiceTest {
         @ParameterizedTest
         @ValueSource(chars = {'R', 'A'})
         void negativePendingJurorWrongStatus(char pendingJurorStatusCode) {
-
-            TestUtils.setupAuthentication("415", "SENIORJURORUSER", "9");
+            TestUtils.mockCourtUser("415", "415", Set.of(Role.SENIOR_JUROR_OFFICER));
 
             ProcessPendingJurorRequestDto processPendingJurorRequestDto =
                 getProcessPendingJurorRequestDto(ApprovalDecision.APPROVE);
@@ -3492,6 +3488,7 @@ class JurorRecordServiceTest {
 
             @AfterEach
             void mockCurrentUser() {
+                TestUtils.afterAll();
                 if (paymentDetailsMockedStatic != null) {
                     paymentDetailsMockedStatic.close();
                 }
@@ -3697,7 +3694,7 @@ class JurorRecordServiceTest {
             String courtOwner = "415";
             String username = "JURY_USER";
 
-            TestUtils.setUpMockAuthentication(courtOwner, username, "1", List.of(courtOwner));
+            TestUtils.mockCourtUser(courtOwner);
 
             Juror juror = new Juror();
             juror.setJurorNumber(JUROR_NUMBER);
@@ -3743,9 +3740,8 @@ class JurorRecordServiceTest {
         @Test
         void negativeUserForbidden() {
             String courtOwner = "415";
-            String username = "JURY_USER";
 
-            TestUtils.setUpMockAuthentication(courtOwner, username, "1", List.of(courtOwner));
+            TestUtils.mockCourtUser(courtOwner);
 
             Juror juror = new Juror();
             juror.setJurorNumber(JUROR_NUMBER);
@@ -3790,7 +3786,7 @@ class JurorRecordServiceTest {
 
         @Test
         void happyPath() {
-            TestUtils.setUpMockAuthentication("415", "CourtUser", "1", List.of("415"));
+            TestUtils.mockCourtUser("415");
             String jurorNumber = "111111111";
 
             ConfirmIdentityDto dto = ConfirmIdentityDto.builder()
@@ -3820,7 +3816,7 @@ class JurorRecordServiceTest {
 
         @Test
         void wrongCourtUser() {
-            TestUtils.setUpMockAuthentication("416", "CourtUser", "1", List.of("416"));
+            TestUtils.mockCourtUser("416");
             String jurorNumber = "111111111";
 
             ConfirmIdentityDto dto = ConfirmIdentityDto.builder()
@@ -3850,7 +3846,7 @@ class JurorRecordServiceTest {
 
         @Test
         void jurorNotFound() {
-            TestUtils.setUpMockAuthentication("416", "CourtUser", "1", List.of("416"));
+            TestUtils.mockCourtUser("416");
             String jurorNumber = "111111111";
 
             ConfirmIdentityDto dto = ConfirmIdentityDto.builder()
@@ -3882,7 +3878,7 @@ class JurorRecordServiceTest {
 
         @Test
         void shouldMarkJurorAsRespondedWhenJurorExistsAndDateOfBirthIsNotNull() {
-            TestUtils.setUpMockAuthentication("400", "Bureau", "1", List.of("400"));
+            TestUtils.mockBureauUser();
 
             final String jurorNumber = "123456789";
             final Juror juror = new Juror();
@@ -3915,8 +3911,7 @@ class JurorRecordServiceTest {
 
         @Test
         void shouldThrowExceptionWhenJurorDoesNotExist() {
-
-            TestUtils.setUpMockAuthentication("415", "CourtUser", "1", List.of("415"));
+            TestUtils.mockCourtUser("415");
 
             String jurorNumber = "123456789";
             when(jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true)).thenReturn(List.of());
@@ -3926,7 +3921,7 @@ class JurorRecordServiceTest {
 
         @Test
         void shouldThrowExceptionWhenJurorDateOfBirthIsNull() {
-            TestUtils.setUpMockAuthentication("400", "Bureau", "1", List.of("400"));
+            TestUtils.mockBureauUser();
 
             final String jurorNumber = "123456789";
             final Juror juror = new Juror();

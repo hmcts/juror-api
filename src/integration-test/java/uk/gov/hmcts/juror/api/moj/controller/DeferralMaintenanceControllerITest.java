@@ -896,7 +896,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
                 httpHeaders, POST, URI.create(URL_PREFIX + JUROR_555555551));
             ResponseEntity<DeferralReasonRequestDto> response = template.exchange(requestEntity,
                 DeferralReasonRequestDto.class);
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+            assertThat(response.getStatusCode()).isEqualTo(NOT_FOUND);
         }
 
         @Test
@@ -1029,7 +1029,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             ResponseEntity<DeferralReasonRequestDto> response = template.exchange(requestEntity,
                 DeferralReasonRequestDto.class);
 
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+            assertThat(response.getStatusCode()).isEqualTo(NOT_FOUND);
         }
 
         @Test
@@ -1261,7 +1261,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             RequestEntity<DeferralAllocateRequestDto> requestEntity = new RequestEntity<>(deferralAllocateRequestDto,
                 httpHeaders, POST, URI.create(URL));
             ResponseEntity<Void> response = template.exchange(requestEntity, Void.class);
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+            assertThat(response.getStatusCode()).isEqualTo(NOT_FOUND);
         }
 
         private DeferralAllocateRequestDto createDeferralAllocateRequestDto(String poolNumber,
@@ -1412,7 +1412,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
                 URI.create(URL_PREFIX + JUROR_123456789));
             ResponseEntity<Void> response = template.exchange(requestEntity, Void.class);
 
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+            assertThat(response.getStatusCode()).isEqualTo(NOT_FOUND);
 
             // check to make sure no record was not deleted for the deferral maintenance table
             Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_123456789);

@@ -15,14 +15,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralRequestDto;
 import uk.gov.hmcts.juror.api.moj.domain.DeferralDecision;
 
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,17 +51,6 @@ public class DeferralRequestControllerITest extends AbstractIntegrationTest {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
-
-    private String initCourtsJwt(String owner, List<String> courts) throws Exception {
-
-        return mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .login("COURT_USER")
-            .owner(owner)
-            .staff(BureauJwtPayload.Staff.builder().courts(courts).build())
-            .build());
-    }
-
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/DeferralRequestController_createInitialPoolRecords.sql"})

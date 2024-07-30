@@ -15,6 +15,7 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -171,9 +172,11 @@ public final class TestUtils {
         return SECURITY_UTIL_MOCK;
     }
 
-    public static void mockSecurityUtil(BureauJwtPayload payload) {
+    public static BureauJwtPayload mockSecurityUtil(BureauJwtPayload payload) {
         MockedStatic<SecurityUtil> securityUtil = getSecurityUtilMock();
+        securityUtil.when(SecurityUtil::hasBureauJwtPayload).thenReturn(true);
         securityUtil.when(SecurityUtil::getActiveUsersBureauPayload).thenReturn(payload);
+        return payload;
     }
 
     public static void mockBureauUser() {
@@ -187,17 +190,34 @@ public final class TestUtils {
 
     }
 
-    public static void mockCourtUser(String owner) {
-        mockCourtUser(owner, owner);
+    public static BureauJwtPayload mockCourtUser(String owner) {
+        return mockCourtUser(owner, owner);
     }
 
-    public static void mockCourtUser(String owner, String locCode) {
-        mockSecurityUtil(BureauJwtPayload.builder()
+    public static BureauJwtPayload mockCourtUser(String owner, String locCode, Collection<Role> roles) {
+        return mockSecurityUtil(BureauJwtPayload.builder()
             .owner(owner)
             .locCode(locCode)
-            .roles(Set.of())
+            .roles(roles)
             .userType(UserType.COURT)
             .activeUserType(UserType.COURT)
+            .staff(BureauJwtPayload.Staff.builder()
+                .courts(List.of(owner, locCode))
+                .build())
+            .build());
+    }
+
+    public static BureauJwtPayload mockCourtUser(String owner, String locCode) {
+        return mockCourtUser(owner, locCode, Set.of());
+    }
+
+    public static BureauJwtPayload mockSystemUser() {
+        return mockSecurityUtil(BureauJwtPayload.builder()
+            .owner("400")
+            .locCode("400")
+            .roles(Set.of())
+            .userType(UserType.SYSTEM)
+            .activeUserType(UserType.SYSTEM)
             .build());
     }
 }

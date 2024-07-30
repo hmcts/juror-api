@@ -98,7 +98,7 @@ public class StaffServiceTest {
         .build();
 
     @AfterEach
-    void afterEach(){
+    void afterEach() {
         TestUtils.afterAll();
     }
 

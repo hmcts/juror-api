@@ -108,8 +108,8 @@ public final class JurorPoolUtils {
      * @param jurorPoolRepository JPA interface to the database to generate and execute SQL queries
      * @param jurorNumber         9-digit numeric string to identify jurors
      * @return a collection (list) of juror pool association records. Although the juror number can uniquely identify
-     * an individual, sometimes one individual can have multiple, active, editable juror pool associative
-     * records, for example when they have been transferred.
+     *          an individual, sometimes one individual can have multiple, active, editable juror pool associative
+     *          records, for example when they have been transferred.
      */
     public static List<JurorPool> getActiveJurorPoolRecords(JurorPoolRepository jurorPoolRepository,
                                                             String jurorNumber) {
@@ -129,12 +129,12 @@ public final class JurorPoolUtils {
      * Query the database and return the latest active, juror pool associations for a given juror number. Ordered by
      * start date descending (latest first).
      *
-     * @deprecated Use getActiveJurorPoolRecord(JurorPoolRepository jurorPoolRepository,
-     *                                                      JurorPoolService jurorPoolService,
-     *                                                      String jurorNumber)
      * @param jurorPoolRepository JPA interface to the database to generate and execute SQL queries
      * @param jurorNumber         9-digit numeric string to identify jurors
      * @return a juror pool association record with the latest service start date for a given juror
+     * @deprecated Use getActiveJurorPoolRecord(JurorPoolRepository jurorPoolRepository,
+     *                                                      JurorPoolService jurorPoolService,
+     *                                                      String jurorNumber)
      */
     @Deprecated(forRemoval = true)
     public static JurorPool getLatestActiveJurorPoolRecord(JurorPoolRepository jurorPoolRepository,
