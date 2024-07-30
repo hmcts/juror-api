@@ -9,9 +9,12 @@ import java.util.List;
 public enum JurorStatusGroup {
 
     AT_COURT(List.of(IJurorStatus.RESPONDED, IJurorStatus.PANEL, IJurorStatus.JUROR)),
-    IN_WAITING(List.of(IJurorStatus.RESPONDED, IJurorStatus.PANEL)),
+    IN_WAITING(IJurorStatus.getAllExcluding(IJurorStatus.JUROR)),
     ON_TRIAL(List.of(IJurorStatus.JUROR)),
-    COMPLETED(List.of(IJurorStatus.COMPLETED));
+    COMPLETED(List.of(IJurorStatus.COMPLETED)),
+
+
+    ALL(IJurorStatus.getAllExcluding());
 
     private List<Integer> statusList;
 
