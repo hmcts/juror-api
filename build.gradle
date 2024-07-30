@@ -278,7 +278,7 @@ checkstyle {
 }
 
 pmdTest {
-    maxFailures = 298
+    maxFailures = 294
 }
 pmdMain {
     maxFailures = 798
