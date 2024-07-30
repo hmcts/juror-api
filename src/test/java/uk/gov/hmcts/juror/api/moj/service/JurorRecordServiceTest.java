@@ -147,7 +147,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.juror.api.moj.controller.request.FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS;
 
 @ExtendWith(SpringExtension.class)
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects",
@@ -3507,7 +3506,7 @@ class JurorRecordServiceTest {
                     .jurorVersion(1L)
                     .include(List.of(
                         FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS,
-                        NAME_DETAILS,
+                        FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS,
                         FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS,
                         FilterableJurorDetailsRequestDto.IncludeType.MILEAGE))
                     .build());
@@ -3562,7 +3561,7 @@ class JurorRecordServiceTest {
                 includeTypeValidator.accept(paymentDetails, response.getPaymentDetails(),
                     FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS);
                 includeTypeValidator.accept(nameDetails, response.getNameDetails(),
-                    NAME_DETAILS);
+                    FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS);
                 includeTypeValidator.accept(jurorAddressDto, response.getAddress(),
                     FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS);
 
