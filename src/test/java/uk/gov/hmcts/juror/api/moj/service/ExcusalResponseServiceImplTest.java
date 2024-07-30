@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.service;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -45,6 +46,8 @@ import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 @RunWith(SpringRunner.class)
@@ -76,6 +79,8 @@ public class ExcusalResponseServiceImplTest {
     private PrintDataService printDataService;
     @Mock
     private JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
+    @Mock
+    private JurorPoolService jurorPoolService;
 
     @InjectMocks
     private ExcusalResponseServiceImpl excusalResponseService;
@@ -89,10 +94,16 @@ public class ExcusalResponseServiceImplTest {
         excusalCodes.add(excusalCodeEntity1);
         Mockito.when(excusalCodeRepository.findAll()).thenReturn(excusalCodes);
 
-        Mockito.doReturn(Collections.singletonList(createTestJurorPool("400", "123456789")))
+        JurorPool jurorPool400 = createTestJurorPool("400", "123456789");
+        Mockito.doReturn(jurorPool400)
+                .when(jurorPoolService).getJurorPoolFromUser("123456789");
+        Mockito.doReturn(Collections.singletonList(jurorPool400))
             .when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc("123456789", true);
-        Mockito.doReturn(Collections.singletonList(createTestJurorPool("415", "987654321")))
+        JurorPool jurorPool415 = createTestJurorPool("415", "987654321");
+        Mockito.doReturn(jurorPool415)
+            .when(jurorPoolService).getJurorPoolFromUser("987654321");
+        Mockito.doReturn(Collections.singletonList(jurorPool415))
             .when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc("987654321", true);
 
@@ -109,8 +120,14 @@ public class ExcusalResponseServiceImplTest {
         Mockito.doReturn(null).when(jurorResponseRepository).save(any());
     }
 
+    @AfterEach
+    void afterEach(){
+        TestUtils.afterAll();
+    }
+
     @Test
     public void test_refuseExcusalRequest_happyPath_paperResponse_bureauUser_bureauOwner() {
+        TestUtils.mockBureauUser();
         String jurorNumber = "123456789";
         BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
@@ -132,6 +149,7 @@ public class ExcusalResponseServiceImplTest {
     @Test
     public void test_refuseExcusalRequest_happyPath_paperResponse_courtUser_courtOwner() {
         String jurorNumber = "987654321";
+        TestUtils.mockCourtUser("415");
         BureauJwtPayload courtPayload = TestUtils.createJwt("415", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
@@ -142,8 +160,8 @@ public class ExcusalResponseServiceImplTest {
 
         excusalResponseService.respondToExcusalRequest(courtPayload, excusalDecisionDto, jurorNumber);
 
-        Mockito.verify(jurorPoolRepository, Mockito.times(1))
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), Mockito.anyBoolean());
+        verify(jurorPoolService, times(1))
+            .getJurorPoolFromUser(jurorNumber);
 
         verifyHappyPaperPath(courtPayload, jurorNumber);
         verifyHappyRefuseJurorPoolPath(2,false);
@@ -173,6 +191,7 @@ public class ExcusalResponseServiceImplTest {
         Mockito.doReturn(List.of(jurorPool)).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR_NUMBER, true);
 
+        TestUtils.mockBureauUser();
         final BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
         excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, JUROR_NUMBER);
 
@@ -205,6 +224,7 @@ public class ExcusalResponseServiceImplTest {
 
     @Test
     public void test_refuseExcusalRequest_happyPath_digitalResponse_bureauUser_bureauOwner() {
+        TestUtils.mockBureauUser();
         final BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
@@ -246,6 +266,7 @@ public class ExcusalResponseServiceImplTest {
 
     @Test
     public void test_grantExcusalRequest_happyPath_digitalResponse_bureauUser_bureauOwner() {
+        TestUtils.mockBureauUser();
         final BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
@@ -395,6 +416,7 @@ public class ExcusalResponseServiceImplTest {
         Mockito.doReturn(List.of(jurorPool)).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR_NUMBER, true);
 
+        TestUtils.mockBureauUser();
         BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
         excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, JUROR_NUMBER);
 
@@ -515,6 +537,7 @@ public class ExcusalResponseServiceImplTest {
 
     @Test
     public void test_excusalRequest_withoutResponse_grant_bureauUser_bureauOwner() {
+        TestUtils.mockBureauUser();
         final BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
         final ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequestNoResponse(ExcusalDecision.GRANT);
@@ -542,6 +565,7 @@ public class ExcusalResponseServiceImplTest {
 
     @Test
     public void test_excusalRequest_withoutResponse_refuse_bureauUser_bureauOwner() {
+        TestUtils.mockBureauUser();
         final BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
         final ExcusalDecisionDto excusalDecisionDto =

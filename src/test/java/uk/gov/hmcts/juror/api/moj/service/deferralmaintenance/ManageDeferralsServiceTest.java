@@ -1416,6 +1416,7 @@ class ManageDeferralsServiceTest {
 
     @Test
     void test_findActivePoolsForDates_invalidAccess() {
+        TestUtils.mockBureauUser();
         String bureauOwner = "400";
         String jurorNumber = "123456789";
         String currentCourtLocation = "415";

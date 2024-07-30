@@ -45,18 +45,13 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
     public static final String DEFERRAL_DENIED_INFO = "Deferral Denied - %s";
     public static final String DEFERRAL_GRANTED_INFO = "Add defer - %s";
 
-    @NonNull
     private final ExcusalCodeRepository excusalCodeRepository;
-    @NonNull
     private final JurorRepository jurorRepository;
-    @NonNull
     private final JurorPoolRepository jurorPoolRepository;
-    @NonNull
     private final JurorHistoryRepository jurorHistoryRepository;
-    @NonNull
     private final PrintDataService printDataService;
     private final JurorHistoryService jurorHistoryService;
-
+    private final JurorPoolService jurorPoolService;
 
     @Override
     @Transactional
@@ -65,7 +60,8 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
         final String jurorNumber = deferralRequestDto.getJurorNumber();
         final String owner = payload.getOwner();
 
-        JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
+        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolRecord(
+            jurorPoolRepository,jurorPoolService, jurorNumber);
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, owner);
 
         checkExcusalCodeIsValid(deferralRequestDto.getDeferralReason());

@@ -155,7 +155,7 @@ public final class JurorPoolUtils {
     public static JurorPool getActiveJurorPoolRecord(JurorPoolRepository jurorPoolRepository,
                                                      JurorPoolService jurorPoolService,
                                                      String jurorNumber) {
-        if (SecurityUtil.isBureau() || SecurityUtil.isSystem()) {
+        if (!SecurityUtil.hasBureauJwtPayload() || SecurityUtil.isBureau() || SecurityUtil.isSystem()) {
             return getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
         }
         return jurorPoolService.getJurorPoolFromUser(jurorNumber);

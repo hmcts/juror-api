@@ -29,6 +29,7 @@ import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
+import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.service.ReissueLetterService;
 import uk.gov.hmcts.juror.api.moj.service.ReissueLetterServiceImpl;
@@ -67,6 +68,8 @@ public class ReissueLetterServiceTest {
 
     @Mock
     private JurorHistoryService jurorHistoryService;
+    @Mock
+    private JurorPoolService jurorPoolService;
 
     @InjectMocks
     ReissueLetterServiceImpl reissueLetterService;

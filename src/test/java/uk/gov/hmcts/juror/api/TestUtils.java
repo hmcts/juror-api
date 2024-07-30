@@ -17,6 +17,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mock;
@@ -70,10 +71,13 @@ public final class TestUtils {
     }
 
     public static BureauJwtPayload createJwt(String owner, String username, String userLevel, List<String> courts) {
+        UserType userType = "400".equals(owner) ? UserType.BUREAU : UserType.COURT;
         return BureauJwtPayload.builder()
             .owner(owner)
             .locCode(owner)
             .login(username)
+            .activeUserType(userType)
+            .userType(userType)
             .staff(staffBuilder(username, Integer.valueOf(userLevel), courts))
             .userLevel(userLevel)
             .build();
@@ -176,6 +180,7 @@ public final class TestUtils {
         mockSecurityUtil(BureauJwtPayload.builder()
             .owner("400")
             .locCode("400")
+            .roles(Set.of())
             .userType(UserType.BUREAU)
             .activeUserType(UserType.BUREAU)
             .build());
@@ -190,6 +195,7 @@ public final class TestUtils {
         mockSecurityUtil(BureauJwtPayload.builder()
             .owner(owner)
             .locCode(locCode)
+            .roles(Set.of())
             .userType(UserType.COURT)
             .activeUserType(UserType.COURT)
             .build());
