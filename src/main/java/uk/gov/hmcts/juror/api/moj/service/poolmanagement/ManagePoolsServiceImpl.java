@@ -1,7 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.service.poolmanagement;
 
 import com.querydsl.core.Tuple;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.juror.domain.ApplicationSettings;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.response.SummoningProgressResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.AvailablePoolsInCourtLocationDto;
@@ -17,6 +17,7 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolStatisticsRepository;
+import uk.gov.hmcts.juror.api.moj.service.ApplicationSettingService;
 import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
@@ -33,14 +34,10 @@ import static uk.gov.hmcts.juror.api.moj.utils.NumberUtils.unboxIntegerValues;
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class ManagePoolsServiceImpl implements ManagePoolsService {
 
-    @NonNull
-    CourtLocationRepository courtLocationRepository;
-    @NonNull
-    PoolRequestRepository poolRequestRepository;
-
-    @NonNull
-    PoolStatisticsRepository poolStatisticsRepository;
-
+    private final CourtLocationRepository courtLocationRepository;
+    private final PoolRequestRepository poolRequestRepository;
+    private final PoolStatisticsRepository poolStatisticsRepository;
+    private final ApplicationSettingService applicationSettingService;
 
     @Override
     @Transactional(readOnly = true)
@@ -83,7 +80,7 @@ public class ManagePoolsServiceImpl implements ManagePoolsService {
 
         List<AvailablePoolsInCourtLocationDto.AvailablePoolsDto> availablePoolsDtos =
             mapAvailablePoolsToDto(poolRequestRepository.findActivePoolsForDateRangeWithCourtCreatedRestriction(
-                owner, locCode, weekCommencing,courtCreatedWeekCommencing), owner);
+                owner, locCode, weekCommencing, courtCreatedWeekCommencing), owner);
 
         AvailablePoolsInCourtLocationDto availablePools = new AvailablePoolsInCourtLocationDto();
         availablePools.setAvailablePools(availablePoolsDtos);
@@ -113,15 +110,22 @@ public class ManagePoolsServiceImpl implements ManagePoolsService {
                                                                String poolType) {
         final int numberOfWeeks = 8;
 
+        LocalDate startOfWorkingNextWeek = DateUtils.getStartOfWeekFromDate(LocalDate.now())
+            .plusWeeks(applicationSettingService
+                .toInteger(ApplicationSettings.Setting.SUMMONING_PROGRESS_WEEK_OFFSET, 0)
+            );
+
         List<Tuple> nilPools =
-            poolStatisticsRepository.getNilPools(payload.getOwner(), courtLocationCode, poolType, numberOfWeeks);
+            poolStatisticsRepository.getNilPools(payload.getOwner(), courtLocationCode, poolType,
+                startOfWorkingNextWeek, numberOfWeeks);
 
         if (nilPools == null) {
             nilPools = new ArrayList<>();
         }
 
         List<Tuple> poolStatistics = poolStatisticsRepository
-            .getStatisticsByCourtLocationAndPoolType(payload.getOwner(), courtLocationCode, poolType, numberOfWeeks);
+            .getStatisticsByCourtLocationAndPoolType(payload.getOwner(), courtLocationCode, poolType,
+                startOfWorkingNextWeek, numberOfWeeks);
 
         if (poolStatistics == null) {
             poolStatistics = new ArrayList<>();
@@ -131,7 +135,6 @@ public class ManagePoolsServiceImpl implements ManagePoolsService {
             throw new MojException.NotFound("Court location with pool type cannot be found", null);
         }
 
-        LocalDate startOfWorkingNextWeek = DateUtils.getStartOfWeekFromDate(LocalDate.now());
         List<LocalDate> eightWeeks = DateUtils.getNumberOfStartingWeeks(numberOfWeeks, startOfWorkingNextWeek);
 
         return getPoolMonitoringStatsForPeriod(poolStatistics, nilPools, eightWeeks);
