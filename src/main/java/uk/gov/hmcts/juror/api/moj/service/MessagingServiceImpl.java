@@ -263,12 +263,12 @@ public class MessagingServiceImpl implements MessagingService {
             message.setEmail(juror.getEmail());
         }
         if (both || MessageType.SendType.SMS.equals(jurorAndSendType.getType())) {
-            if (juror.getPhoneNumber() == null) {
+            if (juror.getPhoneNumberCombined() == null) {
                 throw new MojException.BusinessRuleViolation(
                     "Phone number is required for juror: " + juror.getJurorNumber(),
                     JUROR_MUST_HAVE_PHONE_NUMBER);
             }
-            message.setPhone(juror.getPhoneNumber());
+            message.setPhone(juror.getPhoneNumberCombined());
         }
 
         String otherInfo;
