@@ -17,7 +17,6 @@ import uk.gov.hmcts.juror.api.moj.domain.QJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.letter.CourtLetterSearchCriteria;
 import uk.gov.hmcts.juror.api.moj.domain.letter.court.DeferralGrantedLetterList;
-import uk.gov.hmcts.juror.api.moj.domain.letter.court.QDeferralGrantedLetterList;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 
@@ -29,9 +28,6 @@ public class DeferralGrantedLetterListRepositoryImpl implements IDeferralGranted
 
     @PersistenceContext
     EntityManager entityManager;
-
-    private static final QDeferralGrantedLetterList DEFERRAL_LETTER_LIST =
-        QDeferralGrantedLetterList.deferralGrantedLetterList;
 
     private static final QExcusalCode EXCUSAL_CODE = QExcusalCode.excusalCode;
 
