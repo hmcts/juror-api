@@ -1046,7 +1046,7 @@ class MessagingServiceImplTest {
             Juror juror = mock(Juror.class);
             when(juror.getJurorNumber()).thenReturn(TestConstants.VALID_JUROR_NUMBER);
             when(juror.getPollNumber()).thenReturn(TestConstants.VALID_POOL_NUMBER);
-            when(juror.getPhoneNumber()).thenReturn(TestConstants.VALID_PHONE_NUMBER);
+            when(juror.getPhoneNumberCombined()).thenReturn(TestConstants.VALID_PHONE_NUMBER);
             when(juror.getEmail()).thenReturn(TestConstants.VALID_EMAIL);
 
             doReturn(juror).when(messagingService).getJuror(TestConstants.VALID_JUROR_NUMBER);
@@ -1154,7 +1154,7 @@ class MessagingServiceImplTest {
             Juror juror = mock(Juror.class);
             when(juror.getJurorNumber()).thenReturn(TestConstants.VALID_JUROR_NUMBER);
             when(juror.getPollNumber()).thenReturn(TestConstants.VALID_POOL_NUMBER);
-            when(juror.getPhoneNumber()).thenReturn(TestConstants.VALID_PHONE_NUMBER);
+            when(juror.getPhoneNumberCombined()).thenReturn(TestConstants.VALID_PHONE_NUMBER);
             when(juror.getEmail()).thenReturn(TestConstants.VALID_EMAIL);
 
             doReturn(juror).when(messagingService).getJuror(TestConstants.VALID_JUROR_NUMBER);

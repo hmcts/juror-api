@@ -146,7 +146,7 @@ class MessageTemplateRepositoryImplTest {
                 JUROR.jurorNumber,
                 JUROR_POOL.pool.poolNumber,
                 JUROR.email,
-                JUROR.phoneNumber,
+                JUROR.phoneNumberCombined,
                 JUROR.welsh,
                 JUROR_POOL.pool.courtLocation.locCode
             );
@@ -228,7 +228,7 @@ class MessageTemplateRepositoryImplTest {
                 JUROR.jurorNumber,
                 JUROR_POOL.pool.poolNumber,
                 JUROR.email,
-                JUROR.phoneNumber,
+                JUROR.phoneNumberCombined,
                 JUROR.welsh,
                 JUROR_POOL.pool.courtLocation.locCode,
                 JUROR.firstName,
@@ -309,7 +309,7 @@ class MessageTemplateRepositoryImplTest {
                 JUROR.jurorNumber,
                 JUROR_POOL.pool.poolNumber,
                 JUROR.email,
-                JUROR.phoneNumber,
+                JUROR.phoneNumberCombined,
                 JUROR.welsh,
                 JUROR_POOL.pool.courtLocation.locCode
             );
@@ -395,7 +395,7 @@ class MessageTemplateRepositoryImplTest {
                 JUROR.jurorNumber,
                 JUROR_POOL.pool.poolNumber,
                 JUROR.email,
-                JUROR.phoneNumber,
+                JUROR.phoneNumberCombined,
                 JUROR.welsh,
                 JUROR_POOL.pool.courtLocation.locCode,
                 JUROR.firstName,
@@ -491,7 +491,7 @@ class MessageTemplateRepositoryImplTest {
                 JUROR.jurorNumber,
                 JUROR_POOL.pool.poolNumber,
                 JUROR.email,
-                JUROR.phoneNumber,
+                JUROR.phoneNumberCombined,
                 JUROR.welsh,
                 JUROR_POOL.pool.courtLocation.locCode
             );
