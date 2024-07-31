@@ -20,6 +20,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.validator.constraints.Length;
+import org.springframework.data.annotation.ReadOnlyProperty;
 import uk.gov.hmcts.juror.api.juror.domain.THistoryCode;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeConverter;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
@@ -105,6 +106,10 @@ public class JurorHistory implements Serializable {
 
     @Column(name = "migrated")
     private Boolean migrated;
+
+    @NotNull
+    @Column(name = "date_created", insertable = false, updatable = false)
+    private LocalDate dateCreatedDateOnly;
 
     @PrePersist
     public void prePersist() {
