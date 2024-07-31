@@ -1,3 +1,0 @@
-java:
-  environment:
-    RUN_DB_MIGRATION_ON_STARTUP: true
