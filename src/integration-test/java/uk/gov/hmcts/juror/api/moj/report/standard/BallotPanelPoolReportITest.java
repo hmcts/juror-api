@@ -15,7 +15,7 @@ import java.util.List;
 
 @Sql({
     "/db/mod/truncate.sql",
-    "/db/mod/reports/CurrentPoolStatusReportControllerITest_typical.sql"
+    "/db/mod/reports/BallotPanelPoolReportITest.sql"
 })
 @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
 class BallotPanelPoolReportITest extends AbstractStandardReportControllerITest {
