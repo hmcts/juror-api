@@ -6,7 +6,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolStatisticsWithPoolJoin;
-import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -35,9 +34,9 @@ public class PoolStatisticsRepositoryImpl implements IPoolStatisticsRepository {
      */
     @Override
     public List<Tuple> getStatisticsByCourtLocationAndPoolType(String owner, String courtLocationCode,
-                                                               String poolType, int numberOfWeeks) {
+                                                               String poolType, LocalDate weekCommencing,
+                                                               int numberOfWeeks) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-        LocalDate weekCommencing = DateUtils.getStartOfWeekFromDate(LocalDate.now());
         return queryFactory
             .select(
                 POOL_STATS_WITH_POOL_JOIN.returnDate,
@@ -60,9 +59,9 @@ public class PoolStatisticsRepositoryImpl implements IPoolStatisticsRepository {
     }
 
     @Override
-    public List<Tuple> getNilPools(String owner, String courtLocationCode, String poolType, int numberOfWeeks) {
+    public List<Tuple> getNilPools(String owner, String courtLocationCode, String poolType,
+                                   LocalDate weekCommencing, int numberOfWeeks) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-        LocalDate weekCommencing = DateUtils.getStartOfWeekFromDate(LocalDate.now());
         return queryFactory.select(
                 POOL_REQUEST.poolNumber,
                 POOL_REQUEST.numberRequested,

@@ -11,6 +11,7 @@ import org.mockito.Mockito;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.juror.domain.ApplicationSettings;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.response.SummoningProgressResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.AvailablePoolsInCourtLocationDto;
@@ -19,6 +20,7 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolStatisticsRepository;
+import uk.gov.hmcts.juror.api.moj.service.ApplicationSettingService;
 import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
 
 import java.time.LocalDate;
@@ -35,12 +37,14 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 @SuppressWarnings("PMD.TooManyMethods")
 public class ManagePoolsServiceImplTest extends TestCase {
     public static final String COURT_LOCATION_CODE = "415";
     public static final String POOL_TYPE = "CRO";
+    public static final LocalDate WEEK_COMMENCING = DateUtils.getStartOfWeekFromDate(LocalDate.now());
     public static final int NUMBER_OF_WEEKS = 8;
     public static final String POOL_NUMBER = "415230601";
 
@@ -50,6 +54,8 @@ public class ManagePoolsServiceImplTest extends TestCase {
     CourtLocationRepository courtLocationRepository;
     @Mock
     PoolRequestRepository poolRequestRepository;
+    @Mock
+    ApplicationSettingService applicationSettingService;
 
     @InjectMocks
     ManagePoolsServiceImpl managePoolsService;
@@ -57,17 +63,19 @@ public class ManagePoolsServiceImplTest extends TestCase {
     @Before
     public void setupMocks() {
         final String partialPoolNumber = "4152306";
+        when(applicationSettingService.toInteger(ApplicationSettings.Setting.SUMMONING_PROGRESS_WEEK_OFFSET, 0))
+            .thenReturn(0);
         BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
         List<Tuple> results = getStatisticsByCourtLocationAndPoolTypeResults(8, partialPoolNumber);
         List<Tuple> nilPoolResults = getNilPools();
 
         doReturn(results).when(poolStatisticsRepository)
-            .getStatisticsByCourtLocationAndPoolType(bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE,
-                NUMBER_OF_WEEKS);
+            .getStatisticsByCourtLocationAndPoolType(bureauPayload.getOwner(), COURT_LOCATION_CODE,
+                POOL_TYPE, WEEK_COMMENCING, NUMBER_OF_WEEKS);
 
         doReturn(nilPoolResults)
             .when(poolStatisticsRepository)
-            .getNilPools(bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, NUMBER_OF_WEEKS);
+            .getNilPools(bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, WEEK_COMMENCING, NUMBER_OF_WEEKS);
     }
 
     //Tests related to service method: findAvailablePools
@@ -185,7 +193,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
         BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
         List<Tuple> poolStatistics = poolStatisticsRepository
             .getStatisticsByCourtLocationAndPoolType(bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE,
-                NUMBER_OF_WEEKS);
+                WEEK_COMMENCING, NUMBER_OF_WEEKS);
         assertThat(poolStatistics.size()).as("Expected list size of nine").isEqualTo(9);
 
         Tuple stats = poolStatistics.get(0);
@@ -212,7 +220,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
     public void test_getPoolMonitoringStats_nilPool() {
         BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
         List<Tuple> poolStatistics = poolStatisticsRepository
-            .getNilPools(bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, NUMBER_OF_WEEKS);
+            .getNilPools(bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, WEEK_COMMENCING, NUMBER_OF_WEEKS);
         assertThat(poolStatistics.size()).as("Expected list size of two").isEqualTo(2);
 
         Tuple stats = poolStatistics.get(0);
@@ -227,9 +235,9 @@ public class ManagePoolsServiceImplTest extends TestCase {
             .isEqualTo(LocalDate.now());
         verify(poolStatisticsRepository, times(0))
             .getStatisticsByCourtLocationAndPoolType(anyString(), anyString(), anyString(),
-                anyInt());
+                any(), anyInt());
         verify(poolStatisticsRepository, times(1))
-            .getNilPools(anyString(), anyString(), anyString(), anyInt());
+            .getNilPools(anyString(), anyString(), anyString(), any(), anyInt());
     }
 
     @Test
@@ -237,12 +245,11 @@ public class ManagePoolsServiceImplTest extends TestCase {
         BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
         SummoningProgressResponseDto dto = managePoolsService
             .getPoolMonitoringStats(bureauPayload, COURT_LOCATION_CODE, POOL_TYPE);
-
         verify(poolStatisticsRepository, times(1))
             .getStatisticsByCourtLocationAndPoolType(
-                anyString(), anyString(), anyString(), anyInt());
+                anyString(), anyString(), anyString(), any(), anyInt());
         verify(poolStatisticsRepository, times(1)).getNilPools(
-            anyString(), anyString(), anyString(), anyInt());
+            anyString(), anyString(), anyString(), any(), anyInt());
 
         assertThat(dto.getStatsByWeek().size())
             .as("Expected size to be eight")
@@ -280,9 +287,9 @@ public class ManagePoolsServiceImplTest extends TestCase {
         BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
         doReturn(getStatisticsBeforeCurrentWeek()).when(poolStatisticsRepository)
             .getStatisticsByCourtLocationAndPoolType(
-                bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, NUMBER_OF_WEEKS);
+                bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, WEEK_COMMENCING, NUMBER_OF_WEEKS);
         doReturn(null).when(poolStatisticsRepository).getNilPools(
-            bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, NUMBER_OF_WEEKS);
+            bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, WEEK_COMMENCING, NUMBER_OF_WEEKS);
         SummoningProgressResponseDto dto = managePoolsService
             .getPoolMonitoringStats(bureauPayload, COURT_LOCATION_CODE, POOL_TYPE);
         assertThat(dto.getStatsByWeek().size()).isEqualTo(8);
@@ -294,9 +301,9 @@ public class ManagePoolsServiceImplTest extends TestCase {
         BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
         doReturn(getStatisticsAfterCurrentWeek()).when(poolStatisticsRepository)
             .getStatisticsByCourtLocationAndPoolType(
-                bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, NUMBER_OF_WEEKS);
+                bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, WEEK_COMMENCING, NUMBER_OF_WEEKS);
         doReturn(null).when(poolStatisticsRepository).getNilPools(
-            bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, NUMBER_OF_WEEKS);
+            bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, WEEK_COMMENCING, NUMBER_OF_WEEKS);
         SummoningProgressResponseDto dto = managePoolsService
             .getPoolMonitoringStats(bureauPayload, COURT_LOCATION_CODE, POOL_TYPE);
         assertThat(dto.getStatsByWeek().size()).isEqualTo(8);
@@ -308,9 +315,9 @@ public class ManagePoolsServiceImplTest extends TestCase {
     public void test_getPoolMonitoringStats_nilPoolServiceStartDateAfterCurrentWeek() {
         BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
         doReturn(null).when(poolStatisticsRepository).getStatisticsByCourtLocationAndPoolType(
-            bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, NUMBER_OF_WEEKS);
+            bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, WEEK_COMMENCING, NUMBER_OF_WEEKS);
         doReturn(getNilPoolAfterCurrentWeek()).when(poolStatisticsRepository).getNilPools(
-            bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, NUMBER_OF_WEEKS);
+            bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, WEEK_COMMENCING, NUMBER_OF_WEEKS);
         SummoningProgressResponseDto dto = managePoolsService
             .getPoolMonitoringStats(bureauPayload, COURT_LOCATION_CODE, POOL_TYPE);
         assertThat(dto.getStatsByWeek().size()).isEqualTo(8);
@@ -323,7 +330,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
     public void test_getPoolMonitoringStats_nilPoolsOnly() {
         BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
         doReturn(null).when(poolStatisticsRepository).getStatisticsByCourtLocationAndPoolType(
-            bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, NUMBER_OF_WEEKS);
+            bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, WEEK_COMMENCING, NUMBER_OF_WEEKS);
         SummoningProgressResponseDto dto = managePoolsService
             .getPoolMonitoringStats(bureauPayload, COURT_LOCATION_CODE, POOL_TYPE);
         assertThat(dto.getStatsByWeek().size()).isEqualTo(8);
@@ -340,17 +347,15 @@ public class ManagePoolsServiceImplTest extends TestCase {
 
     private List<Tuple> getStatisticsByCourtLocationAndPoolTypeResults(int numberOfWeeks, String poolNumber) {
         List<Tuple> results = new ArrayList<>();
-        for (int i = 0;
-             i < numberOfWeeks;
-             i++) {
-            Tuple t = Mockito.mock(Tuple.class);
-            doReturn(LocalDate.now()).when(t).get(0, LocalDate.class);
-            doReturn(String.format("%s%02d", poolNumber, i + 1)).when(t).get(1, String.class);
-            doReturn(300).when(t).get(6, int.class);
-            doReturn(40).when(t).get(4, int.class);
-            doReturn(10).when(t).get(5, int.class);
-            doReturn(50).when(t).get(7, int.class);
-            results.add(t);
+        for (int i = 0; i < numberOfWeeks; i++) {
+            Tuple tuple = Mockito.mock(Tuple.class);
+            doReturn(LocalDate.now()).when(tuple).get(0, LocalDate.class);
+            doReturn(String.format("%s%02d", poolNumber, i + 1)).when(tuple).get(1, String.class);
+            doReturn(300).when(tuple).get(6, int.class);
+            doReturn(40).when(tuple).get(4, int.class);
+            doReturn(10).when(tuple).get(5, int.class);
+            doReturn(50).when(tuple).get(7, int.class);
+            results.add(tuple);
         }
 
         // nil pool
@@ -367,49 +372,49 @@ public class ManagePoolsServiceImplTest extends TestCase {
     }
 
     private List<Tuple> getNilPools() {
-        Tuple t = Mockito.mock(Tuple.class);
-        doReturn(0).when(t).get(1, int.class);
-        doReturn(LocalDate.now()).when(t).get(2, LocalDate.class);
-        doReturn("111111111").when(t).get(0, String.class);
+        Tuple tuple = Mockito.mock(Tuple.class);
+        doReturn(0).when(tuple).get(1, int.class);
+        doReturn(LocalDate.now()).when(tuple).get(2, LocalDate.class);
+        doReturn("111111111").when(tuple).get(0, String.class);
         List<Tuple> tuples = new ArrayList<>();
-        tuples.add(t);
+        tuples.add(tuple);
 
-        t = Mockito.mock(Tuple.class);
-        doReturn(0).when(t).get(1, int.class);
-        doReturn(LocalDate.now()).when(t).get(2, LocalDate.class);
-        doReturn(String.format("%s%02d", "4152306", 9)).when(t).get(0, String.class);
-        tuples.add(t);
+        tuple = Mockito.mock(Tuple.class);
+        doReturn(0).when(tuple).get(1, int.class);
+        doReturn(LocalDate.now()).when(tuple).get(2, LocalDate.class);
+        doReturn(String.format("%s%02d", "4152306", 9)).when(tuple).get(0, String.class);
+        tuples.add(tuple);
         return tuples;
     }
 
     private List<Tuple> getStatisticsBeforeCurrentWeek() {
-        Tuple t = Mockito.mock(Tuple.class);
-        doReturn(LocalDate.now().minusWeeks(1)).when(t).get(0, LocalDate.class);
-        doReturn("111111111").when(t).get(1, String.class);
-        doReturn(300).when(t).get(6, int.class);
-        doReturn(40).when(t).get(4, int.class);
-        doReturn(10).when(t).get(5, int.class);
-        doReturn(50).when(t).get(7, int.class);
-        return Collections.singletonList(t);
+        Tuple tuple = Mockito.mock(Tuple.class);
+        doReturn(LocalDate.now().minusWeeks(1)).when(tuple).get(0, LocalDate.class);
+        doReturn("111111111").when(tuple).get(1, String.class);
+        doReturn(300).when(tuple).get(6, int.class);
+        doReturn(40).when(tuple).get(4, int.class);
+        doReturn(10).when(tuple).get(5, int.class);
+        doReturn(50).when(tuple).get(7, int.class);
+        return Collections.singletonList(tuple);
     }
 
     private List<Tuple> getStatisticsAfterCurrentWeek() {
-        Tuple t = Mockito.mock(Tuple.class);
-        doReturn(LocalDate.now().plusWeeks(1)).when(t).get(0, LocalDate.class);
-        doReturn("111111111").when(t).get(1, String.class);
-        doReturn(300).when(t).get(6, int.class);
-        doReturn(40).when(t).get(4, int.class);
-        doReturn(10).when(t).get(5, int.class);
-        doReturn(50).when(t).get(7, int.class);
-        return Collections.singletonList(t);
+        Tuple tuple = Mockito.mock(Tuple.class);
+        doReturn(LocalDate.now().plusWeeks(1)).when(tuple).get(0, LocalDate.class);
+        doReturn("111111111").when(tuple).get(1, String.class);
+        doReturn(300).when(tuple).get(6, int.class);
+        doReturn(40).when(tuple).get(4, int.class);
+        doReturn(10).when(tuple).get(5, int.class);
+        doReturn(50).when(tuple).get(7, int.class);
+        return Collections.singletonList(tuple);
     }
 
     private List<Tuple> getNilPoolAfterCurrentWeek() {
-        Tuple t = Mockito.mock(Tuple.class);
-        doReturn(LocalDate.now().plusWeeks(1)).when(t).get(0, LocalDate.class);
-        doReturn(0).when(t).get(1, int.class);
-        doReturn(LocalDate.now().plusWeeks(1)).when(t).get(2, LocalDate.class);
-        doReturn("111111111").when(t).get(0, String.class);
-        return Collections.singletonList(t);
+        Tuple tuple = Mockito.mock(Tuple.class);
+        doReturn(LocalDate.now().plusWeeks(1)).when(tuple).get(0, LocalDate.class);
+        doReturn(0).when(tuple).get(1, int.class);
+        doReturn(LocalDate.now().plusWeeks(1)).when(tuple).get(2, LocalDate.class);
+        doReturn("111111111").when(tuple).get(0, String.class);
+        return Collections.singletonList(tuple);
     }
 }
