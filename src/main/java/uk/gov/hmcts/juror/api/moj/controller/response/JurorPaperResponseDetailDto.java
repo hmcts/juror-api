@@ -16,6 +16,7 @@ import uk.gov.hmcts.juror.api.moj.domain.authentication.UserDetailsDto;
 import uk.gov.hmcts.juror.api.validation.LocalDateOfBirth;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.EMAIL_ADDRESS_REGEX;
@@ -267,6 +268,11 @@ public class JurorPaperResponseDetailDto implements IJurorResponse {
     @JsonProperty("current_owner")
     @Schema(name = "Current Owner", description = "Current owner (3 digit code) of the juror record")
     private String currentOwner;
+
+    @JsonProperty("completedAt")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Schema(name = "Completed At", description = "Date and time the juror paper response was completed")
+    private LocalDateTime completedAt;
 
     @AllArgsConstructor
     @NoArgsConstructor

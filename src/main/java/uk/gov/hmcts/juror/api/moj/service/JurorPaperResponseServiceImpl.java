@@ -204,6 +204,8 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         jurorPaperResponseDetailDto.setProcessingStatus(jurorPaperResponse.getProcessingStatus().getDescription());
         jurorPaperResponseDetailDto.setWelsh(jurorPaperResponse.getWelsh());
 
+        jurorPaperResponseDetailDto.setCompletedAt(jurorPaperResponse.getCompletedAt());
+
         // copy the existing name and address values from Juror record
         copyExistingJurorDetails(jurorPaperResponseDetailDto, juror);
 
