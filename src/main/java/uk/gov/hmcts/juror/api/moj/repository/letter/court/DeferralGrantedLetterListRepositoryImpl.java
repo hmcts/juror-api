@@ -20,6 +20,8 @@ import uk.gov.hmcts.juror.api.moj.domain.letter.court.DeferralGrantedLetterList;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
+
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -35,7 +37,7 @@ public class DeferralGrantedLetterListRepositoryImpl implements IDeferralGranted
     public List<DeferralGrantedLetterList> findJurorsEligibleForDeferralGrantedLetter(
         CourtLetterSearchCriteria searchCriteria, String owner) {
 
-        JPAQuery<Tuple> jpaQuery = buildBaseQuery(owner);
+        JPAQuery<Tuple> jpaQuery = buildBaseQuery();
 
         filterEligibleLetterSearchCriteria(jpaQuery, searchCriteria);
 
@@ -75,11 +77,11 @@ public class DeferralGrantedLetterListRepositoryImpl implements IDeferralGranted
             }
         });
 
-        return deferralGrantedLetterListMap.values().stream().collect(Collectors.toList());
+        return deferralGrantedLetterListMap.values().stream().toList();
     }
 
 
-    private JPAQuery<Tuple> buildBaseQuery(String locCode) {
+    private JPAQuery<Tuple> buildBaseQuery() {
 
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
 
@@ -95,20 +97,21 @@ public class DeferralGrantedLetterListRepositoryImpl implements IDeferralGranted
                 QJurorPool.jurorPool.isActive,
                 EXCUSAL_CODE.excusalCode.description)
             .from(QJurorPool.jurorPool)
-            .join(QJuror.juror).on(QJuror.juror.jurorNumber.eq(QJurorPool.jurorPool.juror.jurorNumber))
+            .join(QJuror.juror).on(QJuror.juror.eq(QJurorPool.jurorPool.juror))
             .join(QPoolRequest.poolRequest)
-            .on(QPoolRequest.poolRequest.poolNumber.eq(QJurorPool.jurorPool.pool.poolNumber))
+            .on(QPoolRequest.poolRequest.eq(QJurorPool.jurorPool.pool))
             .join(QJurorStatus.jurorStatus).on(QJurorStatus.jurorStatus.eq(QJurorPool.jurorPool.status))
             .join(EXCUSAL_CODE.excusalCode).on(EXCUSAL_CODE.excusalCode.code.eq(QJurorPool.jurorPool.deferralCode))
             .leftJoin(QJurorHistory.jurorHistory)
             .on((QJurorHistory.jurorHistory.jurorNumber.eq(QJuror.juror.jurorNumber))
-                .and(QJurorHistory.jurorHistory.poolNumber.eq(QJurorPool.jurorPool.pool.poolNumber))
+                .and(QJurorHistory.jurorHistory.poolNumber.eq(QPoolRequest.poolRequest.poolNumber))
                 .and(QJurorHistory.jurorHistory.historyCode.eq(HistoryCodeMod.DEFERRED_LETTER))
                 .and(QJurorHistory.jurorHistory.otherInformationDate.eq(QJurorPool.jurorPool.deferralDate))
                 .and(QJurorHistory.jurorHistory.dateCreatedDateOnly
-                    .after(QJurorPool.jurorPool.juror.bureauTransferDate)))
+                    .after(QJuror.juror.bureauTransferDate)))
             .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.DEFERRED)
-                .and(EXCUSAL_CODE.excusalCode.code.ne(ExcusalCodeEnum.P.getCode())));
+                .and(EXCUSAL_CODE.excusalCode.code.ne(ExcusalCodeEnum.P.getCode()))
+                .and(QPoolRequest.poolRequest.owner.eq(SecurityUtil.getActiveOwner())));
     }
 
     private void filterEligibleLetterSearchCriteria(JPAQuery<Tuple> jpaQuery,
