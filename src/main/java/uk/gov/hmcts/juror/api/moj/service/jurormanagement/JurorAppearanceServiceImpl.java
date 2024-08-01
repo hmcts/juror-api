@@ -105,6 +105,10 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             () -> new MojException.NotFound("Court location not found", null));
 
         JurorAppearanceDto appearanceDto = dto.getJurorAppearanceDto();
+        if (hasAttendance(dto.getLocationCode(), jurorNumber, appearanceDto.getAttendanceDate())) {
+            throw new MojException.BusinessRuleViolation("Attendance record already exists",
+                ATTENDANCE_RECORD_ALREADY_EXISTS);
+        }
         processAppearance(payload, appearanceDto, true, isCompleted);
 
         // Read the newly created appearance record
@@ -125,6 +129,10 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         appearanceRepository.saveAndFlush(appearance);
     }
 
+    private boolean hasAttendance(String locCode, String jurorNumber, LocalDate attendanceDate) {
+        return appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(locCode, jurorNumber, attendanceDate)
+            .isPresent();
+    }
 
     @Override
     @Transactional
@@ -644,21 +652,19 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     }
 
     private void checkExistingAttendance(JurorNonAttendanceDto request, LocalDate nonAttendanceDate) {
-        // check if there is already an appearance record for the juror for the non-attendance date
+        final String locCode = request.getLocationCode();
         final String jurorNumber = request.getJurorNumber();
-        appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(jurorNumber, request.getPoolNumber(),
-                nonAttendanceDate)
+        // check if there is already an appearance record for the juror for the non-attendance date
+        appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(locCode, jurorNumber, nonAttendanceDate)
             .ifPresent(appearance -> {
                 if (appearance.getAppearanceStage() != null) {
                     throw new MojException.BusinessRuleViolation("Juror " + jurorNumber + " already has an "
                         + "attendance record for the date " + nonAttendanceDate, ATTENDANCE_RECORD_ALREADY_EXISTS);
                 }
-
                 if (appearance.getNoShow() != null && appearance.getNoShow()) {
                     // this record will get replaced with the new non-attendance record
                     appearanceRepository.delete(appearance);
-                    log.info("Deleted existing no-show record for juror " + jurorNumber + " on date "
-                        + nonAttendanceDate);
+                    log.info("Deleted existing no-show record for juror {} on date {}", jurorNumber, nonAttendanceDate);
                 }
             });
     }
