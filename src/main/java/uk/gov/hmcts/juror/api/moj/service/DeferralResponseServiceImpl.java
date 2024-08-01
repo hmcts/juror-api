@@ -21,8 +21,10 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -51,6 +53,7 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
     private final PrintDataService printDataService;
     private final JurorHistoryService jurorHistoryService;
     private final JurorPoolService jurorPoolService;
+    private final JurorStatusRepository jurorStatusRepository;
 
     @Override
     @Transactional
@@ -60,7 +63,7 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
         final String owner = payload.getOwner();
 
         JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolRecord(
-            jurorPoolRepository,jurorPoolService, jurorNumber);
+            jurorPoolRepository, jurorPoolService, jurorNumber);
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, owner);
 
         checkExcusalCodeIsValid(deferralRequestDto.getDeferralReason());
@@ -99,6 +102,10 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
         final Juror juror = jurorPool.getJuror();
         String username = payload.getLogin();
         if (jurorPool.getStatus().getStatus() != IJurorStatus.DEFERRED) {
+            if (jurorPool.getStatus().getStatus() == IJurorStatus.SUMMONED) {
+                jurorPool.setStatus(
+                    RepositoryUtils.retrieveFromDatabase(IJurorStatus.RESPONDED, jurorStatusRepository));
+            }
             jurorPool.setUserEdtq(username);
             jurorPool.setDeferralCode(deferralRequestDto.getDeferralReason());
             jurorPool.setDeferralDate(null);
@@ -126,7 +133,7 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
 
         jurorHistoryRepository.save(jurorHistory);
 
-        if (JurorDigitalApplication.JUROR_OWNER.equalsIgnoreCase(payload.getOwner())) {
+        if (SecurityUtil.isBureau()) {
             // only Bureau users should enqueue a letter automatically
             printDataService.printDeferralDeniedLetter(jurorPool);
 

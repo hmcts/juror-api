@@ -217,6 +217,10 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
         juror.setExcusalRejected("Y");
         jurorRepository.save(juror);
 
+        if (jurorPool.getStatus().getStatus() == IJurorStatus.SUMMONED) {
+            jurorPool.setStatus(getPoolStatus(IJurorStatus.RESPONDED));
+        }
+
         jurorPool.setUserEdtq(payload.getLogin());
         jurorPoolRepository.save(jurorPool);
 
@@ -243,7 +247,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
         jurorHistoryRepository.save(jurorHistory);
 
         // bureau only - queue letter for xerox
-        if (payload.getOwner().equals("400")) {
+        if (SecurityUtil.isBureau()) {
             printDataService.printExcusalDeniedLetter(jurorPool);
 
             jurorHistoryService.createNonExcusedLetterHistory(jurorPool, "Refused Excusal");
