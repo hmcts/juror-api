@@ -11,10 +11,12 @@ import org.hibernate.annotations.Immutable;
 
 import java.time.LocalDate;
 
+@Entity
 @Getter
 @SuperBuilder
 @Immutable
 @NoArgsConstructor
+@Table(name = "court_deferral_granted", schema = "juror_mod")
 public class DeferralGrantedLetterList extends LetterListBase {
 
     @Column(name = "def_date")

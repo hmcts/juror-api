@@ -66,7 +66,8 @@ public class DeferralGrantedLetterListRepositoryImpl implements IDeferralGranted
             if (deferralGrantedLetterListMap.containsKey(jurorNumber)) {
                 DeferralGrantedLetterList existingDeferralGrantedLetterList =
                     deferralGrantedLetterListMap.get(jurorNumber);
-                if (deferralGrantedLetterList.getDeferralDate().isAfter(existingDeferralGrantedLetterList.getDeferralDate())) {
+                if (deferralGrantedLetterList.getDeferralDate()
+                    .isAfter(existingDeferralGrantedLetterList.getDeferralDate())) {
                     deferralGrantedLetterListMap.put(jurorNumber, deferralGrantedLetterList);
                 }
             } else {
@@ -104,7 +105,8 @@ public class DeferralGrantedLetterListRepositoryImpl implements IDeferralGranted
                 .and(QJurorHistory.jurorHistory.poolNumber.eq(QJurorPool.jurorPool.pool.poolNumber))
                 .and(QJurorHistory.jurorHistory.historyCode.eq(HistoryCodeMod.DEFERRED_LETTER))
                 .and(QJurorHistory.jurorHistory.otherInformationDate.eq(QJurorPool.jurorPool.deferralDate))
-                .and(QJurorHistory.jurorHistory.dateCreatedDateOnly.after(QJurorPool.jurorPool.juror.bureauTransferDate)))
+                .and(QJurorHistory.jurorHistory.dateCreatedDateOnly
+                    .after(QJurorPool.jurorPool.juror.bureauTransferDate)))
             .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.DEFERRED)
                 .and(EXCUSAL_CODE.excusalCode.code.ne(ExcusalCodeEnum.P.getCode())));
     }
@@ -122,7 +124,8 @@ public class DeferralGrantedLetterListRepositoryImpl implements IDeferralGranted
 
         if (!StringUtils.isEmpty(courtLetterSearchCriteria.postcode())) {
             jpaQuery.where(
-                QJurorPool.jurorPool.juror.postcode.trim().eq(courtLetterSearchCriteria.postcode().trim().toUpperCase()));
+                QJurorPool.jurorPool.juror.postcode.trim()
+                    .eq(courtLetterSearchCriteria.postcode().trim().toUpperCase()));
         }
 
         if (!StringUtils.isEmpty(courtLetterSearchCriteria.poolNumber())) {
