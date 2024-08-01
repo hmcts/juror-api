@@ -19,7 +19,6 @@ import uk.gov.hmcts.juror.api.moj.domain.letter.CourtLetterSearchCriteria;
 import uk.gov.hmcts.juror.api.moj.domain.letter.court.DeferralGrantedLetterList;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
-
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.List;
