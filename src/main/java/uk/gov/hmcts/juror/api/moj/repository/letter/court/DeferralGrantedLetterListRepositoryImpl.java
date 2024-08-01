@@ -35,7 +35,7 @@ public class DeferralGrantedLetterListRepositoryImpl implements IDeferralGranted
 
     @Override
     public List<DeferralGrantedLetterList> findJurorsEligibleForDeferralGrantedLetter(
-        CourtLetterSearchCriteria searchCriteria, String owner) {
+        CourtLetterSearchCriteria searchCriteria) {
 
         JPAQuery<Tuple> jpaQuery = buildBaseQuery();
 

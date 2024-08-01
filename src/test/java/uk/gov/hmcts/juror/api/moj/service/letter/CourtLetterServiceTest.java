@@ -148,7 +148,7 @@ public class CourtLetterServiceTest {
             List<DeferralGrantedLetterList> results =
                 List.of(createDeferralLetterList(jurorNumber, deferredTo, reason, poolNumber));
 
-            when(deferralGrantedLetterListRepository.findJurorsEligibleForDeferralGrantedLetter(Mockito.any(),
+            when(deferralGrantedLetterListRepository.findJurorsEligibleForDeferralGrantedLetter(
                 Mockito.any())).thenReturn(results);
 
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto.builder()
@@ -187,7 +187,7 @@ public class CourtLetterServiceTest {
                 List.of(createDeferralLetterList(jurorNumber, deferredTo, reason, poolNumber,
                     datePrinted));
 
-            when(deferralGrantedLetterListRepository.findJurorsEligibleForDeferralGrantedLetter(Mockito.any(),
+            when(deferralGrantedLetterListRepository.findJurorsEligibleForDeferralGrantedLetter(
                 Mockito.any())).thenReturn(results);
 
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto.builder()
@@ -221,7 +221,7 @@ public class CourtLetterServiceTest {
 
             List<DeferralGrantedLetterList> results = new ArrayList<>();
 
-            when(deferralGrantedLetterListRepository.findJurorsEligibleForDeferralGrantedLetter(Mockito.any(),
+            when(deferralGrantedLetterListRepository.findJurorsEligibleForDeferralGrantedLetter(
                 Mockito.any())).thenReturn(results);
 
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto.builder()
