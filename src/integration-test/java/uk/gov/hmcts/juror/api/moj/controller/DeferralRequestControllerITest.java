@@ -15,14 +15,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralRequestDto;
 import uk.gov.hmcts.juror.api.moj.domain.DeferralDecision;
 
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.Collections;
-import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -46,27 +45,12 @@ public class DeferralRequestControllerITest extends AbstractIntegrationTest {
     }
 
     private void initHeaders() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .login("BUREAU_USER")
-            .owner("400")
-            .build());
+        final String bureauJwt = createJwtBureau("BUREAU_USER");
 
         httpHeaders = new HttpHeaders();
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
-
-    private String initCourtsJwt(String owner, List<String> courts) throws Exception {
-
-        return mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .login("COURT_USER")
-            .owner(owner)
-            .staff(BureauJwtPayload.Staff.builder().courts(courts).build())
-            .build());
-    }
-
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/DeferralRequestController_createInitialPoolRecords.sql"})
@@ -104,12 +88,12 @@ public class DeferralRequestControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/DeferralRequestController_createInitialPoolRecords.sql"})
-    public void deny_Deferral_happyPath_courtUser() throws Exception {
+    public void deny_Deferral_happyPath_courtUser() {
         String jurorNumber = "123456789";
         String deferralReason = "B";
 
         DeferralRequestDto requestDto = createDeferralDecisionDto(jurorNumber, deferralReason);
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415")));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwtCourt("COURT_USER", Set.of(), "415"));
 
         ResponseEntity<DeferralRequestDto> response =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PUT,
@@ -122,20 +106,20 @@ public class DeferralRequestControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/DeferralRequestController_createInitialPoolRecords.sql"})
-    public void refuseDeferralRequest_bureauUser_courtOwner() throws Exception {
+    public void refuseDeferralRequest_bureauUser_courtOwner() {
         String jurorNumber = "987654321";
         String deferralReason = "B";
 
         DeferralRequestDto requestDto = createDeferralDecisionDto(jurorNumber, deferralReason);
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415")));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwtCourt("COURT_USER", Set.of(), "415"));
         ResponseEntity<DeferralRequestDto> response =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PUT,
                 URI.create("/api/v1/moj/deferral-response/juror/" + jurorNumber)), DeferralRequestDto.class);
 
         assertThat(response.getStatusCode())
-            .as("Expect the HTTP PUT request to be FORBIDDEN")
-            .isEqualTo(HttpStatus.FORBIDDEN);
+            .as("Expect the HTTP PUT request to be NOT_FOUND")
+            .isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test
@@ -192,12 +176,12 @@ public class DeferralRequestControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/DeferralRequestController_createInitialPoolRecords.sql"})
-    public void grant_Deferral_happyPath_courtUser() throws Exception {
+    public void grant_Deferral_happyPath_courtUser() {
         String jurorNumber = "123456789";
         String deferralReason = "B";
 
         DeferralRequestDto requestDto = createDeferralDecisionDto(jurorNumber, deferralReason);
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415")));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwtCourt("COURT_USER", Set.of(), "415"));
 
         ResponseEntity<DeferralRequestDto> response =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PUT,

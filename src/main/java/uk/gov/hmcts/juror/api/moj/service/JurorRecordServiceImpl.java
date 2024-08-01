@@ -855,16 +855,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         final String owner = payload.getOwner();
 
-        List<JurorPool> jurorPools = JurorPoolUtils.getActiveJurorPoolRecords(jurorPoolRepository, jurorNumber);
-        JurorPool jurorPool = jurorPools.stream().filter(p -> {
-            if (JurorDigitalApplication.JUROR_OWNER.equals(owner)) {
-                return true;
-            } else {
-                return p.getOwner().equals(owner);
-            }
-        }).findFirst().orElseThrow(() ->
-            new MojException.Forbidden("Current user does not have ownership of any "
-                + "associated pools for juror", null));
+        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolRecord(
+            jurorPoolRepository, jurorPoolService, jurorNumber);
 
         // Bureau should always be able to read record
         JurorPoolUtils.checkReadAccessForCurrentUser(jurorPool, owner);
@@ -1044,7 +1036,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         final String contactLogNotes = WordUtils.capitalize(requestDto.getDecision().getDescription())
             + " the juror's name change. " + requestDto.getNotes();
 
-        JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
+        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolRecord(
+            jurorPoolRepository, jurorPoolService, jurorNumber);
         Juror juror = jurorPool.getJuror();
         JurorUtils.checkOwnershipForCurrentUser(juror, payload.getOwner());
 
@@ -1113,7 +1106,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     @Transactional
     public PoliceCheckStatusDto updatePncStatus(final String jurorNumber, final PoliceCheck policeCheck) {
         log.info("Attempting to update PNC check status for juror {} to be {}", jurorNumber, policeCheck);
-        final JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
+        final JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolRecord(
+            jurorPoolRepository, jurorPoolService, jurorNumber);
         final Juror juror = jurorPool.getJuror();
 
         final PoliceCheck oldPoliceCheckValue = juror.getPoliceCheck();

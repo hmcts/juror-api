@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,28 +48,19 @@ import java.util.List;
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class ExcusalResponseServiceImpl implements ExcusalResponseService {
 
-    @NonNull
     private final ExcusalCodeRepository excusalCodeRepository;
-    @NonNull
     private final JurorRepository jurorRepository;
-    @NonNull
     private final JurorPoolRepository jurorPoolRepository;
-    @NonNull
     private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
-    @NonNull
     private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
-    @NonNull
     private final UserRepository userRepository;
-    @NonNull
     private final SummonsReplyMergeService mergeService;
-    @NonNull
     private final JurorStatusRepository jurorStatusRepository;
-    @NonNull
     private final JurorHistoryRepository jurorHistoryRepository;
-    @NonNull
     private final PrintDataService printDataService;
     private final JurorHistoryService jurorHistoryService;
     private final JurorResponseAuditRepositoryMod jurorResponseAuditRepositoryMod;
+    private final JurorPoolService jurorPoolService;
 
     @Override
     @Transactional
@@ -83,7 +73,8 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
 
         checkExcusalCodeIsValid(excusalDecisionDto.getExcusalReasonCode());
 
-        JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
+        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolRecord(
+            jurorPoolRepository, jurorPoolService, jurorNumber);
 
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, owner);
 

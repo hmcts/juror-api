@@ -174,4 +174,8 @@ public final class SecurityUtil {
     public static boolean canEditApprovalLimit() {
         return isAdministration() || isManager() && isCourt();
     }
+
+    public static boolean isSystem() {
+        return AUTO_USER.equals(getUsername()) || getUserType().equals(UserType.SYSTEM);
+    }
 }

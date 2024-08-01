@@ -40,6 +40,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
     private final PrintDataService printDataService;
     private final JurorStatusRepository jurorStatusRepository;
     private final JurorHistoryService jurorHistoryService;
+    private final JurorPoolService jurorPoolService;
 
     @Override
     @Transactional(readOnly = true)
@@ -284,8 +285,8 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
         if (FormCode.ENG_SUMMONS_REMINDER.getCode().equals(letter.getFormCode())
             || FormCode.BI_SUMMONS_REMINDER.getCode().equals(letter.getFormCode())) {
 
-            JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository,
-                letter.getJurorNumber());
+            JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolRecord(
+                jurorPoolRepository, jurorPoolService, letter.getJurorNumber());
 
             jurorPool.setReminderSent(true);
 
