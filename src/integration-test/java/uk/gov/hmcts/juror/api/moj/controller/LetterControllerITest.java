@@ -656,7 +656,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     .isEqualTo(OK);
                 assertThat(response.getBody()).isNotNull();
                 List<?> responseBody = response.getBody().getData();
-                assertThat(responseBody.size()).isEqualTo(2);
+                assertThat(responseBody.size()).isEqualTo(1);
 
                 DeferralLetterData data = (DeferralLetterData) responseBody.get(0);
                 assertThat(data.getJurorNumber()).isEqualTo("555555567");
@@ -670,17 +670,6 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(data.getDatePrinted()).isNull();
                 assertThat(data.getPoolNumber()).isEqualTo("415220404");
 
-                data = (DeferralLetterData) responseBody.get(1);
-                assertThat(data.getJurorNumber()).isEqualTo("555555568");
-                assertThat(data.getFirstName()).isEqualTo("TEST_SEVEN");
-                assertThat(data.getLastName()).isEqualTo("PERSON");
-                assertThat(data.getPostcode()).isEqualTo("CH1 2AN");
-                assertThat(data.getStatus()).isEqualTo("Deferred");
-                assertThat(data.getDeferredTo()).isEqualTo(LocalDate.of(2024,2,25));
-                reason = excusalCodeRepository.findById("A").orElse(new ExcusalCode()).getDescription();
-                assertThat(data.getReason()).isEqualToIgnoringCase(reason);
-                assertThat(data.getDatePrinted()).isNull();
-                assertThat(data.getPoolNumber()).isEqualTo("457220405");
             }
 
             @Test
@@ -751,7 +740,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     .isEqualTo(OK);
                 assertThat(response.getBody()).isNotNull();
                 List<?> responseBody = response.getBody().getData();
-                assertThat(responseBody.size()).isEqualTo(6);
+                assertThat(responseBody.size()).isEqualTo(5);
 
                 List<DeferralLetterData> dataList = responseBody.stream()
                     .map(data -> (DeferralLetterData) data)
@@ -759,7 +748,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                         && data.getDatePrinted() == null)
                     .toList();
 
-                assertThat(dataList).size().isEqualTo(6);
+                assertThat(dataList).size().isEqualTo(5);
             }
 
             @Test
@@ -791,17 +780,17 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     .isEqualTo(OK);
                 assertThat(response.getBody()).isNotNull();
                 List<?> responseBody = response.getBody().getData();
-                assertThat(responseBody.size()).isEqualTo(7);
+                assertThat(responseBody.size()).isEqualTo(6);
 
                 List<DeferralLetterData> dataList = responseBody.stream()
                     .map(data -> (DeferralLetterData) data)
                     .filter(data -> data.getPostcode().equalsIgnoreCase(postcode))
                     .toList();
 
-                assertThat(dataList).size().isEqualTo(7);
+                assertThat(dataList).size().isEqualTo(6);
                 assertThat(dataList.stream().filter(data -> data.getDatePrinted() == null).count())
-                    .as("Expect 6 of the returned records to not have a letter previously printed")
-                    .isEqualTo(6);
+                    .as("Expect 5 of the returned records to not have a letter previously printed")
+                    .isEqualTo(5);
                 assertThat(dataList.stream().filter(data -> data.getDatePrinted() != null).count())
                     .as("Expect 1 of the returned records to have a letter previously printed")
                     .isEqualTo(1);

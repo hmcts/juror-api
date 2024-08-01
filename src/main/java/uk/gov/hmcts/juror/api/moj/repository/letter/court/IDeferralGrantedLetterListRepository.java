@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface IDeferralGrantedLetterListRepository {
 
-    List<DeferralGrantedLetterList> findJurorsEligibleForDeferralGrantedLetter(CourtLetterSearchCriteria searchCriteria,
-                                                                               String owner);
+    List<DeferralGrantedLetterList> findJurorsEligibleForDeferralGrantedLetter(
+        CourtLetterSearchCriteria searchCriteria);
 }
