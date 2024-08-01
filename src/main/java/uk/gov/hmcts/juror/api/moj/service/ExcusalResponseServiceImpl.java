@@ -87,7 +87,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
 
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, owner);
 
-        if (excusalDecisionDto.getReplyMethod() != null) {
+        if (excusalDecisionDto.getReplyMethod() != null && excusalDecisionDto.getReplyMethod() != ReplyMethod.NONE) {
             if (excusalDecisionDto.getReplyMethod().equals(ReplyMethod.PAPER)) {
                 if (null == jurorPaperResponseRepository.findByJurorNumber(jurorNumber)) {
                     // There are scenarios where a juror may not have a paper response when excused from the juror
