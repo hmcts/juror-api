@@ -107,7 +107,6 @@ public class JurorHistory implements Serializable {
     private Boolean migrated;
 
     // readonly field for date created date part only - used in queries
-    @NotNull
     @Column(name = "date_created", insertable = false, updatable = false)
     private LocalDate dateCreatedDateOnly;
 
