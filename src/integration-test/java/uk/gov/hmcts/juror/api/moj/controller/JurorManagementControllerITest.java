@@ -175,8 +175,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
         // verify attendance record has been added
         Optional<Appearance> appearanceOpt =
-            appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(requestDto.getJurorNumber(),
-                requestDto.getPoolNumber(), requestDto.getAttendanceDate());
+            appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(
+                "415", requestDto.getJurorNumber(), requestDto.getAttendanceDate());
         assertThat(appearanceOpt).isNotEmpty();
         Appearance appearance = appearanceOpt.get();
         assertThat(appearance.getJurorNumber()).isEqualTo(requestDto.getJurorNumber());
@@ -210,8 +210,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
         // verify attendance record has been added
         Optional<Appearance> appearanceOpt =
-            appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(requestDto.getJurorNumber(),
-                requestDto.getPoolNumber(), requestDto.getAttendanceDate());
+            appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(
+                "415", requestDto.getJurorNumber(), requestDto.getAttendanceDate());
         assertThat(appearanceOpt).isNotEmpty();
         Appearance appearance = appearanceOpt.get();
         assertThat(appearance.getJurorNumber()).isEqualTo(requestDto.getJurorNumber());
@@ -1629,8 +1629,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             // verify non-attendance record has been added
             Optional<Appearance> appearanceOpt =
-                appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(request.getJurorNumber(),
-                    "415230101", request.getNonAttendanceDate());
+                appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(
+                    "415", request.getJurorNumber(), request.getNonAttendanceDate());
             assertThat(appearanceOpt).isNotEmpty();
             Appearance appearance = appearanceOpt.get();
             assertThat(appearance.getJurorNumber()).isEqualTo(request.getJurorNumber());
@@ -1663,8 +1663,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             // verify non-attendance record has been added
             Optional<Appearance> appearanceOpt =
-                appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(request.getJurorNumber(),
-                    "415230101", request.getNonAttendanceDate());
+                appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(
+                    "415", request.getJurorNumber(), request.getNonAttendanceDate());
             assertThat(appearanceOpt).isNotEmpty();
             Appearance appearance = appearanceOpt.get();
             assertThat(appearance.getJurorNumber()).isEqualTo(request.getJurorNumber());
@@ -1697,8 +1697,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             // verify non-attendance record has been added
             Optional<Appearance> appearanceOpt =
-                appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(request.getJurorNumber(),
-                    "415230101", request.getNonAttendanceDate());
+                appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(
+                    "415", request.getJurorNumber(), request.getNonAttendanceDate());
             assertThat(appearanceOpt).isNotEmpty();
             Appearance appearance = appearanceOpt.get();
             assertThat(appearance.getJurorNumber()).isEqualTo(request.getJurorNumber());
@@ -1755,8 +1755,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             // verify non-attendance record has been added
             Optional<Appearance> appearanceOpt =
-                appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(request.getJurorNumber(),
-                    "415230101", request.getNonAttendanceDate());
+                appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(
+                    "415", request.getJurorNumber(), request.getNonAttendanceDate());
             assertThat(appearanceOpt).isNotEmpty();
             Appearance appearance = appearanceOpt.get();
             assertThat(appearance.getJurorNumber()).isEqualTo(request.getJurorNumber());
@@ -1832,8 +1832,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode()).as("HTTP status created expected").isEqualTo(CREATED);
 
             Optional<Appearance> appearanceOpt =
-                appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(request.getJurorNumber(),
-                    "415230101", request.getNonAttendanceDate());
+                appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(
+                    "415", request.getJurorNumber(), request.getNonAttendanceDate());
             assertThat(appearanceOpt).isNotEmpty();
             Appearance appearance = appearanceOpt.get();
             assertThat(appearance.getJurorNumber()).isEqualTo(request.getJurorNumber());
@@ -1923,8 +1923,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             // verify attendance records have been updated
             Optional<Appearance> appearanceOpt =
-                appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate("222222222",
-                    "415230101", now().minusDays(2));
+                appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(
+                    "415", "222222222", now().minusDays(2));
             assertThat(appearanceOpt).isNotEmpty();
             Appearance appearance = appearanceOpt.get();
             assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));
@@ -1934,8 +1934,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getSatOnJury()).isTrue();
             assertThat(appearance.isAppearanceConfirmed()).isTrue();
 
-            appearanceOpt = appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(
-                "333333333", "415230101", now().minusDays(2));
+            appearanceOpt = appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(
+                "415", "333333333", now().minusDays(2));
             assertThat(appearanceOpt).isNotEmpty();
             appearance = appearanceOpt.get();
             assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));

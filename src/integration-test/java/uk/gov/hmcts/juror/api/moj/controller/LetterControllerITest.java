@@ -656,7 +656,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     .isEqualTo(OK);
                 assertThat(response.getBody()).isNotNull();
                 List<?> responseBody = response.getBody().getData();
-                assertThat(responseBody.size()).isEqualTo(1);
+                assertThat(responseBody.size()).isEqualTo(2);
 
                 DeferralLetterData data = (DeferralLetterData) responseBody.get(0);
                 assertThat(data.getJurorNumber()).isEqualTo("555555567");
@@ -740,7 +740,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     .isEqualTo(OK);
                 assertThat(response.getBody()).isNotNull();
                 List<?> responseBody = response.getBody().getData();
-                assertThat(responseBody.size()).isEqualTo(5);
+                assertThat(responseBody.size()).isEqualTo(6);
 
                 List<DeferralLetterData> dataList = responseBody.stream()
                     .map(data -> (DeferralLetterData) data)
@@ -748,7 +748,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                         && data.getDatePrinted() == null)
                     .toList();
 
-                assertThat(dataList).size().isEqualTo(5);
+                assertThat(dataList).size().isEqualTo(6);
             }
 
             @Test
@@ -789,8 +789,8 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
                 assertThat(dataList).size().isEqualTo(6);
                 assertThat(dataList.stream().filter(data -> data.getDatePrinted() == null).count())
-                    .as("Expect 5 of the returned records to not have a letter previously printed")
-                    .isEqualTo(5);
+                    .as("Expect 6 of the returned records to not have a letter previously printed")
+                    .isEqualTo(6);
                 assertThat(dataList.stream().filter(data -> data.getDatePrinted() != null).count())
                     .as("Expect 1 of the returned records to have a letter previously printed")
                     .isEqualTo(1);

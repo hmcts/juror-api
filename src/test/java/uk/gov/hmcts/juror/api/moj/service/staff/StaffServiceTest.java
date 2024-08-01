@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.service.staff;
 
 import jakarta.persistence.EntityManager;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -73,15 +74,6 @@ public class StaffServiceTest {
 
     private static final String JUROR_NUMBER = "123456789";
 
-    private static final DigitalResponse JUROR_RESPONSE_INVALID_CLOSED = DigitalResponse.builder()
-        .jurorNumber(JUROR_NUMBER)
-        .replyType(ReplyType.builder().type("Digital").build())
-        .processingComplete(true)
-        .urgent(false)
-        .processingStatus(ProcessingStatus.CLOSED)
-        .build();
-
-
     private static final String TARGET_LOGIN = "assignee";
 
     private static final User TARGET_LOGIN_ENTITY = User.builder()
@@ -104,6 +96,11 @@ public class StaffServiceTest {
         .userType(UserType.BUREAU)
         .active(true)
         .build();
+
+    @AfterEach
+    void afterEach() {
+        TestUtils.afterAll();
+    }
 
     @ParameterizedTest
     @ValueSource(strings = {"Paper", "Digital"})
@@ -270,7 +267,7 @@ public class StaffServiceTest {
             .active(true)
             .build();
 
-        TestUtils.setUpMockAuthentication("400", ASSIGNING_LOGIN, "1", Collections.singletonList("400"));
+        TestUtils.mockBureauUser();
 
         doReturn(normalUser).when(mockuserRepository).findByUsername(ASSIGNING_LOGIN);
         MojException.Forbidden exception = Assertions.assertThrows(MojException.Forbidden.class,

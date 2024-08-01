@@ -9,6 +9,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.exception.JurorRecordException;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -131,7 +132,11 @@ public final class JurorPoolUtils {
      * @param jurorPoolRepository JPA interface to the database to generate and execute SQL queries
      * @param jurorNumber         9-digit numeric string to identify jurors
      * @return a juror pool association record with the latest service start date for a given juror
+     * @deprecated Use getActiveJurorPoolRecord(JurorPoolRepository jurorPoolRepository,
+     *                                                      JurorPoolService jurorPoolService,
+     *                                                      String jurorNumber)
      */
+    @Deprecated(forRemoval = true)
     public static JurorPool getLatestActiveJurorPoolRecord(JurorPoolRepository jurorPoolRepository,
                                                            String jurorNumber) {
         log.debug("Retrieving active juror records for juror number {}", jurorNumber);
@@ -145,6 +150,15 @@ public final class JurorPoolUtils {
 
         log.debug("{} records retrieved for juror number {}", jurorPools.size(), jurorNumber);
         return jurorPools.get(0);
+    }
+
+    public static JurorPool getActiveJurorPoolRecord(JurorPoolRepository jurorPoolRepository,
+                                                     JurorPoolService jurorPoolService,
+                                                     String jurorNumber) {
+        if (!SecurityUtil.hasBureauJwtPayload() || SecurityUtil.isBureau() || SecurityUtil.isSystem()) {
+            return getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
+        }
+        return jurorPoolService.getJurorPoolFromUser(jurorNumber);
     }
 
     /**

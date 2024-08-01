@@ -50,9 +50,6 @@ public interface AppearanceRepository extends IAppearanceRepository, JpaReposito
                                                                                                     LocalDate attendanceDate,
                                                                                                     boolean draftExpense);
 
-    Optional<Appearance> findByJurorNumberAndPoolNumberAndAttendanceDate(String jurorNumber,
-                                                                         String poolNumber, LocalDate attendanceDate);
-
     Optional<Appearance> findByCourtLocationLocCodeAndJurorNumberAndAttendanceDate(String locCode,
                                                                                    String jurorNumber,
                                                                                    LocalDate attendanceDate);
@@ -93,4 +90,6 @@ public interface AppearanceRepository extends IAppearanceRepository, JpaReposito
 
     Optional<Appearance> findFirstByAttendanceAuditNumberEqualsAndLocCodeIn(String auditNumber,
                                                                             Collection<String> locCode);
+
+    Optional<Appearance> findByLocCodeAndJurorNumberAndAttendanceDate(String locCode, String jurorNumber, LocalDate attendanceDate);
 }
