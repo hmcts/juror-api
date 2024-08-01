@@ -780,7 +780,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     .isEqualTo(OK);
                 assertThat(response.getBody()).isNotNull();
                 List<?> responseBody = response.getBody().getData();
-                assertThat(responseBody.size()).isEqualTo(5);
+                assertThat(responseBody.size()).isEqualTo(6);
 
                 List<DeferralLetterData> dataList = responseBody.stream()
                     .map(data -> (DeferralLetterData) data)
