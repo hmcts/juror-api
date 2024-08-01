@@ -12,6 +12,7 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportReque
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
@@ -78,6 +79,8 @@ class BallotPanelPoolReportTest extends AbstractStandardReportTestSupport<Ballot
             .where(QJurorPool.jurorPool.pool.poolNumber.eq(request.getPoolNumber()));
         verify(query, times(1))
             .where(QJurorPool.jurorPool.pool.courtLocation.locCode.in(SecurityUtil.getCourts()));
+        verify(query, times(1))
+            .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED));
         verify(query, times(1))
             .orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
     }

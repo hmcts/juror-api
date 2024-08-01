@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
@@ -33,6 +34,7 @@ public class BallotPanelPoolReport extends AbstractStandardReport {
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QJurorPool.jurorPool.pool.poolNumber.eq(request.getPoolNumber()));
         query.where(QJurorPool.jurorPool.pool.courtLocation.locCode.in(SecurityUtil.getCourts()));
+        query.where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED));
         query.orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
     }
 

@@ -18,7 +18,7 @@ import java.util.Optional;
 public interface JurorPoolRepository extends IJurorPoolRepository, JpaRepository<JurorPool, JurorPoolId>,
     QuerydslPredicateExecutor<JurorPool> {
 
-    Optional<JurorPool> findByJurorJurorNumberAndOwnerAndDeferralDate(String jurorNumber, String owner,
+    Optional<JurorPool> findByJurorJurorNumberAndOwnerAndDeferralDateAndIsActiveTrue(String jurorNumber, String owner,
                                                                       LocalDate deferralDate);
 
     List<JurorPool> findByPoolPoolNumberAndIsActive(String poolNumber, boolean isActive);

@@ -2197,13 +2197,13 @@ class JurorAppearanceServiceTest {
         List<JurorAppearanceResponseDto.JurorAppearanceResponseData> jurorAppearance7 = buildAttendanceRecords(JUROR7,
             "SEVEN", LocalTime.of(9, 30), null, IJurorStatus.RESPONDED);
 
-        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR2, JurorStatusGroup.AT_COURT))
+        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR2, JurorStatusGroup.ALL))
             .thenReturn(jurorAppearance2);
-        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR3, JurorStatusGroup.AT_COURT))
+        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR3, JurorStatusGroup.ALL))
             .thenReturn(jurorAppearance3);
-        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR6, JurorStatusGroup.AT_COURT))
+        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR6, JurorStatusGroup.ALL))
             .thenReturn(jurorAppearance6);
-        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR7, JurorStatusGroup.AT_COURT))
+        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR7, JurorStatusGroup.ALL))
             .thenReturn(jurorAppearance7);
 
         CourtLocation courtLocation = mock(CourtLocation.class);

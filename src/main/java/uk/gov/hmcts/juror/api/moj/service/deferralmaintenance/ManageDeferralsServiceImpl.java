@@ -825,8 +825,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
     private JurorPool getPoolMember(CurrentlyDeferred courtDeferral, LocalDate attendanceDate) {
         Optional<JurorPool> jurorPool =
-            jurorPoolRepository.findByJurorJurorNumberAndOwnerAndDeferralDate(courtDeferral.getJurorNumber(),
-                courtDeferral.getOwner(), attendanceDate);
+            jurorPoolRepository.findByJurorJurorNumberAndOwnerAndDeferralDateAndIsActiveTrue(
+                courtDeferral.getJurorNumber(), courtDeferral.getOwner(), attendanceDate);
 
         return jurorPool.orElseThrow(() -> new CurrentlyDeferredException.DeferredMemberNotFound(
             courtDeferral.getJurorNumber()));

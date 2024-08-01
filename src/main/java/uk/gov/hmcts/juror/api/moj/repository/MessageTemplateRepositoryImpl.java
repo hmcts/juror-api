@@ -59,7 +59,7 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
         returnFields.add(JUROR.jurorNumber);
         returnFields.add(JUROR_POOL.pool.poolNumber);
         returnFields.add(JUROR.email);
-        returnFields.add(JUROR.phoneNumber);
+        returnFields.add(JUROR.phoneNumberCombined);
         returnFields.add(JUROR.welsh);
         returnFields.add(JUROR_POOL.pool.courtLocation.locCode);
 
@@ -119,7 +119,7 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
                     .poolNumber(tuple.get(JUROR_POOL.pool.poolNumber))
                     .welshLanguage(Boolean.TRUE.equals(tuple.get(JUROR.welsh)))
                     .email(tuple.get(JUROR.email))
-                    .phone(tuple.get(JUROR.phoneNumber))
+                    .phone(tuple.get(JUROR.phoneNumberCombined))
                     .firstName(tuple.get(JUROR.firstName))
                     .lastName(tuple.get(JUROR.lastName))
                     .status(tuple.get(JUROR_POOL.status) == null ? null : tuple.get(JUROR_POOL.status).getStatusDesc())
