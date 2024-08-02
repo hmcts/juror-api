@@ -266,14 +266,13 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
     public long countPendingApproval(String locCode, boolean isCash) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         return queryFactory
-            .select(APPEARANCE.jurorNumber, APPEARANCE.poolNumber, APPEARANCE.appearanceStage)
+            .select(APPEARANCE.jurorNumber, APPEARANCE.appearanceStage)
             .from(APPEARANCE)
             .where(APPEARANCE.courtLocation.locCode.eq(locCode))
             .where(APPEARANCE.appearanceStage.in(AppearanceStage.EXPENSE_ENTERED, AppearanceStage.EXPENSE_EDITED))
             .where(APPEARANCE.isDraftExpense.isFalse())
             .where(APPEARANCE.payCash.eq(isCash))
             .groupBy(APPEARANCE.jurorNumber)
-            .groupBy(APPEARANCE.poolNumber)
             .groupBy(APPEARANCE.appearanceStage)
             .fetchCount();
     }
