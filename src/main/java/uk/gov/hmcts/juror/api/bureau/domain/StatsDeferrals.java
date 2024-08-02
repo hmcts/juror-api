@@ -26,7 +26,6 @@ import java.io.Serializable;
 @IdClass(StatsDeferralsKey.class)
 @Table(name = "stats_deferrals", schema = "juror_dashboard")
 @Builder
-@Deprecated(forRemoval = true)
 public class StatsDeferrals implements Serializable {
 
     @Id

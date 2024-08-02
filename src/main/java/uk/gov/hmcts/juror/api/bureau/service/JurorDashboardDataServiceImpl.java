@@ -1,10 +1,10 @@
 package uk.gov.hmcts.juror.api.bureau.service;
 
 import com.google.common.collect.Lists;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 import uk.gov.hmcts.juror.api.bureau.domain.StatsAutoProcessed;
 import uk.gov.hmcts.juror.api.bureau.domain.StatsAutoProcessedRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.StatsNotResponded;
@@ -30,6 +30,7 @@ import java.util.List;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class JurorDashboardDataServiceImpl implements JurorDashboardDataService {
 
 
@@ -42,41 +43,6 @@ public class JurorDashboardDataServiceImpl implements JurorDashboardDataService 
     private final StatsThirdPartyOnlineResponseRepository statsThirdPtyOnlnResponseRepository;
     private final SurveyResponseRepository surveyResponseRepository;
     private final StatsResponseTimesTotalRepository statsResponseTimesTotalRepository;
-
-
-    @Autowired
-    public JurorDashboardDataServiceImpl(
-        final StatsResponseTimeRepository statsResponseTimeRepository,
-        final StatsNotRespondedRepository statsNotRespondedRepository,
-        final StatsNotRespondedTotalsRepsoitory statsNotRespondedTotalsRepsoitory,
-        final StatsUnprocessedResponseRepository statsUnprocessedResponseRepository,
-        final StatsWelshOnlineResponseRepository statsWelshOnlineResponseRepository,
-        final StatsAutoProcessedRepository statsAutoProcessedRepository,
-        final StatsThirdPartyOnlineResponseRepository statsThirdPartyOnlineResponseRepository,
-        final SurveyResponseRepository surveyResponseRepository,
-        final StatsResponseTimesTotalRepository statsResponseTimesTotalRepository) {
-        Assert.notNull(statsResponseTimeRepository, "StatsResponseTimeRepository cannot be null");
-        Assert.notNull(statsNotRespondedRepository, "StatsNotRespondedRepository cannot be null");
-        Assert.notNull(statsNotRespondedTotalsRepsoitory, "StatsNotRespondedTotalsRepository cannot be null");
-        Assert.notNull(statsUnprocessedResponseRepository, "StatsUnprocessedResponseRepository cannot be null");
-        Assert.notNull(statsWelshOnlineResponseRepository, "StatsWelshOnlineResponseRepository cannot be null");
-        Assert.notNull(statsAutoProcessedRepository, "StatsAutoProcessedRepository cannot be null");
-        Assert.notNull(
-            statsThirdPartyOnlineResponseRepository,
-            "StatsThirdPartyOnlineResponseRepository cannot be null"
-        );
-        Assert.notNull(surveyResponseRepository, "SurveyResponseRepository cannot be null");
-        Assert.notNull(statsResponseTimesTotalRepository, " StatsResponseTimesTotalRepository cannot be null");
-        this.statsResponseTimeRepository = statsResponseTimeRepository;
-        this.statsNotRespondedRepository = statsNotRespondedRepository;
-        this.statsNotRespondedTotalsRepsoitory = statsNotRespondedTotalsRepsoitory;
-        this.statsUnprocessedResponseRepository = statsUnprocessedResponseRepository;
-        this.statsWelshOnlineResponseRepository = statsWelshOnlineResponseRepository;
-        this.statsAutoProcessedRepository = statsAutoProcessedRepository;
-        this.statsThirdPtyOnlnResponseRepository = statsThirdPartyOnlineResponseRepository;
-        this.surveyResponseRepository = surveyResponseRepository;
-        this.statsResponseTimesTotalRepository = statsResponseTimesTotalRepository;
-    }
 
 
     @Override
@@ -176,7 +142,7 @@ public class JurorDashboardDataServiceImpl implements JurorDashboardDataService 
 
         List<SurveyResponse> surveyResponses = Lists.newLinkedList(
             surveyResponseRepository.findBySurveyResponseDateBetween(startDate, endDate));
-        log.debug("surveyResponses Counts : ", surveyResponses.size());
+        log.debug("surveyResponses Counts : {}", surveyResponses.size());
 
         return surveyResponses;
     }

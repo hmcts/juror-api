@@ -334,6 +334,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             )
             .from(QAppearance.appearance)
             .where(QAppearance.appearance.locCode.eq(locCode))
+            .where(QAppearance.appearance.hideOnUnpaidExpenseAndReports.isFalse())
             .where(QAppearance.appearance.appearanceStage.in(
                 AppearanceStage.EXPENSE_ENTERED, AppearanceStage.EXPENSE_EDITED
             ))
