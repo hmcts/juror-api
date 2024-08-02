@@ -70,7 +70,6 @@ public class JurorDashboardServiceImpl implements JurorDashboardService {
         }
         // Amend date ranges to include whole months in range.
         List<Date> dateRange = getAmendedDateRange(request);
-        String methodResponse = "Online";
         // Get responded total from db within a date range.
         final List<StatsResponseTime> responsesOverTime = jurorDashboardData.getResponsesOverTime(
             dateRange.get(0), dateRange.get(1));

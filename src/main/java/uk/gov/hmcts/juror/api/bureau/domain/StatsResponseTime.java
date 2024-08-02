@@ -28,7 +28,6 @@ import java.util.Date;
 @Immutable
 @Table(name = "stats_response_times", schema = "juror_dashboard")
 @Builder
-@Deprecated(forRemoval = true)
 public class StatsResponseTime implements Serializable {
 
     @NotNull
