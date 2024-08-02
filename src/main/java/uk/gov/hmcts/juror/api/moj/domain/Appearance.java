@@ -8,6 +8,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import jakarta.validation.constraints.Min;
@@ -234,6 +236,11 @@ public class Appearance implements Serializable {
     @Column(name = "is_draft_expense")
     @Builder.Default
     private boolean isDraftExpense = true;
+
+    @Column(name = "hide_on_unpaid_expense_and_reports")
+    @Builder.Default
+    @NotAudited
+    private boolean hideOnUnpaidExpenseAndReports = false;
 
     /**
      * flag indicating whether the juror has not attended court on a day they were due to be present (unauthorised
@@ -602,5 +609,15 @@ public class Appearance implements Serializable {
 
     public void setSmartCardAmountPaid(BigDecimal smartCardAmountPaid) {
         this.smartCardAmountPaid = BigDecimalUtils.round(smartCardAmountPaid, ROUNDING_PRECISION);
+    }
+
+    @PrePersist
+    private void prePersist() {
+        preUpdate();
+    }
+
+    @PreUpdate
+    private void preUpdate() {
+        this.hideOnUnpaidExpenseAndReports = false;
     }
 }
