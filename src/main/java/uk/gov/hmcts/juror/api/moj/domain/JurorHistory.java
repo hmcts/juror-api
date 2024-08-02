@@ -106,6 +106,10 @@ public class JurorHistory implements Serializable {
     @Column(name = "migrated")
     private Boolean migrated;
 
+    // readonly field for date created date part only - used in queries
+    @Column(name = "date_created", insertable = false, updatable = false)
+    private LocalDate dateCreatedDateOnly;
+
     @PrePersist
     public void prePersist() {
         this.dateCreated = LocalDateTime.now();

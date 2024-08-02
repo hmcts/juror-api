@@ -23,7 +23,6 @@ import java.io.Serializable;
 @Table(name = "stats_response_times_totals", schema = "juror_dashboard")
 @Immutable
 @Builder
-@Deprecated(forRemoval = true)
 public class StatsResponseTimesTotals implements Serializable {
 
     @Id

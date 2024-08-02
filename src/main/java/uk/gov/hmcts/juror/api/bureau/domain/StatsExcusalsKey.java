@@ -9,7 +9,6 @@ import java.io.Serializable;
  * Composite key for {@link StatsExcusals}.
  */
 @EqualsAndHashCode
-@Deprecated(forRemoval = true)
 public class StatsExcusalsKey implements Serializable {
 
     private String bureauOrCourt;

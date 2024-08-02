@@ -745,8 +745,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             URI.create("/api/v1/moj/juror-record/optic-reference/123456789/415220502")), String.class);
 
         assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be FORBIDDEN")
-            .isEqualTo(HttpStatus.FORBIDDEN);
+            .as("Expect the HTTP GET request to be NOT_FOUND")
+            .isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test

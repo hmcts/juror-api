@@ -92,6 +92,7 @@ class UnpaidAttendanceReportDetailedReportTest
 
         verify(query).where(QAppearance.appearance.locCode.eq(SecurityUtil.getLocCode()));
         verify(query).where(QAppearance.appearance.attendanceDate.between(request.getFromDate(), request.getToDate()));
+        verify(query).where(QAppearance.appearance.hideOnUnpaidExpenseAndReports.isFalse());
 
         verify(query).orderBy(
             QAppearance.appearance.poolNumber.asc(),

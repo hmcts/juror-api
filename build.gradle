@@ -212,7 +212,7 @@ flyway {
     schemas = ['juror_dashboard', 'juror_mod']
     defaultSchema = 'juror_mod'
     table = 'schema_history'
-    cleanDisabled = true
+    cleanDisabled = System.getenv("FLYWAY_CLEAN_DISABLED") ?: true
 }
 
 task migratePostgresDatabase(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
@@ -287,7 +287,7 @@ pmdTest {
     maxFailures = 294
 }
 pmdMain {
-    maxFailures = 798
+    maxFailures = 794
 }
 pmd {
     maxFailures = 0

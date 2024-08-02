@@ -97,6 +97,7 @@ class UnpaidAttendanceSummaryReportTest extends AbstractGroupedReportTestSupport
             AppearanceStage.EXPENSE_ENTERED,
             AppearanceStage.EXPENSE_EDITED
         ));
+        verify(query).where(QAppearance.appearance.hideOnUnpaidExpenseAndReports.isFalse());
         verify(query, times(1)).where(QAppearance.appearance.locCode.eq(SecurityUtil.getLocCode()));
         verify(query, times(1)).where(
             QAppearance.appearance.attendanceDate.between(request.getFromDate(), request.getToDate()));

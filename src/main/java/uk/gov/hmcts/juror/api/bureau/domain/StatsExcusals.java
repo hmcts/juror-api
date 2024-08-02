@@ -26,7 +26,6 @@ import java.io.Serializable;
 @Immutable
 @Table(name = "stats_excusals", schema = "juror_dashboard")
 @Builder
-@Deprecated(forRemoval = true)
 public class StatsExcusals implements Serializable {
     @NotNull
     @Id

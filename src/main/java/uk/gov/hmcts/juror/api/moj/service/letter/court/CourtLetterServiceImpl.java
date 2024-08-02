@@ -96,7 +96,7 @@ public class CourtLetterServiceImpl implements CourtLetterService {
 
         log.debug("Find jurors eligible for a court deferral letter for the primary court: {}", owner);
         List<DeferralGrantedLetterList> eligibleJurorRecords =
-            deferralGrantedLetterListRepository.findJurorsEligibleForDeferralGrantedLetter(searchCriteria, owner);
+            deferralGrantedLetterListRepository.findJurorsEligibleForDeferralGrantedLetter(searchCriteria);
         log.debug("{} records found", eligibleJurorRecords.size());
 
         List<String> headings = List.of(JUROR_NUMBER, FIRST_NAME, LAST_NAME, POSTCODE, STATUS, DEFERRED_TO, REASON,

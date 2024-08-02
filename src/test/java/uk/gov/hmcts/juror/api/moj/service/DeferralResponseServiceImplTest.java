@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.service;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -39,6 +40,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
+@SuppressWarnings("PMD.TooManyMethods")
 public class DeferralResponseServiceImplTest {
 
     @Mock
@@ -53,6 +55,8 @@ public class DeferralResponseServiceImplTest {
     private JurorHistoryRepository jurorHistoryRepository;
     @Mock
     private PrintDataService printDataService;
+    @Mock
+    private JurorPoolService jurorPoolService;
 
 
     @InjectMocks
@@ -64,9 +68,14 @@ public class DeferralResponseServiceImplTest {
         ExcusalCode excusalCodeEntity = new ExcusalCode("B", "Description of B", false, true, false, false);
         when(excusalCodeRepository.findAll()).thenReturn(Collections.singletonList(excusalCodeEntity));
 
-        doReturn(Collections.singletonList(createTestJurorPool("400", "123456789"))).when(jurorPoolRepository)
+        JurorPool jurorPool400 = createTestJurorPool("400", "123456789");
+        doReturn(jurorPool400).when(jurorPoolService).getJurorPoolFromUser("123456789");
+        doReturn(Collections.singletonList(jurorPool400)).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc("123456789", true);
-        doReturn(Collections.singletonList(createTestJurorPool("415", "987654321"))).when(jurorPoolRepository)
+
+        JurorPool jurorPool415 = createTestJurorPool("415", "987654321");
+        doReturn(jurorPool415).when(jurorPoolService).getJurorPoolFromUser("987654321");
+        doReturn(Collections.singletonList(jurorPool415)).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc("987654321", true);
 
         doReturn(Optional.of(createJurorStatus(1))).when(jurorStatusRepository).findById(1);
@@ -75,18 +84,24 @@ public class DeferralResponseServiceImplTest {
         doReturn(null).when(jurorHistoryRepository).save(any());
     }
 
+    @AfterEach
+    void afterEach() {
+        TestUtils.afterAll();
+    }
+
 
     @Test
     public void test_denyDeferralRequest_happyPath_courtUser_courtOwner() {
         String jurorNumber = "987654321";
+        TestUtils.mockCourtUser("415");
         BureauJwtPayload payload = TestUtils.createJwt("415", "SOME_USER");
 
         DeferralRequestDto deferralRequestDto = createTestDeferralRequestDto(jurorNumber);
 
         deferralResponseService.respondToDeferralRequest(payload, deferralRequestDto);
 
-        verify(jurorPoolRepository, times(1))
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), anyBoolean());
+        verify(jurorPoolService, times(1))
+            .getJurorPoolFromUser(jurorNumber);
 
         verify(jurorPoolRepository, times(1)).save(any());
         verify(jurorHistoryRepository, times(1)).save(any());
@@ -97,6 +112,7 @@ public class DeferralResponseServiceImplTest {
     @Test
     public void test_unhappyPath_multiple_deferrals() {
         String jurorNumber = "987654321";
+        TestUtils.mockCourtUser("415");
         BureauJwtPayload payload = TestUtils.createJwt("415", "SOME_USER");
 
         DeferralRequestDto deferralRequestDto = createTestDeferralRequestDto(jurorNumber);
@@ -136,6 +152,7 @@ public class DeferralResponseServiceImplTest {
     @Test
     public void test_denyDeferralRequest_bureauUser_courtOwner() {
         String jurorNumber = "987654321";
+        TestUtils.mockBureauUser();
         BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
         DeferralRequestDto deferralRequestDto = createTestDeferralRequestDto(jurorNumber);
@@ -156,6 +173,7 @@ public class DeferralResponseServiceImplTest {
     @Test
     public void test_denyDeferralRequest_courtUser_bureauOwner() {
         String jurorNumber = "123456789";
+        TestUtils.mockCourtUser("415");
         BureauJwtPayload payload = TestUtils.createJwt("415", "SOME_USER");
 
         DeferralRequestDto deferralRequestDto = createTestDeferralRequestDto(jurorNumber);
@@ -163,8 +181,8 @@ public class DeferralResponseServiceImplTest {
         Assertions.assertThatExceptionOfType(MojException.Forbidden.class)
             .isThrownBy(() -> deferralResponseService.respondToDeferralRequest(payload, deferralRequestDto));
 
-        verify(jurorPoolRepository, times(1))
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), anyBoolean());
+        verify(jurorPoolService, times(1))
+            .getJurorPoolFromUser(jurorNumber);
 
 
         verify(jurorPoolRepository, never()).save(any());
@@ -176,6 +194,7 @@ public class DeferralResponseServiceImplTest {
     @Test
     public void test_denyDeferralRequest_noJurorRecord() {
         String jurorNumber = "111111111";
+        TestUtils.mockBureauUser();
         BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
         DeferralRequestDto deferralRequestDto = createTestDeferralRequestDto(jurorNumber);
