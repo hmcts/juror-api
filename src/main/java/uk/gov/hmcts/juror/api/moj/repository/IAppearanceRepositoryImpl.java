@@ -271,6 +271,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .where(APPEARANCE.courtLocation.locCode.eq(locCode))
             .where(APPEARANCE.appearanceStage.in(AppearanceStage.EXPENSE_ENTERED, AppearanceStage.EXPENSE_EDITED))
             .where(APPEARANCE.isDraftExpense.isFalse())
+            .where(APPEARANCE.hideOnUnpaidExpenseAndReports.isFalse())
             .where(APPEARANCE.payCash.eq(isCash))
             .groupBy(APPEARANCE.jurorNumber)
             .groupBy(APPEARANCE.appearanceStage)
