@@ -431,21 +431,11 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
         Juror juror = jurorPool.getJuror();
         if (reasonableAdjustments.size() > 1) {
             juror.setReasonableAdjustmentCode(multipleAdjustmentsCode);
-            juror.setReasonableAdjustmentMessage(
-                DataUtils.trimToLength(
-                    reasonableAdjustments
-                        .stream()
-                        .reduce(
-                            "",
-                            (acc, item) -> acc + item.getReasonableAdjustmentDetail() + ", ",
-                            String::concat
-                        ).trim(),
-                    ValidationConstants.REASONABLE_ADJUSTMENT_MESSAGE_LENGTH_MAX));
         } else if (reasonableAdjustments.size() == 1 && reasonableAdjustments.get(0) != null) {
             juror.setReasonableAdjustmentCode(reasonableAdjustments.get(0).getReasonableAdjustment().getCode());
-            juror.setReasonableAdjustmentMessage(reasonableAdjustments.get(0).getReasonableAdjustmentDetail());
         }
-
+        juror
+            .setReasonableAdjustmentMessage(juror.getJurorResponse().getReasonableAdjustmentsArrangements());
         jurorPoolRepository.save(jurorPool);
         log.trace("Juror: {}. Exit mergeReasonableAdjustments", jurorNumber);
     }
