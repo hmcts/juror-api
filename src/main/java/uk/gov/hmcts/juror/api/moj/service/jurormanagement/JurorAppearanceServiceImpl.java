@@ -40,6 +40,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
+import uk.gov.hmcts.juror.api.moj.service.AppearanceCreationService;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryServiceImpl;
 import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
@@ -79,8 +80,10 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     private final JurorHistoryServiceImpl jurorHistoryService;
     private final PanelRepository panelRepository;
     private final JurorPoolService jurorPoolService;
+    private final AppearanceCreationService appearanceCreationService;
 
     @Override
+    @Transactional
     public void addAttendanceDay(BureauJwtPayload payload, AddAttendanceDayDto dto) {
 
         //check that the appearance date is not in the future
@@ -165,8 +168,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         final JurorPool jurorPool = validateJurorStatus(juror, isCompleted,
             appearanceStage, jurorAppearanceDto.isJurorInWaiting());
 
-        Optional<Appearance> appearanceOpt = appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber,
-            appearanceDate);
+        Optional<Appearance> appearanceOpt = getAppearance(jurorNumber, appearanceDate, locCode);
         Appearance appearance;
 
         if (appearanceOpt.isPresent()) {
@@ -174,12 +176,13 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             // validate the current record and the new appearance stage
             validateAppearanceStage(jurorNumber, appearanceStage, appearance);
         } else {
-            appearance = Appearance.builder()
-                .jurorNumber(jurorNumber)
-                .attendanceDate(appearanceDate)
-                .courtLocation(courtLocation)
-                .poolNumber(jurorPool.getPool().getPoolNumber())
-                .build();
+            appearance = appearanceCreationService.createAppearance(
+                jurorNumber,
+                appearanceDate,
+                courtLocation,
+                jurorPool.getPool().getPoolNumber(),
+                false
+            );
         }
 
         if (appearanceStage == AppearanceStage.CHECKED_IN || allowBothCheckInAndOut) {
@@ -441,14 +444,13 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         // 3. absent jurors - build new appearance record with minimal data
         List<Appearance> absentJurors = new ArrayList<>();
         absentTuples.forEach(tuple -> {
-            Appearance appearance = Appearance.builder()
-                .jurorNumber(tuple.get(0, String.class))
-                .poolNumber(tuple.get(4, String.class))
-                .attendanceDate(updateCommonData.getAttendanceDate())
-                .courtLocation(courtLocation)
-                .noShow(Boolean.TRUE)
-                .attendanceType(AttendanceType.ABSENT)
-                .build();
+            Appearance appearance = appearanceCreationService.createAbsentAppearance(
+                tuple.get(0, String.class),
+                updateCommonData.getAttendanceDate(),
+                courtLocation,
+                tuple.get(4, String.class),
+                false
+            );
             absentJurors.add(appearance);
         });
 
@@ -515,17 +517,10 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         checkExistingAttendance(request, nonAttendanceDate);
 
         // create a new Appearance record for juror
-        Appearance appearance = Appearance.builder()
-            .jurorNumber(request.getJurorNumber())
-            .attendanceDate(nonAttendanceDate)
-            .courtLocation(courtLocation)
-            .poolNumber(request.getPoolNumber())
-            .nonAttendanceDay(Boolean.TRUE)
-            .attendanceType(AttendanceType.NON_ATTENDANCE)
-            .appearanceStage(AppearanceStage.EXPENSE_ENTERED)
-            .isDraftExpense(true)
-            .createdBy(payload.getLogin())
-            .build();
+        Appearance appearance =
+            appearanceCreationService.createNoneAttendanceAppearance(
+                request.getJurorNumber(), nonAttendanceDate, courtLocation,
+                jurorPool.getPool().getPoolNumber(), false);
         realignAttendanceType(appearance);
         jurorExpenseService.applyDefaultExpenses(appearance, jurorPool.getJuror());
         appearanceRepository.saveAndFlush(appearance);
@@ -605,14 +600,14 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                 courtLocation);
 
             // get the juror appearance record if it exists
-            Appearance appearance = appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber,
-                    request.getCommonData().getAttendanceDate())
-                .orElse(Appearance.builder()
-                    .jurorNumber(jurorNumber)
-                    .attendanceDate(request.getCommonData().getAttendanceDate())
-                    .courtLocation(courtLocation)
-                    .poolNumber(jurorPool.getPool().getPoolNumber())
-                    .build());
+            Appearance appearance = getAppearance(jurorNumber, request.getCommonData().getAttendanceDate(), locCode)
+                .orElse(appearanceCreationService.createAppearance(
+                    jurorNumber,
+                    request.getCommonData().getAttendanceDate(),
+                    courtLocation,
+                    jurorPool.getPool().getPoolNumber(),
+                    false
+                ));
 
             // update the check-in time if there is none
             if (appearance.getTimeIn() == null) {
@@ -889,15 +884,13 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         // 4. absent jurors - build new appearance record with minimal data
         List<Appearance> absentJurors = new ArrayList<>();
         absentTuples.forEach(tuple -> {
-            Appearance appearance = Appearance.builder()
-                .jurorNumber(tuple.get(0, String.class))
-                .poolNumber(tuple.get(4, String.class))
-                .attendanceDate(updateCommonData.getAttendanceDate())
-                .courtLocation(courtLocation)
-                .noShow(Boolean.TRUE)
-                .attendanceType(AttendanceType.ABSENT)
-                .appearanceConfirmed(Boolean.TRUE)
-                .build();
+            Appearance appearance = appearanceCreationService.createAbsentAppearance(
+                tuple.get(0, String.class),
+                updateCommonData.getAttendanceDate(),
+                courtLocation,
+                tuple.get(4, String.class),
+                true
+            );
             absentJurors.add(appearance);
         });
 
@@ -1240,6 +1233,14 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     }
 
     @Override
+    public Optional<Appearance> getAppearance(String jurorNumber,
+                                              LocalDate appearanceDate,
+                                              String locCode) {
+        return appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(
+            locCode, jurorNumber, appearanceDate);
+    }
+
+    @Override
     public void realignAttendanceType(Appearance appearance) {
         appearanceRepository.save(appearance);
         realignAttendanceType(appearance.getJurorNumber());
@@ -1248,7 +1249,6 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     @Override
     public void realignAttendanceType(String jurorNumber) {
         List<Appearance> appearances = getAllAppearances(jurorNumber);
-
         List<LocalDate> localDates = appearances
             .stream()
             .map(Appearance::getAttendanceDate)

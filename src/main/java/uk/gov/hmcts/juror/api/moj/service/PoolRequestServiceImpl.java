@@ -324,7 +324,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
     private PoolRequest convertFromDto(PoolRequestDto poolRequestDto, String owner, String login) {
         String courtLocationCode = poolRequestDto.getLocationCode();
 
-        log.debug("Retrieve the Court Location object from the database for: " + courtLocationCode);
+        log.debug("Retrieve the Court Location object from the database for: {}", courtLocationCode);
         CourtLocation courtLocation = RepositoryUtils.retrieveFromDatabase(poolRequestDto.getLocationCode(),
             courtLocationRepository);
 
@@ -344,7 +344,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
                 poolRequestDto.getAttendanceTime()));
         }
 
-        log.debug("Retrieve the Pool Type object from the database for: " + poolRequestDto.getPoolType());
+        log.debug("Retrieve the Pool Type object from the database for: {}", poolRequestDto.getPoolType());
         poolRequest.setPoolType(RepositoryUtils.retrieveFromDatabase(poolRequestDto.getPoolType(), poolTypeRepository));
 
         poolRequestRepository.save(poolRequest);

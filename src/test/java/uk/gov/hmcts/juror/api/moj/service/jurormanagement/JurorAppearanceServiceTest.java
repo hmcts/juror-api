@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -49,6 +50,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
+import uk.gov.hmcts.juror.api.moj.service.AppearanceCreationServiceImpl;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryServiceImpl;
 import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
@@ -114,6 +116,9 @@ class JurorAppearanceServiceTest {
     @Mock
     private JurorPoolService jurorPoolService;
 
+    @Mock(answer = Answers.CALLS_REAL_METHODS)
+    private AppearanceCreationServiceImpl appearanceCreationService;
+
     @InjectMocks
     JurorAppearanceServiceImpl jurorAppearanceService;
 
@@ -135,6 +140,7 @@ class JurorAppearanceServiceTest {
     @BeforeEach
     public void setUp() {
         TestUtils.setUpMockAuthentication("415", "COURT_USER", "1", List.of("415"));
+        doReturn(0L).when(appearanceCreationService).getLastVersionNumber(any(), any(), any());
     }
 
 
@@ -677,7 +683,7 @@ class JurorAppearanceServiceTest {
         appearance.setJurorNumber(JUROR_123456789);
         appearance.setAppearanceStage(CHECKED_IN);
         doReturn(Optional.of(appearance)).when(appearanceRepository)
-            .findByJurorNumberAndAttendanceDate(JUROR_123456789, now());
+            .findByLocCodeAndJurorNumberAndAttendanceDate(LOC_415, JUROR_123456789, now());
 
         assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
                 jurorAppearanceService.processAppearance(buildPayload(OWNER_415, List.of(LOC_415)),
@@ -707,7 +713,7 @@ class JurorAppearanceServiceTest {
         appearance.setJurorNumber(JUROR_123456789);
         appearance.setAppearanceStage(CHECKED_OUT);
         doReturn(Optional.of(appearance)).when(appearanceRepository)
-            .findByJurorNumberAndAttendanceDate(JUROR_123456789, now());
+            .findByLocCodeAndJurorNumberAndAttendanceDate(LOC_415, JUROR_123456789, now());
 
         assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
                 jurorAppearanceService.processAppearance(buildPayload(OWNER_415, List.of(LOC_415)),
@@ -737,7 +743,7 @@ class JurorAppearanceServiceTest {
         appearance.setJurorNumber(JUROR_123456789);
         appearance.setAppearanceStage(EXPENSE_ENTERED);
         doReturn(Optional.of(appearance)).when(appearanceRepository)
-            .findByJurorNumberAndAttendanceDate(JUROR_123456789, now());
+            .findByLocCodeAndJurorNumberAndAttendanceDate(LOC_415, JUROR_123456789, now());
 
         assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
                 jurorAppearanceService.processAppearance(buildPayload(OWNER_415, List.of(LOC_415)),
@@ -770,7 +776,7 @@ class JurorAppearanceServiceTest {
         appearance.setJurorNumber(JUROR_123456789);
         appearance.setAppearanceStage(CHECKED_OUT);
         doReturn(Optional.of(appearance)).when(appearanceRepository)
-            .findByJurorNumberAndAttendanceDate(JUROR_123456789, now());
+            .findByLocCodeAndJurorNumberAndAttendanceDate(LOC_415, JUROR_123456789, now());
 
         assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
                 jurorAppearanceService.processAppearance(buildPayload(OWNER_415, List.of(LOC_415)),
@@ -803,7 +809,7 @@ class JurorAppearanceServiceTest {
         appearance.setJurorNumber(JUROR_123456789);
         appearance.setAppearanceStage(EXPENSE_ENTERED);
         doReturn(Optional.of(appearance)).when(appearanceRepository)
-            .findByJurorNumberAndAttendanceDate(JUROR_123456789, now());
+            .findByLocCodeAndJurorNumberAndAttendanceDate(LOC_415, JUROR_123456789, now());
 
         assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
                 jurorAppearanceService.processAppearance(buildPayload(OWNER_415, List.of(LOC_415)),
@@ -2655,6 +2661,7 @@ class JurorAppearanceServiceTest {
         void before() {
             this.appearanceList = new ArrayList<>();
             jurorAppearanceService = spy(jurorAppearanceService);
+
         }
 
         private Appearance mockAppearance(LocalTime timeIn, LocalTime timeOut,
@@ -3020,9 +3027,9 @@ class JurorAppearanceServiceTest {
                 .poolNumber(jurorPool2.getPool().getPoolNumber())
                 .build();
 
-            when(appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR1,
+            when(appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(LOC_415, JUROR1,
                 now().minusDays(1))).thenReturn(Optional.of(appearance1));
-            when(appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR2,
+            when(appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(LOC_415, JUROR2,
                 now().minusDays(1))).thenReturn(Optional.of(appearance2));
             when(appearanceRepository.getNextAttendanceAuditNumber()).thenReturn(10_123_456L);
 
@@ -3042,10 +3049,10 @@ class JurorAppearanceServiceTest {
                 .findByJurorNumberAndIsActiveAndCourt(JUROR2, true, courtLocation);
 
             verify(appearanceRepository, times(1)).getNextAttendanceAuditNumber();
-            verify(appearanceRepository, times(1)).findByJurorNumberAndAttendanceDate(
-                JUROR1, now().minusDays(1));
-            verify(appearanceRepository, times(1)).findByJurorNumberAndAttendanceDate(
-                JUROR2, now().minusDays(1));
+            verify(appearanceRepository, times(1)).findByLocCodeAndJurorNumberAndAttendanceDate(
+                LOC_415, JUROR1, now().minusDays(1));
+            verify(appearanceRepository, times(1)).findByLocCodeAndJurorNumberAndAttendanceDate(
+                LOC_415, JUROR2, now().minusDays(1));
 
             ArgumentCaptor<Appearance> appearanceCaptor = ArgumentCaptor.forClass(Appearance.class);
 
@@ -3127,7 +3134,7 @@ class JurorAppearanceServiceTest {
             verify(jurorRepository, times(1)).findById(JUROR_123456789);
             verifyNoInteractions(jurorPoolRepository);
             verifyNoInteractions(jurorHistoryService);
-            verify(appearanceRepository, never()).findByJurorNumberAndAttendanceDate(JUROR_123456789,
+            verify(appearanceRepository, never()).findByLocCodeAndJurorNumberAndAttendanceDate(LOC_415, JUROR_123456789,
                 request.getCommonData().getAttendanceDate());
         }
 
@@ -3157,7 +3164,7 @@ class JurorAppearanceServiceTest {
             verify(jurorRepository, times(1)).findById(JUROR_123456789);
             verifyNoInteractions(jurorPoolRepository);
             verifyNoInteractions(jurorHistoryService);
-            verify(appearanceRepository, never()).findByJurorNumberAndAttendanceDate(JUROR_123456789,
+            verify(appearanceRepository, never()).findByLocCodeAndJurorNumberAndAttendanceDate(LOC_415, JUROR_123456789,
                 request.getCommonData().getAttendanceDate());
         }
 
@@ -3180,7 +3187,7 @@ class JurorAppearanceServiceTest {
             verifyNoInteractions(jurorRepository);
             verifyNoInteractions(jurorPoolRepository);
             verifyNoInteractions(jurorHistoryService);
-            verify(appearanceRepository, never()).findByJurorNumberAndAttendanceDate(JUROR_123456789,
+            verify(appearanceRepository, never()).findByLocCodeAndJurorNumberAndAttendanceDate(LOC_415, JUROR_123456789,
                 request.getCommonData().getAttendanceDate());
         }
 
