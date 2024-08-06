@@ -1,10 +1,12 @@
 package uk.gov.hmcts.juror.api.moj.service.trial;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -41,6 +43,7 @@ import uk.gov.hmcts.juror.api.moj.repository.trial.CourtroomRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.JudgeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
+import uk.gov.hmcts.juror.api.moj.service.AppearanceCreationServiceImpl;
 import uk.gov.hmcts.juror.api.moj.service.CompleteServiceServiceImpl;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
@@ -102,10 +105,20 @@ class TrialServiceImplTest {
     @Mock
     private JurorHistoryService jurorHistoryService;
 
+    @Mock(answer = Answers.CALLS_REAL_METHODS)
+    private AppearanceCreationServiceImpl appearanceCreationService;
+
     @InjectMocks
     TrialServiceImpl trialService;
 
     BureauJwtPayload payload = createJwtPayload("415", "COURT_USER");
+
+
+    @BeforeEach
+    void beforeEach(){
+        doAnswer(invocation -> invocation.getArgument(0)).when(appearanceCreationService)
+            .addStandardAttributes(any(),any(), any(), any());
+    }
 
     @Test
     void testCreateTrial() {
