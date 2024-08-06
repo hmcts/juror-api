@@ -115,9 +115,9 @@ class TrialServiceImplTest {
 
 
     @BeforeEach
-    void beforeEach(){
+    void beforeEach() {
         doAnswer(invocation -> invocation.getArgument(0)).when(appearanceCreationService)
-            .addStandardAttributes(any(),any(), any(), any());
+            .addStandardAttributes(any(), any(), any(), any());
     }
 
     @Test
@@ -350,7 +350,8 @@ class TrialServiceImplTest {
             .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
         verify(panelRepository, times(panelMembers.size())).saveAndFlush(any());
         verify(jurorHistoryService, times(panelMembers.size())).createJuryAttendanceHistory(any(), any(), any());
-        verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(appearanceArgumentCaptor.capture());
+        verify(jurorAppearanceService, times(panelMembers.size()))
+            .realignAttendanceType(appearanceArgumentCaptor.capture());
         Appearance appearance = appearanceArgumentCaptor.getValue();
         assertThat(appearance.getSatOnJury()).as("Sat on Jury").isTrue();
         assertThat(appearance.getAttendanceType()).as("Attendance type").isEqualTo(AttendanceType.HALF_DAY);
@@ -390,7 +391,8 @@ class TrialServiceImplTest {
             .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
         verify(panelRepository, times(panelMembers.size())).saveAndFlush(any());
         verify(jurorHistoryService, times(panelMembers.size())).createJuryAttendanceHistory(any(), any(), any());
-        verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(appearanceArgumentCaptor.capture());
+        verify(jurorAppearanceService, times(panelMembers.size()))
+            .realignAttendanceType(appearanceArgumentCaptor.capture());
         Appearance appearance = appearanceArgumentCaptor.getValue();
         assertThat(appearance.getSatOnJury()).as("Sat on Jury").isTrue();
         assertThat(appearance.getAttendanceType()).as("Attendance type").isEqualTo(AttendanceType.FULL_DAY);
@@ -429,7 +431,8 @@ class TrialServiceImplTest {
             .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
         verify(panelRepository, times(panelMembers.size())).saveAndFlush(any());
         verify(jurorHistoryService, times(panelMembers.size())).createJuryAttendanceHistory(any(), any(), any());
-        verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(appearanceArgumentCaptor.capture());
+        verify(jurorAppearanceService, times(panelMembers.size()))
+            .realignAttendanceType(appearanceArgumentCaptor.capture());
         Appearance appearance = appearanceArgumentCaptor.getValue();
         assertThat(appearance.getSatOnJury()).as("Sat on Jury").isTrue();
         assertThat(appearance.getAttendanceType()).as("Attendance type").isEqualTo(AttendanceType.FULL_DAY_LONG_TRIAL);
@@ -468,7 +471,8 @@ class TrialServiceImplTest {
             .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
         verify(panelRepository, times(panelMembers.size())).saveAndFlush(any());
         verify(jurorHistoryService, times(panelMembers.size())).createJuryAttendanceHistory(any(), any(), any());
-        verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(appearanceArgumentCaptor.capture());
+        verify(jurorAppearanceService, times(panelMembers.size()))
+            .realignAttendanceType(appearanceArgumentCaptor.capture());
         Appearance appearance = appearanceArgumentCaptor.getValue();
         assertThat(appearance.getSatOnJury()).as("Sat on Jury").isTrue();
         assertThat(appearance.getAttendanceType()).as("Attendance type").isEqualTo(AttendanceType.HALF_DAY_LONG_TRIAL);
@@ -498,8 +502,7 @@ class TrialServiceImplTest {
             .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
         verify(panelRepository, times(panelMembers.size())).saveAndFlush(any());
         verify(jurorHistoryService, times(panelMembers.size())).createJuryAttendanceHistory(any(), any(), any());
-        ArgumentCaptor<Appearance> appearanceArgumentCaptor = ArgumentCaptor.forClass(Appearance.class);
-        verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(appearanceArgumentCaptor.capture());
+        verify(jurorAppearanceService, times(panelMembers.size())).realignAttendanceType(any(Appearance.class));
     }
 
     @Test
@@ -525,7 +528,8 @@ class TrialServiceImplTest {
         verify(completeService, times(panelMembers.size())).completeService(anyString(), any());
         verify(jurorHistoryService, times(panelMembers.size())).createJuryAttendanceHistory(any(), any(), any());
         ArgumentCaptor<Appearance> appearanceArgumentCaptor = ArgumentCaptor.forClass(Appearance.class);
-        verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(appearanceArgumentCaptor.capture());
+        verify(jurorAppearanceService, times(panelMembers.size()))
+            .realignAttendanceType(appearanceArgumentCaptor.capture());
         assertThat(appearanceArgumentCaptor.getValue().getSatOnJury()).as("Sat on Jury").isTrue();
     }
 
