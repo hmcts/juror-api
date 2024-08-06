@@ -7,6 +7,7 @@ import jakarta.persistence.MappedSuperclass;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.validator.constraints.Length;
 import uk.gov.hmcts.juror.api.validation.JurorNumber;
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 @MappedSuperclass
 @IdClass(LetterListId.class)
 @Getter
+@Setter
 @SuperBuilder
 @NoArgsConstructor
 public abstract class LetterListBase implements Serializable {
