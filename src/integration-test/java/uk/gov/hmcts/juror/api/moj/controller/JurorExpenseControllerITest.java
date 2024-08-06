@@ -2446,7 +2446,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 ResponseEntity<List<String>> response = template.exchange(
                     new RequestEntity<>(List.of(expenseDto), httpHeaders, POST,
                         URI.create(toUrl(COURT_LOCATION, paymentMethod))),
-                    new ParameterizedTypeReference<>() {});
+                    new ParameterizedTypeReference<>() {
+                    });
                 assertThat(response.getStatusCode())
                     .as("Expect the HTTP GET request to be successful")
                     .isEqualTo(HttpStatus.OK);
@@ -2513,12 +2514,12 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(2),
                     id, LocalDate.of(2023, 1, 10), 3);
 
-                assertApproved(
-                    appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR_NUMBER, LocalDate.of(2023, 1, 8)));
-                assertApproved(
-                    appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR_NUMBER, LocalDate.of(2023, 1, 9)));
-                assertApproved(
-                    appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR_NUMBER, LocalDate.of(2023, 1, 10)));
+                assertApproved(appearanceRepository
+                    .findByLocCodeAndJurorNumberAndAttendanceDate("415", JUROR_NUMBER, LocalDate.of(2023, 1, 8)));
+                assertApproved(appearanceRepository
+                    .findByLocCodeAndJurorNumberAndAttendanceDate("415", JUROR_NUMBER, LocalDate.of(2023, 1, 9)));
+                assertApproved(appearanceRepository
+                    .findByLocCodeAndJurorNumberAndAttendanceDate("415", JUROR_NUMBER, LocalDate.of(2023, 1, 10)));
                 assertJurorHistory(JUROR_NUMBER, HistoryCodeMod.ARAMIS_EXPENSES_FILE_CREATED, "COURT_USER",
                     "£1,683.98", "415230101", LocalDate.of(2023, 1, 10), "F" + id);
                 assertPaymentData(JUROR_NUMBER, new BigDecimal("1683.98"), new BigDecimal("702.98"),
@@ -2569,11 +2570,14 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     id, LocalDate.of(2023, 2, 10), 3);
 
                 assertApproved(
-                    appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR_NUMBER, LocalDate.of(2023, 2, 8)));
+                    appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415", JUROR_NUMBER,
+                        LocalDate.of(2023, 2, 8)));
                 assertApproved(
-                    appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR_NUMBER, LocalDate.of(2023, 2, 9)));
+                    appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415", JUROR_NUMBER,
+                        LocalDate.of(2023, 2, 9)));
                 assertApproved(
-                    appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR_NUMBER, LocalDate.of(2023, 2, 10)));
+                    appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415", JUROR_NUMBER,
+                        LocalDate.of(2023, 2, 10)));
                 assertJurorHistory(JUROR_NUMBER, HistoryCodeMod.CASH_PAYMENT_APPROVAL, "COURT_USER", "£1,683.98",
                     "415230101", LocalDate.of(2023, 2, 10), "F" + id);
                 List<PaymentData> paymentDataList = paymentDataRepository.findByJurorNumber(JUROR_NUMBER);
@@ -2646,14 +2650,14 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     id, LocalDate.of(2023, 1, 16), 4, 12_344L);
 
                 assertApproved(
-                    appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR_NUMBER,
-                        LocalDate.of(2023, 1, 14)));
+                    appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(
+                        "415", JUROR_NUMBER, LocalDate.of(2023, 1, 14)));
                 assertApproved(
-                    appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR_NUMBER,
-                        LocalDate.of(2023, 1, 15)));
+                    appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(
+                        "415", JUROR_NUMBER, LocalDate.of(2023, 1, 15)));
                 assertApproved(
-                    appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR_NUMBER,
-                        LocalDate.of(2023, 1, 16)));
+                    appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(
+                        "415", JUROR_NUMBER, LocalDate.of(2023, 1, 16)));
 
                 assertJurorHistory(JUROR_NUMBER, HistoryCodeMod.ARAMIS_EXPENSES_FILE_CREATED, "COURT_USER",
                     "£409.00",
