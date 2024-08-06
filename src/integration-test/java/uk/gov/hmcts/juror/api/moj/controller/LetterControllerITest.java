@@ -1123,11 +1123,20 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     .filter(data -> "555555566".equalsIgnoreCase(data.getJurorNumber()))
                     .toList();
 
-                assertThat(dataList).size().isEqualTo(2);
+                assertThat(dataList).size().isEqualTo(1);
 
                 assertThat(dataList.stream().filter(data -> data.getDatePrinted() == null).count())
-                    .as("Expect 1 of the returned records to not have a letter previously printed")
+                    .as("Expect 1 of the returned records to have a letter previously printed")
                     .isEqualTo(1);
+
+
+                dataList = responseBody.stream()
+                    .map(data -> (NonDeferralLetterData) data)
+                    .filter(data -> "555555569".equalsIgnoreCase(data.getJurorNumber()))
+                    .toList();
+
+                assertThat(dataList).size().isEqualTo(1);
+
                 assertThat(dataList.stream().filter(data -> data.getDatePrinted() != null).count())
                     .as("Expect 1 of the returned records to not a letter previously printed")
                     .isEqualTo(1);
