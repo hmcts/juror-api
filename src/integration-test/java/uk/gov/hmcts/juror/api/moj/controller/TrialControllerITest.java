@@ -243,6 +243,8 @@ class TrialControllerITest extends AbstractIntegrationTest {
 
         TrialDto trialRequest2 = createTrialRequest();
         trialRequest2.setCourtLocation("462");
+        trialRequest2.setCourtroomId(67L);
+        trialRequest2.setJudgeId(22L);
         ResponseEntity<TrialSummaryDto> responseEntity =
             restTemplate.exchange(new RequestEntity<>(trialRequest2, httpHeaders, POST,
                 URI.create(URL_CREATE)), TrialSummaryDto.class);
@@ -283,6 +285,8 @@ class TrialControllerITest extends AbstractIntegrationTest {
 
         //Create second trial
         TrialDto trialRequest2 = createTrialRequest();
+        trialRequest2.setCourtroomId(67L);
+        trialRequest2.setJudgeId(22L);
         trialRequest2.setCourtLocation("462");
         trialRequest2.setProtectedTrial(Boolean.TRUE);
 

@@ -43,7 +43,7 @@ public class PanelRepositoryImpl implements IPanelRepository {
             .where(TRIAL.trialNumber.eq(trialNumber))
             .where(JUROR_POOL.pool.courtLocation.eq(COURT_LOCATION))
             .where(JUROR_POOL.isActive.isTrue())
-            .where(PANEL.result.eq(PanelResult.JUROR))
+            .where(PANEL.result.isNull().or(PANEL.result.eq(PanelResult.JUROR)))
             .where(JUROR_POOL.status.status.in(IJurorStatus.JUROR, IJurorStatus.PANEL))
             .fetch();
     }

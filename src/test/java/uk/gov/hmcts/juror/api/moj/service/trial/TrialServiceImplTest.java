@@ -464,7 +464,7 @@ class TrialServiceImplTest {
         verify(panelRepository, times(1))
             .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
         verify(panelRepository, times(panelMembers.size())).saveAndFlush(any());
-        verify(completeService, times(panelMembers.size())).completeService(anyString(), any());
+        verify(completeService, times(panelMembers.size())).completeServiceSingle(any(), any());
         verify(jurorHistoryService, times(panelMembers.size())).createJuryAttendanceHistory(any(), any(), any());
         ArgumentCaptor<Appearance> appearanceArgumentCaptor = ArgumentCaptor.forClass(Appearance.class);
         verify(jurorAppearanceService, times(panelMembers.size()))
