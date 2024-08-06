@@ -1,7 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.repository.letter.court;
 
 import com.querydsl.core.Tuple;
-import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.micrometer.common.util.StringUtils;
@@ -14,9 +13,12 @@ import uk.gov.hmcts.juror.api.moj.domain.QJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.letter.CourtLetterSearchCriteria;
 import uk.gov.hmcts.juror.api.moj.domain.letter.court.DeferralDeniedLetterList;
+import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -34,13 +36,13 @@ public class DeferralDeniedLetterListRepositoryImpl implements IDeferralDeniedLe
 
         filterEligibleLetterSearchCriteria(jpaQuery, searchCriteria);
 
-        orderQueryResults(jpaQuery, searchCriteria.includePrinted());
+        orderQueryResults(jpaQuery);
 
         List<Tuple> results = jpaQuery.fetch();
 
         List<DeferralDeniedLetterList> deferralDeniedLetterLists = results.stream()
             .map(tuple -> DeferralDeniedLetterList.builder()
-                .poolNumber(tuple.get(QJurorPool.jurorPool.pool.poolNumber))
+                .poolNumber(tuple.get(QPoolRequest.poolRequest.poolNumber))
                 .jurorNumber(tuple.get(QJuror.juror.jurorNumber))
                 .firstName(tuple.get(QJuror.juror.firstName))
                 .lastName(tuple.get(QJuror.juror.lastName))
@@ -71,7 +73,7 @@ public class DeferralDeniedLetterListRepositoryImpl implements IDeferralDeniedLe
         });
 
         List<String> poolNumbers =
-            deferralDeniedLetterLists.stream().map(DeferralDeniedLetterList::getPoolNumber).toList();
+            deferralDeniedLetterLists.stream().map(DeferralDeniedLetterList::getPoolNumber).distinct().toList();
 
         // run query to get the most recent deferral denied date for each juror
         List<Tuple> printedDates = getPrintedDate(owner, poolNumbers);
@@ -82,8 +84,9 @@ public class DeferralDeniedLetterListRepositoryImpl implements IDeferralDeniedLe
             if (deferralDeniedLetterListMap.containsKey(jurorNumber)) {
                 DeferralDeniedLetterList deferralDeniedLetterList = deferralDeniedLetterListMap.get(jurorNumber);
                 LocalDateTime datePrinted = tuple.get(QJurorHistory.jurorHistory.dateCreated);
-                if (datePrinted.toLocalDate().equals(deferralDeniedLetterList.getRefusalDate())
-                    || datePrinted.toLocalDate().isAfter(deferralDeniedLetterList.getRefusalDate())) {
+                LocalDate datePrintedDateOnly = datePrinted.toLocalDate();
+                if (datePrintedDateOnly.equals(deferralDeniedLetterList.getRefusalDate())
+                    || datePrintedDateOnly.isAfter(deferralDeniedLetterList.getRefusalDate())) {
                     if (!searchCriteria.includePrinted()) {
                         deferralDeniedLetterListMap.remove(jurorNumber);
                     } else {
@@ -93,9 +96,20 @@ public class DeferralDeniedLetterListRepositoryImpl implements IDeferralDeniedLe
             }
         });
 
+        Comparator<DeferralDeniedLetterList> datePrintComparator = (o1, o2) -> {
+            if (o1.getDatePrinted() == null && o2.getDatePrinted() == null) {
+                return 0;
+            } else if (o1.getDatePrinted() == null) {
+                return -1;
+            } else if (o2.getDatePrinted() == null) {
+                return 1;
+            } else {
+                return o2.getDatePrinted().compareTo(o1.getDatePrinted());
+            }
+        };
 
-        return deferralDeniedLetterListMap.values().stream().toList();
-
+        // sort by date printed (need unprinted letters to be at the top)
+        return deferralDeniedLetterListMap.values().stream().sorted(datePrintComparator).toList();
     }
 
 
@@ -104,7 +118,7 @@ public class DeferralDeniedLetterListRepositoryImpl implements IDeferralDeniedLe
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
 
         return queryFactory.select(
-                QJurorPool.jurorPool.pool.poolNumber,
+                QPoolRequest.poolRequest.poolNumber,
                 QJuror.juror.jurorNumber,
                 QJuror.juror.firstName,
                 QJuror.juror.lastName,
@@ -123,9 +137,9 @@ public class DeferralDeniedLetterListRepositoryImpl implements IDeferralDeniedLe
             .on(QJurorHistory.jurorHistory.jurorNumber.eq(QJuror.juror.jurorNumber)
                 .and(QJurorHistory.jurorHistory.poolNumber.eq(QPoolRequest.poolRequest.poolNumber))
                 .and(QJurorHistory.jurorHistory.historyCode.eq(HistoryCodeMod.DEFERRED_POOL_MEMBER))
-                .and(QJurorHistory.jurorHistory.otherInformation.containsIgnoreCase("deferral denied"))
+                .and(QJurorHistory.jurorHistory.otherInformation.contains("Deferral Denied"))
                 .and(QJurorHistory.jurorHistory.dateCreatedDateOnly.after(QJuror.juror.bureauTransferDate)))
-            .where(QJuror.juror.excusalRejected.eq("Z")
+            .where(QJuror.juror.excusalRejected.eq(ExcusalCodeEnum.Z.getCode())
                 .and(QJurorPool.jurorPool.isActive.isTrue())
                 .and(QPoolRequest.poolRequest.owner.eq(owner)));
     }
@@ -135,7 +149,7 @@ public class DeferralDeniedLetterListRepositoryImpl implements IDeferralDeniedLe
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
 
         return queryFactory.select(
-                QJurorPool.jurorPool.pool.poolNumber,
+                QPoolRequest.poolRequest.poolNumber,
                 QJuror.juror.jurorNumber,
                 QJurorHistory.jurorHistory.dateCreated)
             .from(QJurorPool.jurorPool)
@@ -147,7 +161,7 @@ public class DeferralDeniedLetterListRepositoryImpl implements IDeferralDeniedLe
             .on(QJurorHistory.jurorHistory.jurorNumber.eq(QJuror.juror.jurorNumber)
                 .and(QJurorHistory.jurorHistory.historyCode.eq(HistoryCodeMod.NON_DEFERRED_LETTER))
                 .and(QJurorHistory.jurorHistory.dateCreatedDateOnly.after(QJuror.juror.bureauTransferDate)))
-            .where(QJuror.juror.excusalRejected.eq("Z")
+            .where(QJuror.juror.excusalRejected.eq(ExcusalCodeEnum.Z.getCode())
                 .and(QJurorPool.jurorPool.isActive.isTrue())
                 .and(QJurorPool.jurorPool.pool.poolNumber.in(poolNumbers))
                 .and(QPoolRequest.poolRequest.owner.eq(owner)))
@@ -177,16 +191,7 @@ public class DeferralDeniedLetterListRepositoryImpl implements IDeferralDeniedLe
 
     }
 
-
-    private void orderQueryResults(JPAQuery<Tuple> jpaQuery, boolean isIncludePrinted) {
-
-        if (isIncludePrinted) {
-            jpaQuery.orderBy(new CaseBuilder()
-                .when(QJurorHistory.jurorHistory.dateCreatedDateOnly.isNull())
-                .then(0)
-                .otherwise(1)
-                .asc());
-        }
+    private void orderQueryResults(JPAQuery<Tuple> jpaQuery) {
 
         jpaQuery.orderBy(QJurorHistory.jurorHistory.dateCreatedDateOnly.desc(),
             QJurorPool.jurorPool.juror.jurorNumber.asc());
