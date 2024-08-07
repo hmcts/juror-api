@@ -49,7 +49,6 @@ import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -320,21 +319,6 @@ class TrialServiceImplTest {
         when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415"))
             .thenReturn(panelMembers);
 
-
-        for (Panel panel : panelMembers) {
-            Appearance appearance = createAppearance(panel.getJurorNumber());
-
-            if ("null".equals(checkInTime)) {
-                appearance.setTimeIn(null);
-                appearance.setTimeOut(null);
-            } else {
-                appearance.setTimeIn(LocalTime.parse(checkInTime));
-                appearance.setTimeOut(LocalTime.parse(checkInTime));
-            }
-
-            when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
-                now())).thenReturn(Optional.of(appearance));
-        }
         doAnswer(invocationOnMock -> {
             Appearance appearance = invocationOnMock.getArgument(0);
             appearance.setAttendanceType(AttendanceType.HALF_DAY);
@@ -364,17 +348,6 @@ class TrialServiceImplTest {
         List<Panel> panelMembers = createPanelMembers(10, PanelResult.JUROR, trialNumber, IJurorStatus.JUROR);
         when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415"))
             .thenReturn(panelMembers);
-
-
-        for (Panel panel : panelMembers) {
-            Appearance appearance = createAppearance(panel.getJurorNumber());
-
-            appearance.setTimeIn(null);
-            appearance.setTimeOut(null);
-
-            when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
-                now())).thenReturn(Optional.of(appearance));
-        }
 
         doAnswer(invocationOnMock -> {
             Appearance appearance = invocationOnMock.getArgument(0);
@@ -406,16 +379,6 @@ class TrialServiceImplTest {
         when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415"))
             .thenReturn(panelMembers);
 
-
-        for (Panel panel : panelMembers) {
-            Appearance appearance = createAppearance(panel.getJurorNumber());
-
-            appearance.setTimeIn(null);
-            appearance.setTimeOut(null);
-
-            when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
-                now())).thenReturn(Optional.of(appearance));
-        }
         doAnswer(invocationOnMock -> {
             Appearance appearance = invocationOnMock.getArgument(0);
             appearance.setAttendanceType(AttendanceType.FULL_DAY_LONG_TRIAL);
@@ -446,16 +409,6 @@ class TrialServiceImplTest {
         when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415"))
             .thenReturn(panelMembers);
 
-
-        for (Panel panel : panelMembers) {
-            Appearance appearance = createAppearance(panel.getJurorNumber());
-
-            appearance.setTimeIn(null);
-            appearance.setTimeOut(null);
-
-            when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
-                now())).thenReturn(Optional.of(appearance));
-        }
         doAnswer(invocationOnMock -> {
             Appearance appearance = invocationOnMock.getArgument(0);
             appearance.setAttendanceType(AttendanceType.HALF_DAY_LONG_TRIAL);
@@ -487,13 +440,6 @@ class TrialServiceImplTest {
         doReturn(panelMembers).when(panelRepository)
             .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
 
-        for (Panel panel : panelMembers) {
-            Appearance appearance = createAppearance(panel.getJurorNumber());
-            appearance.setTimeIn(null);
-            when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
-                now())).thenReturn(Optional.of(appearance));
-        }
-
         trialService
             .returnJury(payload, trialNumber, "415",
                 createReturnJuryDto(false, "09:30", null));
@@ -512,20 +458,13 @@ class TrialServiceImplTest {
         doReturn(panelMembers).when(panelRepository)
             .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
 
-        for (Panel panel : panelMembers) {
-            createJurorPool(panel.getJuror(), panel.getTrial().getCourtLocation(), IJurorStatus.JUROR);
-            Appearance appearance = createAppearance(panel.getJurorNumber());
-            when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
-                now())).thenReturn(Optional.of(appearance));
-        }
-
         trialService.returnJury(payload, trialNumber, "415",
             createReturnJuryDto(true, "09:00", "10:00"));
 
         verify(panelRepository, times(1))
             .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
         verify(panelRepository, times(panelMembers.size())).saveAndFlush(any());
-        verify(completeService, times(panelMembers.size())).completeService(anyString(), any());
+        verify(completeService, times(panelMembers.size())).completeServiceSingle(any(), any());
         verify(jurorHistoryService, times(panelMembers.size())).createJuryAttendanceHistory(any(), any(), any());
         ArgumentCaptor<Appearance> appearanceArgumentCaptor = ArgumentCaptor.forClass(Appearance.class);
         verify(jurorAppearanceService, times(panelMembers.size()))
@@ -734,20 +673,6 @@ class TrialServiceImplTest {
         createJurorPool(juror, panel.getTrial().getCourtLocation(), jurorStatusValue);
 
         return panel;
-    }
-
-    private Appearance createAppearance(String jurorNumber) {
-        CourtLocation courtlocation = new CourtLocation();
-        courtlocation.setLocCode("415");
-        courtlocation.setName("Chester");
-
-        Appearance appearance = new Appearance();
-        appearance.setAttendanceDate(now());
-        appearance.setTimeIn(LocalTime.now());
-        appearance.setJurorNumber(jurorNumber);
-        appearance.setCourtLocation(courtlocation);
-
-        return appearance;
     }
 
     private EndTrialDto createEndTrialDto() {

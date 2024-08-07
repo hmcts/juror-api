@@ -22,9 +22,6 @@ public interface AppearanceRepository extends IAppearanceRepository, JpaReposito
 
     long countByJurorNumber(String jurorNumber);
 
-    Optional<Appearance> findByJurorNumberAndAttendanceDate(String jurorNumber, LocalDate attendanceDate);
-
-
     List<Appearance> findAllByCourtLocationLocCodeAndJurorNumber(String locCode, String jurorNumber);
 
     List<Appearance> findAllByJurorNumber(String jurorNumber);
@@ -84,19 +81,17 @@ public interface AppearanceRepository extends IAppearanceRepository, JpaReposito
         + "and( a.attendanceType is null or a.attendanceType not in (AttendanceType.ABSENT))")
     long countNoneAbsentAttendances(String jurorNumber);
 
-
-    Optional<Appearance> findByJurorNumberAndAttendanceDateAndAppearanceStage(String jurorNumber,
-                                                                              LocalDate attendanceDate,
-                                                                              AppearanceStage appearanceStage);
-
-
-    List<Appearance> findAllByJurorNumberAndPoolNumber(String jurorNumber, String poolNumber);
+    Optional<Appearance> findByLocCodeAndJurorNumberAndAttendanceDateAndAppearanceStage(String locCode,
+                                                                                        String jurorNumber,
+                                                                                        LocalDate attendanceDate,
+                                                                                        AppearanceStage appearanceStage);
 
 
     Optional<Appearance> findFirstByAttendanceAuditNumberEqualsAndLocCodeIn(String auditNumber,
                                                                             Collection<String> locCode);
 
-    Optional<Appearance> findByLocCodeAndJurorNumberAndAttendanceDate(String locCode, String jurorNumber, LocalDate attendanceDate);
+    Optional<Appearance> findByLocCodeAndJurorNumberAndAttendanceDate(String locCode, String jurorNumber,
+                                                                      LocalDate attendanceDate);
 
     @Query(value = "select max(a.version) from juror_mod.appearance_audit a where "
         + "a.juror_number = ?1 and a.attendance_date = ?2 and a.loc_code = ?3", nativeQuery = true)

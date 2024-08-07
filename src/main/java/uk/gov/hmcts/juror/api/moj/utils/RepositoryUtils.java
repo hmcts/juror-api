@@ -55,12 +55,16 @@ public class RepositoryUtils {
      * @return the unboxed object from the database result
      */
     public static <T> T unboxOptionalRecord(Optional<T> repoResult, String id) {
+        return unboxOptionalRecord(repoResult, id, "Record");
+    }
+
+    public static <T> T unboxOptionalRecord(Optional<T> repoResult, String id, String supportText) {
         if (repoResult.isPresent()) {
-            log.debug("Database record exists for the ID: " + id);
+            log.debug("{} exists for the ID: {}", supportText, id);
             return repoResult.get();
         }
         throw new MojException.NotFound(
-            String.format("Unable to find a valid record in the database for %s", id),
+            String.format("Unable to find a valid %s in the database for %s.",supportText, id),
             null
         );
     }

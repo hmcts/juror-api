@@ -243,6 +243,8 @@ class TrialControllerITest extends AbstractIntegrationTest {
 
         TrialDto trialRequest2 = createTrialRequest();
         trialRequest2.setCourtLocation("462");
+        trialRequest2.setCourtroomId(67L);
+        trialRequest2.setJudgeId(22L);
         ResponseEntity<TrialSummaryDto> responseEntity =
             restTemplate.exchange(new RequestEntity<>(trialRequest2, httpHeaders, POST,
                 URI.create(URL_CREATE)), TrialSummaryDto.class);
@@ -283,6 +285,8 @@ class TrialControllerITest extends AbstractIntegrationTest {
 
         //Create second trial
         TrialDto trialRequest2 = createTrialRequest();
+        trialRequest2.setCourtroomId(67L);
+        trialRequest2.setJudgeId(22L);
         trialRequest2.setCourtLocation("462");
         trialRequest2.setProtectedTrial(Boolean.TRUE);
 
@@ -733,7 +737,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
             assertThat(panel.isCompleted()).as("Expected panel completed status to be true").isTrue();
 
             Appearance appearance =
-                appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
+                appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415", panel.getJurorNumber(),
                     LocalDate.now()).orElseThrow(() ->
                     new MojException.NotFound("No appearance record found", null));
 
@@ -799,7 +803,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(2);
 
             Appearance appearance =
-                appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
+                appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415", panel.getJurorNumber(),
                     LocalDate.now()).orElseThrow(() ->
                     new MojException.NotFound("No appearance record found", null));
             assertThat(appearance.getTimeIn()).as("Expect time in to be null").isEqualTo(LocalTime.of(9, 30));
@@ -850,7 +854,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
                 "Expect completion date to be " + LocalDate.now()).isEqualTo(LocalDate.now());
 
             Appearance appearance =
-                appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
+                appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415", panel.getJurorNumber(),
                     LocalDate.now()).orElseThrow(() ->
                     new MojException.NotFound("No appearance record found", null));
 
