@@ -15,7 +15,7 @@
 INSERT INTO juror_mod.pool (pool_no,"owner",return_date,no_requested,pool_type,loc_code,new_request,last_update,additional_summons,attend_time,nil_pool,total_no_required,date_created) VALUES
 ('415220401','415',current_date + 10,2,'CRO','415','N',current_date + 10,NULL,TIMESTAMP'2022-09-04 09:00:00.0',false,2,NULL),
 ('415220402','415',current_date + 10,2,'CRO','415','N',current_date + 10,NULL,TIMESTAMP'2022-09-04 09:00:00.0',false,2,NULL),
-('415220403','415',current_date + 10,2,'CRO','457','N',current_date + 10,NULL,TIMESTAMP'2022-09-04 09:00:00.0',false,2,NULL),
+('415220403','457',current_date + 10,2,'CRO','457','N',current_date + 10,NULL,TIMESTAMP'2022-09-04 09:00:00.0',false,2,NULL),
 ('415220404','415',current_date + 10,2,'CRO','415','N',current_date + 10,NULL,TIMESTAMP'2022-09-04 09:00:00.0',false,2,NULL);
 
 -- JUROR
@@ -45,24 +45,24 @@ INSERT INTO juror_mod.juror_pool (juror_number,pool_number,"owner",user_edtq,is_
 ('555555568','415220403','457','COURT_USER',true,2,NULL,NULL,NULL,NULL,NULL,NULL,'0110',NULL,'2023-06-12',false,NULL,true,NULL,NULL,NULL,NULL,NULL,'2024-01-16 12:07:42.162969',NULL,NULL,NULL),
 ('555555569','415220401','415','COURT_USER',true,2,NULL,NULL,NULL,NULL,NULL,NULL,'0110',NULL,'2023-06-12',false,NULL,true,NULL,NULL,NULL,NULL,NULL,'2024-01-16 12:07:42.162969',NULL,NULL,NULL),
 ('555555570','415220401','415','COURT_USER',true,2,NULL,NULL,NULL,NULL,NULL,NULL,'0110',NULL,'2023-06-12',false,NULL,true,NULL,NULL,NULL,NULL,NULL,'2024-01-16 12:07:42.162969',NULL,NULL,NULL),
-('555555571','415220401','457','COURT_USER',true,2,NULL,NULL,NULL,NULL,NULL,NULL,'0110',NULL,'2023-06-12',false,NULL,true,NULL,NULL,NULL,NULL,NULL,'2024-01-16 12:07:42.162969',NULL,NULL,NULL),
+('555555571','415220403','457','COURT_USER',true,2,NULL,NULL,NULL,NULL,NULL,NULL,'0110',NULL,'2023-06-12',false,NULL,true,NULL,NULL,NULL,NULL,NULL,'2024-01-16 12:07:42.162969',NULL,NULL,NULL),
 ('555555572','415220404','415','COURT_USER',true,2,NULL,NULL,NULL,NULL,NULL,NULL,'0110',NULL,'2023-06-12',false,NULL,true,NULL,NULL,NULL,NULL,NULL,'2024-01-16 12:07:42.162969',NULL,NULL,NULL);
 
 -- APPEARANCE
 INSERT INTO juror_mod.appearance (attendance_date,juror_number,pool_number,loc_code,f_audit,time_in,time_out,travel_time,appearance_stage,non_attendance,no_show,attendance_type) VALUES
-(current_date - 10,'555555561','415220401','417',123456789,null,null,null,null,true, true,'ABSENT'),
-(current_date,'555555562','415220401','417',123456789,null,null,null,null,true, true,'ABSENT'),
-(current_date - 10,'555555563','415220401','417',123456789,null,null,null,null,true, true,'ABSENT'),
-(current_date,'555555564','415220401','417',123456789,'09:30:00',null,'01:12','CHECKED_IN',true,null,null),
-(current_date - 3,'555555565','415220402','417',123456789,null,null,null,null,true, true,'ABSENT'),
-(current_date,'555555566','415220401','417',123456789,null,null,null,null,true, true,'ABSENT'),
-(current_date - 5,'555555567','415220401','417',123456789,null,null,null,null,true, true, null),
-(current_date,'555555568','415220403','417',123456789,null,null,null,null,true, true,'ABSENT'),
-(current_date - 10,'555555569','415220401','417',123456789,null,null,null,null,true, true,'ABSENT'),
-(current_date - 10,'555555570','415220401','417',123456789,null,null,null,null,true, true,'ABSENT'),
-(current_date - 10,'555555571','415220401','417',123456789,null,null,null,null,true, true,'ABSENT'),
-(current_date - 8,'555555572','415220404','417',123456789,null,null,null,null,true, true,'ABSENT'),
-(current_date - 6,'555555572','415220404','417',123456789,null,null,null,null,true, true,'ABSENT');
+(current_date - 10,'555555561','415220401','415',123456789,null,null,null,null,true, true,'ABSENT'),
+(current_date,'555555562','415220401','415',123456789,null,null,null,null,true, true,'ABSENT'),
+(current_date - 10,'555555563','415220401','415',123456789,null,null,null,null,true, true,'ABSENT'),
+(current_date,'555555564','415220401','415',123456789,'09:30:00',null,'01:12','CHECKED_IN',true,null,null),
+(current_date - 3,'555555565','415220402','415',123456789,null,null,null,null,true, true,'ABSENT'),
+(current_date,'555555566','415220401','415',123456789,null,null,null,null,true, true,'ABSENT'),
+(current_date - 5,'555555567','415220401','415',123456789,null,null,null,null,true, true, null),
+(current_date,'555555568','415220403','457',123456789,null,null,null,null,true, true,'ABSENT'),
+(current_date - 10,'555555569','415220401','415',123456789,null,null,null,null,true, true,'ABSENT'),
+(current_date - 10,'555555570','415220401','415',123456789,null,null,null,null,true, true,'ABSENT'),
+(current_date - 10,'555555571','415220403','457',123456789,null,null,null,null,true, true,'ABSENT'),
+(current_date - 8,'555555572','415220404','415',123456789,null,null,null,null,true, true,'ABSENT'),
+(current_date - 6,'555555572','415220404','415',123456789,null,null,null,null,true, true,'ABSENT');
 
 -- JUROR_HISTORY
 insert into juror_mod.juror_history (juror_number, date_created, history_code, user_id, other_information, pool_number, other_info_date, other_info_reference) values
@@ -73,4 +73,4 @@ insert into juror_mod.juror_history (juror_number, date_created, history_code, u
 ('555555567', current_date - 1, 'PDEF', 'court_user_1', 'Deferred Pool Member', '415220401', null, null),
 ('555555568', current_date - 1, 'RSHC', 'court_user_1', 'Show Cause Letter', '415220403', null, null),
 ('555555569', current_date - 1, 'RFTA', 'court_user_1', 'Failed To Attend Letter', '415220401', null, null),
-('555555571', current_date - 1, 'RSHC', 'court_user_1', 'Show Cause Letter', '415220401', null, null);
+('555555571', current_date - 1, 'RSHC', 'court_user_1', 'Show Cause Letter', '415220403', null, null);
