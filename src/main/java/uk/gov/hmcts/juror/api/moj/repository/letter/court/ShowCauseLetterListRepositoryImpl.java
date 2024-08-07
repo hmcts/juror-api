@@ -82,7 +82,7 @@ public class ShowCauseLetterListRepositoryImpl implements ShowCauseLetterListRep
             .where(QJurorPool.jurorPool.isActive.eq(Boolean.TRUE)
                 .and(QJurorPool.jurorPool.status.status.in(List.of(IJurorStatus.RESPONDED,
                         IJurorStatus.FAILED_TO_ATTEND))
-                    .and(QAppearance.appearance.noShow.eq(Boolean.TRUE))
+                    .and(QAppearance.appearance.noShow.isTrue())
                     .and(QAppearance.appearance.attendanceType.eq(AttendanceType.ABSENT))
                     .and(QPoolRequest.poolRequest.owner.eq(owner))));
     }
