@@ -99,13 +99,13 @@ public class ExcusalGrantedLetterListRepositoryImpl implements IExcusalGrantedLe
             .join(QJurorStatus.jurorStatus).on(QJurorStatus.jurorStatus.eq(QJurorPool.jurorPool.status))
             .join(EXCUSAL_CODE.excusalCode).on(EXCUSAL_CODE.excusalCode.code.eq(QJuror.juror.excusalCode))
             .leftJoin(QJurorHistory.jurorHistory)
-            .on((QJurorHistory.jurorHistory.jurorNumber.eq(QJuror.juror.jurorNumber))
+            .on(QJurorHistory.jurorHistory.jurorNumber.eq(QJuror.juror.jurorNumber)
                 .and(QJurorHistory.jurorHistory.poolNumber.eq(QPoolRequest.poolRequest.poolNumber))
                 .and(QJurorHistory.jurorHistory.historyCode.eq(HistoryCodeMod.EXCUSED_LETTER))
                 .and(QJurorHistory.jurorHistory.dateCreatedDateOnly
                     .after(QJuror.juror.bureauTransferDate)))
             .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.EXCUSED)
-                .and(QPoolRequest.poolRequest.owner.eq(SecurityUtil.getActiveOwner())));
+                .and(QJurorPool.jurorPool.owner.eq(SecurityUtil.getActiveOwner())));
     }
 
     private void filterEligibleLetterSearchCriteria(JPAQuery<Tuple> jpaQuery,
