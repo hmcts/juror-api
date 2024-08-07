@@ -52,14 +52,10 @@ public class PersonAttendingDetailReport extends AbstractGroupedReport {
         query.where(QJurorPool.jurorPool.nextDate.eq(request.getDate()));
         query.where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(SecurityUtil.getLocCode()));
         if (request.getIncludeSummoned()) {
-            query.where(QJurorPool.jurorPool.status.status.in(IJurorStatus.SUMMONED,
-                                                              IJurorStatus.RESPONDED,
-                                                              IJurorStatus.PANEL,
-                                                              IJurorStatus.JUROR));
+            query.where(QJurorPool.jurorPool.status.status
+                .in(IJurorStatus.SUMMONED, IJurorStatus.RESPONDED));
         } else {
-            query.where(QJurorPool.jurorPool.status.status.in(IJurorStatus.RESPONDED,
-                                                              IJurorStatus.PANEL,
-                                                              IJurorStatus.JUROR));
+            query.where(QJurorPool.jurorPool.status.status.in(IJurorStatus.RESPONDED));
         }
         query.orderBy(QJurorPool.jurorPool.juror.lastName.asc());
     }
