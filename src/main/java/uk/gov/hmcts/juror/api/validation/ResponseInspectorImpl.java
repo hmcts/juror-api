@@ -67,7 +67,6 @@ public class ResponseInspectorImpl implements ResponseInspector {
     @Override
     public boolean hasAdjustments(@NonNull final DigitalResponse response) {
         if ((response.getReasonableAdjustments() != null && !response.getReasonableAdjustments().isEmpty())
-            //    if ((response.getSpecialNeeds() != null && !response.getSpecialNeeds().isEmpty())
             || !Strings.isNullOrEmpty(response.getReasonableAdjustmentsArrangements())) {
             log.debug("Response {} has reasonable adjustments", response.getJurorNumber());
             return true;
@@ -130,25 +129,25 @@ public class ResponseInspectorImpl implements ResponseInspector {
     @Override
     public boolean isJurorAgeDisqualified(final DigitalResponse response) {
         try {
-            final JurorPool j = jurorRepository.findByJurorJurorNumber(response.getJurorNumber());
-            int age = getJurorAgeAtHearingDate(response.getDateOfBirth(), j.getNextDate());
+            final JurorPool jurorPool = jurorRepository.findByJurorJurorNumber(response.getJurorNumber());
+            int age = getJurorAgeAtHearingDate(response.getDateOfBirth(), jurorPool.getNextDate());
             if (log.isTraceEnabled()) {
                 log.trace(
                     "Juror DOB {} at hearing date {} will be {} years old",
                     response.getDateOfBirth(),
-                    j.getNextDate(),
+                    jurorPool.getNextDate(),
                     age
                 );
             }
             if (age < getYoungestJurorAgeAllowed()) {
                 log.info("Juror {} too young for straight through as they are younger than {} on summon date",
-                    j.getJurorNumber(), getYoungestJurorAgeAllowed()
+                    jurorPool.getJurorNumber(), getYoungestJurorAgeAllowed()
                 );
                 return true;
             } else if (age >= getTooOldJurorAge()) {
                 log.info(
                     "Juror {} too old for straight through as they are {} or older on summon date",
-                    j.getJurorNumber(),
+                    jurorPool.getJurorNumber(),
                     getTooOldJurorAge()
                 );
                 return true;
@@ -266,10 +265,10 @@ public class ResponseInspectorImpl implements ResponseInspector {
     public int getPoolNotification(final DigitalResponse response) {
         try {
             // final Pool p = poolRepository.findByJurorNumber(response.getJurorNumber());
-            final JurorPool j = jurorRepository.findByJurorJurorNumber(response.getJurorNumber());
-            return j.getJuror().getNotifications();
-        } catch (Exception e) {
-            log.error("Failed to retrieve the pool.notification value for this juror response.", e);
+            final JurorPool jurorPool = jurorRepository.findByJurorJurorNumber(response.getJurorNumber());
+            return jurorPool.getJuror().getNotifications();
+        } catch (Exception exception) {
+            log.error("Failed to retrieve the pool.notification value for this juror response.", exception);
             return -1;
         }
     }
@@ -278,11 +277,10 @@ public class ResponseInspectorImpl implements ResponseInspector {
     public boolean isWelshCourt(final DigitalResponse response) {
         boolean courtIsWelsh = false;
         try {
-
-            // final Pool p = poolRepository.findByJurorNumber(response.getJurorNumber());
-            final JurorPool j = jurorRepository.findByJurorJurorNumber(response.getJurorNumber());
-            if (isWelshLanguage(response) && welshCourtLocRepository.findByLocCode(j.getCourt().getLocCode()) != null) {
-                log.debug("Court (locCode) {} is Welsh.", j.getCourt().getLocCode());
+            final JurorPool jurorPool = jurorRepository.findByJurorJurorNumber(response.getJurorNumber());
+            if (isWelshLanguage(response)
+                && welshCourtLocRepository.findByLocCode(jurorPool.getCourt().getLocCode()) != null) {
+                log.debug("Court (locCode) {} is Welsh.", jurorPool.getCourt().getLocCode());
                 courtIsWelsh = true;
             }
         } catch (Exception e) {
