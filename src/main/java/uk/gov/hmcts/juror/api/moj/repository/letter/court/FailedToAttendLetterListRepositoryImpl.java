@@ -79,10 +79,10 @@ public class FailedToAttendLetterListRepositoryImpl implements IFailedToAttendLe
             .on(QJurorHistory.jurorHistory.jurorNumber.eq(QJuror.juror.jurorNumber)
                 .and(QJurorHistory.jurorHistory.poolNumber.eq(QPoolRequest.poolRequest.poolNumber))
                 .and(QJurorHistory.jurorHistory.historyCode.eq(HistoryCodeMod.FAILED_TO_ATTEND_LETTER)))
-            .where(QJurorPool.jurorPool.isActive.eq(Boolean.TRUE)
+            .where(QJurorPool.jurorPool.isActive.isTrue()
                 .and(QJurorPool.jurorPool.status.status.in(List.of(IJurorStatus.RESPONDED,
                         IJurorStatus.FAILED_TO_ATTEND))
-                .and(QAppearance.appearance.noShow.eq(Boolean.TRUE))
+                .and(QAppearance.appearance.noShow.isTrue())
                 .and(QAppearance.appearance.attendanceType.eq(AttendanceType.ABSENT))
                 .and(QPoolRequest.poolRequest.owner.eq(owner))));
     }
