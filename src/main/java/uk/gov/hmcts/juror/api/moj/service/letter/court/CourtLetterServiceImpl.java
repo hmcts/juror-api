@@ -374,7 +374,7 @@ public class CourtLetterServiceImpl implements CourtLetterService {
 
         log.debug("Find jurors eligible for a court excusal granted letter for the primary court: {}", owner);
         List<ExcusalGrantedLetterList> eligibleJurorRecords =
-            excusalGrantedLetterListRepository.findJurorsEligibleForExcusalGrantedLetter(searchCriteria, owner);
+            excusalGrantedLetterListRepository.findJurorsEligibleForExcusalGrantedLetter(searchCriteria);
         log.debug("{} records found", eligibleJurorRecords.size());
 
         List<String> headings = List.of(JUROR_NUMBER, FIRST_NAME, LAST_NAME, POSTCODE, STATUS, DATE_EXCUSED, REASON,
