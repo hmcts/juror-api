@@ -79,7 +79,7 @@ public class ShowCauseLetterListRepositoryImpl implements ShowCauseLetterListRep
             .on(QJurorHistory.jurorHistory.jurorNumber.eq(QJuror.juror.jurorNumber)
                 .and(QJurorHistory.jurorHistory.poolNumber.eq(QPoolRequest.poolRequest.poolNumber))
                 .and(QJurorHistory.jurorHistory.historyCode.eq(HistoryCodeMod.SHOW_CAUSE_LETTER)))
-            .where(QJurorPool.jurorPool.isActive.eq(Boolean.TRUE)
+            .where(QJurorPool.jurorPool.isActive.isTrue()
                 .and(QJurorPool.jurorPool.status.status.in(List.of(IJurorStatus.RESPONDED,
                         IJurorStatus.FAILED_TO_ATTEND))
                     .and(QAppearance.appearance.noShow.isTrue())
