@@ -168,7 +168,7 @@ public class JurorManagementServiceImplTest {
         when(poolMemberSequenceService
             .getPoolMemberSequenceNumber(anyString())).thenReturn(1);
 
-        BureauJwtPayload payload = buildPayload("400");
+        BureauJwtPayload payload = TestUtils.mockBureauUser();
         JurorManagementRequestDto jurorManagementRequestDto = createValidJurorManagementRequestDto();
 
         ReassignPoolMembersResultDto

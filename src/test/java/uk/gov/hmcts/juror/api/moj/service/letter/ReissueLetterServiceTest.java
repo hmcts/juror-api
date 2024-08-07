@@ -42,6 +42,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -359,7 +360,7 @@ public class ReissueLetterServiceTest {
 
             List<List<Object>> data = responseDto.getData();
             assertThat(data).isNotNull().hasSize(1);
-            assertThat(data.get(0)).hasSize(7);
+            assertThat(data.get(0)).hasSize(9);
 
             verify(bulkPrintDataRepository, times(1))
                 .findLetters(reissueLetterListRequestDto, LetterType.SUMMONS.getLetterQueryConsumer());
@@ -457,11 +458,8 @@ public class ReissueLetterServiceTest {
                 .thenReturn(Optional.of(deferredStatus));
 
             List<JurorPool> jurorPools = getJurorPools(deferredStatus);
-            when(jurorPoolRepository.findByJurorJurorNumberOrderByDateCreatedDesc(
-                reissueLetterRequestData.getJurorNumber())).thenReturn(jurorPools);
-
-            doReturn(jurorPools).when(jurorPoolRepository)
-                .findByJurorJurorNumberOrderByDateCreatedDesc(reissueLetterRequestData.getJurorNumber());
+            when(jurorPoolRepository.findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(
+                reissueLetterRequestData.getJurorNumber(), true)).thenReturn(jurorPools);
 
             reissueLetterService.reissueLetter(reissueLetterRequestDto);
 
@@ -475,7 +473,8 @@ public class ReissueLetterServiceTest {
 
             verify(jurorStatusRepository, times(1)).findById(IJurorStatus.DEFERRED);
             verify(jurorPoolRepository, times(2))
-                .findByJurorJurorNumberOrderByDateCreatedDesc(reissueLetterRequestData.getJurorNumber());
+                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(
+                    reissueLetterRequestData.getJurorNumber(), true);
         }
 
         @ParameterizedTest
@@ -507,11 +506,12 @@ public class ReissueLetterServiceTest {
                 .thenReturn(Optional.of(withdrawalStatus));
 
             List<JurorPool> jurorPools = getJurorPools(withdrawalStatus);
-            when(jurorPoolRepository.findByJurorJurorNumberOrderByDateCreatedDesc(
-                reissueLetterRequestData.getJurorNumber())).thenReturn(jurorPools);
+            when(jurorPoolRepository.findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(
+                reissueLetterRequestData.getJurorNumber(),true)).thenReturn(jurorPools);
 
             doReturn(jurorPools).when(jurorPoolRepository)
-                .findByJurorJurorNumberOrderByDateCreatedDesc(reissueLetterRequestData.getJurorNumber());
+                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(
+                    reissueLetterRequestData.getJurorNumber(),true);
 
             reissueLetterService.reissueLetter(reissueLetterRequestDto);
 
@@ -525,7 +525,8 @@ public class ReissueLetterServiceTest {
 
             verify(jurorStatusRepository, times(1)).findById(IJurorStatus.DISQUALIFIED);
             verify(jurorPoolRepository, times(2))
-                .findByJurorJurorNumberOrderByDateCreatedDesc(reissueLetterRequestData.getJurorNumber());
+                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(
+                    reissueLetterRequestData.getJurorNumber(),true);
         }
 
         @ParameterizedTest
@@ -550,11 +551,8 @@ public class ReissueLetterServiceTest {
                 .thenReturn(Optional.of(deferredStatus));
 
             List<JurorPool> jurorPools = getJurorPools(deferredStatus);
-            when(jurorPoolRepository.findByJurorJurorNumberOrderByDateCreatedDesc(
-                reissueLetterRequestData.getJurorNumber())).thenReturn(jurorPools);
-
-            doReturn(jurorPools).when(jurorPoolRepository)
-                .findByJurorJurorNumberOrderByDateCreatedDesc(reissueLetterRequestData.getJurorNumber());
+            when(jurorPoolRepository.findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(
+                reissueLetterRequestData.getJurorNumber(),true)).thenReturn(jurorPools);
 
             doReturn(Optional.ofNullable(bulkPrintData)).when(bulkPrintDataRepository)
                 .findByJurorNumberFormCodeDatePrinted(reissueLetterRequestData.getJurorNumber(),
@@ -575,7 +573,7 @@ public class ReissueLetterServiceTest {
                     reissueLetterRequestData.getFormCode());
             verify(jurorStatusRepository, times(1)).findById(Mockito.anyInt());
             verify(jurorPoolRepository, times(1))
-                .findByJurorJurorNumberOrderByDateCreatedDesc(Mockito.anyString());
+                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(Mockito.anyString(), anyBoolean());
         }
 
 
@@ -612,11 +610,8 @@ public class ReissueLetterServiceTest {
 
             // Mock the status change from deferred to disqualified
             List<JurorPool> jurorPools = getJurorPools(disqualifiedStatus);
-            when(jurorPoolRepository.findByJurorJurorNumberOrderByDateCreatedDesc(
-                reissueLetterRequestData.getJurorNumber())).thenReturn(jurorPools);
-
-            doReturn(jurorPools).when(jurorPoolRepository)
-                .findByJurorJurorNumberOrderByDateCreatedDesc(reissueLetterRequestData.getJurorNumber());
+            when(jurorPoolRepository.findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(
+                reissueLetterRequestData.getJurorNumber(),true)).thenReturn(jurorPools);
 
             ReissueLetterReponseDto responseDto = reissueLetterService.reissueLetter(reissueLetterRequestDto);
 
@@ -635,7 +630,7 @@ public class ReissueLetterServiceTest {
                     reissueLetterRequestData.getFormCode());
             verify(jurorStatusRepository, times(1)).findById(Mockito.anyInt());
             verify(jurorPoolRepository, times(1))
-                .findByJurorJurorNumberOrderByDateCreatedDesc(Mockito.anyString());
+                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(Mockito.anyString(),anyBoolean());
         }
 
         @ParameterizedTest
@@ -667,7 +662,7 @@ public class ReissueLetterServiceTest {
                     reissueLetterRequestData.getFormCode());
             verify(jurorStatusRepository, times(0)).findById(Mockito.anyInt());
             verify(jurorPoolRepository, times(1))
-                .findByJurorJurorNumberOrderByDateCreatedDesc(Mockito.anyString());
+                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(Mockito.anyString(), anyBoolean());
         }
 
         @ParameterizedTest
@@ -701,14 +696,9 @@ public class ReissueLetterServiceTest {
             JurorPool jurorPool = new JurorPool();
             jurorPool.setStatus(postponedStatus);
 
-            List<JurorPool> jurorPools = new ArrayList<>();
-            jurorPools.add(jurorPool);
 
-            when(jurorPoolRepository.findByJurorJurorNumberOrderByDateCreatedDesc(
-                reissueLetterRequestData.getJurorNumber())).thenReturn(jurorPools);
-
-            doReturn(jurorPools).when(jurorPoolRepository)
-                .findByJurorJurorNumberOrderByDateCreatedDesc(reissueLetterRequestData.getJurorNumber());
+            when(jurorPoolRepository.findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(
+                reissueLetterRequestData.getJurorNumber(), true)).thenReturn(List.of(jurorPool));
 
             reissueLetterService.reissueLetter(reissueLetterRequestDto);
 
@@ -722,7 +712,8 @@ public class ReissueLetterServiceTest {
 
             verify(jurorStatusRepository, times(1)).findById(IJurorStatus.DEFERRED);
             verify(jurorPoolRepository, times(2))
-                .findByJurorJurorNumberOrderByDateCreatedDesc(reissueLetterRequestData.getJurorNumber());
+                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(
+                    reissueLetterRequestData.getJurorNumber(), true);
         }
 
         @ParameterizedTest
@@ -754,11 +745,8 @@ public class ReissueLetterServiceTest {
                 .thenReturn(Optional.ofNullable(summoned));
 
             List<JurorPool> jurorPools = getJurorPools(summoned);
-            when(jurorPoolRepository.findByJurorJurorNumberOrderByDateCreatedDesc(
-                reissueLetterRequestData.getJurorNumber())).thenReturn(jurorPools);
-
-            doReturn(jurorPools).when(jurorPoolRepository)
-                .findByJurorJurorNumberOrderByDateCreatedDesc(reissueLetterRequestData.getJurorNumber());
+            when(jurorPoolRepository.findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(
+                reissueLetterRequestData.getJurorNumber(), true)).thenReturn(jurorPools);
 
             reissueLetterService.reissueLetter(reissueLetterRequestDto);
 
@@ -772,7 +760,8 @@ public class ReissueLetterServiceTest {
 
             verify(jurorStatusRepository, times(1)).findById(IJurorStatus.SUMMONED);
             verify(jurorPoolRepository, times(2))
-                .findByJurorJurorNumberOrderByDateCreatedDesc(reissueLetterRequestData.getJurorNumber());
+                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(
+                    reissueLetterRequestData.getJurorNumber(), true);
         }
 
         @ParameterizedTest
@@ -800,15 +789,12 @@ public class ReissueLetterServiceTest {
 
             JurorStatus summoned = new JurorStatus();
             when(jurorStatusRepository.findById(IJurorStatus.SUMMONED))
-                .thenReturn(Optional.ofNullable(summoned));
+                .thenReturn(Optional.of(summoned));
 
             List<JurorPool> jurorPools = getJurorPools(summoned);
 
-            when(jurorPoolRepository.findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc("555555561", true))
-                .thenReturn(jurorPools);
-
-            doReturn(jurorPools).when(jurorPoolRepository)
-                .findByJurorJurorNumberOrderByDateCreatedDesc(reissueLetterRequestData.getJurorNumber());
+            doReturn(jurorPools).when(jurorPoolRepository).findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(
+                "555555561", true);
 
             doNothing().when(jurorHistoryService).createSummonsReminderLetterHistory(jurorPools.get(0));
 
@@ -823,8 +809,9 @@ public class ReissueLetterServiceTest {
                     reissueLetterRequestData.getFormCode());
 
             verify(jurorStatusRepository, times(1)).findById(IJurorStatus.SUMMONED);
-            verify(jurorPoolRepository, times(2))
-                .findByJurorJurorNumberOrderByDateCreatedDesc(reissueLetterRequestData.getJurorNumber());
+            verify(jurorPoolRepository, times(3))
+                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(
+                    reissueLetterRequestData.getJurorNumber(),true);
             verify(jurorHistoryService, times(1))
                 .createSummonsReminderLetterHistory(jurorPools.get(0));
         }
@@ -856,7 +843,7 @@ public class ReissueLetterServiceTest {
             JurorStatus summonedStatus = new JurorStatus();
             summonedStatus.setStatus(IJurorStatus.SUMMONED);
             when(jurorStatusRepository.findById(IJurorStatus.SUMMONED))
-                .thenReturn(Optional.ofNullable(summonedStatus));
+                .thenReturn(Optional.of(summonedStatus));
 
             JurorPool jurorPool = new JurorPool();
             jurorPool.setStatus(summonedStatus);
@@ -864,11 +851,8 @@ public class ReissueLetterServiceTest {
             List<JurorPool> jurorPools = new ArrayList<>();
             jurorPools.add(jurorPool);
 
-            when(jurorPoolRepository.findByJurorJurorNumberOrderByDateCreatedDesc(
-                reissueLetterRequestData.getJurorNumber())).thenReturn(jurorPools);
-
-            doReturn(jurorPools).when(jurorPoolRepository)
-                .findByJurorJurorNumberOrderByDateCreatedDesc(reissueLetterRequestData.getJurorNumber());
+            when(jurorPoolRepository.findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(
+                reissueLetterRequestData.getJurorNumber(),true)).thenReturn(jurorPools);
 
             reissueLetterService.reissueLetter(reissueLetterRequestDto);
 
@@ -882,7 +866,8 @@ public class ReissueLetterServiceTest {
 
             verify(jurorStatusRepository, times(1)).findById(IJurorStatus.SUMMONED);
             verify(jurorPoolRepository, times(2))
-                .findByJurorJurorNumberOrderByDateCreatedDesc(reissueLetterRequestData.getJurorNumber());
+                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(
+                    reissueLetterRequestData.getJurorNumber(),true);
         }
 
 
@@ -950,7 +935,8 @@ public class ReissueLetterServiceTest {
                 .thenReturn(jurorPools);
 
             doReturn(jurorPools).when(jurorPoolRepository)
-                .findByJurorJurorNumberOrderByDateCreatedDesc(reissueLetterRequestData.getJurorNumber());
+                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(
+                    reissueLetterRequestData.getJurorNumber(),true);
 
             doNothing().when(jurorHistoryService).createSummonsReminderLetterHistory(jurorPools.get(0));
 
@@ -966,7 +952,8 @@ public class ReissueLetterServiceTest {
 
             verify(jurorStatusRepository, times(1)).findById(IJurorStatus.SUMMONED);
             verify(jurorPoolRepository, times(2))
-                .findByJurorJurorNumberOrderByDateCreatedDesc(reissueLetterRequestData.getJurorNumber());
+                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(
+                    reissueLetterRequestData.getJurorNumber(), true);
             verifyNoMoreInteractions(jurorHistoryService);
         }
     }

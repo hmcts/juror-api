@@ -112,7 +112,7 @@ public abstract class AbstractJurorAmendmentReport implements IReport {
 
         List<JurorAmendmentReportRow> changedData = new ArrayList<>();
         jurorNumberToJurorMap.forEach((jurorNumber, jurors) -> changedData.addAll(
-            getChangesFromJurorAudits(includeOneAuditEitherSide, jurorNumber, jurors)));
+            getChangesFromJurorAudits(includeOneAuditEitherSide, jurors)));
 
         changedData.sort(Comparator.comparing(JurorAmendmentReportRow::getChangedOn).reversed());
 
@@ -156,7 +156,6 @@ public abstract class AbstractJurorAmendmentReport implements IReport {
     }
 
     private Collection<JurorAmendmentReportRow> getChangesFromJurorAudits(boolean includeOneAuditEitherSide,
-                                                                          String jurorNumber,
                                                                           List<JurorAudit> jurors) {
 
         Comparator<JurorAudit> comparator = Comparator.comparing(o -> o.getRevisionInfo().getRevisionDate());

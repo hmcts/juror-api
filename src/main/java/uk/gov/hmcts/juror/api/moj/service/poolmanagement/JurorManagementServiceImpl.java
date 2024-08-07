@@ -14,6 +14,7 @@ import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorManagementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorManagementResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.ReassignPoolMembersResultDto;
+import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
@@ -27,6 +28,7 @@ import uk.gov.hmcts.juror.api.moj.service.GeneratePoolNumberService;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.PoolMemberSequenceService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
+import uk.gov.hmcts.juror.api.moj.service.ReissueLetterService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
@@ -39,6 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -57,6 +60,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
     private final ResponseInspector responseInspector;
     private final PrintDataService printDataService;
     private final JurorHistoryService jurorHistoryService;
+    private final ReissueLetterService reissueLetterService;
 
 
     @Override
@@ -153,10 +157,17 @@ public class JurorManagementServiceImpl implements JurorManagementService {
 
                 // queue a summons confirmation letter only if juror is Bureau owned, has responded and is police
                 // checked
-                if (JurorDigitalApplication.JUROR_OWNER.equals(payload.getOwner())
-                    && targetJurorPool.getStatus().getStatus() == IJurorStatus.RESPONDED
-                    && targetJurorPool.getJuror().getPoliceCheck().isChecked()) {
-                    printDataService.printConfirmationLetter(targetJurorPool);
+                if (SecurityUtil.isBureau()) {
+                    if (targetJurorPool.getStatus().getStatus() == IJurorStatus.RESPONDED
+                        && targetJurorPool.getJuror().getPoliceCheck().isChecked()) {
+                        printDataService.printConfirmationLetter(targetJurorPool);
+                    }
+                    if (targetJurorPool.getStatus().getStatus() == IJurorStatus.SUMMONED) {
+                        reissueLetterService.updatePendingLetters(
+                            jurorNumber,
+                            Set.of(FormCode.ENG_SUMMONS, FormCode.BI_SUMMONS)
+                        );
+                    }
                 }
 
                 reassignedJurorsCount++;
