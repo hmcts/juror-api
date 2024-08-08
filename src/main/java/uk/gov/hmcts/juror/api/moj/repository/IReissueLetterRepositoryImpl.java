@@ -19,6 +19,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.LetterType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.ReissueLetterService;
+import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
@@ -114,8 +115,8 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
             query.where(QJuror.juror.firstName.concat(" ").concat(QJuror.juror.lastName).toLowerCase()
                 .likeIgnoreCase("%" + request.getJurorName().toLowerCase(Settings.LOCALE) + "%"));
         } else if (request.getJurorPostcode() != null) {
-            query.where(QJuror.juror.postcode.toLowerCase()
-                .eq(request.getJurorPostcode().toLowerCase(Settings.LOCALE)));
+            query.where(QJuror.juror.postcode//Postcode is forced to be uppercase in DB
+                .eq(DataUtils.toUppercase(request.getJurorPostcode())));
         } else {
             throw new MojException.InternalServerError("Invalid criteria provided for letter search",
                 null);

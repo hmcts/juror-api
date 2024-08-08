@@ -2438,21 +2438,22 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
         @Nested
         class Positive {
-            protected ResponseEntity<String> triggerValid(
+            protected ResponseEntity<List<String>> triggerValid(
                 PaymentMethod paymentMethod,
                 ApproveExpenseDto... expenseDto) throws Exception {
                 final String jwt = createJwt(COURT_USER, Set.of(Role.MANAGER), COURT_LOCATION, COURT_LOCATION);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
-                ResponseEntity<String> response = template.exchange(
+                ResponseEntity<List<String>> response = template.exchange(
                     new RequestEntity<>(List.of(expenseDto), httpHeaders, POST,
                         URI.create(toUrl(COURT_LOCATION, paymentMethod))),
-                    String.class);
+                    new ParameterizedTypeReference<>() {});
                 assertThat(response.getStatusCode())
                     .as("Expect the HTTP GET request to be successful")
                     .isEqualTo(HttpStatus.OK);
                 assertThat(response.getBody())
-                    .as("Expect no body")
-                    .isEqualTo(null);
+                    .as("Expect a financial audit number")
+                    .isNotNull()
+                    .isEqualTo(List.of("F2"));
                 return response;
             }
 
@@ -3400,7 +3401,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     ExpenseDetailsForTotals.builder()
                         .financialLossApportionedApplied(false)
                         .payAttendance(PayAttendanceType.FULL_DAY)
-                        .totalDue(new BigDecimal("45.34000"))
+                        .totalDue(new BigDecimal("45.34"))
                         .totalPaid(new BigDecimal("0.00"))
                         .attendanceDate(LocalDate.of(2023, 1, 5))
                         .attendanceType(AttendanceType.FULL_DAY)
@@ -3411,17 +3412,17 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .publicTransport(BigDecimal.ZERO)
                         .taxi(BigDecimal.ZERO)
                         .motorcycle(BigDecimal.ZERO)
-                        .car(new BigDecimal("1.57000"))
+                        .car(new BigDecimal("1.57"))
                         .bicycle(BigDecimal.ZERO)
                         .parking(new BigDecimal("2.25"))
-                        .foodAndDrink(new BigDecimal("5.71000"))
+                        .foodAndDrink(new BigDecimal("5.71"))
                         .smartCard(new BigDecimal("4.20"))
                         .build());
                 assertThat(response.getExpenseDetails().get(1)).isEqualTo(
                     ExpenseDetailsForTotals.builder()
                         .financialLossApportionedApplied(false)
                         .payAttendance(PayAttendanceType.FULL_DAY)
-                        .totalDue(new BigDecimal("76.00000"))
+                        .totalDue(new BigDecimal("76.00"))
                         .totalPaid(new BigDecimal("8.00"))
                         .attendanceDate(LocalDate.of(2023, 1, 11))
                         .attendanceType(AttendanceType.FULL_DAY)
@@ -3432,10 +3433,10 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .publicTransport(new BigDecimal("12.10"))
                         .taxi(new BigDecimal("9.40"))
                         .motorcycle(BigDecimal.ZERO)
-                        .car(new BigDecimal("5.97000"))
+                        .car(new BigDecimal("5.97"))
                         .bicycle(BigDecimal.ZERO)
                         .parking(new BigDecimal("13.25"))
-                        .foodAndDrink(new BigDecimal("12.17000"))
+                        .foodAndDrink(new BigDecimal("12.17"))
                         .smartCard(new BigDecimal("4.10"))
                         .build());
                 assertThat(response.getTotal()).isEqualTo(
@@ -3447,13 +3448,13 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .publicTransport(new BigDecimal("12.10"))
                         .taxi(new BigDecimal("9.40"))
                         .motorcycle(BigDecimal.ZERO)
-                        .car(new BigDecimal("7.54000"))
+                        .car(new BigDecimal("7.54"))
                         .bicycle(BigDecimal.ZERO)
                         .parking(new BigDecimal("15.50"))
-                        .foodAndDrink(new BigDecimal("17.88000"))
+                        .foodAndDrink(new BigDecimal("17.88"))
                         .smartCard(new BigDecimal("8.30"))
                         .totalPaid(new BigDecimal("8.00"))
-                        .totalDue(new BigDecimal("121.34000"))
+                        .totalDue(new BigDecimal("121.34"))
                         .build());
             }
 
@@ -3548,39 +3549,39 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     ExpenseDetailsForTotals.builder()
                         .financialLossApportionedApplied(true)
                         .payAttendance(PayAttendanceType.FULL_DAY)
-                        .totalDue(new BigDecimal("70.28000"))
+                        .totalDue(new BigDecimal("70.28"))
                         .totalPaid(new BigDecimal("0.00"))
                         .attendanceDate(LocalDate.of(2023, 1, 5))
                         .attendanceType(AttendanceType.FULL_DAY)
                         .paymentMethod(PaymentMethod.BACS)
                         .lossOfEarnings(new BigDecimal("50.12"))
-                        .extraCare(new BigDecimal("14.83000"))
-                        .other(BigDecimal.ZERO)
+                        .extraCare(new BigDecimal("14.83"))
+                        .other(new BigDecimal("0.00"))
                         .publicTransport(BigDecimal.ZERO)
                         .taxi(BigDecimal.ZERO)
                         .motorcycle(BigDecimal.ZERO)
-                        .car(new BigDecimal("1.57000"))
+                        .car(new BigDecimal("1.57"))
                         .bicycle(BigDecimal.ZERO)
                         .parking(new BigDecimal("2.25"))
-                        .foodAndDrink(new BigDecimal("5.71000"))
+                        .foodAndDrink(new BigDecimal("5.71"))
                         .smartCard(new BigDecimal("4.20"))
                         .build());
                 assertThat(response.getTotal()).isEqualTo(
                     ExpenseTotal.builder()
                         .totalDays(1)
                         .lossOfEarnings(new BigDecimal("50.12"))
-                        .extraCare(new BigDecimal("14.83000"))
-                        .other(BigDecimal.ZERO)
+                        .extraCare(new BigDecimal("14.83"))
+                        .other(new BigDecimal("0.00"))
                         .publicTransport(BigDecimal.ZERO)
                         .taxi(BigDecimal.ZERO)
                         .motorcycle(BigDecimal.ZERO)
-                        .car(new BigDecimal("1.57000"))
+                        .car(new BigDecimal("1.57"))
                         .bicycle(BigDecimal.ZERO)
                         .parking(new BigDecimal("2.25"))
-                        .foodAndDrink(new BigDecimal("5.71000"))
+                        .foodAndDrink(new BigDecimal("5.71"))
                         .smartCard(new BigDecimal("4.20"))
                         .totalPaid(new BigDecimal("0.00"))
-                        .totalDue(new BigDecimal("70.28000"))
+                        .totalDue(new BigDecimal("70.28"))
                         .build());
             }
 
@@ -3639,7 +3640,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     ExpenseDetailsForTotals.builder()
                         .financialLossApportionedApplied(false)
                         .payAttendance(PayAttendanceType.FULL_DAY)
-                        .totalDue(new BigDecimal("76.00000"))
+                        .totalDue(new BigDecimal("76.00"))
                         .totalPaid(new BigDecimal("8.00"))
                         .attendanceDate(LocalDate.of(2023, 1, 11))
                         .attendanceType(AttendanceType.FULL_DAY)
@@ -3650,10 +3651,10 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .publicTransport(new BigDecimal("12.10"))
                         .taxi(new BigDecimal("9.40"))
                         .motorcycle(BigDecimal.ZERO)
-                        .car(new BigDecimal("5.97000"))
+                        .car(new BigDecimal("5.97"))
                         .bicycle(BigDecimal.ZERO)
                         .parking(new BigDecimal("13.25"))
-                        .foodAndDrink(new BigDecimal("12.17000"))
+                        .foodAndDrink(new BigDecimal("12.17"))
                         .smartCard(new BigDecimal("4.10"))
                         .build());
                 ExpenseTotal total = response.getTotal();
@@ -3666,12 +3667,12 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .publicTransport(new BigDecimal("22.10"))
                         .taxi(new BigDecimal("29.40"))
                         .motorcycle(new BigDecimal("30.00"))
-                        .car(new BigDecimal("45.97000"))
+                        .car(new BigDecimal("45.97"))
                         .bicycle(new BigDecimal("50.00"))
                         .parking(new BigDecimal("73.25"))
-                        .foodAndDrink(new BigDecimal("112.17000"))
+                        .foodAndDrink(new BigDecimal("112.17"))
                         .smartCard(new BigDecimal("29.10"))
-                        .totalDue(new BigDecimal("601.00000"))
+                        .totalDue(new BigDecimal("601.00"))
                         .totalPaid(new BigDecimal("8.00"))
                         .build());
             }

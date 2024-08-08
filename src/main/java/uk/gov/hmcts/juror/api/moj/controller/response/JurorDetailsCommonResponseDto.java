@@ -137,7 +137,11 @@ public class JurorDetailsCommonResponseDto {
     @Schema(description = "check for juror manually created")
     private boolean manuallyCreated;
 
-    private boolean hasSummonsResponse;
+    @JsonProperty("response_entered")
+    @Schema(name = "Response Entered", description = "Flag to indicate if a response has been entered for the juror")
+    private boolean responseEntered;
+
+    private LocalDate bureauTransferDate;
 
     /**
      * Initialise an instance of this DTO class using a JurorPool object to populate its properties.
@@ -167,7 +171,8 @@ public class JurorDetailsCommonResponseDto {
         this.courtName = jurorPool.getCourt().getLocCourtName();
         this.isWelshCourt =
             welshCourtLocationRepository.existsByLocCode(jurorPool.getCourt().getLocCode());
-        this.hasSummonsResponse = juror.getJurorResponse() != null;
+        this.bureauTransferDate = juror.getBureauTransferDate();
+        this.responseEntered = juror.isResponseEntered();
 
         if (this.excusalCode != null) {
             this.excusalDescription = ExcusalCodeEnum.fromCode(this.excusalCode).getDescription();

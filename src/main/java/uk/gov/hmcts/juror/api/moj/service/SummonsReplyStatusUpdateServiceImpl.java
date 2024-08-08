@@ -38,6 +38,7 @@ import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAuditChangeServic
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
+import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -171,8 +172,8 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
     @Override
     @Transactional
     public void updateDigitalJurorResponseStatus(final String jurorNumber,
-        final ProcessingStatus status,
-        final BureauJwtPayload payload) {
+                                                 final ProcessingStatus status,
+                                                 final BureauJwtPayload payload) {
 
         log.debug("Updating status for juror {} to {}", jurorNumber, status.getDescription());
         DigitalResponse jurorResponse = DataUtils.getJurorDigitalResponse(jurorNumber, jurorDigitalResponseRepository);
@@ -372,6 +373,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
 
         jurorPool.setUserEdtq(auditorUsername);
         jurorPool.setStatus(RepositoryUtils.retrieveFromDatabase(IJurorStatus.RESPONDED, jurorStatusRepository));
+        jurorPool.setNextDate(jurorPool.getPool().getReturnDate());
         jurorPoolRepository.save(jurorPool);
 
         recordJurorPoolRespondedHistory(jurorNumber, auditorUsername, jurorPool.getPoolNumber());
@@ -429,8 +431,19 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
         Juror juror = jurorPool.getJuror();
         if (reasonableAdjustments.size() > 1) {
             juror.setReasonableAdjustmentCode(multipleAdjustmentsCode);
+            juror.setReasonableAdjustmentMessage(
+                DataUtils.trimToLength(
+                    reasonableAdjustments
+                        .stream()
+                        .reduce(
+                            "",
+                            (acc, item) -> acc + item.getReasonableAdjustmentDetail() + ", ",
+                            String::concat
+                        ).trim(),
+                    ValidationConstants.REASONABLE_ADJUSTMENT_MESSAGE_LENGTH_MAX));
         } else if (reasonableAdjustments.size() == 1 && reasonableAdjustments.get(0) != null) {
             juror.setReasonableAdjustmentCode(reasonableAdjustments.get(0).getReasonableAdjustment().getCode());
+            juror.setReasonableAdjustmentMessage(reasonableAdjustments.get(0).getReasonableAdjustmentDetail());
         }
 
         jurorPoolRepository.save(jurorPool);

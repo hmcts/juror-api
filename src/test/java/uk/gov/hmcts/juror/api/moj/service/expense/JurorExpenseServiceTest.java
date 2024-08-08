@@ -70,6 +70,7 @@ import uk.gov.hmcts.juror.api.moj.repository.PaymentDataRepository;
 import uk.gov.hmcts.juror.api.moj.service.ApplicationSettingService;
 import uk.gov.hmcts.juror.api.moj.service.FinancialAuditService;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
+import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.ValidationService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
@@ -111,7 +112,7 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 
 @ExtendWith(SpringExtension.class)
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects", "PMD.NcssCount",
-    "PMD.TooManyMethods", "unchecked"})
+    "PMD.TooManyMethods", "PMD.TooManyFields", "unchecked"})
 class JurorExpenseServiceTest {
 
     @Mock
@@ -141,6 +142,8 @@ class JurorExpenseServiceTest {
 
     @Mock
     private EntityManager entityManager;
+    @Mock
+    private JurorPoolService jurorPoolService;
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
     private MockedStatic<JurorUtils> jurorUtilsMockedStatic;
@@ -2483,9 +2486,9 @@ class JurorExpenseServiceTest {
             doNothing().when(jurorExpenseService).saveAppearancesWithExpenseRateIdUpdate(any());
 
             JurorPool jurorPool = mock(JurorPool.class);
-            doReturn(List.of(jurorPool)).when(jurorPoolRepository)
-                .findByJurorJurorNumberAndIsActive(
-                    TestConstants.VALID_JUROR_NUMBER, true);
+            doReturn(jurorPool).when(jurorPoolService).getLastJurorPoolForJuror(
+                TestConstants.VALID_COURT_LOCATION,
+                TestConstants.VALID_JUROR_NUMBER);
             when(jurorPool.getOwner()).thenReturn(TestConstants.VALID_COURT_LOCATION);
             when(jurorPool.getCourt()).thenReturn(courtLocation);
             jurorExpenseService.approveExpenses(
@@ -2584,8 +2587,10 @@ class JurorExpenseServiceTest {
             doNothing().when(jurorExpenseService).saveAppearancesWithExpenseRateIdUpdate(any());
             JurorPool jurorPool = mock(JurorPool.class);
 
-            doReturn(List.of(jurorPool)).when(jurorPoolRepository).findByJurorJurorNumberAndIsActive(
-                TestConstants.VALID_JUROR_NUMBER, true);
+
+            doReturn(jurorPool).when(jurorPoolService).getLastJurorPoolForJuror(
+                TestConstants.VALID_COURT_LOCATION,
+                TestConstants.VALID_JUROR_NUMBER);
             when(jurorPool.getOwner()).thenReturn(TestConstants.VALID_COURT_LOCATION);
             when(jurorPool.getCourt()).thenReturn(courtLocation);
 
@@ -4787,6 +4792,9 @@ class JurorExpenseServiceTest {
         doReturn(jurorPool)
             .when(jurorPoolRepository)
             .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue(locCode, jurorNumber);
+        doReturn(jurorPool)
+            .when(jurorPoolService)
+            .getLastJurorPoolForJuror(locCode, jurorNumber);
     }
 
     @Nested
@@ -5356,51 +5364,6 @@ class JurorExpenseServiceTest {
         }
     }
 
-    @Nested
-    @DisplayName("public boolean isLongTrialDay(String jurorNumber, String poolNumber, LocalDate localDate)")
-    class IsLongTrialDay {
-        @ParameterizedTest
-        @ValueSource(ints = {
-            0, 1, 2, 3, 4, 5, 6, 7, 8, 9
-        })
-        void positiveFalse(int offset) {
-            assertTest(offset, false);
-        }
-
-        @ParameterizedTest
-        @ValueSource(ints = {
-            10, 11, 12, 13, 14, 15
-        })
-        void positiveTrue(int offset) {
-            assertTest(offset, true);
-        }
-
-        private void assertTest(int offset, boolean expectedValue) {
-            final LocalDate baseDay = LocalDate.of(2023, 1, 1);
-            LocalDate searchDate = baseDay.plusDays(offset);
-
-            List<Appearance> appearances = new ArrayList<>();
-            for (int i = 0; i < 15; i++) {
-                Appearance appearance = mock(Appearance.class);
-                doReturn(baseDay.plusDays(i)).when(appearance).getAttendanceDate();
-                appearances.add(appearance);
-            }
-            when(appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumber(
-                TestConstants.VALID_COURT_LOCATION,
-                TestConstants.VALID_JUROR_NUMBER
-            )).thenReturn(appearances);
-
-            assertThat(jurorExpenseService.isLongTrialDay(
-                TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, searchDate))
-                .isEqualTo(expectedValue);
-
-            verify(appearanceRepository, times(
-                1)).findAllByCourtLocationLocCodeAndJurorNumber(
-                TestConstants.VALID_COURT_LOCATION,
-                TestConstants.VALID_JUROR_NUMBER
-            );
-        }
-    }
 
     @Test
     void positiveValidateExpenseTest() {

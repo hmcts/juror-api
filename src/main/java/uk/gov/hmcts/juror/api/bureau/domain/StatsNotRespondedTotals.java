@@ -24,7 +24,6 @@ import java.io.Serializable;
 @Table(name = "stats_not_responded_totals", schema = "juror_dashboard")
 @Immutable
 @Builder
-@Deprecated(forRemoval = true)
 public class StatsNotRespondedTotals implements Serializable {
 
     @Id

@@ -34,7 +34,7 @@ public class ExcusalDeniedLetter extends LetterBase {
     protected void setupWelsh() {
         setFormCode(FormCode.BI_EXCUSALDENIED);
         addData(LetterDataType.DATE_OF_LETTER, 18);
-        addData(LetterDataType.WELSH_COURT_NAME, 40);
+        addData(LetterDataType.WELSH_CORRESPONDENCE_NAME, 40);
         addData(LetterDataType.BUREAU_NAME, 40);
         addBureauAddress();
         addData(LetterDataType.BUREAU_PHONE, 12);

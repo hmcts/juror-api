@@ -957,7 +957,7 @@ public class JurorPaperResponseTest {
         response.setAddressLine1("Test");
         response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
-        response.setReasonableAdjustmentsArrangements(buildStringToLength(1001));
+        response.setReasonableAdjustmentsArrangements(buildStringToLength(2001));
 
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
         assertThat(violations).as("Validation violation expected (invalid Reasonable Adjustments Arrangements)")

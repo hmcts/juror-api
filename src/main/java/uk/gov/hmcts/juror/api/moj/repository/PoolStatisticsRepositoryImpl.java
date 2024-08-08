@@ -5,8 +5,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
-import uk.gov.hmcts.juror.api.moj.domain.QPoolStatistics;
-import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
+import uk.gov.hmcts.juror.api.moj.domain.QPoolStatisticsWithPoolJoin;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -15,7 +14,8 @@ public class PoolStatisticsRepositoryImpl implements IPoolStatisticsRepository {
     @PersistenceContext
     EntityManager entityManager;
 
-    private static final QPoolStatistics POOL_STATS = QPoolStatistics.poolStatistics;
+    private static final QPoolStatisticsWithPoolJoin POOL_STATS_WITH_POOL_JOIN =
+        QPoolStatisticsWithPoolJoin.poolStatisticsWithPoolJoin;
 
     private static final QPoolRequest POOL_REQUEST = QPoolRequest.poolRequest;
 
@@ -34,36 +34,34 @@ public class PoolStatisticsRepositoryImpl implements IPoolStatisticsRepository {
      */
     @Override
     public List<Tuple> getStatisticsByCourtLocationAndPoolType(String owner, String courtLocationCode,
-                                                               String poolType, int numberOfWeeks) {
+                                                               String poolType, LocalDate weekCommencing,
+                                                               int numberOfWeeks) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-        LocalDate weekCommencing = DateUtils.getStartOfWeekFromDate(LocalDate.now());
         return queryFactory
             .select(
-                POOL_REQUEST.returnDate,
-                POOL_STATS.poolNumber,
-                POOL_STATS.totalSummoned,
-                POOL_STATS.courtSupply,
-                POOL_STATS.available,
-                POOL_STATS.unavailable,
-                POOL_STATS.unresolved,
-                POOL_REQUEST.numberRequested
+                POOL_STATS_WITH_POOL_JOIN.returnDate,
+                POOL_STATS_WITH_POOL_JOIN.poolNumber,
+                POOL_STATS_WITH_POOL_JOIN.totalSummoned,
+                POOL_STATS_WITH_POOL_JOIN.courtSupply,
+                POOL_STATS_WITH_POOL_JOIN.available,
+                POOL_STATS_WITH_POOL_JOIN.unavailable,
+                POOL_STATS_WITH_POOL_JOIN.unresolved,
+                POOL_STATS_WITH_POOL_JOIN.numberRequested
             )
-            .from(POOL_STATS)
-            .join(POOL_REQUEST)
-            .on(POOL_REQUEST.poolNumber.eq(POOL_STATS.poolNumber))
-            .where(POOL_REQUEST.returnDate.goe(weekCommencing))
-            .where(POOL_REQUEST.returnDate.loe(weekCommencing.plusWeeks(numberOfWeeks)))
-            .where(POOL_REQUEST.courtLocation.locCode.eq(courtLocationCode))
-            .where(POOL_REQUEST.poolType.poolType.eq(poolType))
-            .where(POOL_REQUEST.owner.eq(owner))
-            .orderBy(POOL_REQUEST.returnDate.asc())
+            .from(POOL_STATS_WITH_POOL_JOIN)
+            .where(POOL_STATS_WITH_POOL_JOIN.returnDate.goe(weekCommencing))
+            .where(POOL_STATS_WITH_POOL_JOIN.returnDate.loe(weekCommencing.plusWeeks(numberOfWeeks)))
+            .where(POOL_STATS_WITH_POOL_JOIN.locCode.eq(courtLocationCode))
+            .where(POOL_STATS_WITH_POOL_JOIN.poolType.eq(poolType))
+            .where(POOL_STATS_WITH_POOL_JOIN.owner.eq(owner))
+            .orderBy(POOL_STATS_WITH_POOL_JOIN.returnDate.asc())
             .fetch();
     }
 
     @Override
-    public List<Tuple> getNilPools(String owner, String courtLocationCode, String poolType, int numberOfWeeks) {
+    public List<Tuple> getNilPools(String owner, String courtLocationCode, String poolType,
+                                   LocalDate weekCommencing, int numberOfWeeks) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-        LocalDate weekCommencing = DateUtils.getStartOfWeekFromDate(LocalDate.now());
         return queryFactory.select(
                 POOL_REQUEST.poolNumber,
                 POOL_REQUEST.numberRequested,

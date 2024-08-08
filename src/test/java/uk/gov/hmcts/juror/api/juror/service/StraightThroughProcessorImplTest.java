@@ -1,10 +1,12 @@
 package uk.gov.hmcts.juror.api.juror.service;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.juror.api.bureau.domain.DisCode;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseMergeService;
@@ -24,6 +26,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseR
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
+import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.validation.ResponseInspectorImpl;
 
 import java.time.LocalDate;
@@ -34,6 +37,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -42,7 +46,7 @@ import static uk.gov.hmcts.juror.api.JurorDigitalApplication.AUTO_USER;
 /**
  * Unit test of {@link StraightThroughProcessorImpl}.
  */
-@SuppressWarnings("Duplicates")
+@SuppressWarnings({"Duplicates", "PMD.TooManyMethods"})
 @RunWith(MockitoJUnitRunner.class)
 public class StraightThroughProcessorImplTest {
 
@@ -77,6 +81,8 @@ public class StraightThroughProcessorImplTest {
     @Mock
     private PrintDataService printDataService;
 
+    MockedStatic<JurorPoolUtils> jurorPoolUtilsMockedStatic;
+
     private static final String TEST_JUROR_NUMBER = "209092530";
 
     private DigitalResponse jurorResponse;
@@ -85,6 +91,13 @@ public class StraightThroughProcessorImplTest {
 
     private static final int TOO_OLD_JUROR_AGE = 76;
     private static final int YOUNGEST_JUROR_AGE_ALLOWED = 18;
+
+    @After
+    public void after() {
+        if (jurorPoolUtilsMockedStatic != null) {
+            jurorPoolUtilsMockedStatic.close();
+        }
+    }
 
     @Before
     public void setup() {
@@ -99,6 +112,8 @@ public class StraightThroughProcessorImplTest {
         given(responseInspector.getYoungestJurorAgeAllowed()).willReturn(18);
         given(responseInspector.getTooOldJurorAge()).willReturn(76);
         given(responseInspector.getJurorAgeAtHearingDate(any(), any())).willCallRealMethod();
+
+        jurorPoolUtilsMockedStatic = mockStatic(JurorPoolUtils.class);
     }
 
     @Test
@@ -203,6 +218,9 @@ public class StraightThroughProcessorImplTest {
 
     @Test
     public void processAgeExcusal_happyPath_jurorSuccessfullyExcused_exactlyTooOld() {
+        jurorPoolUtilsMockedStatic.when(() ->
+            JurorPoolUtils.getSingleActiveJurorPool(poolRepository, TEST_JUROR_NUMBER)).thenReturn(jurorPool);
+
         JurorStatus disquallifiedJurorStatus = mock(JurorStatus.class);
         when(jurorStatusRepository.findById(IJurorStatus.DISQUALIFIED))
             .thenReturn(Optional.ofNullable(disquallifiedJurorStatus));
@@ -249,6 +267,9 @@ public class StraightThroughProcessorImplTest {
 
     @Test
     public void processAgeExcusal_happyPath_jurorSuccessfullyExcused_exactlyTooYoung() {
+        jurorPoolUtilsMockedStatic.when(() ->
+            JurorPoolUtils.getSingleActiveJurorPool(poolRepository, TEST_JUROR_NUMBER)).thenReturn(jurorPool);
+
         JurorStatus disquallifiedJurorStatus = mock(JurorStatus.class);
         when(jurorStatusRepository.findById(IJurorStatus.DISQUALIFIED))
             .thenReturn(Optional.ofNullable(disquallifiedJurorStatus));
@@ -294,6 +315,8 @@ public class StraightThroughProcessorImplTest {
 
     @Test
     public void processAgeExcusal_unhappyPath_jurorExactlyMinimumAge() {
+        jurorPoolUtilsMockedStatic.when(() ->
+            JurorPoolUtils.getSingleActiveJurorPool(poolRepository, TEST_JUROR_NUMBER)).thenReturn(jurorPool);
 
         // configure jurorResponse
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
@@ -325,6 +348,8 @@ public class StraightThroughProcessorImplTest {
 
     @Test
     public void processAgeExcusal_unhappyPath_jurorOneDayUnderTooOld() {
+        jurorPoolUtilsMockedStatic.when(() ->
+            JurorPoolUtils.getSingleActiveJurorPool(poolRepository, TEST_JUROR_NUMBER)).thenReturn(jurorPool);
 
         // configure jurorResponse
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
@@ -356,6 +381,9 @@ public class StraightThroughProcessorImplTest {
 
     @Test
     public void processAgeExcusal_unhappyPath_thirdParty() {
+        jurorPoolUtilsMockedStatic.when(() ->
+            JurorPoolUtils.getSingleActiveJurorPool(poolRepository, TEST_JUROR_NUMBER)).thenReturn(jurorPool);
+
         // configure jurorResponse status to fail validation
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
         given(jurorResponse.getRelationship()).willReturn("BFFs");
@@ -376,6 +404,9 @@ public class StraightThroughProcessorImplTest {
 
     @Test
     public void processAgeExcusal_unhappyPath_statusNotSummoned() {
+        jurorPoolUtilsMockedStatic.when(() ->
+            JurorPoolUtils.getSingleActiveJurorPool(poolRepository, TEST_JUROR_NUMBER)).thenReturn(jurorPool);
+
         // configure jurorResponse status to fail validation
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
         given(jurorResponse.getRelationship()).willReturn(null);

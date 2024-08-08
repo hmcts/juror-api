@@ -15,8 +15,10 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mock;
@@ -70,10 +72,13 @@ public final class TestUtils {
     }
 
     public static BureauJwtPayload createJwt(String owner, String username, String userLevel, List<String> courts) {
+        UserType userType = "400".equals(owner) ? UserType.BUREAU : UserType.COURT;
         return BureauJwtPayload.builder()
             .owner(owner)
             .locCode(owner)
             .login(username)
+            .activeUserType(userType)
+            .userType(userType)
             .staff(staffBuilder(username, Integer.valueOf(userLevel), courts))
             .userLevel(userLevel)
             .build();
@@ -167,8 +172,52 @@ public final class TestUtils {
         return SECURITY_UTIL_MOCK;
     }
 
-    public static void mockSecurityUtil(BureauJwtPayload payload) {
+    public static BureauJwtPayload mockSecurityUtil(BureauJwtPayload payload) {
         MockedStatic<SecurityUtil> securityUtil = getSecurityUtilMock();
+        securityUtil.when(SecurityUtil::hasBureauJwtPayload).thenReturn(true);
         securityUtil.when(SecurityUtil::getActiveUsersBureauPayload).thenReturn(payload);
+        return payload;
+    }
+
+    public static void mockBureauUser() {
+        mockSecurityUtil(BureauJwtPayload.builder()
+            .owner("400")
+            .locCode("400")
+            .roles(Set.of())
+            .userType(UserType.BUREAU)
+            .activeUserType(UserType.BUREAU)
+            .build());
+
+    }
+
+    public static BureauJwtPayload mockCourtUser(String owner) {
+        return mockCourtUser(owner, owner);
+    }
+
+    public static BureauJwtPayload mockCourtUser(String owner, String locCode, Collection<Role> roles) {
+        return mockSecurityUtil(BureauJwtPayload.builder()
+            .owner(owner)
+            .locCode(locCode)
+            .roles(roles)
+            .userType(UserType.COURT)
+            .activeUserType(UserType.COURT)
+            .staff(BureauJwtPayload.Staff.builder()
+                .courts(List.of(owner, locCode))
+                .build())
+            .build());
+    }
+
+    public static BureauJwtPayload mockCourtUser(String owner, String locCode) {
+        return mockCourtUser(owner, locCode, Set.of());
+    }
+
+    public static BureauJwtPayload mockSystemUser() {
+        return mockSecurityUtil(BureauJwtPayload.builder()
+            .owner("400")
+            .locCode("400")
+            .roles(Set.of())
+            .userType(UserType.SYSTEM)
+            .activeUserType(UserType.SYSTEM)
+            .build());
     }
 }

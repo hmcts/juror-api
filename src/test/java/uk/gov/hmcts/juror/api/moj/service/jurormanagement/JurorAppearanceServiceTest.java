@@ -6,10 +6,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.TestUtils;
@@ -49,6 +50,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryServiceImpl;
+import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
 
 import java.math.BigDecimal;
@@ -78,6 +80,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -108,6 +111,8 @@ class JurorAppearanceServiceTest {
     private PanelRepository panelRepository;
     @Mock
     private JurorHistoryServiceImpl jurorHistoryService;
+    @Mock
+    private JurorPoolService jurorPoolService;
 
     @InjectMocks
     JurorAppearanceServiceImpl jurorAppearanceService;
@@ -130,6 +135,44 @@ class JurorAppearanceServiceTest {
     @BeforeEach
     public void setUp() {
         TestUtils.setUpMockAuthentication("415", "COURT_USER", "1", List.of("415"));
+    }
+
+
+    @Nested
+    @DisplayName("boolean isLongTrialDay(List<LocalDate> appearanceDates, LocalDate dateToCheck)")
+    class IsLongTrialDay {
+        @ParameterizedTest
+        @ValueSource(ints = {
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+        })
+        void positiveFalse(int offset) {
+            assertTest(offset, false);
+        }
+
+        @ParameterizedTest
+        @ValueSource(ints = {
+            10, 11, 12, 13, 14, 15
+        })
+        void positiveTrue(int offset) {
+            assertTest(offset, true);
+        }
+
+        private void assertTest(int offset, boolean expectedValue) {
+            final LocalDate baseDay = LocalDate.of(2023, 1, 1);
+            LocalDate searchDate = baseDay.plusDays(offset);
+
+            List<LocalDate> appearanceDates = new ArrayList<>();
+            for (int i = 0; i < 16; i++) {
+                Appearance appearance = mock(Appearance.class);
+                LocalDate localDate = baseDay.plusDays(i);
+                doReturn(localDate).when(appearance).getAttendanceDate();
+                appearanceDates.add(localDate);
+            }
+
+            assertThat(jurorAppearanceService.isLongTrialDay(
+                appearanceDates, searchDate))
+                .isEqualTo(expectedValue);
+        }
     }
 
     @Test
@@ -250,9 +293,9 @@ class JurorAppearanceServiceTest {
             appearanceDtoCaptor.capture(), eq(true), eq(false));
         verify(courtLocationRepository, times(1)).findByLocCode(LOC_415);
         verify(appearanceRepository, times(1)).findById(appearanceId);
-        verify(jurorHistoryService, times(1)).createPoolAttendanceHistory(Mockito.any(), Mockito.any());
-        verify(jurorExpenseService, times(1)).applyDefaultExpenses(Mockito.anyList());
-        verify(appearanceRepository, times(1)).saveAndFlush(Mockito.any(Appearance.class));
+        verify(jurorHistoryService, times(1)).createPoolAttendanceHistory(any(), any());
+        verify(jurorExpenseService, times(1)).applyDefaultExpenses(anyList());
+        verify(appearanceRepository, times(1)).saveAndFlush(any(Appearance.class));
 
         BureauJwtPayload payload = payloadArgumentCaptor.getValue();
         assertThat(payload.getOwner()).isEqualTo(OWNER_415);
@@ -290,7 +333,8 @@ class JurorAppearanceServiceTest {
             jurorAppearanceService.addAttendanceDay(buildPayload(OWNER_415, List.of("415", "462", "767")),
                 dto)).as("Requested attendance date is in the future.");
 
-        verify(appearanceRepository, never()).findByJurorNumberAndPoolNumberAndAttendanceDate(any(), any(), any());
+        verify(appearanceRepository, never())
+            .findByLocCodeAndJurorNumberAndAttendanceDate(any(), any(), any());
         verify(jurorRepository, never()).findByJurorNumber(any());
         verify(jurorPoolRepository, never()).save(any());
     }
@@ -367,9 +411,8 @@ class JurorAppearanceServiceTest {
         CourtLocation courtLocation = getCourtLocation();
 
         doReturn(Optional.of(juror)).when(jurorRepository).findById(JUROR_123456789);
-        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(
-                JUROR_123456789, true);
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_123456789);
+
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findById(anyString());
 
         JurorAppearanceResponseDto.JurorAppearanceResponseData appearanceData = JurorAppearanceResponseDto
@@ -396,8 +439,7 @@ class JurorAppearanceServiceTest {
 
         verify(jurorRepository, times(1))
             .findById(JUROR_123456789);
-        verify(jurorPoolRepository, times(1))
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR_123456789, true);
+        verify(jurorPoolService, timeout(1)).getJurorPoolFromUser(JUROR_123456789);
         verify(courtLocationRepository, times(1))
             .findById(LOC_415);
         verify(appearanceRepository, times(1)).saveAndFlush(appearanceArgumentCaptor.capture());
@@ -437,9 +479,7 @@ class JurorAppearanceServiceTest {
         CourtLocation courtLocation = getCourtLocation();
 
         doReturn(Optional.of(juror)).when(jurorRepository).findById(JUROR_123456789);
-        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(
-                JUROR_123456789, true);
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_123456789);
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findById(anyString());
 
         JurorAppearanceResponseDto.JurorAppearanceResponseData appearanceData = JurorAppearanceResponseDto
@@ -462,8 +502,7 @@ class JurorAppearanceServiceTest {
 
         verify(jurorRepository, times(1))
             .findById(JUROR_123456789);
-        verify(jurorPoolRepository, times(1))
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), anyBoolean());
+        verify(jurorPoolService, timeout(1)).getJurorPoolFromUser(JUROR_123456789);
         verify(courtLocationRepository, times(1))
             .findById(LOC_415);
         verify(appearanceRepository, times(1)).saveAndFlush(any());
@@ -482,9 +521,8 @@ class JurorAppearanceServiceTest {
         CourtLocation courtLocation = getCourtLocation();
 
         doReturn(Optional.of(juror)).when(jurorRepository).findById(JUROR_123456789);
-        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(
-                JUROR_123456789, true);
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_123456789);
+
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findById(anyString());
 
         when(appearanceRepository.getAppearanceRecords(anyString(), any(), anyString(), any()))
@@ -498,8 +536,7 @@ class JurorAppearanceServiceTest {
 
         verify(jurorRepository, times(1))
             .findById(JUROR_123456789);
-        verify(jurorPoolRepository, times(1))
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), anyBoolean());
+        verify(jurorPoolService, timeout(1)).getJurorPoolFromUser(JUROR_123456789);
         verify(courtLocationRepository, times(1))
             .findById(LOC_415);
         verify(appearanceRepository, times(1)).saveAndFlush(any());
@@ -515,9 +552,7 @@ class JurorAppearanceServiceTest {
         CourtLocation courtLocation = getCourtLocation();
 
         doReturn(Optional.of(juror)).when(jurorRepository).findById(JUROR_123456789);
-        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(
-                JUROR_123456789, true);
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_123456789);
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findById(anyString());
         JurorAppearanceDto jurorAppearanceDto = buildJurorAppearanceDto();
 
@@ -527,8 +562,7 @@ class JurorAppearanceServiceTest {
 
         verify(jurorRepository, times(1))
             .findById(JUROR_123456789);
-        verify(jurorPoolRepository, times(1))
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), anyBoolean());
+        verify(jurorPoolService, timeout(1)).getJurorPoolFromUser(JUROR_123456789);
         verify(courtLocationRepository, times(1))
             .findById(LOC_415);
         verify(appearanceRepository, times(0)).saveAndFlush(any());
@@ -637,9 +671,7 @@ class JurorAppearanceServiceTest {
         JurorPool jurorPool = getJurorPool(juror, IJurorStatus.RESPONDED);
         juror.setAssociatedPools(Collections.singleton(jurorPool));
         doReturn(Optional.of(juror)).when(jurorRepository).findById(JUROR_123456789);
-        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(
-                JUROR_123456789, true);
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_123456789);
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findById(anyString());
         Appearance appearance = new Appearance();
         appearance.setJurorNumber(JUROR_123456789);
@@ -653,8 +685,7 @@ class JurorAppearanceServiceTest {
             .withMessageContaining("Juror 123456789 has already checked in");
 
         verify(jurorRepository, times(1)).findById(JUROR_123456789);
-        verify(jurorPoolRepository, times(1))
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR_123456789, true);
+        verify(jurorPoolService, timeout(1)).getJurorPoolFromUser(JUROR_123456789);
         verify(courtLocationRepository, times(1)).findById(LOC_415);
         verify(appearanceRepository, times(0)).saveAndFlush(any());
     }
@@ -670,9 +701,7 @@ class JurorAppearanceServiceTest {
         JurorPool jurorPool = getJurorPool(juror, IJurorStatus.RESPONDED);
         juror.setAssociatedPools(Collections.singleton(jurorPool));
         doReturn(Optional.of(juror)).when(jurorRepository).findById(JUROR_123456789);
-        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(
-                JUROR_123456789, true);
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_123456789);
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findById(anyString());
         Appearance appearance = new Appearance();
         appearance.setJurorNumber(JUROR_123456789);
@@ -686,8 +715,7 @@ class JurorAppearanceServiceTest {
             .withMessageContaining("Juror 123456789 has already checked out");
 
         verify(jurorRepository, times(1)).findById(JUROR_123456789);
-        verify(jurorPoolRepository, times(1))
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR_123456789, true);
+        verify(jurorPoolService, timeout(1)).getJurorPoolFromUser(JUROR_123456789);
         verify(courtLocationRepository, times(1)).findById(LOC_415);
         verify(appearanceRepository, times(0)).saveAndFlush(any());
     }
@@ -703,9 +731,7 @@ class JurorAppearanceServiceTest {
         JurorPool jurorPool = getJurorPool(juror, IJurorStatus.RESPONDED);
         juror.setAssociatedPools(Collections.singleton(jurorPool));
         doReturn(Optional.of(juror)).when(jurorRepository).findById(JUROR_123456789);
-        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(
-                JUROR_123456789, true);
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_123456789);
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findById(anyString());
         Appearance appearance = new Appearance();
         appearance.setJurorNumber(JUROR_123456789);
@@ -719,8 +745,7 @@ class JurorAppearanceServiceTest {
             .withMessageContaining("Juror 123456789 has already confirmed their attendance");
 
         verify(jurorRepository, times(1)).findById(JUROR_123456789);
-        verify(jurorPoolRepository, times(1))
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR_123456789, true);
+        verify(jurorPoolService, timeout(1)).getJurorPoolFromUser(JUROR_123456789);
         verify(courtLocationRepository, times(1)).findById(LOC_415);
         verify(appearanceRepository, times(0)).saveAndFlush(any());
     }
@@ -739,8 +764,7 @@ class JurorAppearanceServiceTest {
         JurorPool jurorPool = getJurorPool(juror, IJurorStatus.RESPONDED);
         juror.setAssociatedPools(Collections.singleton(jurorPool));
         doReturn(Optional.of(juror)).when(jurorRepository).findById(JUROR_123456789);
-        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR_123456789, true);
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_123456789);
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findById(anyString());
         Appearance appearance = new Appearance();
         appearance.setJurorNumber(JUROR_123456789);
@@ -754,8 +778,7 @@ class JurorAppearanceServiceTest {
             .withMessageContaining("Juror 123456789 has already checked out");
 
         verify(jurorRepository, times(1)).findById(JUROR_123456789);
-        verify(jurorPoolRepository, times(1))
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR_123456789, true);
+        verify(jurorPoolService, timeout(1)).getJurorPoolFromUser(JUROR_123456789);
         verify(courtLocationRepository, times(1)).findById(LOC_415);
         verify(appearanceRepository, times(0)).saveAndFlush(any());
     }
@@ -774,9 +797,7 @@ class JurorAppearanceServiceTest {
         JurorPool jurorPool = getJurorPool(juror, IJurorStatus.RESPONDED);
         juror.setAssociatedPools(Collections.singleton(jurorPool));
         doReturn(Optional.of(juror)).when(jurorRepository).findById(JUROR_123456789);
-        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(
-                JUROR_123456789, true);
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_123456789);
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findById(anyString());
         Appearance appearance = new Appearance();
         appearance.setJurorNumber(JUROR_123456789);
@@ -790,8 +811,7 @@ class JurorAppearanceServiceTest {
             .withMessageContaining("Juror 123456789 has already confirmed their attendance");
 
         verify(jurorRepository, times(1)).findById(JUROR_123456789);
-        verify(jurorPoolRepository, times(1))
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR_123456789, true);
+        verify(jurorPoolService, timeout(1)).getJurorPoolFromUser(JUROR_123456789);
         verify(courtLocationRepository, times(1)).findById(LOC_415);
         verify(appearanceRepository, times(0)).saveAndFlush(any());
     }
@@ -1492,7 +1512,7 @@ class JurorAppearanceServiceTest {
 
             CourtLocation courtLocation = new CourtLocation();
             courtLocation.setOwner("415");
-            when(courtLocationRepository.findById(Mockito.any())).thenReturn(Optional.of(courtLocation));
+            when(courtLocationRepository.findById(any())).thenReturn(Optional.of(courtLocation));
 
             when(jurorPoolRepository.findJurorsInAttendanceAtCourtLocation(VALID_COURT_LOCATION,
                 pools)).thenReturn(jurorPools);
@@ -1522,8 +1542,8 @@ class JurorAppearanceServiceTest {
             jurorsToDismissTuples.add(t2);
             jurorsToDismissTuples.add(t3);
 
-            when(jurorPoolRepository.getJurorsToDismiss(Mockito.anyList(), Mockito.anyList(),
-                Mockito.anyString()))
+            when(jurorPoolRepository.getJurorsToDismiss(
+                anyList(), anyList(), anyString()))
                 .thenReturn(jurorsToDismissTuples);
 
 
@@ -1574,7 +1594,7 @@ class JurorAppearanceServiceTest {
 
             CourtLocation courtLocation = new CourtLocation();
             courtLocation.setOwner("415");
-            when(courtLocationRepository.findById(Mockito.any())).thenReturn(Optional.of(courtLocation));
+            when(courtLocationRepository.findById(any())).thenReturn(Optional.of(courtLocation));
 
             when(jurorPoolRepository.findJurorsInAttendanceAtCourtLocation(VALID_COURT_LOCATION,
                 pools)).thenReturn(jurorPools);
@@ -1595,8 +1615,8 @@ class JurorAppearanceServiceTest {
             jurorsToDismissTuples.add(t1);
             jurorsToDismissTuples.add(t2);
 
-            when(jurorPoolRepository.getJurorsToDismiss(Mockito.anyList(), Mockito.anyList(),
-                Mockito.anyString()))
+            when(jurorPoolRepository.getJurorsToDismiss(
+                anyList(), anyList(), anyString()))
                 .thenReturn(jurorsToDismissTuples);
 
 
@@ -1647,7 +1667,7 @@ class JurorAppearanceServiceTest {
 
             CourtLocation courtLocation = new CourtLocation();
             courtLocation.setOwner("415");
-            when(courtLocationRepository.findById(Mockito.any())).thenReturn(Optional.of(courtLocation));
+            when(courtLocationRepository.findById(any())).thenReturn(Optional.of(courtLocation));
 
             when(jurorPoolRepository.findJurorsInAttendanceAtCourtLocation(
                 VALID_COURT_LOCATION, pools))
@@ -1671,8 +1691,8 @@ class JurorAppearanceServiceTest {
             jurorsToDismissTuples.add(t1);
             jurorsToDismissTuples.add(t3);
 
-            when(jurorPoolRepository.getJurorsToDismiss(Mockito.anyList(), Mockito.anyList(),
-                Mockito.anyString()))
+            when(jurorPoolRepository.getJurorsToDismiss(
+                anyList(), anyList(), anyString()))
                 .thenReturn(jurorsToDismissTuples);
 
 
@@ -1715,7 +1735,7 @@ class JurorAppearanceServiceTest {
 
             CourtLocation courtLocation = new CourtLocation();
             courtLocation.setOwner("415");
-            when(courtLocationRepository.findById(Mockito.any())).thenReturn(Optional.of(courtLocation));
+            when(courtLocationRepository.findById(any())).thenReturn(Optional.of(courtLocation));
 
             when(jurorPoolRepository.findJurorsInAttendanceAtCourtLocation(VALID_COURT_LOCATION,
                 pools)).thenReturn(jurorPools);
@@ -1728,8 +1748,8 @@ class JurorAppearanceServiceTest {
             List<Tuple> jurorsToDismissTuples = new ArrayList<>();
             jurorsToDismissTuples.add(t1);
 
-            when(jurorPoolRepository.getJurorsToDismiss(Mockito.anyList(), Mockito.anyList(),
-                Mockito.anyString()))
+            when(jurorPoolRepository.getJurorsToDismiss(
+                anyList(), anyList(), anyString()))
                 .thenReturn(jurorsToDismissTuples);
 
 
@@ -1769,7 +1789,7 @@ class JurorAppearanceServiceTest {
 
             CourtLocation courtLocation = new CourtLocation();
             courtLocation.setOwner("415");
-            when(courtLocationRepository.findById(Mockito.any())).thenReturn(Optional.of(courtLocation));
+            when(courtLocationRepository.findById(any())).thenReturn(Optional.of(courtLocation));
 
             when(jurorPoolRepository.findJurorsInAttendanceAtCourtLocation(
                 VALID_COURT_LOCATION, pools))
@@ -2046,18 +2066,14 @@ class JurorAppearanceServiceTest {
         JurorPool jurorPool5 = getJurorPool(createJuror(JUROR5, IJurorStatus.RESPONDED), IJurorStatus.RESPONDED);
         JurorPool jurorPool6 = getJurorPool(createJuror(JUROR6, IJurorStatus.RESPONDED), IJurorStatus.RESPONDED);
         JurorPool jurorPool7 = getJurorPool(createJuror(JUROR7, IJurorStatus.RESPONDED), IJurorStatus.RESPONDED);
-        doReturn(Collections.singletonList(jurorPool1)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR1, true);
-        doReturn(Collections.singletonList(jurorPool2)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR2, true);
-        doReturn(Collections.singletonList(jurorPool3)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR3, true);
-        doReturn(Collections.singletonList(jurorPool5)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR5, true);
-        doReturn(Collections.singletonList(jurorPool6)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR6, true);
-        doReturn(Collections.singletonList(jurorPool7)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR7, true);
+
+        doReturn(jurorPool1).when(jurorPoolService).getJurorPoolFromUser(JUROR1);
+        doReturn(jurorPool2).when(jurorPoolService).getJurorPoolFromUser(JUROR2);
+        doReturn(jurorPool3).when(jurorPoolService).getJurorPoolFromUser(JUROR3);
+        doReturn(jurorPool5).when(jurorPoolService).getJurorPoolFromUser(JUROR5);
+        doReturn(jurorPool6).when(jurorPoolService).getJurorPoolFromUser(JUROR6);
+        doReturn(jurorPool7).when(jurorPoolService).getJurorPoolFromUser(JUROR7);
+
 
         List<JurorAppearanceResponseDto.JurorAppearanceResponseData> jurorAppearance1 = buildAttendanceRecords(JUROR1,
             "ONE", null, null, IJurorStatus.JUROR);
@@ -2113,8 +2129,7 @@ class JurorAppearanceServiceTest {
         doReturn(Optional.of(createJuror(JUROR7, IJurorStatus.RESPONDED))).when(jurorRepository).findById(JUROR7);
 
         JurorPool jurorPool7 = getJurorPool(createJuror(JUROR7, IJurorStatus.RESPONDED), IJurorStatus.RESPONDED);
-        doReturn(Collections.singletonList(jurorPool7)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR7, true);
+        doReturn(jurorPool7).when(jurorPoolService).getJurorPoolFromUser(JUROR7);
 
         List<JurorAppearanceResponseDto.JurorAppearanceResponseData> jurorAppearance7 = buildAttendanceRecords(JUROR7,
             "SEVEN", null, null, IJurorStatus.RESPONDED);
@@ -2164,14 +2179,11 @@ class JurorAppearanceServiceTest {
         JurorPool jurorPool3 = getJurorPool(createJuror(JUROR3, IJurorStatus.PANEL), IJurorStatus.PANEL);
         JurorPool jurorPool6 = getJurorPool(createJuror(JUROR6, IJurorStatus.RESPONDED), IJurorStatus.RESPONDED);
         JurorPool jurorPool7 = getJurorPool(createJuror(JUROR7, IJurorStatus.RESPONDED), IJurorStatus.RESPONDED);
-        doReturn(Collections.singletonList(jurorPool2)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR2, true);
-        doReturn(Collections.singletonList(jurorPool3)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR3, true);
-        doReturn(Collections.singletonList(jurorPool6)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR6, true);
-        doReturn(Collections.singletonList(jurorPool7)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR7, true);
+        doReturn(jurorPool2).when(jurorPoolService).getJurorPoolFromUser(JUROR2);
+
+        doReturn(jurorPool3).when(jurorPoolService).getJurorPoolFromUser(JUROR3);
+        doReturn(jurorPool6).when(jurorPoolService).getJurorPoolFromUser(JUROR6);
+        doReturn(jurorPool7).when(jurorPoolService).getJurorPoolFromUser(JUROR7);
 
         List<JurorAppearanceResponseDto.JurorAppearanceResponseData> jurorAppearance2 = buildAttendanceRecords(JUROR2,
             "TWO", LocalTime.of(9, 30), null, IJurorStatus.JUROR);
@@ -2185,13 +2197,13 @@ class JurorAppearanceServiceTest {
         List<JurorAppearanceResponseDto.JurorAppearanceResponseData> jurorAppearance7 = buildAttendanceRecords(JUROR7,
             "SEVEN", LocalTime.of(9, 30), null, IJurorStatus.RESPONDED);
 
-        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR2, JurorStatusGroup.AT_COURT))
+        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR2, JurorStatusGroup.ALL))
             .thenReturn(jurorAppearance2);
-        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR3, JurorStatusGroup.AT_COURT))
+        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR3, JurorStatusGroup.ALL))
             .thenReturn(jurorAppearance3);
-        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR6, JurorStatusGroup.AT_COURT))
+        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR6, JurorStatusGroup.ALL))
             .thenReturn(jurorAppearance6);
-        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR7, JurorStatusGroup.AT_COURT))
+        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR7, JurorStatusGroup.ALL))
             .thenReturn(jurorAppearance7);
 
         CourtLocation courtLocation = mock(CourtLocation.class);
@@ -2285,15 +2297,15 @@ class JurorAppearanceServiceTest {
         JurorPool jurorPool7 = JurorPool.builder().juror(juror7).pool(poolRequest).build();
 
         doReturn(jurorPool1).when(jurorPoolRepository).findByJurorNumberAndIsActiveAndCourt(eq(JUROR1), eq(true),
-            Mockito.any());
+            any());
         doReturn(jurorPool2).when(jurorPoolRepository).findByJurorNumberAndIsActiveAndCourt(eq(JUROR2), eq(true),
-            Mockito.any());
+            any());
         doReturn(jurorPool3).when(jurorPoolRepository).findByJurorNumberAndIsActiveAndCourt(eq(JUROR3), eq(true),
-            Mockito.any());
+            any());
         doReturn(jurorPool6).when(jurorPoolRepository).findByJurorNumberAndIsActiveAndCourt(eq(JUROR6), eq(true),
-            Mockito.any());
+            any());
         doReturn(jurorPool7).when(jurorPoolRepository).findByJurorNumberAndIsActiveAndCourt(eq(JUROR7), eq(true),
-            Mockito.any());
+            any());
     }
 
 
@@ -2315,7 +2327,7 @@ class JurorAppearanceServiceTest {
             CourtLocation courtLocation = new CourtLocation();
             courtLocation.setOwner(courtOwner);
             when(courtLocationRepository.findByLocCode(courtLocationCode)).thenReturn(Optional.of(courtLocation));
-            when(courtLocationRepository.findById(Mockito.any())).thenReturn(Optional.of(courtLocation));
+            when(courtLocationRepository.findById(any())).thenReturn(Optional.of(courtLocation));
 
             PoolRequest poolRequest = PoolRequest.builder()
                 .poolNumber(poolNumber)
@@ -2343,16 +2355,17 @@ class JurorAppearanceServiceTest {
 
             LocalDate nonAttendanceDate = now();
             doReturn(Optional.empty()).when(appearanceRepository)
-                .findByJurorNumberAndPoolNumberAndAttendanceDate(jurorNumber,
-                    poolNumber, nonAttendanceDate);
+                .findByLocCodeAndJurorNumberAndAttendanceDate(
+                    courtLocationCode, jurorNumber, nonAttendanceDate);
 
             jurorAppearanceService.addNonAttendance(request);
 
             verify(courtLocationRepository, times(1)).findByLocCode(courtLocationCode);
             verify(jurorPoolRepository, times(1))
                 .findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, poolNumber);
-            verify(appearanceRepository, times(1)).findByJurorNumberAndPoolNumberAndAttendanceDate(jurorNumber,
-                poolNumber, nonAttendanceDate);
+            verify(appearanceRepository, times(1))
+                .findByLocCodeAndJurorNumberAndAttendanceDate(
+                    courtLocationCode, jurorNumber, nonAttendanceDate);
             verify(appearanceRepository, times(1)).saveAndFlush(any());
         }
 
@@ -2364,7 +2377,7 @@ class JurorAppearanceServiceTest {
             CourtLocation courtLocation = new CourtLocation();
             courtLocation.setOwner(courtOwner);
             when(courtLocationRepository.findByLocCode(courtLocationCode)).thenReturn(Optional.of(courtLocation));
-            when(courtLocationRepository.findById(Mockito.any())).thenReturn(Optional.of(courtLocation));
+            when(courtLocationRepository.findById(any())).thenReturn(Optional.of(courtLocation));
 
             PoolRequest poolRequest = PoolRequest.builder()
                 .poolNumber(poolNumber)
@@ -2392,7 +2405,8 @@ class JurorAppearanceServiceTest {
 
             LocalDate nonAttendanceDate = now().plusDays(5);
             doReturn(Optional.empty()).when(appearanceRepository)
-                .findByJurorNumberAndPoolNumberAndAttendanceDate(jurorNumber, poolNumber, nonAttendanceDate);
+                .findByLocCodeAndJurorNumberAndAttendanceDate(
+                    courtLocationCode, jurorNumber, nonAttendanceDate);
 
             jurorAppearanceService.addNonAttendance(request);
 
@@ -2400,7 +2414,8 @@ class JurorAppearanceServiceTest {
             verify(jurorPoolRepository, times(1))
                 .findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, poolNumber);
             verify(appearanceRepository, times(1))
-                .findByJurorNumberAndPoolNumberAndAttendanceDate(jurorNumber, poolNumber, nonAttendanceDate);
+                .findByLocCodeAndJurorNumberAndAttendanceDate(
+                    courtLocationCode, jurorNumber, nonAttendanceDate);
             verify(appearanceRepository, times(1)).saveAndFlush(any());
         }
 
@@ -2412,7 +2427,7 @@ class JurorAppearanceServiceTest {
             CourtLocation courtLocation = new CourtLocation();
             courtLocation.setOwner(courtOwner);
             when(courtLocationRepository.findByLocCode(courtLocationCode)).thenReturn(Optional.of(courtLocation));
-            when(courtLocationRepository.findById(Mockito.any())).thenReturn(Optional.of(courtLocation));
+            when(courtLocationRepository.findById(any())).thenReturn(Optional.of(courtLocation));
 
             PoolRequest poolRequest = PoolRequest.builder()
                 .poolNumber(poolNumber)
@@ -2437,8 +2452,8 @@ class JurorAppearanceServiceTest {
 
             LocalDate nonAttendanceDate = now();
             doReturn(Optional.of(appearance)).when(appearanceRepository)
-                .findByJurorNumberAndPoolNumberAndAttendanceDate(jurorNumber,
-                    poolNumber, nonAttendanceDate);
+                .findByLocCodeAndJurorNumberAndAttendanceDate(
+                    courtLocationCode, jurorNumber, nonAttendanceDate);
 
             final JurorNonAttendanceDto request = JurorNonAttendanceDto.builder()
                 .jurorNumber(jurorNumber)
@@ -2454,8 +2469,8 @@ class JurorAppearanceServiceTest {
             verify(jurorPoolRepository, times(1))
                 .findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, poolNumber);
             verify(appearanceRepository, times(1))
-                .findByJurorNumberAndPoolNumberAndAttendanceDate(jurorNumber,
-                    poolNumber, nonAttendanceDate);
+                .findByLocCodeAndJurorNumberAndAttendanceDate(
+                    courtLocationCode, jurorNumber, nonAttendanceDate);
             verify(appearanceRepository, times(1)).delete(appearance);
             //verify(appearanceRepository, times(1)).saveAndFlush(appearanceSaved);
 
@@ -2499,11 +2514,12 @@ class JurorAppearanceServiceTest {
                 .withMessage("Court location " + courtLocationCode + " not found");
 
             verify(courtLocationRepository, times(1)).findByLocCode(courtLocationCode);
-            verify(courtLocationRepository, times(0)).findById(Mockito.anyString());
+            verify(courtLocationRepository, times(0)).findById(anyString());
             verify(jurorPoolRepository, times(0))
-                .findByJurorJurorNumberAndPoolPoolNumber(Mockito.anyString(), Mockito.anyString());
-            verify(appearanceRepository, times(0)).findByJurorNumberAndPoolNumberAndAttendanceDate(Mockito.anyString(),
-                Mockito.anyString(), Mockito.any());
+                .findByJurorJurorNumberAndPoolPoolNumber(anyString(), anyString());
+            verify(appearanceRepository, times(0))
+                .findByLocCodeAndJurorNumberAndAttendanceDate(
+                    anyString(), anyString(), any());
             verify(appearanceRepository, times(0)).saveAndFlush(any());
         }
 
@@ -2531,9 +2547,9 @@ class JurorAppearanceServiceTest {
             verify(courtLocationRepository, times(0)).findByLocCode("416");
             verify(courtLocationRepository, times(0)).findById("416");
             verify(jurorPoolRepository, times(0))
-                .findByJurorJurorNumberAndPoolPoolNumber(Mockito.anyString(), Mockito.anyString());
-            verify(appearanceRepository, times(0)).findByJurorNumberAndPoolNumberAndAttendanceDate(Mockito.anyString(),
-                Mockito.anyString(), Mockito.any());
+                .findByJurorJurorNumberAndPoolPoolNumber(anyString(), anyString());
+            verify(appearanceRepository, times(0))
+                .findByLocCodeAndJurorNumberAndAttendanceDate(anyString(), anyString(), any());
             verify(appearanceRepository, times(0)).saveAndFlush(any());
         }
 
@@ -2545,7 +2561,7 @@ class JurorAppearanceServiceTest {
             CourtLocation courtLocation = new CourtLocation();
             courtLocation.setOwner(courtOwner);
             when(courtLocationRepository.findByLocCode(courtLocationCode)).thenReturn(Optional.of(courtLocation));
-            when(courtLocationRepository.findById(Mockito.any())).thenReturn(Optional.of(courtLocation));
+            when(courtLocationRepository.findById(any())).thenReturn(Optional.of(courtLocation));
 
             doReturn(null).when(jurorPoolRepository)
                 .findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, poolNumber);
@@ -2564,8 +2580,8 @@ class JurorAppearanceServiceTest {
             verify(courtLocationRepository, times(1)).findByLocCode(courtLocationCode);
             verify(jurorPoolRepository, times(1))
                 .findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, poolNumber);
-            verify(appearanceRepository, times(0)).findByJurorNumberAndPoolNumberAndAttendanceDate(Mockito.anyString(),
-                Mockito.anyString(), Mockito.any());
+            verify(appearanceRepository, times(0))
+                .findByLocCodeAndJurorNumberAndAttendanceDate(anyString(), anyString(), any());
             verify(appearanceRepository, times(0)).saveAndFlush(any());
         }
 
@@ -2577,7 +2593,7 @@ class JurorAppearanceServiceTest {
             CourtLocation courtLocation = new CourtLocation();
             courtLocation.setOwner(courtOwner);
             when(courtLocationRepository.findByLocCode(courtLocationCode)).thenReturn(Optional.of(courtLocation));
-            when(courtLocationRepository.findById(Mockito.any())).thenReturn(Optional.of(courtLocation));
+            when(courtLocationRepository.findById(any())).thenReturn(Optional.of(courtLocation));
 
             PoolRequest poolRequest = PoolRequest.builder()
                 .poolNumber(poolNumber)
@@ -2601,8 +2617,8 @@ class JurorAppearanceServiceTest {
 
             LocalDate nonAttendanceDate = now();
             doReturn(Optional.of(appearance)).when(appearanceRepository)
-                .findByJurorNumberAndPoolNumberAndAttendanceDate(jurorNumber,
-                    poolNumber, nonAttendanceDate);
+                .findByLocCodeAndJurorNumberAndAttendanceDate(
+                    courtLocationCode, jurorNumber, nonAttendanceDate);
 
             final JurorNonAttendanceDto request = JurorNonAttendanceDto.builder()
                 .jurorNumber(jurorNumber)
@@ -2623,8 +2639,9 @@ class JurorAppearanceServiceTest {
             verify(courtLocationRepository, times(1)).findByLocCode(courtLocationCode);
             verify(jurorPoolRepository, times(1))
                 .findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, poolNumber);
-            verify(appearanceRepository, times(1)).findByJurorNumberAndPoolNumberAndAttendanceDate(jurorNumber,
-                poolNumber, nonAttendanceDate);
+            verify(appearanceRepository, times(1))
+                .findByLocCodeAndJurorNumberAndAttendanceDate(
+                    courtLocationCode, jurorNumber, nonAttendanceDate);
             verify(appearanceRepository, times(0)).saveAndFlush(any());
         }
     }
@@ -2632,6 +2649,13 @@ class JurorAppearanceServiceTest {
     @Nested
     @DisplayName("void realignAttendanceType(Appearance appearance)")
     class RealignAttendanceType {
+        private List<Appearance> appearanceList;
+
+        @BeforeEach
+        void before() {
+            this.appearanceList = new ArrayList<>();
+            jurorAppearanceService = spy(jurorAppearanceService);
+        }
 
         private Appearance mockAppearance(LocalTime timeIn, LocalTime timeOut,
                                           String locCode,
@@ -2655,10 +2679,15 @@ class JurorAppearanceServiceTest {
             when(courtLocation.getLocCode()).thenReturn(locCode);
             when(appearance.getCourtLocation()).thenReturn(courtLocation);
 
-            when(jurorExpenseService.isLongTrialDay(
-                locCode,
-                TestConstants.VALID_JUROR_NUMBER,
-                localDate
+            when(jurorAppearanceService.getAllAppearances(TestConstants.VALID_JUROR_NUMBER))
+                .thenReturn(appearanceList);
+
+            appearanceList.add(appearance);
+
+
+            when(jurorAppearanceService.isLongTrialDay(
+                anyList(),
+                eq(localDate)
             )).thenReturn(isLongTrialDay);
             return appearance;
         }
@@ -2970,15 +2999,12 @@ class JurorAppearanceServiceTest {
             doReturn(Optional.of(juror1)).when(jurorRepository).findById(JUROR1);
             doReturn(Optional.of(juror2)).when(jurorRepository).findById(JUROR2);
 
-            doReturn(Collections.singletonList(jurorPool1)).when(jurorPoolRepository)
-                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(
-                    JUROR1, true);
-            doReturn(Collections.singletonList(jurorPool2)).when(jurorPoolRepository)
-                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(
-                    JUROR2, true);
+            doReturn(jurorPool1).when(jurorPoolService).getJurorPoolFromUser(JUROR1);
+            doReturn(jurorPool2).when(jurorPoolService).getJurorPoolFromUser(JUROR2);
 
             final UpdateAttendanceDto request = buildUpdateAttendanceDto(locationCode);
             request.setJuror(Arrays.asList(JUROR1, JUROR2));
+
 
             Appearance appearance1 = Appearance.builder()
                 .jurorNumber(JUROR1)
@@ -3000,6 +3026,11 @@ class JurorAppearanceServiceTest {
                 now().minusDays(1))).thenReturn(Optional.of(appearance2));
             when(appearanceRepository.getNextAttendanceAuditNumber()).thenReturn(10_123_456L);
 
+            doReturn(List.of(appearance1)).when(appearanceRepository)
+                .findAllByJurorNumber(JUROR1);
+            doReturn(List.of(appearance2)).when(appearanceRepository)
+                .findAllByJurorNumber(JUROR2);
+
             jurorAppearanceService.confirmJuryAttendance(request);
 
             verify(courtLocationRepository, times(1)).findByLocCode(locationCode);
@@ -3020,7 +3051,7 @@ class JurorAppearanceServiceTest {
 
             verify(appearanceRepository, times(2)).saveAndFlush(appearanceCaptor.capture());
             verify(jurorExpenseService, times(2)).applyDefaultExpenses(
-                appearanceCaptor.capture(), Mockito.any());
+                appearanceCaptor.capture(), any());
 
             Appearance capturedAppearance1 =
                 appearanceCaptor.getAllValues().stream()
@@ -3049,7 +3080,7 @@ class JurorAppearanceServiceTest {
             assertThat(capturedAppearance2.getAttendanceAuditNumber()).isEqualTo("J10123456");
             assertThat(capturedAppearance2.getSatOnJury()).isTrue();
 
-            verify(jurorPoolRepository, times(2)).saveAndFlush(Mockito.any());
+            verify(jurorPoolRepository, times(2)).saveAndFlush(any());
 
             verify(jurorHistoryService, times(1)).createJuryAttendanceHistory(jurorPool1,
                 capturedAppearance1, panel1);

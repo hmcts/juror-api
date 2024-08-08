@@ -27,7 +27,7 @@ public class ExcusalRefusalLetterListRepositoryImpl implements IExcusalRefusalLe
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         JPAQuery<ExcusalRefusedLetterList> jpaQuery =
             queryFactory.selectFrom(EXCUSAL_REFUSED_LETTER_LIST)
-                .where(EXCUSAL_REFUSED_LETTER_LIST.owner.equalsIgnoreCase(owner));
+                .where(EXCUSAL_REFUSED_LETTER_LIST.owner.eq(owner));
 
         filterEligibleLetterSearchCriteria(jpaQuery, searchCriteria);
 

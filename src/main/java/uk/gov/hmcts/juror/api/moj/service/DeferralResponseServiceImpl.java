@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +21,10 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -45,18 +46,14 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
     public static final String DEFERRAL_DENIED_INFO = "Deferral Denied - %s";
     public static final String DEFERRAL_GRANTED_INFO = "Add defer - %s";
 
-    @NonNull
     private final ExcusalCodeRepository excusalCodeRepository;
-    @NonNull
     private final JurorRepository jurorRepository;
-    @NonNull
     private final JurorPoolRepository jurorPoolRepository;
-    @NonNull
     private final JurorHistoryRepository jurorHistoryRepository;
-    @NonNull
     private final PrintDataService printDataService;
     private final JurorHistoryService jurorHistoryService;
-
+    private final JurorPoolService jurorPoolService;
+    private final JurorStatusRepository jurorStatusRepository;
 
     @Override
     @Transactional
@@ -65,7 +62,8 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
         final String jurorNumber = deferralRequestDto.getJurorNumber();
         final String owner = payload.getOwner();
 
-        JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
+        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolRecord(
+            jurorPoolRepository, jurorPoolService, jurorNumber);
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, owner);
 
         checkExcusalCodeIsValid(deferralRequestDto.getDeferralReason());
@@ -101,21 +99,24 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
     private void declineDeferralForJurorPool(BureauJwtPayload payload, DeferralRequestDto deferralRequestDto,
                                              JurorPool jurorPool) {
 
+        final Juror juror = jurorPool.getJuror();
         String username = payload.getLogin();
+        if (jurorPool.getStatus().getStatus() != IJurorStatus.DEFERRED) {
+            if (jurorPool.getStatus().getStatus() == IJurorStatus.SUMMONED) {
+                jurorPool.setStatus(
+                    RepositoryUtils.retrieveFromDatabase(IJurorStatus.RESPONDED, jurorStatusRepository));
+            }
+            jurorPool.setUserEdtq(username);
+            jurorPool.setDeferralCode(deferralRequestDto.getDeferralReason());
+            jurorPool.setDeferralDate(null);
+            jurorPool.setNextDate(jurorPool.getPool().getReturnDate());
+            jurorPoolRepository.save(jurorPool);
 
-        JurorStatus jurorStatus = new JurorStatus();
-        jurorStatus.setStatus(IJurorStatus.RESPONDED);
-        jurorPool.setStatus(jurorStatus);
-        jurorPool.setUserEdtq(username);
-        jurorPool.setDeferralCode(deferralRequestDto.getDeferralReason());
-        jurorPool.setDeferralDate(null);
-        jurorPoolRepository.save(jurorPool);
-
-        Juror juror = jurorPool.getJuror();
-        juror.setResponded(true);
+            juror.setResponded(true);
+            juror.setExcusalDate(null);
+        }
         juror.setUserEdtq(username);
         juror.setExcusalRejected(DEFERRAL_REJECTED_CODE);
-        juror.setExcusalDate(null);
         jurorRepository.save(juror);
 
         // update Juror History - create deferral denied status event
@@ -132,7 +133,7 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
 
         jurorHistoryRepository.save(jurorHistory);
 
-        if (JurorDigitalApplication.JUROR_OWNER.equalsIgnoreCase(payload.getOwner())) {
+        if (SecurityUtil.isBureau()) {
             // only Bureau users should enqueue a letter automatically
             printDataService.printDeferralDeniedLetter(jurorPool);
 

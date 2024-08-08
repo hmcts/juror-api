@@ -124,6 +124,8 @@ public class CourtLetterServiceTest {
         securityUtilMockedStatic = Mockito.mockStatic(SecurityUtil.class);
         securityUtilMockedStatic.when(SecurityUtil::getActiveOwner)
             .thenReturn(owner);
+        securityUtilMockedStatic.when(SecurityUtil::getLocCode)
+            .thenReturn(owner);
     }
 
     @Nested
@@ -146,7 +148,7 @@ public class CourtLetterServiceTest {
             List<DeferralGrantedLetterList> results =
                 List.of(createDeferralLetterList(jurorNumber, deferredTo, reason, poolNumber));
 
-            when(deferralGrantedLetterListRepository.findJurorsEligibleForDeferralGrantedLetter(Mockito.any(),
+            when(deferralGrantedLetterListRepository.findJurorsEligibleForDeferralGrantedLetter(
                 Mockito.any())).thenReturn(results);
 
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto.builder()
@@ -185,7 +187,7 @@ public class CourtLetterServiceTest {
                 List.of(createDeferralLetterList(jurorNumber, deferredTo, reason, poolNumber,
                     datePrinted));
 
-            when(deferralGrantedLetterListRepository.findJurorsEligibleForDeferralGrantedLetter(Mockito.any(),
+            when(deferralGrantedLetterListRepository.findJurorsEligibleForDeferralGrantedLetter(
                 Mockito.any())).thenReturn(results);
 
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto.builder()
@@ -219,7 +221,7 @@ public class CourtLetterServiceTest {
 
             List<DeferralGrantedLetterList> results = new ArrayList<>();
 
-            when(deferralGrantedLetterListRepository.findJurorsEligibleForDeferralGrantedLetter(Mockito.any(),
+            when(deferralGrantedLetterListRepository.findJurorsEligibleForDeferralGrantedLetter(
                 Mockito.any())).thenReturn(results);
 
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto.builder()

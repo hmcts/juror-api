@@ -391,8 +391,8 @@ class IReissueLetterRepositoryImplTest {
         verify(jpaQuery, times(1)).where(QJurorPool.jurorPool.status.status
             .eq(IJurorStatus.SUMMONED)
             .and(QJuror.juror.responded.eq(false)));
-        verify(jpaQuery, times(1)).where(QJuror.juror.postcode.toLowerCase()
-            .eq("ts1 1st"));
+        verify(jpaQuery, times(1)).where(QJuror.juror.postcode
+            .eq("TS1 1ST"));
         verify(jpaQuery, times(1)).where(JUROR_POOL.isActive.eq(true));
         verify(jpaQuery, times(1)).where(JUROR_POOL.owner.eq(SecurityUtil.BUREAU_OWNER));
         verify(jpaQuery, times(1)).orderBy(BULK_PRINT_DATA.creationDate.desc());

@@ -17,6 +17,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequestListAndCount;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequestStatus;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.QPoolComment;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 
 import java.time.LocalDate;
@@ -147,6 +148,11 @@ public class PoolRequestRepositoryImpl extends PoolRequestSearchQueries implemen
     @Override
     public void deletePoolRequestByPoolNumber(@NotNull String poolNumber) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+
+        queryFactory.delete(QPoolComment.poolComment)
+            .where(QPoolComment.poolComment.pool.poolNumber.eq(poolNumber))
+            .execute();
+
         queryFactory.delete(POOL_REQUEST)
             .where(POOL_REQUEST.poolNumber.eq(poolNumber))
             .execute();

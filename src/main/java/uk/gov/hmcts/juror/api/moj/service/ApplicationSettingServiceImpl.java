@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.juror.domain.ApplicationSettings;
 import uk.gov.hmcts.juror.api.moj.repository.ApplicationSettingRepository;
 
-import java.time.LocalTime;
 import java.util.Optional;
 
 @Service
@@ -16,10 +15,10 @@ public class ApplicationSettingServiceImpl implements ApplicationSettingService 
     private final ApplicationSettingRepository applicationSettingRepository;
 
     @Override
-    public LocalTime toLocalTime(ApplicationSettings.Setting setting) {
+    public Integer toInteger(ApplicationSettings.Setting setting, Integer defaultValue) {
         return getAppSetting(setting)
-            .map(settings -> LocalTime.parse(settings.getValue()))
-            .orElse(null);
+            .map(settings -> Integer.parseInt(settings.getValue()))
+            .orElse(defaultValue);
     }
 
     @Override

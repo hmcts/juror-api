@@ -107,6 +107,7 @@ import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAuditChangeService;
 import uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils;
+import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorResponseUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
@@ -187,6 +188,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     private final HistoryTemplateService historyTemplateService;
     private final WelshCourtLocationRepository welshCourtLocationRepository;
     private final JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
+    private final JurorPoolService jurorPoolService;
 
     @Override
     @Transactional
@@ -517,7 +519,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             .addressLine3(jurorAddress.getLineThree())
             .addressLine4(jurorAddress.getTown())
             .addressLine5(jurorAddress.getCounty())
-            .postcode(jurorAddress.getPostcode())
+            .postcode(DataUtils.toUppercase(jurorAddress.getPostcode()))
             .phoneNumber(jurorCreateRequestDto.getPrimaryPhone())
             .altPhoneNumber(jurorCreateRequestDto.getAlternativePhone())
             .email(jurorCreateRequestDto.getEmailAddress())
@@ -631,12 +633,13 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             .addressLine3(pendingJuror.getAddressLine3())
             .addressLine4(pendingJuror.getAddressLine4())
             .addressLine5(pendingJuror.getAddressLine5())
-            .postcode(pendingJuror.getPostcode())
+            .postcode(DataUtils.toUppercase(pendingJuror.getPostcode()))
             .phoneNumber(pendingJuror.getPhoneNumber())
             .altPhoneNumber(pendingJuror.getAltPhoneNumber())
             .email(pendingJuror.getEmail())
             .notes(pendingJuror.getNotes())
             .responded(true)
+            .responseEntered(true)
             .build();
 
         jurorRepository.save(juror);
@@ -852,16 +855,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         final String owner = payload.getOwner();
 
-        List<JurorPool> jurorPools = JurorPoolUtils.getActiveJurorPoolRecords(jurorPoolRepository, jurorNumber);
-        JurorPool jurorPool = jurorPools.stream().filter(p -> {
-            if (JurorDigitalApplication.JUROR_OWNER.equals(owner)) {
-                return true;
-            } else {
-                return p.getOwner().equals(owner);
-            }
-        }).findFirst().orElseThrow(() ->
-            new MojException.Forbidden("Current user does not have ownership of any "
-                + "associated pools for juror", null));
+        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolRecord(
+            jurorPoolRepository, jurorPoolService, jurorNumber);
 
         // Bureau should always be able to read record
         JurorPoolUtils.checkReadAccessForCurrentUser(jurorPool, owner);
@@ -1041,7 +1036,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         final String contactLogNotes = WordUtils.capitalize(requestDto.getDecision().getDescription())
             + " the juror's name change. " + requestDto.getNotes();
 
-        JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
+        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolRecord(
+            jurorPoolRepository, jurorPoolService, jurorNumber);
         Juror juror = jurorPool.getJuror();
         JurorUtils.checkOwnershipForCurrentUser(juror, payload.getOwner());
 
@@ -1110,7 +1106,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     @Transactional
     public PoliceCheckStatusDto updatePncStatus(final String jurorNumber, final PoliceCheck policeCheck) {
         log.info("Attempting to update PNC check status for juror {} to be {}", jurorNumber, policeCheck);
-        final JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
+        final JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolRecord(
+            jurorPoolRepository, jurorPoolService, jurorNumber);
         final Juror juror = jurorPool.getJuror();
 
         final PoliceCheck oldPoliceCheckValue = juror.getPoliceCheck();
@@ -1195,7 +1192,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         log.info("Juror {} attendance record requested by user {}", jurorNumber, payload.getLogin());
 
         SecurityUtil.validateCourtLocationPermitted(locCode);
-        JurorPool jurorPool = getJurorPoolByLocCode(locCode, jurorNumber);
+        JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
         JurorPoolUtils.checkReadAccessForCurrentUser(jurorPool, payload.getOwner());
 
         JurorAttendanceDetailsResponseDto responseDto = new JurorAttendanceDetailsResponseDto();
@@ -1225,6 +1222,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         return responseDto;
     }
+
 
     private List<JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData> getAttendanceData(String locCode,
                                                                                                   String jurorNumber) {
@@ -1381,6 +1379,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         juror.setResponded(true);
         jurorRepository.save(juror);
         jurorPool.setUserEdtq(auditorUsername);
+        jurorPool.setNextDate(jurorPool.getPool().getReturnDate());
         jurorPool.setStatus(RepositoryUtils.retrieveFromDatabase(IJurorStatus.RESPONDED, jurorStatusRepository));
         jurorPoolRepository.save(jurorPool);
 
@@ -1422,16 +1421,6 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, poolNumber);
         if (jurorPool == null) {
             throw new MojException.NotFound("Juror number " + jurorNumber + " not found in pool " + poolNumber, null);
-        }
-        return jurorPool;
-    }
-
-    private JurorPool getJurorPoolByLocCode(String locCode, String jurorNumber) {
-        JurorPool jurorPool = jurorPoolRepository
-            .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue(locCode, jurorNumber);
-        if (jurorPool == null) {
-            throw new MojException.NotFound("No active pools found for juror number "
-                + jurorNumber + " at location " + locCode, null);
         }
         return jurorPool;
     }

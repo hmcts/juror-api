@@ -8,6 +8,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import jakarta.validation.constraints.Min;
@@ -56,6 +58,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.JUROR_NUMBER
 @ToString
 @SuppressWarnings({"PMD.TooManyFields", "PMD.TooManyImports"})
 public class Appearance implements Serializable {
+    private static final int ROUNDING_PRECISION = 2;
 
     @Version
     @Audited
@@ -234,6 +237,11 @@ public class Appearance implements Serializable {
     @Builder.Default
     private boolean isDraftExpense = true;
 
+    @Column(name = "hide_on_unpaid_expense_and_reports")
+    @Builder.Default
+    @NotAudited
+    private boolean hideOnUnpaidExpenseAndReports = false;
+
     /**
      * flag indicating whether the juror has not attended court on a day they were due to be present (unauthorised
      * absence).
@@ -273,6 +281,13 @@ public class Appearance implements Serializable {
      */
     @Column(name = "attendance_audit_number")
     private String attendanceAuditNumber;
+
+    /**
+     * flag indicating if the appearance has been confirmed for the day via the juror management screen.
+     */
+    @Column(name = "appearance_confirmed")
+    @NotAudited
+    private boolean appearanceConfirmed;
 
 
     //Does not include smart card reduction
@@ -422,13 +437,12 @@ public class Appearance implements Serializable {
         addExpenseToErrors(errors, "childcare", this.getChildcareDue(), this.getChildcarePaid());
         addExpenseToErrors(errors, "miscAmount", this.getMiscAmountDue(), this.getMiscAmountPaid());
         addExpenseToErrors(errors, "total", this.getTotalDue(), this.getTotalPaid());
-        if (AppearanceStage.EXPENSE_EDITED.equals(this.getAppearanceStage())
-            || AppearanceStage.EXPENSE_AUTHORISED.equals(this.getAppearanceStage())) {
-            if (BigDecimalUtils.isLessThan(getOrZero(this.getSmartCardAmountPaid()),
-                getOrZero(this.getSmartCardAmountDue()))) {
-                errors.put("smartCardAmount",
-                    "Must be at most " + BigDecimalUtils.currencyFormat(getOrZero(this.getSmartCardAmountPaid())));
-            }
+        if ((AppearanceStage.EXPENSE_EDITED.equals(this.getAppearanceStage())
+            || AppearanceStage.EXPENSE_AUTHORISED.equals(this.getAppearanceStage()))
+            && BigDecimalUtils.isLessThan(getOrZero(this.getSmartCardAmountPaid()),
+            getOrZero(this.getSmartCardAmountDue()))) {
+            errors.put("smartCardAmount",
+                "Must be at most " + BigDecimalUtils.currencyFormat(getOrZero(this.getSmartCardAmountPaid())));
         }
         return errors;
     }
@@ -441,7 +455,8 @@ public class Appearance implements Serializable {
     }
 
     public void setPayAttendanceType(PayAttendanceType payAttendanceType) {
-        if (Set.of(AttendanceType.ABSENT, AttendanceType.NON_ATTENDANCE, AttendanceType.NON_ATTENDANCE_LONG_TRIAL)
+        if (this.getAttendanceType() == null
+            || Set.of(AttendanceType.ABSENT, AttendanceType.NON_ATTENDANCE, AttendanceType.NON_ATTENDANCE_LONG_TRIAL)
             .contains(this.getAttendanceType())) {
             return;
         }
@@ -501,10 +516,108 @@ public class Appearance implements Serializable {
 
     private void validateCanClearExpenses() {
         if (BigDecimalUtils.isGreaterThan(getTotalPaid(), BigDecimal.ZERO)
-            || Set.of(AppearanceStage.EXPENSE_EDITED, AppearanceStage.EXPENSE_AUTHORISED)
-            .contains(getAppearanceStage())) {
+            || (appearanceStage != null && Set.of(AppearanceStage.EXPENSE_EDITED, AppearanceStage.EXPENSE_AUTHORISED)
+            .contains(getAppearanceStage()))) {
             throw new MojException.InternalServerError(
                 "Cannot clear expenses for appearance that has authorised values", null);
         }
+    }
+
+    public void setPublicTransportDue(BigDecimal publicTransportDue) {
+        this.publicTransportDue = BigDecimalUtils.round(publicTransportDue, ROUNDING_PRECISION);
+    }
+
+    public void setPublicTransportPaid(BigDecimal publicTransportPaid) {
+        this.publicTransportPaid = BigDecimalUtils.round(publicTransportPaid, ROUNDING_PRECISION);
+    }
+
+    public void setHiredVehicleDue(BigDecimal hiredVehicleDue) {
+        this.hiredVehicleDue = BigDecimalUtils.round(hiredVehicleDue, ROUNDING_PRECISION);
+    }
+
+    public void setHiredVehiclePaid(BigDecimal hiredVehiclePaid) {
+        this.hiredVehiclePaid = BigDecimalUtils.round(hiredVehiclePaid, ROUNDING_PRECISION);
+    }
+
+    public void setMotorcycleDue(BigDecimal motorcycleDue) {
+        this.motorcycleDue = BigDecimalUtils.round(motorcycleDue, ROUNDING_PRECISION);
+    }
+
+    public void setMotorcyclePaid(BigDecimal motorcyclePaid) {
+        this.motorcyclePaid = BigDecimalUtils.round(motorcyclePaid, ROUNDING_PRECISION);
+    }
+
+    public void setCarDue(BigDecimal carDue) {
+        this.carDue = BigDecimalUtils.round(carDue, ROUNDING_PRECISION);
+    }
+
+    public void setCarPaid(BigDecimal carPaid) {
+        this.carPaid = BigDecimalUtils.round(carPaid, ROUNDING_PRECISION);
+    }
+
+    public void setBicycleDue(BigDecimal bicycleDue) {
+        this.bicycleDue = BigDecimalUtils.round(bicycleDue, ROUNDING_PRECISION);
+    }
+
+    public void setBicyclePaid(BigDecimal bicyclePaid) {
+        this.bicyclePaid = BigDecimalUtils.round(bicyclePaid, ROUNDING_PRECISION);
+    }
+
+    public void setParkingDue(BigDecimal parkingDue) {
+        this.parkingDue = BigDecimalUtils.round(parkingDue, ROUNDING_PRECISION);
+    }
+
+    public void setParkingPaid(BigDecimal parkingPaid) {
+        this.parkingPaid = BigDecimalUtils.round(parkingPaid, ROUNDING_PRECISION);
+    }
+
+    public void setChildcareDue(BigDecimal childcareDue) {
+        this.childcareDue = BigDecimalUtils.round(childcareDue, ROUNDING_PRECISION);
+    }
+
+    public void setChildcarePaid(BigDecimal childcarePaid) {
+        this.childcarePaid = BigDecimalUtils.round(childcarePaid, ROUNDING_PRECISION);
+    }
+
+    public void setMiscAmountDue(BigDecimal miscAmountDue) {
+        this.miscAmountDue = BigDecimalUtils.round(miscAmountDue, ROUNDING_PRECISION);
+    }
+
+    public void setMiscAmountPaid(BigDecimal miscAmountPaid) {
+        this.miscAmountPaid = BigDecimalUtils.round(miscAmountPaid, ROUNDING_PRECISION);
+    }
+
+    public void setLossOfEarningsDue(BigDecimal lossOfEarningsDue) {
+        this.lossOfEarningsDue = BigDecimalUtils.round(lossOfEarningsDue, ROUNDING_PRECISION);
+    }
+
+    public void setLossOfEarningsPaid(BigDecimal lossOfEarningsPaid) {
+        this.lossOfEarningsPaid = BigDecimalUtils.round(lossOfEarningsPaid, ROUNDING_PRECISION);
+    }
+
+    public void setSubsistenceDue(BigDecimal subsistenceDue) {
+        this.subsistenceDue = BigDecimalUtils.round(subsistenceDue, ROUNDING_PRECISION);
+    }
+
+    public void setSubsistencePaid(BigDecimal subsistencePaid) {
+        this.subsistencePaid = BigDecimalUtils.round(subsistencePaid, ROUNDING_PRECISION);
+    }
+
+    public void setSmartCardAmountDue(BigDecimal smartCardAmountDue) {
+        this.smartCardAmountDue = BigDecimalUtils.round(smartCardAmountDue, ROUNDING_PRECISION);
+    }
+
+    public void setSmartCardAmountPaid(BigDecimal smartCardAmountPaid) {
+        this.smartCardAmountPaid = BigDecimalUtils.round(smartCardAmountPaid, ROUNDING_PRECISION);
+    }
+
+    @PrePersist
+    private void prePersist() {
+        preUpdate();
+    }
+
+    @PreUpdate
+    private void preUpdate() {
+        this.hideOnUnpaidExpenseAndReports = false;
     }
 }

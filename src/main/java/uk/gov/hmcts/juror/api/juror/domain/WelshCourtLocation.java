@@ -39,6 +39,12 @@ public class WelshCourtLocation implements Serializable, ICourtLocation {
     private String locCourtName;
 
     /**
+     * Correspondence name used for letters.
+     */
+    @Column(name = "correspondence_name")
+    private String correspondenceName;
+
+    /**
      * Court address line 1.
      */
     @Column(name = "loc_address1")
@@ -85,6 +91,7 @@ public class WelshCourtLocation implements Serializable, ICourtLocation {
     private LocalDateTime lastUpdate;
 
     @PrePersist
+    @SuppressWarnings("PMD.UnusedPrivateMethod")
     private void prePersist() {
         preUpdate();
     }

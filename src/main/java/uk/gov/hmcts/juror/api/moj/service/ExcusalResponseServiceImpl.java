@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,28 +48,19 @@ import java.util.List;
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class ExcusalResponseServiceImpl implements ExcusalResponseService {
 
-    @NonNull
     private final ExcusalCodeRepository excusalCodeRepository;
-    @NonNull
     private final JurorRepository jurorRepository;
-    @NonNull
     private final JurorPoolRepository jurorPoolRepository;
-    @NonNull
     private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
-    @NonNull
     private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
-    @NonNull
     private final UserRepository userRepository;
-    @NonNull
     private final SummonsReplyMergeService mergeService;
-    @NonNull
     private final JurorStatusRepository jurorStatusRepository;
-    @NonNull
     private final JurorHistoryRepository jurorHistoryRepository;
-    @NonNull
     private final PrintDataService printDataService;
     private final JurorHistoryService jurorHistoryService;
     private final JurorResponseAuditRepositoryMod jurorResponseAuditRepositoryMod;
+    private final JurorPoolService jurorPoolService;
 
     @Override
     @Transactional
@@ -83,13 +73,21 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
 
         checkExcusalCodeIsValid(excusalDecisionDto.getExcusalReasonCode());
 
-        JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
+        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolRecord(
+            jurorPoolRepository, jurorPoolService, jurorNumber);
 
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, owner);
 
-        if (excusalDecisionDto.getReplyMethod() != null) {
+        if (excusalDecisionDto.getReplyMethod() != null && excusalDecisionDto.getReplyMethod() != ReplyMethod.NONE) {
             if (excusalDecisionDto.getReplyMethod().equals(ReplyMethod.PAPER)) {
-                setPaperResponseProcessingStatusToClosed(payload, jurorNumber);
+                if (null == jurorPaperResponseRepository.findByJurorNumber(jurorNumber)) {
+                    // There are scenarios where a juror may not have a paper response when excused from the juror
+                    // record
+                    log.info(String.format("No Paper response found for Juror %s when processing excusal request",
+                        jurorNumber));
+                } else {
+                    setPaperResponseProcessingStatusToClosed(payload, jurorNumber);
+                }
             } else {
                 setDigitalResponseProcessingStatusToClosed(payload, jurorNumber);
             }
@@ -211,13 +209,18 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
         log.info(String.format("Processing officer decision to refuse excusal for Juror %s", juror.getJurorNumber()));
 
         juror.setResponded(true);
-        juror.setExcusalDate(LocalDate.now());
-        juror.setExcusalCode(excusalDecisionDto.getExcusalReasonCode());
+        if (jurorPool.getStatus().getStatus() != IJurorStatus.EXCUSED) {
+            juror.setExcusalCode(excusalDecisionDto.getExcusalReasonCode());
+            juror.setExcusalDate(LocalDate.now());
+        }
         juror.setUserEdtq(payload.getLogin());
         juror.setExcusalRejected("Y");
         jurorRepository.save(juror);
 
-        jurorPool.setStatus(getPoolStatus(IJurorStatus.RESPONDED));
+        if (jurorPool.getStatus().getStatus() == IJurorStatus.SUMMONED) {
+            jurorPool.setStatus(getPoolStatus(IJurorStatus.RESPONDED));
+        }
+
         jurorPool.setUserEdtq(payload.getLogin());
         jurorPoolRepository.save(jurorPool);
 
@@ -244,10 +247,10 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
         jurorHistoryRepository.save(jurorHistory);
 
         // bureau only - queue letter for xerox
-        if (payload.getOwner().equals("400")) {
+        if (SecurityUtil.isBureau()) {
             printDataService.printExcusalDeniedLetter(jurorPool);
 
-            jurorHistoryService.createNonExcusedLetterHistory(jurorPool,"Refused Excusal");
+            jurorHistoryService.createNonExcusedLetterHistory(jurorPool, "Refused Excusal");
         }
 
     }

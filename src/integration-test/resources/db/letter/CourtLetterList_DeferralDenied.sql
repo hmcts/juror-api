@@ -14,7 +14,8 @@ INSERT INTO juror_mod.juror (juror_number,poll_number,title,last_name,first_name
 ('555555565','540',NULL,'PERSON','TEST_FIVE','1998-03-08 00:00:00.000','Address Line 1','Address  Line 2','Address Line 3','CARDIFF','Some County','CH1 2AN',true,NULL,'COURT_USER',NULL,'NOT_CHECKED','2024-01-16 12:07:42.000',current_date - 10,0),
 ('555555566','540',NULL,'PERSON','TEST_SIX','1998-03-08 00:00:00.000','Address Line 1','Address  Line 2','Address Line 3','CARDIFF','Some County','CH1 2AN',true,'Z','COURT_USER',NULL,'NOT_CHECKED','2024-01-16 12:07:42.000',current_date - 10,0),
 ('555555567','540',NULL,'PERSON','TEST_SEVEN','1998-03-08 00:00:00.000','Address Line 1','Address  Line 2','Address Line 3','CARDIFF','Some County','CH1 2AN',true,'Z','COURT_USER',NULL,'NOT_CHECKED','2024-01-16 12:07:42.000',current_date - 10,0),
-('555555568','540',NULL,'PERSON','TEST_SEVEN','1998-03-08 00:00:00.000','Address Line 1','Address  Line 2','Address Line 3','CARDIFF','Some County','CH1 2AN',true,'Z','COURT_USER',true,'NOT_CHECKED','2024-01-16 12:07:42.000','2023-11-27',0);
+('555555568','540',NULL,'PERSON','TEST_SEVEN','1998-03-08 00:00:00.000','Address Line 1','Address  Line 2','Address Line 3','CARDIFF','Some County','CH1 2AN',true,'Z','COURT_USER',true,'NOT_CHECKED','2024-01-16 12:07:42.000','2023-11-27',0),
+('555555569','540',NULL,'PERSON','TEST_SIX','1998-03-08 00:00:00.000','Address Line 1','Address  Line 2','Address Line 3','CARDIFF','Some County','CH1 2AN',true,'Z','COURT_USER',NULL,'NOT_CHECKED','2024-01-16 12:07:42.000',current_date - 10,0);
 
 INSERT INTO juror_mod.juror_pool (juror_number,pool_number,"owner",user_edtq,is_active,status,def_date,pool_seq,deferral_code,last_update) VALUES
 -- 555555561 - deferred by the bureau - subsequent deferral denied by the court (currently responded, owned by court)
@@ -33,7 +34,8 @@ INSERT INTO juror_mod.juror_pool (juror_number,pool_number,"owner",user_edtq,is_
 -- 555555567 - multiple deferrals denied by the court and bureau (multiple letters printed)
 ('555555567','415220401','415','COURT_USER',true,2,null,'0109','C','2024-01-16 12:07:42.162505'),
 -- 555555568 - deferral denied by the court (no letter printed) - welsh
-('555555568','457220405','457','COURT_USER',true,7,NULL,'0109','A','2024-01-16 12:07:42.162505');
+('555555568','457220405','457','COURT_USER',true,7,NULL,'0109','A','2024-01-16 12:07:42.162505'),
+('555555569','415220402','415','COURT_USER',true,2,NULL,'0109','A','2024-01-16 12:07:42.162505');
 
 insert into juror_mod.juror_history (juror_number, date_created, history_code, user_id, other_information, pool_number, other_info_date, other_info_reference) values
 -- bureau defer status history event
@@ -67,4 +69,8 @@ insert into juror_mod.juror_history (juror_number, date_created, history_code, u
 -- court deferral denied letter history event
 ('555555567', current_date - 8, 'RDDL', 'court_user_1', '', '415220401', null, 'A'),
 -- court defer status history event (denied)
-('555555568', current_date - 5, 'PDEF', 'court_user_1', 'Deferral Denied - R', '457220405', null, null);
+('555555568', current_date - 5, 'PDEF', 'court_user_1', 'Deferral Denied - R', '457220405', null, null),
+-- court defer status history event (denied)
+('555555569', current_date - 9, 'PDEF', 'court_user_1', 'Deferral Denied - B', '415220402', null, null),
+-- court deferral denied letter history event
+('555555569', current_date - 9, 'RDDL', 'court_user_1', '', '415220402', null, 'B');

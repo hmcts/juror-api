@@ -31,6 +31,7 @@ import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
 import java.time.LocalDate;
@@ -107,9 +108,9 @@ public class JurorManagementServiceImpl implements JurorManagementService {
             if (JurorDigitalApplication.JUROR_OWNER.equals(owner)) {
                 throw new MojException.BadRequest("Receiving Pool Number is required for Bureau users", null);
             }
-            // create a new pool in the same court location for court users only
+            SecurityUtil.validateCourtLocationPermitted(jurorManagementRequestDto.getReceivingCourtLocCode());
             targetPoolRequest = createTargetPoolRequest(jurorManagementRequestDto, sourcePoolRequest,
-                sendingCourtLocation);
+                receivingCourtLocation);
         }
 
         final String sourcePoolNumber = sourcePoolRequest.getPoolNumber();
@@ -160,8 +161,11 @@ public class JurorManagementServiceImpl implements JurorManagementService {
                 jurorHistoryService.createReassignPoolMemberHistory(sourceJurorPool, targetPoolNumber,
                     receivingCourtLocation);
 
-                // queue a summons confirmation letter (Bureau only!)
-                if (JurorDigitalApplication.JUROR_OWNER.equals(payload.getOwner())) {
+                // queue a summons confirmation letter only if juror is Bureau owned, has responded and is police
+                // checked
+                if (JurorDigitalApplication.JUROR_OWNER.equals(payload.getOwner())
+                    && targetJurorPool.getStatus().getStatus() == IJurorStatus.RESPONDED
+                    && targetJurorPool.getJuror().getPoliceCheck().isChecked()) {
                     printDataService.printConfirmationLetter(targetJurorPool);
                 }
 
@@ -491,11 +495,11 @@ public class JurorManagementServiceImpl implements JurorManagementService {
     private PoolRequest createTargetPoolRequest(JurorManagementRequestDto requestDto, PoolRequest sourcePoolRequest,
                                                 CourtLocation receivingCourtLocation) {
         log.trace("Create target pool request for transferring/reassigning pool members to {}",
-            requestDto.getReceivingCourtLocCode());
+            receivingCourtLocation.getLocCode());
         PoolRequest targetPoolRequest = new PoolRequest();
         targetPoolRequest.setOwner(receivingCourtLocation.getOwner());
         targetPoolRequest.setPoolNumber(
-            generatePoolNumberService.generatePoolNumber(requestDto.getReceivingCourtLocCode(),
+            generatePoolNumberService.generatePoolNumber(receivingCourtLocation.getLocCode(),
                 requestDto.getServiceStartDate()));
         targetPoolRequest.setCourtLocation(receivingCourtLocation);
         // target pool request will not need transferring and filling by the bureau so default NEW_REQUEST to 'N'

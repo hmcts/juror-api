@@ -67,7 +67,6 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.BulkService;
 import uk.gov.hmcts.juror.api.moj.service.JurorRecordService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
-import uk.gov.hmcts.juror.api.validation.CourtLocationCode;
 import uk.gov.hmcts.juror.api.validation.JurorNumber;
 
 import java.util.List;
@@ -407,18 +406,16 @@ public class JurorRecordController {
      * Get the Attendance details for a given Juror in a given court.
      *
      * @param jurorNumber Unique Juror number of the juror
-     * @param locCode  a court location code to retrieve attendance details for
      * @return Fully populated DTO of a juror's attendance details in a pool
      */
-    @GetMapping(path = "/attendance-detail/{locCode}/{jurorNumber}")
+    @GetMapping(path = "/attendance-detail/{jurorNumber}")
     @Operation(summary = "Get attendance details for juror number in a pool")
     public ResponseEntity<JurorAttendanceDetailsResponseDto> getJurorAttendanceDetails(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @PathVariable("jurorNumber") @Valid @JurorNumber
-        @Parameter(description = "Valid juror number", required = true) String jurorNumber,
-        @Valid @PathVariable("locCode") @CourtLocationCode String locCode) {
+        @Parameter(description = "Valid juror number", required = true) String jurorNumber) {
         final JurorAttendanceDetailsResponseDto details =
-            jurorRecordService.getJurorAttendanceDetails(locCode, jurorNumber, payload);
+            jurorRecordService.getJurorAttendanceDetails(SecurityUtil.getLocCode(), jurorNumber, payload);
         return ResponseEntity.ok().body(details);
     }
 

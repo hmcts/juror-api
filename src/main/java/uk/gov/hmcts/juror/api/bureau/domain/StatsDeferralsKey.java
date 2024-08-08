@@ -8,7 +8,6 @@ import java.io.Serializable;
  * Composite key for {@link StatsDeferrals}.
  */
 @EqualsAndHashCode
-@Deprecated(forRemoval = true)
 public class StatsDeferralsKey implements Serializable {
     private String bureauOrCourt;
     private String execCode;

@@ -1,7 +1,9 @@
 package uk.gov.hmcts.juror.api.moj.utils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.DateTimePath;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
@@ -14,15 +16,16 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
+import java.util.Locale;
 
 @Slf4j
 public final class DataUtils {
+    static final String RESPONSE_UPDATED_LOG = "Juror: %s. %s response will be updated with new value for %s";
 
     private DataUtils() {
         // private constructor
     }
 
-    static final String RESPONSE_UPDATED_LOG = "Juror: %s. %s response will be updated with new value for %s";
 
     public static boolean hasValueChanged(LocalDate currentValue, LocalDate newValue, String fieldName,
                                           String jurorNumber, String replyMethod) {
@@ -113,5 +116,31 @@ public final class DataUtils {
 
     public static Expression<?> asDate(DateTimePath<LocalDateTime> dateTimePath) {
         return dateTimePath.stringValue().substring(0, 10);
+    }
+
+    public static String trimToLength(String trim, int maxLength) {
+        if (trim == null) {
+            return null;
+        }
+        return trim.length() > maxLength ? trim.substring(0, maxLength) : trim;
+    }
+
+    public static String toUppercase(String postcode) {
+        if (postcode == null) {
+            return null;
+        }
+        return postcode.toUpperCase(Locale.getDefault());
+    }
+
+    @SneakyThrows
+    public static String asJsonString(Object value) {
+        return new ObjectMapper().findAndRegisterModules().writeValueAsString(value);
+    }
+
+    public static String trim(String value) {
+        if (value == null) {
+            return null;
+        }
+        return value.trim();
     }
 }

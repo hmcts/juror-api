@@ -4,6 +4,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 
 import java.util.List;
+import java.util.Set;
 
 public interface FinancialAuditService {
 
@@ -18,12 +19,12 @@ public interface FinancialAuditService {
 
     List<Appearance> getAppearances(FinancialAuditDetails financialAuditDetails);
 
-    FinancialAuditDetails getLastFinancialAuditDetailsWithType(
-        FinancialAuditDetails financialAuditDetails, FinancialAuditDetails.Type.GenericType genericType);
-
     Appearance getPreviousAppearance(FinancialAuditDetails financialAuditDetails, Appearance appearance);
 
     Appearance getPreviousApprovedValue(FinancialAuditDetails financialAuditDetails, Appearance appearance);
 
     FinancialAuditDetails findFromAppearance(Appearance appearance);
+
+    FinancialAuditDetails getLastFinancialAuditDetailsFromTypes(FinancialAuditDetails financialAuditDetails,
+                                                                Set<FinancialAuditDetails.Type> forApproval);
 }

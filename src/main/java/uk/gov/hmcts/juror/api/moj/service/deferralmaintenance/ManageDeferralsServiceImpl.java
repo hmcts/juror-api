@@ -3,8 +3,6 @@ package uk.gov.hmcts.juror.api.moj.service.deferralmaintenance;
 import com.querydsl.core.Tuple;
 import io.micrometer.common.util.StringUtils;
 import jakarta.transaction.Transactional;
-import jakarta.validation.constraints.NotNull;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
@@ -56,6 +54,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRep
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.AssignOnUpdateServiceMod;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
+import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.PoolMemberSequenceService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.service.SummonsReplyMergeService;
@@ -101,38 +100,23 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     private static final String POSTPONE_REASON_CODE = "P";
     private static final String POSTPONE_INFO = "Add Postpone";
 
-    @NonNull
     private final CurrentlyDeferredRepository currentlyDeferredRepository;
-    @NonNull
     private final WelshCourtLocationRepository welshCourtLocationRepository;
-    @NonNull
     private final JurorRepository jurorRepository;
-    @NonNull
     private final JurorPoolRepository jurorPoolRepository;
-    @NonNull
     private final PoolRequestRepository poolRequestRepository;
-    @NonNull
     private final PoolHistoryRepository poolHistoryRepository;
-    @NonNull
     private final JurorHistoryRepository jurorHistoryRepository;
-    @NonNull
     private final JurorStatusRepository jurorStatusRepository;
-    @NonNull
     private final PoolMemberSequenceService poolMemberSequenceService;
-    @NotNull
     private final JurorDigitalResponseRepositoryMod digitalResponseRepository;
-    @NotNull
     private final JurorPaperResponseRepositoryMod paperResponseRepository;
-    @NotNull
     private final AssignOnUpdateServiceMod assignOnUpdateService;
-    @NotNull
     private final SummonsReplyMergeService mergeService;
-    @NotNull
     private final JurorResponseAuditRepositoryMod jurorResponseAuditRepositoryMod;
-    @NonNull
     private final JurorHistoryService jurorHistoryService;
-    @NonNull
     private final PrintDataService printDataService;
+    private final JurorPoolService jurorPoolService;
 
     /**
      * When Jurors defer their service to a future date, a record gets added to the currently_deferred table.
@@ -190,7 +174,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     public void processJurorDeferral(BureauJwtPayload payload, String jurorNumber,
                                      DeferralReasonRequestDto deferralReasonDto) {
         String auditorUsername = payload.getLogin();
-        JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
+        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolRecord(
+            jurorPoolRepository, jurorPoolService, jurorNumber);
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
 
         // if not empty then we need to move the juror to the active pool
@@ -239,7 +224,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     public void changeJurorDeferralDate(BureauJwtPayload payload, String jurorNumber,
                                         DeferralReasonRequestDto deferralReasonDto) {
         String auditorUsername = payload.getLogin();
-        JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
+        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolRecord(
+            jurorPoolRepository, jurorPoolService, jurorNumber);
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
 
         // if not empty then we need to move the juror to the active pool
@@ -252,7 +238,6 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
             JurorPool newJurorPool = new JurorPool();
             if (poolRequest.isPresent()) {
-                PoolRequest request = poolRequest.get();
                 newJurorPool = addMemberToNewPool(
                     poolRequest.get(),
                     jurorPool,
@@ -308,7 +293,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
             // Add deferred member to active pool
             log.trace("Juror {} - adding pool member to requested active pool", jurorNumber);
-            JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
+            JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolRecord(
+                jurorPoolRepository, jurorPoolService, jurorNumber);
             JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
 
             JurorPool newJurorPool = addMemberToNewPool(poolRequest, jurorPool, payload.getLogin(),
@@ -333,7 +319,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         int countJurorsPostponed = 0;
         for (String jurorNumber : request.jurorNumbers) {
             // validation
-            JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
+            JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolRecord(
+                jurorPoolRepository, jurorPoolService, jurorNumber);
             JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
 
             if (jurorPool.getPoolNumber().equalsIgnoreCase(request.getPoolNumber())) {
@@ -454,7 +441,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         log.trace("Juror {}: Enter findActivePoolsForDates", jurorNumber);
         String owner = payload.getOwner();
 
-        JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
+        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolRecord(
+            jurorPoolRepository, jurorPoolService, jurorNumber);
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
 
         String currentCourtLocation = jurorPool.getCourt().getLocCode();
@@ -567,7 +555,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
         String customErrorMessage = String.format("Cannot find deferred record for juror number %s - ", jurorNumber);
 
-        JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
+        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolRecord(
+            jurorPoolRepository, jurorPoolService, jurorNumber);
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
 
         Optional<CurrentlyDeferred> currentlyDeferred = currentlyDeferredRepository.findById(jurorNumber);
@@ -825,8 +814,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
     private JurorPool getPoolMember(CurrentlyDeferred courtDeferral, LocalDate attendanceDate) {
         Optional<JurorPool> jurorPool =
-            jurorPoolRepository.findByJurorJurorNumberAndOwnerAndDeferralDate(courtDeferral.getJurorNumber(),
-                courtDeferral.getOwner(), attendanceDate);
+            jurorPoolRepository.findByJurorJurorNumberAndOwnerAndDeferralDateAndIsActiveTrue(
+                courtDeferral.getJurorNumber(), courtDeferral.getOwner(), attendanceDate);
 
         return jurorPool.orElseThrow(() -> new CurrentlyDeferredException.DeferredMemberNotFound(
             courtDeferral.getJurorNumber()));

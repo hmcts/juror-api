@@ -84,6 +84,7 @@ public class ContactLog implements Serializable {
     private Boolean repeatEnquiry;
 
     @PrePersist
+    @SuppressWarnings("PMD.UnusedPrivateMethod")
     private void prePersist() {
         preUpdate();
     }

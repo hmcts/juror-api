@@ -154,6 +154,7 @@ public final class LetterTestUtils {
     public static WelshCourtLocation testWelshCourtLocation() {
         WelshCourtLocation courtLocationWelsh = new WelshCourtLocation();
         courtLocationWelsh.setLocCourtName("ABERTAWE");
+        courtLocationWelsh.setCorrespondenceName("YN ABERTAWE");
         courtLocationWelsh.setAddress1("Y LLYSOEDD BARN");
         courtLocationWelsh.setAddress2("LON SAN HELEN");
         courtLocationWelsh.setAddress3("ABERTAWE");

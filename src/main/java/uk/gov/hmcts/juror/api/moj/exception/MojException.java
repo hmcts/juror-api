@@ -17,7 +17,7 @@ public class MojException extends RuntimeException {
 
     private MojException(String customErrorMessage, Throwable rootException) {
         super(customErrorMessage, rootException);
-        log.error(customErrorMessage);
+        log.error(customErrorMessage, rootException);
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -91,7 +91,9 @@ public class MojException extends RuntimeException {
             JUROR_DATE_OF_BIRTH_REQUIRED,
             INVALID_APPEARANCES_STATUS,
             DATA_IS_OUT_OF_DATE,
-            JUROR_HAS_BEEN_DEFERRED_BEFORE
+            JUROR_HAS_BEEN_DEFERRED_BEFORE,
+            COULD_NOT_FIND_ENOUGH_VOTERS,
+            COULD_NOT_FIND_ENOUGH_ELIGIBLE_VOTERS
         }
     }
 

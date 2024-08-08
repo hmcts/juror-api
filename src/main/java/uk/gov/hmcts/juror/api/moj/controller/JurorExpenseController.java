@@ -214,13 +214,13 @@ public class JurorExpenseController {
         + " and " + SecurityUtil.IS_COURT
         + " and " + SecurityUtil.IS_MANAGER + ")")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Void> approveExpenses(
+    public ResponseEntity<List<String>> approveExpenses(
         @PathVariable("loc_code") @CourtLocationCode @Valid @P("loc_code") String locCode,
         @PathVariable("payment_method") @Valid @NotNull PaymentMethod paymentMethod,
         @Valid @RequestBody List<ApproveExpenseDto> dto) {
-        bulkService.processVoid(dto,
+        List<String> financialAuditNumbers = bulkService.process(dto,
             approveExpenseDto -> jurorExpenseService.approveExpenses(locCode, paymentMethod, approveExpenseDto));
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ResponseEntity.ok(financialAuditNumbers);
     }
 
     @GetMapping("/{juror_number}/summary/totals")

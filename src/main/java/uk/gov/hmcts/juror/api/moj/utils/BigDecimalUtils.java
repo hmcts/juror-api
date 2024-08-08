@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.utils;
 import uk.gov.hmcts.juror.api.config.Settings;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.util.Optional;
 
@@ -50,5 +51,12 @@ public final class BigDecimalUtils {
 
     public static String currencyFormat(BigDecimal value) {
         return NumberFormat.getCurrencyInstance(Settings.LOCALE).format(value);
+    }
+
+    public static BigDecimal round(BigDecimal value, int precision) {
+        if (value == null) {
+            return null;
+        }
+        return value.setScale(precision, RoundingMode.HALF_UP);
     }
 }

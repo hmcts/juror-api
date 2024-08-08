@@ -1,9 +1,11 @@
 package uk.gov.hmcts.juror.api.moj.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -12,6 +14,7 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.envers.Audited;
 import org.hibernate.validator.constraints.Length;
+import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 
 import java.io.Serializable;
 
@@ -57,14 +60,20 @@ public class Address implements Serializable {
     @Column(name = "postcode")
     @Length(max = 10)
     @Pattern(regexp = POSTCODE_REGEX)
+    @Setter(AccessLevel.NONE)
+    //Must be uppercase
     private String postcode;
 
-
+    @JsonIgnore
     public String getCombinedAddressExcludingPostcode() {
         return addressLine1 + ","
             + addressLine2 + ","
             + addressLine3 + ","
             + addressLine4 + ","
             + addressLine5;
+    }
+
+    public void setPostcode(String postcode) {
+        this.postcode = DataUtils.toUppercase(postcode);
     }
 }

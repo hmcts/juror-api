@@ -9,7 +9,6 @@ import java.util.Date;
  * Composite key for {@link StatsResponseTime}.
  */
 @EqualsAndHashCode
-@Deprecated(forRemoval = true)
 public class StatsResponseTimeKey implements Serializable {
     private Date summonsMonth;
     private Date responseMonth;

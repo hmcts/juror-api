@@ -385,7 +385,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
         RequestEntity<ExcusalDecisionDto> requestEntity = new RequestEntity<>(excusalDecisionDto, httpHeaders,
             HttpMethod.PUT, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test
@@ -471,7 +471,11 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
         RequestEntity<ExcusalDecisionDto> requestEntity = new RequestEntity<>(excusalDecisionDto, httpHeaders,
             HttpMethod.PUT, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
+        validateExcusal(jurorPool, excusalDecisionDto, login);
+        validateExcusalLetter(excusalDecisionDto.getExcusalReasonCode());
     }
 
     private void validatePaperResponseExcusal(PaperResponse jurorPaperResponse, String login) {

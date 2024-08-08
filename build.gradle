@@ -204,15 +204,21 @@ flyway {
     def dbUserName = System.getenv("DB_USERNAME") ?: "system"
     def dbPassword = System.getenv("DB_PASSWORD") ?: "postgres"
     def flywayLocations = System.getenv("FLYWAY_LOC_OVERRIDE") ?: "db/**/*.sql"
-    
+
     url = "$dbUrl"
     user = "$dbUserName"
     password = "$dbPassword"
     locations = [ "$flywayLocations" ]
-    schemas = ['juror', 'juror_digital', 'juror_digital_user', 'juror_dashboard', 'hk', 'juror_mod']
+    schemas = ['juror_dashboard', 'juror_mod']
     defaultSchema = 'juror_mod'
     table = 'schema_history'
-    cleanDisabled = false
+    cleanDisabled = System.getenv("FLYWAY_CLEAN_DISABLED") ?: true
+}
+
+task migratePostgresDatabase(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
+    if (project.hasProperty("dburl")) {
+        url = "jdbc:postgresql://${dburl}"
+    }
 }
 
 springBoot {
@@ -278,10 +284,10 @@ checkstyle {
 }
 
 pmdTest {
-    maxFailures = 298
+    maxFailures = 294
 }
 pmdMain {
-    maxFailures = 799
+    maxFailures = 794
 }
 pmd {
     maxFailures = 0

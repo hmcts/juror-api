@@ -368,6 +368,29 @@ class PanelControllerITest extends AbstractIntegrationTest {
 
     }
 
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql", "/db/trial/CreatedJury.sql"})
+    void jurySummary() {
+        RequestEntity<PanelListDto[]> requestEntity =
+            new RequestEntity<>(
+                httpHeaders,
+                HttpMethod.GET,
+                URI.create("/api/v1/moj/trial/panel/jury-list?trial_number=T10000000&court_location_code=415"));
+
+        ResponseEntity<PanelListDto[]> responseEntity =
+            restTemplate.exchange(requestEntity, PanelListDto[].class);
+
+        assertThat(responseEntity.getStatusCode())
+            .as("Expected status code to be ok")
+            .isEqualTo(HttpStatus.OK);
+
+        assert responseEntity.getBody() != null;
+
+        assertThat(responseEntity.getBody().length)
+            .as("Expected length to be 11")
+            .isEqualTo(11);
+    }
+
     private void validateNotUsedChallengedHistory(Panel panelMember) {
         List<JurorHistory> jurorHistories =
             jurorHistoryRepository.findByJurorNumberOrderById(panelMember.getJurorNumber());

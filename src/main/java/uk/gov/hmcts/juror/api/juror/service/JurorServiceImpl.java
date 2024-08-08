@@ -25,13 +25,17 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ReplyTypeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.ReasonableAdjustmentsRepository;
+import uk.gov.hmcts.juror.api.moj.service.JurorPoolServiceImpl;
 import uk.gov.hmcts.juror.api.moj.service.PoolRequestService;
+import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
+import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
 import java.time.LocalDateTime;
@@ -52,16 +56,18 @@ public class JurorServiceImpl implements JurorService {
     private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
     private final JurorResponseCjsEmploymentRepositoryMod jurorResponseCjsEmploymentRepository;
     private final JurorReasonableAdjustmentRepository jurorReasonableAdjustmentRepository;
-    private final JurorPoolRepository jurorRepository;
+    private final JurorPoolRepository jurorPoolRepository;
     private final UrgencyService urgencyService;
     private final PoolRequestService poolRequestService;
     private final ReasonableAdjustmentsRepository reasonableAdjustmentsRepository;
+    private final JurorRepository jurorRepository;
+    private final JurorPoolServiceImpl jurorPoolServiceImpl;
 
 
     @Override
     public JurorDetailDto getJurorByJurorNumber(final String number) {
         log.debug("Getting juror {} details", number);
-        JurorPool jurorDetails = jurorRepository.findByJurorJurorNumber(number);
+        JurorPool jurorDetails = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, number);
 
         JurorDetailDto.JurorDetailDtoBuilder builder = JurorDetailDto.builder();
         JurorStatus jurorStatus = new JurorStatus();
@@ -148,12 +154,15 @@ public class JurorServiceImpl implements JurorService {
             throw new NoPhoneNumberProvided();
         }
 
+        JurorPool jurorDetails =
+            JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, responseDto.getJurorNumber());
+        Juror juror = jurorDetails.getJuror();
+
         if (!ObjectUtils.isEmpty(responseDto.getThirdParty()) && !ObjectUtils.isEmpty(
             responseDto.getThirdParty().getThirdPartyReason())
             && "deceased".equalsIgnoreCase(responseDto.getThirdParty().getThirdPartyReason())) {
             log.debug("Juror {} third party response for deceased.");
-            final JurorPool jurorDetails = jurorRepository.findByJurorJurorNumber(responseDto.getJurorNumber());
-            Juror juror = jurorDetails.getJuror();
+
             //copy fields from jurorDetails into jurorResponse as they are not supplied by the frontend!
             responseDto.setTitle(juror.getTitle());
             responseDto.setFirstName(juror.getFirstName());
@@ -183,6 +192,8 @@ public class JurorServiceImpl implements JurorService {
                 jurorReasonableAdjustmentRepository.saveAll(savedJurorResponse.getReasonableAdjustments());
             }
 
+            juror.setResponseEntered(true);
+            jurorRepository.save(juror);
 
             log.info("Juror response saved for juror {}", responseEntity.getJurorNumber());
             return savedJurorResponse;
@@ -262,7 +273,7 @@ public class JurorServiceImpl implements JurorService {
             );
         }
 
-        final JurorPool jurorDetails = jurorRepository.findByJurorJurorNumber(jurorNumber);
+        final JurorPool jurorDetails = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
         DigitalResponse.DigitalResponseBuilder<?, ?> builder = DigitalResponse.builder()
             .jurorNumber(dto.getJurorNumber())
             .dateOfBirth(dto.getDateOfBirth())
@@ -277,7 +288,7 @@ public class JurorServiceImpl implements JurorService {
             .addressLine3(dto.getAddressLineThree())
             .addressLine4(dto.getAddressTown())
             .addressLine5(dto.getAddressCounty())
-            .postcode(dto.getAddressPostcode())
+            .postcode(DataUtils.toUppercase(dto.getAddressPostcode()))
             .residency(livedConsecutive != null && livedConsecutive.isAnswer())
             .residencyDetail(livedConsecutive != null ? livedConsecutive.getDetails() : null)
             .bail(onBail != null && onBail.isAnswer())

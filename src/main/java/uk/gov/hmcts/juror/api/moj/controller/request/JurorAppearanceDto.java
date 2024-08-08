@@ -61,4 +61,7 @@ public class JurorAppearanceDto {
     @NotNull
     private AppearanceStage appearanceStage;
 
+    @JsonProperty("juror_in_waiting")
+    private boolean jurorInWaiting;
+
 }

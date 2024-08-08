@@ -79,7 +79,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
         final RetrieveAttendanceDetailsDto.CommonData commonData = request.getCommonData();
 
         // depending on what is to be updated, filter the query based on juror status
-        List<Integer> jurorStatuses = sqlFilterQueryJurorStatus(commonData.getTag());
+        List<Integer> jurorStatuses = sqlFilterQueryJurorStatus(commonData.getTag(), request.isJurorInWaiting());
 
         // start building the query
         JPAQuery<Tuple> query = sqlFetchAppearanceRecords(commonData.getLocationCode(), commonData.getAttendanceDate(),
@@ -112,7 +112,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .from(JUROR)
             .join(JUROR_POOL)
             .on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber))
-            .where(JUROR_POOL.owner.eq(commonData.getLocationCode()))
+            .where(JUROR_POOL.pool.courtLocation.locCode.eq(commonData.getLocationCode()))
             .where(JUROR_POOL.nextDate.eq(commonData.getAttendanceDate()))
             .where(JUROR_POOL.status.status.eq(IJurorStatus.RESPONDED))
             .where(JUROR.jurorNumber.notIn(
@@ -124,13 +124,18 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .orderBy(JUROR.jurorNumber.asc()).fetch();
     }
 
-    private List<Integer> sqlFilterQueryJurorStatus(@NotNull RetrieveAttendanceDetailsTag tag) {
+    private List<Integer> sqlFilterQueryJurorStatus(@NotNull RetrieveAttendanceDetailsTag tag,
+                                                    boolean isJurorInWaiting) {
         if (tag.equals(RetrieveAttendanceDetailsTag.CONFIRM_ATTENDANCE)) {
-            return List.of(IJurorStatus.RESPONDED, IJurorStatus.PANEL);
+            return IJurorStatus.getAllExcluding(IJurorStatus.JUROR);
         } else if (tag.equals(RetrieveAttendanceDetailsTag.PANELLED)) {
             return List.of(IJurorStatus.PANEL);
         } else {
-            return Arrays.asList(IJurorStatus.RESPONDED, IJurorStatus.PANEL, IJurorStatus.JUROR);
+            if (isJurorInWaiting) {
+                return IJurorStatus.getAllExcluding(IJurorStatus.JUROR);
+            } else {
+                return Arrays.asList(IJurorStatus.RESPONDED, IJurorStatus.PANEL, IJurorStatus.JUROR);
+            }
         }
     }
 
@@ -146,7 +151,8 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
                 APPEARANCE.timeOut.as("time_out"),
                 APPEARANCE.noShow.as("no_show"),
                 APPEARANCE.appearanceStage.as("app_stage"),
-                JUROR.policeCheck.as("police_check")
+                JUROR.policeCheck.as("police_check"),
+                APPEARANCE.appearanceConfirmed.as("appearance_confirmed")
             )
             .from(JUROR)
             .join(JUROR_POOL)
@@ -181,6 +187,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
                 .noShow(tuple.get(6, Boolean.class))
                 .appStage(tuple.get(7, AppearanceStage.class))
                 .policeCheck(tuple.get(8, PoliceCheck.class))
+                .appearanceConfirmed(tuple.get(9, Boolean.class))
                 .build();
             appearanceDataList.add(appearanceData);
         }
@@ -259,14 +266,14 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
     public long countPendingApproval(String locCode, boolean isCash) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         return queryFactory
-            .select(APPEARANCE.jurorNumber, APPEARANCE.poolNumber, APPEARANCE.appearanceStage)
+            .select(APPEARANCE.jurorNumber, APPEARANCE.appearanceStage)
             .from(APPEARANCE)
             .where(APPEARANCE.courtLocation.locCode.eq(locCode))
             .where(APPEARANCE.appearanceStage.in(AppearanceStage.EXPENSE_ENTERED, AppearanceStage.EXPENSE_EDITED))
             .where(APPEARANCE.isDraftExpense.isFalse())
+            .where(APPEARANCE.hideOnUnpaidExpenseAndReports.isFalse())
             .where(APPEARANCE.payCash.eq(isCash))
             .groupBy(APPEARANCE.jurorNumber)
-            .groupBy(APPEARANCE.poolNumber)
             .groupBy(APPEARANCE.appearanceStage)
             .fetchCount();
     }
@@ -327,6 +334,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             )
             .from(QAppearance.appearance)
             .where(QAppearance.appearance.locCode.eq(locCode))
+            .where(QAppearance.appearance.hideOnUnpaidExpenseAndReports.isFalse())
             .where(QAppearance.appearance.appearanceStage.in(
                 AppearanceStage.EXPENSE_ENTERED, AppearanceStage.EXPENSE_EDITED
             ))

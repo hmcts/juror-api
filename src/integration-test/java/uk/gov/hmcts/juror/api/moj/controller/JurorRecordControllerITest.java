@@ -745,8 +745,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             URI.create("/api/v1/moj/juror-record/optic-reference/123456789/415220502")), String.class);
 
         assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be FORBIDDEN")
-            .isEqualTo(HttpStatus.FORBIDDEN);
+            .as("Expect the HTTP GET request to be NOT_FOUND")
+            .isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test
@@ -961,6 +961,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         assertThat(jurorDetails.getOpticReference())
             .as("Expect the optic reference to be 18273645")
             .isEqualTo("18273645");
+        assertThat(jurorDetails.getCommonDetails().isResponseEntered())
+            .as("Expect the response entered flag to be true")
+            .isTrue();
     }
 
     @Test
@@ -3359,7 +3362,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, getCourtJwt("415"));
             ResponseEntity<JurorAttendanceDetailsResponseDto> response =
                 restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/attendance-detail/415/111111111")),
+                        URI.create("/api/v1/moj/juror-record/attendance-detail/111111111")),
                     JurorAttendanceDetailsResponseDto.class);
 
             assertThat(response.getStatusCode())
@@ -3430,7 +3433,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, getCourtJwt("415"));
             ResponseEntity<JurorAttendanceDetailsResponseDto> response =
                 restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/attendance-detail/415/222222222")),
+                        URI.create("/api/v1/moj/juror-record/attendance-detail/222222222")),
                     JurorAttendanceDetailsResponseDto.class);
 
             assertThat(response.getStatusCode())
@@ -5232,6 +5235,81 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be FORBIDDEN")
                 .isEqualTo(HttpStatus.FORBIDDEN);
+        }
+
+    }
+
+
+    @Nested
+    @DisplayName("Mark as responded")
+    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_InitMarkAsResponded.sql"})
+    class MarkAsResponded {
+
+        @Test
+        void markJurorAsRespondedCourtHappyPath() throws Exception {
+
+            String jurorNumber = "111111111";
+            final String url = BASE_URL + "/mark-responded/" + jurorNumber;
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
+                UserType.COURT));
+
+            ResponseEntity<Void> response =
+                restTemplate.exchange(new RequestEntity<>(null, httpHeaders, HttpMethod.PATCH,
+                    URI.create(url)), Void.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP POST request to be OK")
+                .isEqualTo(HttpStatus.OK);
+
+            JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumber(jurorNumber);
+
+            assertThat(jurorPool.getStatus().getStatus()).isEqualTo(IJurorStatus.RESPONDED);
+            assertThat(jurorPool.getReturnDate()).isEqualTo(LocalDate.now().minusWeeks(2));
+
+        }
+
+        @Test
+        void markJurorAsRespondedBureauHappyPath() throws Exception {
+
+            String jurorNumber = "222222222";
+            final String url = BASE_URL + "/mark-responded/" + jurorNumber;
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("400", Collections.singletonList("400"),
+                UserType.BUREAU));
+
+            ResponseEntity<Void> response =
+                restTemplate.exchange(new RequestEntity<>(null, httpHeaders, HttpMethod.PATCH,
+                    URI.create(url)), Void.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP POST request to be OK")
+                .isEqualTo(HttpStatus.OK);
+
+            JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumber(jurorNumber);
+
+            assertThat(jurorPool.getStatus().getStatus()).isEqualTo(IJurorStatus.RESPONDED);
+            assertThat(jurorPool.getReturnDate()).isEqualTo(LocalDate.now().minusWeeks(2));
+
+        }
+
+        @Test
+        void markJurorAsRespondedBureauJurorNotFound() throws Exception {
+
+            String jurorNumber = "333333333";
+            final String url = BASE_URL + "/mark-responded/" + jurorNumber;
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("400", Collections.singletonList("400"),
+                UserType.BUREAU));
+
+            ResponseEntity<Void> response =
+                restTemplate.exchange(new RequestEntity<>(null, httpHeaders, HttpMethod.PATCH,
+                    URI.create(url)), Void.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP POST request to be NOT_FOUND")
+                .isEqualTo(HttpStatus.NOT_FOUND);
+
         }
 
     }

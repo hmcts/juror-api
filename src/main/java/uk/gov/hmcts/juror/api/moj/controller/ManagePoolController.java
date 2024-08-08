@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.config.security.IsBureauUser;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorManagementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolEditRequestDto;
@@ -28,14 +29,11 @@ import uk.gov.hmcts.juror.api.moj.controller.response.PoolSummaryResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.SummoningProgressResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.AvailablePoolsInCourtLocationDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.ReassignPoolMembersResultDto;
-import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.DeletePoolService;
 import uk.gov.hmcts.juror.api.moj.service.EditPoolService;
 import uk.gov.hmcts.juror.api.moj.service.PoolStatisticsService;
 import uk.gov.hmcts.juror.api.moj.service.poolmanagement.JurorManagementService;
 import uk.gov.hmcts.juror.api.moj.service.poolmanagement.ManagePoolsService;
-
-import static uk.gov.hmcts.juror.api.JurorDigitalApplication.JUROR_OWNER;
 
 @RestController
 @RequestMapping(value = "/api/v1/moj/manage-pool", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -173,15 +171,11 @@ public class ManagePoolController {
 
     @GetMapping(path = "/summoning-progress/{courtLocCode}/{poolType}")
     @Operation(summary = "Get pool monitoring stats")
+    @IsBureauUser
     public ResponseEntity<SummoningProgressResponseDto> getPoolMonitoringStats(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Parameter @PathVariable("courtLocCode") String courtLocationCode,
         @Parameter @PathVariable("poolType") String poolType) {
-
-        if (!payload.getOwner().equals(JUROR_OWNER)) {
-            throw new MojException.Forbidden("Authorisation access denied, bureau user only",
-                null);
-        }
 
         return ResponseEntity.ok()
             .body(managePoolsService.getPoolMonitoringStats(payload, courtLocationCode, poolType));

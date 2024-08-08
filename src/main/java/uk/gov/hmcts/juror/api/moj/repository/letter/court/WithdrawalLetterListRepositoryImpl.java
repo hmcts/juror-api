@@ -27,7 +27,7 @@ public class WithdrawalLetterListRepositoryImpl implements IWithdrawalLetterList
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         JPAQuery<WithdrawalLetterList> jpaQuery =
             queryFactory.selectFrom(WITHDRAWAL_LETTER_LIST)
-                .where(WITHDRAWAL_LETTER_LIST.owner.equalsIgnoreCase(owner));
+                .where(WITHDRAWAL_LETTER_LIST.owner.eq(owner));
 
         filterEligibleLetterSearchCriteria(jpaQuery, searchCriteria);
 

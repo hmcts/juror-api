@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.domain;
 
+import io.micrometer.common.util.StringUtils;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -17,6 +18,7 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -25,6 +27,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.Generated;
 import org.hibernate.envers.AuditOverride;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
@@ -33,6 +36,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCommon;
+import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -96,6 +100,10 @@ public class Juror extends Address implements Serializable {
     @Length(max = 20)
     private String phoneNumber;
 
+    @Column(name = "m_phone")
+    @Length(max = 20)
+    private String altPhoneNumber;
+
     @Column(name = "w_phone")
     @Length(max = 20)
     private String workPhone;
@@ -155,7 +163,7 @@ public class Juror extends Address implements Serializable {
     private String reasonableAdjustmentCode;
 
     @NotAudited
-    @Length(max = 60)
+    @Length(max = ValidationConstants.REASONABLE_ADJUSTMENT_MESSAGE_LENGTH_MAX)
     @Column(name = "reasonable_adj_msg")
     private String reasonableAdjustmentMessage;
 
@@ -202,9 +210,7 @@ public class Juror extends Address implements Serializable {
     @Column(name = "summons_file")
     private String summonsFile;
 
-    @Column(name = "m_phone")
-    @Length(max = 20)
-    private String altPhoneNumber;
+
 
     @Length(max = 254)
     @Column(name = "h_email")
@@ -257,7 +263,7 @@ public class Juror extends Address implements Serializable {
     private BigDecimal financialLoss;
 
     @Column(name = "mileage")
-    @NotAudited
+    @Audited
     private Integer mileage;
 
     @Column(name = "claiming_subsistence_allowance")
@@ -279,6 +285,10 @@ public class Juror extends Address implements Serializable {
     @NotAudited
     private String serviceCompCommsStatus;
 
+    @Column(name = "response_entered")
+    @NotAudited
+    private boolean responseEntered;
+
     @NotAudited
     @OneToMany(mappedBy = "juror", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
     private Set<JurorPool> associatedPools;
@@ -289,8 +299,15 @@ public class Juror extends Address implements Serializable {
     @NotAudited
     private JurorResponseCommon jurorResponse;
 
+    @Column(name = "phone_number_combined")
+    @Setter(AccessLevel.NONE)
+    @NotAudited
+    @Generated
+    private String phoneNumberCombined;
+
 
     @PrePersist
+    @SuppressWarnings("PMD.UnusedPrivateMethod")
     private void prePersist() {
         dateCreated = LocalDateTime.now();
         preUpdate();
@@ -303,10 +320,10 @@ public class Juror extends Address implements Serializable {
 
     public String getName() {
         String buildName = "";
-        if (title != null) {
+        if (StringUtils.isNotBlank(title)) {
             buildName = title + " ";
         }
-        return buildName + firstName + " " + lastName;
+        return (buildName + firstName + " " + lastName).trim();
     }
 
     public void setPoliceCheck(PoliceCheck policeCheck) {

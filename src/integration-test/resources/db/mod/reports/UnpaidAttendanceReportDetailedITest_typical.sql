@@ -63,28 +63,30 @@ values ('415', '415000001', 'T100000002', 1, current_date - 1, 'J', false),
        ('414', '414000002', 'T100000004', 1, current_date - 1, 'J', false);
 
 INSERT INTO juror_mod.appearance (attendance_date, juror_number, pool_number, loc_code, attendance_type,
-                                  appearance_stage, attendance_audit_number, trial_number, is_draft_expense)
-values ('2023-01-01', '415000001', '415230101', '415', 'ABSENT', 'CHECKED_OUT', 'P123', null,false),
-       ('2023-01-02', '415000001', '415230101', '415', 'FULL_DAY', 'EXPENSE_ENTERED', 'P1234', null,true),
-       ('2023-01-03', '415000001', '415230101', '415', 'NON_ATTENDANCE', 'EXPENSE_ENTERED', 'J1234', 'T100000002',false),
-       ('2023-01-04', '415000001', '415230101', '415', 'NON_ATTENDANCE', 'EXPENSE_ENTERED', 'P1234', null,true),
+                                  appearance_stage, attendance_audit_number, trial_number, is_draft_expense, hide_on_unpaid_expense_and_reports)
+values ('2023-01-01', '415000001', '415230101', '415', 'ABSENT', 'CHECKED_OUT', 'P123', null,false, false),
+       ('2023-01-02', '415000001', '415230101', '415', 'FULL_DAY', 'EXPENSE_ENTERED', 'P1234', null,true, false),
+       ('2023-01-03', '415000001', '415230101', '415', 'NON_ATTENDANCE', 'EXPENSE_ENTERED', 'J1234', 'T100000002',false, false),
+       ('2023-01-04', '415000001', '415230101', '415', 'NON_ATTENDANCE', 'EXPENSE_ENTERED', 'P1234', null,true, false),
+       ('2023-01-05', '415000001', '415230101', '415', 'NON_ATTENDANCE', 'EXPENSE_ENTERED', 'J1234', 'T100000002',false, true),
+       ('2023-01-06', '415000001', '415230101', '415', 'NON_ATTENDANCE', 'EXPENSE_ENTERED', 'P1234', null,true, true),
 
-       ('2023-01-01', '415000002', '415230101', '415', 'HALF_DAY', 'EXPENSE_AUTHORISED', 'J123', 'T100000002',false),
-       ('2023-01-02', '415000002', '415230101', '415', 'FULL_DAY', 'EXPENSE_EDITED', 'P1234', null,false),
-       ('2023-01-03', '415000002', '415230101', '415', 'NON_ATTENDANCE', 'EXPENSE_ENTERED', 'J1231', 'T100000003',false),
-       ('2023-01-04', '415000002', '415230101', '415', 'NON_ATTENDANCE', 'EXPENSE_ENTERED', 'J1235', 'T100000003',false),
+       ('2023-01-01', '415000002', '415230101', '415', 'HALF_DAY', 'EXPENSE_AUTHORISED', 'J123', 'T100000002',false, false),
+       ('2023-01-02', '415000002', '415230101', '415', 'FULL_DAY', 'EXPENSE_EDITED', 'P1234', null,false, false),
+       ('2023-01-03', '415000002', '415230101', '415', 'NON_ATTENDANCE', 'EXPENSE_ENTERED', 'J1231', 'T100000003',false, false),
+       ('2023-01-04', '415000002', '415230101', '415', 'NON_ATTENDANCE', 'EXPENSE_ENTERED', 'J1235', 'T100000003',false, false),
 
 
-       ('2023-01-01', '415000003', '415230103', '415', 'HALF_DAY', 'EXPENSE_AUTHORISED', 'P1234', null,false),
-       ('2023-01-02', '415000003', '415230103', '415', 'FULL_DAY', 'EXPENSE_EDITED', 'P1234', null,false),
+       ('2023-01-01', '415000003', '415230103', '415', 'HALF_DAY', 'EXPENSE_AUTHORISED', 'P1234', null,false, false),
+       ('2023-01-02', '415000003', '415230103', '415', 'FULL_DAY', 'EXPENSE_EDITED', 'P1234', null,false, false),
 
-       ('2023-01-01', '414000001', '414230101', '414', 'FULL_DAY', 'EXPENSE_ENTERED', 'J1231', 'T100000004',false),
-       ('2023-01-02', '414000001', '414230101', '414', 'FULL_DAY', 'EXPENSE_ENTERED', 'J1235', 'T100000004',false),
-       ('2023-01-01', '414000002', '414230101', '414', 'HALF_DAY_LONG_TRIAL', 'EXPENSE_ENTERED', 'J1231', 'T100000004',false),
-       ('2023-01-02', '414000002', '414230101', '414', 'FULL_DAY', 'EXPENSE_ENTERED', 'J1235', 'T100000004',false),
+       ('2023-01-01', '414000001', '414230101', '414', 'FULL_DAY', 'EXPENSE_ENTERED', 'J1231', 'T100000004',false, false),
+       ('2023-01-02', '414000001', '414230101', '414', 'FULL_DAY', 'EXPENSE_ENTERED', 'J1235', 'T100000004',false, false),
+       ('2023-01-01', '414000002', '414230101', '414', 'HALF_DAY_LONG_TRIAL', 'EXPENSE_ENTERED', 'J1231', 'T100000004',false, false),
+       ('2023-01-02', '414000002', '414230101', '414', 'FULL_DAY', 'EXPENSE_ENTERED', 'J1235', 'T100000004',false, false),
 
-       ('2023-01-01', '413000001', '413230101', '413', 'NON_ATTENDANCE_LONG_TRIAL', 'EXPENSE_ENTERED', 'P1231', null,false),
-       ('2023-01-02', '413000001', '413230101', '413', 'FULL_DAY', 'EXPENSE_ENTERED', 'P1235', null,false),
-       ('2023-01-01', '413000002', '413230101', '413', 'FULL_DAY', 'EXPENSE_ENTERED', 'P1231', null,false),
-       ('2023-01-02', '413000002', '413230101', '413', 'FULL_DAY', 'EXPENSE_ENTERED', 'P1235', null,false)
+       ('2023-01-01', '413000001', '413230101', '413', 'NON_ATTENDANCE_LONG_TRIAL', 'EXPENSE_ENTERED', 'P1231', null,false, false),
+       ('2023-01-02', '413000001', '413230101', '413', 'FULL_DAY', 'EXPENSE_ENTERED', 'P1235', null,false, false),
+       ('2023-01-01', '413000002', '413230101', '413', 'FULL_DAY', 'EXPENSE_ENTERED', 'P1231', null,false, false),
+       ('2023-01-02', '413000002', '413230101', '413', 'FULL_DAY', 'EXPENSE_ENTERED', 'P1235', null,false, false)
 ;

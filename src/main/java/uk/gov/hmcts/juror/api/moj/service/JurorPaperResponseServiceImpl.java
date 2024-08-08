@@ -204,6 +204,8 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         jurorPaperResponseDetailDto.setProcessingStatus(jurorPaperResponse.getProcessingStatus().getDescription());
         jurorPaperResponseDetailDto.setWelsh(jurorPaperResponse.getWelsh());
 
+        jurorPaperResponseDetailDto.setCompletedAt(jurorPaperResponse.getCompletedAt());
+
         // copy the existing name and address values from Juror record
         copyExistingJurorDetails(jurorPaperResponseDetailDto, juror);
 
@@ -333,6 +335,11 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         jurorPaperResponse = updateWelshFlagBasedOnResponse(jurorPaperResponse, jurorPool);
 
         paperResponseRepository.save(jurorPaperResponse);
+
+        Juror juror = jurorPool.getJuror();
+        juror.setResponseEntered(true);
+        jurorRepository.save(juror);
+
         log.info(String.format("Saved paper response for Juror %s", jurorNumber));
 
         jurorResponseCjsEmploymentRepository.saveAll(jurorPaperResponse.getCjsEmployments());

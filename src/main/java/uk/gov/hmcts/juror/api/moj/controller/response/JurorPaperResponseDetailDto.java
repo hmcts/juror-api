@@ -14,8 +14,10 @@ import org.hibernate.validator.constraints.Length;
 import uk.gov.hmcts.juror.api.moj.controller.response.jurorresponse.IJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.UserDetailsDto;
 import uk.gov.hmcts.juror.api.validation.LocalDateOfBirth;
+import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.EMAIL_ADDRESS_REGEX;
@@ -267,6 +269,11 @@ public class JurorPaperResponseDetailDto implements IJurorResponse {
     @JsonProperty("current_owner")
     @Schema(name = "Current Owner", description = "Current owner (3 digit code) of the juror record")
     private String currentOwner;
+
+    @JsonProperty("completed_at")
+    @JsonFormat(pattern = ValidationConstants.DATETIME_FORMAT)
+    @Schema(name = "Completed At", description = "Date and time the juror paper response was completed")
+    private LocalDateTime completedAt;
 
     @AllArgsConstructor
     @NoArgsConstructor

@@ -63,8 +63,10 @@ import uk.gov.hmcts.juror.api.moj.repository.PaymentDataRepository;
 import uk.gov.hmcts.juror.api.moj.service.ApplicationSettingService;
 import uk.gov.hmcts.juror.api.moj.service.FinancialAuditService;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
+import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.ValidationService;
 import uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils;
+import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
@@ -114,6 +116,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     private final ApplicationSettingService applicationSettingService;
     private final EntityManager entityManager;
     private final ExpenseRatesRepository expenseRatesRepository;
+    private final JurorPoolService jurorPoolService;
 
     Integer getJurorDefaultMileage(String jurorNumber) {
         Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
@@ -735,8 +738,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
      */
     @Override
     @Transactional
-    public void realignExpenseDetails(Appearance appearance, boolean isDeleted) {
-        if (isDeleted || AttendanceType.ABSENT.equals(appearance.getAttendanceType())) {
+    public void realignExpenseDetails(Appearance appearance) {
+        if (AttendanceType.ABSENT.equals(appearance.getAttendanceType())) {
             appearance.clearExpenses(true);
         } else if (!isAttendanceDay(appearance)) {
             appearance.clearTravelExpenses(true);
@@ -1018,7 +1021,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
         return PendingApproval.builder()
             .jurorNumber(jurorNumber)
-            .poolNumber(getActiveJurorPool(locCode, juror.getJurorNumber()).getPoolNumber())
+            .poolNumber(jurorPoolService.getLastJurorPoolForJuror(locCode, jurorNumber).getPoolNumber())
             .firstName(juror.getFirstName())
             .lastName(juror.getLastName())
             .amountDue(appearances.stream()
@@ -1033,16 +1036,6 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                         .version(appearance.getVersion())
                         .build()).toList()
             ).build();
-    }
-
-    private JurorPool getActiveJurorPool(String locCode, String jurorNumber) {
-        JurorPool jurorPool =
-            jurorPoolRepository.findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue(locCode,
-                jurorNumber);
-        if (jurorPool == null) {
-            throw new MojException.NotFound("No active pool found for juror: " + jurorNumber, null);
-        }
-        return jurorPool;
     }
 
     //This method is here to support unit testing
@@ -1061,7 +1054,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     @Override
     @Transactional
     @PreAuthorize(SecurityUtil.IS_MANAGER)
-    public void approveExpenses(String locCode, PaymentMethod paymentMethod, ApproveExpenseDto dto) {
+    public String approveExpenses(String locCode, PaymentMethod paymentMethod, ApproveExpenseDto dto) {
         ApproveExpenseDto.ApprovalType approvalType = dto.getApprovalType();
         List<Appearance> appearances = appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumber(
                 locCode, dto.getJurorNumber())
@@ -1093,8 +1086,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 "User cannot approve expenses over " + BigDecimalUtils.currencyFormat(userLimit),
                 CAN_NOT_APPROVE_MORE_THAN_LIMIT);
         }
-        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, dto.getJurorNumber(),
-            SecurityUtil.getActiveOwner());
+        JurorPool jurorPool =  jurorPoolService.getLastJurorPoolForJuror(locCode, dto.getJurorNumber());
         if (!PaymentMethod.CASH.equals(paymentMethod)) {
             createAndSavePaymentDataWhereApplicable(dto.getJurorNumber(), jurorPool.getCourt(), appearances);
         }
@@ -1128,6 +1120,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 totalToApprove
             );
         }
+
+        return financialAuditDetails.getFinancialAuditNumber();
     }
 
     void approveAppearance(Appearance appearance) {
@@ -1198,16 +1192,16 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             .creationDateTime(LocalDateTime.now())
             .expenseTotal(expenseTotal)
             .jurorNumber(jurorNumber)
-            .bankSortCode(juror.getSortCode())
-            .bankAccountName(juror.getBankAccountName())
-            .bankAccountNumber(juror.getBankAccountNumber())
-            .buildingSocietyNumber(juror.getBuildingSocietyRollNumber())
-            .addressLine1(juror.getAddressLine1())
-            .addressLine2(juror.getAddressLine2())
-            .addressLine3(juror.getAddressLine3())
-            .addressLine4(juror.getAddressLine4())
-            .addressLine5(juror.getAddressLine5())
-            .postcode(juror.getPostcode())
+            .bankSortCode(DataUtils.trim(juror.getSortCode()))
+            .bankAccountName(DataUtils.trim(juror.getBankAccountName()))
+            .bankAccountNumber(DataUtils.trim(juror.getBankAccountNumber()))
+            .buildingSocietyNumber(DataUtils.trim(juror.getBuildingSocietyRollNumber()))
+            .addressLine1(DataUtils.trim(juror.getAddressLine1()))
+            .addressLine2(DataUtils.trim(juror.getAddressLine2()))
+            .addressLine3(DataUtils.trim(juror.getAddressLine3()))
+            .addressLine4(DataUtils.trim(juror.getAddressLine4()))
+            .addressLine5(DataUtils.trim(juror.getAddressLine5()))
+            .postcode(DataUtils.trim(juror.getPostcode()))
             .authCode(applicationSettingService.getAppSetting(ApplicationSettings.Setting.PAYMENT_AUTH_CODE)
                 .orElseThrow(
                     () -> new MojException.InternalServerError(
@@ -1269,23 +1263,6 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         }
         updateFoodDrinkClaimType(appearance, foodAndDrink.getFoodAndDrinkClaimType());
         appearance.setSmartCardAmountDue(foodAndDrink.getSmartCardAmount());
-    }
-
-
-    @Override
-    @Transactional(readOnly = true)
-    public boolean isLongTrialDay(String locCode, String jurorNumber, LocalDate localDate) {
-        List<LocalDate> localDates = new ArrayList<>();
-        localDates.add(localDate);
-        localDates.addAll(
-            appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumber(locCode, jurorNumber)
-                .stream()
-                .map(Appearance::getAttendanceDate)
-                .distinct()
-                .toList());
-        return localDates.stream().distinct().sorted(Comparator.naturalOrder())
-            .toList()
-            .indexOf(localDate) >= 10;//>= as 0 indexed
     }
 
 

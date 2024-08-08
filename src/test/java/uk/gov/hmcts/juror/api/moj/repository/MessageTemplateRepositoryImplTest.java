@@ -146,8 +146,9 @@ class MessageTemplateRepositoryImplTest {
                 JUROR.jurorNumber,
                 JUROR_POOL.pool.poolNumber,
                 JUROR.email,
-                JUROR.phoneNumber,
-                JUROR.welsh
+                JUROR.phoneNumberCombined,
+                JUROR.welsh,
+                JUROR_POOL.pool.courtLocation.locCode
             );
         verify(messageSearch, times(1))
             .apply(jpaQuery);
@@ -227,8 +228,9 @@ class MessageTemplateRepositoryImplTest {
                 JUROR.jurorNumber,
                 JUROR_POOL.pool.poolNumber,
                 JUROR.email,
-                JUROR.phoneNumber,
+                JUROR.phoneNumberCombined,
                 JUROR.welsh,
+                JUROR_POOL.pool.courtLocation.locCode,
                 JUROR.firstName,
                 JUROR.lastName,
                 JUROR_POOL.status,
@@ -307,8 +309,9 @@ class MessageTemplateRepositoryImplTest {
                 JUROR.jurorNumber,
                 JUROR_POOL.pool.poolNumber,
                 JUROR.email,
-                JUROR.phoneNumber,
-                JUROR.welsh
+                JUROR.phoneNumberCombined,
+                JUROR.welsh,
+                JUROR_POOL.pool.courtLocation.locCode
             );
         verify(messageSearch, times(1))
             .apply(jpaQuery);
@@ -392,8 +395,9 @@ class MessageTemplateRepositoryImplTest {
                 JUROR.jurorNumber,
                 JUROR_POOL.pool.poolNumber,
                 JUROR.email,
-                JUROR.phoneNumber,
+                JUROR.phoneNumberCombined,
                 JUROR.welsh,
+                JUROR_POOL.pool.courtLocation.locCode,
                 JUROR.firstName,
                 JUROR.lastName,
                 JUROR_POOL.status,
@@ -487,8 +491,9 @@ class MessageTemplateRepositoryImplTest {
                 JUROR.jurorNumber,
                 JUROR_POOL.pool.poolNumber,
                 JUROR.email,
-                JUROR.phoneNumber,
-                JUROR.welsh
+                JUROR.phoneNumberCombined,
+                JUROR.welsh,
+                JUROR_POOL.pool.courtLocation.locCode
             );
         verify(messageSearch, times(1))
             .apply(jpaQuery);

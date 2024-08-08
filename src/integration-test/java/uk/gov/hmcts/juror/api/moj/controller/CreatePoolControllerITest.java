@@ -1588,7 +1588,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         RequestEntity<PoolCreateRequestDto> requestEntity = new RequestEntity<>(poolCreateRequest, httpHeaders,
             HttpMethod.POST, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     private void confirmCoronerPoolRecordAsExpected(CoronerPoolItemDto coronerPoolItemDto) {
