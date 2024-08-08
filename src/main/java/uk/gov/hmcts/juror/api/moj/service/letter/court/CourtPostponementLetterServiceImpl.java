@@ -41,7 +41,7 @@ public class CourtPostponementLetterServiceImpl implements CourtLetterService {
 
         log.debug("Find jurors eligible for a court postpone letter for the primary court: {}", owner);
         List<PostponedLetterList> eligibleJurorRecords =
-            postponementLetterListRepository.findJurorsEligibleForPostponementLetter(searchCriteria, owner);
+            postponementLetterListRepository.findJurorsEligibleForPostponementLetter(searchCriteria);
         log.debug("{} records found", eligibleJurorRecords.size());
 
         List<String> headings = List.of(JUROR_NUMBER, FIRST_NAME, LAST_NAME, POSTCODE, STATUS, POSTPONED_TO, REASON,

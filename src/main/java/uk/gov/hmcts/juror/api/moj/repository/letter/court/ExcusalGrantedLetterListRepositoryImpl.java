@@ -114,6 +114,7 @@ public class ExcusalGrantedLetterListRepositoryImpl implements IExcusalGrantedLe
             jpaQuery.where(QJurorPool.jurorPool.juror.jurorNumber.startsWith(courtLetterSearchCriteria.jurorNumber()));
         }
 
+
         if (!StringUtils.isEmpty(courtLetterSearchCriteria.jurorName())) {
             jpaQuery.where(QJurorPool.jurorPool.juror.firstName.concat(" ").concat(QJurorPool.jurorPool.juror.lastName)
                 .containsIgnoreCase(courtLetterSearchCriteria.jurorName()));
@@ -145,7 +146,7 @@ public class ExcusalGrantedLetterListRepositoryImpl implements IExcusalGrantedLe
                 .then(0)
                 .otherwise(1)
                 .asc());
-        }
+            }
 
         jpaQuery.orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc())
             .orderBy(QJuror.juror.excusalDate.desc());

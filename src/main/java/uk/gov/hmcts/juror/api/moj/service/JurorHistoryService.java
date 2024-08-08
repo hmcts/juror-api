@@ -9,6 +9,7 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public interface JurorHistoryService {
     void createPoliceCheckDisqualifyHistory(JurorPool jurorPool);
 
