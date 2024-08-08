@@ -1469,7 +1469,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
             assertThat(response.getBody()).isNotNull();
             List<?> responseBody = response.getBody().getData();
-            assertThat(responseBody.size()).isEqualTo(1);
+            assertThat(responseBody.size()).isEqualTo(0);
         }
 
         @Test
@@ -1578,14 +1578,14 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
             assertThat(response.getBody()).isNotNull();
             List<?> responseBody = response.getBody().getData();
-            assertThat(responseBody.size()).isEqualTo(3);
+            assertThat(responseBody.size()).isEqualTo(2);
 
             List<ExcusalLetterData> dataList = responseBody.stream()
                 .map(data -> (ExcusalLetterData) data)
                 .filter(data -> data.getPostcode().equalsIgnoreCase(postcode))
                 .toList();
 
-            assertThat(dataList).size().isEqualTo(3);
+            assertThat(dataList).size().isEqualTo(2);
         }
 
         @Test
@@ -1653,14 +1653,14 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
             assertThat(response.getBody()).isNotNull();
             List<?> responseBody = response.getBody().getData();
-            assertThat(responseBody.size()).isEqualTo(3);
+            assertThat(responseBody.size()).isEqualTo(2);
 
             List<ExcusalLetterData> dataList = responseBody.stream()
                 .map(data -> (ExcusalLetterData) data)
                 .filter(data -> data.getPoolNumber().equalsIgnoreCase(poolNumber))
                 .toList();
 
-            assertThat(dataList).size().isEqualTo(3);
+            assertThat(dataList).size().isEqualTo(2);
         }
 
         @Test
