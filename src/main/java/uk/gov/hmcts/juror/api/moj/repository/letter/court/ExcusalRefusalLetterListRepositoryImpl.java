@@ -193,7 +193,7 @@ public class ExcusalRefusalLetterListRepositoryImpl implements IExcusalRefusalLe
         }
 
         if (!StringUtils.isEmpty(courtLetterSearchCriteria.poolNumber())) {
-            jpaQuery.where(QJurorPool.jurorPool.pool.poolNumber.startsWith(courtLetterSearchCriteria.poolNumber()));
+            jpaQuery.where(QPoolRequest.poolRequest.poolNumber.startsWith(courtLetterSearchCriteria.poolNumber()));
         }
     }
 
