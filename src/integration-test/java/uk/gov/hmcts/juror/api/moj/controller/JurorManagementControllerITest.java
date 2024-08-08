@@ -1108,7 +1108,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             // verify attendance details have been updated x 2 checked in
             Appearance appearance1 =
-                appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR1, request.getCommonData()
+                appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415", JUROR1, request.getCommonData()
                     .getAttendanceDate()).orElseThrow(() ->
                     new MojException.NotFound("No appearance record found", null));
             assertThat(appearance1.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
@@ -1116,7 +1116,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(appearance1.isAppearanceConfirmed()).isTrue();
 
             Appearance appearance2 =
-                appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR6, request.getCommonData()
+                appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415", JUROR6, request.getCommonData()
                     .getAttendanceDate()).orElseThrow(() ->
                     new MojException.NotFound("No appearance record found", null));
             assertThat(appearance2.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);

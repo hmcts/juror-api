@@ -517,7 +517,7 @@ public class CourtLetterServiceTest {
             List<ExcusalGrantedLetterList> results =
                 List.of(createExcusalLetterList(jurorNumber, deferredTo, reason, poolNumber, null));
 
-            when(excusalGrantedLetterListRepository.findJurorsEligibleForExcusalGrantedLetter(Mockito.any(),
+            when(excusalGrantedLetterListRepository.findJurorsEligibleForExcusalGrantedLetter(
                 Mockito.any())).thenReturn(results);
 
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto.builder()
@@ -556,7 +556,7 @@ public class CourtLetterServiceTest {
                 List.of(createExcusalLetterList(jurorNumber, dateExcused, reason, poolNumber,
                     datePrinted));
 
-            when(excusalGrantedLetterListRepository.findJurorsEligibleForExcusalGrantedLetter(Mockito.any(),
+            when(excusalGrantedLetterListRepository.findJurorsEligibleForExcusalGrantedLetter(
                 Mockito.any())).thenReturn(results);
 
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto.builder()
@@ -590,7 +590,7 @@ public class CourtLetterServiceTest {
 
             List<ExcusalGrantedLetterList> results = new ArrayList<>();
 
-            when(excusalGrantedLetterListRepository.findJurorsEligibleForExcusalGrantedLetter(Mockito.any(),
+            when(excusalGrantedLetterListRepository.findJurorsEligibleForExcusalGrantedLetter(
                 Mockito.any())).thenReturn(results);
 
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto.builder()

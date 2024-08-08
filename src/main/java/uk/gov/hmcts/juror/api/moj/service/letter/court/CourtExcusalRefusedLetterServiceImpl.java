@@ -41,8 +41,6 @@ public class CourtExcusalRefusedLetterServiceImpl implements CourtLetterService 
 
         log.debug("Find jurors eligible for a court deferral letter for the primary court: {}", owner);
 
-        //todo implement serialise excusal refused letter data aka steal from me brudda ;)
-
         List<ExcusalRefusedLetterList> eligibleJurorRecords =
             excusalRefusalLetterListRepository.findJurorsEligibleForExcusalRefusalLetter(searchCriteria, owner);
         log.debug("{} records found", eligibleJurorRecords.size());

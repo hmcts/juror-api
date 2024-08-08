@@ -86,9 +86,7 @@ class PersonAttendingSummaryReportTest extends AbstractStandardReportTestSupport
         verify(query, times(1))
             .where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(locCode));
         verify(query, times(1))
-            .where(QJurorPool.jurorPool.status.status.in(IJurorStatus.RESPONDED,
-                                                         IJurorStatus.PANEL,
-                                                         IJurorStatus.JUROR));
+            .where(QJurorPool.jurorPool.status.status.in(IJurorStatus.RESPONDED));
         verify(query, times(1)).orderBy(QJurorPool.jurorPool.juror.lastName.asc());
     }
 
@@ -101,7 +99,7 @@ class PersonAttendingSummaryReportTest extends AbstractStandardReportTestSupport
         when(requestMock.getDate()).thenReturn(LocalDate.now());
 
         JPAQuery<Tuple> query = mock(JPAQuery.class,
-                                     withSettings().defaultAnswer(RETURNS_SELF));
+            withSettings().defaultAnswer(RETURNS_SELF));
         StandardReportRequest request = getValidRequest();
 
         request.setIncludeSummoned(true);
@@ -112,10 +110,7 @@ class PersonAttendingSummaryReportTest extends AbstractStandardReportTestSupport
         verify(query, times(1))
             .where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(locCode));
         verify(query, times(1))
-            .where(QJurorPool.jurorPool.status.status.in(IJurorStatus.SUMMONED,
-                                                         IJurorStatus.RESPONDED,
-                                                         IJurorStatus.PANEL,
-                                                         IJurorStatus.JUROR));
+            .where(QJurorPool.jurorPool.status.status.in(IJurorStatus.SUMMONED, IJurorStatus.RESPONDED));
         verify(query, times(1)).orderBy(QJurorPool.jurorPool.juror.lastName.asc());
 
         verifyNoMoreInteractions(query);

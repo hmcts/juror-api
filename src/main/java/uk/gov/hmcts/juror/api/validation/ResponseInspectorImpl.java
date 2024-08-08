@@ -55,8 +55,8 @@ public class ResponseInspectorImpl implements ResponseInspector {
     }
 
     @Override
-    public boolean isThirdPartyResponse(@NonNull final DigitalResponse r) {
-        boolean isThirdPartyResponse = !Strings.isNullOrEmpty(r.getThirdPartyFName());
+    public boolean isThirdPartyResponse(@NonNull final DigitalResponse response) {
+        boolean isThirdPartyResponse = !Strings.isNullOrEmpty(response.getThirdPartyFName());
         if (log.isDebugEnabled()) {
             log.debug("Third party response: {}", isThirdPartyResponse);
         }
@@ -65,23 +65,22 @@ public class ResponseInspectorImpl implements ResponseInspector {
 
     @Transactional(readOnly = true)
     @Override
-    public boolean hasAdjustments(@NonNull final DigitalResponse r) {
-        if ((r.getReasonableAdjustments() != null && !r.getReasonableAdjustments().isEmpty())
-            //    if ((r.getSpecialNeeds() != null && !r.getSpecialNeeds().isEmpty())
-            || !Strings.isNullOrEmpty(r.getReasonableAdjustmentsArrangements())) {
-            log.debug("Response {} has reasonable adjustments", r.getJurorNumber());
+    public boolean hasAdjustments(@NonNull final DigitalResponse response) {
+        if ((response.getReasonableAdjustments() != null && !response.getReasonableAdjustments().isEmpty())
+            || !Strings.isNullOrEmpty(response.getReasonableAdjustmentsArrangements())) {
+            log.debug("Response {} has reasonable adjustments", response.getJurorNumber());
             return true;
         }
 
-        log.trace("Response {} does not have reasonable adjustments", r.getJurorNumber());
+        log.trace("Response {} does not have reasonable adjustments", response.getJurorNumber());
         return false;
     }
 
     @Override
-    public boolean isWelshLanguage(@NonNull final DigitalResponse r) {
+    public boolean isWelshLanguage(@NonNull final DigitalResponse response) {
         if (appSettingService.isWelshEnabled()) {
-            if (BooleanUtils.isTrue(r.getWelsh())) {
-                log.debug("Juror response {} is Welsh language response.", r.getJurorNumber());
+            if (BooleanUtils.isTrue(response.getWelsh())) {
+                log.debug("Juror response {} is Welsh language response.", response.getJurorNumber());
                 return true;
             }
         }
@@ -89,68 +88,66 @@ public class ResponseInspectorImpl implements ResponseInspector {
     }
 
     @Override
-    public String activeContactEmail(@NonNull final DigitalResponse r) {
-        if (isThirdPartyResponse(r)) {
-            if (BooleanUtils.isFalse(r.getJurorEmailDetails())) {
+    public String activeContactEmail(@NonNull final DigitalResponse response) {
+        if (isThirdPartyResponse(response)) {
+            if (BooleanUtils.isFalse(response.getJurorEmailDetails())) {
                 log.debug("Active contact email is third party.");
-                return r.getEmailAddress();
+                return response.getEmailAddress();
             }
         }
-        log.debug("Active contact email is juror.");
-        return r.getEmail();
+        log.debug("Active contact email is juroresponse.");
+        return response.getEmail();
     }
 
     @Override
-    public NotifyTemplateType responseType(@NonNull final DigitalResponse r) {
-        final String jurorNumber = r.getJurorNumber();
+    public NotifyTemplateType responseType(@NonNull final DigitalResponse response) {
+        final String jurorNumber = response.getJurorNumber();
 
         // fail fast
-        if (isJurorDeceased(r)) {
+        if (isJurorDeceased(response)) {
             log.debug("{} Excusal deceased", jurorNumber);
             return NotifyTemplateType.EXCUSAL_DECEASED;
         }
 
-        if (isJurorAgeDisqualified(r)) {
+        if (isJurorAgeDisqualified(response)) {
             log.debug("{} Disqualification age", jurorNumber);
             return NotifyTemplateType.DISQUALIFICATION_AGE;
         }
 
-        if (isExcusal(r)) {
+        if (isExcusal(response)) {
             log.debug("{} Excusal", jurorNumber);
             return NotifyTemplateType.EXCUSAL;
         }
-        if (isDeferral(r)) {
+        if (isDeferral(response)) {
             log.debug("{} Deferral", jurorNumber);
             return NotifyTemplateType.DEFERRAL;
         }
 
-        // is now a straight through since other types have been checked.
-        log.warn("{} Acceptance");
         return NotifyTemplateType.STRAIGHT_THROUGH;//default value
     }
 
     @Override
-    public boolean isJurorAgeDisqualified(final DigitalResponse r) {
+    public boolean isJurorAgeDisqualified(final DigitalResponse response) {
         try {
-            final JurorPool j = jurorRepository.findByJurorJurorNumber(r.getJurorNumber());
-            int age = getJurorAgeAtHearingDate(r.getDateOfBirth(), j.getNextDate());
+            final JurorPool jurorPool = jurorRepository.findByJurorJurorNumber(response.getJurorNumber());
+            int age = getJurorAgeAtHearingDate(response.getDateOfBirth(), jurorPool.getNextDate());
             if (log.isTraceEnabled()) {
                 log.trace(
                     "Juror DOB {} at hearing date {} will be {} years old",
-                    r.getDateOfBirth(),
-                    j.getNextDate(),
+                    response.getDateOfBirth(),
+                    jurorPool.getNextDate(),
                     age
                 );
             }
             if (age < getYoungestJurorAgeAllowed()) {
                 log.info("Juror {} too young for straight through as they are younger than {} on summon date",
-                    j.getJurorNumber(), getYoungestJurorAgeAllowed()
+                    jurorPool.getJurorNumber(), getYoungestJurorAgeAllowed()
                 );
                 return true;
             } else if (age >= getTooOldJurorAge()) {
                 log.info(
                     "Juror {} too old for straight through as they are {} or older on summon date",
-                    j.getJurorNumber(),
+                    jurorPool.getJurorNumber(),
                     getTooOldJurorAge()
                 );
                 return true;
@@ -166,49 +163,50 @@ public class ResponseInspectorImpl implements ResponseInspector {
     }
 
     @Override
-    public boolean isIneligible(final DigitalResponse r) {
-        if (BooleanUtils.isFalse(r.getResidency())) {
-            log.debug("Response {} ineligible - Residency", r.getJurorNumber());
+    public boolean isIneligible(final DigitalResponse response) {
+        if (BooleanUtils.isFalse(response.getResidency())) {
+            log.debug("Response {} ineligible - Residency", response.getJurorNumber());
             return true;
         }
 
-        if (BooleanUtils.isTrue(r.getBail())) {
-            log.debug("Response {} ineligible - Residency", r.getJurorNumber());
+        if (BooleanUtils.isTrue(response.getBail())) {
+            log.debug("Response {} ineligible - Residency", response.getJurorNumber());
             return true;
         }
 
-        if (BooleanUtils.isTrue(r.getMentalHealthAct())) {
-            log.debug("Response {} ineligible - Mental Health Act", r.getJurorNumber());
+        if (BooleanUtils.isTrue(response.getMentalHealthAct())) {
+            log.debug("Response {} ineligible - Mental Health Act", response.getJurorNumber());
             return true;
         }
 
-        if (BooleanUtils.isTrue(r.getConvictions())) {
-            log.debug("Response {} ineligible - Convictions", r.getJurorNumber());
+        if (BooleanUtils.isTrue(response.getConvictions())) {
+            log.debug("Response {} ineligible - Convictions", response.getJurorNumber());
             return true;
         }
 
-        if ((r.getCjsEmployments() != null && !r.getCjsEmployments().isEmpty())) {
-            log.debug("Response {} ineligible - CJS employments", r.getJurorNumber());
+        if ((response.getCjsEmployments() != null && !response.getCjsEmployments().isEmpty())) {
+            log.debug("Response {} ineligible - CJS employments", response.getJurorNumber());
             return true;
         }
 
-        log.trace("Response {} is eligible for jury service", r.getJurorNumber());
+        log.trace("Response {} is eligible for jury service", response.getJurorNumber());
         return false;
     }
 
     @Override
-    public boolean isDeferral(final DigitalResponse r) {
-        return !Strings.isNullOrEmpty(r.getDeferralReason());
+    public boolean isDeferral(final DigitalResponse response) {
+        return !Strings.isNullOrEmpty(response.getDeferralReason());
     }
 
     @Override
-    public boolean isExcusal(final DigitalResponse r) {
-        return !Strings.isNullOrEmpty(r.getExcusalReason());
+    public boolean isExcusal(final DigitalResponse response) {
+        return !Strings.isNullOrEmpty(response.getExcusalReason());
     }
 
     @Override
-    public boolean isJurorDeceased(final DigitalResponse r) {
-        return !Strings.isNullOrEmpty(r.getThirdPartyReason()) && DECEASED.equalsIgnoreCase(r.getThirdPartyReason());
+    public boolean isJurorDeceased(final DigitalResponse response) {
+        return !Strings.isNullOrEmpty(response.getThirdPartyReason())
+            && DECEASED.equalsIgnoreCase(response.getThirdPartyReason());
     }
 
     @Override
@@ -264,26 +262,25 @@ public class ResponseInspectorImpl implements ResponseInspector {
     }
 
     @Override
-    public int getPoolNotification(final DigitalResponse r) {
+    public int getPoolNotification(final DigitalResponse response) {
         try {
-            // final Pool p = poolRepository.findByJurorNumber(r.getJurorNumber());
-            final JurorPool j = jurorRepository.findByJurorJurorNumber(r.getJurorNumber());
-            return j.getJuror().getNotifications();
-        } catch (Exception e) {
-            log.error("Failed to retrieve the pool.notification value for this juror response.", e);
+            // final Pool p = poolRepository.findByJurorNumber(response.getJurorNumber());
+            final JurorPool jurorPool = jurorRepository.findByJurorJurorNumber(response.getJurorNumber());
+            return jurorPool.getJuror().getNotifications();
+        } catch (Exception exception) {
+            log.error("Failed to retrieve the pool.notification value for this juror response.", exception);
             return -1;
         }
     }
 
     @Override
-    public boolean isWelshCourt(final DigitalResponse r) {
+    public boolean isWelshCourt(final DigitalResponse response) {
         boolean courtIsWelsh = false;
         try {
-
-            // final Pool p = poolRepository.findByJurorNumber(r.getJurorNumber());
-            final JurorPool j = jurorRepository.findByJurorJurorNumber(r.getJurorNumber());
-            if (isWelshLanguage(r) && welshCourtLocRepository.findByLocCode(j.getCourt().getLocCode()) != null) {
-                log.debug("Court (locCode) {} is Welsh.", j.getCourt().getLocCode());
+            final JurorPool jurorPool = jurorRepository.findByJurorJurorNumber(response.getJurorNumber());
+            if (isWelshLanguage(response)
+                && welshCourtLocRepository.findByLocCode(jurorPool.getCourt().getLocCode()) != null) {
+                log.debug("Court (locCode) {} is Welsh.", jurorPool.getCourt().getLocCode());
                 courtIsWelsh = true;
             }
         } catch (Exception e) {

@@ -179,8 +179,8 @@ public final class TestUtils {
         return payload;
     }
 
-    public static void mockBureauUser() {
-        mockSecurityUtil(BureauJwtPayload.builder()
+    public static BureauJwtPayload mockBureauUser() {
+        return mockSecurityUtil(BureauJwtPayload.builder()
             .owner("400")
             .locCode("400")
             .roles(Set.of())

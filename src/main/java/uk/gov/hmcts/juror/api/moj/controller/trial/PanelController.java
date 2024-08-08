@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -38,8 +37,7 @@ import java.util.List;
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class PanelController {
 
-    @NonNull
-    private PanelService panelService;
+    private final PanelService panelService;
 
     @GetMapping("/available-jurors")
     @Operation(summary = "Retrieves a list of jurors for a court location")

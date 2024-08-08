@@ -4296,9 +4296,6 @@ class JurorExpenseServiceTest {
 
         @Test
         void positiveNotFound() {
-            when(appearanceRepository.findAllByJurorNumberAndPoolNumber(
-                TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER
-            )).thenReturn(List.of());
 
             assertThat(jurorExpenseService.countExpenseTypes(
                 TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER

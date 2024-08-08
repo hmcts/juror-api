@@ -26,7 +26,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -82,8 +81,8 @@ class CourtPostponementLetterServiceImplTest {
             List<PostponedLetterList> results =
                 List.of(createPostponedLetterList(jurorNumber, postponedTo, reason, poolNumber));
 
-            when(postponementLetterListRepository.findJurorsEligibleForPostponementLetter(any(),
-                any())).thenReturn(results);
+            when(postponementLetterListRepository.findJurorsEligibleForPostponementLetter(
+             Mockito.any())).thenReturn(results);
 
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto.builder()
                 .letterType(CourtLetterType.POSTPONED)
@@ -121,8 +120,8 @@ class CourtPostponementLetterServiceImplTest {
                 List.of(createPostponedLetterList(jurorNumber, postponedTo, reason, poolNumber,
                     datePrinted));
 
-            when(postponementLetterListRepository.findJurorsEligibleForPostponementLetter(any(),
-                any())).thenReturn(results);
+            when(postponementLetterListRepository.findJurorsEligibleForPostponementLetter(
+            Mockito.any())).thenReturn(results);
 
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto.builder()
                 .letterType(CourtLetterType.POSTPONED)
@@ -155,8 +154,8 @@ class CourtPostponementLetterServiceImplTest {
 
             List<PostponedLetterList> results = new ArrayList<>();
 
-            when(postponementLetterListRepository.findJurorsEligibleForPostponementLetter(any(),
-                any())).thenReturn(results);
+            when(postponementLetterListRepository.findJurorsEligibleForPostponementLetter(
+                Mockito.any())).thenReturn(results);
 
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto.builder()
                 .letterType(CourtLetterType.POSTPONED)

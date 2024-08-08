@@ -42,16 +42,16 @@ class PersonAttendingDetailReportTest extends AbstractGroupedReportTestSupport<P
 
     public PersonAttendingDetailReportTest() {
         super(QJurorPool.jurorPool,
-              PersonAttendingDetailReport.RequestValidator.class,
-              ReportGroupBy.builder()
-                  .dataType(DataType.POOL_NUMBER)
-                  .removeGroupByFromResponse(true)
-                  .build(),
-              DataType.JUROR_NUMBER,
-              DataType.FIRST_NAME,
-              DataType.LAST_NAME,
-              DataType.JUROR_POSTAL_ADDRESS,
-              DataType.CONTACT_DETAILS);
+            PersonAttendingDetailReport.RequestValidator.class,
+            ReportGroupBy.builder()
+                .dataType(DataType.POOL_NUMBER)
+                .removeGroupByFromResponse(true)
+                .build(),
+            DataType.JUROR_NUMBER,
+            DataType.FIRST_NAME,
+            DataType.LAST_NAME,
+            DataType.JUROR_POSTAL_ADDRESS,
+            DataType.CONTACT_DETAILS);
     }
 
     @BeforeEach
@@ -95,9 +95,7 @@ class PersonAttendingDetailReportTest extends AbstractGroupedReportTestSupport<P
         verify(query, times(1))
             .where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(locCode));
         verify(query, times(1))
-            .where(QJurorPool.jurorPool.status.status.in(IJurorStatus.RESPONDED,
-                                                         IJurorStatus.PANEL,
-                                                         IJurorStatus.JUROR));
+            .where(QJurorPool.jurorPool.status.status.in(IJurorStatus.RESPONDED));
         verify(query, times(1)).orderBy(QJurorPool.jurorPool.juror.lastName.asc());
     }
 
@@ -111,7 +109,7 @@ class PersonAttendingDetailReportTest extends AbstractGroupedReportTestSupport<P
         when(requestMock.getDate()).thenReturn(LocalDate.now());
 
         JPAQuery<Tuple> query = mock(JPAQuery.class,
-                                     withSettings().defaultAnswer(RETURNS_SELF));
+            withSettings().defaultAnswer(RETURNS_SELF));
         StandardReportRequest request = getValidRequest();
 
         request.setIncludeSummoned(true);
@@ -122,10 +120,7 @@ class PersonAttendingDetailReportTest extends AbstractGroupedReportTestSupport<P
         verify(query, times(1))
             .where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(locCode));
         verify(query, times(1))
-            .where(QJurorPool.jurorPool.status.status.in(IJurorStatus.SUMMONED,
-                                                         IJurorStatus.RESPONDED,
-                                                         IJurorStatus.PANEL,
-                                                         IJurorStatus.JUROR));
+            .where(QJurorPool.jurorPool.status.status.in(IJurorStatus.SUMMONED, IJurorStatus.RESPONDED));
         verify(query, times(1)).orderBy(QJurorPool.jurorPool.juror.lastName.asc());
 
         verifyNoMoreInteractions(query);

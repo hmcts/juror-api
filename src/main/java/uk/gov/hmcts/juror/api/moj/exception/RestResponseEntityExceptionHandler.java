@@ -1,19 +1,24 @@
 package uk.gov.hmcts.juror.api.moj.exception;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.ValidationException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.postgresql.util.PSQLException;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -192,5 +197,32 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     public static class FieldError {
         private final String field;
         private final String message;
+    }
+
+    @Nullable
+    @Override
+    protected ResponseEntity<Object> handleExceptionInternal(
+        Exception ex, @Nullable Object body, HttpHeaders headers, HttpStatusCode statusCode, WebRequest request) {
+        logger.error("Internal server error", ex);
+        if (request instanceof ServletWebRequest servletWebRequest) {
+            HttpServletResponse response = servletWebRequest.getResponse();
+            if (response != null && response.isCommitted()) {
+                if (this.logger.isWarnEnabled()) {
+                    this.logger.warn("Response already committed. Ignoring: " + ex);
+                }
+
+                return null;
+            }
+        }
+
+        if (body == null && ex instanceof ErrorResponse errorResponse) {
+            body = errorResponse.updateAndGetBody(this.getMessageSource(), LocaleContextHolder.getLocale());
+        }
+
+        if (statusCode.equals(HttpStatus.INTERNAL_SERVER_ERROR) && body == null) {
+            request.setAttribute("jakarta.servlet.error.exception", ex, 0);
+        }
+
+        return this.createResponseEntity(body, headers, statusCode, request);
     }
 }
