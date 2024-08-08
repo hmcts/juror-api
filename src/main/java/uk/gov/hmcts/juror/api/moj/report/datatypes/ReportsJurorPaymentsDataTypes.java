@@ -128,6 +128,7 @@ public enum ReportsJurorPaymentsDataTypes implements IDataType {
         this.requiredTables = List.of(requiredTables);
     }
 
+    @Override
     public final String getId() {
         return this.name().toLowerCase(Locale.ROOT);
     }
