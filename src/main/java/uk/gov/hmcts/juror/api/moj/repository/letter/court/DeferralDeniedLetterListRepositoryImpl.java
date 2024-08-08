@@ -141,7 +141,7 @@ public class DeferralDeniedLetterListRepositoryImpl implements IDeferralDeniedLe
                 .and(QJurorHistory.jurorHistory.dateCreatedDateOnly.after(QJuror.juror.bureauTransferDate)))
             .where(QJuror.juror.excusalRejected.eq(ExcusalCodeEnum.Z.getCode())
                 .and(QJurorPool.jurorPool.isActive.isTrue())
-                .and(QPoolRequest.poolRequest.owner.eq(owner)));
+                .and(QJurorPool.jurorPool.owner.eq(owner)));
     }
 
     private List<Tuple> getPrintedDate(String owner, List<String> poolNumbers) {
@@ -164,7 +164,7 @@ public class DeferralDeniedLetterListRepositoryImpl implements IDeferralDeniedLe
             .where(QJuror.juror.excusalRejected.eq(ExcusalCodeEnum.Z.getCode())
                 .and(QJurorPool.jurorPool.isActive.isTrue())
                 .and(QJurorPool.jurorPool.pool.poolNumber.in(poolNumbers))
-                .and(QPoolRequest.poolRequest.owner.eq(owner)))
+                .and(QJurorPool.jurorPool.owner.eq(owner)))
             .fetch();
     }
 

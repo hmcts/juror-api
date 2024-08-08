@@ -83,7 +83,7 @@ public class WithdrawalLetterListRepositoryImpl implements IWithdrawalLetterList
                 .and(QJurorHistory.jurorHistory.dateCreatedDateOnly.after(QJuror.juror.bureauTransferDate)))
             .where(QJurorPool.jurorPool.isActive.isTrue()
                 .and(QJurorPool.jurorPool.status.status.eq(IJurorStatus.DISQUALIFIED))
-                .and(QPoolRequest.poolRequest.owner.eq(owner)));
+                .and(QJurorPool.jurorPool.owner.eq(owner)));
     }
 
     private void filterEligibleLetterSearchCriteria(JPAQuery<Tuple> jpaQuery,
