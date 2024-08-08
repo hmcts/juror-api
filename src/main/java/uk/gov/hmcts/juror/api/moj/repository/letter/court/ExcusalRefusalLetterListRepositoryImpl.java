@@ -80,7 +80,7 @@ public class ExcusalRefusalLetterListRepositoryImpl implements IExcusalRefusalLe
         return excusalRefusedLetterListMap.values().stream().sorted(DATE_PRINT_COMPARATOR).toList();
     }
 
-    private static ConcurrentHashMap<String, ExcusalRefusedLetterList> removeDuplicateJurorRecords(
+    private ConcurrentHashMap<String, ExcusalRefusedLetterList> removeDuplicateJurorRecords(
         List<ExcusalRefusedLetterList> excusalRefusedLetterLists) {
         // for each juror select the most recent excusal refused date and remove the other entries
         ConcurrentHashMap<String, ExcusalRefusedLetterList> excusalRefusedLetterListMap = new ConcurrentHashMap<>();
@@ -100,7 +100,7 @@ public class ExcusalRefusalLetterListRepositoryImpl implements IExcusalRefusalLe
         return excusalRefusedLetterListMap;
     }
 
-    private static void updateDatePrinted(CourtLetterSearchCriteria searchCriteria,
+    private void updateDatePrinted(CourtLetterSearchCriteria searchCriteria,
                                   ConcurrentHashMap<String, ExcusalRefusedLetterList> excusalRefusedLetterListMap,
                                   List<Tuple> printedDates) {
         // update the excusal refused letter printed date for each juror
