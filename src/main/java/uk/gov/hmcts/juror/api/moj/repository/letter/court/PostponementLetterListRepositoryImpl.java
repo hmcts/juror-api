@@ -99,12 +99,12 @@ public class PostponementLetterListRepositoryImpl implements PostponementLetterL
             .leftJoin(QJurorHistory.jurorHistory)
             .on((QJurorHistory.jurorHistory.jurorNumber.eq(QJuror.juror.jurorNumber))
                     .and(QJurorHistory.jurorHistory.poolNumber.eq(QPoolRequest.poolRequest.poolNumber))
-                    .and(QJurorHistory.jurorHistory.historyCode.eq(HistoryCodeMod.DEFERRED_LETTER))
+                    .and(QJurorHistory.jurorHistory.historyCode.eq(HistoryCodeMod.POSTPONED_LETTER))
                     .and(QJurorHistory.jurorHistory.otherInformationDate.eq(QJurorPool.jurorPool.deferralDate))
                     .and(QJurorHistory.jurorHistory.dateCreatedDateOnly
                              .after(QJuror.juror.bureauTransferDate)))
             .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.DEFERRED)
-                       .and(EXCUSAL_CODE.excusalCode.code.ne(ExcusalCodeEnum.P.getCode()))
+                       .and(EXCUSAL_CODE.excusalCode.code.eq(ExcusalCodeEnum.P.getCode()))
                        .and(QPoolRequest.poolRequest.owner.eq(SecurityUtil.getActiveOwner())));
     }
 
