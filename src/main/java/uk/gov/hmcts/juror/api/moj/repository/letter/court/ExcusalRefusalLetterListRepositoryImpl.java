@@ -136,7 +136,7 @@ public class ExcusalRefusalLetterListRepositoryImpl implements IExcusalRefusalLe
                 .and(QJurorHistory.jurorHistory.dateCreatedDateOnly.after(QJuror.juror.bureauTransferDate)))
             .where(QJurorPool.jurorPool.isActive.isTrue()
                 .and(QJuror.juror.excusalRejected.eq("Y"))
-                .and(QPoolRequest.poolRequest.owner.eq(owner)));
+                .and(QJurorPool.jurorPool.owner.eq(owner)));
     }
 
     private List<Tuple> getDatePrinted(String owner, List<String> poolNumbers) {
@@ -158,7 +158,7 @@ public class ExcusalRefusalLetterListRepositoryImpl implements IExcusalRefusalLe
                 .and(QJurorHistory.jurorHistory.dateCreatedDateOnly.after(QJuror.juror.bureauTransferDate)))
             .where(QJurorPool.jurorPool.isActive.isTrue()
                 .and(QJuror.juror.excusalRejected.eq("Y"))
-                .and(QPoolRequest.poolRequest.owner.eq(owner))
+                .and(QJurorPool.jurorPool.owner.eq(owner))
                 .and(QPoolRequest.poolRequest.poolNumber.in(poolNumbers)))
             .fetch();
     }
