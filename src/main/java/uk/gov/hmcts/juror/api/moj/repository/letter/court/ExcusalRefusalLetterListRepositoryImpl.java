@@ -1,79 +1,193 @@
 package uk.gov.hmcts.juror.api.moj.repository.letter.court;
 
-import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.micrometer.common.util.StringUtils;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import uk.gov.hmcts.juror.api.moj.domain.QJuror;
+import uk.gov.hmcts.juror.api.moj.domain.QJurorHistory;
+import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.QJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.letter.CourtLetterSearchCriteria;
 import uk.gov.hmcts.juror.api.moj.domain.letter.court.ExcusalRefusedLetterList;
-import uk.gov.hmcts.juror.api.moj.domain.letter.court.QExcusalRefusedLetterList;
+import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class ExcusalRefusalLetterListRepositoryImpl implements IExcusalRefusalLetterListRepository {
 
     @PersistenceContext
     EntityManager entityManager;
 
-    private static final QExcusalRefusedLetterList EXCUSAL_REFUSED_LETTER_LIST =
-        QExcusalRefusedLetterList.excusalRefusedLetterList;
-
     @Override
+    @SuppressWarnings("PMD.CognitiveComplexity")
     public List<ExcusalRefusedLetterList> findJurorsEligibleForExcusalRefusalLetter(
         CourtLetterSearchCriteria searchCriteria, String owner) {
 
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-        JPAQuery<ExcusalRefusedLetterList> jpaQuery =
-            queryFactory.selectFrom(EXCUSAL_REFUSED_LETTER_LIST)
-                .where(EXCUSAL_REFUSED_LETTER_LIST.owner.eq(owner));
+        JPAQuery<Tuple> jpaQuery = buildBaseQuery(owner);
 
         filterEligibleLetterSearchCriteria(jpaQuery, searchCriteria);
 
-        orderExcusalRefusedQueryResults(jpaQuery, searchCriteria.includePrinted());
+        orderExcusalRefusedQueryResults(jpaQuery);
 
-        return jpaQuery.fetch();
+        List<Tuple> results = jpaQuery.fetch();
+
+        List<ExcusalRefusedLetterList> excusalRefusedLetterLists = results.stream().map(tuple ->
+            ExcusalRefusedLetterList.builder()
+                .poolNumber(tuple.get(QPoolRequest.poolRequest.poolNumber))
+                .jurorNumber(tuple.get(QJuror.juror.jurorNumber))
+                .firstName(tuple.get(QJuror.juror.firstName))
+                .lastName(tuple.get(QJuror.juror.lastName))
+                .postcode(tuple.get(QJuror.juror.postcode))
+                .status(tuple.get(QJurorStatus.jurorStatus.statusDesc))
+                .dateExcused(tuple.get(QJuror.juror.excusalDate))
+                .reason(tuple.get(QJuror.juror.excusalCode))
+                .isActive(tuple.get(QJurorPool.jurorPool.isActive))
+                .build())
+            .collect(Collectors.toList());
+
+        // for each juror select the most recent excusal refused date and remove the other entries
+        ConcurrentHashMap<String, ExcusalRefusedLetterList> excusalRefusedLetterListMap = new ConcurrentHashMap<>();
+        excusalRefusedLetterLists.forEach(excusalRefusedLetterList -> {
+            String jurorNumber = excusalRefusedLetterList.getJurorNumber();
+            if (excusalRefusedLetterListMap.containsKey(jurorNumber)) {
+                ExcusalRefusedLetterList existingExcusalRefusedLetterList =
+                    excusalRefusedLetterListMap.get(jurorNumber);
+                if (excusalRefusedLetterList.getDateExcused()
+                    .isAfter(existingExcusalRefusedLetterList.getDateExcused())) {
+                    excusalRefusedLetterListMap.put(jurorNumber, excusalRefusedLetterList);
+                }
+            } else {
+                excusalRefusedLetterListMap.put(jurorNumber, excusalRefusedLetterList);
+            }
+        });
+
+        List<String> poolNumbers =
+            excusalRefusedLetterLists.stream().map(ExcusalRefusedLetterList::getPoolNumber).distinct().toList();
+
+        // run query to get the most recent excusal refused date for each juror
+        List<Tuple> printedDates = getDatePrinted(owner, poolNumbers);
+
+        // update the excusal refused letter printed date for each juror
+        printedDates.forEach(tuple -> {
+            String jurorNumber = tuple.get(QJuror.juror.jurorNumber);
+            if (excusalRefusedLetterListMap.containsKey(jurorNumber)) {
+                ExcusalRefusedLetterList excusalRefusedLetterList = excusalRefusedLetterListMap.get(jurorNumber);
+                LocalDateTime datePrinted = tuple.get(QJurorHistory.jurorHistory.dateCreated);
+                LocalDate datePrintedDateOnly = datePrinted.toLocalDate();
+                if (datePrintedDateOnly.equals(excusalRefusedLetterList.getDateExcused())
+                    || datePrintedDateOnly.isAfter(excusalRefusedLetterList.getDateExcused())) {
+                    if (!searchCriteria.includePrinted()) {
+                        excusalRefusedLetterListMap.remove(jurorNumber);
+                    } else {
+                        excusalRefusedLetterList.setDatePrinted(datePrinted);
+                    }
+                }
+            }
+        });
+
+        Comparator<ExcusalRefusedLetterList> datePrintComparator = (o1, o2) -> {
+            if (o1.getDatePrinted() == null && o2.getDatePrinted() == null) {
+                return 0;
+            } else if (o1.getDatePrinted() == null) {
+                return -1;
+            } else if (o2.getDatePrinted() == null) {
+                return 1;
+            } else {
+                return o2.getDatePrinted().compareTo(o1.getDatePrinted());
+            }
+        };
+
+        // sort by date printed (need unprinted letters to be at the top)
+        return excusalRefusedLetterListMap.values().stream().sorted(datePrintComparator).toList();
     }
 
+    private JPAQuery<Tuple> buildBaseQuery(String owner) {
 
-    private void filterEligibleLetterSearchCriteria(JPAQuery<ExcusalRefusedLetterList> jpaQuery,
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+
+        return queryFactory.select(
+                QPoolRequest.poolRequest.poolNumber,
+                QJuror.juror.jurorNumber,
+                QJuror.juror.firstName,
+                QJuror.juror.lastName,
+                QJuror.juror.postcode,
+                QJurorStatus.jurorStatus.statusDesc,
+                QJuror.juror.excusalCode,
+                QJuror.juror.excusalDate,
+                QJurorPool.jurorPool.isActive)
+            .from(QJurorPool.jurorPool)
+            .join(QJuror.juror).on(QJuror.juror.eq(QJurorPool.jurorPool.juror))
+            .join(QPoolRequest.poolRequest).on(QPoolRequest.poolRequest.eq(QJurorPool.jurorPool.pool))
+            .join(QJurorStatus.jurorStatus).on(QJurorStatus.jurorStatus.eq(QJurorPool.jurorPool.status))
+            .leftJoin(QJurorHistory.jurorHistory)
+            .on(QJurorHistory.jurorHistory.jurorNumber.eq(QJuror.juror.jurorNumber)
+                .and(QJurorHistory.jurorHistory.poolNumber.eq(QPoolRequest.poolRequest.poolNumber))
+                .and(QJurorHistory.jurorHistory.historyCode.eq(HistoryCodeMod.EXCUSE_POOL_MEMBER))
+                .and(QJurorHistory.jurorHistory.otherInformation.contains("Refuse Excuse"))
+                .and(QJurorHistory.jurorHistory.dateCreatedDateOnly.after(QJuror.juror.bureauTransferDate)))
+            .where(QJurorPool.jurorPool.isActive.isTrue()
+                .and(QJuror.juror.excusalRejected.eq("Y"))
+                .and(QPoolRequest.poolRequest.owner.eq(owner)));
+    }
+
+    private List<Tuple> getDatePrinted(String owner, List<String> poolNumbers) {
+
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+
+        return queryFactory.select(
+                QPoolRequest.poolRequest.poolNumber,
+                QJuror.juror.jurorNumber,
+                QJurorHistory.jurorHistory.dateCreated)
+            .from(QJurorPool.jurorPool)
+            .join(QJuror.juror).on(QJuror.juror.eq(QJurorPool.jurorPool.juror))
+            .join(QPoolRequest.poolRequest).on(QPoolRequest.poolRequest.eq(QJurorPool.jurorPool.pool))
+            .join(QJurorStatus.jurorStatus).on(QJurorStatus.jurorStatus.eq(QJurorPool.jurorPool.status))
+            .leftJoin(QJurorHistory.jurorHistory)
+            .on(QJurorHistory.jurorHistory.jurorNumber.eq(QJuror.juror.jurorNumber)
+                .and(QJurorHistory.jurorHistory.poolNumber.eq(QPoolRequest.poolRequest.poolNumber))
+                .and(QJurorHistory.jurorHistory.historyCode.eq(HistoryCodeMod.NON_EXCUSED_LETTER))
+                .and(QJurorHistory.jurorHistory.dateCreatedDateOnly.after(QJuror.juror.bureauTransferDate)))
+            .where(QJurorPool.jurorPool.isActive.isTrue()
+                .and(QJuror.juror.excusalRejected.eq("Y"))
+                .and(QPoolRequest.poolRequest.owner.eq(owner))
+                .and(QPoolRequest.poolRequest.poolNumber.in(poolNumbers)))
+            .fetch();
+    }
+
+    private void filterEligibleLetterSearchCriteria(JPAQuery<Tuple> jpaQuery,
                                                     CourtLetterSearchCriteria courtLetterSearchCriteria) {
         if (!StringUtils.isEmpty(courtLetterSearchCriteria.jurorNumber())) {
-            jpaQuery.where(EXCUSAL_REFUSED_LETTER_LIST.jurorNumber.startsWith(courtLetterSearchCriteria.jurorNumber()));
+            jpaQuery.where(QJurorPool.jurorPool.juror.jurorNumber.startsWith(courtLetterSearchCriteria.jurorNumber()));
         }
 
         if (!StringUtils.isEmpty(courtLetterSearchCriteria.jurorName())) {
-            jpaQuery.where(EXCUSAL_REFUSED_LETTER_LIST.firstName.concat(" " + EXCUSAL_REFUSED_LETTER_LIST.lastName)
+            jpaQuery.where(QJurorPool.jurorPool.juror.firstName.concat(" ").concat(QJurorPool.jurorPool.juror.lastName)
                 .containsIgnoreCase(courtLetterSearchCriteria.jurorName()));
         }
 
         if (!StringUtils.isEmpty(courtLetterSearchCriteria.postcode())) {
             jpaQuery.where(
-                EXCUSAL_REFUSED_LETTER_LIST.postcode.trim().equalsIgnoreCase(courtLetterSearchCriteria.postcode()
-                    .trim()));
+                QJurorPool.jurorPool.juror.postcode.trim()
+                    .eq(courtLetterSearchCriteria.postcode().trim().toUpperCase()));
         }
 
         if (!StringUtils.isEmpty(courtLetterSearchCriteria.poolNumber())) {
-            jpaQuery.where(EXCUSAL_REFUSED_LETTER_LIST.poolNumber.startsWith(courtLetterSearchCriteria.poolNumber()));
-        }
-
-        if (!courtLetterSearchCriteria.includePrinted()) {
-            jpaQuery.where(EXCUSAL_REFUSED_LETTER_LIST.datePrinted.isNull());
+            jpaQuery.where(QJurorPool.jurorPool.pool.poolNumber.startsWith(courtLetterSearchCriteria.poolNumber()));
         }
     }
 
-    private void orderExcusalRefusedQueryResults(JPAQuery<ExcusalRefusedLetterList> jpaQuery,
-                                                 boolean isIncludePrinted) {
+    private void orderExcusalRefusedQueryResults(JPAQuery<Tuple> jpaQuery) {
 
-        if (isIncludePrinted) {
-            jpaQuery.orderBy(new CaseBuilder()
-                .when(EXCUSAL_REFUSED_LETTER_LIST.datePrinted.isNull())
-                .then(0)
-                .otherwise(1)
-                .asc());
-        }
-        jpaQuery.orderBy(EXCUSAL_REFUSED_LETTER_LIST.datePrinted.desc());
-        jpaQuery.orderBy(EXCUSAL_REFUSED_LETTER_LIST.jurorNumber.asc());
+        jpaQuery.orderBy(QJurorHistory.jurorHistory.dateCreatedDateOnly.desc(),
+            QJurorPool.jurorPool.juror.jurorNumber.asc());
     }
 }
