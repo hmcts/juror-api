@@ -83,8 +83,16 @@ public class JurorRepositoryImpl implements IJurorRepository {
         }
 
         if (null != query.getJurorName()) {
-            partialQuery.where(JUROR.firstName.concat(" ").concat(JUROR.lastName).containsIgnoreCase(
-                query.getJurorName()));
+
+            String[] names = query.getJurorName().split(" ");
+
+            if (names.length == 2) {
+                partialQuery.where(JUROR.firstName.containsIgnoreCase(names[0])
+                    .and(JUROR.lastName.containsIgnoreCase(names[1])));
+            } else {
+                partialQuery.where(JUROR.firstName.concat(" ").concat(JUROR.lastName).containsIgnoreCase(
+                    query.getJurorName()));
+            }
         }
 
         if (null != query.getPostcode()) {
