@@ -1,6 +1,7 @@
 INSERT INTO juror_mod.pool (pool_no,"owner",return_date,no_requested,pool_type,loc_code,new_request,last_update,additional_summons,attend_time,nil_pool,total_no_required,date_created) VALUES
 	 ('415220502','415',current_date + 10,4,'CRO','415','N',current_date - 1,NULL,NULL,false,4,NULL),
-	 ('415220503','415',current_date + 10,4,'CRO','415','N',current_date - 1,NULL,NULL,false,4,NULL);
+	 ('415220503','415',current_date + 10,4,'CRO','415','N',current_date - 1,NULL,NULL,false,4,NULL),
+	 ('415220504','400',current_date + 10,4,'CRO','415','N',current_date - 1,NULL,NULL,false,4,NULL);
 
 INSERT INTO juror_mod.juror (juror_number,poll_number,title,last_name,first_name,dob,address_line_1,address_line_2,address_line_3,address_line_4,address_line_5,postcode,h_phone,w_phone,w_ph_local,responded,date_excused,excusal_code,acc_exc,date_disq,disq_code,user_edtq,notes,no_def_pos,perm_disqual,reasonable_adj_code,reasonable_adj_msg,smart_card_number,completion_date,sort_code,bank_acct_name,bank_acct_no,bldg_soc_roll_no,welsh,police_check,last_update,summons_file,m_phone,h_email,contact_preference,notifications,date_created,optic_reference,pending_title,pending_first_name,pending_last_name,mileage,financial_loss,travel_time,bureau_transfer_date) VALUES
 	 ('555555562','543',NULL,'LNAME2','FNAME2','1975-05-03 00:00:00.000','Address Line 1','Address Line 2','Address Line3','Some Town','Some County','CH1 2AN','01234567890',NULL,NULL,true,current_date-5,'A',NULL,NULL,NULL,'BUREAU_USER_1','',0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'NOT_CHECKED',current_date - 1,NULL,'07123456789','email@address.com',0,0,NULL,NULL,'Mr','Test','Person',NULL,NULL,NULL,current_date - 5),
@@ -13,7 +14,7 @@ INSERT INTO juror_mod.juror (juror_number,poll_number,title,last_name,first_name
 
 INSERT INTO juror_mod.juror_pool (juror_number,pool_number,"owner",user_edtq,is_active,status,times_sel,def_date,"location",no_attendances,no_attended,no_fta,no_awol,pool_seq,edit_tag,next_date,on_call,smart_card,was_deferred,deferral_code,id_checked,postpone,paid_cash,scan_code,last_update,reminder_sent,transfer_date,date_created) VALUES
 	 ('555555562','415220502','415','COURT_USER',true,5,NULL,NULL,'415',NULL,NULL,NULL,NULL,'0109',NULL,NULL,false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,current_date - 1,NULL,NULL,NULL),
-	 ('555555561','415220502','400','COURT_USER',true,5,NULL,NULL,'415',NULL,NULL,NULL,NULL,'0109',NULL,NULL,false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,current_date - 1,NULL,NULL,NULL),
+	 ('555555561','415220504','400','COURT_USER',true,5,NULL,NULL,'415',NULL,NULL,NULL,NULL,'0109',NULL,NULL,false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,current_date - 1,NULL,NULL,NULL),
 	 ('555555563','415220502','415','COURT_USER',true,5,NULL,NULL,'415',NULL,NULL,NULL,NULL,'0109',NULL,NULL,false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,current_date - 1,NULL,NULL,NULL),
 	 ('555555564','415220502','415','COURT_USER',true,5,NULL,NULL,'415',NULL,NULL,NULL,NULL,'0109',NULL,NULL,false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,current_date - 1,NULL,NULL,NULL),
 	 ('555555565','415220502','415','COURT_USER',true,5,NULL,NULL,'415',NULL,NULL,NULL,NULL,'0109',NULL,NULL,false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,current_date - 1,NULL,NULL,NULL),

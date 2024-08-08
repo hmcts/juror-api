@@ -1616,14 +1616,14 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
             assertThat(response.getBody()).isNotNull();
             List<?> responseBody = response.getBody().getData();
-            assertThat(responseBody.size()).isEqualTo(6);
+            assertThat(responseBody.size()).isEqualTo(5);
 
             List<ExcusalLetterData> dataList = responseBody.stream()
                 .map(data -> (ExcusalLetterData) data)
                 .filter(data -> data.getPostcode().equalsIgnoreCase(postcode))
                 .toList();
 
-            assertThat(dataList).size().isEqualTo(6);
+            assertThat(dataList).size().isEqualTo(5);
         }
 
         @Test
@@ -1691,14 +1691,14 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
             assertThat(response.getBody()).isNotNull();
             List<?> responseBody = response.getBody().getData();
-            assertThat(responseBody.size()).isEqualTo(6);
+            assertThat(responseBody.size()).isEqualTo(5);
 
             List<ExcusalLetterData> dataList = responseBody.stream()
                 .map(data -> (ExcusalLetterData) data)
                 .filter(data -> data.getPoolNumber().equalsIgnoreCase(poolNumber))
                 .toList();
 
-            assertThat(dataList).size().isEqualTo(6);
+            assertThat(dataList).size().isEqualTo(5);
         }
     }
 
@@ -2710,25 +2710,29 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(reissueLetterListResponseDto).isNotNull();
             List<String> headings = reissueLetterListResponseDto.getHeadings();
             assertThat(headings).isNotNull();
-            assertThat(headings.size()).as("Expect there to be 7 headings").isEqualTo(7);
-            assertThat(headings.get(0)).isEqualTo("Juror number");
-            assertThat(headings.get(1)).isEqualTo("First name");
-            assertThat(headings.get(2)).isEqualTo("Last name");
-            assertThat(headings.get(3)).isEqualTo("Postcode");
-            assertThat(headings.get(4)).isEqualTo("Date printed");
-            assertThat(headings.get(5)).isEqualTo("hidden_extracted_flag");
-            assertThat(headings.get(6)).isEqualTo("hidden_form_code");
+            assertThat(headings.size()).as("Expect there to be 9 headings").isEqualTo(9);
+            assertThat(headings.get(0)).isEqualTo("Pool Number");
+            assertThat(headings.get(1)).isEqualTo("Summons date");
+            assertThat(headings.get(2)).isEqualTo("Juror number");
+            assertThat(headings.get(3)).isEqualTo("First name");
+            assertThat(headings.get(4)).isEqualTo("Last name");
+            assertThat(headings.get(5)).isEqualTo("Postcode");
+            assertThat(headings.get(6)).isEqualTo("Date printed");
+            assertThat(headings.get(7)).isEqualTo("hidden_extracted_flag");
+            assertThat(headings.get(8)).isEqualTo("hidden_form_code");
 
             List<String> dataTypes = reissueLetterListResponseDto.getDataTypes();
             assertThat(dataTypes).isNotNull();
-            assertThat(dataTypes.size()).as("Expect there to be 7 data types").isEqualTo(7);
+            assertThat(dataTypes.size()).as("Expect there to be 9 data types").isEqualTo(9);
             assertThat(dataTypes.get(0)).isEqualTo("string");
             assertThat(dataTypes.get(1)).isEqualTo("string");
             assertThat(dataTypes.get(2)).isEqualTo("string");
             assertThat(dataTypes.get(3)).isEqualTo("string");
-            assertThat(dataTypes.get(4)).isEqualTo("date");
-            assertThat(dataTypes.get(5)).isEqualTo("boolean");
-            assertThat(dataTypes.get(6)).isEqualTo("string");
+            assertThat(dataTypes.get(4)).isEqualTo("string");
+            assertThat(dataTypes.get(5)).isEqualTo("string");
+            assertThat(dataTypes.get(6)).isEqualTo("date");
+            assertThat(dataTypes.get(7)).isEqualTo("boolean");
+            assertThat(dataTypes.get(8)).isEqualTo("string");
         }
 
 
@@ -2764,14 +2768,16 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<List<Object>> data = reissueLetterListResponseDto.getData();
             assertThat(data).isNotNull();
             assertThat(data.size()).isEqualTo(1);
-            assertThat(data.get(0).size()).isEqualTo(7);
-            assertThat(data.get(0).get(0)).isEqualTo("555555561");
-            assertThat(data.get(0).get(1)).isEqualTo("FNAMEFIVEFOURZERO");
-            assertThat(data.get(0).get(2)).isEqualTo("LNAMEFIVEFOURZERO");
-            assertThat(data.get(0).get(3)).isEqualTo("CH1 2AN");
-            assertThat(data.get(0).get(4)).isEqualTo(LocalDate.now().minusDays(1).toString());
-            assertThat(data.get(0).get(5)).isEqualTo(true);
-            assertThat(data.get(0).get(6)).isEqualTo(FormCode.ENG_SUMMONS.getCode());
+            assertThat(data.get(0).size()).isEqualTo(9);
+            assertThat(data.get(0).get(0)).isEqualTo("415241001");
+            assertThat(data.get(0).get(1)).isEqualTo("TUESDAY 8 OCTOBER, 2024");
+            assertThat(data.get(0).get(2)).isEqualTo("555555561");
+            assertThat(data.get(0).get(3)).isEqualTo("FNAMEFIVEFOURZERO");
+            assertThat(data.get(0).get(4)).isEqualTo("LNAMEFIVEFOURZERO");
+            assertThat(data.get(0).get(5)).isEqualTo("CH1 2AN");
+            assertThat(data.get(0).get(6)).isEqualTo(LocalDate.now().minusDays(1).toString());
+            assertThat(data.get(0).get(7)).isEqualTo(true);
+            assertThat(data.get(0).get(8)).isEqualTo(FormCode.ENG_SUMMONS.getCode());
         }
 
         @Test
@@ -2840,14 +2846,16 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<List<Object>> data = reissueLetterListResponseDto.getData();
             assertThat(data).isNotNull();
             assertThat(data.size()).isEqualTo(1);
-            assertThat(data.get(0).size()).isEqualTo(7);
-            assertThat(data.get(0).get(0)).isEqualTo("555555562");
-            assertThat(data.get(0).get(1)).isEqualTo("FNAMEFIVEFOURZERO");
-            assertThat(data.get(0).get(2)).isEqualTo("LNAMEFIVEFOURZERO");
-            assertThat(data.get(0).get(3)).isEqualTo("CH1 2AN");
-            assertThat(data.get(0).get(4)).isEqualTo(LocalDate.now().minusDays(1).toString());
-            assertThat(data.get(0).get(5)).isEqualTo(true);
-            assertThat(data.get(0).get(6)).isEqualTo(FormCode.BI_SUMMONS.getCode());
+            assertThat(data.get(0).size()).isEqualTo(9);
+            assertThat(data.get(0).get(0)).isEqualTo("415241001");
+            assertThat(data.get(0).get(1)).isEqualTo("TUESDAY 8 OCTOBER, 2024");
+            assertThat(data.get(0).get(2)).isEqualTo("555555562");
+            assertThat(data.get(0).get(3)).isEqualTo("FNAMEFIVEFOURZERO");
+            assertThat(data.get(0).get(4)).isEqualTo("LNAMEFIVEFOURZERO");
+            assertThat(data.get(0).get(5)).isEqualTo("CH1 2AN");
+            assertThat(data.get(0).get(6)).isEqualTo(LocalDate.now().minusDays(1).toString());
+            assertThat(data.get(0).get(7)).isEqualTo(true);
+            assertThat(data.get(0).get(8)).isEqualTo(FormCode.BI_SUMMONS.getCode());
         }
     }
 

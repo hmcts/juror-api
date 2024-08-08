@@ -91,6 +91,7 @@ public enum PendingJurorTypes implements IDataType {
         this.requiredTables = null;
     }
 
+    @Override
     public final String getId() {
         return this.name().toLowerCase(Locale.ROOT);
     }

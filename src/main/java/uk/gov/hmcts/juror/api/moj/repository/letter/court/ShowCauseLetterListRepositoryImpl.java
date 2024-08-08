@@ -84,7 +84,7 @@ public class ShowCauseLetterListRepositoryImpl implements ShowCauseLetterListRep
                         IJurorStatus.FAILED_TO_ATTEND))
                     .and(QAppearance.appearance.noShow.isTrue())
                     .and(QAppearance.appearance.attendanceType.eq(AttendanceType.ABSENT))
-                    .and(QPoolRequest.poolRequest.owner.eq(owner))));
+                    .and(QJurorPool.jurorPool.owner.eq(owner))));
     }
 
     private void orderQueryResults(JPAQuery<Tuple> jpaQuery, boolean isIncludePrinted) {
