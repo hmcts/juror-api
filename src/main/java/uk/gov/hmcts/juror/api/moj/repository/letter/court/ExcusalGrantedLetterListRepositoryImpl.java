@@ -146,7 +146,7 @@ public class ExcusalGrantedLetterListRepositoryImpl implements IExcusalGrantedLe
                 .then(0)
                 .otherwise(1)
                 .asc());
-            }
+        }
 
         jpaQuery.orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc())
             .orderBy(QJuror.juror.excusalDate.desc());
