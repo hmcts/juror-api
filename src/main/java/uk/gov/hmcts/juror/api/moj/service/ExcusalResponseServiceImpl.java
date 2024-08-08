@@ -98,7 +98,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
             if (!ExcusalCodeEnum.D.getCode().equals(excusalDecisionDto.getExcusalReasonCode())
                 && SecurityUtil.BUREAU_OWNER.equals(owner)) {
                 // Only generate letter for non-deceased jurors and Bureau users
-                sendExcusalLetter(jurorPool, jurorNumber, excusalDecisionDto.getExcusalReasonCode(), login);
+                sendExcusalLetter(jurorPool, jurorNumber);
             }
         } else {
             refuseExcusalForJuror(payload, excusalDecisionDto, jurorPool);
@@ -255,7 +255,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
 
     }
 
-    private void sendExcusalLetter(JurorPool jurorPool, String jurorNumber, String excusalCode, String login) {
+    private void sendExcusalLetter(JurorPool jurorPool, String jurorNumber) {
         log.info(String.format("Preparing an excusal letter for Juror %s", jurorNumber));
 
         printDataService.printExcusalLetter(jurorPool);
