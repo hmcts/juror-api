@@ -105,7 +105,7 @@ public class PostponementLetterListRepositoryImpl implements PostponementLetterL
                              .after(QJuror.juror.bureauTransferDate)))
             .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.DEFERRED)
                        .and(EXCUSAL_CODE.excusalCode.code.eq(ExcusalCodeEnum.P.getCode()))
-                       .and(QPoolRequest.poolRequest.owner.eq(SecurityUtil.getActiveOwner())));
+                       .and(QJurorPool.jurorPool.owner.eq(SecurityUtil.getActiveOwner())));
     }
 
     private void filterEligibleLetterSearchCriteria(JPAQuery<Tuple> jpaQuery,
