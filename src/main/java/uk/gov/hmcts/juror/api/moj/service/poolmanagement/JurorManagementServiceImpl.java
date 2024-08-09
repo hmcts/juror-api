@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.service.poolmanagement;
 
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.antlr.v4.runtime.misc.Triple;
@@ -15,6 +14,7 @@ import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorManagementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorManagementResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.ReassignPoolMembersResultDto;
+import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
@@ -28,6 +28,7 @@ import uk.gov.hmcts.juror.api.moj.service.GeneratePoolNumberService;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.PoolMemberSequenceService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
+import uk.gov.hmcts.juror.api.moj.service.ReissueLetterService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
@@ -40,6 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -49,24 +51,16 @@ import java.util.Optional;
     "PMD.GodClass"})
 public class JurorManagementServiceImpl implements JurorManagementService {
 
-    @NonNull
     private final PoolRequestRepository poolRequestRepository;
-    @NonNull
     private final CourtLocationRepository courtLocationRepository;
-    @NonNull
     private final JurorPoolRepository jurorPoolRepository;
-    @NonNull
     private final JurorStatusRepository jurorStatusRepository;
-    @NonNull
     private final GeneratePoolNumberService generatePoolNumberService;
-    @NonNull
     private final PoolMemberSequenceService poolMemberSequenceService;
-    @NonNull
     private final ResponseInspector responseInspector;
-    @NonNull
     private final PrintDataService printDataService;
-
     private final JurorHistoryService jurorHistoryService;
+    private final ReissueLetterService reissueLetterService;
 
 
     @Override
@@ -163,10 +157,17 @@ public class JurorManagementServiceImpl implements JurorManagementService {
 
                 // queue a summons confirmation letter only if juror is Bureau owned, has responded and is police
                 // checked
-                if (JurorDigitalApplication.JUROR_OWNER.equals(payload.getOwner())
-                    && targetJurorPool.getStatus().getStatus() == IJurorStatus.RESPONDED
-                    && targetJurorPool.getJuror().getPoliceCheck().isChecked()) {
-                    printDataService.printConfirmationLetter(targetJurorPool);
+                if (SecurityUtil.isBureau()) {
+                    if (targetJurorPool.getStatus().getStatus() == IJurorStatus.RESPONDED
+                        && targetJurorPool.getJuror().getPoliceCheck().isChecked()) {
+                        printDataService.printConfirmationLetter(targetJurorPool);
+                    }
+                    if (targetJurorPool.getStatus().getStatus() == IJurorStatus.SUMMONED) {
+                        reissueLetterService.updatePendingLetters(
+                            jurorNumber,
+                            Set.of(FormCode.ENG_SUMMONS, FormCode.BI_SUMMONS)
+                        );
+                    }
                 }
 
                 reassignedJurorsCount++;
@@ -305,7 +306,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         validateTransferRequest(activeUserOwner, requestDto);
 
         // check the current user has write access to manage the source pool
-        PoolRequest sourcePoolRequest = getSourcePoolRequest(requestDto.getSourcePoolNumber(), activeUserOwner);
+        PoolRequest sourcePoolRequest = getSourcePoolRequest(requestDto.getSourcePoolNumber());
         CourtLocation sendingCourtLocation = getSendingCourtLocation(requestDto.getSendingCourtLocCode());
 
         // current user does not need access to the receiving court location
@@ -346,6 +347,18 @@ public class JurorManagementServiceImpl implements JurorManagementService {
                 logicallyDeleteExistingJurorPool(jurorNumber, receivingCourtLocation);
 
                 // copy the pool members data over to a new record in the new court location
+
+                JurorPool oldActiveJurorPool =
+                    jurorPoolRepository.findByJurorJurorNumberAndIsActiveAndOwner(jurorNumber, true,
+                        receivingCourtLocation.getOwner());
+                //If the juror is being transferred back to the original
+                // ensure old transferred record is no longer active
+                if (oldActiveJurorPool != null
+                    && oldActiveJurorPool.getStatus().getStatus() == IJurorStatus.TRANSFERRED) {
+                    oldActiveJurorPool.setIsActive(false);
+                    jurorPoolRepository.save(oldActiveJurorPool);
+                }
+
                 JurorPool targetJurorPool = createTransferredJurorPool(sourceJurorPool, receivingCourtLocation,
                     targetPoolRequest, currentUser);
 
@@ -443,19 +456,9 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         JurorUtils.validateJurorNumbers(requestDto.getJurorNumbers());
     }
 
-    private PoolRequest getSourcePoolRequest(String sourcePoolNumber, String owner) {
-        log.trace("Enter getPoolRequest");
-        PoolRequest sourcePoolRequest = RepositoryUtils.unboxOptionalRecord(poolRequestRepository
-                .findById(sourcePoolNumber),
-            sourcePoolNumber);
-
-        log.debug("Check whether the current user owns the pool");
-        if (!sourcePoolRequest.getOwner().equalsIgnoreCase(owner)) {
-            throw new MojException.Forbidden(String.format("Current user does not have permission "
-                + "to transfer from Pool: %s", sourcePoolNumber), null);
-        }
-
-        return sourcePoolRequest;
+    private PoolRequest getSourcePoolRequest(String sourcePoolNumber) {
+        return RepositoryUtils.unboxOptionalRecord(
+            poolRequestRepository.findById(sourcePoolNumber), sourcePoolNumber);
     }
 
     private CourtLocation getSendingCourtLocation(String sourceCourtLocCode) {

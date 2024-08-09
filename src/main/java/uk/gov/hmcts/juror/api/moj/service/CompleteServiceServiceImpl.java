@@ -34,6 +34,7 @@ public class CompleteServiceServiceImpl implements CompleteServiceService {
 
 
     @Override
+    @Transactional
     public void uncompleteJurorsService(String jurorNumber, String poolNumber) {
         JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndStatus(jurorNumber,
             poolNumber, RepositoryUtils.retrieveFromDatabase(IJurorStatus.COMPLETED, jurorStatusRepository));
@@ -50,14 +51,23 @@ public class CompleteServiceServiceImpl implements CompleteServiceService {
     }
 
     @Override
+    @Transactional
+    public boolean completeServiceSingle(JurorPool jurorPool, LocalDate completionDate) {
+        if (isJurorValidForCompletion(jurorPool)) {
+            completeService(jurorPool, completionDate);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    @Transactional(noRollbackFor = MojException.BusinessRuleViolation.class)
     public void completeService(String poolNumber,
                                 CompleteServiceJurorNumberListDto completeServiceJurorNumberListDto) {
         List<String> ineligibleJurorNumbers = new ArrayList<>();
         for (String jurorNumber : completeServiceJurorNumberListDto.getJurorNumbers()) {
             JurorPool jurorPool = getJurorPool(poolNumber, jurorNumber);
-            if (isJurorValidForCompletion(jurorPool)) {
-                completeService(jurorPool, completeServiceJurorNumberListDto.getCompletionDate());
-            } else {
+            if (!completeServiceSingle(jurorPool, completeServiceJurorNumberListDto.getCompletionDate())) {
                 ineligibleJurorNumbers.add(jurorNumber);
             }
         }
@@ -160,6 +170,6 @@ public class CompleteServiceServiceImpl implements CompleteServiceService {
 
     private boolean isJurorValidForCompletion(JurorPool jurorPool) {
         return !Set.of(IJurorStatus.TRANSFERRED, IJurorStatus.FAILED_TO_ATTEND, IJurorStatus.SUMMONED)
-                .contains(jurorPool.getStatus().getStatus());
+            .contains(jurorPool.getStatus().getStatus());
     }
 }

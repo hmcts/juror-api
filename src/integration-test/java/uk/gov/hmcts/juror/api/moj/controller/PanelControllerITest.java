@@ -399,7 +399,7 @@ class PanelControllerITest extends AbstractIntegrationTest {
                 "Expected history code to be VRET")
             .isEqualTo("VRET");
         Appearance appearance =
-            appearanceRepository.findByJurorNumberAndAttendanceDate(panelMember.getJurorNumber(),
+            appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415", panelMember.getJurorNumber(),
                 LocalDate.now()).orElseThrow(() ->
                 new MojException.NotFound("No appearance record found", null));
         JurorPool jurorPool = PanelUtils.getAssociatedJurorPool(jurorPoolRepository, panelMember);

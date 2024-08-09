@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorListRequestDto;
@@ -68,6 +69,7 @@ public class PanelServiceImpl implements PanelService {
     }
 
     @Override
+    @Transactional
     public List<PanelListDto> createPanel(int numberRequested, String trialNumber,
                                           List<String> poolNumbers, String courtLocationCode,
                                           LocalDate attendanceDate,
@@ -85,6 +87,7 @@ public class PanelServiceImpl implements PanelService {
     }
 
     @Override
+    @Transactional
     public List<PanelListDto> addPanelMembers(int numberRequested, String trialNumber,
                                               List<String> poolNumbers, String courtLocationCode,
                                               LocalDate attendanceDate) {
@@ -194,7 +197,8 @@ public class PanelServiceImpl implements PanelService {
             //update appearance record with trial number
             Appearance appearance =
                 RepositoryUtils.unboxOptionalRecord(
-                    appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber, attendanceDate), jurorNumber);
+                    appearanceRepository.findByCourtLocationLocCodeAndJurorNumberAndAttendanceDate(
+                        courtLocationCode, jurorNumber, attendanceDate), jurorNumber);
 
             appearance.setTrialNumber(trial.getTrialNumber());
             appearanceRepository.saveAndFlush(appearance);
@@ -211,6 +215,7 @@ public class PanelServiceImpl implements PanelService {
     }
 
     @Override
+    @Transactional
     public EmpanelListDto requestEmpanel(int numberRequested, String trialNumber, String locCode) {
         if (numberRequested <= 0 || numberRequested > 30) {
             throw new MojException.BadRequest(
@@ -230,17 +235,19 @@ public class PanelServiceImpl implements PanelService {
     }
 
     @Override
+    @Transactional
     public List<PanelListDto> processEmpanelled(JurorListRequestDto dto, BureauJwtPayload payload) {
         if (dto.getNumberRequested() <= 0 || dto.getNumberRequested() > 30) {
             throw new MojException.BadRequest(
                 "Number requested must be between 1 and 30", null);
         }
 
+        final String locCode = dto.getCourtLocationCode();
         for (JurorDetailRequestDto detail : dto.getJurors()) {
             Panel panelMember =
                 panelRepository
                     .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumber(
-                        dto.getTrialNumber(), dto.getCourtLocationCode(), detail.getJurorNumber());
+                        dto.getTrialNumber(), locCode, detail.getJurorNumber());
 
             panelMember.setResult(detail.getResult());
             setJurorStatus(panelMember);
@@ -258,11 +265,12 @@ public class PanelServiceImpl implements PanelService {
                 // An appearance record MUST exist for the juror and attendance day
                 // - they must be checked in on the day that's being processed
                 Appearance appearance =
-                    appearanceRepository.findByJurorNumberAndAttendanceDateAndAppearanceStage(jurorNumber,
-                            dto.getAttendanceDate(), AppearanceStage.CHECKED_IN)
+                    appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDateAndAppearanceStage(
+                            locCode, jurorNumber, dto.getAttendanceDate(), AppearanceStage.CHECKED_IN)
                         .orElseThrow(() ->
                             new MojException.BusinessRuleViolation(String.format("No appearance record found for "
-                                + "juror %s on %s", jurorNumber, dto.getAttendanceDate()), JUROR_MUST_BE_CHECKED_IN));
+                                + "juror %s on %s at %s", jurorNumber, dto.getAttendanceDate(), locCode),
+                                JUROR_MUST_BE_CHECKED_IN));
                 appearance.setPoolNumber(jurorPool.getPoolNumber());
 
                 if (panelMember.getResult() == PanelResult.CHALLENGED) {

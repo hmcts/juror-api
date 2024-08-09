@@ -1,13 +1,13 @@
 package uk.gov.hmcts.juror.api.moj.service.trial;
 
 import io.micrometer.common.util.StringUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
-import uk.gov.hmcts.juror.api.moj.controller.request.CompleteServiceJurorNumberListDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.EndTrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReturnJuryDto;
@@ -31,15 +31,14 @@ import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
-import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.CourtroomRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.JudgeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
+import uk.gov.hmcts.juror.api.moj.service.AppearanceCreationService;
 import uk.gov.hmcts.juror.api.moj.service.CompleteServiceService;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
-import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.utils.PanelUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
@@ -49,7 +48,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -63,45 +61,30 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
     "PMD.ExcessiveImports",
     "PMD.TooManyMethods"
 })
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class TrialServiceImpl implements TrialService {
 
-    @Autowired
-    private TrialRepository trialRepository;
-    @Autowired
-    private JudgeRepository judgeRepository;
-    @Autowired
-    private CourtroomRepository courtroomRepository;
-    @Autowired
-    private CourtLocationRepository courtLocationRepository;
-    @Autowired
-    private PanelRepository panelRepository;
-    @Autowired
-    private JurorHistoryRepository jurorHistoryRepository;
-    @Autowired
-    private AppearanceRepository appearanceRepository;
-    @Autowired
-    private JurorPoolRepository jurorPoolRepository;
-    @Autowired
-    private CompleteServiceService completeService;
+    private final TrialRepository trialRepository;
+    private final JudgeRepository judgeRepository;
+    private final CourtroomRepository courtroomRepository;
+    private final CourtLocationRepository courtLocationRepository;
+    private final PanelRepository panelRepository;
+    private final AppearanceRepository appearanceRepository;
+    private final JurorPoolRepository jurorPoolRepository;
+    private final CompleteServiceService completeService;
+    private final JurorAppearanceService jurorAppearanceService;
+    private final JurorHistoryService jurorHistoryService;
+    private final AppearanceCreationService appearanceCreationService;
 
-    @Autowired
-    private JurorAppearanceService jurorAppearanceService;
-
-    @Autowired
-    private JurorExpenseService jurorExpenseService;
-
-    @Autowired
-    private JurorHistoryService jurorHistoryService;
-
-    private static final int PAGE_SIZE = 25;
     private static final String CANNOT_FIND_TRIAL_ERROR_MESSAGE = "Cannot find trial with number: %s for "
         + "court location %s";
 
     @Override
+    @Transactional
     public TrialSummaryDto createTrial(BureauJwtPayload payload, TrialDto trialDto) {
 
-        if (trialRepository.existsByTrialNumberAndCourtLocationLocCode(trialDto.getCaseNumber(),
-            trialDto.getCourtLocation())) {
+        if (trialRepository.existsByTrialNumberAndCourtLocationLocCode(
+            trialDto.getCaseNumber(), trialDto.getCourtLocation())) {
             throw new MojException.BadRequest(String.format("Unable to create trial with case number: %s at "
                     + "location code %s (case number already in use at this "
                     + "location)",
@@ -111,18 +94,24 @@ public class TrialServiceImpl implements TrialService {
 
         Courtroom courtroom =
             RepositoryUtils.unboxOptionalRecord(courtroomRepository.findById(trialDto.getCourtroomId()),
-                trialDto.getCourtroomId().toString());
+                trialDto.getCourtroomId().toString(), "Courtroom");
+        if (!courtroom.getCourtLocation().getLocCode().equals(trialDto.getCourtLocation())) {
+            throw new MojException.BadRequest("Courtroom does not belong to the court location", null);
+        }
         CourtLocation courtLocation =
             RepositoryUtils.unboxOptionalRecord(courtLocationRepository.findByLocCode(trialDto.getCourtLocation()),
-                trialDto.getCourtLocation());
+                trialDto.getCourtLocation(), "Court Location");
         Judge judge =
             RepositoryUtils.unboxOptionalRecord(judgeRepository.findById(trialDto.getJudgeId()),
-                trialDto.getJudgeId().toString());
+                trialDto.getJudgeId().toString(), "Judge");
+
+        if (!judge.getOwner().equals(courtLocation.getOwner())) {
+            throw new MojException.BadRequest("Judge does not belong to the court location", null);
+        }
 
         Trial trial = convertDtoToTrial(trialDto, courtroom, judge, courtLocation);
         trialRepository.save(trial);
 
-        //TODO confirm
         judge.setLastUsed(LocalDateTime.now());
         judgeRepository.save(judge);
         return createTrialSummary(trial, courtroom, judge, false);
@@ -168,6 +157,14 @@ public class TrialServiceImpl implements TrialService {
         trial.setCourtroom(courtroomRepository.findById(trialDto.getCourtroomId())
             .orElseThrow(() -> new MojException.NotFound("Cannot find courtroom with id: %s"
                 .formatted(trialDto.getCourtroomId()), null)));
+
+        if (!trial.getCourtLocation().getLocCode().equals(trialDto.getCourtLocation())) {
+            throw new MojException.BadRequest("Courtroom does not belong to the court location", null);
+        }
+        if (!trial.getJudge().getOwner().equals(trial.getCourtLocation().getOwner())) {
+            throw new MojException.BadRequest("Judge does not belong to the court location", null);
+        }
+
         trialRepository.save(trial);
 
         return createTrialSummary(trial, trial.getCourtroom(), trial.getJudge(), false);
@@ -202,6 +199,7 @@ public class TrialServiceImpl implements TrialService {
     }
 
     @Override
+    @Transactional
     public void returnPanel(BureauJwtPayload payload, String trialNo, String locCode,
                             List<JurorDetailRequestDto> jurorDetailRequestDto) {
 
@@ -231,6 +229,7 @@ public class TrialServiceImpl implements TrialService {
     }
 
     @Override
+    @Transactional
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     public void returnJury(BureauJwtPayload payload, String trialNumber, String locationCode,
                            ReturnJuryDto returnJuryDto) {
@@ -242,8 +241,6 @@ public class TrialServiceImpl implements TrialService {
 
         log.info(String.format("found %d jury members to be returned", juryMembersToBeReturned.size()));
 
-        JurorStatus jurorStatus = new JurorStatus();
-        jurorStatus.setStatus(IJurorStatus.RESPONDED);
 
         // get the next available attendance number from the database sequence
         final long attendanceAuditNumber = appearanceRepository.getNextAttendanceAuditNumber();
@@ -255,7 +252,8 @@ public class TrialServiceImpl implements TrialService {
 
             if (StringUtils.isNotEmpty(returnJuryDto.getCheckIn())) {
 
-                Appearance appearance = getJurorAppearanceForDate(jurorPool, returnJuryDto.getAttendanceDate());
+                Appearance appearance =
+                    getJurorAppearanceForDate(jurorPool, returnJuryDto.getAttendanceDate(), locationCode);
 
                 // only apply check in time for those that have not been checked in yet
                 if (appearance.getTimeIn() == null) {
@@ -269,14 +267,11 @@ public class TrialServiceImpl implements TrialService {
                     appearance.setTimeOut(LocalTime.parse(returnJuryDto.getCheckOut()));
                     log.debug("setting time out for juror %s".formatted(jurorNumber));
                 }
-                appearanceRepository.save(appearance);
-                jurorAppearanceService.realignAttendanceType(appearance);
                 appearance.setAttendanceAuditNumber("J" + attendanceAuditNumber);
-
-                jurorHistoryService.createJuryAttendanceHistory(jurorPool, appearance, panel);
-
+                appearance.setTrialNumber(trialNumber);
                 appearance.setSatOnJury(true);
-                appearanceRepository.saveAndFlush(appearance);
+                jurorAppearanceService.realignAttendanceType(appearance);
+                jurorHistoryService.createJuryAttendanceHistory(jurorPool, appearance, panel);
             }
 
             panel.setResult(PanelResult.RETURNED);
@@ -284,6 +279,8 @@ public class TrialServiceImpl implements TrialService {
             panel.setReturnDate(LocalDate.now());
             panelRepository.saveAndFlush(panel);
 
+            JurorStatus jurorStatus = new JurorStatus();
+            jurorStatus.setStatus(IJurorStatus.RESPONDED);
             jurorPool.setStatus(jurorStatus);
 
             log.debug(String.format("updated juror trial record for juror %s", jurorNumber));
@@ -291,15 +288,13 @@ public class TrialServiceImpl implements TrialService {
             log.debug(String.format(String.format("saved history item for juror %s", jurorNumber)));
 
             if (Boolean.TRUE.equals(returnJuryDto.getCompleted())) {
-                CompleteServiceJurorNumberListDto dto = new CompleteServiceJurorNumberListDto();
-                dto.setJurorNumbers(Collections.singletonList(panel.getJurorNumber()));
-                dto.setCompletionDate(LocalDate.now());
-                completeService.completeService(jurorPool.getPoolNumber(), dto);
+                completeService.completeServiceSingle(jurorPool, LocalDate.now());
             }
         }
     }
 
     @Override
+    @Transactional
     public void endTrial(EndTrialDto dto) {
         List<Panel> panelList =
             panelRepository.retrieveMembersOnTrial(dto.getTrialNumber(), dto.getLocationCode());
@@ -412,24 +407,24 @@ public class TrialServiceImpl implements TrialService {
         return trial;
     }
 
-    private Appearance getJurorAppearanceForDate(JurorPool jurorPool, LocalDate attendanceDate) {
+    private Appearance getJurorAppearanceForDate(JurorPool jurorPool, LocalDate attendanceDate, String locCode) {
 
         final String jurorNumber = jurorPool.getJurorNumber();
-
         log.debug(String.format("Check for an appearance record for Juror: %s on %s", jurorNumber, attendanceDate));
-        Optional<Appearance> appearanceOpt = appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber,
-            attendanceDate);
-        log.debug(String.format("Appearance record for Juror: %s on %s %s", jurorNumber,
-            attendanceDate, appearanceOpt.isPresent()
+        Optional<Appearance> appearanceOpt = jurorAppearanceService
+            .getAppearance(jurorNumber, attendanceDate, locCode);
+        log.debug(String.format("Appearance record for Juror: %s on %s at %s %s",
+            jurorNumber, attendanceDate, locCode,
+            appearanceOpt.isPresent()
                 ? "already exists"
                 : "could not be found"));
 
         return appearanceOpt.orElse(
-            Appearance.builder()
-                .jurorNumber(jurorNumber)
-                .attendanceDate(attendanceDate)
-                .courtLocation(jurorPool.getPool().getCourtLocation())
-                .poolNumber(jurorPool.getPool().getPoolNumber())
-                .build());
+            appearanceCreationService.createAppearance(
+                jurorNumber,
+                attendanceDate,
+                jurorPool.getPool().getCourtLocation(),
+                jurorPool.getPool().getPoolNumber(),
+                false));
     }
 }

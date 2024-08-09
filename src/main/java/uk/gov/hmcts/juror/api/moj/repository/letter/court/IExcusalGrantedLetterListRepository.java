@@ -7,6 +7,5 @@ import java.util.List;
 
 public interface IExcusalGrantedLetterListRepository {
 
-    List<ExcusalGrantedLetterList> findJurorsEligibleForExcusalGrantedLetter(CourtLetterSearchCriteria searchCriteria,
-                                                                             String owner);
+    List<ExcusalGrantedLetterList> findJurorsEligibleForExcusalGrantedLetter(CourtLetterSearchCriteria searchCriteria);
 }

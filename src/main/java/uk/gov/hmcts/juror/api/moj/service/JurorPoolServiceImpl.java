@@ -73,8 +73,10 @@ public class JurorPoolServiceImpl implements JurorPoolService {
 
     @Override
     public JurorPool getLastJurorPoolForJuror(String locCode, String jurorNumber) {
-        List<JurorPool> jurorPools = getJurorPools(locCode, jurorNumber).stream().sorted(
-            Comparator.comparing(JurorPool::getDateCreated).reversed()).toList();
+        List<JurorPool> jurorPools = getJurorPools(locCode, jurorNumber)
+            .stream()
+            .sorted(Comparator.comparing(JurorPool::getDateCreated).reversed())
+            .toList();
 
         Optional<JurorPool> jurorPool = jurorPools.stream().filter(JurorPool::getIsActive).findFirst();
         if (jurorPool.isPresent()) {
