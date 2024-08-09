@@ -3,7 +3,7 @@ package uk.gov.hmcts.juror.api.bureau.service;
 
 import com.google.common.collect.Lists;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import io.jsonwebtoken.lang.Assert;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,25 +26,13 @@ import java.util.Map;
  */
 @Slf4j
 @Service
+@AllArgsConstructor(onConstructor = @__(@Autowired))
 public class JurorCommsWeeklyInfoServiceImpl implements BureauProcessService {
 
 
     private static final Integer NOTIFICATION_SENT = 1;
     private final JurorCommsNotificationService jurorCommsNotificationService;
-
-
     private final JurorPoolRepository jurorRepository;
-
-    @Autowired
-    public JurorCommsWeeklyInfoServiceImpl(
-        final JurorCommsNotificationService jurorCommsNotificationService,
-        final JurorPoolRepository jurorRepository) {
-        Assert.notNull(jurorCommsNotificationService, "JurorCommsNotificationService cannot be null.");
-        Assert.notNull(jurorRepository, "JurorRepository cannot be null.");
-        this.jurorCommsNotificationService = jurorCommsNotificationService;
-        this.jurorRepository = jurorRepository;
-
-    }
 
     /**
      * Implements a specific job execution.

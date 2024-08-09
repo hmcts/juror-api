@@ -1,6 +1,6 @@
 package uk.gov.hmcts.juror.api.bureau.service;
 
-import io.jsonwebtoken.lang.Assert;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -24,7 +24,6 @@ import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 
 import java.net.InetSocketAddress;
 import java.net.Proxy;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -34,42 +33,21 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 
 @Configuration
 @Slf4j
 @Component
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService {
 
     private final AppSettingService appSetting;
-    //private final NotifyConfigurationProperties notifyConfigurationProperties;
     private final SmartSurveyConfigurationProperties smartSurveyConfigurationProperties;
     private final SurveyResponseRepository surveyResponseRepository;
 
     private Proxy proxy;
-    private String proxyHost;
-    private String proxyPort;
-    private Proxy.Type proxyType;
     private Boolean proxyEnabled = false;
-
-    @Autowired
-    public JurorDashboardSmartSurveyImportImpl(
-        final AppSettingService appSetting,
-        //final NotifyConfigurationProperties notifyConfigurationProperties,
-        final SmartSurveyConfigurationProperties smartSurveyConfigurationProperties,
-        final SurveyResponseRepository surveyResponseRepository) {
-        Assert.notNull(appSetting, "appSetting cannot be null.");
-        //Assert.notNull(notifyConfigurationProperties, "notifyConfigurationProperties cannot be null");
-        Assert.notNull(smartSurveyConfigurationProperties, "smartSurveyConfigurationProperties cannot be null");
-        Assert.notNull(surveyResponseRepository, "SurveyResponseRepository cannot be null.");
-
-        this.appSetting = appSetting;
-        //this.notifyConfigurationProperties = notifyConfigurationProperties;
-        this.smartSurveyConfigurationProperties = smartSurveyConfigurationProperties;
-        this.surveyResponseRepository = surveyResponseRepository;
-    }
 
     /**
      * Implements a specific job execution.
@@ -95,14 +73,12 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
         String smartSurveyToken = smartSurveyConfigurationProperties.getToken();
 
         String smartSurveyCredentials = "?api_token={apiToken}&api_token_secret={apiTokenSecret}";
-        String exportId = null;
-        String exportUrl = null;
+        String exportUrl;
 
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
         LocalDate currentDate = LocalDate.now();
         LocalDate startDate = currentDate.minusDays(surveyDays);
 
-        List<SurveyResponse> surveyResponseList = new ArrayList<SurveyResponse>();
+        List<SurveyResponse> surveyResponseList;
         int dbInsertCount = 0;
         int dbSkipCount = 0;
 
@@ -129,6 +105,9 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
                 proxyEnabled = proxyProperties.getEnabled();
                 log.info("Smart Survey proxy enabled: {}", proxyEnabled);
 
+                Proxy.Type proxyType;
+                String proxyHost;
+                String proxyPort;
                 if (proxyEnabled) {
                     proxyHost = proxyProperties.getHost();
                     proxyPort = proxyProperties.getPort();
@@ -140,12 +119,7 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
 
                     proxy = new Proxy(proxyType, new InetSocketAddress(proxyHost, Integer.valueOf(proxyPort)));
                 } else {
-
-                    proxyHost = null;
-                    proxyPort = null;
-                    proxyType = null;
                     proxy = null;
-
                     log.info("Smart Survey proxy settings ignored");
                 }
 
@@ -179,15 +153,12 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
             }
 
             // Add records to table SURVEY_RESPONSE if not existing
-            if (surveyResponseList.size() > 0) {
+            if (!surveyResponseList.isEmpty()) {
 
                 log.info("Smart Survey records parsed (excluding header): {}", surveyResponseList.size());
 
-                for (int i = 0;
-                     i < surveyResponseList.size();
-                     i++) {
+                for (SurveyResponse objSurveyResponse : surveyResponseList) {
 
-                    SurveyResponse objSurveyResponse = surveyResponseList.get(i);
                     SurveyResponseKey objSurveyResponseKey = new SurveyResponseKey();
                     objSurveyResponseKey.setId(objSurveyResponse.getId());
                     objSurveyResponseKey.setSurveyId(objSurveyResponse.getSurveyId());
@@ -234,9 +205,9 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
         // Get the latest survey export URL from the smart survey API
 
         final String configExportName = this.appSetting.getSmartSurveySummonsResponseExportName();
-        String smartSurveyExportList = null;
-        RestTemplate restTemplate = null;
-        HttpHeaders headers = null;
+        String smartSurveyExportList;
+        RestTemplate restTemplate;
+        HttpHeaders headers;
 
         log.info("Smart Survey request url: {}", smartSurveyUrl);
         log.info("Smart Survey config export name: {}", configExportName);
@@ -288,7 +259,7 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
         }
         String exportUrl = null;
         //Get the Url for the latest export record - first item in list
-        if (jsonList.size() > 0) {
+        if (!jsonList.isEmpty()) {
             JSONObject obj = jsonList.get(0);
             log.debug("Smart Survey export details: {}", obj);
             exportUrl = obj.getString("href_download");
@@ -306,9 +277,9 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
                                                LocalDate extractStartDate, String surveyId) {
 
         List<SurveyResponse> surveyResponseList = new ArrayList<SurveyResponse>();
-        String smartSurveyExportData = null;
-        RestTemplate restTemplate = null;
-        HttpHeaders headers = null;
+        String smartSurveyExportData;
+        RestTemplate restTemplate;
+        HttpHeaders headers;
 
         // get export data from Smart Survey API
         log.info("Smart Survey request url: {}", smartSurveyUrl);
@@ -354,9 +325,7 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
             // Note: the fist row (index 0) contains column headings
             // processing starts from the second row (index 1)
             if (arrCsvRows.length > 1) {
-                for (int i = 1;
-                     i < arrCsvRows.length;
-                     i++) {
+                for (int i = 1; i < arrCsvRows.length; i++) {
 
                     String csvRow = arrCsvRows[i];
                     String[] csvCols = csvRow.split(",");

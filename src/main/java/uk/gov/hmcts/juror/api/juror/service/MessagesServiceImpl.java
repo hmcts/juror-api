@@ -78,14 +78,10 @@ public class MessagesServiceImpl implements BureauProcessService {
         // keys as values
 
         Map<String, String> myRegionMap = new HashMap<>();
-        @SuppressWarnings("PMD.VariableDeclarationUsageDistance")
-        int errorCount = 0;
 
         List<String> notifyRegionKeys = setUpNotifyRegionKeys();
         List<String> regionIds = setUpRegionIds();
-        for (int i = 0;
-             i < notifyRegionKeys.size();
-             i++) {
+        for (int i = 0; i < notifyRegionKeys.size(); i++) {
             myRegionMap.put(regionIds.get(i), notifyRegionKeys.get(i));
         }
 
@@ -102,6 +98,11 @@ public class MessagesServiceImpl implements BureauProcessService {
 
         Map<String, TemplateDetails> templateDetailsMap = new HashMap<>();
 
+        int errorCount = 0;
+        int missingApiKeyCount = 0;
+        int missingEmailAndPhone = 0;
+        int emailSuccess = 0;
+        int smsSuccess = 0;
 
         for (Message messagesDetail : messageDetailList) {
             log.info("messagesDetail  Juror number : {}", messagesDetail.getJurorNumber());
@@ -124,9 +125,6 @@ public class MessagesServiceImpl implements BureauProcessService {
                 final String textMessage = messagesDetail.getMessageText();
                 final String reference = (messagesDetail.getJurorNumber());
 
-
-                //     String apiKey = (messagesDetail != null ? messagesDetail.getLocationCode().getCourtRegion()
-                //     .getNotifyAccountKey() : null);
                 final String regionId = messagesDetail.getLocationCode().getCourtRegion().getRegionId();
                 final String regionApikey = myRegionMap.get(regionId);
                 log.debug("regionApikey {} ", regionApikey);
@@ -137,7 +135,7 @@ public class MessagesServiceImpl implements BureauProcessService {
                         regionId);
                     messagesDetail.setMessageRead(MESSAGE_READ_APP_ERROR);
                     updateMessageFlag(messagesDetail);
-
+                    missingApiKeyCount++;
                     continue;
                 }
 
@@ -150,6 +148,7 @@ public class MessagesServiceImpl implements BureauProcessService {
                 final boolean isPhone = messagesDetail.getPhone() != null;
 
                 if (!isEmail && !isPhone) {
+                    missingEmailAndPhone++;
                     continue;
                 }
 
@@ -184,11 +183,13 @@ public class MessagesServiceImpl implements BureauProcessService {
                             smsTemplateId, email, personalisation, reference);
                         response = emailResponse;
                         notificationId = emailResponse.getNotificationId();
+                        emailSuccess++;
                     } else if (isPhone) {
                         SendSmsResponse smsResponse =
                             notifyClient.sendSms(smsTemplateId, phoneNumber, personalisation, reference);
                         response = smsResponse;
                         notificationId = smsResponse.getNotificationId();
+                        smsSuccess++;
                     }
 
                     if (notificationId != null) {
@@ -213,7 +214,14 @@ public class MessagesServiceImpl implements BureauProcessService {
             errorCount == 0
                 ? SchedulerServiceClient.Result.Status.SUCCESS
                 : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS, null,
-            Map.of("ERROR_COUNT", "" + errorCount));
+            Map.of(
+                "TOTAL_MESSAGES_TO_SEND","" + messageDetailList.size(),
+                "ERROR_COUNT", "" + errorCount,
+                "MISSING_API_KEY_COUNT", "" + missingApiKeyCount,
+                "MISSING_EMAIL_AND_PHONE", "" + missingEmailAndPhone,
+                "EMAIL_SUCCESS", "" + emailSuccess,
+                "SMS_SUCCESS", "" + smsSuccess
+            ));
     }
 
     private TemplateDetails createTemplateDetails(Message messagesDetail) {
