@@ -84,11 +84,15 @@ public class JurorRepositoryImpl implements IJurorRepository {
 
         if (null != query.getJurorName()) {
 
-            String[] names = query.getJurorName().split(" ");
+            String[] names = query.getJurorName().split(" ",3);
 
             if (names.length == 2) {
                 partialQuery.where(JUROR.firstName.containsIgnoreCase(names[0])
                     .and(JUROR.lastName.containsIgnoreCase(names[1])));
+            } else if (names.length > 2) {
+                // assume first name is first word and last name is the rest
+                partialQuery.where(JUROR.firstName.containsIgnoreCase(names[0])
+                    .and(JUROR.lastName.containsIgnoreCase(names[1] + " " + names[2])));
             } else {
                 partialQuery.where(JUROR.firstName.concat(" ").concat(JUROR.lastName).containsIgnoreCase(
                     query.getJurorName()));
