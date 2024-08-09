@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
@@ -20,6 +21,7 @@ public class AppearanceCreationServiceImpl implements AppearanceCreationService 
     private final AppearanceRepository appearanceRepository;
 
     @Override
+    @Transactional
     public Appearance createAppearance(String jurorNumber, LocalDate appearanceDate, CourtLocation courtLocation,
                                        String poolNumber, boolean appearanceConfirmed) {
         return addStandardAttributes(Appearance.builder()
@@ -33,6 +35,7 @@ public class AppearanceCreationServiceImpl implements AppearanceCreationService 
     }
 
     @Override
+    @Transactional
     public Appearance createAbsentAppearance(String jurorNumber, LocalDate attendanceDate, CourtLocation courtLocation,
                                              String poolNumber, boolean appearanceConfirmed) {
         return addStandardAttributes(Appearance.builder()
@@ -49,6 +52,7 @@ public class AppearanceCreationServiceImpl implements AppearanceCreationService 
 
 
     @Override
+    @Transactional
     public Appearance createNoneAttendanceAppearance(String jurorNumber, LocalDate nonAttendanceDate,
                                                      CourtLocation courtLocation, String poolNumber,
                                                      boolean appearanceConfirmed) {
@@ -80,6 +84,6 @@ public class AppearanceCreationServiceImpl implements AppearanceCreationService 
     //Public for test use should only be used internally
     public Long getLastVersionNumber(String jurorNumber, LocalDate date, String locCode) {
         Long lastVersion = appearanceRepository.getLastVersionNumber(jurorNumber, date, locCode);
-        return lastVersion == null ? 0 : lastVersion + 1;
+        return lastVersion == null ? null : lastVersion + 1;
     }
 }
