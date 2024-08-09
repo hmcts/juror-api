@@ -105,13 +105,13 @@ public class PoolRequestServiceImpl implements PoolRequestService {
 
         Path<Object> sortField = Expressions.path(Object.class, QPoolRequest.poolRequest, sortBy);
         OrderSpecifier<?> order;
-        if (sortOrder.equals("asc")) {
+        if ("asc".equals(sortOrder)) {
             order = new OrderSpecifier(Order.ASC, sortField);
         } else {
             order = new OrderSpecifier(Order.DESC, sortField);
         }
 
-        if (payload.getOwner().equals(JurorDigitalApplication.JUROR_OWNER)) {
+        if (JurorDigitalApplication.JUROR_OWNER.equals(payload.getOwner())) {
             log.debug("Retrieving Pool Request for the current Bureau user");
             poolRequests = poolRequestRepository.findBureauPoolRequestsList(
                 POOL_TYPES_DESC_LIST,

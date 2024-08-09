@@ -5456,12 +5456,111 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
+        void searchForJurorRecordsByNameFNameInitialNotSupplied() throws Exception {
+
+            String bureauJwt = createBureauJwt("Court_User", "417", "417");
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+            JurorRecordFilterRequestQuery request = JurorRecordFilterRequestQuery.builder()
+                .jurorName("fnametwo lnametwo")
+                .pageNumber(1)
+                .pageLimit(10)
+                .sortMethod(SortMethod.DESC)
+                .sortField(JurorRecordFilterRequestQuery.SortField.JUROR_NUMBER)
+                .build();
+
+            ResponseEntity<PaginatedList<FilterJurorRecord>> response =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
+                    URI.create(URL)), new ParameterizedTypeReference<>() {});
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP POST request (GET With Body) to be successful")
+                .isEqualTo(HttpStatus.OK);
+
+            assertThat(response.getBody()).isNotNull();
+            PaginatedList<FilterJurorRecord> responseBody = response.getBody();
+
+            List<FilterJurorRecord> data = responseBody.getData();
+            assertThat(data.size()).as("Expect the response body to contain all 1 data items").isEqualTo(1);
+            FilterJurorRecord juror = data.get(0);
+            assertThat(juror.getJurorNumber()).as("Expect the response body to contain the correct juror number")
+                .isEqualTo("641700120");
+            assertThat(juror.getJurorName()).as("Expect the response body to contain the correct juror name")
+                .isEqualTo("Fnametwo I Lnametwo");
+
+        }
+
+        @Test
+        void searchForJurorRecordsByNameLastnameFirstPartOnly() throws Exception {
+
+            String bureauJwt = createBureauJwt("Court_User", "417", "417");
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+            JurorRecordFilterRequestQuery request = JurorRecordFilterRequestQuery.builder()
+                .jurorName("fnamethree lnamethree")
+                .pageNumber(1)
+                .pageLimit(10)
+                .sortMethod(SortMethod.DESC)
+                .sortField(JurorRecordFilterRequestQuery.SortField.JUROR_NUMBER)
+                .build();
+
+            ResponseEntity<PaginatedList<FilterJurorRecord>> response =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
+                    URI.create(URL)), new ParameterizedTypeReference<>() {});
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP POST request (GET With Body) to be successful")
+                .isEqualTo(HttpStatus.OK);
+
+            assertThat(response.getBody()).isNotNull();
+            PaginatedList<FilterJurorRecord> responseBody = response.getBody();
+
+            List<FilterJurorRecord> data = responseBody.getData();
+            assertThat(data.size()).as("Expect the response body to contain all 1 data items").isEqualTo(1);
+            FilterJurorRecord juror = data.get(0);
+            assertThat(juror.getJurorNumber()).as("Expect the response body to contain the correct juror number")
+                .isEqualTo("641700123");
+            assertThat(juror.getJurorName()).as("Expect the response body to contain the correct juror name")
+                .isEqualTo("Fnamethree Lnamethree I");
+
+        }
+
+        @Test
+        void searchForJurorRecordsByNameLastnameTwoParts() throws Exception {
+
+            String bureauJwt = createBureauJwt("Court_User", "417", "417");
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+            JurorRecordFilterRequestQuery request = JurorRecordFilterRequestQuery.builder()
+                .jurorName("fnamethree lnamethree I")
+                .pageNumber(1)
+                .pageLimit(10)
+                .sortMethod(SortMethod.DESC)
+                .sortField(JurorRecordFilterRequestQuery.SortField.JUROR_NUMBER)
+                .build();
+
+            ResponseEntity<PaginatedList<FilterJurorRecord>> response =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
+                    URI.create(URL)), new ParameterizedTypeReference<>() {});
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP POST request (GET With Body) to be successful")
+                .isEqualTo(HttpStatus.OK);
+
+            assertThat(response.getBody()).isNotNull();
+            PaginatedList<FilterJurorRecord> responseBody = response.getBody();
+
+            List<FilterJurorRecord> data = responseBody.getData();
+            assertThat(data.size()).as("Expect the response body to contain all 1 data items").isEqualTo(1);
+            FilterJurorRecord juror = data.get(0);
+            assertThat(juror.getJurorNumber()).as("Expect the response body to contain the correct juror number")
+                .isEqualTo("641700123");
+            assertThat(juror.getJurorName()).as("Expect the response body to contain the correct juror name")
+                .isEqualTo("Fnamethree Lnamethree I");
+
+        }
+
+        @Test
         void searchForJurorRecordsByName() throws Exception {
 
             String bureauJwt = createBureauJwt("Court_User", "415", "415");
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
             JurorRecordFilterRequestQuery request = JurorRecordFilterRequestQuery.builder()
-                .jurorName("Lnameninefive")
+                .jurorName("LNAMENINEFIVE")
                 .pageNumber(1)
                 .pageLimit(10)
                 .sortMethod(SortMethod.DESC)
