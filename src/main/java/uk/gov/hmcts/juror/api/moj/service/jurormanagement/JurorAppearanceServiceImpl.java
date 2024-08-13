@@ -609,8 +609,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                     false
                 ));
 
-            if (appearance.getAppearanceStage() != null &&
-                AppearanceStage.getConfirmedAppearanceStages().contains(appearance.getAppearanceStage())) {
+            if (appearance.getAppearanceStage() != null
+                && AppearanceStage.getConfirmedAppearanceStages().contains(appearance.getAppearanceStage())) {
                 throw new MojException.BusinessRuleViolation(
                     "Juror " + jurorNumber + " has already confirmed their attendance for this day",
                     MojException.BusinessRuleViolation.ErrorCode.DAY_ALREADY_CONFIRMED);
