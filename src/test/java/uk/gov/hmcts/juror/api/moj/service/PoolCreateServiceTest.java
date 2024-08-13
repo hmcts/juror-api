@@ -211,8 +211,6 @@ public class PoolCreateServiceTest {
         poolCreateRequestDto.setCitizensToSummon(citizensToSummon);
         poolCreateRequestDto.setPreviousJurorCount(0);
         List<Voters> voters = List.of(createValidVoter());
-
-        List<Voters> voters = List.of(createValidVoter());
         //GET POOL MEMBER
         Mockito.when(votersServiceImpl.getVoters(Mockito.any())).thenReturn(voters);
         Mockito.when(poolMemberSequenceService.getPoolMemberSequenceNumber(Mockito.any())).thenReturn(1);
