@@ -4,6 +4,27 @@ DROP VIEW juror_mod.summons_snapshot;
 alter table juror_mod.court_location
   ALTER COLUMN loc_court_name TYPE character varying(40);
 
+CREATE OR REPLACE VIEW juror_mod.summons_snapshot
+AS WITH original_summons_cte AS (
+    SELECT jh.juror_number,
+           jh.pool_number AS pool_no,
+           jh.date_created,
+           row_number() OVER (PARTITION BY jh.juror_number ORDER BY jh.date_created) AS row_no
+    FROM juror_mod.juror_history jh
+    WHERE jh.history_code::text = 'RSUM'::text
+)
+   SELECT os.juror_number,
+          os.pool_no,
+          p.return_date AS service_start_date,
+          p.loc_code,
+          cl.loc_name AS location_name,
+          cl.loc_court_name AS court_name,
+          os.date_created
+   FROM original_summons_cte os
+            JOIN juror_mod.pool p ON p.pool_no::text = os.pool_no::text
+            JOIN juror_mod.court_location cl ON p.loc_code::text = cl.loc_code::text
+   WHERE os.row_no = 1;
+
 CREATE OR REPLACE VIEW juror_mod.mod_juror_detail
 AS WITH juror_details_cte AS (
     SELECT j_1.juror_number,
@@ -168,27 +189,6 @@ AS WITH juror_details_cte AS (
             JOIN juror_mod.court_location c ON j.loc_code::text = c.loc_code::text
             LEFT JOIN juror_mod.welsh_court_location wl ON c.loc_code::text = wl.loc_code::text
    WHERE j.row_no = 1;
-
-CREATE OR REPLACE VIEW juror_mod.summons_snapshot
-AS WITH original_summons_cte AS (
-    SELECT jh.juror_number,
-           jh.pool_number AS pool_no,
-           jh.date_created,
-           row_number() OVER (PARTITION BY jh.juror_number ORDER BY jh.date_created) AS row_no
-    FROM juror_mod.juror_history jh
-    WHERE jh.history_code::text = 'RSUM'::text
-)
-   SELECT os.juror_number,
-          os.pool_no,
-          p.return_date AS service_start_date,
-          p.loc_code,
-          cl.loc_name AS location_name,
-          cl.loc_court_name AS court_name,
-          os.date_created
-   FROM original_summons_cte os
-            JOIN juror_mod.pool p ON p.pool_no::text = os.pool_no::text
-            JOIN juror_mod.court_location cl ON p.loc_code::text = cl.loc_code::text
-   WHERE os.row_no = 1;
 
 update juror_mod.court_location set loc_court_name = 'THE CROWN COURT AT SOUTHEND' where loc_code = '772';
 update juror_mod.court_location set loc_court_name = 'PRESTON COMBINED COURT CENTRE' where loc_code = '448';
