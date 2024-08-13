@@ -61,9 +61,7 @@ import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -205,7 +203,6 @@ public class PoolCreateServiceTest {
         String owner = "400";
         int citizensToSummon = 1;
         int noRequested = 1;
-        List<Voters> voters = List.of(createValidVoter());
 
         final BureauJwtPayload payload = buildPayload(owner);
 
@@ -214,6 +211,7 @@ public class PoolCreateServiceTest {
         poolCreateRequestDto.setCitizensToSummon(citizensToSummon);
         poolCreateRequestDto.setPreviousJurorCount(0);
 
+        List<Voters> voters = List.of(createValidVoter());
         //GET POOL MEMBER
         Mockito.when(votersServiceImpl.getVoters(Mockito.any())).thenReturn(voters);
         Mockito.when(poolMemberSequenceService.getPoolMemberSequenceNumber(Mockito.any())).thenReturn(1);

@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.history.Revision;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetailsAppearances;

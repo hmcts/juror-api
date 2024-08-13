@@ -34,6 +34,12 @@ public class VotersServiceImpl implements VotersService {
     @PersistenceContext
     EntityManager entityManager;
 
+
+    @Override
+    public List<Voters> getVotersForCoronerPool(String postcode, int number, String locCode) {
+        return getVoters(List.of(postcode), number, LocalDate.now(), locCode, true);
+    }
+
     @Override
     public List<Voters> getVoters(PoolCreateRequestDto poolCreateRequestDto) {
         return getVoters(poolCreateRequestDto.getPostcodes(),
@@ -41,12 +47,6 @@ public class VotersServiceImpl implements VotersService {
             poolCreateRequestDto.getStartDate(),
             poolCreateRequestDto.getCatchmentArea(), false);
     }
-
-    @Override
-    public List<Voters> getVotersForCoronerPool(String postcode, int number, String locCode) {
-        return getVoters(List.of(postcode), number, LocalDate.now(), locCode, true);
-    }
-
 
     @Override
     public List<Voters> getVoters(List<String> postcodes,

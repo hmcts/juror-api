@@ -10,17 +10,14 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.moj.service.VotersService;
-import uk.gov.hmcts.juror.api.moj.service.VotersServiceImpl;
 import uk.gov.hmcts.juror.api.testsupport.ContainerTest;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 
 @RunWith(SpringRunner.class)
 @Slf4j
