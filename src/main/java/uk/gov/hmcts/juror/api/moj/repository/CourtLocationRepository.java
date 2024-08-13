@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.repository;
 
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.history.RevisionRepository;
@@ -27,4 +28,8 @@ public interface CourtLocationRepository extends CrudRepository<CourtLocation, S
 
     @Override
     List<CourtLocation> findAll();
+
+    @Query(value = "SELECT MAX(clu.revision) FROM juror_mod.court_location_audit clu WHERE clu.loc_code = ?1",
+        nativeQuery = true)
+    Long getLatestRevision(String locCode);
 }

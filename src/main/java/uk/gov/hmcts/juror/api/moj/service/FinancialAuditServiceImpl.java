@@ -42,7 +42,7 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
                                                             FinancialAuditDetails.Type type,
                                                             List<Appearance> appearances) {
         Revision<Long, Juror> jurorRevision = revisionService.getLatestJurorRevision(jurorNumber);
-        Revision<Long, CourtLocation> courtRevision = revisionService.getLatestCourtRevision(courtLocationCode);
+
 
         // create a single financial audit details object with a new audit number generated for this batch of expenses
         FinancialAuditDetails auditDetails = FinancialAuditDetails.builder()
@@ -52,7 +52,7 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
             .jurorNumber(jurorNumber)
             .jurorRevision(jurorRevision.getRequiredRevisionNumber())
             .locCode(courtLocationCode)
-            .courtLocationRevision(courtRevision.getRequiredRevisionNumber())
+            .courtLocationRevision(revisionService.getLatestCourtRevisionNumber(courtLocationCode))
             .build();
 
         FinancialAuditDetails financialAuditDetails = financialAuditDetailsRepository.save(auditDetails);

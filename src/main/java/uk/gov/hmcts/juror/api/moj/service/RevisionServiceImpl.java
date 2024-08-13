@@ -30,6 +30,11 @@ public class RevisionServiceImpl implements RevisionService {
     }
 
     @Override
+    public Long getLatestCourtRevisionNumber(String locCode) {
+        return courtLocationRepository.getLatestRevision(locCode);
+    }
+
+    @Override
     public Revision<Long, Juror> getLatestJurorRevision(String jurorNumber) {
         return jurorRepository.findLastChangeRevision(jurorNumber)
             .orElseThrow(() -> new MojException.NotFound("Juror revision: " + jurorNumber + " not found", null));
