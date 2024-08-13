@@ -15,19 +15,4 @@ import java.util.List;
 public interface VotersRepository extends JpaRepository<Voters, Voters.VotersId>,
     QuerydslPredicateExecutor<Voters> {
 
-    /**
-     * Function to randomly select a number of voters from the Voters table.
-     * The function returns the juror number of the selected voters.
-     */
-    @Query(nativeQuery = true, value = "SELECT * from juror_mod.get_voters( :required, :minDate, :maxDate, :LocCode, "
-        + ":areaCodeList, :poolType)")
-    List<String> callGetVoters(@Param("required") Integer required,
-                               @Param("minDate") LocalDate minDate,
-                               @Param("maxDate") LocalDate maxDate,
-                               @Param("LocCode") String locCode,
-                               @Param("areaCodeList") String areaCodeList,
-                               @Param("poolType") String poolType) throws SQLException;
-
-    Voters findByJurorNumber(String jurorNumber);
-
 }

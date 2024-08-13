@@ -205,7 +205,7 @@ public class PoolCreateServiceTest {
         String owner = "400";
         int citizensToSummon = 1;
         int noRequested = 1;
-        final Map<String, String> jurorNumber = Collections.singletonMap(createValidVoter().getJurorNumber(), null);
+        List<Voters> voters = List.of(createValidVoter());
 
         final BureauJwtPayload payload = buildPayload(owner);
 
@@ -215,15 +215,14 @@ public class PoolCreateServiceTest {
         poolCreateRequestDto.setPreviousJurorCount(0);
 
         //GET POOL MEMBER
-        Mockito.when(votersServiceImpl.getVoters(Mockito.any(), Mockito.any())).thenReturn(jurorNumber);
+        Mockito.when(votersServiceImpl.getVoters(Mockito.any())).thenReturn(voters);
         Mockito.when(poolMemberSequenceService.getPoolMemberSequenceNumber(Mockito.any())).thenReturn(1);
         Mockito.when(poolMemberSequenceService.leftPadInteger(1)).thenReturn("01");
         Mockito.when(poolRequestRepository.findById(Mockito.any()))
             .thenReturn(Optional.of(createValidPoolRequest("415220110")));
         Mockito.when(jurorStatusRepository.findById(Mockito.any()))
             .thenReturn(Optional.of(createValidPoolStatus()));
-        Mockito.when(votersRepository.findByJurorNumber(Mockito.any())).thenReturn(createValidVoter());
-        Mockito.doNothing().when(votersServiceImpl).markVoterAsSelected(Mockito.any(), Mockito.any());
+        Mockito.doNothing().when(votersServiceImpl).markVotersAsSelected(Mockito.any(), Mockito.any());
 
         //CREATE POOL MEMBER
         JurorPool jurorPool = createValidJurorPool();
@@ -244,16 +243,15 @@ public class PoolCreateServiceTest {
 
         poolCreateService.createPool(payload, poolCreateRequestDto);
 
-        Mockito.verify(votersServiceImpl, Mockito.times(1)).getVoters(Mockito.any(),
-            Mockito.any());
+        Mockito.verify(votersServiceImpl, Mockito.times(1)).getVoters(Mockito.any());
         Mockito.verify(poolMemberSequenceService, Mockito.times(1))
             .getPoolMemberSequenceNumber(poolCreateRequestDto.getPoolNumber());
         Mockito.verify(poolRequestRepository, Mockito.times(1)).findById(Mockito.any());
-        Mockito.verify(votersRepository, Mockito.times(1)).findByJurorNumber(Mockito.anyString());
-        Mockito.verify(votersServiceImpl, Mockito.times(jurorNumber.size()))
-            .markVoterAsSelected(Mockito.any(), Mockito.any());
-        Mockito.verify(poolMemberSequenceService, Mockito.times(jurorNumber.size())).leftPadInteger(1);
-        Mockito.verify(jurorStatusRepository, Mockito.times(jurorNumber.size())).findById(1);
+
+        Mockito.verify(votersServiceImpl, Mockito.times(1))
+            .markVotersAsSelected(Mockito.any(), Mockito.any());
+        Mockito.verify(poolMemberSequenceService, Mockito.times(voters.size())).leftPadInteger(1);
+        Mockito.verify(jurorStatusRepository, Mockito.times(voters.size())).findById(1);
         Mockito.verify(jurorPoolRepository, Mockito.times(1)).saveAll(Mockito.any());
         Mockito.verify(poolRequestRepository, Mockito.times(1)).save(Mockito.any());
         Mockito.verify(poolHistoryRepository, Mockito.times(1)).save(Mockito.any());
