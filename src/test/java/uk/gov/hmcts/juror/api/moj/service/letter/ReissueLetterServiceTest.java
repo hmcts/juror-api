@@ -14,6 +14,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterListRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorStatusDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterReponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
@@ -621,7 +622,8 @@ public class ReissueLetterServiceTest {
                 reissueLetterRequestData.getJurorNumber());
             assertThat(responseDto.getJurors().get(0).getFirstName()).isEqualTo("John");
             assertThat(responseDto.getJurors().get(0).getLastName()).isEqualTo("Doe");
-            assertThat(responseDto.getJurors().get(0).getJurorStatus()).isEqualTo(disqualifiedStatus);
+            assertThat(responseDto.getJurors().get(0).getJurorStatus()).isEqualTo(
+                JurorStatusDto.of(disqualifiedStatus));
 
             verify(bulkPrintDataRepository, times(0))
                 .findByJurorNumberFormCodeDatePrinted(reissueLetterRequestData.getJurorNumber(),

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterListRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorStatusDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterReponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
@@ -156,7 +157,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
                         .jurorNumber(letter.getJurorNumber())
                         .firstName(jurorPool.getJuror().getFirstName())
                         .lastName(jurorPool.getJuror().getLastName())
-                        .jurorStatus(jurorPool.getStatus())
+                        .jurorStatus(JurorStatusDto.of(jurorPool.getStatus()))
                         .build();
                 response.getJurors().add(jurorData);
             }

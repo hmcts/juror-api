@@ -210,6 +210,7 @@ public class PoolCreateServiceTest {
         poolCreateRequestDto.setNoRequested(noRequested);
         poolCreateRequestDto.setCitizensToSummon(citizensToSummon);
         poolCreateRequestDto.setPreviousJurorCount(0);
+        List<Voters> voters = List.of(createValidVoter());
 
         List<Voters> voters = List.of(createValidVoter());
         //GET POOL MEMBER

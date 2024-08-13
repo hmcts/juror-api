@@ -19,6 +19,7 @@ import java.time.LocalDate;
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class AppearanceCreationServiceImpl implements AppearanceCreationService {
     private final AppearanceRepository appearanceRepository;
+    private final UserService userService;
 
     @Override
     @Transactional
@@ -78,6 +79,7 @@ public class AppearanceCreationServiceImpl implements AppearanceCreationService 
                                                        CourtLocation courtLocation) {
         return appearanceBuilder
             .createdBy(SecurityUtil.getActiveLogin())
+            //TODO .createdBy(userService.findUserByUsername(SecurityUtil.getActiveLogin()))
             .version(getLastVersionNumber(jurorNumber, appearanceDate, courtLocation.getLocCode()));
     }
 

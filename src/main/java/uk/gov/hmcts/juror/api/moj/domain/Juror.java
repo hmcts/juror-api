@@ -290,7 +290,7 @@ public class Juror extends Address implements Serializable {
     private boolean responseEntered;
 
     @NotAudited
-    @OneToMany(mappedBy = "juror", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "juror", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     private Set<JurorPool> associatedPools;
 
 

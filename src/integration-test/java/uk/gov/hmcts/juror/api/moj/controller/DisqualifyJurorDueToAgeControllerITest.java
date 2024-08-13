@@ -105,30 +105,30 @@ public class DisqualifyJurorDueToAgeControllerITest extends AbstractIntegrationT
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/summonsmanagement/DisqualifyJurorControllerTestData.sql"})
     public void disqualifyJurorDueToAge_noResponse() {
+        executeInTransaction(() -> {
+            assertThat(!jurorDigitalResponseRepository.existsById(JUROR_NUMBER_NO_RESPONSE));
+            assertThat(!jurorPaperResponseRepository.existsById(JUROR_NUMBER_NO_RESPONSE));
 
-        assertThat(!jurorDigitalResponseRepository.existsById(JUROR_NUMBER_NO_RESPONSE));
-        assertThat(!jurorPaperResponseRepository.existsById(JUROR_NUMBER_NO_RESPONSE));
+            //Pool (juror) record
+            List<JurorPool> jurorPools =
+                jurorPoolRepository.findByJurorJurorNumberAndIsActive(JUROR_NUMBER_NO_RESPONSE, true);
+            assertThat(jurorPools.size()).isGreaterThan(0);
 
-        //Pool (juror) record
-        List<JurorPool> jurorPools =
-            jurorPoolRepository.findByJurorJurorNumberAndIsActive(JUROR_NUMBER_NO_RESPONSE, true);
-        assertThat(jurorPools.size()).isGreaterThan(0);
+            JurorPool jurorPoolRecord = jurorPools.get(0);
+            Juror juror = jurorPoolRecord.getJuror();
+            assertThat(juror.isResponded()).isEqualTo(Boolean.FALSE);
+            assertThat(juror.getDisqualifyDate()).isNull();
+            assertThat(juror.getDisqualifyCode()).isNull();
+            assertThat(juror.getUserEdtq()).isEqualTo("BUREAU_USER_1");
+            assertThat(jurorPoolRecord.getNextDate()).isNotNull();
+            assertThat(jurorPoolRecord.getStatus().getStatus()).isEqualTo(IJurorStatus.SUMMONED);
 
-        JurorPool jurorPoolRecord = jurorPools.get(0);
-        Juror juror = jurorPoolRecord.getJuror();
-        assertThat(juror.isResponded()).isEqualTo(Boolean.FALSE);
-        assertThat(juror.getDisqualifyDate()).isNull();
-        assertThat(juror.getDisqualifyCode()).isNull();
-        assertThat(juror.getUserEdtq()).isEqualTo("BUREAU_USER_1");
-        assertThat(jurorPoolRecord.getNextDate()).isNotNull();
-        assertThat(jurorPoolRecord.getStatus().getStatus()).isEqualTo(IJurorStatus.SUMMONED);
-
-        //History
-        LocalDate today = LocalDate.now();
-        List<JurorHistory> jurorHistoryList =
-            jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(JUROR_NUMBER_NO_RESPONSE, today);
-        assertThat(jurorHistoryList).isEmpty();
-
+            //History
+            LocalDate today = LocalDate.now();
+            List<JurorHistory> jurorHistoryList =
+                jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(JUROR_NUMBER_NO_RESPONSE, today);
+            assertThat(jurorHistoryList).isEmpty();
+        });
         assertTemplateExchangeDisqualifyJuror(UserType.BUREAU, JUROR_NUMBER_NO_RESPONSE,
             BUREAU_USER, "400", HttpStatus.OK);
 
@@ -147,124 +147,130 @@ public class DisqualifyJurorDueToAgeControllerITest extends AbstractIntegrationT
 
 
     private void assertDigitalDisqualifyJurorPreVerification(String jurorNumber) {
+        executeInTransaction(() -> {
+            //Juror digital response
+            DigitalResponse digitalResponse = getJurorDigitalResponse(jurorNumber,
+                jurorDigitalResponseRepository);
+            assertThat(digitalResponse).isNotNull();
+            assertThat(digitalResponse.getProcessingStatus()).isEqualTo(ProcessingStatus.TODO);
 
-        //Juror digital response
-        DigitalResponse digitalResponse = getJurorDigitalResponse(jurorNumber,
-            jurorDigitalResponseRepository);
-        assertThat(digitalResponse).isNotNull();
-        assertThat(digitalResponse.getProcessingStatus()).isEqualTo(ProcessingStatus.TODO);
+            //Pool (juror) record
+            List<JurorPool> jurorPools =
+                jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true);
+            assertThat(jurorPools.size()).isGreaterThan(0);
 
-        //Pool (juror) record
-        List<JurorPool> jurorPools =
-            jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        assertThat(jurorPools.size()).isGreaterThan(0);
+            JurorPool jurorPoolRecord = jurorPools.get(0);
+            Juror juror = jurorPoolRecord.getJuror();
+            assertThat(juror.isResponded()).isEqualTo(Boolean.FALSE);
+            assertThat(juror.getDisqualifyDate()).isNull();
+            assertThat(juror.getDisqualifyCode()).isNull();
+            assertThat(juror.getUserEdtq()).isEqualTo("BUREAU_USER_1");
+            assertThat(jurorPoolRecord.getNextDate()).isNotNull();
+            assertThat(jurorPoolRecord.getStatus().getStatus()).isEqualTo(RESPONDED);
 
-        JurorPool jurorPoolRecord = jurorPools.get(0);
-        Juror juror = jurorPoolRecord.getJuror();
-        assertThat(juror.isResponded()).isEqualTo(Boolean.FALSE);
-        assertThat(juror.getDisqualifyDate()).isNull();
-        assertThat(juror.getDisqualifyCode()).isNull();
-        assertThat(juror.getUserEdtq()).isEqualTo("BUREAU_USER_1");
-        assertThat(jurorPoolRecord.getNextDate()).isNotNull();
-        assertThat(jurorPoolRecord.getStatus().getStatus()).isEqualTo(RESPONDED);
-
-        //History
-        LocalDate today = LocalDate.now();
-        List<JurorHistory> jurorHistoryList =
-            jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, today);
-        assertThat(jurorHistoryList).isEmpty();
+            //History
+            LocalDate today = LocalDate.now();
+            List<JurorHistory> jurorHistoryList =
+                jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, today);
+            assertThat(jurorHistoryList).isEmpty();
+        });
     }
 
 
     private void assertDigitalDisqualifyJurorPostVerification(String jurorNumber) {
-        //Juror digital response
-        DigitalResponse digitalResponse = getJurorDigitalResponse(jurorNumber,
-            jurorDigitalResponseRepository);
-        assertThat(digitalResponse).isNotNull();
-        assertThat(digitalResponse.getProcessingStatus()).isEqualTo(ProcessingStatus.CLOSED);
+        executeInTransaction(() -> {
+            //Juror digital response
+            DigitalResponse digitalResponse = getJurorDigitalResponse(jurorNumber,
+                jurorDigitalResponseRepository);
+            assertThat(digitalResponse).isNotNull();
+            assertThat(digitalResponse.getProcessingStatus()).isEqualTo(ProcessingStatus.CLOSED);
 
-        //Pool (juror) record
-        List<JurorPool> jurorPools =
-            jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true);
+            //Pool (juror) record
+            List<JurorPool> jurorPools =
+                jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true);
 
-        assertThat(jurorPools.size()).isGreaterThan(0);
+            assertThat(jurorPools.size()).isGreaterThan(0);
 
-        JurorPool jurorPoolRecord = jurorPools.get(0);
-        Juror juror = jurorPoolRecord.getJuror();
-        assertThat(juror.isResponded()).isEqualTo(Boolean.TRUE);
-        assertThat(juror.getDisqualifyDate()).isNotNull();
-        assertThat(juror.getDisqualifyCode()).isEqualTo("A");
-        assertThat(jurorPoolRecord.getUserEdtq()).isEqualTo(BUREAU_USER);
-        assertThat(jurorPoolRecord.getNextDate()).isNull();
-        assertThat(jurorPoolRecord.getStatus().getStatus()).isEqualTo(IJurorStatus.DISQUALIFIED);
+            JurorPool jurorPoolRecord = jurorPools.get(0);
+            Juror juror = jurorPoolRecord.getJuror();
+            assertThat(juror.isResponded()).isEqualTo(Boolean.TRUE);
+            assertThat(juror.getDisqualifyDate()).isNotNull();
+            assertThat(juror.getDisqualifyCode()).isEqualTo("A");
+            assertThat(jurorPoolRecord.getUserEdtq()).isEqualTo(BUREAU_USER);
+            assertThat(jurorPoolRecord.getNextDate()).isNull();
+            assertThat(jurorPoolRecord.getStatus().getStatus()).isEqualTo(IJurorStatus.DISQUALIFIED);
 
-        //History
-        LocalDate updatedToday = LocalDate.now();
-        List<JurorHistory> updatedJurorHistoryList =
-            jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber,
-                updatedToday);
-        assertThat(updatedJurorHistoryList).isNotNull();
+            //History
+            LocalDate updatedToday = LocalDate.now();
+            List<JurorHistory> updatedJurorHistoryList =
+                jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber,
+                    updatedToday);
+            assertThat(updatedJurorHistoryList).isNotNull();
+        });
     }
 
     private void paperDisqualifyJurorPreVerification(String jurorNumber) {
+        executeInTransaction(() -> {
+            assertThat(!jurorDigitalResponseRepository.existsById(jurorNumber));
 
-        assertThat(!jurorDigitalResponseRepository.existsById(jurorNumber));
+            //Juror paper response
+            PaperResponse paperResponse = getJurorPaperResponse(jurorNumber,
+                jurorPaperResponseRepository);
+            assertThat(paperResponse).isNotNull();
+            assertThat(paperResponse.getProcessingStatus()).isEqualTo(ProcessingStatus.TODO);
 
-        //Juror paper response
-        PaperResponse paperResponse = getJurorPaperResponse(jurorNumber,
-            jurorPaperResponseRepository);
-        assertThat(paperResponse).isNotNull();
-        assertThat(paperResponse.getProcessingStatus()).isEqualTo(ProcessingStatus.TODO);
+            //Pool (juror) record
+            List<JurorPool> jurorPools =
+                jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true);
+            assertThat(jurorPools.size()).isGreaterThan(0);
 
-        //Pool (juror) record
-        List<JurorPool> jurorPools =
-            jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        assertThat(jurorPools.size()).isGreaterThan(0);
+            JurorPool jurorPoolRecord = jurorPools.get(0);
+            Juror juror = jurorPoolRecord.getJuror();
+            assertThat(juror.isResponded()).isEqualTo(Boolean.FALSE);
+            assertThat(juror.getDisqualifyDate()).isNull();
+            assertThat(juror.getDisqualifyCode()).isNull();
+            assertThat(juror.getUserEdtq()).isEqualTo("COURT_USER_1");
+            assertThat(jurorPoolRecord.getNextDate()).isNotNull();
+            assertThat(jurorPoolRecord.getStatus().getStatus()).isEqualTo(RESPONDED);
 
-        JurorPool jurorPoolRecord = jurorPools.get(0);
-        Juror juror = jurorPoolRecord.getJuror();
-        assertThat(juror.isResponded()).isEqualTo(Boolean.FALSE);
-        assertThat(juror.getDisqualifyDate()).isNull();
-        assertThat(juror.getDisqualifyCode()).isNull();
-        assertThat(juror.getUserEdtq()).isEqualTo("COURT_USER_1");
-        assertThat(jurorPoolRecord.getNextDate()).isNotNull();
-        assertThat(jurorPoolRecord.getStatus().getStatus()).isEqualTo(RESPONDED);
-
-        //History
-        LocalDate today = LocalDate.now();
-        List<JurorHistory> jurorHistoryList =
-            jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, today);
-        assertThat(jurorHistoryList).isEmpty();
+            //History
+            LocalDate today = LocalDate.now();
+            List<JurorHistory> jurorHistoryList =
+                jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, today);
+            assertThat(jurorHistoryList).isEmpty();
+        });
     }
 
     private void assertPaperDisqualifyJurorPostVerification(String user, String jurorNumber) {
-        //Juror paper response
-        PaperResponse paperResponse = getJurorPaperResponse(jurorNumber,
-            jurorPaperResponseRepository);
-        assertThat(paperResponse).isNotNull();
-        assertThat(paperResponse.getProcessingStatus()).isEqualTo(ProcessingStatus.CLOSED);
+        executeInTransaction(() -> {
+            //Juror paper response
+            PaperResponse paperResponse = getJurorPaperResponse(jurorNumber,
+                jurorPaperResponseRepository);
+            assertThat(paperResponse).isNotNull();
+            assertThat(paperResponse.getProcessingStatus()).isEqualTo(ProcessingStatus.CLOSED);
 
-        //Pool (juror) record
-        List<JurorPool> jurorPools =
-            jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true);
+            //Pool (juror) record
+            List<JurorPool> jurorPools =
+                jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true);
 
-        assertThat(jurorPools.size()).isGreaterThan(0);
+            assertThat(jurorPools.size()).isGreaterThan(0);
 
-        JurorPool jurorPoolRecord = jurorPools.get(0);
-        Juror juror = jurorPoolRecord.getJuror();
-        assertThat(juror.isResponded()).isEqualTo(Boolean.TRUE);
-        assertThat(juror.getDisqualifyDate()).isNotNull();
-        assertThat(juror.getDisqualifyCode()).isEqualTo("A");
-        assertThat(jurorPoolRecord.getUserEdtq()).isEqualTo(user);
-        assertThat(jurorPoolRecord.getNextDate()).isNull();
-        assertThat(jurorPoolRecord.getStatus().getStatus()).isEqualTo(IJurorStatus.DISQUALIFIED);
+            JurorPool jurorPoolRecord = jurorPools.get(0);
+            Juror juror = jurorPoolRecord.getJuror();
+            assertThat(juror.isResponded()).isEqualTo(Boolean.TRUE);
+            assertThat(juror.getDisqualifyDate()).isNotNull();
+            assertThat(juror.getDisqualifyCode()).isEqualTo("A");
+            assertThat(jurorPoolRecord.getUserEdtq()).isEqualTo(user);
+            assertThat(jurorPoolRecord.getNextDate()).isNull();
+            assertThat(jurorPoolRecord.getStatus().getStatus()).isEqualTo(IJurorStatus.DISQUALIFIED);
 
-        //History
-        LocalDate updatedToday = LocalDate.now();
-        List<JurorHistory> updatedJurorHistoryList =
-            jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber,
-                updatedToday);
-        assertThat(updatedJurorHistoryList).isNotNull();
+            //History
+            LocalDate updatedToday = LocalDate.now();
+            List<JurorHistory> updatedJurorHistoryList =
+                jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber,
+                    updatedToday);
+            assertThat(updatedJurorHistoryList).isNotNull();
+        });
     }
 
 
@@ -275,7 +281,7 @@ public class DisqualifyJurorDueToAgeControllerITest extends AbstractIntegrationT
                                                        HttpStatus httpStatus) {
         final URI uri = URI.create(String.format(URI_DISQUALIFY_JUROR, jurorNumber));
         HttpHeaders httpHeaders =
-            initialiseHeaders(username,userType,Set.of(Role.MANAGER),owner);
+            initialiseHeaders(username, userType, Set.of(Role.MANAGER), owner);
 
         RequestEntity<String> requestEntity = new RequestEntity<>(httpHeaders,
             HttpMethod.PATCH, uri);

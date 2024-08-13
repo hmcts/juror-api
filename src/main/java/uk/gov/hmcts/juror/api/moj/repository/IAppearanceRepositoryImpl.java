@@ -292,7 +292,8 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
                                                                                        LocalDate attendanceDate,
                                                                                        long appearanceVersion) {
         try {
-            return Optional.ofNullable((Appearance) AuditReaderFactory.get(entityManager)
+            return
+                Optional.ofNullable((Appearance) AuditReaderFactory.get(entityManager)
                 .createQuery()
                 .forRevisionsOfEntity(Appearance.class, true, false)
                 .add(AuditEntity.property("jurorNumber").eq(jurorNumber))

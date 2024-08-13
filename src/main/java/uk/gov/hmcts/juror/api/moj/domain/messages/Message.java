@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.domain.messages;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
@@ -53,7 +54,7 @@ public class Message implements Serializable {
     private String userName;
 
     @Id
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "loc_code")
     private CourtLocation locationCode;
 

@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.juror.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -53,7 +54,7 @@ public class Holidays implements Serializable {
     @NotEmpty
     private String description;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "loc_code", updatable = false)
     private CourtLocation courtLocation;
 

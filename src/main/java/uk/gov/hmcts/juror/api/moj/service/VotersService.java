@@ -8,9 +8,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface VotersService {
-
-    List<Voters> getVotersForCoronerPool(String postcode, int number, String locCode);
-
     List<Voters> getVoters(PoolCreateRequestDto poolCreateRequestDto);
 
     List<Voters> getVoters(List<String> postcodes,
@@ -18,6 +15,8 @@ public interface VotersService {
                            LocalDate attendanceDate,
                            String locCode,
                            boolean isCoroners);
+
+    List<Voters> getVotersForCoronerPool(String postcode, int number, String locCode);
 
     void markVotersAsSelected(List<Voters> voters, Date attendanceDate);
 }

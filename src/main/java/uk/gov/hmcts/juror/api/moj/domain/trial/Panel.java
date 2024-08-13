@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.domain.trial;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
@@ -35,13 +36,13 @@ public class Panel implements Serializable {
 
     @JoinColumn(name = "loc_code")
     @JoinColumn(name = "trial_number")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @Id
     private Trial trial;
 
     @JoinColumn(name = "juror_number")
     @NotNull
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @Id
     private Juror juror;
 

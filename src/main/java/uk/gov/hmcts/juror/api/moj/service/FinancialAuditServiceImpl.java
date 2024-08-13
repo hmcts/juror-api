@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.history.Revision;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetailsAppearances;
@@ -36,6 +37,7 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
     private final Clock clock;
 
     @Override
+    @Transactional
     public FinancialAuditDetails createFinancialAuditDetail(String jurorNumber,
                                                             String courtLocationCode,
                                                             FinancialAuditDetails.Type type,
@@ -85,11 +87,13 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
     }
 
     @Override
+    @Transactional
     public List<FinancialAuditDetails> getFinancialAuditDetails(Appearance appearance) {
         return financialAuditDetailsRepository.findAllByAppearance(appearance);
     }
 
     @Override
+    @Transactional
     public FinancialAuditDetails getFinancialAuditDetails(long financialAuditNumber, String locCode) {
         return financialAuditDetailsRepository.findById(new FinancialAuditDetails.IdClass(
                 financialAuditNumber,
@@ -99,6 +103,7 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
     }
 
     @Override
+    @Transactional
     public List<Appearance> getAppearances(FinancialAuditDetails financialAuditDetails) {
         List<FinancialAuditDetailsAppearances> financialAuditDetailsAppearances =
             financialAuditDetails.getFinancialAuditDetailsAppearances();
@@ -114,6 +119,7 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
 
 
     @Override
+    @Transactional
     public FinancialAuditDetails getLastFinancialAuditDetailsFromTypes(FinancialAuditDetails financialAuditDetails,
                                                                        Set<FinancialAuditDetails.Type> types) {
         return financialAuditDetailsRepository.findLastFinancialAuditDetailsWithAnyTypeWithin(
@@ -124,6 +130,7 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
 
 
     @Override
+    @Transactional
     public Appearance getPreviousAppearance(FinancialAuditDetails financialAuditDetails, Appearance appearance) {
         return getAppearanceFromFinancialAuditDetailsAppearances(
             financialAuditDetails.getLocCode(),
@@ -132,6 +139,7 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
     }
 
     @Override
+    @Transactional
     public Appearance getPreviousApprovedValue(FinancialAuditDetails financialAuditDetails, Appearance appearance) {
         return getAppearanceFromFinancialAuditDetailsAppearances(
             financialAuditDetails.getLocCode(),
@@ -141,6 +149,7 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
     }
 
     @Override
+    @Transactional
     public FinancialAuditDetails findFromAppearance(Appearance appearance) {
         return getFinancialAuditDetails(appearance.getFinancialAudit(), appearance.getLocCode());
     }
