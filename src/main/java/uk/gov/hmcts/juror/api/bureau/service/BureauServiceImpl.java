@@ -20,7 +20,6 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
-import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QModJurorDetail;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
@@ -128,7 +127,8 @@ public class BureauServiceImpl implements BureauService {
     private Map<ProcessingStatus, Long> getJurorResponseCounts(String username) {
         return jurorCommonResponseRepositoryMod.getJurorResponseCounts(
             QCombinedJurorResponse.combinedJurorResponse.staff.username.eq(username),
-            QCombinedJurorResponse.combinedJurorResponse.processingStatus.ne(ProcessingStatus.CLOSED)
+            QCombinedJurorResponse.combinedJurorResponse.processingStatus.ne(ProcessingStatus.CLOSED),
+            QCombinedJurorResponse.combinedJurorResponse.juror.bureauTransferDate.isNull()
         );
     }
 
@@ -179,7 +179,7 @@ public class BureauServiceImpl implements BureauService {
                     .map(tuple -> {
                         CombinedJurorResponse jurorResponseRepository1 =
                             tuple.get(QCombinedJurorResponse.combinedJurorResponse);
-                        Juror juror = tuple.get(QJuror.juror);
+                        Juror juror = jurorResponseRepository1.getJuror();
                         JurorPool jurorPool = tuple.get(QJurorPool.jurorPool);
                         PoolRequest pool = tuple.get(QPoolRequest.poolRequest);
                         return bureauTransformsService.detailToDto(jurorResponseRepository1, juror, jurorPool, pool);
