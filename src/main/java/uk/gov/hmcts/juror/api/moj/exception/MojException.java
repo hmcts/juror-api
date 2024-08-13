@@ -93,7 +93,8 @@ public class MojException extends RuntimeException {
             DATA_IS_OUT_OF_DATE,
             JUROR_HAS_BEEN_DEFERRED_BEFORE,
             COULD_NOT_FIND_ENOUGH_VOTERS,
-            COULD_NOT_FIND_ENOUGH_ELIGIBLE_VOTERS
+            COULD_NOT_FIND_ENOUGH_ELIGIBLE_VOTERS,
+            DAY_ALREADY_CONFIRMED
         }
     }
 
