@@ -24,6 +24,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
+import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseService;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -57,6 +58,8 @@ public class DeferralResponseServiceImplTest {
     private PrintDataService printDataService;
     @Mock
     private JurorPoolService jurorPoolService;
+    @Mock
+    private JurorResponseService jurorResponseService;
 
 
     @InjectMocks
@@ -106,7 +109,7 @@ public class DeferralResponseServiceImplTest {
         verify(jurorPoolRepository, times(1)).save(any());
         verify(jurorHistoryRepository, times(1)).save(any());
         verify(printDataService, never()).printDeferralDeniedLetter(any());
-
+        verify(jurorResponseService, times(1)).setResponseProcessingStatusToClosed(jurorNumber);
     }
 
     @Test
@@ -130,6 +133,7 @@ public class DeferralResponseServiceImplTest {
                 + "allow_multiple_deferrals to bypass this error.");
         assertThat(exception.getErrorCode())
             .isEqualTo(MojException.BusinessRuleViolation.ErrorCode.JUROR_HAS_BEEN_DEFERRED_BEFORE);
+        verify(jurorResponseService, never()).setResponseProcessingStatusToClosed(jurorNumber);
     }
 
     @Test
@@ -147,6 +151,7 @@ public class DeferralResponseServiceImplTest {
         verify(jurorPoolRepository, times(1)).save(any());
         verify(jurorHistoryRepository, times(2)).save(any());
         verify(printDataService, times(1)).printDeferralDeniedLetter(any());
+        verify(jurorResponseService, times(1)).setResponseProcessingStatusToClosed(jurorNumber);
     }
 
     @Test
@@ -168,6 +173,7 @@ public class DeferralResponseServiceImplTest {
         verify(jurorPoolRepository, never()).save(any());
         verify(jurorHistoryRepository, never()).save(any());
         verify(printDataService, never()).printDeferralDeniedLetter(any());
+        verify(jurorResponseService, never()).setResponseProcessingStatusToClosed(jurorNumber);
     }
 
     @Test
@@ -188,7 +194,7 @@ public class DeferralResponseServiceImplTest {
         verify(jurorPoolRepository, never()).save(any());
         verify(jurorHistoryRepository, never()).save(any());
         verify(printDataService, never()).printDeferralDeniedLetter(any());
-
+        verify(jurorResponseService, never()).setResponseProcessingStatusToClosed(jurorNumber);
     }
 
     @Test
@@ -209,7 +215,7 @@ public class DeferralResponseServiceImplTest {
         verify(jurorPoolRepository, never()).save(any());
         verify(jurorHistoryRepository, never()).save(any());
         verify(printDataService, never()).printDeferralDeniedLetter(any());
-
+        verify(jurorResponseService, never()).setResponseProcessingStatusToClosed(jurorNumber);
     }
 
     private DeferralRequestDto createTestDeferralRequestDto(String jurorNumber) {
