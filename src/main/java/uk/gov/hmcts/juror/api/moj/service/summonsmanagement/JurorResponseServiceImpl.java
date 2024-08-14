@@ -7,20 +7,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPaperResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPersonalDetailsDto;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorCommonResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.StraightThroughProcessorService;
+import uk.gov.hmcts.juror.api.moj.service.SummonsReplyMergeService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -39,6 +45,9 @@ public class JurorResponseServiceImpl implements JurorResponseService {
     private final JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository;
     private final StraightThroughProcessorService straightThroughProcessorService;
     private final JurorCommonResponseRepositoryMod jurorCommonResponseRepository;
+    private final JurorResponseAuditRepositoryMod jurorResponseAuditRepositoryMod;
+    private final UserRepository userRepository;
+    private final SummonsReplyMergeService mergeService;
 
     @Override
     @Transactional
@@ -256,5 +265,36 @@ public class JurorResponseServiceImpl implements JurorResponseService {
             }
         }
         log.debug(String.format("Juror: %s. Exit juror processStraightThroughResponse", jurorPool.getJurorNumber()));
+    }
+
+    @Transactional
+    private void setResponseProcessingStatusToClosed(AbstractJurorResponse jurorResponse) {
+        if (jurorResponse.isClosed()) {
+            return; //Closed records are static as such we should not update
+        }
+        jurorResponse.setProcessingStatus(jurorResponseAuditRepositoryMod, ProcessingStatus.CLOSED);
+        if (jurorResponse.getStaff() == null) {
+            log.info(String.format("No staff assigned to response for Juror %s", jurorResponse));
+            User staff = userRepository.findByUsername(SecurityUtil.getActiveLogin());
+            jurorResponse.setStaff(staff);
+            log.info(String.format("Assigned current user to response for Juror %s", jurorResponse));
+        }
+        if (jurorResponse instanceof PaperResponse paperResponse) {
+            mergeService.mergePaperResponse(paperResponse, SecurityUtil.getActiveLogin());
+        } else if (jurorResponse instanceof DigitalResponse digitalResponse) {
+            mergeService.mergeDigitalResponse(digitalResponse, SecurityUtil.getActiveLogin());
+        }
+    }
+
+    @Override
+    public void setResponseProcessingStatusToClosed(String jurorNumber) {
+        AbstractJurorResponse jurorResponse = jurorDigitalResponseRepository.findByJurorNumber(jurorNumber);
+        if (jurorResponse == null) {
+            jurorResponse = jurorPaperResponseRepository.findByJurorNumber(jurorNumber);
+        }
+
+        if (jurorResponse != null) {
+            setResponseProcessingStatusToClosed(jurorResponse);
+        }
     }
 }

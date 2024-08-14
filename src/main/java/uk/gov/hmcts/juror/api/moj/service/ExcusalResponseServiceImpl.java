@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeRepository;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
-import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.ExcusalDecisionDto;
 import uk.gov.hmcts.juror.api.moj.domain.ExcusalDecision;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -15,22 +14,14 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
-import uk.gov.hmcts.juror.api.moj.domain.User;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
-import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.ExcusalResponseException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
-import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
-import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
-import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
-import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
-import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
+import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
@@ -51,16 +42,12 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
     private final ExcusalCodeRepository excusalCodeRepository;
     private final JurorRepository jurorRepository;
     private final JurorPoolRepository jurorPoolRepository;
-    private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
-    private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
-    private final UserRepository userRepository;
-    private final SummonsReplyMergeService mergeService;
     private final JurorStatusRepository jurorStatusRepository;
     private final JurorHistoryRepository jurorHistoryRepository;
     private final PrintDataService printDataService;
     private final JurorHistoryService jurorHistoryService;
-    private final JurorResponseAuditRepositoryMod jurorResponseAuditRepositoryMod;
     private final JurorPoolService jurorPoolService;
+    private final JurorResponseService jurorResponseService;
 
     @Override
     @Transactional
@@ -78,21 +65,6 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
 
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, owner);
 
-        if (excusalDecisionDto.getReplyMethod() != null && excusalDecisionDto.getReplyMethod() != ReplyMethod.NONE) {
-            if (excusalDecisionDto.getReplyMethod().equals(ReplyMethod.PAPER)) {
-                if (null == jurorPaperResponseRepository.findByJurorNumber(jurorNumber)) {
-                    // There are scenarios where a juror may not have a paper response when excused from the juror
-                    // record
-                    log.info(String.format("No Paper response found for Juror %s when processing excusal request",
-                        jurorNumber));
-                } else {
-                    setPaperResponseProcessingStatusToClosed(payload, jurorNumber);
-                }
-            } else {
-                setDigitalResponseProcessingStatusToClosed(payload, jurorNumber);
-            }
-        }
-
         if (excusalDecisionDto.getExcusalDecision().equals(ExcusalDecision.GRANT)) {
             grantExcusalForJuror(payload, excusalDecisionDto, jurorPool);
             if (!ExcusalCodeEnum.D.getCode().equals(excusalDecisionDto.getExcusalReasonCode())
@@ -103,6 +75,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
         } else {
             refuseExcusalForJuror(payload, excusalDecisionDto, jurorPool);
         }
+        jurorResponseService.setResponseProcessingStatusToClosed(jurorNumber);
     }
 
     public void checkExcusalCodeIsValid(String excusalCode) {
@@ -124,55 +97,6 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
         }
     }
 
-    private void setPaperResponseProcessingStatusToClosed(BureauJwtPayload payload, String jurorNumber) {
-
-        log.info(String.format("Locating PAPER response for Juror %s", jurorNumber));
-        PaperResponse jurorPaperResponse = DataUtils.getJurorPaperResponse(jurorNumber, jurorPaperResponseRepository);
-
-        if (jurorPaperResponse.isClosed()) {
-            return; //Closed records are static as such we should not update
-        }
-
-        log.info(String.format("PAPER response found for Juror %s", jurorNumber));
-
-        jurorPaperResponse.setProcessingStatus(jurorResponseAuditRepositoryMod, ProcessingStatus.CLOSED);
-
-        if (jurorPaperResponse.getStaff() == null) {
-            log.info(String.format("No staff assigned to PAPER response for Juror %s", jurorNumber));
-            User staff = userRepository.findByUsername(payload.getLogin());
-            jurorPaperResponse.setStaff(staff);
-            log.info(String.format("Assigned current user to PAPER response for Juror %s", jurorNumber));
-        }
-
-        mergeService.mergePaperResponse(jurorPaperResponse, payload.getLogin());
-
-        log.info(String.format("PAPER response for Juror %s successfully closed", jurorNumber));
-    }
-
-    private void setDigitalResponseProcessingStatusToClosed(BureauJwtPayload payload, String jurorNumber) {
-
-        log.info(String.format("Locating DIGITAL response for Juror %s", jurorNumber));
-        DigitalResponse jurorResponse = jurorResponseRepository.findByJurorNumber(jurorNumber);
-
-        if (jurorResponse.isClosed()) {
-            return; //Closed records are static as such we should not update
-        }
-
-        log.info(String.format("DIGITAL response found for Juror %s", jurorNumber));
-
-        jurorResponse.setProcessingStatus(jurorResponseAuditRepositoryMod, ProcessingStatus.CLOSED);
-
-        if (jurorResponse.getStaff() == null) {
-            log.info(String.format("No staff assigned to DIGITAL response for Juror %s", jurorNumber));
-            User staff = userRepository.findByUsername(payload.getLogin());
-            jurorResponse.setStaff(staff);
-            log.info(String.format("Assigned current user to DIGITAL response for Juror %s", jurorNumber));
-        }
-
-        mergeService.mergeDigitalResponse(jurorResponse, payload.getLogin());
-
-        log.info(String.format("DIGITAL response for Juror %s successfully closed", jurorNumber));
-    }
 
     private void grantExcusalForJuror(BureauJwtPayload payload, ExcusalDecisionDto excusalDecisionDto,
                                       JurorPool jurorPool) {
