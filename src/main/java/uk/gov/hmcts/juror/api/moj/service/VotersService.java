@@ -4,13 +4,20 @@ import uk.gov.hmcts.juror.api.moj.controller.request.PoolCreateRequestDto;
 import uk.gov.hmcts.juror.api.moj.domain.Voters;
 
 import java.sql.Date;
-import java.sql.SQLException;
-import java.util.Map;
+import java.time.LocalDate;
+import java.util.List;
 
 public interface VotersService {
-    Map<String,String> getVoters(String owner, PoolCreateRequestDto poolCreateRequestDto) throws SQLException;
 
-    Map<String,String> getVotersForCoronerPool(String postcode, int number, String locCode) throws SQLException;
+    List<Voters> getVotersForCoronerPool(String postcode, int number, String locCode);
 
-    void markVoterAsSelected(Voters voter, Date attendanceDate);
+    List<Voters> getVoters(PoolCreateRequestDto poolCreateRequestDto);
+
+    List<Voters> getVoters(List<String> postcodes,
+                           int citizensToSummon,
+                           LocalDate attendanceDate,
+                           String locCode,
+                           boolean isCoroners);
+
+    void markVotersAsSelected(List<Voters> voters, Date attendanceDate);
 }

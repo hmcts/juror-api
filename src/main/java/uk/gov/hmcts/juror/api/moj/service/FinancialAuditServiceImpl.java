@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.history.Revision;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetailsAppearances;
@@ -42,7 +41,7 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
                                                             FinancialAuditDetails.Type type,
                                                             List<Appearance> appearances) {
         Revision<Long, Juror> jurorRevision = revisionService.getLatestJurorRevision(jurorNumber);
-        Revision<Long, CourtLocation> courtRevision = revisionService.getLatestCourtRevision(courtLocationCode);
+
 
         // create a single financial audit details object with a new audit number generated for this batch of expenses
         FinancialAuditDetails auditDetails = FinancialAuditDetails.builder()
@@ -52,7 +51,7 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
             .jurorNumber(jurorNumber)
             .jurorRevision(jurorRevision.getRequiredRevisionNumber())
             .locCode(courtLocationCode)
-            .courtLocationRevision(courtRevision.getRequiredRevisionNumber())
+            .courtLocationRevision(revisionService.getLatestCourtRevisionNumber(courtLocationCode))
             .build();
 
         FinancialAuditDetails financialAuditDetails = financialAuditDetailsRepository.save(auditDetails);

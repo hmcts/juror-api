@@ -112,6 +112,9 @@ public class Voters implements Serializable {
     @Length(max = 10)
     private String postcode;
 
+    @Column(name = "postcode_start", updatable = false, insertable = false)
+    private String postcodeStart;
+
     @Column(name = "DATE_SELECTED1")
     private Date dateSelected1;
 
