@@ -50,7 +50,7 @@ public class JurorDigitalResponseRepositoryModImpl implements IJurorDigitalRespo
                 new CaseBuilder()
                     .when(digitalResponse.urgent.isTrue().and(QJuror.juror.isNotNull()))
                     .then(1L).otherwise(0L).sum().as("urgent"),
-                digitalResponse.count().as("allReplies")
+                QJuror.juror.count().as("allReplies")
             ).from(user)
             .where(user.userType.eq(UserType.BUREAU))
             .where(user.active.isTrue())
