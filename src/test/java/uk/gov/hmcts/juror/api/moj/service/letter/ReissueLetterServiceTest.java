@@ -46,6 +46,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -777,12 +778,6 @@ public class ReissueLetterServiceTest {
             final ReissueLetterRequestDto reissueLetterRequestDto =
                 getReissueLetterRequestDto(reissueLetterRequestData);
 
-            final BulkPrintData bulkPrintData = getBulkPrintData(reissueLetterRequestData);
-
-            doReturn(Optional.of(bulkPrintData)).when(bulkPrintDataRepository)
-                .findByJurorNumberFormCodeDatePrinted(reissueLetterRequestData.getJurorNumber(),
-                    reissueLetterRequestData.getFormCode(), reissueLetterRequestData.getDatePrinted());
-
             doReturn(Optional.empty()).when(bulkPrintDataRepository)
                 .findByJurorNumberFormCodeAndPending(reissueLetterRequestData.getJurorNumber(),
                     reissueLetterRequestData.getFormCode());
@@ -800,7 +795,7 @@ public class ReissueLetterServiceTest {
 
             reissueLetterService.reissueLetter(reissueLetterRequestDto);
 
-            verify(bulkPrintDataRepository, times(1))
+            verify(bulkPrintDataRepository, never())
                 .findByJurorNumberFormCodeDatePrinted(reissueLetterRequestData.getJurorNumber(),
                     reissueLetterRequestData.getFormCode(), reissueLetterRequestData.getDatePrinted());
 

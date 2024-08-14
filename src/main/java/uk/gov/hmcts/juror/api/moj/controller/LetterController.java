@@ -116,9 +116,7 @@ public class LetterController {
     @IsBureauUser
     public ResponseEntity<ReissueLetterReponseDto> reissueLetter(
         @RequestBody @Valid @NotNull ReissueLetterRequestDto request) {
-
         ReissueLetterReponseDto response = reissueLetterService.reissueLetter(request);
-
         return ResponseEntity.ok(response);
     }
 
