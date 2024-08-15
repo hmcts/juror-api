@@ -21,10 +21,10 @@ VALUES ('415', '111111111', '415230701', true, 2);
 
 INSERT INTO juror_mod.rev_info
 (revision_number, revision_timestamp)
-VALUES(0, EXTRACT (EPOCH FROM current_date));
+VALUES(1, EXTRACT (EPOCH FROM current_date));
 
 INSERT INTO juror_mod.juror_audit
 (revision, juror_number, rev_type, title, first_name, last_name, dob, address_line_1, address_line_4, postcode, pending_title,
 pending_first_name, pending_last_name)
-VALUES(0, '111111111', 1, NULL, 'FNAMEONE', 'LNAMEONE', '1989-03-31', '543 STREET NAME', 'ANYTOWN', 'CH1 2AN', 'Mr',
+VALUES(1, '111111111', 1, NULL, 'FNAMEONE', 'LNAMEONE', '1989-03-31', '543 STREET NAME', 'ANYTOWN', 'CH1 2AN', 'Mr',
 'Test' ,'Person');

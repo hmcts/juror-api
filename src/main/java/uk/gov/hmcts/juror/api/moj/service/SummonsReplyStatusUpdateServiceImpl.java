@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.service;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -63,6 +64,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
     private final WelshCourtLocationRepository welshCourtLocationRepository;
     private final JurorRecordService jurorRecordService;
     private final JurorAuditChangeService jurorAuditChangeService;
+    private final JurorThirdPartyService jurorThirdPartyService;
 
     private static final String TITLE = "title";
     private static final String FIRST_NAME = "firstName";
@@ -264,6 +266,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
         // TODO - Processing a paper summons reply for a deceased juror is currently awaiting design/sign off
 
         Juror juror = jurorPool.getJuror();
+        mergeThirdPartyDetails(jurorResponse, juror);
 
         // Check for changes between the new/updated values and the juror record values
         Map<String, Boolean> changedPropertiesMap =
@@ -397,6 +400,63 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
         jurorHistoryRepository.save(history);
 
         log.trace("Exit recordJurorPoolResponseHistory");
+    }
+
+    private void mergeThirdPartyDetails(AbstractJurorResponse abstractJurorResponse, Juror juror) {
+        if (StringUtils.isNotBlank(abstractJurorResponse.getThirdPartyReason())
+            || StringUtils.isNotBlank(abstractJurorResponse.getRelationship())) {
+            jurorThirdPartyService.createOrUpdateThirdParty(juror, new JurorThirdPartyService.ThirdPartyUpdateDto() {
+                @Override
+                public String getOtherReason() {
+                    return null;
+                }
+
+                @Override
+                public String getReason() {
+                    return abstractJurorResponse.getThirdPartyReason();
+                }
+
+                @Override
+                public String getEmailAddress() {
+                    return null;
+                }
+
+                @Override
+                public String getOtherPhone() {
+                    return null;
+                }
+
+                @Override
+                public String getMainPhone() {
+                    return null;
+                }
+
+                @Override
+                public String getRelationship() {
+                    return abstractJurorResponse.getRelationship();
+                }
+
+                @Override
+                public String getLastName() {
+                    return null;
+                }
+
+                @Override
+                public String getFirstName() {
+                    return null;
+                }
+
+                @Override
+                public boolean isContactJurorByEmail() {
+                    return true;
+                }
+
+                @Override
+                public boolean isContactJurorByPhone() {
+                    return true;
+                }
+            });
+        }
     }
 
     private void mergeReasonableAdjustments(JurorPool jurorPool) {

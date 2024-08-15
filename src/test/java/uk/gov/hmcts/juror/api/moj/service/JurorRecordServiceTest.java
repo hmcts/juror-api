@@ -222,6 +222,8 @@ class JurorRecordServiceTest {
     private JurorPaymentsSummaryRepository jurorPaymentsSummaryRepository;
     @Mock
     private JurorPoolService jurorPoolService;
+    @Mock
+    private JurorThirdPartyService jurorThirdPartyService;
 
     @Mock
     private Clock clock;

@@ -123,7 +123,6 @@ class ExcusedAndDisqualifiedListReportITest extends AbstractGroupedReportControl
         testBuilder()
             .jwt(getCourtJwt("414"))
             .triggerInvalid()
-            .printResponse()
             .assertMojForbiddenResponse("User not allowed to access this pool");
     }
 
