@@ -62,7 +62,9 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
         String locCode, LocalDate date, String jurorNumber, JurorStatusGroup group) {
 
         List<Integer> jurorStatuses = group.getStatusList();
-        JPAQuery<Tuple> query = sqlFetchAppearanceRecords(locCode, date, jurorStatuses);
+        JPAQuery<Tuple> query = sqlFetchAppearanceRecords(locCode, date, jurorStatuses,
+            group == JurorStatusGroup.IN_WAITING);
+
 
         // check if we need to just return one juror's record
         if (jurorNumber != null) {
@@ -83,7 +85,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
 
         // start building the query
         JPAQuery<Tuple> query = sqlFetchAppearanceRecords(commonData.getLocationCode(), commonData.getAttendanceDate(),
-            jurorStatuses);
+            jurorStatuses, request.isJurorInWaiting());
 
         if (commonData.getTag().equals(RetrieveAttendanceDetailsTag.JUROR_NUMBER)) {
             query = query.where(APPEARANCE.jurorNumber.in(request.getJuror()));
@@ -139,10 +141,11 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
         }
     }
 
-    private JPAQuery<Tuple> sqlFetchAppearanceRecords(String locCode, LocalDate date, List<Integer> jurorStatuses) {
+    private JPAQuery<Tuple> sqlFetchAppearanceRecords(String locCode, LocalDate date, List<Integer> jurorStatuses,
+                                                      boolean excludeJuryAttendances) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
 
-        return queryFactory.select(
+        JPAQuery<Tuple> query = queryFactory.select(
                 JUROR.jurorNumber.as("juror_number"),
                 JUROR.firstName.as("first_name"),
                 JUROR.lastName.as("last_name"),
@@ -164,6 +167,11 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .where(APPEARANCE.attendanceDate.eq(date))
             .where(JUROR_POOL.status.status.in(jurorStatuses))
             .where(JUROR_POOL.isActive.isTrue());
+        if (excludeJuryAttendances) {
+            query.where(APPEARANCE.attendanceAuditNumber.isNull()
+                .or(APPEARANCE.attendanceAuditNumber.startsWith("J").not()));
+        }
+        return query;
     }
 
     private List<Tuple> sqlOrderQueryResults(JPAQuery<Tuple> query) {
@@ -313,7 +321,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .where(APPEARANCE.appearanceStage.in(AppearanceStage.EXPENSE_ENTERED, AppearanceStage.EXPENSE_AUTHORISED,
                 AppearanceStage.EXPENSE_EDITED))
             .where(APPEARANCE.courtLocation.locCode.eq(locationCode))
-            .where(PANEL.result.eq(PanelResult.JUROR))
+            .where(APPEARANCE.attendanceAuditNumber.startsWith("J"))
             .groupBy(PANEL.trial.trialNumber,
                 APPEARANCE.attendanceAuditNumber)
             .fetch();
