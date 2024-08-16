@@ -239,7 +239,7 @@ processResources.finalizedBy(copyDocs)
 
 
 wrapper {
-    gradleVersion = '8.8'
+    gradleVersion = '8.10'
 }
 
 sourceSets {
