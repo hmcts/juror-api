@@ -248,6 +248,7 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
         expressions.add(COURT_LOCATION.signatory);
         expressions.add(COURT_LOCATION.locCode);
         expressions.add(COURT_LOCATION.postcode);
+        expressions.add(COURT_LOCATION.courtAttendTime);
 
         // Juror information
         expressions.add(JUROR_POOL.juror.firstName);
