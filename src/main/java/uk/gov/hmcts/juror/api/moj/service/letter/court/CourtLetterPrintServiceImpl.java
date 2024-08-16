@@ -279,7 +279,7 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
         LocalDateTime attendanceTime = data.get(POOL_REQUEST.attendTime);
         builder.attendTime(attendanceTime != null
             ? attendanceTime.toLocalTime()
-            : null);
+            : data.get(COURT_LOCATION.courtAttendTime));
         builder.date(formatDate(LocalDate.now(), welsh));
 
         switch (dto.getLetterType()) {
