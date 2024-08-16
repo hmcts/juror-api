@@ -206,8 +206,7 @@ public class TrialServiceImpl implements TrialService {
         // grabs the panel members from the DB and checks to make sure they match the requested members to be returned
         List<Panel> panelList =
             panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNo, locCode);
-        List<Panel> panelMembersToReturn = getPanelMembersToReturn(null, IJurorStatus.PANEL, jurorDetailRequestDto,
-            panelList);
+        List<Panel> panelMembersToReturn = getPanelMembersToReturn(jurorDetailRequestDto, panelList);
 
         log.debug(String.format("found %d panel members to be returned", panelMembersToReturn.size()));
 
@@ -219,8 +218,10 @@ public class TrialServiceImpl implements TrialService {
             panelRepository.saveAndFlush(panel);
 
             JurorPool jurorPool = PanelUtils.getAssociatedJurorPool(jurorPoolRepository, panel);
-            jurorPool.setStatus(jurorStatus);
-            jurorPoolRepository.saveAndFlush(jurorPool);
+            if (jurorPool.getStatus().getStatus() == IJurorStatus.PANEL) {
+                jurorPool.setStatus(jurorStatus);
+                jurorPoolRepository.saveAndFlush(jurorPool);
+            }
 
             log.debug(String.format("updated juror trial record for juror %s", panel.getJurorNumber()));
             jurorHistoryService.createReturnFromPanelHistory(jurorPool, panel);
@@ -236,8 +237,7 @@ public class TrialServiceImpl implements TrialService {
         List<Panel> panelList =
             panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, locationCode);
 
-        List<Panel> juryMembersToBeReturned = getPanelMembersToReturn(PanelResult.JUROR, IJurorStatus.JUROR,
-            returnJuryDto.getJurors(), panelList);
+        List<Panel> juryMembersToBeReturned = getPanelMembersToReturn(returnJuryDto.getJurors(), panelList);
 
         log.info(String.format("found %d jury members to be returned", juryMembersToBeReturned.size()));
 
@@ -250,7 +250,8 @@ public class TrialServiceImpl implements TrialService {
             final String jurorNumber = panel.getJurorNumber();
             JurorPool jurorPool = PanelUtils.getAssociatedJurorPool(jurorPoolRepository, panel);
 
-            if (StringUtils.isNotEmpty(returnJuryDto.getCheckIn())) {
+            if (jurorPool.getStatus().getStatus() == IJurorStatus.JUROR
+                && StringUtils.isNotEmpty(returnJuryDto.getCheckIn())) {
 
                 Appearance appearance =
                     getJurorAppearanceForDate(jurorPool, returnJuryDto.getAttendanceDate(), locationCode);
@@ -279,9 +280,12 @@ public class TrialServiceImpl implements TrialService {
             panel.setReturnDate(LocalDate.now());
             panelRepository.saveAndFlush(panel);
 
-            JurorStatus jurorStatus = new JurorStatus();
-            jurorStatus.setStatus(IJurorStatus.RESPONDED);
-            jurorPool.setStatus(jurorStatus);
+            if (jurorPool.getStatus().getStatus() == IJurorStatus.JUROR
+                || jurorPool.getStatus().getStatus() == IJurorStatus.PANEL) {
+                JurorStatus jurorStatus = new JurorStatus();
+                jurorStatus.setStatus(IJurorStatus.RESPONDED);
+                jurorPool.setStatus(jurorStatus);
+            }
 
             log.debug(String.format("updated juror trial record for juror %s", jurorNumber));
             jurorHistoryService.createReturnFromPanelHistory(jurorPool, panel);
@@ -316,15 +320,11 @@ public class TrialServiceImpl implements TrialService {
         trialRepository.save(trial);
     }
 
-    private List<Panel> getPanelMembersToReturn(PanelResult panelResult, int jurorStatus,
-                                                List<JurorDetailRequestDto> jurorList, List<Panel> panelList) {
+    private List<Panel> getPanelMembersToReturn(List<JurorDetailRequestDto> jurorList, List<Panel> panelList) {
         List<Panel> panelMembersToReturn = new ArrayList<>();
         for (Panel panel : panelList) {
             for (JurorDetailRequestDto dto : jurorList) {
-                if (dto.getJurorNumber().equals(panel.getJurorNumber())
-                    && panel.getResult() == panelResult
-                    && PanelUtils.getAssociatedJurorPool(jurorPoolRepository,
-                    panel).getStatus().getStatus() == jurorStatus) {
+                if (dto.getJurorNumber().equals(panel.getJurorNumber())) {
                     panelMembersToReturn.add(panel);
                     break;
                 }

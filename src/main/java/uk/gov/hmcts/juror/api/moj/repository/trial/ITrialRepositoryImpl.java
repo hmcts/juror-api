@@ -8,6 +8,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialSearch;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
+import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
@@ -28,6 +29,7 @@ public class ITrialRepositoryImpl implements ITrialRepository {
 
     private static final QTrial TRIAL = QTrial.trial;
     private static final QPanel PANEL = QPanel.panel;
+    private static final QAppearance APPEARANCE = QAppearance.appearance;
 
     @Override
     public <T> PaginatedList<T> getListOfTrials(TrialSearch trialSearch,
@@ -61,17 +63,27 @@ public class ITrialRepositoryImpl implements ITrialRepository {
 
         return queryFactory.select(TRIAL.trialNumber,
                 TRIAL.description,
-                TRIAL.trialType.stringValue(),
+                TRIAL.trialType,
                 TRIAL.courtroom.description,
                 TRIAL.judge.name,
-                PANEL.juror.count())
+                PANEL.count())
             .from(TRIAL)
             .join(PANEL)
             .on(TRIAL.eq(PANEL.trial))
-            .where(TRIAL.trialEndDate.isNull().and(TRIAL.courtLocation.locCode.eq(locationCode)))
+            .leftJoin(APPEARANCE).on(
+                APPEARANCE.jurorNumber.eq(PANEL.juror.jurorNumber)
+                    .and(APPEARANCE.locCode.eq(locationCode))
+                    .and(APPEARANCE.attendanceDate.eq(attendanceDate))
+                    .and(APPEARANCE.attendanceAuditNumber.startsWith("J"))
+                    .and(APPEARANCE.trialNumber.eq(TRIAL.trialNumber))
+            )
+            .where(TRIAL.courtLocation.locCode.eq(locationCode))
             .where(TRIAL.trialStartDate.loe(attendanceDate))
-            .where(PANEL.result.eq(PanelResult.JUROR))
-            .groupBy(TRIAL.trialNumber, TRIAL.description, TRIAL.trialType.stringValue(), TRIAL.courtroom.description,
+            .where(TRIAL.trialEndDate.isNull().or(TRIAL.trialEndDate.goe(attendanceDate)))
+            //If they are a JUROR or have an appearance with a jury confirmation audit number
+            .where(PANEL.result.eq(PanelResult.JUROR)
+                .or(APPEARANCE.isNotNull()))
+            .groupBy(TRIAL.trialNumber, TRIAL.description, TRIAL.trialType, TRIAL.courtroom.description,
                 TRIAL.judge.name)
             .fetch();
     }
