@@ -270,21 +270,21 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
         return newLetterData;
     }
 
+    private static final List<String> CREATE_LETTER_IF_NOT_EXIST_CODES = List.of(
+        FormCode.ENG_SUMMONS_REMINDER.getCode(),
+        FormCode.BI_SUMMONS_REMINDER.getCode());
+
     private void validateRequestedLetter(ReissueLetterRequestDto.@NotNull ReissueLetterRequestData letter,
                                          boolean requirePrintedLetter) {
-        if (requirePrintedLetter) {
+
+        // for some letters do not throw exception as need to print the initial letter (after validation)
+        if (requirePrintedLetter && !CREATE_LETTER_IF_NOT_EXIST_CODES.contains(letter.getFormCode())) {
             // verify the letter exists to reprint
             Optional<BulkPrintData> printedLetter = bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(
                 letter.getJurorNumber(), letter.getFormCode(), letter.getDatePrinted());
             if (printedLetter.isEmpty()) {
-                // for some letters do not throw exception as need to print the initial letter (after validation)
-                List<String> createLetterIfNotExist = List.of("5228", "5228C");
-                boolean createLetter = createLetterIfNotExist.contains(letter.getFormCode());
-
-                if (!createLetter) {
-                    throw new MojException.NotFound(String.format("Bulk print data not found for juror %s ",
-                        letter.getJurorNumber()), null);
-                }
+                throw new MojException.NotFound(String.format("Bulk print data not found for juror %s ",
+                    letter.getJurorNumber()), null);
             }
         }
         // verify the same letter is not already pending a reprint

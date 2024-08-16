@@ -80,10 +80,12 @@ public class BureauBacklogAllocateServiceImplTest {
         // because the mock repo will return nothing
 
 
-        doReturn(nonUrgentResponses).when(responseRepo).findAll(JurorResponseQueries.byUnassignedTodoNonUrgent(),
+        doReturn(nonUrgentResponses).when(responseRepo).findAll(JurorResponseQueries.byUnassignedTodoNonUrgent()
+                .and(JurorResponseQueries.jurorIsNotTransferred()),
             PageRequest.of(0, NON_URGENT_TO_ALLOCATE_TO_STAFF, Sort.Direction.ASC, "dateReceived"));
 
-        doReturn(urgentResponses).when(responseRepo).findAll(JurorResponseQueries.byUnassignedTodoUrgent(),
+        doReturn(urgentResponses).when(responseRepo).findAll(JurorResponseQueries.byUnassignedTodoUrgent()
+                .and(JurorResponseQueries.jurorIsNotTransferred()),
             PageRequest.of(0, URGENT_TO_ALLOCATE_TO_STAFF, Sort.Direction.ASC, "dateReceived"));
 
 

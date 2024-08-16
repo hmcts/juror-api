@@ -11,6 +11,8 @@ public interface RevisionService {
 
     Revision<Long, CourtLocation> getLatestCourtRevision(String locCode);
 
+    Long getLatestCourtRevisionNumber(String locCode);
+
     Revision<Long, Juror> getLatestJurorRevision(String jurorNumber);
 
     Revision<Long, Appearance> getLatestAppearanceRevision(AppearanceId appearanceId);

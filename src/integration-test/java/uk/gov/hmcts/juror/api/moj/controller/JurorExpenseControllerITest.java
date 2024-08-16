@@ -1475,7 +1475,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             List<Appearance> modifiedAppearances =
                 appearances.stream().filter(app -> appearanceDates.contains(app.getAttendanceDate())).toList();
             assertThat(modifiedAppearances).hasSize(2);
-            verifyExpenseSubmittedForApproval(modifiedAppearances.get(0), 2);
+            verifyExpenseSubmittedForApproval(modifiedAppearances.get(0), 3);
             verifyExpenseSubmittedForApproval(modifiedAppearances.get(1), 3);
 
             List<Appearance> unmodifiedAppearances =
@@ -1513,7 +1513,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             List<Appearance> modifiedAppearances =
                 appearances.stream().filter(app -> appearanceDates.contains(app.getAttendanceDate())).toList();
             assertThat(modifiedAppearances).hasSize(1);
-            verifyExpenseSubmittedForApproval(modifiedAppearances.get(0), 2);
+            verifyExpenseSubmittedForApproval(modifiedAppearances.get(0), 3);
 
             List<Appearance> unmodifiedAppearances =
                 appearances.stream().filter(app -> !appearanceDates.contains(app.getAttendanceDate())).toList();
@@ -2508,7 +2508,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 long id = assertFinancialAuditDetailsApproved(financialAuditDetails.get(0),
                     LocalDateTime.now(), FinancialAuditDetails.Type.APPROVED_BACS);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(0),
-                    id, LocalDate.of(2023, 1, 8), 2);
+                    id, LocalDate.of(2023, 1, 8), 3);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(1),
                     id, LocalDate.of(2023, 1, 9), 4);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(2),
@@ -2563,7 +2563,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 long id = assertFinancialAuditDetailsApproved(financialAuditDetails.get(0),
                     LocalDateTime.now(), FinancialAuditDetails.Type.APPROVED_CASH);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(0),
-                    id, LocalDate.of(2023, 2, 8), 2);
+                    id, LocalDate.of(2023, 2, 8), 3);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(1),
                     id, LocalDate.of(2023, 2, 9), 3);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(2),
@@ -3244,7 +3244,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 financialAuditDetailsAppearancesRepository.findAll().forEach(financialAuditDetailsAppearances::add);
                 assertThat(financialAuditDetailsAppearances).hasSize(1);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(0),
-                    2, LocalDate.of(2023, 1, 11), 2);
+                    2, LocalDate.of(2023, 1, 11), 3);
                 assertJurorHistory(jurorNumber, HistoryCodeMod.EDIT_PAYMENTS, "COURT_USER", "£62.03",
                     "415230101", LocalDate.of(2023, 1, 11), "F2", 1, 0);
             }
@@ -3308,7 +3308,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 financialAuditDetailsAppearancesRepository.findAll().forEach(financialAuditDetailsAppearances::add);
                 assertThat(financialAuditDetailsAppearances).hasSize(1);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(0),
-                    2, LocalDate.of(2023, 1, 15), 2);
+                    2, LocalDate.of(2023, 1, 15), 3);
                 assertJurorHistory(jurorNumber, HistoryCodeMod.EDIT_PAYMENTS, "COURT_USER", "£65.54",
                     "415230101", LocalDate.of(2023, 1, 15), "F2", 1, 0);
             }

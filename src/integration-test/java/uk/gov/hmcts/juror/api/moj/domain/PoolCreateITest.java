@@ -9,17 +9,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
-import uk.gov.hmcts.juror.api.moj.repository.VotersRepository;
+import uk.gov.hmcts.juror.api.moj.service.VotersService;
 import uk.gov.hmcts.juror.api.testsupport.ContainerTest;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 
 @RunWith(SpringRunner.class)
 @Slf4j
@@ -28,7 +26,7 @@ import static org.assertj.core.api.Assertions.fail;
 public class PoolCreateITest extends ContainerTest {
 
     @Autowired
-    VotersRepository votersRepository;
+    VotersService votersService;
 
     /*
      * This test will invoke the Get_Voters function in the database to randomly
@@ -37,20 +35,14 @@ public class PoolCreateITest extends ContainerTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_loadVoters.sql"})
     public void test_poolCreate_getVoters_success() {
-        try {
-            // load voters from the database
-            List<String> resultSet = votersRepository.callGetVoters(5,
-                LocalDate.now().minusYears(75),
-                LocalDate.now().minusYears(18),
-                "415",
-                "CH1,CH2,CH3",
-                "N");
-            assertThat(resultSet).isNotEmpty();
-            assertThat(resultSet.size()).isEqualTo(7); // should be 5 * 1.4 = 7
-        } catch (SQLException e) {
-            log.error("Unexpected error", e);
-            fail("Unexpected error", e);
-        }
+        // load voters from the database
+        List<Voters> resultSet = votersService.getVoters(List.of("CH1", "CH2", "CH3"),
+            5,
+            LocalDate.now(),
+            "415",
+            false);
+        assertThat(resultSet).isNotEmpty();
+        assertThat(resultSet.size()).isEqualTo(7); // should be 5 * 1.4 = 7
     }
 
     @Test
@@ -61,28 +53,19 @@ public class PoolCreateITest extends ContainerTest {
         int loopCount = 100;
         Map<String, Integer> jurorIdMap = new ConcurrentHashMap<>();
 
-        for (int i = 0;
-             i < loopCount;
-             i++) {
+        for (int i = 0; i < loopCount; i++) {
+            // load voters from the database
+            List<Voters> resultSet = votersService.getVoters(List.of("CH1", "CH2", "CH3"),
+                5, LocalDate.now(),
+                "415",
+                false);
+            assertThat(resultSet).isNotEmpty();
 
-            try {
-                // load voters from the database
-                List<String> resultSet = votersRepository.callGetVoters(5,
-                    LocalDate.now().minusYears(75),
-                    LocalDate.now().minusYears(18),
-                    "415",
-                    "CH1,CH2,CH3",
-                    "N");
-                assertThat(resultSet).isNotEmpty();
-
-                resultSet.forEach(row -> {
-                    String jurorNumber = row.split(",")[0];
-                    jurorIdMap.computeIfPresent(jurorNumber, (key, val) -> val + 1);
-                    jurorIdMap.putIfAbsent(jurorNumber, 1);
-                });
-            } catch (SQLException e) {
-                log.error(e.getMessage());
-            }
+            resultSet.forEach(row -> {
+                String jurorNumber = row.getJurorNumber();
+                jurorIdMap.computeIfPresent(jurorNumber, (key, val) -> val + 1);
+                jurorIdMap.putIfAbsent(jurorNumber, 1);
+            });
         }
         jurorIdMap.forEach((key, val) -> log.info("There were {} occurrences of juror number {}", val, key));
     }

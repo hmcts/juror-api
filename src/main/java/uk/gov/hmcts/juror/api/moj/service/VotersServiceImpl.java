@@ -1,6 +1,10 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
-import lombok.NonNull;
+import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,15 +12,13 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.bureau.domain.SystemParameter;
 import uk.gov.hmcts.juror.api.bureau.domain.SystemParameterRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolCreateRequestDto;
+import uk.gov.hmcts.juror.api.moj.domain.QVoters;
 import uk.gov.hmcts.juror.api.moj.domain.Voters;
 import uk.gov.hmcts.juror.api.moj.repository.VotersRepository;
 
 import java.sql.Date;
-import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -26,79 +28,68 @@ public class VotersServiceImpl implements VotersService {
     static final int AGE_LOWER_SP_ID = 101;
     static final int AGE_UPPER_SP_ID = 100;
 
-    @NonNull
     private final VotersRepository votersRepository;
-    @NonNull
     private final SystemParameterRepository systemParameterRepository;
 
-    /* function returns a map of juror number and flag values */
+    @PersistenceContext
+    EntityManager entityManager;
+
+
     @Override
-    public Map<String,String> getVoters(String owner, PoolCreateRequestDto poolCreateRequestDto) throws SQLException {
+    public List<Voters> getVotersForCoronerPool(String postcode, int number, String locCode) {
+        return getVoters(List.of(postcode), number, LocalDate.now(), locCode, true);
+    }
 
-        LocalDate attendanceDate = poolCreateRequestDto.getStartDate();
-        String postcodeString = createPostCodeString(poolCreateRequestDto.getPostcodes());
+    @Override
+    public List<Voters> getVoters(PoolCreateRequestDto poolCreateRequestDto) {
+        return getVoters(poolCreateRequestDto.getPostcodes(),
+            poolCreateRequestDto.getCitizensToSummon(),
+            poolCreateRequestDto.getStartDate(),
+            poolCreateRequestDto.getCatchmentArea(), false);
+    }
 
+    @Override
+    public List<Voters> getVoters(List<String> postcodes,
+                                  int citizensToSummon,
+                                  LocalDate attendanceDate,
+                                  String locCode,
+                                  boolean isCoroners) {
         //Determine Max and Min DOB allowed based on attendance date
         LocalDate maxDateOfBirth = calculateDateLimit(attendanceDate, AGE_LOWER_SP_ID, 18);
         LocalDate minDateOfBirth = calculateDateLimit(attendanceDate, AGE_UPPER_SP_ID, 76);
 
-        List<String> voters = votersRepository.callGetVoters(poolCreateRequestDto.getCitizensToSummon(),
-                minDateOfBirth,
-                maxDateOfBirth,
-                poolCreateRequestDto.getCatchmentArea(),
-                postcodeString,
-                "N");
-        log.info("Obtained {} records from voters table for pool {} ", voters.size(),
-                poolCreateRequestDto.getPoolNumber());
+        JPAQueryFactory queryFactory = getQueryFactory();
+        JPAQuery<Voters> query = queryFactory.selectFrom(QVoters.voters)
+            .where(QVoters.voters.locCode.eq(locCode)
+                .and(QVoters.voters.dateSelected1.isNull())
+                .and(QVoters.voters.dateOfBirth.isNull()
+                    .or(QVoters.voters.dateOfBirth.between(minDateOfBirth, maxDateOfBirth)))
+                .and(QVoters.voters.permDisqual.isNull())
+                .and(QVoters.voters.postcodeStart.in(postcodes)));
 
-        Map<String, String> voterMap = new HashMap<>();
-
-        voters.forEach(voter -> voterMap.put(voter.split(",")[0], voter.split(",")[1]));
-
-        return voterMap;
+        if (isCoroners) {
+            query.where(QVoters.voters.flags.isNull());
+        }
+        return query.orderBy(NumberExpression.random().asc())
+            .limit((long) (citizensToSummon * 1.4))
+            .fetch();
     }
+
+    JPAQueryFactory getQueryFactory() {
+        return new JPAQueryFactory(entityManager);
+    }
+
 
     @Override
-    public Map<String,String> getVotersForCoronerPool(String postcode, int number,
-                                                      String locCode) throws SQLException {
-
-        LocalDate currentDate = LocalDate.now();
-
-        //Determine Max and Min DOB allowed based on attendance date
-        LocalDate maxDateOfBirth = calculateDateLimit(currentDate, AGE_LOWER_SP_ID, 18);
-        LocalDate minDateOfBirth = calculateDateLimit(currentDate, AGE_UPPER_SP_ID, 76);
-
-        List<String> voters = votersRepository.callGetVoters(
-            number,
-            minDateOfBirth,
-            maxDateOfBirth,
-            locCode,
-            postcode, "C");
-
-        log.info("Obtained {} records from voters table for coroner pool ", voters.size());
-
-        Map<String, String> votersMap = new HashMap<>();
-
-        voters.forEach(voter -> votersMap.put(voter.split(",")[0], voter.split(",")[1]));
-        return votersMap;
-    }
-
-    @Override
-    public void markVoterAsSelected(Voters voter, Date attendanceDate) {
-
-        voter.setDateSelected1(attendanceDate);
-        votersRepository.save(voter);
-        log.info("Voter with Juror number {} has been selected for a pool.", voter.getJurorNumber());
-    }
-
-    private String createPostCodeString(List<String> postcodes) {
-
-        StringBuilder postcodeString = new StringBuilder();
-
-        postcodes.forEach(postcode -> postcodeString.append(postcode).append(","));
-        //trim the last comma from the string buffer
-        return postcodeString.substring(0, postcodeString.length() - 1);
-
+    public void markVotersAsSelected(List<Voters> voters, Date attendanceDate) {
+        if (voters.isEmpty()) {
+            return;
+        }
+        voters.forEach(voter -> {
+            voter.setDateSelected1(attendanceDate);
+            log.info("Voter with Juror number {} has been selected for a pool.", voter.getJurorNumber());
+        });
+        votersRepository.saveAll(voters);
     }
 
     private LocalDate calculateDateLimit(LocalDate attendanceDate, int systemParamId, int defaultAge) {

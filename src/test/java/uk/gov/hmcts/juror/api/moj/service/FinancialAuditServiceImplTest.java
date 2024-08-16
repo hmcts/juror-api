@@ -94,10 +94,8 @@ public class FinancialAuditServiceImplTest {
                 .getLatestJurorRevision(TestConstants.VALID_JUROR_NUMBER);
             doReturn(1L).when(jurorRevision).getRequiredRevisionNumber();
 
-            Revision<Long, CourtLocation> courtRevision = mock(Revision.class);
-            doReturn(courtRevision).when(revisionService)
-                .getLatestCourtRevision(TestConstants.VALID_COURT_LOCATION);
-            doReturn(12L).when(courtRevision).getRequiredRevisionNumber();
+            doReturn(12L).when(revisionService)
+                .getLatestCourtRevisionNumber(TestConstants.VALID_COURT_LOCATION);
 
             User user = mock(User.class);
             doReturn(user).when(userRepository).findByUsername(USER_NAME);
@@ -188,10 +186,8 @@ public class FinancialAuditServiceImplTest {
                 .getLatestJurorRevision(TestConstants.VALID_JUROR_NUMBER);
             doReturn(1L).when(jurorRevision).getRequiredRevisionNumber();
 
-            Revision<Long, CourtLocation> courtRevision = mock(Revision.class);
-            doReturn(courtRevision).when(revisionService)
-                .getLatestCourtRevision(TestConstants.VALID_COURT_LOCATION);
-            doReturn(12L).when(courtRevision).getRequiredRevisionNumber();
+            doReturn(12L).when(revisionService)
+                .getLatestCourtRevisionNumber(TestConstants.VALID_COURT_LOCATION);
 
             User user = mock(User.class);
             doReturn(user).when(userRepository).findByUsername(USER_NAME);

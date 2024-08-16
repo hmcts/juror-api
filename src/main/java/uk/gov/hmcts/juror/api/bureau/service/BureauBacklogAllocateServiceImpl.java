@@ -96,7 +96,8 @@ public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateSe
             );
             if (staffMemberNonUrgentCount > 0) {
                 toBeAllocated.addAll(allocateResponses(
-                    JurorResponseQueries.byUnassignedTodoNonUrgent(),
+                    JurorResponseQueries.byUnassignedTodoNonUrgent()
+                        .and(JurorResponseQueries.jurorIsNotTransferred()),
                     staffMember,
                     staffMemberNonUrgentCount
                 ));
@@ -109,7 +110,8 @@ public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateSe
             );
             if (staffMemberUrgentCount > 0) {
                 toBeAllocated.addAll(allocateResponses(
-                    JurorResponseQueries.byUnassignedTodoUrgent(),
+                    JurorResponseQueries.byUnassignedTodoUrgent()
+                        .and(JurorResponseQueries.jurorIsNotTransferred()),
                     staffMember,
                     staffMemberUrgentCount
                 ));

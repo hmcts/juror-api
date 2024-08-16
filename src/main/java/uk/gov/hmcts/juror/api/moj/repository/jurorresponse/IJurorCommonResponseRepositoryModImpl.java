@@ -7,7 +7,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
-import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QCombinedJurorResponse;
@@ -28,18 +27,16 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
                                                                   Predicate... predicates) {
         JPAQuery<Tuple> query = getJpaQueryFactory().select(
                 QCombinedJurorResponse.combinedJurorResponse,
-                QJuror.juror,
                 QJurorPool.jurorPool,
                 QPoolRequest.poolRequest
             )
             .from(QCombinedJurorResponse.combinedJurorResponse)
-            .join(QJuror.juror)
-            .on(QJuror.juror.jurorNumber.eq(QCombinedJurorResponse.combinedJurorResponse.jurorNumber))
-
-            .join(QJurorPool.jurorPool).on(QJurorPool.jurorPool.juror.eq(QJuror.juror))
+            .join(QJurorPool.jurorPool)
+            .on(QJurorPool.jurorPool.juror.eq(QCombinedJurorResponse.combinedJurorResponse.juror))
             .join(QPoolRequest.poolRequest).on(QPoolRequest.poolRequest.eq(QJurorPool.jurorPool.pool))
             .where(QCombinedJurorResponse.combinedJurorResponse.staff.username.eq(staffLogin))
             .where(QCombinedJurorResponse.combinedJurorResponse.processingStatus.in(processingStatus))
+            .where(QCombinedJurorResponse.combinedJurorResponse.juror.bureauTransferDate.isNull())
             .where(QJurorPool.jurorPool.isActive.isTrue())
             .where(QJurorPool.jurorPool.owner.eq(SecurityUtil.BUREAU_OWNER));
 
@@ -57,10 +54,10 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
                 QCombinedJurorResponse.combinedJurorResponse.count()
             )
             .from(QCombinedJurorResponse.combinedJurorResponse)
-            .join(QJuror.juror)
-            .on(QJuror.juror.jurorNumber.eq(QCombinedJurorResponse.combinedJurorResponse.jurorNumber))
-            .join(QJurorPool.jurorPool).on(QJurorPool.jurorPool.juror.eq(QJuror.juror))
+            .join(QJurorPool.jurorPool)
+            .on(QJurorPool.jurorPool.juror.eq(QCombinedJurorResponse.combinedJurorResponse.juror))
             .where(QJurorPool.jurorPool.isActive.isTrue())
+            .where(QCombinedJurorResponse.combinedJurorResponse.juror.bureauTransferDate.isNull())
             .where(QJurorPool.jurorPool.owner.eq(SecurityUtil.BUREAU_OWNER));
 
         if (predicates != null && predicates.length > 0) {

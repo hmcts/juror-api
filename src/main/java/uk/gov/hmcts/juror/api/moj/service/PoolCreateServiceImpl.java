@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +65,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -86,43 +84,24 @@ public class PoolCreateServiceImpl implements PoolCreateService {
 
     private static final int UPPER_REQUEST_LIMIT = 250;
 
-    @NonNull
     private final PoolRequestRepository poolRequestRepository;
-    @NonNull
     private final VotersLocPostcodeTotalsService votersLocPostcodeTotalsService;
-    @NonNull
     private final ManageDeferralsService manageDeferralsService;
-    @NonNull
     private final JurorPoolRepository jurorPoolRepository;
-    @NonNull
     private final JurorRepository jurorRepository;
-    @NonNull
     private final VotersRepository votersRepository;
-    @NonNull
     private final CourtLocationService courtLocationService;
-    @NonNull
     private final PrintDataService printDataService;
-    @NonNull
     private final VotersService votersService;
-    @NonNull
     private final PoolHistoryRepository poolHistoryRepository;
-    @NonNull
     private final JurorHistoryRepository jurorHistoryRepository;
-    @NonNull
     private final JurorStatusRepository jurorStatusRepository;
-    @NonNull
     private final PoolMemberSequenceService poolMemberSequenceService;
-    @NonNull
     private final GeneratePoolNumberService generatePoolNumberService;
-    @NonNull
     private final PoolTypeRepository poolTypeRepository;
-    @NonNull
     private final CourtLocationRepository courtLocationRepository;
-    @NonNull
     private final GenerateCoronerPoolNumberService generateCoronerPoolNumberService;
-    @NonNull
     private final CoronerPoolDetailRepository coronerPoolDetailRepository;
-    @NonNull
     private final CoronerPoolRepository coronerPoolRepository;
 
     @Override
@@ -284,13 +263,11 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         List<JurorPool> jurorPools = getJurorPools(payload.getLogin(), payload.getOwner(), poolCreateRequestDto);
 
         // find the actual number of jurors added and pass to pool history (minus the disq. on selection)
-        int numSelected = jurorPools.stream().mapToInt(jurorPool -> Objects.equals(jurorPool.getStatus().getStatus(),
-                IJurorStatus.DISQUALIFIED)
-                ? 0
-                : 1)
+        int numSelected = jurorPools
+            .stream()
+            .mapToInt(jurorPool -> jurorPool.getStatus().getStatus() == IJurorStatus.DISQUALIFIED ? 0 : 1)
             .sum();
 
-        String owner = payload.getOwner();
         String userId = payload.getLogin();
         updatePoolHistory(poolCreateRequestDto.getPoolNumber(), userId, numSelected,
             PoolHistory.NEW_POOL_REQUEST_SUFFIX, HistoryCode.PHSI);
@@ -308,13 +285,10 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         // Get a list of Pool members from voters table
         List<JurorPool> jurorPools = getJurorPools(payload.getLogin(), payload.getOwner(), poolCreateRequestDto);
         // find the actual number of jurors added and pass to pool history (minus the disq. on selection)
-        int numSelected = jurorPools.stream().mapToInt(member -> Objects.equals(member.getStatus().getStatus(),
-            IJurorStatus.DISQUALIFIED
-        )
-            ? 0
-            : 1).sum();
+        int numSelected = jurorPools.stream()
+            .mapToInt(member -> member.getStatus().getStatus() == IJurorStatus.DISQUALIFIED ? 0 : 1)
+            .sum();
 
-        String owner = payload.getOwner();
         String userId = payload.getLogin();
 
         updatePoolHistory(poolCreateRequestDto.getPoolNumber(), userId, numSelected,
@@ -394,9 +368,8 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         final String locCode = poolCreateRequestDto.getCatchmentArea();
         try {
             // Randomly select a number of voters from Voters table
-            Map<String, String> votersMap = votersService.getVoters(owner, poolCreateRequestDto);
-            List<String> jurorNumbers = votersMap.keySet().stream().toList();
-            final int size = jurorNumbers.size();
+            List<Voters> voters = votersService.getVoters(poolCreateRequestDto);
+            final int size = voters.size();
 
             // throw an exception if we couldn't find the required number of voters
             if (size < poolCreateRequestDto.getCitizensToSummon()) {
@@ -416,12 +389,12 @@ public class PoolCreateServiceImpl implements PoolCreateService {
             }
 
             int jurorsFound = 0;
-            for (String jurorNumber : jurorNumbers) {
-                Voters voter = votersRepository.findByJurorNumber(jurorNumber);
+            List<Voters> selectedVoters = new ArrayList<>(voters.size());
+            for (Voters voter : voters) {
                 if (voter.getFlags() == null) {
                     jurorsFound++;
                 }
-                votersService.markVoterAsSelected(voter, attendanceDate);
+                selectedVoters.add(voter);
                 String paddedSequenceNumber = poolMemberSequenceService.leftPadInteger(sequenceNumber);
                 JurorPool jurorPool = createJurorPool(login, owner, voter, poolCreateRequestDto,
                     paddedSequenceNumber, poolRequest
@@ -435,6 +408,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                     break;  // we've found the number of jurors required, no need to process any further.
                 }
             }
+            votersService.markVotersAsSelected(selectedVoters, attendanceDate);
 
             if (jurorsFound < poolCreateRequestDto.getCitizensToSummon()) {
                 throw new MojException.BusinessRuleViolation(
@@ -890,25 +864,26 @@ public class PoolCreateServiceImpl implements PoolCreateService {
             try {
                 lockVoters(locCode);
                 // Randomly select a number of voters from Voters table
-                Map<String, String> votersMap = votersService.getVotersForCoronerPool(item.getPostcode(),
-                    item.getNumberToAdd(), locCode);
-                List<String> jurorNumbers = votersMap.keySet().stream().toList();
-                final int size = jurorNumbers.size();
+                List<Voters> voters = votersService.getVotersForCoronerPool(
+                    item.getPostcode(),
+                    item.getNumberToAdd(),
+                    locCode);
+                final int size = voters.size();
                 final int requiredMembers = item.getNumberToAdd();
 
                 // throw an exception if we couldn't find the required number of voters
                 if (size < requiredMembers) {
-                    throw new RuntimeException();
+                    throw new MojException.BusinessRuleViolation("Not enough voters found to create a pool",
+                        MojException.BusinessRuleViolation.ErrorCode.COULD_NOT_FIND_ENOUGH_VOTERS);
                 }
-                for (int index = 0;
-                     index < requiredMembers;
-                     index++) {
-                    Voters voter = votersRepository.findByJurorNumber(jurorNumbers.get(index));
 
-                    votersService.markVoterAsSelected(voter, Date.valueOf(LocalDate.now()));
-
+                List<Voters> selectedVoters = new ArrayList<>(requiredMembers);
+                for (int index = 0; index < requiredMembers; index++) {
+                    Voters voter = voters.get(index);
+                    selectedVoters.add(voter);
                     createCoronerJurorPool(poolNumber, voter);
                 }
+                votersService.markVotersAsSelected(selectedVoters, Date.valueOf(LocalDate.now()));
             } catch (Exception e) {
                 log.error("Exception occurred when adding members to coroner pool - {}", e.getMessage());
                 throw new PoolCreateException.UnableToCreatePool();

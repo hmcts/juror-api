@@ -195,8 +195,6 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
         appearance.setAppearanceStage(appearanceStage);
         realignAttendanceType(appearance);
-        appearanceRepository.saveAndFlush(appearance);
-
         // update the juror next date and clear on call flag in case it is set
         jurorPool.setNextDate(getNextWorkingDay(locCode));
 
@@ -601,13 +599,21 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
             // get the juror appearance record if it exists
             Appearance appearance = getAppearance(jurorNumber, request.getCommonData().getAttendanceDate(), locCode)
-                .orElse(appearanceCreationService.createAppearance(
-                    jurorNumber,
-                    request.getCommonData().getAttendanceDate(),
-                    courtLocation,
-                    jurorPool.getPool().getPoolNumber(),
-                    false
-                ));
+                .orElseGet(() -> appearanceRepository.save(
+                    appearanceCreationService.createAppearance(
+                        jurorNumber,
+                        request.getCommonData().getAttendanceDate(),
+                        courtLocation,
+                        jurorPool.getPool().getPoolNumber(),
+                        false
+                    )));
+
+            if (appearance.getAppearanceStage() != null
+                && AppearanceStage.getConfirmedAppearanceStages().contains(appearance.getAppearanceStage())) {
+                throw new MojException.BusinessRuleViolation(
+                    "Juror " + jurorNumber + " has already confirmed their attendance for this day",
+                    MojException.BusinessRuleViolation.ErrorCode.DAY_ALREADY_CONFIRMED);
+            }
 
             // update the check-in time if there is none
             if (appearance.getTimeIn() == null) {

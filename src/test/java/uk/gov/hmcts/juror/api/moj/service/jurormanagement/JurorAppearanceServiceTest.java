@@ -78,6 +78,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -420,6 +421,8 @@ class JurorAppearanceServiceTest {
         doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_123456789);
 
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findById(anyString());
+        doAnswer(invocation -> invocation.<Appearance>getArgument(0))
+                .when(appearanceRepository).save(any());
 
         JurorAppearanceResponseDto.JurorAppearanceResponseData appearanceData = JurorAppearanceResponseDto
             .JurorAppearanceResponseData.builder().jurorNumber(JUROR_123456789)
@@ -448,7 +451,7 @@ class JurorAppearanceServiceTest {
         verify(jurorPoolService, timeout(1)).getJurorPoolFromUser(JUROR_123456789);
         verify(courtLocationRepository, times(1))
             .findById(LOC_415);
-        verify(appearanceRepository, times(1)).saveAndFlush(appearanceArgumentCaptor.capture());
+        verify(appearanceRepository, times(1)).save(appearanceArgumentCaptor.capture());
 
         Appearance appearance = appearanceArgumentCaptor.getValue();
 
@@ -487,6 +490,8 @@ class JurorAppearanceServiceTest {
         doReturn(Optional.of(juror)).when(jurorRepository).findById(JUROR_123456789);
         doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_123456789);
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findById(anyString());
+        doAnswer(invocation -> invocation.<Appearance>getArgument(0))
+                .when(appearanceRepository).save(any());
 
         JurorAppearanceResponseDto.JurorAppearanceResponseData appearanceData = JurorAppearanceResponseDto
             .JurorAppearanceResponseData.builder().jurorNumber(JUROR_123456789)
@@ -511,7 +516,6 @@ class JurorAppearanceServiceTest {
         verify(jurorPoolService, timeout(1)).getJurorPoolFromUser(JUROR_123456789);
         verify(courtLocationRepository, times(1))
             .findById(LOC_415);
-        verify(appearanceRepository, times(1)).saveAndFlush(any());
     }
 
     @Test
@@ -528,6 +532,8 @@ class JurorAppearanceServiceTest {
 
         doReturn(Optional.of(juror)).when(jurorRepository).findById(JUROR_123456789);
         doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_123456789);
+        doAnswer(invocation -> invocation.<Appearance>getArgument(0))
+                .when(appearanceRepository).save(any());
 
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findById(anyString());
 
@@ -545,7 +551,6 @@ class JurorAppearanceServiceTest {
         verify(jurorPoolService, timeout(1)).getJurorPoolFromUser(JUROR_123456789);
         verify(courtLocationRepository, times(1))
             .findById(LOC_415);
-        verify(appearanceRepository, times(1)).saveAndFlush(any());
     }
 
     @Test
