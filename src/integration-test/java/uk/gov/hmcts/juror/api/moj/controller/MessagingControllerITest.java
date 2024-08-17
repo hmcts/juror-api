@@ -706,7 +706,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 addTest(MessageType.REMIND_TO_ATTEND,
                     "Reminder: Please attend for your Jury Service at <court_name> Court on <attend_date> at "
                         + "<attend_time>. If you have any questions, please contact the jury office on <court_phone>.",
-                    "Nodyn Atgoffa: Cofiwch fynychu eich Gwasanaeth Rheithgor yn Llys<welsh_courtname> ar "
+                    "Nodyn Atgoffa: Cofiwch fynychu eich Gwasanaeth Rheithgor yn Llys <welsh_courtname> ar "
                         + "<attend_date> am <attend_time>. Os oes gennych unrhyw gwestiynau, cysylltwch â'r swyddfa "
                         + "rheithgor drwy ffonio <court_phone>.",
                     List.of(
@@ -728,7 +728,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 addTest(MessageType.FAILED_TO_ATTEND_COURT,
                     "You failed to attend for Jury Service at <court_name> Court on <attend_date>. Please contact the"
                         + " jury office on <court_phone>.",
-                    "Bu ichi fethu â mynychu eich Gwasanaeth Rheithgor yn Llys<welsh_courtname> ar <attend_date>. "
+                    "Bu ichi fethu â mynychu eich Gwasanaeth Rheithgor yn Llys <welsh_courtname> ar <attend_date>. "
                         + "Cysylltwch â'r Swyddfa Rheithgor drwy ffonio <court_phone>.",
                     List.of(
                         TestData.Placeholder.ENGLISH_COURT_NAME.toPlaceholder(),
@@ -748,7 +748,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         + "service and will not be added on at the end. If you have any questions, please contact the"
                         + " jury office on <court_phone>.",
                     "Mae dyddiad mynychu eich Gwasanaeth Rheithgor wedi newid i <attend_date> am <attend_time> yn "
-                        + "Llys<welsh_courtname>. Mae'r dyddiau pan na fydd eich angen yn y llys dal yn ffurfio rhan "
+                        + "Llys <welsh_courtname>. Mae'r dyddiau pan na fydd eich angen yn y llys dal yn ffurfio rhan "
                         + "o'ch gwasanaeth rheithgor ac ni fyddant yn cael eu hychwanegu ar y diwedd. Os oes gennych "
                         + "unrhyw gwestiynau, cysylltwch â'r swyddfa rheithgor drwy ffonio <court_phone>.",
                     List.of(
@@ -814,7 +814,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         + "<court_name> Court. If you have any questions, please contact the jury office on "
                         + "<court_phone>.",
                     "Mae angen i chi fynychu'r llys eto ar gyfer eich Gwasanaeth Rheithgor ar <attend_date> am "
-                        + "<attend_time> yn Llys<welsh_courtname>. Os oes gennych unrhyw gwestiynau, cysylltwch â'r "
+                        + "<attend_time> yn Llys <welsh_courtname>. Os oes gennych unrhyw gwestiynau, cysylltwch â'r "
                         + "swyddfa rheithgor drwy ffonio <court_phone>.",
                     List.of(
                         TestData.Placeholder.ATTEND_DATE.toPlaceholder(),
@@ -850,7 +850,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
                 addTest(MessageType.PLEASE_CONTACT_COURT,
                     "Please contact <court_name> Jury Office on <court_phone> with regard to your jury service.",
-                    "Cysylltwch â Swyddfa Rheithgor<welsh_courtname> drwy ffonio <court_phone>  ynghylch eich "
+                    "Cysylltwch â Swyddfa Rheithgor <welsh_courtname> drwy ffonio <court_phone> ynghylch eich "
                         + "gwasanaeth rheithgor.",
                     List.of(
                         TestData.Placeholder.ENGLISH_COURT_NAME.toPlaceholder(),
@@ -887,7 +887,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         + "<court_name> Court on <attend_date> at <attend_time>. If you have any questions, please "
                         + "contact the jury office on <court_phone>.",
                     "Rydych wedi cael eich dewis i fod yn rhan o banel a bydd Rheithgor yn cael ei ddewis o blith y "
-                        + "panel hwnnw. Ewch i Lys<welsh_courtname> ar <attend_date> am <attend_time>. Os oes gennych"
+                        + "panel hwnnw. Ewch i Lys <welsh_courtname> ar <attend_date> am <attend_time>. Os oes gennych"
                         + " unrhyw gwestiynau, cysylltwch â'r swyddfa rheithgor drwy ffonio <court_phone>.",
                     List.of(
                         TestData.Placeholder.ENGLISH_COURT_NAME.toPlaceholder(),
@@ -1834,7 +1834,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         + "05:00. If you have any questions, please contact the jury office on 01244 356726.",
                     "Reminder: Please attend for your Jury Service at CARMARTHEN Court on 01/01/2023 at "
                         + "05:00. If you have any questions, please contact the jury office on 01792 637000.",
-                    "Nodyn Atgoffa: Cofiwch fynychu eich Gwasanaeth Rheithgor yn LlysCAERFYRDDIN ar 01/01/2023"
+                    "Nodyn Atgoffa: Cofiwch fynychu eich Gwasanaeth Rheithgor yn Llys CAERFYRDDIN ar 01/01/2023"
                         + " am 05:00. Os oes gennych unrhyw gwestiynau, cysylltwch â'r swyddfa rheithgor drwy"
                         + " ffonio 01792 637000.",
                     Map.of(
@@ -1852,7 +1852,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         + "the jury office on 01244 356726.",
                     "You failed to attend for Jury Service at CARMARTHEN Court on 01/01/2023. Please contact "
                         + "the jury office on 01792 637000.",
-                    "Bu ichi fethu â mynychu eich Gwasanaeth Rheithgor yn LlysCAERFYRDDIN ar 01/01/2023. "
+                    "Bu ichi fethu â mynychu eich Gwasanaeth Rheithgor yn Llys CAERFYRDDIN ar 01/01/2023. "
                         + "Cysylltwch â'r Swyddfa Rheithgor drwy ffonio 01792 637000.",
                     Map.of(
                         "<attend_date>", "2023-01-01"
@@ -1873,7 +1873,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         + "service and will not be added on at the end. If you have any questions, please contact the"
                         + " jury office on 01792 637000.",
                     "Mae dyddiad mynychu eich Gwasanaeth Rheithgor wedi newid i 01/01/2023 am 05:00 yn "
-                        + "LlysCAERFYRDDIN. Mae'r dyddiau pan na fydd eich angen yn y llys dal yn ffurfio rhan o'ch "
+                        + "Llys CAERFYRDDIN. Mae'r dyddiau pan na fydd eich angen yn y llys dal yn ffurfio rhan o'ch "
                         + "gwasanaeth rheithgor ac ni fyddant yn cael eu hychwanegu ar y diwedd. Os oes gennych unrhyw "
                         + "gwestiynau, cysylltwch â'r swyddfa rheithgor drwy ffonio 01792 637000.",
                     Map.of(
@@ -1940,7 +1940,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                     "You are next required to attend for Jury Service on 03/01/2023 at 08:00 at CARMARTHEN "
                         + "Court. If you have any questions, please contact the jury office on 01792 637000.",
                     "Mae angen i chi fynychu'r llys eto ar gyfer eich Gwasanaeth Rheithgor ar 03/01/2023 "
-                        + "am 08:00 yn LlysCAERFYRDDIN. Os oes gennych unrhyw gwestiynau, cysylltwch â'r swyddfa "
+                        + "am 08:00 yn Llys CAERFYRDDIN. Os oes gennych unrhyw gwestiynau, cysylltwch â'r swyddfa "
                         + "rheithgor drwy ffonio 01792 637000.",
                     Map.of(
                         "<attend_date>", "2023-01-03",
@@ -1975,7 +1975,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                     MessageType.PLEASE_CONTACT_COURT,
                     "Please contact WARRINGTON Jury Office on 01244 356726 with regard to your jury service.",
                     "Please contact CARMARTHEN Jury Office on 01792 637000 with regard to your jury service.",
-                    "Cysylltwch â Swyddfa RheithgorCAERFYRDDIN drwy ffonio 01792 637000  ynghylch eich gwasanaeth "
+                    "Cysylltwch â Swyddfa Rheithgor CAERFYRDDIN drwy ffonio 01792 637000 ynghylch eich gwasanaeth "
                         + "rheithgor.",
                     Map.of(),
                     "Please contact",
@@ -2015,7 +2015,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         + "CARMARTHEN Court on 02/01/2023 at 15:30. If you have any questions, please "
                         + "contact the jury office on 01792 637000.",
                     "Rydych wedi cael eich dewis i fod yn rhan o banel a bydd Rheithgor yn cael ei ddewis o blith y "
-                        + "panel hwnnw. Ewch i LysCAERFYRDDIN ar 02/01/2023 am 15:30. Os oes gennych unrhyw "
+                        + "panel hwnnw. Ewch i Lys CAERFYRDDIN ar 02/01/2023 am 15:30. Os oes gennych unrhyw "
                         + "gwestiynau, cysylltwch â'r swyddfa rheithgor drwy ffonio 01792 637000.",
                     Map.of(
                         "<attend_date>", "2023-01-02",
@@ -2995,7 +2995,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         + "05:00. If you have any questions, please contact the jury office on 01244 356726.",
                     "Reminder: Please attend for your Jury Service at CARMARTHEN Court on 01/01/2023 at "
                         + "05:00. If you have any questions, please contact the jury office on 01792 637000.",
-                    "Nodyn Atgoffa: Cofiwch fynychu eich Gwasanaeth Rheithgor yn LlysCAERFYRDDIN ar 01/01/2023"
+                    "Nodyn Atgoffa: Cofiwch fynychu eich Gwasanaeth Rheithgor yn Llys CAERFYRDDIN ar 01/01/2023"
                         + " am 05:00. Os oes gennych unrhyw gwestiynau, cysylltwch â'r swyddfa rheithgor drwy"
                         + " ffonio 01792 637000.",
                     Map.of(
@@ -3010,7 +3010,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         + "the jury office on 01244 356726.",
                     "You failed to attend for Jury Service at CARMARTHEN Court on 01/01/2023. Please contact "
                         + "the jury office on 01792 637000.",
-                    "Bu ichi fethu â mynychu eich Gwasanaeth Rheithgor yn LlysCAERFYRDDIN ar 01/01/2023. "
+                    "Bu ichi fethu â mynychu eich Gwasanaeth Rheithgor yn Llys CAERFYRDDIN ar 01/01/2023. "
                         + "Cysylltwch â'r Swyddfa Rheithgor drwy ffonio 01792 637000.",
                     Map.of(
                         "<attend_date>", "2023-01-01"
@@ -3028,7 +3028,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         + "service and will not be added on at the end. If you have any questions, please contact the"
                         + " jury office on 01792 637000.",
                     "Mae dyddiad mynychu eich Gwasanaeth Rheithgor wedi newid i 01/01/2023 am 05:00 yn "
-                        + "LlysCAERFYRDDIN. Mae'r dyddiau pan na fydd eich angen yn y llys dal yn ffurfio rhan o'ch "
+                        + "Llys CAERFYRDDIN. Mae'r dyddiau pan na fydd eich angen yn y llys dal yn ffurfio rhan o'ch "
                         + "gwasanaeth rheithgor ac ni fyddant yn cael eu hychwanegu ar y diwedd. Os oes gennych unrhyw "
                         + "gwestiynau, cysylltwch â'r swyddfa rheithgor drwy ffonio 01792 637000.",
                     Map.of(
@@ -3082,7 +3082,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                     "You are next required to attend for Jury Service on 03/01/2023 at 08:00 at CARMARTHEN "
                         + "Court. If you have any questions, please contact the jury office on 01792 637000.",
                     "Mae angen i chi fynychu'r llys eto ar gyfer eich Gwasanaeth Rheithgor ar 03/01/2023 "
-                        + "am 08:00 yn LlysCAERFYRDDIN. Os oes gennych unrhyw gwestiynau, cysylltwch â'r swyddfa "
+                        + "am 08:00 yn Llys CAERFYRDDIN. Os oes gennych unrhyw gwestiynau, cysylltwch â'r swyddfa "
                         + "rheithgor drwy ffonio 01792 637000.",
                     Map.of(
                         "<attend_date>", "2023-01-03",
@@ -3111,7 +3111,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                     MessageType.PLEASE_CONTACT_COURT,
                     "Please contact WARRINGTON Jury Office on 01244 356726 with regard to your jury service.",
                     "Please contact CARMARTHEN Jury Office on 01792 637000 with regard to your jury service.",
-                    "Cysylltwch â Swyddfa RheithgorCAERFYRDDIN drwy ffonio 01792 637000  ynghylch eich gwasanaeth "
+                    "Cysylltwch â Swyddfa Rheithgor CAERFYRDDIN drwy ffonio 01792 637000 ynghylch eich gwasanaeth "
                         + "rheithgor.",
                     Map.of(),
                     MessageType.SendType.EMAIL_AND_SMS
@@ -3145,7 +3145,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         + "CARMARTHEN Court on 02/01/2023 at 15:30. If you have any questions, please "
                         + "contact the jury office on 01792 637000.",
                     "Rydych wedi cael eich dewis i fod yn rhan o banel a bydd Rheithgor yn cael ei ddewis o blith y "
-                        + "panel hwnnw. Ewch i LysCAERFYRDDIN ar 02/01/2023 am 15:30. Os oes gennych unrhyw "
+                        + "panel hwnnw. Ewch i Lys CAERFYRDDIN ar 02/01/2023 am 15:30. Os oes gennych unrhyw "
                         + "gwestiynau, cysylltwch â'r swyddfa rheithgor drwy ffonio 01792 637000.",
                     Map.of(
                         "<attend_date>", "2023-01-02",
