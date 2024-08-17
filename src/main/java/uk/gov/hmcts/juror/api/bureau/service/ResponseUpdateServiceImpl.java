@@ -18,6 +18,7 @@ import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
 import uk.gov.hmcts.juror.api.moj.domain.IContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
@@ -25,7 +26,7 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
 import uk.gov.hmcts.juror.api.moj.repository.ContactCodeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactLogRepository;
-import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
@@ -33,6 +34,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRep
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.ReasonableAdjustmentsRepository;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
+import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
 import java.lang.reflect.Field;
@@ -89,9 +91,9 @@ import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.TITLE;
 public class ResponseUpdateServiceImpl implements ResponseUpdateService {
     private final ContactCodeRepository contactCodeRepository;
     static final String HASH_SALT = "445NlwAglWA78Vh9DKbVwN5vPHsvy2kA";
-    private static final String MESSAGE = "User {} applied {} total changes to response {}";
     private static final String OTHER_1 = "Other";
-    private final JurorPoolRepository jurorRepository;
+    private final JurorRepository jurorRepository;
+    private final JurorPoolService jurorPoolService;
     private final ContactLogRepository phoneLogRepository;
     private final JurorDigitalResponseRepositoryMod responseRepository;
     private final UserRepository userRepository;
@@ -106,14 +108,14 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
     @Override
     @Transactional(readOnly = true)
     public JurorNoteDto notesByJurorNumber(final String jurorId) {
-        final JurorPool juror = jurorRepository.findByJurorJurorNumber(jurorId);
+        final Juror juror = jurorRepository.findByJurorNumber(jurorId);
 
         if (juror != null) {
-            final String notes = juror.getJuror().getNotes();
+            final String notes = juror.getNotes();
             return new JurorNoteDto(notes, comparisonHash(notes));
         } else {
-            log.error("No POOL entry found for PART_NO={}", jurorId);
-            throw new NoteNotFoundException("POOL entry not found");
+            log.error("Juror entry not found for juror number = {}", jurorId);
+            throw new NoteNotFoundException("Juror entry not found");
         }
     }
 
@@ -122,13 +124,13 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
     public void updateNote(final JurorNoteDto noteDto,
                            final String jurorId,
                            final String auditUser) {
-        final JurorPool juror = jurorRepository.findByJurorJurorNumber(jurorId);
+        final JurorPool juror = jurorPoolService.getJurorPoolFromUser(jurorId);
 
         if (juror != null) {
             if (comparisonHash(juror.getJuror().getNotes()).compareTo(noteDto.getVersion()) == 0) {
                 // hashcode matches, save changes to notes
                 juror.getJuror().setNotes(noteDto.getNotes());
-                final JurorPool updatedPool = jurorRepository.save(juror);
+                final JurorPool updatedPool = jurorPoolService.save(juror);
 
                 // JDB-2685: if no staff assigned, assign current login
                 DigitalResponse jurorResponse = responseRepository.findByJurorNumber(jurorId);
@@ -421,7 +423,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
         log.debug("Start - update response status, when legacy status changed for juror {}", jurorId);
 
         final DigitalResponse domain = responseRepository.findByJurorNumber(jurorId);
-        final JurorPool juror = jurorRepository.findByJurorJurorNumber(jurorId);
+        final JurorPool juror = jurorPoolService.getJurorPoolFromUser(jurorId);
         applyOptimisticLocking(domain, version);
 
         if (juror != null) {

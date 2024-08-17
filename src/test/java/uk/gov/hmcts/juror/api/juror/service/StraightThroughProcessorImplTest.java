@@ -103,7 +103,7 @@ public class StraightThroughProcessorImplTest {
         jurorPool = mock(JurorPool.class);
         juror = mock(Juror.class);
         given(jurorPool.getJuror()).willReturn(juror);
-        given(poolRepository.findByJurorJurorNumber(TEST_JUROR_NUMBER)).willReturn(jurorPool);
+        given(jurorPoolService.getJurorPoolFromUser(TEST_JUROR_NUMBER)).willReturn(jurorPool);
 
         given(responseInspector.getYoungestJurorAgeAllowed()).willReturn(18);
         given(responseInspector.getTooOldJurorAge()).willReturn(76);

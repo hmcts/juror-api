@@ -27,6 +27,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.JurorThirdPartyService;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
@@ -54,6 +55,7 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
     private final JurorReasonableAdjustmentRepository specialNeedsRepository;
     private final WelshCourtLocationRepository welshCourtLocationRepository;
     private final JurorResponseAuditRepositoryMod jurorResponseAuditRepositoryMod;
+    private final JurorPoolService jurorPoolService;
     private final JurorThirdPartyService jurorThirdPartyService;
 
 
@@ -105,7 +107,7 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
                 mergeResponse(jurorResponse, auditorUsername);
 
                 // JDB-2487 AC16.6: Changing to a CLOSED processingStatus, so set required "Positive Response" values
-                JurorPool jurorDetails = jurorPoolRepository.findByJurorJurorNumber(jurorNumber);
+                JurorPool jurorDetails = jurorPoolService.getJurorPoolFromUser(jurorNumber);
                 jurorDetails.getJuror().setResponded(true);
                 jurorDetails.setUserEdtq(auditorUsername);
                 jurorDetails.setStatus(RepositoryUtils.retrieveFromDatabase(IJurorStatus.RESPONDED,
@@ -145,7 +147,7 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
             log.trace("Merging response {}", originalDetails);
         }
 
-        final JurorPool jurorDetails = jurorDetailsRepository.findByJurorJurorNumber(originalDetails.getJurorNumber());
+        final JurorPool jurorDetails = jurorPoolService.getJurorPoolFromUser(originalDetails.getJurorNumber());
         if (jurorDetails == null) {
             log.error("No pool entry found for Juror {}", originalDetails.getJurorNumber());
             throw new JurorPoolEntryNotFoundException("No pool entry found");

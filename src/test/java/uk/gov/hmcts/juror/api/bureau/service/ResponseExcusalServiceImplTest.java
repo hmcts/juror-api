@@ -24,6 +24,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 
 import java.time.LocalDate;
@@ -46,31 +47,26 @@ public class ResponseExcusalServiceImplTest {
 
     @Mock
     private JurorDigitalResponseRepositoryMod jurorResponseRepository;
-
     @Mock
     private JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
-
     @Mock
     private JurorPoolRepository poolRepository;
     @Mock
     private JurorStatusRepository jurorStatusRepository;
     @Mock
     private JurorHistoryRepository partHistRepository;
-
     @Mock
     private ExcusalCodeRepository excusalCodeRepository;
-
     @Mock
     private ResponseMergeService mergeService;
-
     @Mock
     private UserRepository userRepository;
-
     @Mock
     private AssignOnUpdateService assignOnUpdateService;
-
     @Mock
     private EntityManager entityManager;
+    @Mock
+    private JurorPoolService jurorPoolService;
 
     @InjectMocks
     private ResponseExcusalServiceImpl responseExcusalService;
@@ -109,7 +105,7 @@ public class ResponseExcusalServiceImplTest {
         JurorPool poolDetails = mock(JurorPool.class);
         Juror juror = mock(Juror.class);
         when(poolDetails.getJuror()).thenReturn(juror);
-        given(poolRepository.findByJurorJurorNumber(any(String.class))).willReturn(poolDetails);
+        given(jurorPoolService.getJurorPoolFromUser(any(String.class))).willReturn(poolDetails);
 
         String excusalCode = "B";
         List<ExcusalCode> excusalCodeEntityList = new ArrayList<>();
@@ -241,7 +237,7 @@ public class ResponseExcusalServiceImplTest {
         JurorPool poolDetails = mock(JurorPool.class);
         Juror juror = mock(Juror.class);
         when(poolDetails.getJuror()).thenReturn(juror);
-        given(poolRepository.findByJurorJurorNumber(any(String.class))).willReturn(poolDetails);
+        given(jurorPoolService.getJurorPoolFromUser(any(String.class))).willReturn(poolDetails);
 
         String excusalCode = "B";
         List<ExcusalCode> excusalCodeEntityList = new ArrayList<>();

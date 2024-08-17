@@ -18,6 +18,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
+import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -42,15 +43,14 @@ public class ResponseInspectorImplTest {
 
     @Mock
     private SystemParameterRepository mockSystemParameterRepository;
-
     @Mock
     private JurorPoolRepository mockPoolRepository;
-
     @Mock
     private AppSettingService mockAppSettingService;
-
     @Mock
     private WelshCourtLocationRepository welshCourtLocationRepository;
+    @Mock
+    private JurorPoolService jurorPoolService;
 
     @InjectMocks
     private ResponseInspectorImpl inspector;
@@ -193,7 +193,7 @@ public class ResponseInspectorImplTest {
         final DigitalResponse tooYoungJuror = new DigitalResponse();
         tooYoungJuror.setJurorNumber(youngJurorNumber);
         tooYoungJuror.setDateOfBirth(hearingDate.minusYears(18).plusDays(1));
-        given(mockPoolRepository.findByJurorJurorNumber(anyString()))
+        given(jurorPoolService.getJurorPoolFromUser(anyString()))
             .willReturn(JurorPool.builder()
                 .juror(Juror.builder()
                     .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
@@ -217,7 +217,7 @@ public class ResponseInspectorImplTest {
         tooYoungJuror.setJurorNumber(youngJurorNumber);
         tooYoungJuror.setDateOfBirth(hearingDate.minusYears(18));
 
-        when(mockPoolRepository.findByJurorJurorNumber(anyString()))
+        when(jurorPoolService.getJurorPoolFromUser(anyString()))
             .thenReturn(JurorPool.builder()
                 .nextDate(hearingDate)
                 .build());
@@ -236,7 +236,7 @@ public class ResponseInspectorImplTest {
         final DigitalResponse tooYoungJuror = new DigitalResponse();
         tooYoungJuror.setJurorNumber(youngJurorNumber);
         tooYoungJuror.setDateOfBirth(hearingDate.minusYears(50));
-        given(mockPoolRepository.findByJurorJurorNumber(anyString()))
+        given(jurorPoolService.getJurorPoolFromUser(anyString()))
             .willReturn(JurorPool.builder()
                 .nextDate(hearingDate)
                 .build());
@@ -255,7 +255,7 @@ public class ResponseInspectorImplTest {
         final DigitalResponse tooYoungJuror = new DigitalResponse();
         tooYoungJuror.setJurorNumber(youngJurorNumber);
         tooYoungJuror.setDateOfBirth(hearingDate.minusYears(76));
-        given(mockPoolRepository.findByJurorJurorNumber(anyString()))
+        given(jurorPoolService.getJurorPoolFromUser(anyString()))
             .willReturn(JurorPool.builder()
                 .juror(Juror.builder().jurorNumber(TestConstants.VALID_JUROR_NUMBER).build())
                 .nextDate(hearingDate)
@@ -278,7 +278,7 @@ public class ResponseInspectorImplTest {
         tooYoungJuror.setDateOfBirth(hearingDate.minusYears(76).plusDays(1)
             .plusDays(1));
 
-        given(mockPoolRepository.findByJurorJurorNumber(anyString()))
+        given(jurorPoolService.getJurorPoolFromUser(anyString()))
             .willReturn(JurorPool.builder()
                 .juror(Juror.builder().jurorNumber(TestConstants.VALID_JUROR_NUMBER).build())
                 .nextDate(hearingDate)
@@ -519,7 +519,7 @@ public class ResponseInspectorImplTest {
         jurorResponseEnglishLanguageDefault.setJurorNumber(jurorNumber);
         jurorResponseEnglishLanguageDefault.setWelsh(true);
 
-        given(mockPoolRepository.findByJurorJurorNumber(anyString())).willReturn(pool);
+        given(jurorPoolService.getJurorPoolFromUser(anyString())).willReturn(pool);
 
         given(welshCourtLocationRepository.findByLocCode(anyString())).willReturn(welshCourt);
 
@@ -559,7 +559,7 @@ public class ResponseInspectorImplTest {
         jurorResponseEnglishLanguageDefault.setWelsh(true);
 
 
-        given(mockPoolRepository.findByJurorJurorNumber(anyString())).willReturn(pool);
+        given(jurorPoolService.getJurorPoolFromUser(anyString())).willReturn(pool);
 
         given(welshCourtLocationRepository.findByLocCode(anyString())).willReturn(null);
 

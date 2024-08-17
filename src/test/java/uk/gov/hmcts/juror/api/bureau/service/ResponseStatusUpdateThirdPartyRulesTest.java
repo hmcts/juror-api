@@ -17,6 +17,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
@@ -58,6 +59,8 @@ public class ResponseStatusUpdateThirdPartyRulesTest {
     private JurorReasonableAdjustmentRepository specialNeedsRepository;
     @Mock
     private WelshCourtLocationRepository welshCourtLocationRepository;
+    @Mock
+    private JurorPoolService jurorPoolService;
 
     @InjectMocks
     private ResponseStatusUpdateServiceImpl statusUpdateService;
@@ -92,7 +95,7 @@ public class ResponseStatusUpdateThirdPartyRulesTest {
         poolRequest = new PoolRequest();
         poolDetails.setPool(poolRequest);
         poolDetails.getJuror().setJurorNumber(JUROR_NUMBER);
-        doReturn(poolDetails).when(poolDetailsRepository).findByJurorJurorNumber(JUROR_NUMBER);
+        doReturn(poolDetails).when(jurorPoolService).getJurorPoolFromUser(JUROR_NUMBER);
     }
 
     @Test

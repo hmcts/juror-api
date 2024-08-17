@@ -3693,8 +3693,6 @@ class JurorRecordServiceTest {
         @Test
         void positiveTypical() {
             String courtOwner = "415";
-            String username = "JURY_USER";
-
             TestUtils.mockCourtUser(courtOwner);
 
             Juror juror = new Juror();

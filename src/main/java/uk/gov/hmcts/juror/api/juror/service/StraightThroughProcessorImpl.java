@@ -25,6 +25,7 @@ import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
+import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
@@ -56,6 +57,7 @@ public class StraightThroughProcessorImpl implements StraightThroughProcessor {
     private final JurorStatusRepository jurorStatusRepository;
     private final JurorHistoryService jurorHistoryService;
     private final PrintDataService printDataService;
+    private final JurorPoolService jurorPoolService;
 
     private static final String THIRD_PARTY_REASON_DECEASED = "deceased";
     private static final String MESSAGE = "Urgent response does not qualify for straight-through";
@@ -87,7 +89,7 @@ public class StraightThroughProcessorImpl implements StraightThroughProcessor {
             final DigitalResponse savedDigitalResponse =
                 jurorDigitalResponseRepository.findByJurorNumber(digitalResponse.getJurorNumber());
             final JurorPool jurorDetails =
-                jurorRepository.findByJurorJurorNumber(savedDigitalResponse.getJurorNumber());
+                jurorPoolService.getJurorPoolFromUser(savedDigitalResponse.getJurorNumber());
 
             // check the response for answers making it ineligible for straight through processing.
             // JDB-126 a. the title, first name and last name must be the same in the Juror response as they are on
@@ -275,9 +277,8 @@ public class StraightThroughProcessorImpl implements StraightThroughProcessor {
             mergeService.mergeResponse(savedDigitalResponse, AUTO_USER);
 
             // update juror entry
-            //   final Pool updatedDetails = detailsRepository.findByJurorNumber(savedDigitalResponse.getJurorNumber());
             final JurorPool updatedJurorDetails =
-                jurorRepository.findByJurorJurorNumber(savedDigitalResponse.getJurorNumber());
+                jurorPoolService.getJurorPoolFromUser(savedDigitalResponse.getJurorNumber());
             updatedJurorDetails.getJuror().setResponded(true);
             updatedJurorDetails.setUserEdtq(AUTO_USER);
             updatedJurorDetails.setStatus(RepositoryUtils.retrieveFromDatabase(IJurorStatus.RESPONDED,
@@ -327,8 +328,7 @@ public class StraightThroughProcessorImpl implements StraightThroughProcessor {
         try {
             final DigitalResponse savedDigitalResponse =
                 jurorDigitalResponseRepository.findByJurorNumber(digitalResponse.getJurorNumber());
-            final JurorPool jurorDetails =
-                jurorRepository.findByJurorJurorNumber(savedDigitalResponse.getJurorNumber());
+            final JurorPool jurorDetails = jurorPoolService.getJurorPoolFromUser(savedDigitalResponse.getJurorNumber());
 
             // check the response for answers making it ineligible for straight through processing.
             //JDB-73 a. the response must have been submitted by a third party
