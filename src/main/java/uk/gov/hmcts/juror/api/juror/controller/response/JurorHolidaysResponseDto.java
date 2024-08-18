@@ -64,7 +64,7 @@ public class JurorHolidaysResponseDto implements Serializable {
             return publicHolidaysDates.stream()
                 .map(holiday -> {
                     String locCode = null;
-                    if(holiday.getCourtLocation() != null){
+                    if (holiday.getCourtLocation() != null) {
                         locCode = holiday.getCourtLocation().getLocCode();
                     }
                     return Holidays.builder()
