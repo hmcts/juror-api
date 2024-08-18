@@ -856,8 +856,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         final String owner = payload.getOwner();
 
-        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolRecord(
-            jurorPoolRepository, jurorPoolService, jurorNumber);
+        JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
 
         // Bureau should always be able to read record
         JurorPoolUtils.checkReadAccessForCurrentUser(jurorPool, owner);
@@ -1037,8 +1036,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         final String contactLogNotes = WordUtils.capitalize(requestDto.getDecision().getDescription())
             + " the juror's name change. " + requestDto.getNotes();
 
-        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolRecord(
-            jurorPoolRepository, jurorPoolService, jurorNumber);
+        JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
         Juror juror = jurorPool.getJuror();
         JurorUtils.checkOwnershipForCurrentUser(juror, payload.getOwner());
 
@@ -1089,8 +1087,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     @Transactional
     public PoliceCheckStatusDto updatePncStatus(final String jurorNumber, final PoliceCheck policeCheck) {
         log.info("Attempting to update PNC check status for juror {} to be {}", jurorNumber, policeCheck);
-        final JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolRecord(
-            jurorPoolRepository, jurorPoolService, jurorNumber);
+        final JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
         final Juror juror = jurorPool.getJuror();
 
         final PoliceCheck oldPoliceCheckValue = juror.getPoliceCheck();

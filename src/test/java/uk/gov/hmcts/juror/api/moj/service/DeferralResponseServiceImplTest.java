@@ -33,8 +33,8 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -145,8 +145,8 @@ public class DeferralResponseServiceImplTest {
 
         deferralResponseService.respondToDeferralRequest(payload, deferralRequestDto);
 
-        verify(jurorPoolRepository, times(1))
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), anyBoolean());
+        verify(jurorPoolService, times(1))
+            .getJurorPoolFromUser(any());
 
         verify(jurorPoolRepository, times(1)).save(any());
         verify(jurorHistoryRepository, times(2)).save(any());
@@ -167,8 +167,8 @@ public class DeferralResponseServiceImplTest {
                 deferralResponseService.respondToDeferralRequest(payload, deferralRequestDto);
             });
 
-        verify(jurorPoolRepository, times(1))
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), anyBoolean());
+        verify(jurorPoolService, times(1))
+            .getJurorPoolFromUser(any());
 
         verify(jurorPoolRepository, never()).save(any());
         verify(jurorHistoryRepository, never()).save(any());
@@ -205,11 +205,13 @@ public class DeferralResponseServiceImplTest {
 
         DeferralRequestDto deferralRequestDto = createTestDeferralRequestDto(jurorNumber);
 
+        doThrow(MojException.NotFound.class).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+
         Assertions.assertThatExceptionOfType(MojException.NotFound.class)
             .isThrownBy(() -> deferralResponseService.respondToDeferralRequest(payload, deferralRequestDto));
 
-        verify(jurorPoolRepository, times(1))
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), anyBoolean());
+        verify(jurorPoolService, times(1))
+            .getJurorPoolFromUser(any());
 
 
         verify(jurorPoolRepository, never()).save(any());

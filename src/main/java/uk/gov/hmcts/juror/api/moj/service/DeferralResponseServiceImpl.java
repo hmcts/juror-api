@@ -64,8 +64,7 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
         final String jurorNumber = deferralRequestDto.getJurorNumber();
         final String owner = payload.getOwner();
 
-        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolRecord(
-            jurorPoolRepository, jurorPoolService, jurorNumber);
+        JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, owner);
 
         checkExcusalCodeIsValid(deferralRequestDto.getDeferralReason());

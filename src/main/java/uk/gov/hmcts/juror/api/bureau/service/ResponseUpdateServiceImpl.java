@@ -24,6 +24,7 @@ import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.ContactCodeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactLogRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
@@ -115,7 +116,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
             return new JurorNoteDto(notes, comparisonHash(notes));
         } else {
             log.error("Juror entry not found for juror number = {}", jurorId);
-            throw new NoteNotFoundException("Juror entry not found");
+            throw new MojException.NotFound("Juror entry not found",null);
         }
     }
 
@@ -126,40 +127,35 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
                            final String auditUser) {
         final JurorPool juror = jurorPoolService.getJurorPoolFromUser(jurorId);
 
-        if (juror != null) {
-            if (comparisonHash(juror.getJuror().getNotes()).compareTo(noteDto.getVersion()) == 0) {
-                // hashcode matches, save changes to notes
-                juror.getJuror().setNotes(noteDto.getNotes());
-                final JurorPool updatedPool = jurorPoolService.save(juror);
+        if (comparisonHash(juror.getJuror().getNotes()).compareTo(noteDto.getVersion()) == 0) {
+            // hashcode matches, save changes to notes
+            juror.getJuror().setNotes(noteDto.getNotes());
+            final JurorPool updatedPool = jurorPoolService.save(juror);
 
-                // JDB-2685: if no staff assigned, assign current login
-                DigitalResponse jurorResponse = responseRepository.findByJurorNumber(jurorId);
-                if (null == jurorResponse.getStaff()) {
-                    assignOnUpdateService.assignToCurrentLogin(jurorResponse, auditUser);
-                }
-
-                // 2. persist response
-                if (log.isTraceEnabled()) {
-                    log.trace("Persisting staff assignment update for response: {}", jurorResponse);
-                }
-                responseRepository.save(jurorResponse);
-
-                if (log.isDebugEnabled()) {
-                    log.debug("Updated note for juror {}: {}", jurorId, updatedPool.getJuror().getNotes());
-                }
-
-                // audit the change to the notes column
-                jurorHistoryService.createPoolEditHistory(updatedPool);
-            } else {
-                log.debug("Note failed hash comparison.");
-                if (log.isTraceEnabled()) {
-                    log.trace("UI={} DB={}", noteDto.getVersion(), comparisonHash(juror.getJuror().getNotes()));
-                }
-                throw new NoteComparisonFailureException();
+            // JDB-2685: if no staff assigned, assign current login
+            DigitalResponse jurorResponse = responseRepository.findByJurorNumber(jurorId);
+            if (null == jurorResponse.getStaff()) {
+                assignOnUpdateService.assignToCurrentLogin(jurorResponse, auditUser);
             }
+
+            // 2. persist response
+            if (log.isTraceEnabled()) {
+                log.trace("Persisting staff assignment update for response: {}", jurorResponse);
+            }
+            responseRepository.save(jurorResponse);
+
+            if (log.isDebugEnabled()) {
+                log.debug("Updated note for juror {}: {}", jurorId, updatedPool.getJuror().getNotes());
+            }
+
+            // audit the change to the notes column
+            jurorHistoryService.createPoolEditHistory(updatedPool);
         } else {
-            log.warn("No Juror entry found for PART_NO={}", jurorId);
-            throw new NoteNotFoundException("Juror entry not found");
+            log.debug("Note failed hash comparison.");
+            if (log.isTraceEnabled()) {
+                log.trace("UI={} DB={}", noteDto.getVersion(), comparisonHash(juror.getJuror().getNotes()));
+            }
+            throw new NoteComparisonFailureException();
         }
     }
 
@@ -763,7 +759,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
     /**
      * Save changelog and juror response to the database catching and wrapping a optimistic locking exception.
      *
-     * @param domain    Updated DETATCHED juror response entity
+     * @param domain Updated DETATCHED juror response entity
      */
     private void saveUpdatesOptimistically(final DigitalResponse domain)
         throws BureauOptimisticLockingException {

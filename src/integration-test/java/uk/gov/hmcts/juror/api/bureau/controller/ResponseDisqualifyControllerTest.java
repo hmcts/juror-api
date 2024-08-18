@@ -22,7 +22,6 @@ import uk.gov.hmcts.juror.api.bureau.controller.ResponseDisqualifyController.Dis
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseDisqualifyController.DisqualifyReasonsDto;
 import uk.gov.hmcts.juror.api.bureau.domain.DisCode;
 import uk.gov.hmcts.juror.api.bureau.domain.IPoolStatus;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.domain.DisqualifiedCode;
 
 import java.net.URI;
@@ -57,12 +56,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
     @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False positive
     public void testGDisqualifyReasons_happy() {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
-            .login(loginName)
-            .owner("400")
-            .build())
-        );
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwtBureau(loginName));
 
         ResponseEntity<DisqualifyReasonsDto> responseEntity = template.exchange(new RequestEntity<Void>(httpHeaders,
             HttpMethod.GET, URI.create("/api/v1/bureau/juror/disqualify")), DisqualifyReasonsDto.class);
@@ -90,12 +84,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
     })
     public void disqualifyJuror_happy() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
-            .login(loginName)
-            .owner("400")
-            .build())
-        );
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwtBureau(loginName));
 
         DisqualifiedCode disqualifyCodeEntity = new DisqualifiedCode("B", "On Bail", true);
         DisqualifyCodeDto disqualifyDto =
@@ -213,12 +202,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
     })
     public void disqualifyJuror_happy_ageDisqualification() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
-            .login(loginName)
-            .owner("400")
-            .build())
-        );
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwtBureau(loginName));
 
         DisqualifiedCode disqualifyCodeEntity = new DisqualifiedCode("A", "Less Than Eighteen Years of Age or"
             + " Over 70", true);
@@ -305,12 +289,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
     })
     public void disqualifyJuror_unhappy_invalidDisqualifyCode() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
-            .login(loginName)
-            .owner("400")
-            .build())
-        );
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwtBureau(loginName));
 
         DisqualifiedCode disqualifyCodeEntity = new DisqualifiedCode("Z", "Zinvalid code", true);
         DisqualifyCodeDto disqualifyDto = new DisqualifyCodeDto(disqualifyCodeEntity);
@@ -391,12 +370,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
     })
     public void disqualifyJuror_unhappy_jurorNotFound() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
-            .login(loginName)
-            .owner("400")
-            .build())
-        );
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwtBureau(loginName));
 
         DisqualifiedCode disqualifyCodeEntity = new DisqualifiedCode("B", "On Bail", true);
         DisqualifyCodeDto disqualifyDto = new DisqualifyCodeDto(disqualifyCodeEntity);
@@ -471,12 +445,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
     })
     public void disqualifyJuror_unhappy_incorrectVersion() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
-            .login(loginName)
-            .owner("400")
-            .build())
-        );
+        httpHeaders.set(HttpHeaders.AUTHORIZATION,createJwtBureau(loginName));
 
         DisqualifiedCode disqualifyCodeEntity = new DisqualifiedCode("B", "On Bail", true);
         DisqualifyCodeDto disqualifyDto = new DisqualifyCodeDto(disqualifyCodeEntity);
@@ -551,12 +520,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
     })
     public void disqualifyJuror_unhappy_nullVersion() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
-            .login(loginName)
-            .owner("400")
-            .build())
-        );
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwtBureau(loginName));
 
         DisqualifiedCode disqualifyCodeEntity = new DisqualifiedCode("B", "On Bail", true);
         DisqualifyCodeDto disqualifyDto = new DisqualifyCodeDto(disqualifyCodeEntity);
