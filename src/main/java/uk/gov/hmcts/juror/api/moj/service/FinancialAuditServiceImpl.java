@@ -3,12 +3,10 @@ package uk.gov.hmcts.juror.api.moj.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.history.Revision;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetailsAppearances;
-import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
@@ -40,16 +38,13 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
                                                             String courtLocationCode,
                                                             FinancialAuditDetails.Type type,
                                                             List<Appearance> appearances) {
-        Revision<Long, Juror> jurorRevision = revisionService.getLatestJurorRevision(jurorNumber);
-
-
         // create a single financial audit details object with a new audit number generated for this batch of expenses
         FinancialAuditDetails auditDetails = FinancialAuditDetails.builder()
             .createdBy(userRepository.findByUsername(SecurityUtil.getActiveLogin()))
             .createdOn(LocalDateTime.now(clock))
             .type(type)
             .jurorNumber(jurorNumber)
-            .jurorRevision(jurorRevision.getRequiredRevisionNumber())
+            .jurorRevision(revisionService.getLatestJurorRevisionNumber(jurorNumber))
             .locCode(courtLocationCode)
             .courtLocationRevision(revisionService.getLatestCourtRevisionNumber(courtLocationCode))
             .build();
