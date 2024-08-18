@@ -27,9 +27,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
-import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
-import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -45,7 +43,6 @@ import java.util.Objects;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateService, ResponseMergeService {
     private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
-    private final JurorResponseAuditRepositoryMod auditRepository;
     private final JurorPoolRepository jurorDetailsRepository;
     private final JurorStatusRepository jurorStatusRepository;
     private final JurorHistoryRepository partHistRepository;
@@ -166,38 +163,25 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
             specialNeedsByJurorNumber.size()
         );
 
-        if (specialNeedsByJurorNumber != null) {
-            //if multiple set need to M
-            if (specialNeedsByJurorNumber.size() > 1) {
-                jurorDetails.getJuror().setReasonableAdjustmentCode("M");
-                jurorDetails.getJuror()
-                    .setReasonableAdjustmentMessage(
-                        DataUtils.trimToLength(
-                            specialNeedsByJurorNumber
-                                .stream()
-                                .reduce(
-                                    "",
-                                    (acc, item) -> acc + item.getReasonableAdjustmentDetail() + ", ",
-                                    String::concat
-                                ).trim(),
-                            ValidationConstants.REASONABLE_ADJUSTMENT_MESSAGE_LENGTH_MAX));
-            } else if (specialNeedsByJurorNumber.size() == 1
-                && specialNeedsByJurorNumber.get(0) != null) {
-                jurorDetails.getJuror()
-                    .setReasonableAdjustmentCode(specialNeedsByJurorNumber.get(0).getReasonableAdjustment().getCode());
-                jurorDetails.getJuror()
-                    .setReasonableAdjustmentMessage(specialNeedsByJurorNumber.get(0).getReasonableAdjustmentDetail());
-            }
-
-            log.debug("Merging special need information  for juror {}, Special need {}", jurorDetails.getJurorNumber(),
-                //   poolDetails.getSpecialNeed()
-                jurorDetails.getJuror().getReasonableAdjustmentMessage()
-            );
-
-            jurorDetailsRepository.save(jurorDetails);// save the updated pool table data
-
-            log.debug("Merged special need information  for juror {}", jurorDetails.getJurorNumber());
+        //if multiple set need to M
+        if (specialNeedsByJurorNumber.size() > 1) {
+            jurorDetails.getJuror().setReasonableAdjustmentCode("M");
+        } else if (specialNeedsByJurorNumber.size() == 1
+            && specialNeedsByJurorNumber.get(0) != null) {
+            jurorDetails.getJuror()
+                .setReasonableAdjustmentCode(specialNeedsByJurorNumber.get(0).getReasonableAdjustment().getCode());
         }
+        jurorDetails.getJuror()
+            .setReasonableAdjustmentMessage(updatedDetails.getReasonableAdjustmentsArrangements());
+
+        log.debug("Merging special need information  for juror {}, Special need {}", jurorDetails.getJurorNumber(),
+            //   poolDetails.getSpecialNeed()
+            jurorDetails.getJuror().getReasonableAdjustmentMessage()
+        );
+
+        jurorDetailsRepository.save(jurorDetails);// save the updated pool table data
+
+        log.debug("Merged special need information  for juror {}", jurorDetails.getJurorNumber());
 
         if ("deceased".equalsIgnoreCase(originalDetails.getThirdPartyReason())) {
             log.info("Third party deceased flow.");

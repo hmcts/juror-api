@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -34,6 +35,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRep
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAuditChangeService;
+import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseService;
 
 import java.text.ParseException;
 import java.time.LocalDate;
@@ -54,6 +56,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
@@ -84,9 +87,18 @@ public class SummonsReplyStatusUpdateServiceImplTest {
     private JurorRecordService jurorRecordService;
     @Mock
     private JurorAuditChangeService jurorAuditChangeService;
+    @Mock
+    private JurorResponseService jurorResponseService;
 
     @InjectMocks
     private SummonsReplyStatusUpdateServiceImpl summonsReplyStatusUpdateService;
+
+    @Before
+    public void setUp() {
+        when(jurorResponseService.getCommonJurorResponseOptional(anyString()))
+            .thenReturn(Optional.empty());
+        summonsReplyStatusUpdateService.jurorResponseService = jurorResponseService;
+    }
 
     //Interface method: updateJurorResponseStatus
     @Test
