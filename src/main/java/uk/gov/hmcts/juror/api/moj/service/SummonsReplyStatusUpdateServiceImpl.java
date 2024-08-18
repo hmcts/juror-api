@@ -1,12 +1,11 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
 import jakarta.persistence.EntityManager;
-import jakarta.validation.constraints.NotNull;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,10 +34,10 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRep
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAuditChangeService;
+import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseService;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
-import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -52,34 +51,17 @@ import java.util.Map;
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 @SuppressWarnings("PMD.CyclomaticComplexity")
 public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUpdateService, SummonsReplyMergeService {
-    public static final String COPY_RESPONSE_TO_GENERIC_JUROR_RESPONSE_POJO = "Juror: {}. Copying properties from {} "
-        + "to a generic juror response pojo";
-
-    @NonNull
     private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
-    @NotNull
     private final JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository;
-    @NonNull
-    private final JurorResponseAuditRepositoryMod auditRepository;
-    @NonNull
     private final AssignOnUpdateServiceMod assignOnUpdateService;
-    @NotNull
     private final EntityManager entityManager;
-    @NonNull
     private final JurorRepository jurorRepository;
-    @NonNull
     private final JurorPoolRepository jurorPoolRepository;
-    @NonNull
     private final JurorStatusRepository jurorStatusRepository;
-    @NonNull
     private final JurorHistoryRepository jurorHistoryRepository;
-    @NonNull
     private final JurorReasonableAdjustmentRepository jurorReasonableAdjustmentsRepository;
-    @NonNull
     private final WelshCourtLocationRepository welshCourtLocationRepository;
-    @NonNull
     private final JurorRecordService jurorRecordService;
-    @NonNull
     private final JurorAuditChangeService jurorAuditChangeService;
 
     private static final String TITLE = "title";
@@ -88,11 +70,10 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
     private static final String PHONE_NO = "phoneNumber";
     private static final String ALT_PHONE_NO = "altPhoneNumber";
     private static final String EMAIL = "email";
-
-    private static final String ADDRESS = "address";
-
-    private static final String POSTCODE = "postcode";
     private final JurorResponseAuditRepositoryMod jurorResponseAuditRepositoryMod;
+    @Autowired
+    @Lazy
+    JurorResponseService jurorResponseService;
 
     /**
      * Update the processing status of a Juror response within Juror Digital.
@@ -434,8 +415,9 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
         } else if (reasonableAdjustments.size() == 1 && reasonableAdjustments.get(0) != null) {
             juror.setReasonableAdjustmentCode(reasonableAdjustments.get(0).getReasonableAdjustment().getCode());
         }
-        juror
-            .setReasonableAdjustmentMessage(juror.getJurorResponse().getReasonableAdjustmentsArrangements());
+        jurorResponseService.getCommonJurorResponseOptional(jurorNumber)
+            .ifPresent(abstractResponse ->
+                juror.setReasonableAdjustmentMessage(abstractResponse.getReasonableAdjustmentsArrangements()));
         jurorPoolRepository.save(jurorPool);
         log.trace("Juror: {}. Exit mergeReasonableAdjustments", jurorNumber);
     }

@@ -45,7 +45,6 @@ import java.util.Objects;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateService, ResponseMergeService {
     private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
-    private final JurorResponseAuditRepositoryMod auditRepository;
     private final JurorPoolRepository jurorDetailsRepository;
     private final JurorStatusRepository jurorStatusRepository;
     private final JurorHistoryRepository partHistRepository;
@@ -166,27 +165,25 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
             specialNeedsByJurorNumber.size()
         );
 
-        if (specialNeedsByJurorNumber != null) {
-            //if multiple set need to M
-            if (specialNeedsByJurorNumber.size() > 1) {
-                jurorDetails.getJuror().setReasonableAdjustmentCode("M");
-            } else if (specialNeedsByJurorNumber.size() == 1
-                && specialNeedsByJurorNumber.get(0) != null) {
-                jurorDetails.getJuror()
-                    .setReasonableAdjustmentCode(specialNeedsByJurorNumber.get(0).getReasonableAdjustment().getCode());
-            }
+        //if multiple set need to M
+        if (specialNeedsByJurorNumber.size() > 1) {
+            jurorDetails.getJuror().setReasonableAdjustmentCode("M");
+        } else if (specialNeedsByJurorNumber.size() == 1
+            && specialNeedsByJurorNumber.get(0) != null) {
             jurorDetails.getJuror()
-                .setReasonableAdjustmentMessage(jurorDetails.getJuror().getJurorResponse().getReasonableAdjustmentsArrangements());
-
-            log.debug("Merging special need information  for juror {}, Special need {}", jurorDetails.getJurorNumber(),
-                //   poolDetails.getSpecialNeed()
-                jurorDetails.getJuror().getReasonableAdjustmentMessage()
-            );
-
-            jurorDetailsRepository.save(jurorDetails);// save the updated pool table data
-
-            log.debug("Merged special need information  for juror {}", jurorDetails.getJurorNumber());
+                .setReasonableAdjustmentCode(specialNeedsByJurorNumber.get(0).getReasonableAdjustment().getCode());
         }
+        jurorDetails.getJuror()
+            .setReasonableAdjustmentMessage(updatedDetails.getReasonableAdjustmentsArrangements());
+
+        log.debug("Merging special need information  for juror {}, Special need {}", jurorDetails.getJurorNumber(),
+            //   poolDetails.getSpecialNeed()
+            jurorDetails.getJuror().getReasonableAdjustmentMessage()
+        );
+
+        jurorDetailsRepository.save(jurorDetails);// save the updated pool table data
+
+        log.debug("Merged special need information  for juror {}", jurorDetails.getJurorNumber());
 
         if ("deceased".equalsIgnoreCase(originalDetails.getThirdPartyReason())) {
             log.info("Third party deceased flow.");
