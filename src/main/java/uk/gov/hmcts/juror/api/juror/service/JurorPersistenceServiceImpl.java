@@ -47,8 +47,8 @@ public class JurorPersistenceServiceImpl implements JurorPersistenceService {
                 sendNotificationResponse(savedResponse, NotifyTemplateType.STRAIGHT_THROUGH);
                 return Boolean.TRUE;// prevent further processing of straight through due to success.
             } catch (StraightThroughProcessingServiceException stpse) {
-                log.info("Failed to process Juror {} Response as a straight through acceptance: {}",
-                    savedResponse.getJurorNumber(), stpse
+                log.info("Failed to process Juror {} Response as a straight through acceptance: {} - {}",
+                    savedResponse.getJurorNumber(), stpse.getClass().getSimpleName(), stpse.getMessage()
                 );
             }
         }
@@ -64,8 +64,8 @@ public class JurorPersistenceServiceImpl implements JurorPersistenceService {
                 sendNotificationResponse(savedResponse, NotifyTemplateType.EXCUSAL_DECEASED);
                 return Boolean.TRUE;// prevent further processing of straight through due to success.
             } catch (StraightThroughProcessingServiceException stpse) {
-                log.info("Failed to process Juror {} Response as a straight-through deceased-excusal: {}",
-                    savedResponse.getJurorNumber(), stpse
+                log.info("Failed to process Juror {} Response as a straight-through deceased-excusal: {} - {}",
+                    savedResponse.getJurorNumber(), stpse.getClass().getSimpleName(), stpse.getMessage()
                 );
             }
         }
@@ -81,8 +81,8 @@ public class JurorPersistenceServiceImpl implements JurorPersistenceService {
                 sendNotificationResponse(savedResponse, NotifyTemplateType.DISQUALIFICATION_AGE);
                 return Boolean.TRUE;// prevent further processing of straight through due to success.
             } catch (StraightThroughProcessingServiceException stpse) {
-                log.info("Failed to process Juror {} Response as a straight-through age-excusal: {}",
-                    savedResponse.getJurorNumber(), stpse
+                log.info("Failed to process Juror {} Response as a straight-through age-excusal: {} - {}",
+                    savedResponse.getJurorNumber(), stpse.getClass().getSimpleName(), stpse.getMessage()
                 );
             }
         }
@@ -105,7 +105,7 @@ public class JurorPersistenceServiceImpl implements JurorPersistenceService {
         try {
             jurorNotificationService.sendResponseReceipt(savedResponse, notifyTemplateType);
         } catch (Exception e) {
-            log.warn("Could not send receipt for juror {} response! {}", savedResponse.getJurorNumber(), e);
+            log.warn("Could not send receipt for juror {} response!", savedResponse.getJurorNumber(), e);
         }
     }
 
@@ -133,7 +133,7 @@ public class JurorPersistenceServiceImpl implements JurorPersistenceService {
                 return true;
             }
         } catch (Exception e) {
-            log.warn("Failed to query application setting for Straight Through {} Processing: {}",
+            log.warn("Failed to query application setting for Straight Through {} Processing:",
                 straightThroughType.getReadableName(), e
             );
             return false;
