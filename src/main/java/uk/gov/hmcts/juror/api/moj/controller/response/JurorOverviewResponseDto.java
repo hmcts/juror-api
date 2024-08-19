@@ -15,6 +15,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
+import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.IdCheckCodeEnum;
@@ -121,8 +122,14 @@ public class JurorOverviewResponseDto {
 
         if (todayAppearance.isPresent() && todayAppearance.get().getTimeIn() != null) {
             this.checkedInTodayTime = todayAppearance.get().getTimeIn();
-            this.location = getLocation(todayAppearance.get(), panelRepository, jurorPool);
         }
+
+        if (todayAppearance.isPresent() && todayAppearance.get().getTimeOut() != null) {
+            this.location = null;
+        } else {
+            this.location = getLocationFromPanel(panelRepository, jurorPool);
+        }
+
 
         this.attendances = appearanceList.stream()
             .filter(appearance -> !AttendanceType.ABSENT.equals(appearance.getAttendanceType()))
@@ -151,19 +158,17 @@ public class JurorOverviewResponseDto {
     }
 
     @JsonIgnore
-    private String getLocation(Appearance appearance, PanelRepository panelRepository, JurorPool jurorPool) {
-        if (appearance.getTimeOut() != null) {
-            return null;
-        }
-        return Optional.ofNullable(appearance.getTrialNumber())
-            .flatMap(trialNumber -> Optional.ofNullable(panelRepository
-                    .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumber(
-                        trialNumber,
-                        jurorPool.getCourt().getLocCode(),
-                        jurorPool.getJurorNumber()))
-                .map(panel -> panel.getTrial().getCourtroom().getDescription()))
+    private String getLocationFromPanel(PanelRepository panelRepository, JurorPool jurorPool) {
+        return getActivePanel(panelRepository, jurorPool)
+            .map(panel -> panel.getTrial().getCourtroom().getDescription())
             .orElse(Optional.ofNullable(jurorPool.getCourt().getAssemblyRoom())
-                .map(Courtroom::getDescription)
-                .orElse(null));
+            .map(Courtroom::getDescription)
+            .orElse(null));
+    }
+
+    private Optional<Panel> getActivePanel(PanelRepository panelRepository, JurorPool jurorPool) {
+        return Optional.ofNullable(panelRepository.findActivePanelByCourtGroup(
+            SecurityUtil.getCourts(),
+            jurorPool.getJurorNumber()));
     }
 }
