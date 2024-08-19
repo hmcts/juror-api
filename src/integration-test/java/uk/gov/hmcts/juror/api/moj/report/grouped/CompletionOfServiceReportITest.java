@@ -66,7 +66,7 @@ class CompletionOfServiceReportITest extends AbstractGroupedReportControllerITes
         testBuilder()
             .triggerValid()
             .responseConsumer(this::verifyAndRemoveReportCreated)
-            .assertEquals(createResponse("CHESTER (415)", 7,
+            .assertEquals(createResponse("CHESTER (415)", 8,
                 true));
     }
 
@@ -184,6 +184,11 @@ class CompletionOfServiceReportITest extends AbstractGroupedReportControllerITes
                         .add(LAST_NAME_KEY, "LASTNAMEFIVE")
                         .add(COMPLETION_DATE_KEY, "2023-01-30")))
                 .add("416220902,CROWN COURT", List.of(
+                    new ReportLinkedMap<>()
+                        .add(JUROR_NUMBER_KEY, "415000004")
+                        .add(FIRST_NAME_KEY, "FIRSTNAMEFOUR")
+                        .add(LAST_NAME_KEY, "LASTNAMEFOUR")
+                        .add(COMPLETION_DATE_KEY, "2023-01-30"),
                     new ReportLinkedMap<String, Object>()
                         .add(JUROR_NUMBER_KEY, "415000006")
                         .add(FIRST_NAME_KEY, "FIRSTNAMESIX")
