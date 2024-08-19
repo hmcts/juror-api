@@ -405,57 +405,62 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
     private void mergeThirdPartyDetails(AbstractJurorResponse abstractJurorResponse, Juror juror) {
         if (StringUtils.isNotBlank(abstractJurorResponse.getThirdPartyReason())
             || StringUtils.isNotBlank(abstractJurorResponse.getRelationship())) {
-            jurorThirdPartyService.createOrUpdateThirdParty(juror, new JurorThirdPartyService.ThirdPartyUpdateDto() {
-                @Override
-                public String getOtherReason() {
-                    return null;
-                }
+            if (abstractJurorResponse instanceof DigitalResponse digitalResponse) {
+                jurorThirdPartyService.createOrUpdateThirdParty(juror, digitalResponse);
+            } else {
+                jurorThirdPartyService.createOrUpdateThirdParty(juror,
+                    new JurorThirdPartyService.ThirdPartyUpdateDto() {
+                        @Override
+                        public String getOtherReason() {
+                            return null;
+                        }
 
-                @Override
-                public String getReason() {
-                    return abstractJurorResponse.getThirdPartyReason();
-                }
+                        @Override
+                        public String getReason() {
+                            return abstractJurorResponse.getThirdPartyReason();
+                        }
 
-                @Override
-                public String getEmailAddress() {
-                    return null;
-                }
+                        @Override
+                        public String getEmailAddress() {
+                            return null;
+                        }
 
-                @Override
-                public String getOtherPhone() {
-                    return null;
-                }
+                        @Override
+                        public String getOtherPhone() {
+                            return null;
+                        }
 
-                @Override
-                public String getMainPhone() {
-                    return null;
-                }
+                        @Override
+                        public String getMainPhone() {
+                            return null;
+                        }
 
-                @Override
-                public String getRelationship() {
-                    return abstractJurorResponse.getRelationship();
-                }
+                        @Override
+                        public String getRelationship() {
+                            return abstractJurorResponse.getRelationship();
+                        }
 
-                @Override
-                public String getLastName() {
-                    return null;
-                }
+                        @Override
+                        public String getLastName() {
+                            return null;
+                        }
 
-                @Override
-                public String getFirstName() {
-                    return null;
-                }
+                        @Override
+                        public String getFirstName() {
+                            return null;
+                        }
 
-                @Override
-                public boolean isContactJurorByEmail() {
-                    return true;
-                }
+                        @Override
+                        public boolean isContactJurorByEmail() {
+                            return true;
+                        }
 
-                @Override
-                public boolean isContactJurorByPhone() {
-                    return true;
-                }
-            });
+                        @Override
+                        public boolean isContactJurorByPhone() {
+                            return true;
+                        }
+                    });
+            }
         }
     }
 
