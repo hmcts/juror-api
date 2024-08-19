@@ -125,8 +125,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
         log.debug("Printing letter for juror number {} with form code {}", letter.getJurorNumber(),
             letter.getFormCode());
 
-        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolRecord(
-            jurorPoolRepository, jurorPoolService, letter.getJurorNumber());
+        JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(letter.getJurorNumber());
 
         BiConsumer<PrintDataService, JurorPool> letterPrinter = formCode.getLetterPrinter();
         if (letterPrinter == null) {
@@ -144,8 +143,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
         request.getLetters().forEach(letter -> {
             FormCode formCode = FormCode.getFormCode(letter.getFormCode());
 
-            JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolRecord(
-                jurorPoolRepository, jurorPoolService, letter.getJurorNumber());
+            JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(letter.getJurorNumber());
 
             JurorStatus jurorStatus = RepositoryUtils.retrieveFromDatabase(
                 formCode.getJurorStatus(), jurorStatusRepository);
@@ -301,8 +299,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
         if (FormCode.ENG_SUMMONS_REMINDER.getCode().equals(letter.getFormCode())
             || FormCode.BI_SUMMONS_REMINDER.getCode().equals(letter.getFormCode())) {
 
-            JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolRecord(
-                jurorPoolRepository, jurorPoolService, letter.getJurorNumber());
+            JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(letter.getJurorNumber());
 
             jurorPool.setReminderSent(true);
             if (Set.of("5228", "5228C").contains(letter.getFormCode())) {

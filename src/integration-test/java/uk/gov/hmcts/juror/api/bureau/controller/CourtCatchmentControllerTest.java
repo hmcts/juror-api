@@ -20,7 +20,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.SpringBootErrorResponse;
 import uk.gov.hmcts.juror.api.bureau.controller.response.CourtCatchmentStatusDto;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 
 import java.net.URI;
 import java.util.Collections;
@@ -55,11 +54,7 @@ class CourtCatchmentControllerTest extends AbstractIntegrationTest {
     @Sql("/db/standing_data.sql")
     @Sql("/db/BureauResponseCourtCatchmentController.sql")
     void courtCatchmentChanged() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .login("ncrawford")
-            .owner("400")
-            .build());
+        final String bureauJwt = createJwtBureau("ncrawford");
 
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -93,11 +88,7 @@ class CourtCatchmentControllerTest extends AbstractIntegrationTest {
     @Sql("/db/standing_data.sql")
     @Sql("/db/BureauResponseCourtCatchmentController.sql")
     void courtCatchmentUnchanged() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .login("ncrawford")
-            .owner("400")
-            .build());
+        final String bureauJwt = createJwtBureau("ncrawford");
 
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -130,11 +121,7 @@ class CourtCatchmentControllerTest extends AbstractIntegrationTest {
     @Sql("/db/standing_data.sql")
     @Sql("/db/BureauResponseCourtCatchmentController_Unhappy.sql")
     void courtCatchmentLocCodeNotFoundUnhappy() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .login("ncrawford")
-            .owner("400")
-            .build());
+        final String bureauJwt = createJwtBureau("ncrawford");
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 

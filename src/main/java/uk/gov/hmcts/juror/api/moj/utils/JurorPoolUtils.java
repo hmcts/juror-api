@@ -9,7 +9,6 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.exception.JurorRecordException;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
-import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -137,7 +136,7 @@ public final class JurorPoolUtils {
      *                                                      String jurorNumber)
      */
     @Deprecated(forRemoval = true)
-    public static JurorPool getLatestActiveJurorPoolRecord(JurorPoolRepository jurorPoolRepository,
+    private static JurorPool getLatestActiveJurorPoolRecord(JurorPoolRepository jurorPoolRepository,
                                                            String jurorNumber) {
         log.debug("Retrieving active juror records for juror number {}", jurorNumber);
         List<JurorPool> jurorPools =
@@ -150,15 +149,6 @@ public final class JurorPoolUtils {
 
         log.debug("{} records retrieved for juror number {}", jurorPools.size(), jurorNumber);
         return jurorPools.get(0);
-    }
-
-    public static JurorPool getActiveJurorPoolRecord(JurorPoolRepository jurorPoolRepository,
-                                                     JurorPoolService jurorPoolService,
-                                                     String jurorNumber) {
-        if (!SecurityUtil.hasBureauJwtPayload() || SecurityUtil.isBureau() || SecurityUtil.isSystem()) {
-            return getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
-        }
-        return jurorPoolService.getJurorPoolFromUser(jurorNumber);
     }
 
     /**

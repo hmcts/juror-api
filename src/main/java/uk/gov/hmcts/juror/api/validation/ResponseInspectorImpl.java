@@ -2,20 +2,21 @@ package uk.gov.hmcts.juror.api.validation;
 
 import com.google.common.base.Strings;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 import uk.gov.hmcts.juror.api.bureau.domain.SystemParameter;
 import uk.gov.hmcts.juror.api.bureau.domain.SystemParameterRepository;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.juror.notify.NotifyTemplateType;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
-import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
+import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -23,6 +24,7 @@ import java.util.Optional;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ResponseInspectorImpl implements ResponseInspector {
     static final int AGE_LOWER_SP_ID = 101;
     static final int AGE_UPPER_SP_ID = 100;
@@ -33,26 +35,11 @@ public class ResponseInspectorImpl implements ResponseInspector {
     public static final String DECEASED = "deceased";
     private final SystemParameterRepository systemParameterRepository;
 
-    private final JurorPoolRepository jurorRepository;
+    private final JurorRepository jurorRepository;
 
     private final WelshCourtLocationRepository welshCourtLocRepository;
     private final AppSettingService appSettingService;
-
-    @Autowired
-    public ResponseInspectorImpl(final SystemParameterRepository systemParameterRepository,
-
-                                 final JurorPoolRepository jurorRepository,
-                                 final AppSettingService appSettingService,
-                                 final WelshCourtLocationRepository welshCourtLocRepository) {
-        Assert.notNull(systemParameterRepository, "SystemParameterRepository cannot be null.");
-        Assert.notNull(jurorRepository, "JurorRepository cannot be null.");
-        Assert.notNull(appSettingService, "AppSettingService cannot be null.");
-        Assert.notNull(welshCourtLocRepository, "WelshCourtLocationRepository cannot be null.");
-        this.systemParameterRepository = systemParameterRepository;
-        this.jurorRepository = jurorRepository;
-        this.appSettingService = appSettingService;
-        this.welshCourtLocRepository = welshCourtLocRepository;
-    }
+    private final JurorPoolService jurorPoolService;
 
     @Override
     public boolean isThirdPartyResponse(@NonNull final DigitalResponse response) {
@@ -129,7 +116,7 @@ public class ResponseInspectorImpl implements ResponseInspector {
     @Override
     public boolean isJurorAgeDisqualified(final DigitalResponse response) {
         try {
-            final JurorPool jurorPool = jurorRepository.findByJurorJurorNumber(response.getJurorNumber());
+            final JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(response.getJurorNumber());
             int age = getJurorAgeAtHearingDate(response.getDateOfBirth(), jurorPool.getNextDate());
             if (log.isTraceEnabled()) {
                 log.trace(
@@ -264,9 +251,7 @@ public class ResponseInspectorImpl implements ResponseInspector {
     @Override
     public int getPoolNotification(final DigitalResponse response) {
         try {
-            // final Pool p = poolRepository.findByJurorNumber(response.getJurorNumber());
-            final JurorPool jurorPool = jurorRepository.findByJurorJurorNumber(response.getJurorNumber());
-            return jurorPool.getJuror().getNotifications();
+            return jurorRepository.findByJurorNumber(response.getJurorNumber()).getNotifications();
         } catch (Exception exception) {
             log.error("Failed to retrieve the pool.notification value for this juror response.", exception);
             return -1;
@@ -277,7 +262,7 @@ public class ResponseInspectorImpl implements ResponseInspector {
     public boolean isWelshCourt(final DigitalResponse response) {
         boolean courtIsWelsh = false;
         try {
-            final JurorPool jurorPool = jurorRepository.findByJurorJurorNumber(response.getJurorNumber());
+            final JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(response.getJurorNumber());
             if (isWelshLanguage(response)
                 && welshCourtLocRepository.findByLocCode(jurorPool.getCourt().getLocCode()) != null) {
                 log.debug("Court (locCode) {} is Welsh.", jurorPool.getCourt().getLocCode());

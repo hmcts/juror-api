@@ -52,7 +52,6 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRep
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCommonRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
-import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -1013,7 +1012,8 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
     private void validateAgeDisqualificationMergedJurorRecord(String jurorNumber, ReplyMethod replyMethod,
                                                               int statusCode) {
         AbstractJurorResponse jurorResponse = createGenericJurorResponse(replyMethod, jurorNumber);
-        JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
+        JurorPool jurorPool =
+            jurorPoolRepository.findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true).get(0);
         Juror juror = jurorPool.getJuror();
 
         assertThat(juror.getPendingTitle()).isEqualToIgnoringCase(jurorResponse.getTitle());
@@ -1046,7 +1046,8 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
     }
 
     private void verifyAgeDisqualification(String jurorNumber) {
-        JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
+        JurorPool jurorPool =
+            jurorPoolRepository.findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true).get(0);
         Juror juror = jurorPool.getJuror();
 
         assertThat(juror.isResponded()).as("Juror record should be updated and marked as responded").isTrue();
@@ -1078,7 +1079,8 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
     private void verifyStraightThroughAgeDisqualificationNotProcessed(String jurorNumber, ReplyMethod replyMethod,
                                                                       int statusCode) {
         AbstractJurorResponse jurorResponse = createGenericJurorResponse(replyMethod, jurorNumber);
-        JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
+        JurorPool jurorPool =
+            jurorPoolRepository.findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true).get(0);
         final Juror juror = jurorPool.getJuror();
 
         assertThat(jurorResponse.getProcessingComplete())

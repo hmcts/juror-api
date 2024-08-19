@@ -20,6 +20,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,12 +53,12 @@ public class ResponseStatusUpdatePhoneNumberRulesTest {
     private EntityManager entityManager;
     @Mock
     private AssignOnUpdateService assignOnUpdateService;
-
     @Mock
     private JurorReasonableAdjustmentRepository specialNeedsRepository;
-
     @Mock
     private WelshCourtLocationRepository welshCourtLocationRepository;
+    @Mock
+    private JurorPoolService jurorPoolService;
 
     @InjectMocks
     private ResponseStatusUpdateServiceImpl statusUpdateService;
@@ -78,7 +79,7 @@ public class ResponseStatusUpdatePhoneNumberRulesTest {
         PoolRequest poolRequest = new PoolRequest();
         poolRequest.setPoolNumber(TestConstants.VALID_POOL_NUMBER);
         poolDetails.setPool(poolRequest);
-        doReturn(poolDetails).when(poolDetailsRepository).findByJurorJurorNumber(JUROR_NUMBER);
+        doReturn(poolDetails).when(jurorPoolService).getJurorPoolFromUser(JUROR_NUMBER);
 
     }
 
