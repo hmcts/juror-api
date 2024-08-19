@@ -25,6 +25,7 @@ import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
+import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.validation.ResponseInspectorImpl;
@@ -46,35 +47,30 @@ import static uk.gov.hmcts.juror.api.JurorDigitalApplication.AUTO_USER;
 /**
  * Unit test of {@link StraightThroughProcessorImpl}.
  */
-@SuppressWarnings({"Duplicates", "PMD.TooManyMethods"})
+@SuppressWarnings({"Duplicates", "PMD.TooManyMethods", "PMD.ExcessiveImports"})
 @RunWith(MockitoJUnitRunner.class)
 public class StraightThroughProcessorImplTest {
 
     @Mock
     private JurorDigitalResponseRepositoryMod jurorResponseRepository;
-
     @Mock
     private JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
-
     @Mock
     private JurorPoolRepository poolRepository;
     @Mock
     private JurorStatusRepository jurorStatusRepository;
-
     @Mock
     private ResponseMergeService mergeService;
-
     @Mock
     private JurorHistoryRepository partHistRepository;
-
     @Mock
     private UserRepository userRepository;
-
     @Mock
     private ResponseInspectorImpl responseInspector;
-
     @Mock
     private JurorHistoryService jurorHistoryService;
+    @Mock
+    private JurorPoolService jurorPoolService;
     @InjectMocks
     private StraightThroughProcessorImpl straightThroughProcessor;
 

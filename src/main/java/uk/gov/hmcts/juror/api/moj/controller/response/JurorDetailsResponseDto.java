@@ -12,6 +12,7 @@ import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.JurorThirdParty;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurorresponse.ReasonableAdjustmentsEnum;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
@@ -114,7 +115,6 @@ public class JurorDetailsResponseDto {
     @Schema(name = "Optic Reference", description = "Eight digit Optic Reference Number for Juror")
     private String opticReference;
 
-
     /**
      * Initialise an instance of this DTO class using a JurorPool object to populate its properties.
      *
@@ -155,6 +155,25 @@ public class JurorDetailsResponseDto {
         }
         this.specialNeedMessage = juror.getReasonableAdjustmentMessage();
         this.opticReference = juror.getOpticRef();
+        setJurorThirdParty(juror.getThirdParty());
+    }
+
+    private void setJurorThirdParty(JurorThirdParty jurorThirdParty) {
+        if (jurorThirdParty == null) {
+            this.thirdParty = null;
+            return;
+        }
+        this.thirdParty = new JurorResponseDto.ThirdParty();
+        this.thirdParty.setThirdPartyFName(jurorThirdParty.getFirstName());
+        this.thirdParty.setThirdPartyLName(jurorThirdParty.getLastName());
+        this.thirdParty.setThirdPartyReason(jurorThirdParty.getReason());
+        this.thirdParty.setThirdPartyOtherReason(jurorThirdParty.getOtherReason());
+        this.thirdParty.setRelationship(jurorThirdParty.getRelationship());
+        this.thirdParty.setMainPhone(jurorThirdParty.getMainPhone());
+        this.thirdParty.setOtherPhone(jurorThirdParty.getOtherPhone());
+        this.thirdParty.setEmailAddress(jurorThirdParty.getEmailAddress());
+        this.thirdParty.setUseJurorEmailDetails(jurorThirdParty.isContactJurorByEmail());
+        this.thirdParty.setUseJurorPhoneDetails(jurorThirdParty.isContactJurorByPhone());
     }
 
     /**

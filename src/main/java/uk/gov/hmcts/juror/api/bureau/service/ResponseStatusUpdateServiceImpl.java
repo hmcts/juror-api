@@ -27,6 +27,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.JurorThirdPartyService;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
 import java.time.LocalDate;
@@ -53,6 +54,7 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
     private final JurorReasonableAdjustmentRepository specialNeedsRepository;
     private final WelshCourtLocationRepository welshCourtLocationRepository;
     private final JurorResponseAuditRepositoryMod jurorResponseAuditRepositoryMod;
+    private final JurorThirdPartyService jurorThirdPartyService;
 
 
     /**
@@ -163,6 +165,11 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
             specialNeedsByJurorNumber.size()
         );
 
+
+        if (updatedDetails.getThirdPartyFName() != null) {
+            jurorThirdPartyService.createOrUpdateThirdParty(jurorDetails.getJuror(), updatedDetails);
+        }
+
         //if multiple set need to M
         if (specialNeedsByJurorNumber.size() > 1) {
             jurorDetails.getJuror().setReasonableAdjustmentCode("M");
@@ -201,7 +208,7 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
 
         // perform merge or changes
         // check for changes in original values
-        boolean titleChanged = false;
+        boolean titleChanged;
         if (updatedDetails.getTitle() != null) {
             if (jurorDetails.getJuror().getTitle() != null) {
                 titleChanged = updatedDetails.getTitle().compareTo(jurorDetails.getJuror().getTitle()) != 0;

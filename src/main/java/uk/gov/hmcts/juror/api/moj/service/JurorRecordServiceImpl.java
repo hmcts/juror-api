@@ -18,7 +18,6 @@ import uk.gov.hmcts.juror.api.bureau.domain.DisCode;
 import uk.gov.hmcts.juror.api.bureau.service.BureauService;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
-import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
@@ -190,6 +189,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     private final WelshCourtLocationRepository welshCourtLocationRepository;
     private final JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
     private final JurorPoolService jurorPoolService;
+    private final JurorThirdPartyService jurorThirdPartyService;
 
     @Override
     @Transactional
@@ -224,6 +224,11 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         } else {
             juror.setReasonableAdjustmentCode(null);
             juror.setReasonableAdjustmentMessage(null);
+        }
+        if (requestDto.getThirdParty() == null) {
+            jurorThirdPartyService.deleteThirdParty(juror);
+        } else {
+            jurorThirdPartyService.createOrUpdateThirdParty(juror, requestDto.getThirdParty());
         }
 
         juror.setPendingTitle(requestDto.getPendingTitle());
@@ -326,10 +331,6 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         if (jurorResponse != null) {
             jurorDetailsResponseDto.setReplyMethod(REPLY_METHOD_ONLINE);
             jurorDetailsResponseDto.setReplyProcessingStatus(jurorResponse.getProcessingStatus().getDescription());
-            // Todo keep this in for now but will need to revisit post UAT
-            if (jurorResponse.getThirdPartyFName() != null) {
-                jurorDetailsResponseDto.setThirdParty(getThirdPartyDetails(jurorResponse));
-            }
             return jurorDetailsResponseDto;
         }
 
@@ -338,7 +339,6 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             jurorDetailsResponseDto.setReplyMethod(REPLY_METHOD_PAPER);
             jurorDetailsResponseDto.setReplyProcessingStatus(response.getProcessingStatus().getDescription());
         }
-
         return jurorDetailsResponseDto;
     }
 
@@ -1083,24 +1083,6 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         juror.setUserEdtq(auditorUsername);
 
         log.trace("Exit updateJurorNameDetails");
-    }
-
-    private JurorResponseDto.ThirdParty getThirdPartyDetails(DigitalResponse jurorResponse) {
-
-        JurorResponseDto.ThirdParty thirdParty = new JurorResponseDto.ThirdParty();
-
-        thirdParty.setThirdPartyFName(jurorResponse.getThirdPartyFName());
-        thirdParty.setThirdPartyLName(jurorResponse.getThirdPartyLName());
-        thirdParty.setThirdPartyReason(jurorResponse.getThirdPartyReason());
-        thirdParty.setThirdPartyOtherReason(jurorResponse.getThirdPartyOtherReason());
-        thirdParty.setRelationship(jurorResponse.getRelationship());
-        thirdParty.setMainPhone(jurorResponse.getMainPhone());
-        thirdParty.setOtherPhone(jurorResponse.getOtherPhone());
-        thirdParty.setEmailAddress(jurorResponse.getEmailAddress());
-        thirdParty.setUseJurorEmailDetails(jurorResponse.getJurorEmailDetails());
-        thirdParty.setUseJurorPhoneDetails(jurorResponse.getJurorPhoneDetails());
-
-        return thirdParty;
     }
 
     @Override

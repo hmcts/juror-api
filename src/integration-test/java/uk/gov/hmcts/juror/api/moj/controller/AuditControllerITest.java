@@ -97,7 +97,6 @@ public class AuditControllerITest {
             testBuilder()
                 .url(toUrl("INVALID"))
                 .triggerInvalid()
-                .printResponse()
                 .assertInvalidPathParam("INVALID is the incorrect data type or is not in the expected format (date)");
         }
     }

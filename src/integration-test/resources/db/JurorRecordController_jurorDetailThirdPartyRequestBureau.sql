@@ -25,9 +25,7 @@ VALUES
     NULL, 'Y', NULL, 'N', NULL, 'N', NULL, 'N', NULL, 'C', '7/6/2023, 3/7/2023, 9/8/2023', NULL, NULL, 'N', 0,
     'TPFIRSTNAME',
     'TPLASTNAME', 'Son of the juror', '012033223', '07878787323', 'new_email@address.com', 'Unable to read english or welsh', 'OTHER_REASON',
-    false,
-     false,
-    NULL,
-     NULL,
-     'N',
-    NULL,    'N', 'Digital');
+    false,false,NULL,NULL,'N', NULL,'N','Digital');
+
+INSERT INTO juror_mod.juror_third_party (juror_number, first_name, last_name, relationship, main_phone, other_phone, email_address, reason, other_reason, contact_juror_by_phone, contact_juror_by_email)
+VALUES('641600096', 'TPFIRSTNAME', 'TPLASTNAME', 'Son of the juror', '012033223', '07878787323', NULL, 'Unable to read english or welsh', NULL, false, false);

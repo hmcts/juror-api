@@ -88,6 +88,8 @@ public class SummonsReplyStatusUpdateServiceImplTest {
     @Mock
     private JurorAuditChangeService jurorAuditChangeService;
     @Mock
+    private JurorThirdPartyService jurorThirdPartyService;
+    @Mock
     private JurorResponseService jurorResponseService;
 
     @InjectMocks

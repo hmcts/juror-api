@@ -43,7 +43,6 @@ class PoolAttendanceAuditReportITest extends AbstractStandardReportControllerITe
 
     @Test
     void positiveTypical() {
-        testBuilder().triggerInvalid().printResponse();
         testBuilder()
             .triggerValid()
             .responseConsumer(this::verifyAndRemoveReportCreated)
