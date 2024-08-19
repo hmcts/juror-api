@@ -17,6 +17,7 @@ import uk.gov.hmcts.juror.api.moj.repository.PoolStatisticsRepository;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -51,6 +52,7 @@ public class PoolStatisticsServiceTest {
         poolRequest.setCourtLocation(courtLocation);
         poolRequest.setNilPool(isNilPool);
         poolRequest.setPoolType(new PoolType("CIV", "Civil Court"));
+        poolRequest.setJurorPools(new ArrayList<>());
         return poolRequest;
     }
 
