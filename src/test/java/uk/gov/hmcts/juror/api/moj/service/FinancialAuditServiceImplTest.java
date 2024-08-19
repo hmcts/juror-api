@@ -6,13 +6,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.springframework.data.history.Revision;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetailsAppearances;
-import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.FinancialAuditDetailsAppearancesRepository;
@@ -89,10 +87,8 @@ public class FinancialAuditServiceImplTest {
         @Test
         void positiveTypical() {
             FinancialAuditDetails.Type type = FinancialAuditDetails.Type.APPROVED_CASH;
-            Revision<Long, Juror> jurorRevision = mock(Revision.class);
-            doReturn(jurorRevision).when(revisionService)
-                .getLatestJurorRevision(TestConstants.VALID_JUROR_NUMBER);
-            doReturn(1L).when(jurorRevision).getRequiredRevisionNumber();
+            doReturn(1L).when(revisionService)
+                .getLatestJurorRevisionNumber(TestConstants.VALID_JUROR_NUMBER);
 
             doReturn(12L).when(revisionService)
                 .getLatestCourtRevisionNumber(TestConstants.VALID_COURT_LOCATION);
@@ -181,10 +177,8 @@ public class FinancialAuditServiceImplTest {
         @Test
         void positiveTypicalReApproval() {
             FinancialAuditDetails.Type type = FinancialAuditDetails.Type.REAPPROVED_BACS;
-            Revision<Long, Juror> jurorRevision = mock(Revision.class);
-            doReturn(jurorRevision).when(revisionService)
-                .getLatestJurorRevision(TestConstants.VALID_JUROR_NUMBER);
-            doReturn(1L).when(jurorRevision).getRequiredRevisionNumber();
+            doReturn(1L).when(revisionService)
+                .getLatestJurorRevisionNumber(TestConstants.VALID_JUROR_NUMBER);
 
             doReturn(12L).when(revisionService)
                 .getLatestCourtRevisionNumber(TestConstants.VALID_COURT_LOCATION);
