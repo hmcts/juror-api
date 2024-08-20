@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorThirdParty;
 import uk.gov.hmcts.juror.api.moj.repository.juror.JurorThirdPartyRepository;
+import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -24,14 +25,14 @@ public class JurorThirdPartyServiceImpl implements JurorThirdPartyService {
     @Transactional
     public void createOrUpdateThirdParty(Juror juror, ThirdPartyUpdateDto thirdPartyUpdate) {
         JurorThirdParty jurorThirdParty = getOrCreateJurorThirdParty(juror.getJurorNumber());
-        jurorThirdParty.setFirstName(thirdPartyUpdate.getFirstName());
-        jurorThirdParty.setLastName(thirdPartyUpdate.getLastName());
-        jurorThirdParty.setRelationship(thirdPartyUpdate.getRelationship());
-        jurorThirdParty.setMainPhone(thirdPartyUpdate.getMainPhone());
-        jurorThirdParty.setOtherPhone(thirdPartyUpdate.getOtherPhone());
-        jurorThirdParty.setEmailAddress(thirdPartyUpdate.getEmailAddress());
-        jurorThirdParty.setReason(thirdPartyUpdate.getReason());
-        jurorThirdParty.setOtherReason(thirdPartyUpdate.getOtherReason());
+        jurorThirdParty.setFirstName(DataUtils.nullIfBlank(thirdPartyUpdate.getThirdPartyFirstName()));
+        jurorThirdParty.setLastName(DataUtils.nullIfBlank(thirdPartyUpdate.getThirdPartyLastName()));
+        jurorThirdParty.setRelationship(DataUtils.nullIfBlank(thirdPartyUpdate.getThirdPartyRelationship()));
+        jurorThirdParty.setMainPhone(DataUtils.nullIfBlank(thirdPartyUpdate.getThirdPartyMainPhone()));
+        jurorThirdParty.setOtherPhone(DataUtils.nullIfBlank(thirdPartyUpdate.getThirdPartyOtherPhone()));
+        jurorThirdParty.setEmailAddress(DataUtils.nullIfBlank(thirdPartyUpdate.getThirdPartyEmailAddress()));
+        jurorThirdParty.setReason(DataUtils.nullIfBlank(thirdPartyUpdate.getThirdPartyReason()));
+        jurorThirdParty.setOtherReason(DataUtils.nullIfBlank(thirdPartyUpdate.getThirdPartyOtherReason()));
         jurorThirdParty.setContactJurorByEmail(thirdPartyUpdate.isContactJurorByEmail());
         jurorThirdParty.setContactJurorByPhone(thirdPartyUpdate.isContactJurorByPhone());
 

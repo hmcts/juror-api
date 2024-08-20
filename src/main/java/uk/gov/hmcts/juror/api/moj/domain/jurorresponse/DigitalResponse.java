@@ -110,14 +110,35 @@ public class DigitalResponse extends AbstractJurorResponse
         super.setReplyType(new ReplyType("Digital", "Online response"));
     }
 
+
     @Override
-    public String getOtherReason() {
-        return this.getThirdPartyOtherReason();
+    public String getThirdPartyEmailAddress() {
+        return this.getEmailAddress();
     }
 
     @Override
-    public String getReason() {
-        return this.getThirdPartyReason();
+    public String getThirdPartyOtherPhone() {
+        return this.getOtherPhone();
+    }
+
+    @Override
+    public String getThirdPartyMainPhone() {
+        return this.getMainPhone();
+    }
+
+    @Override
+    public String getThirdPartyRelationship() {
+        return this.getRelationship();
+    }
+
+    @Override
+    public String getThirdPartyLastName() {
+        return this.getThirdPartyLName();
+    }
+
+    @Override
+    public String getThirdPartyFirstName() {
+        return this.getThirdPartyFName();
     }
 
     @Override

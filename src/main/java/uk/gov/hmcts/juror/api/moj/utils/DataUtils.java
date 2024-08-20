@@ -143,4 +143,11 @@ public final class DataUtils {
         }
         return value.trim();
     }
+
+    public static String nullIfBlank(String value) {
+        if (value == null || value.trim().isBlank()) {
+            return null;
+        }
+        return value.trim();
+    }
 }

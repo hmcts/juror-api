@@ -410,43 +410,44 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
             } else {
                 jurorThirdPartyService.createOrUpdateThirdParty(juror,
                     new JurorThirdPartyService.ThirdPartyUpdateDto() {
+
                         @Override
-                        public String getOtherReason() {
+                        public String getThirdPartyOtherReason() {
                             return null;
                         }
 
                         @Override
-                        public String getReason() {
+                        public String getThirdPartyReason() {
                             return abstractJurorResponse.getThirdPartyReason();
                         }
 
                         @Override
-                        public String getEmailAddress() {
+                        public String getThirdPartyEmailAddress() {
                             return null;
                         }
 
                         @Override
-                        public String getOtherPhone() {
+                        public String getThirdPartyOtherPhone() {
                             return null;
                         }
 
                         @Override
-                        public String getMainPhone() {
+                        public String getThirdPartyMainPhone() {
                             return null;
                         }
 
                         @Override
-                        public String getRelationship() {
+                        public String getThirdPartyRelationship() {
                             return abstractJurorResponse.getRelationship();
                         }
 
                         @Override
-                        public String getLastName() {
+                        public String getThirdPartyLastName() {
                             return null;
                         }
 
                         @Override
-                        public String getFirstName() {
+                        public String getThirdPartyFirstName() {
                             return null;
                         }
 
