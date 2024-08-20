@@ -33,5 +33,12 @@ public interface PanelRepository extends IPanelRepository, JpaRepository<Panel, 
     )
     Panel findActivePanel(String locCode, String jurorNumber);
 
+    @Query(
+        value = "SELECT * FROM juror_mod.juror_trial "
+            + "WHERE loc_code in ?1 AND juror_number = ?2 AND AND (result IS NULL OR result = 'J')",
+        nativeQuery = true
+    )
+    Panel findActivePanelByCourtGroup(List<String> locCode, String jurorNumber);
+
     long countByJurorJurorNumberAndTrialCourtLocationLocCode(String jurorNumber, String locCode);
 }
