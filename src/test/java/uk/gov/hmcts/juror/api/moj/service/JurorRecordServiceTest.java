@@ -1580,11 +1580,7 @@ class JurorRecordServiceTest {
     }
 
     private void setupBureauUser() {
-        TestUtils.mockSecurityUtil(
-            BureauJwtPayload.builder()
-                .locCode("400")
-                .build()
-        );
+        TestUtils.mockBureauUser();
     }
 
     @Test
