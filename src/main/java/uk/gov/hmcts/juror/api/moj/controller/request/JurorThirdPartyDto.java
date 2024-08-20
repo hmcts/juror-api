@@ -74,4 +74,43 @@ public class JurorThirdPartyDto implements JurorThirdPartyService.ThirdPartyUpda
     @JsonProperty("contact_juror_by_email")
     private boolean contactJurorByEmail;
 
+    @Override
+    public String getThirdPartyOtherReason() {
+        return this.getOtherReason();
+    }
+
+    @Override
+    public String getThirdPartyReason() {
+        return this.getReason();
+    }
+
+    @Override
+    public String getThirdPartyEmailAddress() {
+        return this.getEmailAddress();
+    }
+
+    @Override
+    public String getThirdPartyOtherPhone() {
+        return this.getOtherPhone();
+    }
+
+    @Override
+    public String getThirdPartyMainPhone() {
+        return this.getMainPhone();
+    }
+
+    @Override
+    public String getThirdPartyRelationship() {
+        return this.getRelationship();
+    }
+
+    @Override
+    public String getThirdPartyLastName() {
+        return this.getLastName();
+    }
+
+    @Override
+    public String getThirdPartyFirstName() {
+        return this.getFirstName();
+    }
 }

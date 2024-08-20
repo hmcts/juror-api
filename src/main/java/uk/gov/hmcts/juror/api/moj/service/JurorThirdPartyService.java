@@ -10,21 +10,21 @@ public interface JurorThirdPartyService {
 
     interface ThirdPartyUpdateDto {
 
-        String getOtherReason();
+        String getThirdPartyOtherReason();
 
-        String getReason();
+        String getThirdPartyReason();
 
-        String getEmailAddress();
+        String getThirdPartyEmailAddress();
 
-        String getOtherPhone();
+        String getThirdPartyOtherPhone();
 
-        String getMainPhone();
+        String getThirdPartyMainPhone();
 
-        String getRelationship();
+        String getThirdPartyRelationship();
 
-        String getLastName();
+        String getThirdPartyLastName();
 
-        String getFirstName();
+        String getThirdPartyFirstName();
 
         boolean isContactJurorByEmail();
 
