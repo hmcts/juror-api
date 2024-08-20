@@ -42,7 +42,7 @@ public class PoolStatisticsServiceImpl implements PoolStatisticsService {
         populatePoolDetailsData(poolSummaryResponse, poolRequest);
         populateBureauSummoningData(poolSummaryResponse, poolStatistics, poolRequest.getNumberRequested());
         populatePoolSummaryData(poolSummaryResponse, poolStatistics, poolRequest.getTotalNoRequired());
-        populateAdditionalStatsData(poolSummaryResponse, poolStatistics);
+        populateAdditionalStatsData(poolSummaryResponse, poolStatistics, poolRequest);
 
         poolSummaryResponse.getPoolDetails().setCurrentOwner(poolRequest.getOwner());
 
@@ -113,10 +113,12 @@ public class PoolStatisticsServiceImpl implements PoolStatisticsService {
     }
 
     private void populateAdditionalStatsData(PoolSummaryResponseDto poolSummaryResponse,
-                                             PoolStatistics poolStatistics) {
+                                             PoolStatistics poolStatistics,
+                                             PoolRequest poolRequest) {
         PoolSummaryResponseDto.AdditionalStatistics additionalStatistics =
             poolSummaryResponse.getAdditionalStatistics();
         additionalStatistics.setCourtSupply(poolStatistics.getCourtSupply());
+        additionalStatistics.setTotalJurorsInPool(poolRequest.getJurorPools().size());
     }
 
 }
