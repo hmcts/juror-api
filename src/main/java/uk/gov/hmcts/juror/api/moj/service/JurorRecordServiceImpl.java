@@ -580,8 +580,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     public void updateAttendance(UpdateAttendanceRequestDto dto) {
         log.info("Placing juror on call for juror {} ", dto.getJurorNumber());
 
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, dto.getJurorNumber());
-
+        JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(dto.getJurorNumber());
         validateUpdateAttendance(dto);
 
         if (dto.isOnCall()) {
