@@ -2276,8 +2276,8 @@ class JurorRecordServiceTest {
         jurorPool.setOnCall(false);
         jurorPool.setNextDate(LocalDate.now().plusWeeks(1));
 
-        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
 
         jurorRecordService.updateAttendance(dto);
 
@@ -2302,8 +2302,8 @@ class JurorRecordServiceTest {
         jurorPool.setOnCall(false);
         jurorPool.setNextDate(LocalDate.now().plusWeeks(1));
 
-        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
 
         jurorRecordService.updateAttendance(dto);
 
@@ -2350,8 +2350,8 @@ class JurorRecordServiceTest {
         JurorPool jurorPool = createValidJurorPool(jurorNumber, courtOwner);
         jurorPool.setOnCall(false);
 
-        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doThrow(MojException.NotFound.class).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumberNotExist);
 
         assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
             jurorRecordService.updateAttendance(dto));
@@ -2372,8 +2372,8 @@ class JurorRecordServiceTest {
         JurorPool jurorPool = createValidJurorPool(jurorNumber, courtOwner);
         jurorPool.setOnCall(true);
 
-        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
 
         assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
             jurorRecordService.updateAttendance(dto));
