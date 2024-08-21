@@ -2,11 +2,13 @@ package uk.gov.hmcts.juror.api.moj.service;
 
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.PoolRequestedFilterQuery;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolNumbersListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestActiveListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolsAtCourtLocationListDto;
 import uk.gov.hmcts.juror.api.moj.domain.DayType;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 
 import java.time.LocalDate;
@@ -14,8 +16,8 @@ import java.time.LocalDateTime;
 
 public interface PoolRequestService {
 
-    PoolRequestListDto getFilteredPoolRequests(BureauJwtPayload payload, String courtLocation,
-                                               int offset, String sortBy, String sortOrder);
+    PaginatedList<PoolRequestListDto> getFilteredPoolRequests(BureauJwtPayload payload, String courtLocation,
+                                                              PoolRequestedFilterQuery filterQuery);
 
     void savePoolRequest(PoolRequestDto poolRequestDto, BureauJwtPayload payload);
 

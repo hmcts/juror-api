@@ -22,7 +22,9 @@ import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.HolidaysRepository;
+import uk.gov.hmcts.juror.api.moj.controller.request.PoolMemberFilterRequestQuery;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.PoolRequestedFilterQuery;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolNumbersListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestActiveListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestListDto;
@@ -31,10 +33,12 @@ import uk.gov.hmcts.juror.api.moj.domain.ActivePoolsBureau;
 import uk.gov.hmcts.juror.api.moj.domain.ActivePoolsCourt;
 import uk.gov.hmcts.juror.api.moj.domain.DayType;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PoolHistory;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequestListAndCount;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
 import uk.gov.hmcts.juror.api.moj.exception.CurrentlyDeferredException;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.PoolRequestException;
@@ -46,6 +50,7 @@ import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolTypeRepository;
 import uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDeferralsService;
 import uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils;
+import uk.gov.hmcts.juror.api.moj.utils.PaginationUtil;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -99,43 +104,52 @@ public class PoolRequestServiceImpl implements PoolRequestService {
     @Override
     @SuppressWarnings({"rawtypes", "unchecked"})
     @Transactional(readOnly = true)
-    public PoolRequestListDto getFilteredPoolRequests(BureauJwtPayload payload, String courtLocation,
-                                                      int offset, String sortBy, String sortOrder) {
-        PoolRequestListAndCount poolRequests;
+    public PaginatedList<PoolRequestListDto> getFilteredPoolRequests(BureauJwtPayload payload, String courtLocation,
+                                                                     PoolRequestedFilterQuery filterQuery) {
 
-        Path<Object> sortField = Expressions.path(Object.class, QPoolRequest.poolRequest, sortBy);
-        OrderSpecifier<?> order;
-        if ("asc".equals(sortOrder)) {
-            order = new OrderSpecifier(Order.ASC, sortField);
-        } else {
-            order = new OrderSpecifier(Order.DESC, sortField);
-        }
+        return PaginationUtil.toPaginatedList(
+            poolRequestRepository.findBureauPoolRequestsList(POOL_TYPES_DESC_LIST, courtLocation),
+            filterQuery,
+            PoolRequestedFilterQuery.SortField.RETURN_DATE,
+            SortMethod.ASC,
+            poolRequest -> {
+                PoolRequestListDto.PoolRequestListDtoBuilder builder = PoolRequestListDto.builder()
+                    .numberRequested(poolRequest.getNumberRequested())
+                    .attendanceDate(poolRequest.getReturnDate())
+                    .courtName(poolRequest.getCourtLocation().getName())
+                    .poolNumber(poolRequest.getPoolNumber())
+                    .poolType(poolRequest.getPoolType().getPoolType());
 
-        if (JurorDigitalApplication.JUROR_OWNER.equals(payload.getOwner())) {
-            log.debug("Retrieving Pool Request for the current Bureau user");
-            poolRequests = poolRequestRepository.findBureauPoolRequestsList(
-                POOL_TYPES_DESC_LIST,
-                courtLocation,
-                offset,
-                PAGE_SIZE,
-                order
-            );
-        } else {
-            log.debug("Retrieving Pool Request for the current Courts user");
-            List<String> courts = payload.getStaff().getCourts();
-            poolRequests = poolRequestRepository.findCourtsPoolRequestsList(
-                courts,
-                POOL_TYPES_DESC_LIST,
-                courtLocation,
-                offset,
-                PAGE_SIZE,
-                order
-            );
-        }
-        return this.buildPoolRequestListDtoResponse(
-            poolRequests.getPoolRequestList(),
-            poolRequests.getPoolRequestCount()
+                return builder.build();
+            },
+            500L
         );
+
+//        if (JurorDigitalApplication.JUROR_OWNER.equals(payload.getOwner())) {
+//            log.debug("Retrieving Pool Request for the current Bureau user");
+//            poolRequests = poolRequestRepository.findBureauPoolRequestsList(
+//                POOL_TYPES_DESC_LIST,
+//                courtLocation,
+//                offset,
+//                PAGE_SIZE,
+//                order
+//            );
+//        } else {
+//            log.debug("Retrieving Pool Request for the current Courts user");
+//            List<String> courts = payload.getStaff().getCourts();
+//            poolRequests = poolRequestRepository.findCourtsPoolRequestsList(
+//                courts,
+//                POOL_TYPES_DESC_LIST,
+//                courtLocation,
+//                offset,
+//                PAGE_SIZE,
+//                order
+//            );
+//        }
+//        return this.buildPoolRequestListDtoResponse(
+//            poolRequests.getPoolRequestList(),
+//            poolRequests.getPoolRequestCount()
+//        );
     }
 
     /**
@@ -242,26 +256,26 @@ public class PoolRequestServiceImpl implements PoolRequestService {
         return new PoolNumbersListDto(poolNumbers);
     }
 
-    private PoolRequestListDto buildPoolRequestListDtoResponse(Iterable<PoolRequest> poolRequestList,
-                                                               Long poolRequestCount) {
-        log.trace("Enter buildPoolRequestListDtoResponse");
-        List<PoolRequestListDto.PoolRequestDataDto> poolRequests = new ArrayList<>();
-
-        poolRequestList.forEach(poolRequest -> {
-            log.debug(String.format(
-                "Mapping pool request: %s to DTO",
-                poolRequest.getPoolNumber()
-            ));
-            PoolRequestListDto.PoolRequestDataDto poolRequestData =
-                new PoolRequestListDto.PoolRequestDataDto(poolRequest);
-
-            poolRequests.add(poolRequestData);
-            log.trace(String.format("Pool request data added: %s", poolRequestData));
-        });
-
-        log.debug(String.format("%d pool requests retrieved", poolRequests.size()));
-        return new PoolRequestListDto(poolRequests, poolRequestCount);
-    }
+//    private PoolRequestListDto buildPoolRequestListDtoResponse(Iterable<PoolRequest> poolRequestList,
+//                                                               Long poolRequestCount) {
+//        log.trace("Enter buildPoolRequestListDtoResponse");
+//        List<PoolRequestListDto.PoolRequestDataDto> poolRequests = new ArrayList<>();
+//
+//        poolRequestList.forEach(poolRequest -> {
+//            log.debug(String.format(
+//                "Mapping pool request: %s to DTO",
+//                poolRequest.getPoolNumber()
+//            ));
+//            PoolRequestListDto.PoolRequestDataDto poolRequestData =
+//                new PoolRequestListDto.PoolRequestDataDto(poolRequest);
+//
+//            poolRequests.add(poolRequestData);
+//            log.trace(String.format("Pool request data added: %s", poolRequestData));
+//        });
+//
+//        log.debug(String.format("%d pool requests retrieved", poolRequests.size()));
+//        return new PoolRequestListDto(poolRequests, poolRequestCount);
+//    }
 
     /**
      * Validate that the newly requested pool is not a duplicate - make sure the pool number is not in use for any

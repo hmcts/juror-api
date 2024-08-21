@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.moj.repository;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.jpa.impl.JPAQuery;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequestListAndCount;
 
@@ -15,8 +16,7 @@ import java.util.List;
  */
 public interface IPoolRequestRepository extends IPoolRequestSearchQueries {
 
-    PoolRequestListAndCount findBureauPoolRequestsList(List<String> poolTypes, String courtLocation, int offset,
-                                                       int pageSize, OrderSpecifier<?> order);
+    JPAQuery<PoolRequest> findBureauPoolRequestsList(List<String> poolTypes, String courtLocation);
 
     PoolRequestListAndCount findCourtsPoolRequestsList(List<String> courts, List<String> poolTypes,
                                                        String courtLocation, int offset, int pageSize,

@@ -48,20 +48,9 @@ public class PoolRequestRepositoryImpl extends PoolRequestSearchQueries implemen
      * @return a list of Pool Requests which are owned by the Bureau and filtered further based on the supplied criteria
      */
     @Override
-    public PoolRequestListAndCount findBureauPoolRequestsList(@NotNull List<String> poolTypes, String courtLocation,
-                                                              int offset, int pageSize, OrderSpecifier<?> order) {
-
-        JPAQuery<PoolRequest> query = findFilteredPoolRequests(poolTypes, courtLocation)
-            .where(POOL_REQUEST.owner.eq(JurorDigitalApplication.JUROR_OWNER))
-            .offset((long) offset * pageSize)
-            .limit(pageSize)
-            .orderBy(order);
-
-        QueryResults<PoolRequest> queryResults = query.fetchResults();
-        long poolRequestCount = queryResults.getTotal();
-        List<PoolRequest> poolRequestList = queryResults.getResults();
-
-        return new PoolRequestListAndCount(poolRequestList, poolRequestCount);
+    public JPAQuery<PoolRequest> findBureauPoolRequestsList(@NotNull List<String> poolTypes, String courtLocation) {
+        return findFilteredPoolRequests(poolTypes, courtLocation)
+            .where(POOL_REQUEST.owner.eq(JurorDigitalApplication.JUROR_OWNER));
     }
 
     @Override

@@ -25,12 +25,15 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.PoolRequestedFilterQuery;
 import uk.gov.hmcts.juror.api.moj.controller.response.CourtLocationListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolNumbersListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestActiveListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolsAtCourtLocationListDto;
 import uk.gov.hmcts.juror.api.moj.domain.DayType;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
+import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
 import uk.gov.hmcts.juror.api.moj.service.CourtLocationService;
 import uk.gov.hmcts.juror.api.moj.service.GeneratePoolNumberService;
 import uk.gov.hmcts.juror.api.moj.service.PoolRequestService;
@@ -63,7 +66,7 @@ public class RequestPoolController {
 
     /**
      * Retrieve a list of all pools filtered by status, pool type and court location.
-     * 
+     *
      * @param payload   Decoded JWT principal data from the user
      * @param locCode   Single location code to filter pools by
      * @param offset    The page number for result table
@@ -76,15 +79,21 @@ public class RequestPoolController {
      */
     @GetMapping("/pools-requested")
     @Operation(summary = "Retrieve a list of all pools filtered by status, pool type and court location")
-    public ResponseEntity<PoolRequestListDto> getPoolRequests(
+    public ResponseEntity<PaginatedList<PoolRequestListDto>> getPoolRequests(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestParam(required = false) @Size(min = 3, max = 3) @Valid String locCode,
-        @RequestParam @Valid int offset,
-        @RequestParam @Valid String sortBy,
-        @RequestParam @Valid String sortOrder) {
+        @RequestParam @Valid int pageNumber,
+        @RequestParam @Valid String sortBy) {
 
-        PoolRequestListDto poolRequests = poolRequestService.getFilteredPoolRequests(payload, locCode, offset,
-            sortBy, sortOrder);
+        PoolRequestedFilterQuery filterQuery = PoolRequestedFilterQuery.builder()
+            .sortField(PoolRequestedFilterQuery.SortField.RETURN_DATE)
+            .sortMethod(SortMethod.ASC)
+            .pageLimit(25)
+            .pageNumber(pageNumber)
+            .build();
+
+        PaginatedList<PoolRequestListDto> poolRequests = poolRequestService.getFilteredPoolRequests(payload, locCode,
+            filterQuery);
 
         return ResponseEntity.ok().body(poolRequests);
     }
