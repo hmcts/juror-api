@@ -393,8 +393,8 @@ public class PoolRequestServiceImpl implements PoolRequestService {
                     Optional<CourtLocation> courtLocationOpt = courtLocationRepository.findByLocCode(locCode);
                     if (courtLocationOpt.isPresent()) {
                         CourtLocation courtLocation = courtLocationOpt.get();
-                        activePoolsBureauList = activePoolsBureauRepository
-                            .findByPoolTypeInAndCourtName(PoolRequestUtils.POOL_TYPES_DESC_LIST, courtLocation.getName(), pageable);
+                        activePoolsBureauList = activePoolsBureauRepository.findByPoolTypeInAndCourtName(
+                                PoolRequestUtils.POOL_TYPES_DESC_LIST, courtLocation.getName(), pageable);
                     } else {
                         log.error("Invalid Location code parameter for active pools search {}", locCode);
                         throw new IllegalArgumentException(

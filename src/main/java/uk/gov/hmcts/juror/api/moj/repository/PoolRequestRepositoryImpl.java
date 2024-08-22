@@ -68,7 +68,7 @@ public class PoolRequestRepositoryImpl extends PoolRequestSearchQueries implemen
      * @param poolNumberPrefix The first 7 characters of a Pool Number containing the Court Location Code,
      *                         Attendance Date Year (YY) and Attendance Date Month (MM)
      * @return the first Pool Request to match the provided Pool Number prefix, ordered by Pool Number (descending)
-     * therefor the first record returned will have the current highest sequence number
+     *          therefor the first record returned will have the current highest sequence number
      */
     @Override
     public PoolRequest findLatestPoolRequestByPoolNumberPrefix(@NotNull String poolNumberPrefix) {
@@ -126,12 +126,12 @@ public class PoolRequestRepositoryImpl extends PoolRequestSearchQueries implemen
      * @param minDate start date (inclusive) for date range predicate
      * @param maxDate end date (inclusive) for date range predicate
      * @return a Tuple4 containing:
-     * <ol>
-     *     <li>Pool Number</li>
-     *     <li>Service Start Date</li>
-     *     <li>Number of Pool Members requested for the Bureau to supply</li>
-     *     <li>Number of Active Pool Members in a responded state</li>
-     * </ol>
+     *          <ol>
+     *              <li>Pool Number</li>
+     *              <li>Service Start Date</li>
+     *              <li>Number of Pool Members requested for the Bureau to supply</li>
+     *              <li>Number of Active Pool Members in a responded state</li>
+     *          </ol>
      */
     @Override
     public List<Tuple> findActivePoolsForDateRange(String owner, String locCode, LocalDate minDate, LocalDate maxDate,

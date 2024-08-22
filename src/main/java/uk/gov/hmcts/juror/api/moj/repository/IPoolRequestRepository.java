@@ -1,12 +1,10 @@
 package uk.gov.hmcts.juror.api.moj.repository;
 
 import com.querydsl.core.Tuple;
-import com.querydsl.core.types.OrderSpecifier;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolRequestedFilterQuery;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestDataDto;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
-import uk.gov.hmcts.juror.api.moj.domain.PoolRequestListAndCount;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

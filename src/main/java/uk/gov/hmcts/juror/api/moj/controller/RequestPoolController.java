@@ -38,7 +38,6 @@ import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
 import uk.gov.hmcts.juror.api.moj.service.CourtLocationService;
 import uk.gov.hmcts.juror.api.moj.service.GeneratePoolNumberService;
 import uk.gov.hmcts.juror.api.moj.service.PoolRequestService;
-import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.validation.CourtLocationCode;
 
 import java.time.LocalDate;
@@ -69,15 +68,12 @@ public class RequestPoolController {
 
     /**
      * Retrieve a list of all pools filtered by status, pool type and court location.
-     * 
-     * @param payload   Decoded JWT principal data from the user
+     *
      * @param locCode   Single location code to filter pools by
-     * @param offset    The page number for result table
      * @param sortBy    The sort by criteria, this can be poolNumber, courtName, poolType, serviceStartDate and for
      *                  bureau tab only,
      *                  jurorsRequested and confirmedJurors, and for court tab only, totalNumber and jurorsInPool
      * @param sortOrder Sort order can be either "asc" or "desc"
-     *
      * @return The list of requested pools including CIV and CRO and also the total of results for the query
      */
     @GetMapping("/pools-requested")
@@ -88,7 +84,7 @@ public class RequestPoolController {
         @RequestParam @Valid @Min(1) Integer pageNumber,
         @RequestParam @Valid @Min(1) Integer pageLimit,
         @RequestParam @Valid PoolRequestedFilterQuery.SortField sortBy,
-        @RequestParam @Valid SortMethod sortOrder){
+        @RequestParam @Valid SortMethod sortOrder) {
 
         PoolRequestedFilterQuery filterQuery = PoolRequestedFilterQuery.builder()
             .locCode(locCode)
@@ -98,9 +94,7 @@ public class RequestPoolController {
             .pageNumber(pageNumber)
             .build();
 
-        PaginatedList<PoolRequestDataDto> poolRequests = poolRequestService.getFilteredPoolRequests(filterQuery);
-        System.out.println("TMP: " + DataUtils.asJsonString(poolRequests));
-        return ResponseEntity.ok().body(poolRequests);
+        return ResponseEntity.ok().body(poolRequestService.getFilteredPoolRequests(filterQuery));
     }
 
     /**
@@ -192,7 +186,6 @@ public class RequestPoolController {
      *                  bureau tab only,
      *                  jurorsRequested and confirmedJurors, and for court tab only, totalNumber and jurorsInPool
      * @param sortOrder Sort order can be either "asc" or "desc"
-     *
      * @return A list of active pools fitting the search criteria
      */
     @GetMapping("/pools-active")

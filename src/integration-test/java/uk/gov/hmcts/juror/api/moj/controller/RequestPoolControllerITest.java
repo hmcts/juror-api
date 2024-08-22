@@ -41,7 +41,6 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
-import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
 import java.net.URI;
@@ -209,7 +208,6 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .isEqualTo(OK);
 
         PaginatedList<PoolRequestDataDto> responseBody = responseEntity.getBody();
-        System.out.println("TMP: " + DataUtils.asJsonString(responseBody));
         assertThat(responseBody).isNotNull();
         assertThat(responseBody.getData().size())
             .as("Expect the response body to contain 2 Pool Requests owned by the Bureau")
