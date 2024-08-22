@@ -2,6 +2,9 @@ package uk.gov.hmcts.juror.api.moj.enumeration;
 
 import lombok.Getter;
 
+import java.util.Collection;
+import java.util.List;
+
 @Getter
 public enum AttendanceType {
     FULL_DAY("Full day", false, true),
@@ -25,5 +28,9 @@ public enum AttendanceType {
 
     public PayAttendanceType getPayAttendanceType() {
         return isFullDay == null ? null : isFullDay ? PayAttendanceType.FULL_DAY : PayAttendanceType.HALF_DAY;
+    }
+
+    public static Collection<AttendanceType> getNonAttendanceTypes() {
+        return List.of(NON_ATTENDANCE, NON_ATTENDANCE_LONG_TRIAL);
     }
 }

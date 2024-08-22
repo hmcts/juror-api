@@ -3491,6 +3491,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
+        //False positive BigDecimal.ZERO != new BigDecimal("0.00")
+        @SuppressWarnings("PMD.BigIntegerInstantiation")
         void getJurorPayments() {
             ResponseEntity<JurorPaymentsResponseDto> response =
                 restTemplate.exchange(new RequestEntity<>(courtHeaders, HttpMethod.GET,
@@ -3500,93 +3502,86 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP GET request to be successful")
                 .isEqualTo(HttpStatus.OK);
-
-            assertThat(response.getBody().toString()).isEqualTo(JurorPaymentsResponseDto.builder()
+            assertThat(response.getBody()).isEqualTo(JurorPaymentsResponseDto.builder()
                 .attendances(6)
                 .nonAttendances(0)
-                .financialLoss(BigDecimal.valueOf(77.00).setScale(2))
-                .travel(BigDecimal.valueOf(18.63).setScale(2))
-                .subsistence(BigDecimal.valueOf(5.71).setScale(2))
-                .totalPaid(BigDecimal.valueOf(101.34).setScale(2))
+                .financialLoss(new BigDecimal("77.00"))
+                .travel(new BigDecimal("18.63"))
+                .subsistence(new BigDecimal("5.71"))
+                .totalPaid(new BigDecimal("101.34"))
                 .data(List.of(JurorPaymentsResponseDto.PaymentDayDto.builder()
                         .attendanceDate(LocalDate.of(2024, 5, 6))
                         .attendanceAudit("P10011777")
                         .paymentAudit("F12")
-                        .datePaid(LocalDate.of(2024, 5, 15))
-                        .timePaid(LocalTime.of(18, 15))
-                        .travel(BigDecimal.valueOf(7.63).setScale(2))
-                        .financialLoss(BigDecimal.valueOf(12.00).setScale(2))
-                        .subsistence(BigDecimal.valueOf(0.00).setScale(2))
-                        .smartcard(BigDecimal.valueOf(0.00).setScale(2))
-                        .totalDue(BigDecimal.valueOf(19.63).setScale(2))
-                        .totalPaid(BigDecimal.valueOf(19.63).setScale(2))
+                        .datePaid(LocalDateTime.of(2024, 5, 15, 18, 15, 6, 147_000_000))
+                        .travel(new BigDecimal("7.63"))
+                        .financialLoss(new BigDecimal("12.00"))
+                        .subsistence(new BigDecimal("0.00"))
+                        .smartcard(new BigDecimal("0"))
+                        .totalDue(new BigDecimal("19.63"))
+                        .totalPaid(new BigDecimal("19.63"))
                         .build(),
                     JurorPaymentsResponseDto.PaymentDayDto.builder()
                         .attendanceDate(LocalDate.of(2024, 5, 7))
                         .attendanceAudit("P10012682")
                         .paymentAudit("F16")
-                        .datePaid(LocalDate.of(2024, 5, 15))
-                        .timePaid(LocalTime.of(18, 29))
-                        .travel(BigDecimal.valueOf(4.00).setScale(2))
-                        .financialLoss(BigDecimal.valueOf(16.00).setScale(2))
-                        .subsistence(BigDecimal.valueOf(0.00).setScale(2))
-                        .smartcard(BigDecimal.valueOf(0.00).setScale(2))
-                        .totalDue(BigDecimal.valueOf(20.00).setScale(2))
-                        .totalPaid(BigDecimal.valueOf(20.00).setScale(2))
+                        .datePaid(LocalDateTime.of(2024, 5, 15, 18, 29, 58, 575_000_000))
+                        .travel(new BigDecimal("4.00"))
+                        .financialLoss(new BigDecimal("16.00"))
+                        .subsistence(new BigDecimal("0.00"))
+                        .smartcard(new BigDecimal("0"))
+                        .totalDue(new BigDecimal("20.00"))
+                        .totalPaid(new BigDecimal("20.00"))
                         .build(),
                     JurorPaymentsResponseDto.PaymentDayDto.builder()
                         .attendanceDate(LocalDate.of(2024, 5, 8))
                         .attendanceAudit("P10013503")
                         .paymentAudit("F12")
-                        .datePaid(LocalDate.of(2024, 5, 15))
-                        .timePaid(LocalTime.of(18, 15))
-                        .travel(BigDecimal.valueOf(3.00).setScale(2))
-                        .financialLoss(BigDecimal.valueOf(12.00).setScale(2))
-                        .subsistence(BigDecimal.valueOf(5.71).setScale(2))
-                        .smartcard(BigDecimal.valueOf(0.00).setScale(2))
-                        .totalDue(BigDecimal.valueOf(20.71).setScale(2))
-                        .totalPaid(BigDecimal.valueOf(20.71).setScale(2))
+                        .datePaid(LocalDateTime.of(2024, 5, 15, 18, 15, 6, 147_000_000))
+                        .travel(new BigDecimal("3.00"))
+                        .financialLoss(new BigDecimal("12.00"))
+                        .subsistence(new BigDecimal("5.71"))
+                        .smartcard(new BigDecimal("0"))
+                        .totalDue(new BigDecimal("20.71"))
+                        .totalPaid(new BigDecimal("20.71"))
                         .build(),
                     JurorPaymentsResponseDto.PaymentDayDto.builder()
                         .attendanceDate(LocalDate.of(2024, 5, 9))
                         .attendanceAudit("P10014275")
                         .paymentAudit("F10")
-                        .datePaid(LocalDate.of(2024, 5, 14))
-                        .timePaid(LocalTime.of(18, 13))
-                        .travel(BigDecimal.valueOf(4.00).setScale(2))
-                        .financialLoss(BigDecimal.valueOf(12.00).setScale(2))
-                        .subsistence(BigDecimal.valueOf(0.00).setScale(2))
-                        .smartcard(BigDecimal.valueOf(0.00).setScale(2))
-                        .totalDue(BigDecimal.valueOf(16.00).setScale(2))
-                        .totalPaid(BigDecimal.valueOf(16.00).setScale(2))
+                        .datePaid(LocalDateTime.of(2024, 5, 14, 18, 13, 17, 637_000_000))
+                        .travel(new BigDecimal("4.00"))
+                        .financialLoss(new BigDecimal("12.00"))
+                        .subsistence(new BigDecimal("0.00"))
+                        .smartcard(new BigDecimal("0"))
+                        .totalDue(new BigDecimal("16.00"))
+                        .totalPaid(new BigDecimal("16.00"))
                         .build(),
                     JurorPaymentsResponseDto.PaymentDayDto.builder()
                         .attendanceDate(LocalDate.of(2024, 5, 10))
                         .attendanceAudit("P10014995")
                         .paymentAudit("F10")
-                        .datePaid(LocalDate.of(2024, 5, 14))
-                        .timePaid(LocalTime.of(18, 13))
-                        .travel(BigDecimal.valueOf(0.00).setScale(2))
-                        .financialLoss(BigDecimal.valueOf(13.00).setScale(2))
-                        .subsistence(BigDecimal.valueOf(0.00).setScale(2))
-                        .smartcard(BigDecimal.valueOf(0.00).setScale(2))
-                        .totalDue(BigDecimal.valueOf(13.00).setScale(2))
-                        .totalPaid(BigDecimal.valueOf(13.00).setScale(2))
+                        .datePaid(LocalDateTime.of(2024, 5, 14, 18, 13, 17, 637_000_000))
+                        .travel(new BigDecimal("0.00"))
+                        .financialLoss(new BigDecimal("13.00"))
+                        .subsistence(new BigDecimal("0.00"))
+                        .smartcard(new BigDecimal("0"))
+                        .totalDue(new BigDecimal("13.00"))
+                        .totalPaid(new BigDecimal("13.00"))
                         .build(),
                     JurorPaymentsResponseDto.PaymentDayDto.builder()
                         .attendanceDate(LocalDate.of(2024, 5, 13))
                         .attendanceAudit("P10016300")
                         .paymentAudit("F10")
-                        .datePaid(LocalDate.of(2024, 5, 14))
-                        .timePaid(LocalTime.of(18, 13))
-                        .travel(BigDecimal.valueOf(0.00).setScale(2))
-                        .financialLoss(BigDecimal.valueOf(12.00).setScale(2))
-                        .subsistence(BigDecimal.valueOf(0.00).setScale(2))
-                        .smartcard(BigDecimal.valueOf(0.00).setScale(2))
-                        .totalDue(BigDecimal.valueOf(12.00).setScale(2))
-                        .totalPaid(BigDecimal.valueOf(12.00).setScale(2))
+                        .datePaid(LocalDateTime.of(2024, 5, 14, 18, 13, 17, 637_000_000))
+                        .travel(new BigDecimal("0"))
+                        .financialLoss(new BigDecimal("12.00"))
+                        .subsistence(new BigDecimal("0"))
+                        .smartcard(new BigDecimal("0"))
+                        .totalDue(new BigDecimal("12.00"))
+                        .totalPaid(new BigDecimal("12.00"))
                         .build()))
-                .build().toString());
+                .build());
         }
 
         @Test
@@ -3597,8 +3592,18 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                     JurorPaymentsResponseDto.class);
 
             assertThat(response.getStatusCode())
-                .as("Expect the HTTP GET request to fail")
-                .isEqualTo(HttpStatus.NOT_FOUND);
+                .as("Expect the HTTP GET request to be okay")
+                .isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody())
+                .isEqualTo(JurorPaymentsResponseDto.builder()
+                    .data(new ArrayList<>())
+                    .attendances(0)
+                    .nonAttendances(0)
+                    .financialLoss(BigDecimal.ZERO)
+                    .travel(BigDecimal.ZERO)
+                    .subsistence(BigDecimal.ZERO)
+                    .totalPaid(BigDecimal.ZERO)
+                    .build());
         }
 
         @Test
@@ -3627,8 +3632,18 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 );
 
             assertThat(response.getStatusCode())
-                .as("Expect the HTTP GET request to fail")
-                .isEqualTo(HttpStatus.FORBIDDEN);
+                .as("Expect the HTTP GET request to be okay")
+                .isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody())
+                .isEqualTo(JurorPaymentsResponseDto.builder()
+                    .data(new ArrayList<>())
+                    .attendances(0)
+                    .nonAttendances(0)
+                    .financialLoss(BigDecimal.ZERO)
+                    .travel(BigDecimal.ZERO)
+                    .subsistence(BigDecimal.ZERO)
+                    .totalPaid(BigDecimal.ZERO)
+                    .build());
         }
 
         @Test
@@ -3764,7 +3779,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             ResponseEntity<JurorHistoryResponseDto> response =
                 restTemplate.exchange(
                     new RequestEntity<>(otherCourtHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/141500073/payments")
+                        URI.create("/api/v1/moj/juror-record/141500073/history")
                     ),
                     JurorHistoryResponseDto.class
                 );

@@ -19,6 +19,7 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -117,6 +118,19 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
             SortMethod.DESC);
     }
 
+    @Override
+    public Optional<FinancialAuditDetails> getLastFinancialAuditDetailsFromAppearanceAndGenericType(
+        Appearance appearance,
+        FinancialAuditDetails.Type.GenericType genericType) {
+        return financialAuditDetailsRepository
+            .findLastFinancialAuditDetailsByType(
+                appearance.getJurorNumber(),
+                appearance.getAttendanceDate(),
+                appearance.getLocCode(),
+                genericType.getTypes())
+            ;
+    }
+
 
     @Override
     public Appearance getPreviousAppearance(FinancialAuditDetails financialAuditDetails, Appearance appearance) {
@@ -151,6 +165,19 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
                     + appearance.getFinancialAudit()
                     + " locCode: " + appearance.getLocCode(),
                     null));
+    }
+
+    private FinancialAuditDetailsAppearances getFinancialAuditDetailsAppearancesWithGenericTypeExcludingAuditNumber(
+        FinancialAuditDetails.Type.GenericType genericType,
+        FinancialAuditDetails financialAuditDetails,
+        Appearance appearance) {
+        return financialAuditDetailsAppearancesRepository
+            .findPreviousFinancialAuditDetailsAppearancesWithGenericTypeExcludingProvidedAuditDetails(
+                genericType,
+                financialAuditDetails,
+                appearance)
+            .orElseThrow(
+                () -> new MojException.NotFound("No previous appearance found for appearance", null));
     }
 
 

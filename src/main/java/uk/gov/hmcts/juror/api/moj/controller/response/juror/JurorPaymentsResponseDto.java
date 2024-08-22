@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,11 +14,12 @@ import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 @Getter
 @Setter
 @Builder
@@ -57,6 +59,7 @@ public class JurorPaymentsResponseDto {
     @Getter
     @Schema(description = "Appearance and payments row")
     @ToString
+    @EqualsAndHashCode
     public static class PaymentDayDto {
         @JsonProperty("attendance_date")
         @JsonFormat(pattern = ValidationConstants.DATE_FORMAT)
@@ -72,14 +75,9 @@ public class JurorPaymentsResponseDto {
         private String paymentAudit;
 
         @JsonProperty("date_paid")
-        @JsonFormat(pattern = ValidationConstants.DATE_FORMAT)
+        @JsonFormat(pattern = ValidationConstants.DATETIME_FORMAT)
         @Schema(description = "Date payment was made")
-        private LocalDate datePaid;
-
-        @JsonProperty("time_paid")
-        @JsonFormat(pattern = ValidationConstants.TIME_FORMAT)
-        @Schema(description = "Time payment was made")
-        private LocalTime timePaid;
+        private LocalDateTime datePaid;
 
         @JsonProperty("travel")
         @Schema(description = "Travel cost for the day")

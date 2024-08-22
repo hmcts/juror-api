@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
-import com.querydsl.core.Tuple;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -53,6 +52,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.ContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
 import uk.gov.hmcts.juror.api.moj.domain.FilterJurorRecord;
+import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.IContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -68,7 +68,6 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolHistory;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
-import uk.gov.hmcts.juror.api.moj.domain.QReportsJurorPayments;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
@@ -95,7 +94,6 @@ import uk.gov.hmcts.juror.api.moj.repository.PendingJurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolTypeRepository;
-import uk.gov.hmcts.juror.api.moj.repository.juror.JurorPaymentsSummaryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
@@ -119,7 +117,9 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -141,7 +141,7 @@ import static uk.gov.hmcts.juror.api.moj.utils.JurorUtils.checkReadAccessForCurr
 @Slf4j
 @Service
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports",
-                   "PMD.TooManyFields"})
+    "PMD.TooManyFields"})
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class JurorRecordServiceImpl implements JurorRecordService {
     private final ContactCodeRepository contactCodeRepository;
@@ -163,7 +163,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     private final JurorHistoryRepository jurorHistoryRepository;
     private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
     private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
-    private final JurorPaymentsSummaryRepository jurorPaymentsSummaryRepository;
+    private final FinancialAuditService financialAuditService;
 
     private final JurorResponseCommonRepositoryMod jurorResponseCommonRepositoryMod;
 
@@ -1225,10 +1225,10 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         BigDecimal paid = BigDecimal.ZERO;
 
         PaymentSummaryData add(PaymentSummaryData target) {
-            financialLoss = financialLoss.add(target.getFinancialLoss());
-            travel = travel.add(target.getTravel());
-            subsistence = subsistence.add(target.getSubsistence());
-            paid = paid.add(target.getPaid());
+            financialLoss = financialLoss.add(BigDecimalUtils.getOrZero(target.getFinancialLoss()));
+            travel = travel.add(BigDecimalUtils.getOrZero(target.getTravel()));
+            subsistence = subsistence.add(BigDecimalUtils.getOrZero(target.getSubsistence()));
+            paid = paid.add(BigDecimalUtils.getOrZero(target.getPaid()));
 
             return this;
         }
@@ -1236,62 +1236,72 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     @Override
     public JurorPaymentsResponseDto getJurorPayments(String jurorNumber) {
-        JurorUtils.checkOwnershipForCurrentUser(JurorPoolUtils.getActiveJurorRecord(jurorPoolRepository, jurorNumber),
-            SecurityUtil.getActiveOwner());
-        checkReadAccessForCurrentUser(jurorPoolRepository, jurorNumber, SecurityUtil.getActiveOwner());
 
-        List<Tuple> data = jurorPaymentsSummaryRepository.fetchPaymentLogByJuror(jurorNumber);
+        List<Appearance> appearances =
+            appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumberAndAppearanceStageIn(
+                SecurityUtil.getLocCode(),
+                jurorNumber,
+                AppearanceStage.getConfirmedAppearanceStages()
+            );
 
-        int nonAttendanceCount = (int) data.stream().filter(
-            item -> Optional.ofNullable(item.get(QReportsJurorPayments.reportsJurorPayments.nonAttendance))
-                .orElse(false)
+
+        Collection<AttendanceType> nonAttendanceTypes = AttendanceType.getNonAttendanceTypes();
+
+        int nonAttendanceCount = (int) appearances.stream().filter(
+            appearance -> nonAttendanceTypes.contains(appearance.getAttendanceType())
         ).count();
 
-        PaymentSummaryData summaryData = data.stream().reduce(
-            new PaymentSummaryData(),
-            (total, item) -> total.add(new PaymentSummaryData(
-                BigDecimalUtils.getOrZero(item.get(QReportsJurorPayments.reportsJurorPayments.totalFinancialLossDue)),
-                BigDecimalUtils.getOrZero(item.get(QReportsJurorPayments.reportsJurorPayments.totalTravelDue)),
-                BigDecimalUtils.getOrZero(item.get(QReportsJurorPayments.reportsJurorPayments.subsistenceDue)),
-                BigDecimalUtils.getOrZero(item.get(QReportsJurorPayments.reportsJurorPayments.totalPaid)))),
-            PaymentSummaryData::add);
+        PaymentSummaryData summaryData = appearances.stream()
+            .filter(appearance -> !appearance.isDraftExpense())
+            .reduce(
+                new PaymentSummaryData(),
+                (total, item) -> total.add(new PaymentSummaryData(
+                    item.getTotalFinancialLossDue(),
+                    item.getTotalTravelDue(),
+                    item.getSubsistenceDue(),
+                    item.getTotalPaid())),
+                PaymentSummaryData::add
+            );
 
+        Map<Long, Optional<FinancialAuditDetails>> auditDetailsMap = new HashMap<>();
         return JurorPaymentsResponseDto.builder()
-            .attendances(data.size() - nonAttendanceCount)
+            .attendances(appearances.size() - nonAttendanceCount)
             .nonAttendances(nonAttendanceCount)
-            .financialLoss(summaryData.getFinancialLoss().setScale(2))
-            .travel(summaryData.getTravel().setScale(2))
-            .subsistence(summaryData.getSubsistence().setScale(2))
-            .totalPaid(summaryData.getPaid().setScale(2))
-            .data(data.stream().map(item -> {
+            .financialLoss(BigDecimalUtils.getOrZero(summaryData.getFinancialLoss()))
+            .travel(BigDecimalUtils.getOrZero(summaryData.getTravel()))
+            .subsistence(BigDecimalUtils.getOrZero(summaryData.getSubsistence()))
+            .totalPaid(BigDecimalUtils.getOrZero(summaryData.getPaid()))
+            .data(appearances.stream().map(appearance -> {
                 JurorPaymentsResponseDto.PaymentDayDto.PaymentDayDtoBuilder day =
                     JurorPaymentsResponseDto.PaymentDayDto.builder()
-                        .attendanceDate(item.get(QReportsJurorPayments.reportsJurorPayments.attendanceDate))
-                        .attendanceAudit(item.get(QReportsJurorPayments.reportsJurorPayments.attendanceAudit))
-                        .travel(BigDecimalUtils.getOrZero(item
-                            .get(QReportsJurorPayments.reportsJurorPayments.totalTravelDue)).setScale(2))
-                        .financialLoss(BigDecimalUtils.getOrZero(item
-                            .get(QReportsJurorPayments.reportsJurorPayments.totalFinancialLossDue)).setScale(2))
-                        .subsistence(BigDecimalUtils.getOrZero(item
-                            .get(QReportsJurorPayments.reportsJurorPayments.subsistenceDue)).setScale(2))
-                        .smartcard(BigDecimalUtils.getOrZero(item
-                            .get(QReportsJurorPayments.reportsJurorPayments.smartCardDue)).setScale(2))
-                        .totalDue(BigDecimalUtils.getOrZero(item
-                            .get(QReportsJurorPayments.reportsJurorPayments.totalDue)).setScale(2))
-                        .totalPaid(BigDecimalUtils.getOrZero(item
-                            .get(QReportsJurorPayments.reportsJurorPayments.totalPaid)).setScale(2));
+                        .attendanceDate(appearance.getAttendanceDate())
+                        .attendanceAudit(appearance.getAttendanceAuditNumber());
 
-                if (Optional.ofNullable(item.get(QReportsJurorPayments.reportsJurorPayments.latestPaymentFAuditId))
-                    .isPresent()) {
-                    day.paymentAudit("F".concat(item.get(
-                        QReportsJurorPayments.reportsJurorPayments.latestPaymentFAuditId)));
+                if (!appearance.isDraftExpense()) {
+                    day.travel(appearance.getTotalTravelDue())
+                        .financialLoss(appearance.getTotalFinancialLossDue())
+                        .subsistence(BigDecimalUtils.getOrZero(appearance.getSubsistenceDue()))
+                        .smartcard(BigDecimalUtils.getOrZero(appearance.getSmartCardAmountDue()))
+                        .totalDue(appearance.getTotalDue())
+                        .totalPaid(appearance.getTotalPaid());
+
+                    if (appearance.getFinancialAudit() != null) {
+                        final Optional<FinancialAuditDetails> financialAuditDetailsOptional;
+                        if (!auditDetailsMap.containsKey(appearance.getFinancialAudit())) {
+                            financialAuditDetailsOptional =
+                                financialAuditService.getLastFinancialAuditDetailsFromAppearanceAndGenericType(
+                                    appearance, FinancialAuditDetails.Type.GenericType.APPROVED);
+                            auditDetailsMap.put(appearance.getFinancialAudit(), financialAuditDetailsOptional);
+                        } else {
+                            financialAuditDetailsOptional = auditDetailsMap.get(appearance.getFinancialAudit());
+                        }
+                        if (financialAuditDetailsOptional.isPresent()) {
+                            FinancialAuditDetails financialAuditDetails = financialAuditDetailsOptional.get();
+                            day.paymentAudit(FinancialAuditDetails.F_AUDIT_PREFIX + financialAuditDetails.getId());
+                            day.datePaid(financialAuditDetails.getCreatedOn());
+                        }
+                    }
                 }
-
-                if (Optional.ofNullable(item.get(QReportsJurorPayments.reportsJurorPayments.paymentDate)).isPresent()) {
-                    day.datePaid(item.get(QReportsJurorPayments.reportsJurorPayments.paymentDate).toLocalDate())
-                        .timePaid(item.get(QReportsJurorPayments.reportsJurorPayments.paymentDate).toLocalTime());
-                }
-
                 return day.build();
             }).toList())
             .build();
