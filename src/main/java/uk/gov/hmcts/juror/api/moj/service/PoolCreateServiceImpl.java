@@ -57,6 +57,7 @@ import uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDeferralsSer
 import uk.gov.hmcts.juror.api.moj.utils.PaginationUtil;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
+import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -566,7 +567,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
 
                 return builder.build();
             },
-            500L
+            ValidationConstants.MAX_ITEMS
         );
     }
 

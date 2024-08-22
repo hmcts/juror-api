@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -25,15 +26,20 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.PoolRequestedFilterQuery;
 import uk.gov.hmcts.juror.api.moj.controller.response.CourtLocationListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolNumbersListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestActiveListDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestListDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestDataDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolsAtCourtLocationListDto;
 import uk.gov.hmcts.juror.api.moj.domain.DayType;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
+import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
 import uk.gov.hmcts.juror.api.moj.service.CourtLocationService;
 import uk.gov.hmcts.juror.api.moj.service.GeneratePoolNumberService;
 import uk.gov.hmcts.juror.api.moj.service.PoolRequestService;
+import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
+import uk.gov.hmcts.juror.api.validation.CourtLocationCode;
 
 import java.time.LocalDate;
 
@@ -76,16 +82,24 @@ public class RequestPoolController {
      */
     @GetMapping("/pools-requested")
     @Operation(summary = "Retrieve a list of all pools filtered by status, pool type and court location")
-    public ResponseEntity<PoolRequestListDto> getPoolRequests(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
-        @RequestParam(required = false) @Size(min = 3, max = 3) @Valid String locCode,
-        @RequestParam @Valid int offset,
-        @RequestParam @Valid String sortBy,
-        @RequestParam @Valid String sortOrder) {
+    public ResponseEntity<PaginatedList<PoolRequestDataDto>> getPoolRequests(
+        @RequestParam(required = false)
+        @CourtLocationCode @Size(min = 3, max = 3) @Valid String locCode,
+        @RequestParam @Valid @Min(1) Integer pageNumber,
+        @RequestParam @Valid @Min(1) Integer pageLimit,
+        @RequestParam @Valid PoolRequestedFilterQuery.SortField sortBy,
+        @RequestParam @Valid SortMethod sortOrder){
 
-        PoolRequestListDto poolRequests = poolRequestService.getFilteredPoolRequests(payload, locCode, offset,
-            sortBy, sortOrder);
+        PoolRequestedFilterQuery filterQuery = PoolRequestedFilterQuery.builder()
+            .locCode(locCode)
+            .sortField(sortBy)
+            .sortMethod(sortOrder)
+            .pageLimit(pageLimit)
+            .pageNumber(pageNumber)
+            .build();
 
+        PaginatedList<PoolRequestDataDto> poolRequests = poolRequestService.getFilteredPoolRequests(filterQuery);
+        System.out.println("TMP: " + DataUtils.asJsonString(poolRequests));
         return ResponseEntity.ok().body(poolRequests);
     }
 

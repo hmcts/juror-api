@@ -113,6 +113,7 @@ import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
 import uk.gov.hmcts.juror.api.moj.utils.PaginationUtil;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
+import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -1392,7 +1393,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
                     .locCode(tuple.get(QJurorPool.jurorPool.pool.courtLocation.locCode));
                 return builder.build();
             },
-            500L
+            ValidationConstants.MAX_ITEMS
         );
     }
 
