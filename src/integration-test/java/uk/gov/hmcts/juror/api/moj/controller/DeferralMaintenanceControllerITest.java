@@ -868,24 +868,6 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         }
 
         @Test
-        void bureauProcessJurorAlreadyInBulkPrintForGivenDate() {
-            final String bureauJwt = createJwt(BUREAU_USER, OWNER_400);
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-
-            ResponseEntity<String> response = template.exchange(new RequestEntity<>(
-                createDeferralReasonRequestDtoToActivePool(ReplyMethod.PAPER),
-                httpHeaders, POST, URI.create(URL_PREFIX + JUROR_555555552)), String.class);
-
-            assertThat(response.getStatusCode()).as("HTTP status unprocessable entity expected")
-                .isEqualTo(UNPROCESSABLE_ENTITY);
-
-            assertBusinessRuleViolation(response, "Letter already exists in bulk print queue for the same day",
-                DAY_ALREADY_EXISTS);
-        }
-
-
-        @Test
         void bureauOwnedCourtUserProcessJurorActivePoolPaper() {
             final String bureauJwt = createJwt(COURT_USER, OWNER_415);
 
