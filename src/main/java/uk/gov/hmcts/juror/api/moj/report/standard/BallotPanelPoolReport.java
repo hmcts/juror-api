@@ -35,7 +35,7 @@ public class BallotPanelPoolReport extends AbstractStandardReport {
         query.where(QJurorPool.jurorPool.pool.poolNumber.eq(request.getPoolNumber()));
         query.where(QJurorPool.jurorPool.pool.courtLocation.locCode.in(SecurityUtil.getCourts()));
         query.where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED));
-        query.orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
+        query.orderBy(QJurorPool.jurorPool.juror.lastName.asc(), QJurorPool.jurorPool.juror.jurorNumber.asc());
     }
 
     @Override
