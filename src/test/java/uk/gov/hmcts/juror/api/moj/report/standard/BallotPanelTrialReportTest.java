@@ -80,7 +80,7 @@ class BallotPanelTrialReportTest extends AbstractStandardReportTestSupport<Ballo
         Mockito.verify(query, Mockito.times(1))
             .where(QPanel.panel.trial.courtLocation.locCode.in(List.of(TestConstants.VALID_COURT_LOCATION)));
         Mockito.verify(query, Mockito.times(1))
-            .orderBy(QPanel.panel.juror.jurorNumber.asc());
+            .orderBy(QPanel.panel.juror.lastName.asc(), QPanel.panel.juror.jurorNumber.asc());
     }
 
     @Override
