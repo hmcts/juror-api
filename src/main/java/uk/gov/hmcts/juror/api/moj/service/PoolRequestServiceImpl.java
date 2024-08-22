@@ -6,25 +6,19 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.HolidaysRepository;
+import uk.gov.hmcts.juror.api.moj.controller.request.ActivePoolFilterQuery;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolRequestedFilterQuery;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolNumbersListDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestActiveListDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestActiveDataDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestDataDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolsAtCourtLocationListDto;
-import uk.gov.hmcts.juror.api.moj.domain.ActivePoolsBureau;
-import uk.gov.hmcts.juror.api.moj.domain.ActivePoolsCourt;
 import uk.gov.hmcts.juror.api.moj.domain.DayType;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
@@ -33,15 +27,13 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.exception.CurrentlyDeferredException;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.PoolRequestException;
-import uk.gov.hmcts.juror.api.moj.repository.ActivePoolsBureauRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
-import uk.gov.hmcts.juror.api.moj.repository.IActivePoolsCourtRepository;
+import uk.gov.hmcts.juror.api.moj.repository.IActivePoolsRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolTypeRepository;
 import uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDeferralsService;
 import uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils;
-import uk.gov.hmcts.juror.api.moj.utils.PoolRequestUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -62,10 +54,6 @@ public class PoolRequestServiceImpl implements PoolRequestService {
 
     private static final Character NEW_REQUEST_STATE = 'Y';
     private static final Character CREATED_REQUEST_STATE = 'N';
-    private static final String BUREAU_TAB = "bureau";
-    private static final String COURT_TAB = "court";
-    private static final int PAGE_SIZE = 25;
-    private static final int ACTIVE_POOL_DAYS_LIMIT = 28;
 
     private final PoolRequestRepository poolRequestRepository;
     private final CourtLocationRepository courtLocationRepository;
@@ -73,8 +61,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
     private final HolidaysRepository holidaysRepository;
     private final ManageDeferralsService manageDeferralsService;
     private final PoolHistoryRepository poolHistoryRepository;
-    private final ActivePoolsBureauRepository activePoolsBureauRepository;
-    private final IActivePoolsCourtRepository activePoolsCourtRepository;
+    private final IActivePoolsRepository activePoolsRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -295,158 +282,8 @@ public class PoolRequestServiceImpl implements PoolRequestService {
     }
 
     @Override
-    public PoolRequestActiveListDto getActivePoolRequests(BureauJwtPayload payload, String locCode, String tab,
-                                                          int offset, String sortBy, String sortOrder) {
-
-        List<PoolRequestActiveListDto.PoolRequestActiveDataDto> data = new ArrayList<>();
-        long totalSize = 0;
-        Sort sort = sortOrder.equals("desc")
-            ? Sort.by(sortBy).descending()
-            : Sort.by(sortBy).ascending();
-        Pageable pageable = PageRequest.of(offset, PAGE_SIZE, sort);
-        Page<ActivePoolsBureau> activePoolsBureauList;
-        Page<ActivePoolsCourt> activePoolsCourtPage;
-        List<ActivePoolsCourt> activePoolsCourtList;
-
-        if (payload.getOwner().equals(JurorDigitalApplication.JUROR_OWNER)) {
-
-            if (tab.equals(BUREAU_TAB)) {
-
-                log.debug("Retrieving active Pool Requests at Bureau for the current Bureau user");
-
-                if (locCode == null) {
-                    activePoolsBureauList =
-                        activePoolsBureauRepository.findByPoolTypeIn(PoolRequestUtils.POOL_TYPES_DESC_LIST, pageable);
-                } else {
-                    Optional<CourtLocation> courtLocationOpt = courtLocationRepository.findByLocCode(locCode);
-                    if (courtLocationOpt.isPresent()) {
-                        CourtLocation courtLocation = courtLocationOpt.get();
-                        activePoolsBureauList =
-                            activePoolsBureauRepository.findByPoolTypeInAndCourtName(
-                                PoolRequestUtils.POOL_TYPES_DESC_LIST, courtLocation.getName(), pageable);
-                    } else {
-                        log.error("Invalid Location code parameter for active pools search {}", locCode);
-                        throw new IllegalArgumentException(
-                            "Invalid court location code supplied for active pool search: " + locCode);
-                    }
-                }
-
-                if (activePoolsBureauList == null) {
-                    //nothing found for search criteria, return empty list
-                    return new PoolRequestActiveListDto(data, 0);
-                }
-
-                totalSize = populateAtBureauDataList(activePoolsBureauList, data);
-
-            } else if (tab.equals(COURT_TAB)) {
-
-                log.debug("Retrieving active Pool Requests at Court for the current Bureau user");
-
-                //set a date to limit results
-                LocalDate returnDateAfter = LocalDate.now().minusDays(ACTIVE_POOL_DAYS_LIMIT);
-
-                if (locCode == null) {
-                    activePoolsCourtList = activePoolsCourtRepository.findActivePools(null, returnDateAfter, sortBy,
-                        sortOrder, PoolRequestUtils.POOL_TYPES_DESC_LIST);
-                } else {
-                    activePoolsCourtList = activePoolsCourtRepository.findActivePools(List.of(locCode), null,
-                        sortBy, sortOrder, PoolRequestUtils.POOL_TYPES_DESC_LIST);
-                }
-
-                activePoolsCourtPage = convertListToPage(activePoolsCourtList, pageable);
-
-                if (activePoolsCourtPage.isEmpty()) {
-                    //nothing found for search criteria, return empty list
-                    return new PoolRequestActiveListDto(data, 0);
-                }
-
-                totalSize = populateAtCourtDataList(activePoolsCourtPage, data);
-            }
-
-        } else {
-            //This is a court user
-
-            if (tab.equals(BUREAU_TAB)) {
-
-                log.debug("Retrieving active Pool Requests at Bureau for the current Courts user");
-
-                //find all courts user has access to and search for pool requests
-                List<String> courts = payload.getStaff().getCourts();
-
-                if (locCode == null) {
-                    List<CourtLocation> courtLocations = courtLocationRepository.findByLocCodeIn(courts);
-                    List<String> courtNames = new ArrayList<>();
-
-                    for (CourtLocation c : courtLocations) {
-                        courtNames.add(c.getName());
-                    }
-                    activePoolsBureauList = activePoolsBureauRepository.findByPoolTypeInAndCourtNameIn(
-                        PoolRequestUtils.POOL_TYPES_DESC_LIST, courtNames, pageable);
-                } else {
-
-                    //check if user is allowed to query the locCode supplied
-                    if (!courts.contains(locCode)) {
-                        log.error("Location code is not in users courts list {}", locCode);
-                        throw new IllegalArgumentException("Location code {} is not in users courts list" + locCode);
-                    }
-
-                    Optional<CourtLocation> courtLocationOpt = courtLocationRepository.findByLocCode(locCode);
-                    if (courtLocationOpt.isPresent()) {
-                        CourtLocation courtLocation = courtLocationOpt.get();
-                        activePoolsBureauList = activePoolsBureauRepository.findByPoolTypeInAndCourtName(
-                                PoolRequestUtils.POOL_TYPES_DESC_LIST, courtLocation.getName(), pageable);
-                    } else {
-                        log.error("Invalid Location code parameter for active pools search {}", locCode);
-                        throw new IllegalArgumentException(
-                            "Invalid court location code supplied for active pool search: " + locCode);
-                    }
-                }
-
-                if (activePoolsBureauList == null) {
-                    //nothing found for search criteria, return empty list
-                    return new PoolRequestActiveListDto(data, 0);
-                }
-
-                totalSize = populateAtBureauDataList(activePoolsBureauList, data);
-
-            } else if (tab.equals(COURT_TAB)) {
-
-                log.debug("Retrieving active Pool Requests at Court for the current Courts user");
-
-                if (locCode == null) {
-                    //find all courts user has access to and search for pool requests
-                    List<String> courts = payload.getStaff().getCourts();
-                    activePoolsCourtList = activePoolsCourtRepository.findActivePools(
-                        courts,
-                        null,
-                        sortBy,
-                        sortOrder,
-                        PoolRequestUtils.POOL_TYPES_DESC_LIST
-                    );
-
-                } else {
-                    activePoolsCourtList = activePoolsCourtRepository.findActivePools(
-                        List.of(locCode),
-                        null,
-                        sortBy,
-                        sortOrder,
-                        PoolRequestUtils.POOL_TYPES_DESC_LIST
-                    );
-                }
-
-                activePoolsCourtPage = convertListToPage(activePoolsCourtList, pageable);
-
-                if (activePoolsCourtPage.isEmpty()) {
-                    //nothing found for search criteria, return empty list
-                    return new PoolRequestActiveListDto(data, 0);
-                }
-
-                totalSize = populateAtCourtDataList(activePoolsCourtPage, data);
-            }
-
-        }
-        log.debug(String.format("Found %s active pool records for current user, %s", totalSize, payload.getLogin()));
-        return new PoolRequestActiveListDto(data, totalSize);
+    public PaginatedList<PoolRequestActiveDataDto> getActivePoolRequests(ActivePoolFilterQuery filterQuery) {
+        return activePoolsRepository.getActivePoolRequests(filterQuery);
     }
 
     @Override
@@ -459,13 +296,13 @@ public class PoolRequestServiceImpl implements PoolRequestService {
         //check if user is allowed to query the locCode supplied
         CourtLocationUtils.validateAccessToCourtLocation(locCode, payload.getOwner(), courtLocationRepository);
 
-        log.debug("User %s, Retrieving active Pool Requests at Court location %s", userLogin, locCode);
+        log.debug("User {}, Retrieving active Pool Requests at Court location {}", userLogin, locCode);
         List<PoolsAtCourtLocationListDto.PoolsAtCourtLocationDataDto> data = new ArrayList<>();
         try {
             List<String> poolsListing = poolRequestRepository.findPoolsByCourtLocation(locCode);
             log.debug("Found {} active pool records for current user, {}", poolsListing.size(), userLogin);
 
-            poolsListing.stream().forEach(pool -> {
+            poolsListing.forEach(pool -> {
                 List<String> poolDetails = Arrays.asList(pool.split(","));
 
                 int jurorsInAttendance = poolDetails.get(2).equals("null") ? 0 : Integer.parseInt(poolDetails.get(2));
@@ -494,46 +331,6 @@ public class PoolRequestServiceImpl implements PoolRequestService {
         return new PoolsAtCourtLocationListDto(data);
     }
 
-    private long populateAtCourtDataList(Page<ActivePoolsCourt> activePoolsCourtPage,
-                                         List<PoolRequestActiveListDto.PoolRequestActiveDataDto> data) {
-        long totalSize;
-        activePoolsCourtPage.forEach(p -> {
-            PoolRequestActiveListDto.PoolRequestActiveDataDto poolRequestActiveDataDto =
-                PoolRequestActiveListDto.PoolRequestActiveDataDto.builder()
-                    .poolNumber(p.getPoolNumber())
-                    .poolCapacity(p.getPoolCapacity())
-                    .jurorsInPool(p.getJurorsInPool())
-                    .courtName(p.getCourtName())
-                    .poolType(p.getPoolType())
-                    .attendanceDate(p.getServiceStartDate())
-                    .build();
-            data.add(poolRequestActiveDataDto);
-        });
-
-        totalSize = activePoolsCourtPage.getTotalElements();
-        return totalSize;
-    }
-
-    private long populateAtBureauDataList(Page<ActivePoolsBureau> activePoolsBureauList,
-                                          List<PoolRequestActiveListDto.PoolRequestActiveDataDto> data) {
-        long totalSize;
-        activePoolsBureauList.forEach(p -> {
-            PoolRequestActiveListDto.PoolRequestActiveDataDto poolRequestActiveDataDto =
-                PoolRequestActiveListDto.PoolRequestActiveDataDto.builder()
-                    .poolNumber(p.getPoolNumber())
-                    .requestedFromBureau(p.getJurorsRequested())
-                    .confirmedFromBureau(p.getConfirmedJurors())
-                    .courtName(p.getCourtName())
-                    .poolType(p.getPoolType())
-                    .attendanceDate(p.getServiceStartDate())
-                    .build();
-            data.add(poolRequestActiveDataDto);
-        });
-
-        totalSize = activePoolsBureauList.getTotalElements();
-        return totalSize;
-    }
-
     @Override
     public LocalDateTime getPoolAttendanceTime(String poolId) {
         log.trace("Looking up pool attendance time for pool ID {}", poolId);
@@ -557,16 +354,5 @@ public class PoolRequestServiceImpl implements PoolRequestService {
     public PoolRequest getPoolRequest(String poolNumber) {
         return poolRequestRepository.findById(poolNumber)
             .orElseThrow(() -> new MojException.NotFound("Pool Number not found", null));
-    }
-
-    public static <T> Page<T> convertListToPage(List<T> objectList, Pageable pageable) {
-        int start = (int) pageable.getOffset();
-        int end = Math.min(start + pageable.getPageSize(), objectList.size());
-        List<T> subList = start >= end
-            ?
-            new ArrayList<>()
-            :
-                objectList.subList(start, end);
-        return new PageImpl<>(subList, pageable, objectList.size());
     }
 }

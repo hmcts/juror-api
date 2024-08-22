@@ -25,11 +25,12 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
+import uk.gov.hmcts.juror.api.moj.controller.request.ActivePoolFilterQuery;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolRequestedFilterQuery;
 import uk.gov.hmcts.juror.api.moj.controller.response.CourtLocationListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolNumbersListDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestActiveListDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestActiveDataDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestDataDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolsAtCourtLocationListDto;
 import uk.gov.hmcts.juror.api.moj.domain.DayType;
@@ -178,10 +179,9 @@ public class RequestPoolController {
      * Get a list of Active pools as a Bureau or Court user for At Bureau or At Court.
      * The Pool Types currently returned are Civil and Crown Court only.
      *
-     * @param payload   The JWT principal from front end
      * @param locCode   Single location code of court to filter by, e.g. 415
      * @param tab       Which tab the user is on, i.e, "court" or "bureau"
-     * @param offset    The page number for result table
+     * @param pageNumber    The page number for result table
      * @param sortBy    The sort by criteria, this can be poolNumber, courtName, poolType, serviceStartDate and for
      *                  bureau tab only,
      *                  jurorsRequested and confirmedJurors, and for court tab only, totalNumber and jurorsInPool
@@ -190,18 +190,24 @@ public class RequestPoolController {
      */
     @GetMapping("/pools-active")
     @Operation(summary = "Retrieve a list of all active pools for Court or Bureau users")
-    public ResponseEntity<PoolRequestActiveListDto> getActivePoolRequests(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
-        @RequestParam(required = false) @Size(min = 3, max = 3) @Valid String locCode,
+    public ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> getActivePoolRequests(
+        @CourtLocationCode @Size(min = 3, max = 3) @Valid String locCode,
         @RequestParam @Valid String tab,
-        @RequestParam @Valid int offset,
-        @RequestParam @Valid String sortBy,
-        @RequestParam @Valid String sortOrder) {
+        @RequestParam @Valid @Min(1) Integer pageNumber,
+        @RequestParam @Valid @Min(1) Integer pageLimit,
+        @RequestParam @Valid ActivePoolFilterQuery.SortField sortBy,
+        @RequestParam @Valid SortMethod sortOrder) {
 
-        PoolRequestActiveListDto poolRequests = poolRequestService.getActivePoolRequests(payload, locCode, tab,
-            offset, sortBy, sortOrder);
+        ActivePoolFilterQuery filterQuery = ActivePoolFilterQuery.builder()
+            .locCode(locCode)
+            .tab(tab)
+            .sortField(sortBy)
+            .sortMethod(sortOrder)
+            .pageLimit(pageLimit)
+            .pageNumber(pageNumber)
+            .build();
 
-        return ResponseEntity.ok().body(poolRequests);
+        return ResponseEntity.ok().body(poolRequestService.getActivePoolRequests(filterQuery));
     }
 
     /**
