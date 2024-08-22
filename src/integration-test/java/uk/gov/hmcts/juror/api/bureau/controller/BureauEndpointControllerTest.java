@@ -172,11 +172,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
 
         final URI uri = URI.create("/api/v1/bureau/status/644892530");
 
-        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .login("testlogin")
-            .owner(JurorDigitalApplication.JUROR_OWNER)
-            .build());
+        final String bureauJwt = createJwtBureau("testlogin");
 
         // assert db state before merge.
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(1);
@@ -256,11 +252,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
 
         final URI uri = URI.create("/api/v1/bureau/status/644892530");
 
-        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .login("testlogin")
-            .owner(JurorDigitalApplication.JUROR_OWNER)
-            .build());
+        final String bureauJwt = createJwtBureau("testlogin");
 
         // assert db state before merge.
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(1);

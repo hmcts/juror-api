@@ -1,6 +1,6 @@
 package uk.gov.hmcts.juror.api.bureau.service;
 
-import io.jsonwebtoken.lang.Assert;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -24,7 +24,6 @@ import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 
 import java.net.InetSocketAddress;
 import java.net.Proxy;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -34,48 +33,25 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 
 @Configuration
 @Slf4j
 @Component
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService {
 
     private final AppSettingService appSetting;
-    //private final NotifyConfigurationProperties notifyConfigurationProperties;
     private final SmartSurveyConfigurationProperties smartSurveyConfigurationProperties;
     private final SurveyResponseRepository surveyResponseRepository;
-
     private Proxy proxy;
-    private String proxyHost;
-    private String proxyPort;
-    private Proxy.Type proxyType;
     private Boolean proxyEnabled = false;
-
-    @Autowired
-    public JurorDashboardSmartSurveyImportImpl(
-        final AppSettingService appSetting,
-        //final NotifyConfigurationProperties notifyConfigurationProperties,
-        final SmartSurveyConfigurationProperties smartSurveyConfigurationProperties,
-        final SurveyResponseRepository surveyResponseRepository) {
-        Assert.notNull(appSetting, "appSetting cannot be null.");
-        //Assert.notNull(notifyConfigurationProperties, "notifyConfigurationProperties cannot be null");
-        Assert.notNull(smartSurveyConfigurationProperties, "smartSurveyConfigurationProperties cannot be null");
-        Assert.notNull(surveyResponseRepository, "SurveyResponseRepository cannot be null.");
-
-        this.appSetting = appSetting;
-        //this.notifyConfigurationProperties = notifyConfigurationProperties;
-        this.smartSurveyConfigurationProperties = smartSurveyConfigurationProperties;
-        this.surveyResponseRepository = surveyResponseRepository;
-    }
 
     /**
      * Implements a specific job execution.
      * Process retrieval of satisfaction survey responses via the smart survey rest api.
      */
-
     @Override
     @Transactional
     public SchedulerServiceClient.Result process() {
@@ -95,14 +71,12 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
         String smartSurveyToken = smartSurveyConfigurationProperties.getToken();
 
         String smartSurveyCredentials = "?api_token={apiToken}&api_token_secret={apiTokenSecret}";
-        String exportId = null;
-        String exportUrl = null;
+        String exportUrl;
 
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
         LocalDate currentDate = LocalDate.now();
         LocalDate startDate = currentDate.minusDays(surveyDays);
 
-        List<SurveyResponse> surveyResponseList = new ArrayList<SurveyResponse>();
+        List<SurveyResponse> surveyResponseList;
         int dbInsertCount = 0;
         int dbSkipCount = 0;
 
@@ -129,6 +103,9 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
                 proxyEnabled = proxyProperties.getEnabled();
                 log.info("Smart Survey proxy enabled: {}", proxyEnabled);
 
+                String proxyHost;
+                Proxy.Type proxyType;
+                String proxyPort;
                 if (proxyEnabled) {
                     proxyHost = proxyProperties.getHost();
                     proxyPort = proxyProperties.getPort();

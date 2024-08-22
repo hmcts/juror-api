@@ -66,6 +66,9 @@ public class JurorPoolServiceImpl implements JurorPoolService {
 
     @Override
     public JurorPool getJurorPoolFromUser(String jurorNumber) {
+        if (!SecurityUtil.hasBureauJwtPayload() || SecurityUtil.isBureau() || SecurityUtil.isSystem()) {
+            return getLastActiveJurorPool(jurorNumber);
+        }
         return Optional.ofNullable(jurorPoolRepository.findByJurorJurorNumberAndIsActiveAndOwner(
                 jurorNumber, true, SecurityUtil.getActiveOwner()))
             .orElseThrow(() -> new MojException.NotFound("Juror not found: " + jurorNumber, null));
@@ -87,7 +90,21 @@ public class JurorPoolServiceImpl implements JurorPoolService {
         throw new MojException.NotFound("Juror not found: " + jurorNumber, null);
     }
 
+    @Override
+    public JurorPool save(JurorPool jurorPool) {
+        return jurorPoolRepository.save(jurorPool);
+    }
+
     private List<JurorPool> getJurorPools(String locCode, String jurorNumber) {
         return jurorPoolRepository.findByPoolCourtLocationLocCodeAndJurorJurorNumber(locCode, jurorNumber);
+    }
+
+    private JurorPool getLastActiveJurorPool(String jurorNumber) {
+        List<JurorPool> jurorPools =
+            jurorPoolRepository.findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
+        if (!jurorPools.isEmpty()) {
+            return jurorPools.get(0);
+        }
+        throw new MojException.NotFound("Juror not found: " + jurorNumber, null);
     }
 }

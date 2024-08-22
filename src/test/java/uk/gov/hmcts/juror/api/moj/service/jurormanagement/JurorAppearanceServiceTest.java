@@ -36,6 +36,9 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
+import uk.gov.hmcts.juror.api.moj.domain.trial.QCourtroom;
+import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
+import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
@@ -43,6 +46,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.PayAttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.UpdateAttendanceStatus;
+import uk.gov.hmcts.juror.api.moj.enumeration.trial.TrialType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
@@ -2870,12 +2874,12 @@ class JurorAppearanceServiceTest {
             doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findById(locationCode);
 
             Tuple t1 = mock(Tuple.class);
-            doReturn("T10000000").when(t1).get(0, String.class);
-            doReturn("test defendants").when(t1).get(1, String.class);
-            doReturn("CIV").when(t1).get(2, String.class);
-            doReturn("Big Court Room").when(t1).get(3, String.class);
-            doReturn("Big Judge").when(t1).get(4, String.class);
-            doReturn(8L).when(t1).get(5, Long.class);
+            doReturn("T10000000").when(t1).get(QTrial.trial.trialNumber);
+            doReturn("test defendants").when(t1).get(QTrial.trial.description);
+            doReturn(TrialType.CIV).when(t1).get(QTrial.trial.trialType);
+            doReturn("Big Court Room").when(t1).get(QCourtroom.courtroom.description);
+            doReturn("Big Judge").when(t1).get(QTrial.trial.judge.name);
+            doReturn(8L).when(t1).get(QPanel.panel.count());
 
             List<Tuple> jurorsOnTrialTuples = new ArrayList<>();
             jurorsOnTrialTuples.add(t1);
@@ -2884,8 +2888,8 @@ class JurorAppearanceServiceTest {
                 .thenReturn(jurorsOnTrialTuples);
 
             Tuple t2 = mock(Tuple.class);
-            doReturn("T10000000").when(t2).get(0, String.class);
-            doReturn(6L).when(t2).get(1, Long.class);
+            doReturn("T10000000").when(t2).get(QTrial.trial.trialNumber);
+            doReturn("Trial Desc").when(t2).get(QTrial.trial.description);
 
             List<Tuple> jurorsOnTrialsAttended = new ArrayList<>();
             jurorsOnTrialsAttended.add(t2);

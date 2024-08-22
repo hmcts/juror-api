@@ -22,13 +22,6 @@ public interface ResponseNotesService {
      */
     void updateNote(ResponseUpdateController.JurorNoteDto noteDto, String jurorId, String auditUser);
 
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    class NoteNotFoundException extends RuntimeException {
-        public NoteNotFoundException(String message) {
-            super(message);
-        }
-    }
-
     @ResponseStatus(HttpStatus.CONFLICT)
     class NoteComparisonFailureException extends RuntimeException {
         public NoteComparisonFailureException() {

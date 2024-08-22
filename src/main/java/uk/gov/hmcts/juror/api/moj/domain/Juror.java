@@ -211,7 +211,6 @@ public class Juror extends Address implements Serializable {
     private String summonsFile;
 
 
-
     @Length(max = 254)
     @Column(name = "h_email")
     private String email;
@@ -305,6 +304,10 @@ public class Juror extends Address implements Serializable {
     @Generated
     private String phoneNumberCombined;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "juror_number")
+    @NotAudited
+    private JurorThirdParty thirdParty;
 
     @PrePersist
     @SuppressWarnings("PMD.UnusedPrivateMethod")

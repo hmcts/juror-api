@@ -25,6 +25,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
@@ -49,6 +50,7 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
     private final EntityManager entityManager;
     private final AssignOnUpdateService assignOnUpdateService;
     private final PrintDataService printDataService;
+    private final JurorPoolService jurorPoolService;
 
 
     @Override
@@ -119,7 +121,7 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
             }
 
             // update juror pool entry
-            JurorPool poolDetails = detailsRepository.findByJurorJurorNumber(savedResponse.getJurorNumber());
+            JurorPool poolDetails = jurorPoolService.getJurorPoolFromUser(savedResponse.getJurorNumber());
             poolDetails.getJuror().setResponded(true);
             poolDetails.getJuror().setExcusalDate(LocalDate.now());
             poolDetails.getJuror().setExcusalCode(excusalCodeDto.getExcusalCode());
@@ -211,7 +213,7 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
             }
 
             // update juror pool entry
-            JurorPool poolDetails = detailsRepository.findByJurorJurorNumber(savedResponse.getJurorNumber());
+            JurorPool poolDetails = jurorPoolService.getJurorPoolFromUser(savedResponse.getJurorNumber());
             poolDetails.getJuror().setResponded(true);
             poolDetails.getJuror().setExcusalDate(LocalDate.now());
             poolDetails.getJuror().setExcusalCode(excusalCodeDto.getExcusalCode());

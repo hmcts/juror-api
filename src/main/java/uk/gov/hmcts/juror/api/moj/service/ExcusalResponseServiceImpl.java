@@ -60,8 +60,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
 
         checkExcusalCodeIsValid(excusalDecisionDto.getExcusalReasonCode());
 
-        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolRecord(
-            jurorPoolRepository, jurorPoolService, jurorNumber);
+        JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
 
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, owner);
 

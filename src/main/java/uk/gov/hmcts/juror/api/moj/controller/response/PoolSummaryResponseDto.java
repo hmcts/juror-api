@@ -137,6 +137,9 @@ public class PoolSummaryResponseDto {
         @Schema(name = "Court Supply", description = "The number of Pool Members owned by the court (e.g. court "
             + "deferrals) with a status of 'Responded'")
         private int courtSupply;
+
+        @JsonProperty("totalJurorsInPool")
+        private long totalJurorsInPool;
     }
 
 }

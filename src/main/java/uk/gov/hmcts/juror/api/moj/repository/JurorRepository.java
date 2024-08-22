@@ -35,5 +35,7 @@ public interface JurorRepository extends RevisionRepository<Juror, String, Long>
     List<String> callDailyUtilJurorsStats(@Param("LocCode") String locCode,
                                     @Param("reportDate") LocalDate reportDate) throws SQLException;
 
-
+    @Query(value = "SELECT MAX(j.revision) FROM juror_mod.juror_audit j WHERE j.juror_number = ?1",
+        nativeQuery = true)
+    Long getLatestRevision(String jurorNumber);
 }

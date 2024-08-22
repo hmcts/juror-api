@@ -172,7 +172,7 @@ public final class SecurityUtil {
     }
 
     public static boolean canEditApprovalLimit() {
-        return isAdministration() || isManager() && isCourt();
+        return isAdministration();
     }
 
     public static boolean isSystem() {

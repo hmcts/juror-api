@@ -23,6 +23,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
+import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
@@ -38,6 +39,7 @@ public class ResponseDisqualifyServiceImpl implements ResponseDisqualifyService 
     private final JurorDigitalResponseRepositoryMod responseRepository;
     private final JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
     private final JurorPoolRepository detailsRepository;
+    private final JurorPoolService jurorPoolService;
     private final JurorStatusRepository jurorStatusRepository;
     private final DisqualifiedCodeRepository disqualifyCodeRepository;
     private final ResponseMergeService mergeService;
@@ -112,7 +114,7 @@ public class ResponseDisqualifyServiceImpl implements ResponseDisqualifyService 
             }
 
             // update juror pool entry
-            JurorPool jurorDetails = detailsRepository.findByJurorJurorNumber(savedResponse.getJurorNumber());
+            JurorPool jurorDetails = jurorPoolService.getJurorPoolFromUser(savedResponse.getJurorNumber());
             jurorDetails.getJuror().setResponded(true);
             jurorDetails.getJuror().setDisqualifyDate(LocalDate.now());
             jurorDetails.getJuror().setDisqualifyCode(disqualifyCodeDto.getDisqualifyCode());

@@ -62,11 +62,17 @@ public class JurorHolidaysResponseDto implements Serializable {
 
         public static List<Holidays> from(List<uk.gov.hmcts.juror.api.juror.domain.Holidays> publicHolidaysDates) {
             return publicHolidaysDates.stream()
-                .map(holiday -> Holidays.builder()
-                    .date(holiday.getHoliday())
-                    .publicHoliday(holiday.getPublicHoliday())
-                    .locCode(holiday.getCourtLocation().getLocCode())
-                    .build())
+                .map(holiday -> {
+                    String locCode = null;
+                    if (holiday.getCourtLocation() != null) {
+                        locCode = holiday.getCourtLocation().getLocCode();
+                    }
+                    return Holidays.builder()
+                        .date(holiday.getHoliday())
+                        .publicHoliday(holiday.getPublicHoliday())
+                        .locCode(locCode)
+                        .build();
+                })
                 .toList();
         }
     }

@@ -26,13 +26,15 @@ import uk.gov.hmcts.juror.api.moj.domain.AppearanceId;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
+import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
+import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.UpdateAttendanceStatus;
-import uk.gov.hmcts.juror.api.moj.enumeration.trial.TrialType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
@@ -544,12 +546,12 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         for (Tuple tuple : jurorsOnTrialsTuples) {
             JurorsOnTrialResponseDto.JurorsOnTrialResponseData jurorsOnTrialData =
                 JurorsOnTrialResponseDto.JurorsOnTrialResponseData.builder()
-                    .trialNumber(tuple.get(0, String.class))
-                    .parties(tuple.get(1, String.class))
-                    .trialType(TrialType.valueOf(tuple.get(2, String.class)).getDescription())
-                    .courtroom(tuple.get(3, String.class))
-                    .judge(tuple.get(4, String.class))
-                    .totalJurors(tuple.get(5, Long.class))
+                    .trialNumber(tuple.get(QTrial.trial.trialNumber))
+                    .parties(tuple.get(QTrial.trial.description))
+                    .trialType(tuple.get(QTrial.trial.trialType).getDescription())
+                    .courtroom(tuple.get(QTrial.trial.courtroom.description))
+                    .judge(tuple.get(QTrial.trial.judge.name))
+                    .totalJurors(tuple.get(QPanel.panel.count()))
                     .build();
 
             jurorsOnTrialResponseDto.getTrialsList().add(jurorsOnTrialData);
@@ -562,9 +564,9 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         // update the response with the number of jurors attended
         jurorsOnTrialResponseDto.getTrialsList().forEach(jurorsOnTrialData -> {
             jurorsAttendanceCounts.forEach(tuple -> {
-                if (jurorsOnTrialData.getTrialNumber().equals(tuple.get(0, String.class))) {
-                    jurorsOnTrialData.setNumberAttended(tuple.get(1, Long.class));
-                    jurorsOnTrialData.setAttendanceAudit(tuple.get(2, String.class));
+                if (jurorsOnTrialData.getTrialNumber().equals(tuple.get(QPanel.panel.trial.trialNumber))) {
+                    jurorsOnTrialData.setNumberAttended(tuple.get(QAppearance.appearance.jurorNumber.count()));
+                    jurorsOnTrialData.setAttendanceAudit(tuple.get(QAppearance.appearance.attendanceAuditNumber));
                 }
             });
         });

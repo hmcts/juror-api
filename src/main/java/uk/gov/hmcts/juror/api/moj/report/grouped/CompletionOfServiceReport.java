@@ -55,6 +55,7 @@ public class CompletionOfServiceReport extends AbstractGroupedReport {
     public void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QJuror.juror.completionDate.between(request.getFromDate(), request.getToDate()));
         query.where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(SecurityUtil.getLocCode()));
+        query.where(QJurorPool.jurorPool.isActive.isTrue());
         query.orderBy(QJuror.juror.jurorNumber.asc());
     }
 

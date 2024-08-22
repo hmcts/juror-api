@@ -28,6 +28,7 @@ import uk.gov.hmcts.juror.api.bureau.service.ResponsePhoneLogService;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseUpdateServiceImpl.CjsEmployment;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -94,7 +95,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(HttpStatus.NOT_FOUND.value());
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getException()).as("Error is correct")
-            .isEqualTo(ResponseNotesService.NoteNotFoundException.class.getTypeName());
+            .isEqualTo(MojException.NotFound.class.getTypeName());
     }
 
     @Test
@@ -103,10 +104,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
     public void updateNoteByJurorNumber_happy() throws Exception {
         final String loginName = "testlogin";
 
-        final String bureauJwt = mintBureauJwt(
-            BureauJwtPayload.builder().userLevel("5").login(loginName)
-                .owner("400").staff(BureauJwtPayload.Staff.builder().active(1).rank(1).name(loginName)
-                    .courts(Collections.singletonList("123")).build()).build());
+        final String bureauJwt = createJwtBureau(loginName);
 
         // assert db state before merge.
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror", Integer.class))
@@ -157,11 +155,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
     public void updateNoteByJurorNumber_unhappyNonExistentJuror() throws Exception {
         final String loginName = "testlogin";
 
-        final String bureauJwt = mintBureauJwt(
-            BureauJwtPayload.builder().userLevel("5").login(loginName)
-                .owner("400").staff(
-                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(loginName + " Mc" + loginName)
-                        .courts(Collections.singletonList("123")).build()).build());
+        final String bureauJwt = createJwtBureau(loginName);
 
         // assert db state before merge.
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror", Integer.class)).isEqualTo(2);
@@ -183,7 +177,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
 
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(exchange.getBody().getException()).as("Error is correct")
-            .isEqualTo(ResponseNotesService.NoteNotFoundException.class.getTypeName());
+            .isEqualTo(MojException.NotFound.class.getTypeName());
 
         // assert the DB change was NOT applied
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror", Integer.class))
@@ -203,11 +197,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
     public void updateNoteByJurorNumber_unhappy_hashMismatch() throws Exception {
         final String loginName = "testlogin";
 
-        final String bureauJwt = mintBureauJwt(
-            BureauJwtPayload.builder().userLevel("5").login(loginName)
-                .owner("400").staff(
-                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(loginName + " Mc" + loginName)
-                        .courts(Collections.singletonList("123")).build()).build());
+        final String bureauJwt = createJwtBureau(loginName);
 
         // assert db state before merge.
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror", Integer.class)).isEqualTo(2);
@@ -2085,9 +2075,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
 
         final URI uri = URI.create("/api/v1/bureau/juror/644892530/response/status");
 
-        final String bureauJwt = mintBureauJwt(
-            BureauJwtPayload.builder().userLevel("99").login("testlogin")
-                .owner(JurorDigitalApplication.JUROR_OWNER).build());
+        final String bureauJwt = createJwtBureau("testlogin");
 
         // assert db state before merge.
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(2);
@@ -2147,9 +2135,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
 
         final URI uri = URI.create("/api/v1/bureau/juror/644892530/response/status");
 
-        final String bureauJwt = mintBureauJwt(
-            BureauJwtPayload.builder().userLevel("99").login("testlogin")
-                .owner(JurorDigitalApplication.JUROR_OWNER).build());
+        final String bureauJwt = createJwtBureau("testlogin");
 
         // assert db state before merge.
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(2);

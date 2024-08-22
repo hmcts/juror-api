@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
+import uk.gov.hmcts.juror.api.moj.service.JurorThirdPartyService;
 import uk.gov.hmcts.juror.api.moj.validation.DigitalThirdPartyOtherReason;
 
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REGEX;
@@ -27,7 +28,8 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REG
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @SuppressWarnings("PMD.TooManyFields")
-public class DigitalResponse extends AbstractJurorResponse {
+public class DigitalResponse extends AbstractJurorResponse
+    implements JurorThirdPartyService.ThirdPartyUpdateDto {
 
     @Column(name = "residency")
     @NotNull
@@ -106,5 +108,46 @@ public class DigitalResponse extends AbstractJurorResponse {
     public DigitalResponse() {
         super();
         super.setReplyType(new ReplyType("Digital", "Online response"));
+    }
+
+
+    @Override
+    public String getThirdPartyEmailAddress() {
+        return this.getEmailAddress();
+    }
+
+    @Override
+    public String getThirdPartyOtherPhone() {
+        return this.getOtherPhone();
+    }
+
+    @Override
+    public String getThirdPartyMainPhone() {
+        return this.getMainPhone();
+    }
+
+    @Override
+    public String getThirdPartyRelationship() {
+        return this.getRelationship();
+    }
+
+    @Override
+    public String getThirdPartyLastName() {
+        return this.getThirdPartyLName();
+    }
+
+    @Override
+    public String getThirdPartyFirstName() {
+        return this.getThirdPartyFName();
+    }
+
+    @Override
+    public boolean isContactJurorByEmail() {
+        return this.getJurorEmailDetails() != null && this.getJurorEmailDetails();
+    }
+
+    @Override
+    public boolean isContactJurorByPhone() {
+        return this.getJurorPhoneDetails() != null && this.getJurorPhoneDetails();
     }
 }

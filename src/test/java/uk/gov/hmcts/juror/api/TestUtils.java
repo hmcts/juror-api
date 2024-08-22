@@ -186,6 +186,9 @@ public final class TestUtils {
             .roles(Set.of())
             .userType(UserType.BUREAU)
             .activeUserType(UserType.BUREAU)
+            .staff(BureauJwtPayload.Staff.builder()
+                .courts(List.of("400"))
+                .build())
             .build());
 
     }

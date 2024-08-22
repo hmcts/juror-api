@@ -963,7 +963,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                         .isActive(true)
                         .lastSignIn(null)
                         .userType(UserType.COURT)
-                        .approvalLimit(new BigDecimal("0.00"))
+                        .approvalLimit(null)
                         .roles(Set.of())
                         .courts(List.of(UserCourtDto.builder()
                             .primaryCourt(CourtDto.builder()
@@ -1171,8 +1171,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                         assertThat(user.getEmail()).isEqualTo(oldUser.getEmail());
                         assertThat(user.getName()).isEqualTo(oldUser.getName());
                         assertThat(user.isActive()).isEqualTo(oldUser.isActive());
-                        assertThat(user.getApprovalLimit()).isEqualTo(
-                            isCourtManager ? userDto.getApprovalLimit() : oldUser.getApprovalLimit());
+                        assertThat(user.getApprovalLimit()).isEqualTo(oldUser.getApprovalLimit());
                     }
                     assertThat(user.getRoles()).isEqualTo(Optional.ofNullable(userDto.getRoles()).orElse(Set.of()));
                     assertThat(user.getUpdatedBy()).isEqualTo(updatedBy);

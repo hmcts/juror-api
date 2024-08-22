@@ -22,6 +22,7 @@ import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 
 import java.util.Optional;
 
@@ -40,32 +41,26 @@ public class ResponseStatusUpdateServiceImplTest {
 
     @Mock
     JurorDigitalResponseRepositoryMod jurorResponseRepository;
-
     @Mock
     JurorStatusRepository jurorStatusRepository;
     @Mock
     JurorResponseAuditRepositoryMod auditRepository;
-
     @Mock
     JurorPoolRepository poolDetailsRepository;
-
     @Mock
     JurorHistoryRepository partHistRepository;
-
     @Mock
     EntityManager entityManager;
-
     @Mock
     private UserRepository userRepository;
-
     @Mock
     private AssignOnUpdateService assignOnUpdateService;
-
     @Mock
     private JurorReasonableAdjustmentRepository specialNeedsRepository;
-
     @Mock
     private WelshCourtLocationRepository welshCourtLocationRepository;
+    @Mock
+    private JurorPoolService jurorPoolService;
 
     @InjectMocks
     private ResponseStatusUpdateServiceImpl responseStatusUpdateService;
@@ -209,7 +204,7 @@ public class ResponseStatusUpdateServiceImplTest {
         given(jurorResponseRepository.findByJurorNumber(any(String.class))).willReturn(mockJurorResponse);
         given(mockJurorResponse.getJurorNumber()).willReturn(jurorNumber);
         given(mockJurorResponse.getProcessingStatus()).willReturn(currentProcessingStatus);
-        given(poolDetailsRepository.findByJurorJurorNumber(jurorNumber)).willReturn(mockPool);
+        given(jurorPoolService.getJurorPoolFromUser(jurorNumber)).willReturn(mockPool);
 
         User mockStaff = mock(User.class);
         given(mockJurorResponse.getStaff()).willReturn(mockStaff);
@@ -228,7 +223,7 @@ public class ResponseStatusUpdateServiceImplTest {
 
         // as we're setting the status to CLOSED, we should be merging data to Juror
         // and also setting RESPONDED to Y, so double the Pool interactions
-        verify(poolDetailsRepository, times(2)).findByJurorJurorNumber(jurorNumber);
+        verify(jurorPoolService, times(2)).getJurorPoolFromUser(jurorNumber);
         verify(poolDetailsRepository, times(3)).save(any(JurorPool.class));
         verify(partHistRepository, times(2)).save(any(JurorHistory.class));
     }

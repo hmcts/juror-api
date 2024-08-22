@@ -8,6 +8,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.juror.api.moj.controller.request.summonsmanagement.JurorResponseRetrieveRequestDto;
+import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCommon;
@@ -23,7 +24,7 @@ import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.isNotEmptyOrNull;
 
 /**
  * Custom Repository implementation for juror responses (paper or digital).
- * */
+ */
 
 @Repository
 public class JurorResponseCommonRepositoryModImpl implements JurorResponseCommonRepositoryMod {
@@ -32,6 +33,7 @@ public class JurorResponseCommonRepositoryModImpl implements JurorResponseCommon
     private static final QDigitalResponse DIGITAL_RESPONSE = QDigitalResponse.digitalResponse;
     private static final QPaperResponse PAPER_RESPONSE = QPaperResponse.paperResponse;
     private static final QJurorPool JUROR_POOL = QJurorPool.jurorPool;
+    private static final QJuror JUROR = QJuror.juror;
 
 
     @PersistenceContext
@@ -96,7 +98,10 @@ public class JurorResponseCommonRepositoryModImpl implements JurorResponseCommon
             .join(JUROR_POOL)
             .on(JUROR_RESPONSE_COMMON.jurorNumber
                 .eq(JUROR_POOL.juror.jurorNumber)
-                .and(JUROR_POOL.isActive.eq(true)));
+                .and(JUROR_POOL.isActive.eq(true)))
+            .join(JUROR)
+            .on(JUROR_RESPONSE_COMMON.jurorNumber.eq(JUROR.jurorNumber))
+            .where(JUROR.bureauTransferDate.isNull());
 
         // add filters to query
         addCommonFilters(request, query);
@@ -132,7 +137,7 @@ public class JurorResponseCommonRepositoryModImpl implements JurorResponseCommon
         }
 
         if (request.getOfficerAssigned() != null && !request.getOfficerAssigned().isBlank()) {
-            query.where(JUROR_RESPONSE_COMMON.staff.username.equalsIgnoreCase(request.getOfficerAssigned()));
+            query.where(JUROR_RESPONSE_COMMON.staff.username.eq(request.getOfficerAssigned()));
         }
 
         if (isNotEmptyOrNull(request.getProcessingStatus())) {

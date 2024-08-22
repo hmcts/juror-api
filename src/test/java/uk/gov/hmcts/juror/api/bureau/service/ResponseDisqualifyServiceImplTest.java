@@ -23,6 +23,7 @@ import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
+import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 
 import java.time.LocalDate;
@@ -45,35 +46,28 @@ public class ResponseDisqualifyServiceImplTest {
 
     @Mock
     private JurorDigitalResponseRepositoryMod jurorResponseRepository;
-
     @Mock
     private JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
-
     @Mock
     private JurorStatusRepository jurorStatusRepository;
     @Mock
     private JurorPoolRepository poolRepository;
-
     @Mock
     private JurorHistoryService jurorHistoryService;
-
     @Mock
     private DisqualifiedCodeRepository disqualifyCodeRepository;
-
     @Mock
     private ResponseMergeService mergeService;
-
     @Mock
     private EntityManager entityManager;
-
     @Mock
     private UserRepository userRepository;
-
     @Mock
     private AssignOnUpdateService assignOnUpdateService;
-
     @Mock
     private PrintDataService printDataService;
+    @Mock
+    private JurorPoolService jurorPoolService;
 
     @InjectMocks
     private ResponseDisqualifyServiceImpl responseDisqualifyService;
@@ -112,7 +106,7 @@ public class ResponseDisqualifyServiceImplTest {
         JurorPool poolDetails = mock(JurorPool.class);
         Juror juror = mock(Juror.class);
         when(poolDetails.getJuror()).thenReturn(juror);
-        given(poolRepository.findByJurorJurorNumber(any(String.class))).willReturn(poolDetails);
+        given(jurorPoolService.getJurorPoolFromUser(any(String.class))).willReturn(poolDetails);
 
         List<DisqualifiedCode> disqualifyCodeEntityList = new ArrayList<>();
         String disqualifyCode = "B";

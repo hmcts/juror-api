@@ -1,0 +1,1 @@
+CREATE INDEX juror_audit_juror_number_idx ON juror_mod.juror_audit (juror_number);

@@ -222,6 +222,8 @@ class JurorRecordServiceTest {
     private JurorPaymentsSummaryRepository jurorPaymentsSummaryRepository;
     @Mock
     private JurorPoolService jurorPoolService;
+    @Mock
+    private JurorThirdPartyService jurorThirdPartyService;
 
     @Mock
     private Clock clock;
@@ -1578,11 +1580,7 @@ class JurorRecordServiceTest {
     }
 
     private void setupBureauUser() {
-        TestUtils.mockSecurityUtil(
-            BureauJwtPayload.builder()
-                .locCode("400")
-                .build()
-        );
+        TestUtils.mockBureauUser();
     }
 
     @Test
@@ -2195,18 +2193,15 @@ class JurorRecordServiceTest {
 
     @Test
     void testProcessPendingNameChangeInvalidPermission() {
-        String courtOwner = "415";
         String username = "COURT_USER";
         String jurorNumber = "111111111";
         TestUtils.mockBureauUser();
         BureauJwtPayload payload = TestUtils.createJwt("416", username);
-
-        JurorPool jurorPool = createValidJurorPool(jurorNumber, courtOwner);
         String notes = "Their name has not been legally changed";
 
         ProcessNameChangeRequestDto dto = new ProcessNameChangeRequestDto(ApprovalDecision.REJECT, notes);
 
-        doReturn(jurorPool).when(jurorPoolService)
+        doThrow(MojException.NotFound.class).when(jurorPoolService)
             .getJurorPoolFromUser(jurorNumber);
 
         assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
@@ -2276,8 +2271,8 @@ class JurorRecordServiceTest {
         jurorPool.setOnCall(false);
         jurorPool.setNextDate(LocalDate.now().plusWeeks(1));
 
-        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
 
         jurorRecordService.updateAttendance(dto);
 
@@ -2302,8 +2297,8 @@ class JurorRecordServiceTest {
         jurorPool.setOnCall(false);
         jurorPool.setNextDate(LocalDate.now().plusWeeks(1));
 
-        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
 
         jurorRecordService.updateAttendance(dto);
 
@@ -2350,8 +2345,8 @@ class JurorRecordServiceTest {
         JurorPool jurorPool = createValidJurorPool(jurorNumber, courtOwner);
         jurorPool.setOnCall(false);
 
-        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doThrow(MojException.NotFound.class).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumberNotExist);
 
         assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
             jurorRecordService.updateAttendance(dto));
@@ -2372,8 +2367,8 @@ class JurorRecordServiceTest {
         JurorPool jurorPool = createValidJurorPool(jurorNumber, courtOwner);
         jurorPool.setOnCall(true);
 
-        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
 
         assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
             jurorRecordService.updateAttendance(dto));
@@ -2438,8 +2433,8 @@ class JurorRecordServiceTest {
         private JurorPool setupJurorPool(PoliceCheck policeCheck) {
             JurorPool jurorPool = createValidJurorPool(TestConstants.VALID_JUROR_NUMBER, "400");
             jurorPool.getJuror().setPoliceCheck(policeCheck);
-            doReturn(List.of(jurorPool)).when(jurorPoolRepository)
-                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(TestConstants.VALID_JUROR_NUMBER, true);
+            doReturn(jurorPool).when(jurorPoolService)
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
             return jurorPool;
         }
 
@@ -2457,8 +2452,8 @@ class JurorRecordServiceTest {
                 jurorHistoryService,
                 printDataService
             );
-            verify(jurorPoolRepository, times(1))
-                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(TestConstants.VALID_JUROR_NUMBER, true);
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
             verify(jurorPoolRepository, times(1)).save(jurorPool);
             verify(jurorRepository, times(1)).save(jurorPool.getJuror());
             verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
@@ -2477,8 +2472,8 @@ class JurorRecordServiceTest {
             verify(jurorHistoryService, times(1))
                 .createPoliceCheckQualifyHistory(jurorPool, false);
 
-            verify(jurorPoolRepository, times(1))
-                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(TestConstants.VALID_JUROR_NUMBER, true);
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
             verify(jurorPoolRepository, times(1)).save(jurorPool);
             verify(jurorRepository, times(1)).save(jurorPool.getJuror());
             verify(printDataService, times(1)).printConfirmationLetter(jurorPool);
@@ -2497,8 +2492,8 @@ class JurorRecordServiceTest {
 
             verify(jurorHistoryService, times(1))
                 .createPoliceCheckQualifyHistory(jurorPool, true);
-            verify(jurorPoolRepository, times(1))
-                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(TestConstants.VALID_JUROR_NUMBER, true);
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
             verify(jurorPoolRepository, times(1)).save(jurorPool);
             verify(jurorRepository, times(1)).save(jurorPool.getJuror());
             verify(printDataService, times(1)).printConfirmationLetter(jurorPool);
@@ -2518,8 +2513,8 @@ class JurorRecordServiceTest {
 
             verify(jurorHistoryService, times(1))
                 .createPoliceCheckQualifyHistory(jurorPool, true);
-            verify(jurorPoolRepository, times(1))
-                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(TestConstants.VALID_JUROR_NUMBER, true);
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
             verify(jurorPoolRepository, times(1)).save(jurorPool);
             verify(jurorRepository, times(1)).save(jurorPool.getJuror());
             verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
@@ -2549,8 +2544,8 @@ class JurorRecordServiceTest {
             verify(jurorHistoryService, times(1))
                 .createWithdrawHistory(jurorPool, "Withdrawal Letter Auto", "E");
 
-            verify(jurorPoolRepository, times(1))
-                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(TestConstants.VALID_JUROR_NUMBER, true);
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
             verify(jurorPoolRepository, times(1)).save(jurorPool);
             verify(jurorRepository, times(1)).save(jurorPool.getJuror());
             verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
@@ -2580,8 +2575,8 @@ class JurorRecordServiceTest {
                 .createPoliceCheckDisqualifyHistory(jurorPool);
             verifyNoMoreInteractions(printDataService);
 
-            verify(jurorPoolRepository, times(1))
-                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(TestConstants.VALID_JUROR_NUMBER, true);
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
             verify(jurorPoolRepository, times(1)).save(jurorPool);
             verify(jurorRepository, times(1)).save(jurorPool.getJuror());
             verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
@@ -2597,8 +2592,8 @@ class JurorRecordServiceTest {
             verifyNoInteractions(jurorHistoryService);
             verifyNoInteractions(printDataService);
 
-            verify(jurorPoolRepository, times(1))
-                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(TestConstants.VALID_JUROR_NUMBER, true);
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
             verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
             verifyNoInteractions(jurorRepository);
         }
@@ -2617,8 +2612,8 @@ class JurorRecordServiceTest {
             verify(jurorHistoryService, times(1))
                 .createPoliceCheckInProgressHistory(jurorPool);
             verifyNoMoreInteractions(jurorHistoryService);
-            verify(jurorPoolRepository, times(1))
-                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(TestConstants.VALID_JUROR_NUMBER, true);
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
             verify(jurorPoolRepository, times(1)).save(jurorPool);
             verify(jurorRepository, times(1)).save(jurorPool.getJuror());
             verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
@@ -2638,8 +2633,8 @@ class JurorRecordServiceTest {
             verify(jurorHistoryService, times(1))
                 .createPoliceCheckInsufficientInformationHistory(jurorPool);
             verifyNoMoreInteractions(jurorHistoryService);
-            verify(jurorPoolRepository, times(1))
-                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(TestConstants.VALID_JUROR_NUMBER, true);
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
             verify(jurorPoolRepository, times(1)).save(jurorPool);
             verify(jurorRepository, times(1)).save(jurorPool.getJuror());
             verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
@@ -3691,8 +3686,6 @@ class JurorRecordServiceTest {
         @Test
         void positiveTypical() {
             String courtOwner = "415";
-            String username = "JURY_USER";
-
             TestUtils.mockCourtUser(courtOwner);
 
             Juror juror = new Juror();

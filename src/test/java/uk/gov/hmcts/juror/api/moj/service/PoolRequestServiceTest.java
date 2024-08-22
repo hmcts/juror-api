@@ -379,7 +379,7 @@ public class PoolRequestServiceTest {
 
         PoolRequestDto poolRequestDto = createValidPoolRequestDto();
         poolRequestDto.setCourtOnly(true);
-        poolRequestDto.setAttendanceTime(null);
+        poolRequestDto.setAttendanceTime(LocalTime.of(10,11));
         poolRequestDto.setNumberRequested(0);
 
         CourtLocation courtLocation = new CourtLocation();
@@ -418,8 +418,8 @@ public class PoolRequestServiceTest {
             .as("Expect service start date to be mapped from request dto")
             .isEqualTo(poolRequestDto.getAttendanceDate());
         assertThat(poolRequest.getAttendTime())
-            .as("Expect attendance time not to be set")
-            .isNull();
+            .as("Expect attendance time to be set")
+            .isEqualTo(LocalDateTime.of(poolRequestDto.getAttendanceDate(), poolRequestDto.getAttendanceTime()));
         assertThat(poolRequest.getNewRequest())
             .as("Expect new request flag to be set to 'N' - pool request goes straight to created")
             .isEqualTo('N');

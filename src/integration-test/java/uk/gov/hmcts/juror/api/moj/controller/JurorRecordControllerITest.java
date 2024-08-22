@@ -863,7 +863,6 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
             .isEqualTo(HttpStatus.OK);
-
         JurorDetailsResponseDto jurorDetails = response.getBody();
 
         assertThat(jurorDetails).isNotNull();
