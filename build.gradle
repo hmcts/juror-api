@@ -204,7 +204,7 @@ flyway {
     def dbUserName = System.getenv("DB_USERNAME") ?: "system"
     def dbPassword = System.getenv("DB_PASSWORD") ?: "postgres"
     def flywayLocations = System.getenv("FLYWAY_LOC_OVERRIDE") ?: "db/**/*.sql"
-    schemas = ['juror_dashboard', 'juror_mod', 'juror', 'juror_digital', 'juror_digital_user']
+    schemas = ['juror_dashboard', 'juror_mod']
     url = "$dbUrl"
     user = "$dbUserName"
     password = "$dbPassword"
