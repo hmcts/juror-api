@@ -6,6 +6,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -16,22 +17,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.CourtLocationDataDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.CourtLocationListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolNumbersListDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestActiveListDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestListDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestActiveDataDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestDataDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolsAtCourtLocationListDto;
 import uk.gov.hmcts.juror.api.moj.domain.DayType;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolHistory;
-import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.ConfirmationLetterRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CurrentlyDeferredRepository;
@@ -89,25 +89,11 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     }
 
     private void initHeaders() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .login("BUREAU_USER")
-            .owner("400")
-            .build());
+        final String bureauJwt = getBureauJwt();
 
         httpHeaders = new HttpHeaders();
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-    }
-
-    private String initCourtsJwt(String owner, List<String> courts) throws Exception {
-
-        return mintBureauJwt(BureauJwtPayload.builder()
-            .userType(UserType.COURT)
-            .login("COURT_USER")
-            .owner(owner)
-            .staff(BureauJwtPayload.Staff.builder().courts(courts).build())
-            .build());
     }
 
     @Test
@@ -143,7 +129,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     public void test_getCourtLocations_courtUser() throws Exception {
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("799", Collections.singletonList("799")));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, getSatelliteCourtJwt("799", "799"));
         ResponseEntity<CourtLocationListDto> responseEntity =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
                 URI.create("/api/v1/moj/pool-request/court-locations")), CourtLocationListDto.class);
@@ -176,21 +162,23 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/RequestPoolController_initPoolRequests.sql"})
     public void test_getPoolRequests_withoutLocCodeParam_bureauUser() {
-        ResponseEntity<PoolRequestListDto> responseEntity =
+        ResponseEntity<PaginatedList<PoolRequestDataDto>> responseEntity =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/pool-request/pools-requested?offset=0&sortBy=returnDate&sortOrder=asc")),
-                PoolRequestListDto.class);
+                    URI.create("/api/v1/moj/pool-request/pools-requested"
+                        + "?pageNumber=1&pageLimit=25&sortBy=RETURN_DATE&sortOrder=ASC")),
+                new ParameterizedTypeReference<>() {
+                });
 
         assertThat(responseEntity.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
             .isEqualTo(OK);
 
-        PoolRequestListDto responseBody = responseEntity.getBody();
+        PaginatedList<PoolRequestDataDto> responseBody = responseEntity.getBody();
         assertThat(responseBody).isNotNull();
         assertThat(responseBody.getData().size())
             .as("Expect the response body to contain 2 Pool Requests owned by the Bureau")
             .isEqualTo(25);
-        assertThat(responseBody.getTotalSize())
+        assertThat(responseBody.getTotalItems())
             .as("The total number of entries available in the table")
             .isEqualTo(31);
     }
@@ -198,21 +186,23 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/RequestPoolController_initPoolRequests.sql"})
     public void test_getPoolRequests_withoutLocCodeParam_bureauUser_page2() {
-        ResponseEntity<PoolRequestListDto> responseEntity =
+        ResponseEntity<PaginatedList<PoolRequestDataDto>> responseEntity =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/pool-request/pools-requested?offset=1&sortBy=returnDate&sortOrder=asc")),
-                PoolRequestListDto.class);
+                    URI.create("/api/v1/moj/pool-request/pools-requested"
+                        + "?pageNumber=2&pageLimit=25&sortBy=RETURN_DATE&sortOrder=ASC")),
+                new ParameterizedTypeReference<>() {
+                });
 
         assertThat(responseEntity.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
             .isEqualTo(OK);
 
-        PoolRequestListDto responseBody = responseEntity.getBody();
+        PaginatedList<PoolRequestDataDto> responseBody = responseEntity.getBody();
         assertThat(responseBody).isNotNull();
         assertThat(responseBody.getData().size())
             .as("Expect the response body to contain 2 Pool Requests owned by the Bureau")
             .isEqualTo(6);
-        assertThat(responseBody.getTotalSize())
+        assertThat(responseBody.getTotalItems())
             .as("The total number of entries available in the table")
             .isEqualTo(31);
     }
@@ -220,23 +210,25 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/RequestPoolController_initPoolRequests.sql"})
     public void test_getPoolRequests_withoutLocCodeParam_courtUser() throws Exception {
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("457", Arrays.asList("457", "479")));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, getSatelliteCourtJwt("457", "457", "479"));
 
-        ResponseEntity<PoolRequestListDto> responseEntity =
+        ResponseEntity<PaginatedList<PoolRequestDataDto>> responseEntity =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/pool-request/pools-requested?offset=0&sortBy=returnDate&sortOrder=asc")),
-                PoolRequestListDto.class);
+                    URI.create("/api/v1/moj/pool-request/pools-requested"
+                        + "?pageNumber=1&pageLimit=25&sortBy=RETURN_DATE&sortOrder=ASC")),
+                new ParameterizedTypeReference<>() {
+                });
 
         assertThat(responseEntity.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
             .isEqualTo(OK);
 
-        PoolRequestListDto responseBody = responseEntity.getBody();
+        PaginatedList<PoolRequestDataDto> responseBody = responseEntity.getBody();
         assertThat(responseBody).isNotNull();
         assertThat(responseBody.getData().size())
             .as("Expect the response body to contain 2 Pool Request, filtered on user authority")
             .isEqualTo(2);
-        assertThat(responseBody.getTotalSize())
+        assertThat(responseBody.getTotalItems())
             .as("The total number of entries available in the table")
             .isEqualTo(2);
     }
@@ -244,22 +236,29 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/RequestPoolController_initPoolRequests.sql"})
     public void test_getPoolRequests_createdWithLocCodeParam() {
-        ResponseEntity<PoolRequestActiveListDto> responseEntity =
+        ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> responseEntity =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/pool-request/pools-active?locCode=415&tab=bureau&offset=0&sortBy"
-                    + "=poolNumber&sortOrder=asc")), PoolRequestActiveListDto.class);
+                    URI.create("/api/v1/moj/pool-request/pools-active"
+                        + "?tab=bureau"
+                        + "&pageNumber=1"
+                        + "&pageLimit=25"
+                        + "&sortBy=POOL_NUMBER"
+                        + "&locCode=415"
+                        + "&sortOrder=ASC")),
+                new ParameterizedTypeReference<>() {
+                });
 
         assertThat(responseEntity.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
             .isEqualTo(OK);
 
-        PoolRequestActiveListDto responseBody = responseEntity.getBody();
+        PaginatedList<PoolRequestActiveDataDto> responseBody = responseEntity.getBody();
         assertThat(responseBody).isNotNull();
         assertThat(responseBody.getData().size())
             .as("Expect the response body to contain 2 Pool Requests")
             .isEqualTo(2);
 
-        PoolRequestActiveListDto.PoolRequestActiveDataDto data = responseBody.getData().get(1);
+        PoolRequestActiveDataDto data = responseBody.getData().get(1);
         assertThat(data.getCourtName())
             .as("Court Name should be populated from the Court Location table using the LOC_CODE foreign key")
             .isEqualTo("CHESTER");
@@ -280,21 +279,23 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/RequestPoolController_initPoolRequests.sql"})
     public void test_getPoolRequests_requestedWithLocCodeParam_noPoolsExist() {
-        ResponseEntity<PoolRequestListDto> responseEntity =
+        ResponseEntity<PaginatedList<PoolRequestDataDto>> responseEntity =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/pool-request/pools-requested?locCode=414&offset=0&sortBy=returnDate&sortOrder"
-                    + "=asc")), PoolRequestListDto.class);
+                    URI.create("/api/v1/moj/pool-request/pools-requested"
+                        + "?locCode=414&pageNumber=1&pageLimit=25&sortBy=RETURN_DATE&sortOrder=ASC")),
+                new ParameterizedTypeReference<>() {
+                });
 
         assertThat(responseEntity.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
             .isEqualTo(OK);
 
-        PoolRequestListDto responseBody = responseEntity.getBody();
+        PaginatedList<PoolRequestDataDto> responseBody = responseEntity.getBody();
         assertThat(responseBody).isNotNull();
         assertThat(responseBody.getData().isEmpty())
             .as("Expect the response body to be an empty list")
             .isTrue();
-        assertThat(responseBody.getTotalSize())
+        assertThat(responseBody.getTotalItems())
             .as("The total number of entries available in the table")
             .isEqualTo(0);
     }
@@ -302,16 +303,18 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/RequestPoolController_initPoolRequests.sql"})
     public void test_getPoolRequests_requestedWithLocCodeParam_poolsExist() {
-        ResponseEntity<PoolRequestListDto> responseEntity =
+        ResponseEntity<PaginatedList<PoolRequestDataDto>> responseEntity =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/pool-request/pools-requested?locCode=415&offset=0&sortBy=returnDate&sortOrder"
-                    + "=asc")), PoolRequestListDto.class);
+                    URI.create("/api/v1/moj/pool-request/pools-requested"
+                        + "?locCode=415&pageNumber=1&pageLimit=25&sortBy=RETURN_DATE&sortOrder=ASC")),
+                new ParameterizedTypeReference<>() {
+                });
 
         assertThat(responseEntity.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
             .isEqualTo(OK);
 
-        PoolRequestListDto responseBody = responseEntity.getBody();
+        PaginatedList<PoolRequestDataDto> responseBody = responseEntity.getBody();
         assertThat(responseBody).isNotNull();
         assertThat(responseBody.getData().size())
             .as("Expect the response body to be an empty list")
@@ -399,7 +402,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql("/db/mod/truncate.sql")
     public void test_requestNewPoolFromBureau_validRequest_courtsUser() throws Exception {
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("457", Arrays.asList("457", "799")));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, getSatelliteCourtJwt("457", "457", "799"));
         HttpEntity<PoolRequestDto> entity = new HttpEntity<>(createValidPoolRequestDto(), httpHeaders);
 
         ResponseEntity<String> response = restTemplate.exchange(
@@ -451,7 +454,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql("/db/mod/truncate.sql")
     public void test_requestNewPoolFromBureau_satelliteCourtOwner() throws Exception {
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Arrays.asList("415", "767")));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, getSatelliteCourtJwt("415", "415", "767"));
         PoolRequestDto poolRequestDto = createValidPoolRequestDto();
         poolRequestDto.setLocationCode("767");
         HttpEntity<PoolRequestDto> entity = new HttpEntity<>(poolRequestDto, httpHeaders);
@@ -479,7 +482,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/RequestPoolController_initDeferrals.sql"})
     public void test_requestNewPoolFromBureau_satelliteCourtDeferrals() throws Exception {
         String ownerCourt = "415";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt(ownerCourt, Arrays.asList(ownerCourt, "767")));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, getSatelliteCourtJwt(ownerCourt, ownerCourt, "767"));
         PoolRequestDto poolRequestDto = createValidPoolRequestDto();
         poolRequestDto.setDeferralsUsed(1);
         poolRequestDto.setPoolNumber("767221001");
@@ -540,7 +543,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         newJurorHistoryMap.put("PoolNumber", newlyRequestedPool.getPoolNumber());
         newJurorHistoryMap.put("HistoryCode", "PDEF");
         newJurorHistoryMap.put("Info", "Added to New Pool");
-        newJurorHistoryMap.put("UserId", "COURT_USER");
+        newJurorHistoryMap.put("UserId", "test_court_standard");
         assertJurorHistoryCreated(jurorHistoryRepository.findAll(), newJurorHistoryMap,
             Collections.singletonList("444444444"));
     }
@@ -548,7 +551,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/RequestPoolController_initDeferrals.sql"})
     public void test_requestNewPoolFromBureau_withCourtDeferrals() throws Exception {
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Arrays.asList("415", "416")));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, getSatelliteCourtJwt("415", "415", "416"));
         String ownerCourt = "415";
         PoolRequestDto poolRequestDto = createValidPoolRequestDto();
         poolRequestDto.setDeferralsUsed(3);
@@ -615,7 +618,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         newJurorHistoryMap.put("PoolNumber", newlyRequestedPool.getPoolNumber());
         newJurorHistoryMap.put("HistoryCode", "PDEF");
         newJurorHistoryMap.put("Info", "Added to New Pool");
-        newJurorHistoryMap.put("UserId", "COURT_USER");
+        newJurorHistoryMap.put("UserId", "test_court_standard");
         assertJurorHistoryCreated(jurorHistoryRepository.findAll(), newJurorHistoryMap,
             Arrays.asList("111111111", "222222222", "333333333"));
 
@@ -631,7 +634,8 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     @Sql("/db/mod/truncate.sql")
     public void test_requestNewCourtOnlyPool_validRequest_courtsUser() throws Exception {
         String courtOwner = "457";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt(courtOwner, Arrays.asList(courtOwner, "799")));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION,
+            getSatelliteCourtJwt(courtOwner, courtOwner, "799"));
         HttpEntity<PoolRequestDto> entity = new HttpEntity<>(createValidCourtOnlyPoolRequestDto(), httpHeaders);
 
         ResponseEntity<String> response = restTemplate.exchange(
@@ -730,7 +734,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
                     .isNull();
                 assertThat(newJurorPool.getUserEdtq())
                     .as("Expect the new juror record to be created with the current user login recorded")
-                    .isEqualTo("COURT_USER");
+                    .isEqualTo("test_court_standard");
                 LocalDate returnDate = newPool.getReturnDate();
                 assertThat(newJurorPool.getNextDate())
                     .as("Expect the new juror record to be created with a next date matching the new pool's return "
@@ -1306,34 +1310,38 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void test_getActivePools_AtBureauByBureauUser() {
 
         String tab = "bureau";
-        int offset = 0;
-        String sortBy = "poolNumber";
-        String sortOrder = "asc";
+        int offset = 1;
+        String sortBy = "POOL_NUMBER";
+        String sortOrder = "ASC";
 
-        String requestUrl = "/api/v1/moj/pool-request/pools-active?tab=" + tab
-            + "&offset=" + offset + "&sortBy=" + sortBy + "&sortOrder=" + sortOrder;
-
-        ResponseEntity<PoolRequestActiveListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestUrl)), PoolRequestActiveListDto.class);
+        String requestUrl = "/api/v1/moj/pool-request/pools-active"
+            + "?tab=" + tab
+            + "&pageNumber=" + offset
+            + "&pageLimit=25"
+            + "&sortBy=" + sortBy
+            + "&sortOrder=" + sortOrder;
+        ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> response =
+            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+                HttpMethod.GET, URI.create(requestUrl)), new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
             .isEqualTo(OK);
 
-        PoolRequestActiveListDto responseBody = response.getBody();
+        PaginatedList<PoolRequestActiveDataDto> responseBody = response.getBody();
 
         assertThat(responseBody).isNotNull();
-        assertThat(responseBody.getTotalSize())
+        assertThat(responseBody.getTotalItems())
             .as("Expect the active pools list to have 29 entries in total")
             .isEqualTo(29);
 
-        List<PoolRequestActiveListDto.PoolRequestActiveDataDto> poolRequestActiveDataDtos = responseBody.getData();
+        List<PoolRequestActiveDataDto> poolRequestActiveDataDtos = responseBody.getData();
         assertThat(poolRequestActiveDataDtos.size())
             .as("Expect the active pools list page to have 25 entries in total")
             .isEqualTo(25);
 
         // get first element in the page
-        PoolRequestActiveListDto.PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
+        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
 
         assertThat(poolRequestActiveDataDto.getPoolNumber())
             .as("Expect the number to be equal to 415221201")
@@ -1360,34 +1368,39 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void test_getActivePools_AtBureauByBureauUser_secondPage() {
 
         String tab = "bureau";
-        int offset = 1;
-        String sortBy = "poolNumber";
-        String sortOrder = "asc";
+        int offset = 2;
+        String sortBy = "POOL_NUMBER";
+        String sortOrder = "ASC";
 
-        String requestUrl = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&offset=" + offset + "&sortBy="
-            + sortBy + "&sortOrder=" + sortOrder;
+        String requestUrl = "/api/v1/moj/pool-request/pools-active"
+            + "?tab=" + tab
+            + "&pageNumber=" + offset
+            + "&pageLimit=25"
+            + "&sortBy=" + sortBy
+            + "&sortOrder=" + sortOrder;
 
-        ResponseEntity<PoolRequestActiveListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestUrl)), PoolRequestActiveListDto.class);
+        ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> response =
+            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+                HttpMethod.GET, URI.create(requestUrl)), new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
             .isEqualTo(OK);
 
-        PoolRequestActiveListDto responseBody = response.getBody();
+        PaginatedList<PoolRequestActiveDataDto> responseBody = response.getBody();
 
         assertThat(responseBody).isNotNull();
-        assertThat(responseBody.getTotalSize())
+        assertThat(responseBody.getTotalItems())
             .as("Expect the active pools list to have 4 entries in total")
             .isEqualTo(29);
 
-        List<PoolRequestActiveListDto.PoolRequestActiveDataDto> poolRequestActiveDataDtos = responseBody.getData();
+        List<PoolRequestActiveDataDto> poolRequestActiveDataDtos = responseBody.getData();
         assertThat(poolRequestActiveDataDtos.size())
             .as("Expect the active pools list page to have 4 entries in total")
             .isEqualTo(4);
 
         // get first element in the page
-        PoolRequestActiveListDto.PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
+        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
 
         assertThat(poolRequestActiveDataDto.getPoolNumber())
             .as("Expect the number to be equal to 415221234")
@@ -1414,34 +1427,39 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void test_getActivePools_AtBureauByBureauUser_descending() {
 
         String tab = "bureau";
-        int offset = 0;
-        String sortBy = "poolNumber";
-        String sortOrder = "desc";
+        int offset = 1;
+        String sortBy = "POOL_NUMBER";
+        String sortOrder = "DESC";
 
-        String requestUrl = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&offset=" + offset
-            + "&sortBy=" + sortBy + "&sortOrder=" + sortOrder;
+        String requestUrl = "/api/v1/moj/pool-request/pools-active"
+            + "?tab=" + tab
+            + "&pageNumber=" + offset
+            + "&pageLimit=25"
+            + "&sortBy=" + sortBy
+            + "&sortOrder=" + sortOrder;
 
-        ResponseEntity<PoolRequestActiveListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestUrl)), PoolRequestActiveListDto.class);
+        ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> response =
+            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+                HttpMethod.GET, URI.create(requestUrl)), new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
             .isEqualTo(OK);
 
-        PoolRequestActiveListDto responseBody = response.getBody();
+        PaginatedList<PoolRequestActiveDataDto> responseBody = response.getBody();
 
         assertThat(responseBody).isNotNull();
-        assertThat(responseBody.getTotalSize())
+        assertThat(responseBody.getTotalItems())
             .as("Expect the active pools list to have 4 entries in total")
             .isEqualTo(29);
 
-        List<PoolRequestActiveListDto.PoolRequestActiveDataDto> poolRequestActiveDataDtos = responseBody.getData();
+        List<PoolRequestActiveDataDto> poolRequestActiveDataDtos = responseBody.getData();
         assertThat(poolRequestActiveDataDtos.size())
             .as("Expect the active pools list page to have 25 entries in total")
             .isEqualTo(25);
 
         // get first element in the page
-        PoolRequestActiveListDto.PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
+        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
 
         assertThat(poolRequestActiveDataDto.getPoolNumber())
             .as("Expect the number to be equal to 462221207")
@@ -1468,35 +1486,41 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void test_getActivePools_AtBureauByBureauUser_CourtFilter() {
 
         String tab = "bureau";
-        int offset = 0;
-        String sortBy = "poolNumber";
-        String sortOrder = "asc";
+        int offset = 1;
+        String sortBy = "POOL_NUMBER";
+        String sortOrder = "ASC";
         String locCode = "416";
 
-        String requestUrl = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&locCode=" + locCode
-            + "&offset=" + offset + "&sortBy=" + sortBy + "&sortOrder=" + sortOrder;
+        String requestUrl = "/api/v1/moj/pool-request/pools-active"
+            + "?tab=" + tab
+            + "&pageNumber=" + offset
+            + "&pageLimit=25"
+            + "&sortBy=" + sortBy
+            + "&locCode=" + locCode
+            + "&sortOrder=" + sortOrder;
 
-        ResponseEntity<PoolRequestActiveListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestUrl)), PoolRequestActiveListDto.class);
+        ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> response =
+            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+                HttpMethod.GET, URI.create(requestUrl)), new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
             .isEqualTo(OK);
 
-        PoolRequestActiveListDto responseBody = response.getBody();
+        PaginatedList<PoolRequestActiveDataDto> responseBody = response.getBody();
 
         assertThat(responseBody).isNotNull();
-        assertThat(responseBody.getTotalSize())
+        assertThat(responseBody.getTotalItems())
             .as("Expect the active pools list to have 1 entry in total")
             .isEqualTo(1);
 
-        List<PoolRequestActiveListDto.PoolRequestActiveDataDto> poolRequestActiveDataDtos = responseBody.getData();
+        List<PoolRequestActiveDataDto> poolRequestActiveDataDtos = responseBody.getData();
         assertThat(poolRequestActiveDataDtos.size())
             .as("Expect the active pools list page to have 1 entry in total")
             .isEqualTo(1);
 
         // get first element in the page
-        PoolRequestActiveListDto.PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
+        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
 
         assertThat(poolRequestActiveDataDto.getPoolNumber())
             .as("Expect the number to be equal to 416221203")
@@ -1523,36 +1547,41 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void test_getActivePools_AtBureauByCourtUser_WithMultipleCourts() throws Exception {
 
         String tab = "bureau";
-        int offset = 0;
-        String sortBy = "poolNumber";
-        String sortOrder = "asc";
+        int offset = 1;
+        String sortBy = "POOL_NUMBER";
+        String sortOrder = "ASC";
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Arrays.asList("415", "462", "774", "767")));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, getSatelliteCourtJwt("415", "415", "462", "774", "767"));
 
-        String requestUrl = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&offset=" + offset + "&sortBy="
-            + sortBy + "&sortOrder=" + sortOrder;
+        String requestUrl = "/api/v1/moj/pool-request/pools-active"
+            + "?tab=" + tab
+            + "&pageNumber=" + offset
+            + "&pageLimit=25"
+            + "&sortBy=" + sortBy
+            + "&sortOrder=" + sortOrder;
 
-        ResponseEntity<PoolRequestActiveListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestUrl)), PoolRequestActiveListDto.class);
+        ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> response =
+            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+                HttpMethod.GET, URI.create(requestUrl)), new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
             .isEqualTo(OK);
 
-        PoolRequestActiveListDto responseBody = response.getBody();
+        PaginatedList<PoolRequestActiveDataDto> responseBody = response.getBody();
 
         assertThat(responseBody).isNotNull();
-        assertThat(responseBody.getTotalSize())
+        assertThat(responseBody.getTotalItems())
             .as("Expect the active pools list to have 28 entries in total")
             .isEqualTo(28);
 
-        List<PoolRequestActiveListDto.PoolRequestActiveDataDto> poolRequestActiveDataDtos = responseBody.getData();
+        List<PoolRequestActiveDataDto> poolRequestActiveDataDtos = responseBody.getData();
         assertThat(poolRequestActiveDataDtos.size())
             .as("Expect the active pools list page to have 25 entries in total")
             .isEqualTo(25);
 
         // get first element in the page
-        PoolRequestActiveListDto.PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
+        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
 
         assertThat(poolRequestActiveDataDto.getPoolNumber())
             .as("Expect the number to be equal to 415221201")
@@ -1579,37 +1608,43 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void test_getActivePools_AtBureauByCourtUser_WithMultipleCourts_CourtFilter() throws Exception {
 
         String tab = "bureau";
-        int offset = 0;
-        String sortBy = "poolNumber";
-        String sortOrder = "asc";
+        int offset = 1;
+        String sortBy = "POOL_NUMBER";
+        String sortOrder = "ASC";
         String locCode = "462";
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Arrays.asList("415", "462", "774", "767")));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, getSatelliteCourtJwt("415", "415", "462", "774", "767"));
 
-        String requestUrl = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&locCode=" + locCode + "&offset="
-            + offset + "&sortBy=" + sortBy + "&sortOrder=" + sortOrder;
+        String requestUrl = "/api/v1/moj/pool-request/pools-active"
+            + "?tab=" + tab
+            + "&pageNumber=" + offset
+            + "&pageLimit=25"
+            + "&sortBy=" + sortBy
+            + "&locCode=" + locCode
+            + "&sortOrder=" + sortOrder;
 
-        ResponseEntity<PoolRequestActiveListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestUrl)), PoolRequestActiveListDto.class);
+        ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> response =
+            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+                HttpMethod.GET, URI.create(requestUrl)), new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
             .isEqualTo(OK);
 
-        PoolRequestActiveListDto responseBody = response.getBody();
+        PaginatedList<PoolRequestActiveDataDto> responseBody = response.getBody();
 
         assertThat(responseBody).isNotNull();
-        assertThat(responseBody.getTotalSize())
+        assertThat(responseBody.getTotalItems())
             .as("Expect the active pools list to have 1 entry in total")
             .isEqualTo(1);
 
-        List<PoolRequestActiveListDto.PoolRequestActiveDataDto> poolRequestActiveDataDtos = responseBody.getData();
+        List<PoolRequestActiveDataDto> poolRequestActiveDataDtos = responseBody.getData();
         assertThat(poolRequestActiveDataDtos.size())
             .as("Expect the active pools list page to have 1 entry in total")
             .isEqualTo(1);
 
         // get first element in the page
-        PoolRequestActiveListDto.PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
+        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
 
         assertThat(poolRequestActiveDataDto.getPoolNumber())
             .as("Expect the number to be equal to 462221207")
@@ -1636,34 +1671,39 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void test_getActivePools_AtCourtByBureauUser() {
 
         String tab = "court";
-        int offset = 0;
-        String sortBy = "poolNumber";
-        String sortOrder = "asc";
+        int offset = 1;
+        String sortBy = "POOL_NUMBER";
+        String sortOrder = "ASC";
 
-        String requestUrl = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&offset=" + offset
-            + "&sortBy=" + sortBy + "&sortOrder=" + sortOrder;
+        String requestUrl = "/api/v1/moj/pool-request/pools-active"
+            + "?tab=" + tab
+            + "&pageNumber=" + offset
+            + "&pageLimit=25"
+            + "&sortBy=" + sortBy
+            + "&sortOrder=" + sortOrder;
 
-        ResponseEntity<PoolRequestActiveListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestUrl)), PoolRequestActiveListDto.class);
+        ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> response =
+            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+                HttpMethod.GET, URI.create(requestUrl)), new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
             .isEqualTo(OK);
 
-        PoolRequestActiveListDto responseBody = response.getBody();
+        PaginatedList<PoolRequestActiveDataDto> responseBody = response.getBody();
 
         assertThat(responseBody).isNotNull();
-        assertThat(responseBody.getTotalSize())
+        assertThat(responseBody.getTotalItems())
             .as("Expect the active pools list to have 28 entries in total")
             .isEqualTo(28);
 
-        List<PoolRequestActiveListDto.PoolRequestActiveDataDto> poolRequestActiveDataDtos = responseBody.getData();
+        List<PoolRequestActiveDataDto> poolRequestActiveDataDtos = responseBody.getData();
         assertThat(poolRequestActiveDataDtos.size())
             .as("Expect the active pools list page to have 25 entries in total")
             .isEqualTo(25);
 
         // get first element in the page
-        PoolRequestActiveListDto.PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
+        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
 
         assertThat(poolRequestActiveDataDto.getPoolNumber())
             .as("Expect the number to be equal to 415221306")
@@ -1690,34 +1730,39 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void test_getActivePools_AtCourtByBureauUser_secondPage() {
 
         String tab = "court";
-        int offset = 1;
-        String sortBy = "poolNumber";
-        String sortOrder = "asc";
+        int offset = 2;
+        String sortBy = "POOL_NUMBER";
+        String sortOrder = "ASC";
 
-        String requestUrl = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&offset=" + offset
-            + "&sortBy=" + sortBy + "&sortOrder=" + sortOrder;
+        String requestUrl = "/api/v1/moj/pool-request/pools-active"
+            + "?tab=" + tab
+            + "&pageNumber=" + offset
+            + "&pageLimit=25"
+            + "&sortBy=" + sortBy
+            + "&sortOrder=" + sortOrder;
 
-        ResponseEntity<PoolRequestActiveListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestUrl)), PoolRequestActiveListDto.class);
+        ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> response =
+            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+                HttpMethod.GET, URI.create(requestUrl)), new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
             .isEqualTo(OK);
 
-        PoolRequestActiveListDto responseBody = response.getBody();
+        PaginatedList<PoolRequestActiveDataDto> responseBody = response.getBody();
 
         assertThat(responseBody).isNotNull();
-        assertThat(responseBody.getTotalSize())
+        assertThat(responseBody.getTotalItems())
             .as("Expect the active pools list to have 28 entries in total")
             .isEqualTo(28);
 
-        List<PoolRequestActiveListDto.PoolRequestActiveDataDto> poolRequestActiveDataDtos = responseBody.getData();
+        List<PoolRequestActiveDataDto> poolRequestActiveDataDtos = responseBody.getData();
         assertThat(poolRequestActiveDataDtos.size())
             .as("Expect the active pools list page to have 3 entries in total")
             .isEqualTo(3);
 
         // get first element in the page
-        PoolRequestActiveListDto.PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
+        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
 
         assertThat(poolRequestActiveDataDto.getPoolNumber())
             .as("Expect the number to be equal to 415221331")
@@ -1744,35 +1789,41 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void test_getActivePools_AtCourtByBureauUser_CourtFilter() {
 
         String tab = "court";
-        int offset = 0;
-        String sortBy = "poolNumber";
-        String sortOrder = "asc";
+        int offset = 1;
+        String sortBy = "POOL_NUMBER";
+        String sortOrder = "ASC";
         String locCode = "415";
 
-        String requestUrl = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&locCode=" + locCode
-            + "&offset=" + offset + "&sortBy=" + sortBy + "&sortOrder=" + sortOrder;
+        String requestUrl = "/api/v1/moj/pool-request/pools-active"
+            + "?tab=" + tab
+            + "&pageNumber=" + offset
+            + "&pageLimit=25"
+            + "&sortBy=" + sortBy
+            + "&locCode=" + locCode
+            + "&sortOrder=" + sortOrder;
 
-        ResponseEntity<PoolRequestActiveListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestUrl)), PoolRequestActiveListDto.class);
+        ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> response =
+            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+                HttpMethod.GET, URI.create(requestUrl)), new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
             .isEqualTo(OK);
 
-        PoolRequestActiveListDto responseBody = response.getBody();
+        PaginatedList<PoolRequestActiveDataDto> responseBody = response.getBody();
 
         assertThat(responseBody).isNotNull();
-        assertThat(responseBody.getTotalSize())
+        assertThat(responseBody.getTotalItems())
             .as("Expect the active pools list to have 26 entries in total")
             .isEqualTo(26);
 
-        List<PoolRequestActiveListDto.PoolRequestActiveDataDto> poolRequestActiveDataDtos = responseBody.getData();
+        List<PoolRequestActiveDataDto> poolRequestActiveDataDtos = responseBody.getData();
         assertThat(poolRequestActiveDataDtos.size())
             .as("Expect the active pools list page to have 25 entries in total")
             .isEqualTo(25);
 
         // get first element in the page
-        PoolRequestActiveListDto.PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
+        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
 
         assertThat(poolRequestActiveDataDto.getPoolNumber())
             .as("Expect the number to be equal to 415221306")
@@ -1799,36 +1850,41 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void test_getActivePools_AtCourtByCourtUser_MultipleCourts() throws Exception {
 
         String tab = "court";
-        int offset = 0;
-        String sortBy = "poolNumber";
-        String sortOrder = "asc";
+        int offset = 1;
+        String sortBy = "POOL_NUMBER";
+        String sortOrder = "ASC";
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Arrays.asList("415", "462", "774", "767")));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, getSatelliteCourtJwt("415", "415", "462", "774", "767"));
 
-        String requestUrl = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&offset=" + offset
-            + "&sortBy=" + sortBy + "&sortOrder=" + sortOrder;
+        String requestUrl = "/api/v1/moj/pool-request/pools-active"
+            + "?tab=" + tab
+            + "&pageNumber=" + offset
+            + "&pageLimit=25"
+            + "&sortBy=" + sortBy
+            + "&sortOrder=" + sortOrder;
 
-        ResponseEntity<PoolRequestActiveListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestUrl)), PoolRequestActiveListDto.class);
+        ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> response =
+            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+                HttpMethod.GET, URI.create(requestUrl)), new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
             .isEqualTo(OK);
 
-        PoolRequestActiveListDto responseBody = response.getBody();
+        PaginatedList<PoolRequestActiveDataDto> responseBody = response.getBody();
 
         assertThat(responseBody).isNotNull();
-        assertThat(responseBody.getTotalSize())
+        assertThat(responseBody.getTotalItems())
             .as("Expect the active pools list to have 27 entries in total")
             .isEqualTo(27);
 
-        List<PoolRequestActiveListDto.PoolRequestActiveDataDto> poolRequestActiveDataDtos = responseBody.getData();
+        List<PoolRequestActiveDataDto> poolRequestActiveDataDtos = responseBody.getData();
         assertThat(poolRequestActiveDataDtos.size())
             .as("Expect the active pools list page to have 25 entries in total")
             .isEqualTo(25);
 
         // get first element in the page
-        PoolRequestActiveListDto.PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
+        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
 
         assertThat(poolRequestActiveDataDto.getPoolNumber())
             .as("Expect the number to be equal to 415221306")
@@ -1855,36 +1911,41 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void test_getActivePools_AtCourtByCourtUser_MultipleCourts_SecondPage() throws Exception {
 
         String tab = "court";
-        int offset = 1;
-        String sortBy = "poolNumber";
-        String sortOrder = "asc";
+        int offset = 2;
+        String sortBy = "POOL_NUMBER";
+        String sortOrder = "ASC";
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Arrays.asList("415", "462", "774", "767")));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, getSatelliteCourtJwt("415", "415", "462", "774", "767"));
 
-        String requestUrl = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&offset=" + offset
-            + "&sortBy=" + sortBy + "&sortOrder=" + sortOrder;
+        String requestUrl = "/api/v1/moj/pool-request/pools-active"
+            + "?tab=" + tab
+            + "&pageNumber=" + offset
+            + "&pageLimit=25"
+            + "&sortBy=" + sortBy
+            + "&sortOrder=" + sortOrder;
 
-        ResponseEntity<PoolRequestActiveListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestUrl)), PoolRequestActiveListDto.class);
+        ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> response =
+            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+                HttpMethod.GET, URI.create(requestUrl)), new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
             .isEqualTo(OK);
 
-        PoolRequestActiveListDto responseBody = response.getBody();
+        PaginatedList<PoolRequestActiveDataDto> responseBody = response.getBody();
 
         assertThat(responseBody).isNotNull();
-        assertThat(responseBody.getTotalSize())
+        assertThat(responseBody.getTotalItems())
             .as("Expect the active pools list to have 27 entries in total")
             .isEqualTo(27);
 
-        List<PoolRequestActiveListDto.PoolRequestActiveDataDto> poolRequestActiveDataDtos = responseBody.getData();
+        List<PoolRequestActiveDataDto> poolRequestActiveDataDtos = responseBody.getData();
         assertThat(poolRequestActiveDataDtos.size())
             .as("Expect the active pools list page to have 2 entries in total")
             .isEqualTo(2);
 
         // get first element in the page
-        PoolRequestActiveListDto.PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
+        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
 
         assertThat(poolRequestActiveDataDto.getPoolNumber())
             .as("Expect the number to be equal to 415221331")
@@ -1911,36 +1972,41 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void test_getActivePools_AtCourtByCourtUser_MultipleCourts_desc() throws Exception {
 
         String tab = "court";
-        int offset = 0;
-        String sortBy = "poolNumber";
-        String sortOrder = "desc";
+        int offset = 1;
+        String sortBy = "POOL_NUMBER";
+        String sortOrder = "DESC";
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Arrays.asList("415", "462", "774", "767")));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, getSatelliteCourtJwt("415", "415", "462", "774", "767"));
 
-        String requestUrl = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&offset=" + offset
-            + "&sortBy=" + sortBy + "&sortOrder=" + sortOrder;
+        String requestUrl = "/api/v1/moj/pool-request/pools-active"
+            + "?tab=" + tab
+            + "&pageNumber=" + offset
+            + "&pageLimit=25"
+            + "&sortBy=" + sortBy
+            + "&sortOrder=" + sortOrder;
 
-        ResponseEntity<PoolRequestActiveListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestUrl)), PoolRequestActiveListDto.class);
+        ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> response =
+            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+                HttpMethod.GET, URI.create(requestUrl)), new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
             .isEqualTo(OK);
 
-        PoolRequestActiveListDto responseBody = response.getBody();
+        PaginatedList<PoolRequestActiveDataDto> responseBody = response.getBody();
 
         assertThat(responseBody).isNotNull();
-        assertThat(responseBody.getTotalSize())
+        assertThat(responseBody.getTotalItems())
             .as("Expect the active pools list to have 27 entries in total")
             .isEqualTo(27);
 
-        List<PoolRequestActiveListDto.PoolRequestActiveDataDto> poolRequestActiveDataDtos = responseBody.getData();
+        List<PoolRequestActiveDataDto> poolRequestActiveDataDtos = responseBody.getData();
         assertThat(poolRequestActiveDataDtos.size())
             .as("Expect the active pools list page to have 25 entries in total")
             .isEqualTo(25);
 
         // get first element in the page
-        PoolRequestActiveListDto.PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
+        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
 
         assertThat(poolRequestActiveDataDto.getPoolNumber())
             .as("Expect the number to be equal to 767221206")
@@ -1967,36 +2033,41 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void test_getActivePools_AtCourtByCourtUser_OneCourt() throws Exception {
 
         String tab = "court";
-        int offset = 0;
-        String sortBy = "poolNumber";
-        String sortOrder = "asc";
+        int offset = 1;
+        String sortBy = "POOL_NUMBER";
+        String sortOrder = "ASC";
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", List.of("416")));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, getSatelliteCourtJwt("416", "416"));
 
-        String requestUrl = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&offset=" + offset
-            + "&sortBy=" + sortBy + "&sortOrder=" + sortOrder;
+        String requestUrl = "/api/v1/moj/pool-request/pools-active"
+            + "?tab=" + tab
+            + "&pageNumber=" + offset
+            + "&pageLimit=25"
+            + "&sortBy=" + sortBy
+            + "&sortOrder=" + sortOrder;
 
-        ResponseEntity<PoolRequestActiveListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestUrl)), PoolRequestActiveListDto.class);
+        ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> response =
+            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+                HttpMethod.GET, URI.create(requestUrl)), new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
             .isEqualTo(OK);
 
-        PoolRequestActiveListDto responseBody = response.getBody();
+        PaginatedList<PoolRequestActiveDataDto> responseBody = response.getBody();
 
         assertThat(responseBody).isNotNull();
-        assertThat(responseBody.getTotalSize())
+        assertThat(responseBody.getTotalItems())
             .as("Expect the active pools list to have 2 entry in total")
             .isEqualTo(2);
 
-        List<PoolRequestActiveListDto.PoolRequestActiveDataDto> poolRequestActiveDataDtos = responseBody.getData();
+        List<PoolRequestActiveDataDto> poolRequestActiveDataDtos = responseBody.getData();
         assertThat(poolRequestActiveDataDtos.size())
             .as("Expect the active pools list page to have entry in total")
             .isEqualTo(2);
 
         // get first element in the page
-        PoolRequestActiveListDto.PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
+        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
 
         assertThat(poolRequestActiveDataDto.getPoolNumber())
             .as("Expect the number to be equal to 416221336")
@@ -2023,25 +2094,31 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void test_getActivePools_BureauNoResult() {
 
         String tab = "bureau";
-        int offset = 0;
-        String sortBy = "poolNumber";
-        String sortOrder = "asc";
+        int offset = 1;
+        String sortBy = "POOL_NUMBER";
+        String sortOrder = "ASC";
         String locCode = "415";
 
-        String requestUrl = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&locCode=" + locCode
-            + "&offset=" + offset + "&sortBy=" + sortBy + "&sortOrder=" + sortOrder;
+        String requestUrl = "/api/v1/moj/pool-request/pools-active"
+            + "?tab=" + tab
+            + "&pageNumber=" + offset
+            + "&pageLimit=25"
+            + "&sortBy=" + sortBy
+            + "&locCode=" + locCode
+            + "&sortOrder=" + sortOrder;
 
-        ResponseEntity<PoolRequestActiveListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestUrl)), PoolRequestActiveListDto.class);
+        ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> response =
+            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+                HttpMethod.GET, URI.create(requestUrl)), new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
             .isEqualTo(OK);
 
-        PoolRequestActiveListDto responseBody = response.getBody();
+        PaginatedList<PoolRequestActiveDataDto> responseBody = response.getBody();
 
         assertThat(responseBody).isNotNull();
-        assertThat(responseBody.getTotalSize())
+        assertThat(responseBody.getTotalItems())
             .as("Expect the active pools list to have no entries")
             .isEqualTo(0);
     }
@@ -2051,28 +2128,34 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void test_getActivePools_CourtNoResult() throws Exception {
 
         String tab = "bureau";
-        int offset = 0;
-        String sortBy = "poolNumber";
-        String sortOrder = "asc";
+        int offset = 1;
+        String sortBy = "POOL_NUMBER";
+        String sortOrder = "ASC";
         String locCode = "415";
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415",
-            Arrays.asList("415", "462", "774", "767")));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION,
+            getSatelliteCourtJwt("415", "415", "462", "774", "767"));
 
-        String requestUrl = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&locCode=" + locCode
-            + "&offset=" + offset + "&sortBy=" + sortBy + "&sortOrder=" + sortOrder;
+        String requestUrl = "/api/v1/moj/pool-request/pools-active"
+            + "?tab=" + tab
+            + "&pageNumber=" + offset
+            + "&pageLimit=25"
+            + "&sortBy=" + sortBy
+            + "&locCode=" + locCode
+            + "&sortOrder=" + sortOrder;
 
-        ResponseEntity<PoolRequestActiveListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestUrl)), PoolRequestActiveListDto.class);
+        ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> response =
+            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+                HttpMethod.GET, URI.create(requestUrl)), new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
             .isEqualTo(OK);
 
-        PoolRequestActiveListDto responseBody = response.getBody();
+        PaginatedList<PoolRequestActiveDataDto> responseBody = response.getBody();
 
         assertThat(responseBody).isNotNull();
-        assertThat(responseBody.getTotalSize())
+        assertThat(responseBody.getTotalItems())
             .as("Expect the active pools list to have no entries")
             .isEqualTo(0);
 
@@ -2084,7 +2167,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
 
         String locCode = "417";
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("417", List.of("417")));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, getSatelliteCourtJwt("417", "417"));
 
         String requestUrl = "/api/v1/moj/pool-request/pools-at-court?locCode=" + locCode;
 
@@ -2132,7 +2215,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
 
         String locCode = "418";
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("418", List.of("418")));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, getSatelliteCourtJwt("418", "418"));
 
         String requestUrl = "/api/v1/moj/pool-request/pools-at-court?locCode=" + locCode;
 
@@ -2191,7 +2274,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void testGetPoolsAtCourtLocationByCourtOneOnCallOnlyNoneInAttendance() throws Exception {
 
         String locCode = "419";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("419", List.of("419")));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, getSatelliteCourtJwt("419", "419", "419"));
         String requestUrl = "/api/v1/moj/pool-request/pools-at-court?locCode=" + locCode;
 
         ResponseEntity<PoolsAtCourtLocationListDto> response =
@@ -2246,7 +2329,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void testGetPoolsAtCourtLocationByCourtUserNone() throws Exception {
 
         String locCode = "420";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("420", List.of("420")));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, getSatelliteCourtJwt("420", "420", "420"));
         String requestUrl = "/api/v1/moj/pool-request/pools-at-court?locCode=" + locCode;
 
         ResponseEntity<PoolsAtCourtLocationListDto> response =
@@ -2270,7 +2353,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void testGetPoolsAtCourtLocationByBureauUserForbidden() throws Exception {
 
         String locCode = "419";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("400", List.of("419")));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, getSatelliteCourtJwt("400", "419"));
         String requestUrl = "/api/v1/moj/pool-request/pools-at-court?locCode=" + locCode;
 
         ResponseEntity<PoolsAtCourtLocationListDto> response = restTemplate.exchange(new RequestEntity<Void>(

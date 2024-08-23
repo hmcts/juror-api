@@ -1,8 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.repository;
 
-import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
-import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
@@ -12,19 +10,24 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.validation.constraints.NotNull;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
+import uk.gov.hmcts.juror.api.moj.controller.request.PoolRequestedFilterQuery;
+import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestDataDto;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
-import uk.gov.hmcts.juror.api.moj.domain.PoolRequestListAndCount;
-import uk.gov.hmcts.juror.api.moj.domain.PoolRequestStatus;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolComment;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
+import uk.gov.hmcts.juror.api.moj.utils.PaginationUtil;
+import uk.gov.hmcts.juror.api.moj.utils.PoolRequestUtils;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
+import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static uk.gov.hmcts.juror.api.moj.domain.PoolRequestQueries.filterByActiveFlag;
 import static uk.gov.hmcts.juror.api.moj.domain.PoolRequestQueries.filterByCourtLocations;
 import static uk.gov.hmcts.juror.api.moj.domain.PoolRequestQueries.filterByPoolTypeAndLocation;
 
@@ -39,47 +42,6 @@ public class PoolRequestRepositoryImpl extends PoolRequestSearchQueries implemen
     private static final QPoolRequest POOL_REQUEST = QPoolRequest.poolRequest;
     private static final QJurorPool JUROR_POOL = QJurorPool.jurorPool;
 
-    /**
-     * Retrieve database records from the JUROR_DIGITAL_USER.POOL_REQUEST view using predicates to filter the results
-     * Only return records owned by the Bureau (owner = '400')
-     *
-     * @param poolTypes     List of court type description that the pool has been summoned for
-     * @param courtLocation Unique 3 digit code to identify a specific court location
-     * @return a list of Pool Requests which are owned by the Bureau and filtered further based on the supplied criteria
-     */
-    @Override
-    public PoolRequestListAndCount findBureauPoolRequestsList(@NotNull List<String> poolTypes, String courtLocation,
-                                                              int offset, int pageSize, OrderSpecifier<?> order) {
-
-        JPAQuery<PoolRequest> query = findFilteredPoolRequests(poolTypes, courtLocation)
-            .where(POOL_REQUEST.owner.eq(JurorDigitalApplication.JUROR_OWNER))
-            .offset((long) offset * pageSize)
-            .limit(pageSize)
-            .orderBy(order);
-
-        QueryResults<PoolRequest> queryResults = query.fetchResults();
-        long poolRequestCount = queryResults.getTotal();
-        List<PoolRequest> poolRequestList = queryResults.getResults();
-
-        return new PoolRequestListAndCount(poolRequestList, poolRequestCount);
-    }
-
-    @Override
-    public PoolRequestListAndCount findCourtsPoolRequestsList(List<String> courts, List<String> poolTypes,
-                                                              String courtLocation, int offset, int pageSize,
-                                                              OrderSpecifier<?> order) {
-        JPAQuery<PoolRequest> query = findFilteredPoolRequests(poolTypes, courtLocation)
-            .where(filterByCourtLocations(courts))
-            .offset((long) offset * pageSize)
-            .limit(pageSize)
-            .orderBy(order);
-
-        QueryResults<PoolRequest> queryResults = query.fetchResults();
-        long poolRequestCount = queryResults.getTotal();
-        List<PoolRequest> poolRequestList = queryResults.getResults();
-
-        return new PoolRequestListAndCount(poolRequestList, poolRequestCount);
-    }
 
     /**
      * Retrieves a list of distinct pools for a given court, year and month from JUROR_DIGITAL_USER.POOL_REQUEST view
@@ -98,13 +60,6 @@ public class PoolRequestRepositoryImpl extends PoolRequestSearchQueries implemen
             .fetch();
     }
 
-    private JPAQuery<PoolRequest> findFilteredPoolRequests(List<String> poolTypes, String courtLocation) {
-        QPoolRequest pr = new QPoolRequest("pr");
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-        return queryFactory.selectFrom(POOL_REQUEST)
-            .where(filterByPoolTypeAndLocation(poolTypes, courtLocation)
-                .and(filterByActiveFlag(POOL_REQUEST, pr, PoolRequestStatus.REQUESTED)));
-    }
 
     /**
      * Retrieve database records from the JUROR_DIGITAL_USER.POOL_REQUEST view using a LIKE expression to filter
@@ -113,7 +68,7 @@ public class PoolRequestRepositoryImpl extends PoolRequestSearchQueries implemen
      * @param poolNumberPrefix The first 7 characters of a Pool Number containing the Court Location Code,
      *                         Attendance Date Year (YY) and Attendance Date Month (MM)
      * @return the first Pool Request to match the provided Pool Number prefix, ordered by Pool Number (descending)
-     *     therefor the first record returned will have the current highest sequence number
+     *          therefor the first record returned will have the current highest sequence number
      */
     @Override
     public PoolRequest findLatestPoolRequestByPoolNumberPrefix(@NotNull String poolNumberPrefix) {
@@ -171,12 +126,12 @@ public class PoolRequestRepositoryImpl extends PoolRequestSearchQueries implemen
      * @param minDate start date (inclusive) for date range predicate
      * @param maxDate end date (inclusive) for date range predicate
      * @return a Tuple4 containing:
-     *     <ol>
-     *         <li>Pool Number</li>
-     *         <li>Service Start Date</li>
-     *         <li>Number of Pool Members requested for the Bureau to supply</li>
-     *         <li>Number of Active Pool Members in a responded state</li>
-     *     </ol>
+     *          <ol>
+     *              <li>Pool Number</li>
+     *              <li>Service Start Date</li>
+     *              <li>Number of Pool Members requested for the Bureau to supply</li>
+     *              <li>Number of Active Pool Members in a responded state</li>
+     *          </ol>
      */
     @Override
     public List<Tuple> findActivePoolsForDateRange(String owner, String locCode, LocalDate minDate, LocalDate maxDate,
@@ -243,6 +198,35 @@ public class PoolRequestRepositoryImpl extends PoolRequestSearchQueries implemen
             .groupBy(POOL_REQUEST.poolNumber)
             .groupBy(POOL_REQUEST.returnDate)
             .groupBy(POOL_REQUEST.numberRequested).fetch();
+    }
+
+    @Override
+    public PaginatedList<PoolRequestDataDto> getPoolRequestList(PoolRequestedFilterQuery filterQuery) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+
+        JPAQuery<PoolRequest> query = queryFactory.selectFrom(POOL_REQUEST)
+            .where(filterByPoolTypeAndLocation(PoolRequestUtils.POOL_TYPES_DESC_LIST, filterQuery.getLocCode()))
+            .where(POOL_REQUEST.newRequest.ne('N'));
+
+        if (SecurityUtil.isBureau()) {
+            query.where(POOL_REQUEST.owner.eq(JurorDigitalApplication.JUROR_OWNER));
+        } else if (SecurityUtil.isCourt()) {
+            query.where(filterByCourtLocations(SecurityUtil.getCourts()));
+        }
+        return PaginationUtil.toPaginatedList(
+            query,
+            filterQuery,
+            PoolRequestedFilterQuery.SortField.POOL_NUMBER,
+            SortMethod.ASC,
+            poolRequest -> PoolRequestDataDto.builder()
+                .numberRequested(poolRequest.getNumberRequested())
+                .attendanceDate(poolRequest.getReturnDate())
+                .courtName(poolRequest.getCourtLocation().getName())
+                .poolNumber(poolRequest.getPoolNumber())
+                .poolType(poolRequest.getPoolType().getPoolType())
+                .build(),
+            ValidationConstants.MAX_ITEMS
+        );
     }
 
     /**
