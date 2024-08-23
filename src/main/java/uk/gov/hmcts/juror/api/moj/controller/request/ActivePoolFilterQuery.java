@@ -10,6 +10,7 @@ import lombok.Getter;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
+import uk.gov.hmcts.juror.api.moj.repository.ActivePoolsRepositoryImpl;
 import uk.gov.hmcts.juror.api.moj.service.IsPageable;
 import uk.gov.hmcts.juror.api.validation.CourtLocationCode;
 
@@ -44,9 +45,11 @@ public class ActivePoolFilterQuery implements IsPageable {
         POOL_NUMBER(QPoolRequest.poolRequest.poolNumber),
         TOTAL_NUMBER_REQUESTED(QPoolRequest.poolRequest.totalNoRequired),
         JURORS_IN_POOL(QJurorPool.jurorPool.isActive.count()),
-        COURT_NAME(QPoolRequest.poolRequest.poolType.poolType),
+        COURT_NAME(QPoolRequest.poolRequest.courtLocation.name),
         SERVICE_START_DATE(QPoolRequest.poolRequest.returnDate),
-        POOL_TYPE(QPoolRequest.poolRequest.poolType.description);
+        POOL_TYPE(QPoolRequest.poolRequest.poolType.poolType),
+        POOL_CAPACITY(QPoolRequest.poolRequest.totalNoRequired),
+        JURORS_CONFIRMED(ActivePoolsRepositoryImpl.CONFIRMED_FROM_BUREAU);
 
         private final Expression<? extends Comparable<?>> comparableExpression;
 
