@@ -214,8 +214,7 @@ public class StraightThroughProcessorImplTest {
 
     @Test
     public void processAgeExcusal_happyPath_jurorSuccessfullyExcused_exactlyTooOld() {
-        jurorPoolUtilsMockedStatic.when(() ->
-            JurorPoolUtils.getSingleActiveJurorPool(poolRepository, TEST_JUROR_NUMBER)).thenReturn(jurorPool);
+        when(jurorPoolService.getJurorPoolFromUser(TEST_JUROR_NUMBER)).thenReturn(jurorPool);
 
         JurorStatus disquallifiedJurorStatus = mock(JurorStatus.class);
         when(jurorStatusRepository.findById(IJurorStatus.DISQUALIFIED))
@@ -263,8 +262,7 @@ public class StraightThroughProcessorImplTest {
 
     @Test
     public void processAgeExcusal_happyPath_jurorSuccessfullyExcused_exactlyTooYoung() {
-        jurorPoolUtilsMockedStatic.when(() ->
-            JurorPoolUtils.getSingleActiveJurorPool(poolRepository, TEST_JUROR_NUMBER)).thenReturn(jurorPool);
+        when(jurorPoolService.getJurorPoolFromUser(TEST_JUROR_NUMBER)).thenReturn(jurorPool);
 
         JurorStatus disquallifiedJurorStatus = mock(JurorStatus.class);
         when(jurorStatusRepository.findById(IJurorStatus.DISQUALIFIED))
@@ -311,8 +309,7 @@ public class StraightThroughProcessorImplTest {
 
     @Test
     public void processAgeExcusal_unhappyPath_jurorExactlyMinimumAge() {
-        jurorPoolUtilsMockedStatic.when(() ->
-            JurorPoolUtils.getSingleActiveJurorPool(poolRepository, TEST_JUROR_NUMBER)).thenReturn(jurorPool);
+        when(jurorPoolService.getJurorPoolFromUser(TEST_JUROR_NUMBER)).thenReturn(jurorPool);
 
         // configure jurorResponse
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
@@ -344,8 +341,7 @@ public class StraightThroughProcessorImplTest {
 
     @Test
     public void processAgeExcusal_unhappyPath_jurorOneDayUnderTooOld() {
-        jurorPoolUtilsMockedStatic.when(() ->
-            JurorPoolUtils.getSingleActiveJurorPool(poolRepository, TEST_JUROR_NUMBER)).thenReturn(jurorPool);
+        when(jurorPoolService.getJurorPoolFromUser(TEST_JUROR_NUMBER)).thenReturn(jurorPool);
 
         // configure jurorResponse
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
@@ -377,8 +373,7 @@ public class StraightThroughProcessorImplTest {
 
     @Test
     public void processAgeExcusal_unhappyPath_thirdParty() {
-        jurorPoolUtilsMockedStatic.when(() ->
-            JurorPoolUtils.getSingleActiveJurorPool(poolRepository, TEST_JUROR_NUMBER)).thenReturn(jurorPool);
+        when(jurorPoolService.getJurorPoolFromUser(TEST_JUROR_NUMBER)).thenReturn(jurorPool);
 
         // configure jurorResponse status to fail validation
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
@@ -400,8 +395,7 @@ public class StraightThroughProcessorImplTest {
 
     @Test
     public void processAgeExcusal_unhappyPath_statusNotSummoned() {
-        jurorPoolUtilsMockedStatic.when(() ->
-            JurorPoolUtils.getSingleActiveJurorPool(poolRepository, TEST_JUROR_NUMBER)).thenReturn(jurorPool);
+        when(jurorPoolService.getJurorPoolFromUser(TEST_JUROR_NUMBER)).thenReturn(jurorPool);
 
         // configure jurorResponse status to fail validation
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);

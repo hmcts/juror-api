@@ -99,6 +99,8 @@ public class JurorPaperResponseServiceImplTest {
     private StraightThroughProcessorService straightThroughProcessorService;
     @Mock
     private JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
+    @Mock
+    private JurorPoolService jurorPoolService;
     @InjectMocks
     private JurorPaperResponseServiceImpl jurorPaperResponseService;
 
@@ -117,6 +119,11 @@ public class JurorPaperResponseServiceImplTest {
             .findByJurorJurorNumberAndIsActive(VALID_JUROR_NUMBER_BUREAU, true);
         Mockito.doReturn(Collections.singletonList(courtOwnerJurorPool)).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActive(VALID_JUROR_NUMBER_COURT, true);
+
+        Mockito.doReturn(bureauOwnerJurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(VALID_JUROR_NUMBER_BUREAU);
+        Mockito.doReturn(courtOwnerJurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(VALID_JUROR_NUMBER_COURT);
 
         Mockito.doReturn(Collections.singletonList(bureauOwnerJurorPool)).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc("123456789", true);
@@ -335,8 +342,8 @@ public class JurorPaperResponseServiceImplTest {
 
         jurorPaperResponseService.saveResponse(payload, responseDto);
 
-        Mockito.verify(jurorPoolRepository, Mockito.times(1))
-            .findByJurorJurorNumberAndIsActive(VALID_JUROR_NUMBER_BUREAU, true);
+        Mockito.verify(jurorPoolService, Mockito.times(1))
+            .getJurorPoolFromUser(VALID_JUROR_NUMBER_BUREAU);
         Mockito.verify(jurorPaperResponseRepository, Mockito.times(1))
             .save(paperResponseArgumentCaptor.capture());
         PaperResponse paperResponse = paperResponseArgumentCaptor.getValue();
@@ -364,8 +371,8 @@ public class JurorPaperResponseServiceImplTest {
         Assertions.assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
             jurorPaperResponseService.saveResponse(payload, responseDto));
 
-        Mockito.verify(jurorPoolRepository, Mockito.times(1))
-            .findByJurorJurorNumberAndIsActive("987654321", true);
+        Mockito.verify(jurorPoolService, Mockito.times(1))
+            .getJurorPoolFromUser("987654321");
         Mockito.verify(jurorPaperResponseRepository, Mockito.never()).save(any());
         Mockito.verify(jurorResponseCjsRepository, Mockito.never()).save(any());
         Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.never()).save(any());
@@ -389,8 +396,8 @@ public class JurorPaperResponseServiceImplTest {
         Assertions.assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
             jurorPaperResponseService.saveResponse(payload, responseDto));
 
-        Mockito.verify(jurorPoolRepository, Mockito.times(1))
-            .findByJurorJurorNumberAndIsActive("123456789", true);
+        Mockito.verify(jurorPoolService, Mockito.times(1))
+            .getJurorPoolFromUser("123456789");
         Mockito.verify(jurorPaperResponseRepository, Mockito.never()).save(any());
         Mockito.verify(jurorResponseCjsRepository, Mockito.never()).save(any());
         Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.never()).save(any());
@@ -416,8 +423,8 @@ public class JurorPaperResponseServiceImplTest {
 
         jurorPaperResponseService.saveResponse(payload, responseDto);
 
-        Mockito.verify(jurorPoolRepository, Mockito.times(1))
-            .findByJurorJurorNumberAndIsActive(VALID_JUROR_NUMBER_COURT, true);
+        Mockito.verify(jurorPoolService, Mockito.times(1))
+            .getJurorPoolFromUser(VALID_JUROR_NUMBER_COURT);
         Mockito.verify(jurorPaperResponseRepository, Mockito.times(1))
             .save(paperResponseArgumentCaptor.capture());
         PaperResponse paperResponse = paperResponseArgumentCaptor.getValue();
@@ -446,8 +453,8 @@ public class JurorPaperResponseServiceImplTest {
         Assertions.assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
             jurorPaperResponseService.saveResponse(payload, responseDto));
 
-        Mockito.verify(jurorPoolRepository, Mockito.times(1))
-            .findByJurorJurorNumberAndIsActive("987654321", true);
+        Mockito.verify(jurorPoolService, Mockito.times(1))
+            .getJurorPoolFromUser("987654321");
         Mockito.verify(jurorPaperResponseRepository, Mockito.never()).save(any());
         Mockito.verify(jurorResponseCjsRepository, Mockito.never()).save(any());
         Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.never()).save(any());
@@ -482,8 +489,8 @@ public class JurorPaperResponseServiceImplTest {
 
         jurorPaperResponseService.saveResponse(payload, responseDto);
 
-        Mockito.verify(jurorPoolRepository, Mockito.times(1))
-            .findByJurorJurorNumberAndIsActive("123456789", true);
+        Mockito.verify(jurorPoolService, Mockito.times(1))
+            .getJurorPoolFromUser("123456789");
         Mockito.verify(jurorPaperResponseRepository, Mockito.times(1)).save(any());
         Mockito.verify(jurorResponseCjsRepository, Mockito.times(1)).saveAll(any());
         Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.times(1)).saveAll(any());
@@ -505,8 +512,8 @@ public class JurorPaperResponseServiceImplTest {
 
         jurorPaperResponseService.saveResponse(payload, responseDto);
 
-        Mockito.verify(jurorPoolRepository, Mockito.times(1))
-            .findByJurorJurorNumberAndIsActive("123456789", true);
+        Mockito.verify(jurorPoolService, Mockito.times(1))
+            .getJurorPoolFromUser("123456789");
         Mockito.verify(jurorPaperResponseRepository, Mockito.times(1)).save(any());
         Mockito.verify(jurorResponseCjsRepository, Mockito.times(1)).saveAll(any());
         Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.times(1)).saveAll(any());
@@ -531,8 +538,8 @@ public class JurorPaperResponseServiceImplTest {
 
         jurorPaperResponseService.saveResponse(payload, responseDto);
 
-        Mockito.verify(jurorPoolRepository, Mockito.times(1))
-            .findByJurorJurorNumberAndIsActive("123456789", true);
+        Mockito.verify(jurorPoolService, Mockito.times(1))
+            .getJurorPoolFromUser("123456789");
         Mockito.verify(jurorPaperResponseRepository, Mockito.times(1)).save(any());
         Mockito.verify(jurorResponseCjsRepository, Mockito.times(1)).saveAll(any());
         Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.times(1)).saveAll(any());
@@ -617,8 +624,8 @@ public class JurorPaperResponseServiceImplTest {
 
         jurorPaperResponseService.saveResponse(payload, responseDto);
 
-        Mockito.verify(jurorPoolRepository, Mockito.times(1))
-            .findByJurorJurorNumberAndIsActive(VALID_JUROR_NUMBER_BUREAU, true);
+        Mockito.verify(jurorPoolService, Mockito.times(1))
+            .getJurorPoolFromUser(VALID_JUROR_NUMBER_BUREAU);
         Mockito.verify(jurorPaperResponseRepository, Mockito.times(1))
             .save(paperResponseArgumentCaptor.capture());
         PaperResponse paperResponse = paperResponseArgumentCaptor.getValue();

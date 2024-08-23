@@ -116,6 +116,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -3275,6 +3276,8 @@ class JurorRecordServiceTest {
                     .build()
             );
 
+            doReturn(jurorPool.getJuror()).when(jurorRepository)
+                .findByJurorNumber(any());
             doReturn(List.of(jurorPool)).when(jurorPoolRepository)
                 .findByJurorJurorNumberAndIsActive(any(), anyBoolean());
 
@@ -3296,15 +3299,20 @@ class JurorRecordServiceTest {
         @Test
         void negativeNoPermission() {
             String jurorNumber = "641500094";
-            JurorPool jurorPool = createValidJurorPool(jurorNumber, COURT_OWNER);
+            Juror juror = new Juror();
+            juror.setJurorNumber(jurorNumber);
+            juror.setFirstName("jurorPool1");
+            juror.setLastName("jurorPool1L");
+            juror.setPostcode("M24 4GT");
+            juror.setAssociatedPools(new HashSet<>());
             TestUtils.mockSecurityUtil(
                 BureauJwtPayload.builder()
                     .owner("416")
                     .build()
             );
 
-            doReturn(List.of(jurorPool)).when(jurorPoolRepository)
-                .findByJurorJurorNumberAndIsActive(any(), anyBoolean());
+            doReturn(juror).when(jurorRepository)
+                .findByJurorNumber(any());
 
             assertThrows(MojException.Forbidden.class, () -> jurorRecordService.getJurorPayments(jurorNumber));
         }
@@ -3366,7 +3374,7 @@ class JurorRecordServiceTest {
             doReturn(List.of(jurorPool)).when(jurorPoolRepository)
                 .findByJurorJurorNumberAndIsActive(any(), anyBoolean());
 
-            assertThrows(MojException.Forbidden.class, () -> jurorRecordService.getJurorPayments(jurorNumber));
+            assertThrows(MojException.Forbidden.class, () -> jurorRecordService.getJurorHistory(jurorNumber));
         }
     }
 

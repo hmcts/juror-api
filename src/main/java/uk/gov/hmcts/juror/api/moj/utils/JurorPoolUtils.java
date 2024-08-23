@@ -4,9 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.bureau.domain.IPoolStatus;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
-import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
-import uk.gov.hmcts.juror.api.moj.exception.JurorRecordException;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 
@@ -175,53 +173,6 @@ public final class JurorPoolUtils {
 
         log.debug("retrieved juror pool record for juror number {} and location {}", jurorNumber, courtLocation);
         return jurorPool;
-    }
-
-    /**
-     * Query the database and return a single active juror pool association for a
-     * given juror number. To be used when only a single active juror pool association is expecting, for example when
-     * the bureau are managing the summons reply
-     *
-     * @param jurorPoolRepository JPA interface to the database to generate and execute SQL queries
-     * @param jurorNumber         9-digit numeric string to identify jurors
-     * @return a juror pool record, there should be only one active record for a given juror number
-     */
-    public static JurorPool getSingleActiveJurorPool(JurorPoolRepository jurorPoolRepository, String jurorNumber) {
-        log.debug("Retrieving active juror pool record for juror number {}", jurorNumber);
-
-        List<JurorPool> jurorPoolDetails = jurorPoolRepository
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        log.debug("{} Active Juror Record(s) found for Juror Number: {}", jurorPoolDetails.size(), jurorNumber);
-        switch (jurorPoolDetails.size()) {
-            case 0 -> throw new MojException.NotFound(String.format("Unable to find a Juror Pool association for"
-                + "Juror Number %s", jurorNumber), null);
-            case 1 -> {
-                log.debug("Found a single juror pool association record for juror number {}", jurorNumber);
-                return jurorPoolDetails.get(0);
-            }
-            default -> throw new JurorRecordException.MultipleJurorRecordsFound(jurorNumber);
-        }
-
-    }
-
-    /**
-     * To be used when only a single association between a Juror record and a Pool is expected to exist in a
-     * collection returned from a database query.
-     *
-     * @param jurorPoolRepository JPA interface to the database to generate and execute SQL queries
-     * @param jurorNumber         9-digit numeric string to identify jurors
-     * @return a single Juror object
-     */
-    public static Juror getActiveJurorRecord(JurorPoolRepository jurorPoolRepository, String jurorNumber) {
-        log.debug("Retrieving active juror pool records for juror number {}", jurorNumber);
-        List<JurorPool> jurorPools = getActiveJurorPoolRecords(jurorPoolRepository, jurorNumber);
-
-        log.debug("retrieved {} active juror pool record(s) for juror number {}", jurorPools.size(), jurorNumber);
-        if (jurorPools.size() > 1) {
-            throw new JurorRecordException.MultipleJurorRecordsFound(jurorNumber);
-        }
-
-        return jurorPools.get(0).getJuror();
     }
 
     /**

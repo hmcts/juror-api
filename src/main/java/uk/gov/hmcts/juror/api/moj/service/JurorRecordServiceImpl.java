@@ -141,7 +141,7 @@ import static uk.gov.hmcts.juror.api.moj.utils.JurorUtils.checkReadAccessForCurr
 @Slf4j
 @Service
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports",
-                   "PMD.TooManyFields"})
+    "PMD.TooManyFields"})
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class JurorRecordServiceImpl implements JurorRecordService {
     private final ContactCodeRepository contactCodeRepository;
@@ -1236,8 +1236,11 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     @Override
     public JurorPaymentsResponseDto getJurorPayments(String jurorNumber) {
-        JurorUtils.checkOwnershipForCurrentUser(JurorPoolUtils.getActiveJurorRecord(jurorPoolRepository, jurorNumber),
-            SecurityUtil.getActiveOwner());
+        Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
+        if (juror == null) {
+            throw new MojException.NotFound("Juror not found", null);
+        }
+        JurorUtils.checkOwnershipForCurrentUser(juror, SecurityUtil.getActiveOwner());
         checkReadAccessForCurrentUser(jurorPoolRepository, jurorNumber, SecurityUtil.getActiveOwner());
 
         List<Tuple> data = jurorPaymentsSummaryRepository.fetchPaymentLogByJuror(jurorNumber);

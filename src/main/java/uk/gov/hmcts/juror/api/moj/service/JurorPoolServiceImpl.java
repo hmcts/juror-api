@@ -103,7 +103,10 @@ public class JurorPoolServiceImpl implements JurorPoolService {
         List<JurorPool> jurorPools =
             jurorPoolRepository.findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
         if (!jurorPools.isEmpty()) {
-            return jurorPools.get(0);
+            return jurorPools.stream()
+                .filter(jurorPool -> jurorPool.getOwner().equals(SecurityUtil.BUREAU_OWNER))
+                .findFirst()
+                .orElse(jurorPools.get(0));
         }
         throw new MojException.NotFound("Juror not found: " + jurorNumber, null);
     }

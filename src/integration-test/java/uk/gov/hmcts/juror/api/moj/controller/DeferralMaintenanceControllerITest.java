@@ -40,7 +40,6 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
-import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -855,7 +854,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             verifyActivePoolOldRecord(jurorPools.get(0));
 
             // grab new record to verify it has been created and the properties have been updated correctly
-            Juror newJurorRecord = JurorPoolUtils.getActiveJurorRecord(jurorPoolRepository, JUROR_555555561);
+            Juror newJurorRecord = jurorRepository.findByJurorNumber(JUROR_555555561);
 
             verifyActiveJurorNewRecord(newJurorRecord,
                 deferralReasonRequestDto.getPoolNumber(), deferralReasonRequestDto.getDeferralDate());
@@ -919,7 +918,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             verifyActivePoolOldRecord(jurorPools.get(0));
 
             // grab new record to verify it has been created and the properties have been updated correctly
-            Juror newJurorRecord = JurorPoolUtils.getActiveJurorRecord(jurorPoolRepository, JUROR_555555558);
+            Juror newJurorRecord = jurorRepository.findByJurorNumber(JUROR_555555558);
             verifyActiveJurorNewRecord(newJurorRecord,
                 deferralReasonRequestDto.getPoolNumber(), deferralReasonRequestDto.getDeferralDate());
 

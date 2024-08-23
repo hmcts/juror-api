@@ -106,7 +106,6 @@ import uk.gov.hmcts.juror.api.moj.repository.SummonsSnapshotRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
-import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
 import java.math.BigDecimal;
@@ -386,7 +385,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         //Check the Juror record has been created as well
         RepositoryUtils.retrieveFromDatabase("041600001", jurorRepository);
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, "041600001");
+        JurorPool jurorPool = jurorPoolRepository.findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue(
+            "416", "041600001");
         assertThat(jurorPool.getPool().getPoolNumber()).as("Expect the Juror to be created and in pool 416220503")
             .isEqualTo("416220503");
         assertThat(jurorPool.getStatus().getStatus()).as("Expect the Juror to be active")
@@ -470,8 +470,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             .as("Expect the HTTP status to be NO CONTENT")
             .isEqualTo(HttpStatus.NO_CONTENT);
 
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
-        Juror juror = jurorPool.getJuror();
+        Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
 
         //Check data has been changed and now matches what was in the dto.
         assertThat(juror.getTitle()).isEqualTo(requestDto.getTitle());
@@ -510,8 +509,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             .as("Expect the HTTP status to be NO CONTENT")
             .isEqualTo(HttpStatus.NO_CONTENT);
 
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
-        Juror juror = jurorPool.getJuror();
+        Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
 
         //Check data has been changed and now matches what was in the dto.
         assertThat(juror.getTitle()).isEqualTo(requestDto.getTitle());

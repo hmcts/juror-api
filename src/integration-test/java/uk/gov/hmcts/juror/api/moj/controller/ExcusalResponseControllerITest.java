@@ -39,7 +39,6 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
-import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -110,7 +109,8 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
         PaperResponse jurorPaperResponse = jurorPaperResponseRepository.findByJurorNumber(jurorNumber);
         validatePaperResponseExcusal(jurorPaperResponse, login);
 
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
+        JurorPool jurorPool = jurorPoolRepository
+            .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue("415", jurorNumber);
         validateRefuseExcusal(jurorPool, excusalDecisionDto, login);
         validateExcusalDeniedLetter();
     }
@@ -136,7 +136,8 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
             jurorPaperResponseRepository.findByJurorNumber(jurorNumber);
         validatePaperResponseExcusal(jurorPaperResponse, login);
 
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
+        JurorPool jurorPool = jurorPoolRepository
+            .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue("415", jurorNumber);
         validateRefuseExcusal(jurorPool, excusalDecisionDto, login);
 
         Iterable<BulkPrintData> bulkPrintDataIterable = bulkPrintDataRepository.findAll();
@@ -176,7 +177,8 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
             jurorPaperResponseRepository.findByJurorNumber(jurorNumber);
         validatePaperResponseExcusal(jurorPaperResponse, login);
 
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
+        JurorPool jurorPool = jurorPoolRepository
+            .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue("415", jurorNumber);
         validateExcusal(jurorPool, excusalDecisionDto, login);
 
         validateExcusalLetter(excusalDecisionDto.getExcusalReasonCode());
@@ -204,7 +206,8 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
             jurorPaperResponseRepository.findByJurorNumber(jurorNumber);
         validatePaperResponseExcusal(jurorPaperResponse, login);
 
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
+        JurorPool jurorPool = jurorPoolRepository
+            .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue("415", jurorNumber);
         validateExcusal(jurorPool, excusalDecisionDto, login);
     }
 
@@ -229,7 +232,8 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
         DigitalResponse jurorResponse = jurorResponseRepository.findByJurorNumber(jurorNumber);
         validateDigitalResponseExcusal(jurorResponse, login);
 
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
+        JurorPool jurorPool = jurorPoolRepository
+            .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue("415", jurorNumber);
         validateRefuseExcusal(jurorPool, excusalDecisionDto, login);
         validateExcusalDeniedLetter();
     }
@@ -255,7 +259,8 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
         DigitalResponse jurorResponse = jurorResponseRepository.findByJurorNumber(jurorNumber);
         validateDigitalResponseExcusal(jurorResponse, login);
 
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
+        JurorPool jurorPool = jurorPoolRepository
+            .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue("415", jurorNumber);
         validateRefuseExcusal(jurorPool, excusalDecisionDto, login);
         Iterable<BulkPrintData> bulkPrintDataIterable = bulkPrintDataRepository.findAll();
         List<BulkPrintData> bulkPrintData = new ArrayList<>();
@@ -294,7 +299,8 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
         DigitalResponse jurorResponse = jurorResponseRepository.findByJurorNumber(jurorNumber);
         validateDigitalResponseExcusal(jurorResponse, login);
 
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
+        JurorPool jurorPool = jurorPoolRepository
+            .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue("415", jurorNumber);
         validateExcusal(jurorPool, excusalDecisionDto, login);
         validateExcusalLetter(excusalDecisionDto.getExcusalReasonCode());
     }
@@ -321,7 +327,8 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
         DigitalResponse jurorResponse = jurorResponseRepository.findByJurorNumber(jurorNumber);
         validateDigitalResponseExcusal(jurorResponse, login);
 
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
+        JurorPool jurorPool = jurorPoolRepository
+            .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue("415", jurorNumber);
         validateExcusal(jurorPool, excusalDecisionDto, login);
     }
 
@@ -347,7 +354,8 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
         PaperResponse jurorPaperResponse = jurorPaperResponseRepository.findByJurorNumber(jurorNumber);
         validatePaperResponseExcusal(jurorPaperResponse, login);
 
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
+        JurorPool jurorPool = jurorPoolRepository
+            .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue("415", jurorNumber);
         validateExcusal(jurorPool, excusalDecisionDto, login);
         validateExcusalLetter(excusalDecisionDto.getExcusalReasonCode());
     }
@@ -411,7 +419,8 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
         PaperResponse jurorPaperResponse = jurorPaperResponseRepository.findByJurorNumber(jurorNumber);
         validatePaperResponseExcusal(jurorPaperResponse, login);
 
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
+        JurorPool jurorPool = jurorPoolRepository
+            .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue("415", jurorNumber);
         validateExcusal(jurorPool, excusalDecisionDto, login);
         validateExcusalLetter(excusalDecisionDto.getExcusalReasonCode());
     }
@@ -473,7 +482,8 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
+        JurorPool jurorPool = jurorPoolRepository
+            .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue("415", jurorNumber);
         validateExcusal(jurorPool, excusalDecisionDto, login);
         validateExcusalLetter(excusalDecisionDto.getExcusalReasonCode());
     }

@@ -21,7 +21,6 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
-import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -94,7 +93,8 @@ public class UndeliverableResponseControllerITest extends AbstractIntegrationTes
     }
 
     private void assertUpdated(String jurorNumber) {
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
+        JurorPool jurorPool = jurorPoolRepository
+            .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue("415", jurorNumber);
         Juror juror = jurorPool.getJuror();
 
         assertThat(juror.isResponded()).isFalse();
@@ -129,8 +129,8 @@ public class UndeliverableResponseControllerITest extends AbstractIntegrationTes
             restTemplate.exchange(createRequest("123456789"), String.class);
 
         assertThat(response.getStatusCode())
-            .as("Expect the HTTP PUT request to be FORBIDDEN")
-            .isEqualTo(HttpStatus.FORBIDDEN);
+            .as("Expect the HTTP PUT request to be NOT_FOUND")
+            .isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test

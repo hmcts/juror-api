@@ -48,20 +48,4 @@ public class JurorRecordException extends RuntimeException {
 
     }
 
-    /**
-     * Exception type thrown when a single, active, juror record is expected for a single Juror Number
-     * but multiple juror records have been returned - sometimes active multiple juror records can be valid or expected
-     * for example when a juror is transferred to a different court they could have one active record per court they
-     * have served at. However, there are times when only a single record is expected, for example before the juror has
-     * attended court they are being managed by the Bureau, having their summons reply processed for a single location
-     */
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public static class MultipleJurorRecordsFound extends JurorRecordException {
-
-        public MultipleJurorRecordsFound(String jurorNumber) {
-            super(String.format("Unexpected number of Juror Records found for juror number: %s", jurorNumber));
-        }
-
-    }
-
 }

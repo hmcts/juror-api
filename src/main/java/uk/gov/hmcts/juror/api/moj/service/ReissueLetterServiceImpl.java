@@ -19,6 +19,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.letter.LetterType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
@@ -41,6 +42,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
     private final JurorStatusRepository jurorStatusRepository;
     private final JurorHistoryService jurorHistoryService;
     private final JurorPoolService jurorPoolService;
+    private final JurorRepository jurorRepository;
 
 
     @Transactional
@@ -255,7 +257,9 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
 
                 // determine form code based on Welsh flag
                 String jurorNumber = datum.get(jurorNumberIndex).toString();
-                Juror juror = JurorPoolUtils.getActiveJurorRecord(jurorPoolRepository, jurorNumber);
+                System.out.println("TMP: " + jurorNumberIndex);
+                System.out.println("TMP: " + jurorNumber);
+                Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
 
                 if (juror.isWelsh()) {
                     newData.add(formCodeIndex, FormCode.BI_SUMMONS_REMINDER.getCode());

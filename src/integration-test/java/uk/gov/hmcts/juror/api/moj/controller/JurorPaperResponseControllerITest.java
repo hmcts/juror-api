@@ -15,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.CjsEmploymentDetailsDto;
@@ -53,7 +52,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -170,7 +168,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             HttpMethod.POST, uri);
         ResponseEntity<SaveJurorPaperReplyResponseDto> response = template.exchange(requestEntity,
             SaveJurorPaperReplyResponseDto.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test
@@ -221,7 +219,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             HttpMethod.POST, uri);
         ResponseEntity<SaveJurorPaperReplyResponseDto> response = template.exchange(requestEntity,
             SaveJurorPaperReplyResponseDto.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test
@@ -1752,20 +1750,8 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_updatePaperResponseStatus.sql"})
-    public void updateJurorPaperResponseStatus_bureauUser_multipleJurorRecords() throws Exception {
-        final String bureauJwt = createJwtBureau("BUREAU_USER");
-        final URI uri = URI.create("/api/v1/moj/juror-paper-response/update-status/444444444/CLOSED");
-
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-        RequestEntity<Void> requestEntity = new RequestEntity<>(httpHeaders, HttpMethod.PUT, uri);
-        ResponseEntity<Void> response = template.exchange(requestEntity, Void.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_updatePaperResponseStatus.sql"})
     public void updateJurorPaperResponseStatus_courtUser_thirdParty() throws Exception {
-        final String bureauJwt = initCourtsJwt("411", Arrays.asList("411", "774"));
+        final String bureauJwt = getSatelliteCourtJwt("411","411", "774");
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/update-status/555555555/CLOSED");
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -1784,7 +1770,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             "555555555");
 
         validateMergedJurorRecord(jurorPool, summonsReplyData, IJurorStatus.RESPONDED);
-        assertThat(jurorPool.getUserEdtq()).isEqualToIgnoringCase("COURT_USER");
+        assertThat(jurorPool.getUserEdtq()).isEqualToIgnoringCase("test_court_standard");
 
         // juror contact details are omitted from merge when completed by a third party
         assertThat(juror.getPhoneNumber()).isNull();
@@ -2064,16 +2050,6 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             .build();
 
         jurorPaperResponseDto.setThirdParty(thirdParty);
-    }
-
-    private String initCourtsJwt(String owner, List<String> courts) throws Exception {
-
-        return mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .login("COURT_USER")
-            .owner(owner)
-            .staff(BureauJwtPayload.Staff.builder().courts(courts).build())
-            .build());
     }
 
     private void validateMergedJurorRecord(JurorPool jurorPool, PaperResponse summonsReplyData,
