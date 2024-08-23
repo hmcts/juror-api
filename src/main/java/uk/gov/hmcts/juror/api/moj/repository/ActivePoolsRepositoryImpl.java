@@ -45,6 +45,12 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
     private static final String COURT_TAB = "court";
     private static final int ACTIVE_POOL_DAYS_LIMIT = 28;
 
+    public static NumberExpression<Integer> CONFIRMED_FROM_BUREAU = new CaseBuilder()
+        .when(JUROR_POOL.owner.eq(SecurityUtil.BUREAU_OWNER)
+            .and(JUROR_POOL.status.status.eq(IJurorStatus.RESPONDED)))
+        .then(1)
+        .otherwise(0).sum();
+
     @PersistenceContext
     EntityManager entityManager;
 
@@ -63,24 +69,14 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
     private PaginatedList<PoolRequestActiveDataDto> getActiveBureauTabRequests(ActivePoolFilterQuery filterQuery) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
 
-        NumberExpression<Integer> confirmedFromBureau = new CaseBuilder()
-            .when(JUROR_POOL.owner.eq(SecurityUtil.BUREAU_OWNER)
-                .and(JUROR_POOL.status.status.eq(IJurorStatus.RESPONDED)))
-            .then(1)
-            .otherwise(0).sum();
-
-        JPAQuery<Tuple> query = queryFactory.select(POOL_REQUEST, confirmedFromBureau)
+        JPAQuery<Tuple> query = queryFactory.select(POOL_REQUEST, CONFIRMED_FROM_BUREAU)
             .from(POOL_REQUEST)
             .leftJoin(JUROR_POOL).on(POOL_REQUEST.eq(JUROR_POOL.pool))
             .where(POOL_REQUEST.owner.eq(SecurityUtil.BUREAU_OWNER))
             .where(POOL_REQUEST.newRequest.eq('N'))
             .where(POOL_REQUEST.numberRequested.ne(0))
             .where(POOL_REQUEST.poolType.description.in(PoolRequestUtils.POOL_TYPES_DESC_LIST))
-            .groupBy(POOL_REQUEST);
-
-        if (filterQuery.getSortField().equals(ActivePoolFilterQuery.SortField.COURT_NAME)) {
-            query.groupBy(POOL_REQUEST.courtLocation.name);
-        }
+            .groupBy(POOL_REQUEST, POOL_REQUEST.courtLocation.name);
 
         if (StringUtils.isNotBlank(filterQuery.getLocCode())) {
             query.where(POOL_REQUEST.courtLocation.locCode.eq(filterQuery.getLocCode()));
@@ -99,7 +95,7 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
                 return PoolRequestActiveDataDto.builder()
                     .poolNumber(poolRequest.getPoolNumber())
                     .requestedFromBureau(poolRequest.getNumberRequested())
-                    .confirmedFromBureau(data.get(confirmedFromBureau))
+                    .confirmedFromBureau(data.get(CONFIRMED_FROM_BUREAU))
                     .courtName(poolRequest.getCourtLocation().getName())
                     .poolType(poolRequest.getPoolType().getDescription())
                     .attendanceDate(poolRequest.getReturnDate())
