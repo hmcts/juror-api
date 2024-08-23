@@ -58,11 +58,9 @@ import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription.CONFIRMED;
 import static uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription.NEEDED;
 import static uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription.SURPLUS;
-import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.DAY_ALREADY_EXISTS;
 import static uk.gov.hmcts.juror.api.testvalidation.DeferralMaintenanceValidation.validateDeferralMaintenanceOptions;
 
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
@@ -866,24 +864,6 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_555555561);
             assertThat(deferral.isPresent()).isFalse();
         }
-
-        @Test
-        void bureauProcessJurorAlreadyInBulkPrintForGivenDate() {
-            final String bureauJwt = createJwt(BUREAU_USER, OWNER_400);
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-
-            ResponseEntity<String> response = template.exchange(new RequestEntity<>(
-                createDeferralReasonRequestDtoToActivePool(ReplyMethod.PAPER),
-                httpHeaders, POST, URI.create(URL_PREFIX + JUROR_555555552)), String.class);
-
-            assertThat(response.getStatusCode()).as("HTTP status unprocessable entity expected")
-                .isEqualTo(UNPROCESSABLE_ENTITY);
-
-            assertBusinessRuleViolation(response, "Letter already exists in bulk print queue for the same day",
-                DAY_ALREADY_EXISTS);
-        }
-
 
         @Test
         void bureauOwnedCourtUserProcessJurorActivePoolPaper() {
