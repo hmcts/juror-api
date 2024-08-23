@@ -470,8 +470,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             .as("Expect the HTTP status to be NO CONTENT")
             .isEqualTo(HttpStatus.NO_CONTENT);
         executeInTransaction(() -> {
-            JurorPool jurorPool = jurorRepository.findByJurorNumber(jurorNumber);
-            Juror juror = jurorPool.getJuror();
+            Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
 
             //Check data has been changed and now matches what was in the dto.
             assertThat(juror.getTitle()).isEqualTo(requestDto.getTitle());
@@ -511,8 +510,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             .as("Expect the HTTP status to be NO CONTENT")
             .isEqualTo(HttpStatus.NO_CONTENT);
         executeInTransaction(() -> {
-            JurorPool jurorPool = jurorRepository.findByJurorNumber(jurorNumber);
-            Juror juror = jurorPool.getJuror();
+            Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
 
             //Check data has been changed and now matches what was in the dto.
             assertThat(juror.getTitle()).isEqualTo(requestDto.getTitle());
