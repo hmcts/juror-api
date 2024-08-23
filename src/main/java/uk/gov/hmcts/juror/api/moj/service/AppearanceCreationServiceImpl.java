@@ -79,7 +79,6 @@ public class AppearanceCreationServiceImpl implements AppearanceCreationService 
                                                        CourtLocation courtLocation) {
         return appearanceBuilder
             .createdBy(SecurityUtil.getActiveLogin())
-            //TODO .createdBy(userService.findUserByUsername(SecurityUtil.getActiveLogin()))
             .version(getLastVersionNumber(jurorNumber, appearanceDate, courtLocation.getLocCode()));
     }
 
