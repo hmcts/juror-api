@@ -191,7 +191,7 @@ class PersonAttendingSummaryReportTest extends AbstractStandardReportTestSupport
     void negativeMissingIncludePanelMembers() {
         StandardReportRequest request = getValidRequest();
         request.setIncludePanelMembers(null);
-        assertValidationFails(request, new ValidationFailure("includeSummoned", "must not be null"));
+        assertValidationFails(request, new ValidationFailure("includePanelMembers", "must not be null"));
     }
 
 
