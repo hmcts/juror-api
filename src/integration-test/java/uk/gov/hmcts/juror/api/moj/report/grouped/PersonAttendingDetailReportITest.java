@@ -39,6 +39,7 @@ class PersonAttendingDetailReportITest extends AbstractGroupedReportControllerIT
             .date(LocalDate.now().plusDays(1))
             .locCode("415")
             .includeSummoned(false)
+            .includePanelMembers(false)
             .build());
     }
 
