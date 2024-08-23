@@ -42,18 +42,48 @@ public class IFinancialAuditDetailsAppearancesRepositoryImpl
         Appearance appearance,
         FinancialAuditDetails.Type.GenericType genericType,
         boolean excludeProvidedAuditDetails) {
+        return findPreviousFinancialAuditDetailsAppearancesBase(
+            financialAuditDetails.getId(),
+            financialAuditDetails.getLocCode(),
+            financialAuditDetails.getJurorNumber(),
+            appearance,
+            genericType,
+            excludeProvidedAuditDetails);
+    }
+
+    public Optional<FinancialAuditDetailsAppearances> findPreviousFinancialAuditDetailsAppearancesBase(
+        Appearance appearance,
+        FinancialAuditDetails.Type.GenericType genericType,
+        boolean excludeProvidedAuditDetails) {
+        return findPreviousFinancialAuditDetailsAppearancesBase(
+            appearance.getFinancialAudit(),
+            appearance.getLocCode(),
+            appearance.getJurorNumber(),
+            appearance,
+            genericType,
+            excludeProvidedAuditDetails);
+    }
+
+
+    public Optional<FinancialAuditDetailsAppearances> findPreviousFinancialAuditDetailsAppearancesBase(
+        long financialAuditDetailsId,
+        String locCode,
+        String jurorNumber,
+        Appearance appearance,
+        FinancialAuditDetails.Type.GenericType genericType,
+        boolean excludeProvidedAuditDetails) {
         JPAQueryFactory queryFactory = getJpaQueryFactory();
 
         BooleanExpression financialAuditDetailsJoinCondition = QFinancialAuditDetails.financialAuditDetails.id
             .eq(QFinancialAuditDetailsAppearances.financialAuditDetailsAppearances.financialAuditId)
             .and(QFinancialAuditDetailsAppearances.financialAuditDetailsAppearances
-                .locCode.eq(financialAuditDetails.getLocCode()))
-            .and(QFinancialAuditDetails.financialAuditDetails.jurorNumber.eq(financialAuditDetails.getJurorNumber()))
-            .and(QFinancialAuditDetails.financialAuditDetails.locCode.eq(financialAuditDetails.getLocCode()));
+                .locCode.eq(locCode))
+            .and(QFinancialAuditDetails.financialAuditDetails.jurorNumber.eq(jurorNumber))
+            .and(QFinancialAuditDetails.financialAuditDetails.locCode.eq(locCode));
 
         if (excludeProvidedAuditDetails) {
             financialAuditDetailsJoinCondition = financialAuditDetailsJoinCondition
-                .and(QFinancialAuditDetails.financialAuditDetails.id.ne(financialAuditDetails.getId()));
+                .and(QFinancialAuditDetails.financialAuditDetails.id.ne(financialAuditDetailsId));
         }
         if (genericType != null) {
             financialAuditDetailsJoinCondition = financialAuditDetailsJoinCondition
