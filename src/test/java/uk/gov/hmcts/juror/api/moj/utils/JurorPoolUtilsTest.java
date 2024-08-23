@@ -9,7 +9,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
-import uk.gov.hmcts.juror.api.moj.exception.JurorRecordException;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 
@@ -141,38 +140,6 @@ public class JurorPoolUtilsTest {
 
         Assertions.assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
             JurorPoolUtils.getActiveJurorPoolRecords(jurorPoolPoolRepository, "333333333"));
-    }
-
-    @Test
-    public void test_getActiveJurorRecord_singleRecord() {
-        JurorPool jurorPoolOne = createJurorPool("111111111", "457");
-
-        Mockito.doReturn(Collections.singletonList(jurorPoolOne)).when(jurorPoolPoolRepository)
-            .findByJurorJurorNumberAndIsActive("111111111", true);
-
-        Assertions.assertThat(JurorPoolUtils.getActiveJurorRecord(jurorPoolPoolRepository, "111111111"))
-            .isEqualTo(jurorPoolOne.getJuror());
-    }
-
-    @Test
-    public void test_getActiveJurorRecord_noRecords() {
-        Mockito.doReturn(new ArrayList<JurorPool>()).when(jurorPoolPoolRepository)
-            .findByJurorJurorNumberAndIsActive("333333333", true);
-
-        Assertions.assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
-            JurorPoolUtils.getActiveJurorRecord(jurorPoolPoolRepository, "333333333"));
-    }
-
-    @Test
-    public void test_getActiveJurorRecord_multipleRecords() {
-        JurorPool jurorPoolOne = createJurorPool("111111111", "457");
-        JurorPool jurorPoolTwo = createJurorPool("111111111", "415");
-
-        Mockito.doReturn(Arrays.asList(jurorPoolOne, jurorPoolTwo)).when(jurorPoolPoolRepository)
-            .findByJurorJurorNumberAndIsActive("111111111", true);
-
-        Assertions.assertThatExceptionOfType(JurorRecordException.MultipleJurorRecordsFound.class).isThrownBy(() ->
-            JurorPoolUtils.getActiveJurorRecord(jurorPoolPoolRepository, "111111111"));
     }
 
     @Test
@@ -360,48 +327,6 @@ public class JurorPoolUtilsTest {
 
         Assertions.assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
             JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolPoolRepository, jurorNumber, "415"));
-    }
-
-    @Test
-    public void test_getSingleActiveJurorPool_singleJurorPool() {
-        String jurorNumber = "111111111";
-        String owner = "400";
-        JurorPool jurorPool = createJurorPool(jurorNumber, owner);
-        List<JurorPool> jurorPools = Collections.singletonList(jurorPool);
-        Mockito.doReturn(jurorPools).when(jurorPoolPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-
-        JurorPool jurorForUser = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolPoolRepository, jurorNumber);
-        Assertions.assertThat(jurorForUser)
-            .as("Expect the juror pool record to be returned successfully")
-            .isEqualTo(jurorPool);
-    }
-
-    @Test
-    public void test_getSingleActiveJurorPool_noJurorPools() {
-        String jurorNumber = "111111111";
-
-        Mockito.doReturn(new ArrayList<>()).when(jurorPoolPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-
-        Assertions.assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
-            JurorPoolUtils.getSingleActiveJurorPool(jurorPoolPoolRepository, jurorNumber));
-    }
-
-    @Test
-    public void test_getSingleActiveJurorPool_multipleJurorPools() {
-        String jurorNumber = "111111111";
-        String owner = "400";
-
-        List<JurorPool> jurorPools = new ArrayList<>();
-        jurorPools.add(createJurorPool(jurorNumber, owner));
-        jurorPools.add(createJurorPool(jurorNumber, owner));
-
-        Mockito.doReturn(jurorPools).when(jurorPoolPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-
-        Assertions.assertThatExceptionOfType(JurorRecordException.MultipleJurorRecordsFound.class).isThrownBy(() ->
-            JurorPoolUtils.getSingleActiveJurorPool(jurorPoolPoolRepository, jurorNumber));
     }
 
     private JurorPool createJurorPool(String jurorNumber, String owner) {

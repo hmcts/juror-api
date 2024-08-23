@@ -17,9 +17,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
-import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -31,7 +29,7 @@ class UndeliverableResponseServiceTest {
     @Mock
     private JurorHistoryService jurorHistoryService;
     @Mock
-    private JurorPoolRepository jurorPoolRepository;
+    private JurorPoolService jurorPoolService;
 
     @InjectMocks
     private UndeliverableResponseServiceImpl undeliverableResponseService;
@@ -58,16 +56,14 @@ class UndeliverableResponseServiceTest {
     void negativeJurorRecordDoesNotExist() {
         String jurorNumber = "111111111";
 
-        List<JurorPool> members = new ArrayList<>();
-
-        Mockito.doReturn(members).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doThrow(MojException.NotFound.class).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(
             () -> undeliverableResponseService.markAsUndeliverable(List.of(jurorNumber)));
 
-        Mockito.verify(jurorPoolRepository, Mockito.times(1))
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.verify(jurorPoolRepository, Mockito.never()).save(Mockito.any());
+        Mockito.verify(jurorPoolService, Mockito.times(1))
+            .getJurorPoolFromUser(jurorNumber);
+        Mockito.verify(jurorPoolService, Mockito.never()).save(Mockito.any());
         Mockito.verify(jurorHistoryService, Mockito.never()).createUndeliveredSummonsHistory(Mockito.any());
     }
 
@@ -76,18 +72,16 @@ class UndeliverableResponseServiceTest {
     void negativeJurorRecordIsNotOwned() {
         String jurorNumber = "123456789";
 
-        List<JurorPool> members = new ArrayList<>();
-        members.add(createValidJurorPool(jurorNumber, "415"));
 
-        Mockito.doReturn(members).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(createValidJurorPool(jurorNumber, "415")).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
 
         assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(
             () -> undeliverableResponseService.markAsUndeliverable(List.of(jurorNumber)));
 
-        Mockito.verify(jurorPoolRepository, Mockito.times(1))
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.verify(jurorPoolRepository, Mockito.never()).save(Mockito.any());
+        Mockito.verify(jurorPoolService, Mockito.times(1))
+            .getJurorPoolFromUser(jurorNumber);
+        Mockito.verify(jurorPoolService, Mockito.never()).save(Mockito.any());
         Mockito.verify(jurorHistoryService, Mockito.never()).createUndeliveredSummonsHistory(Mockito.any());
 
     }
@@ -97,17 +91,14 @@ class UndeliverableResponseServiceTest {
         String jurorNumber = "222222225";
 
         JurorPool jurorPool = createValidJurorPool(jurorNumber, OWNER);
-        List<JurorPool> members = new ArrayList<>();
-        members.add(jurorPool);
-
-        Mockito.doReturn(members).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
 
         undeliverableResponseService.markAsUndeliverable(List.of(jurorNumber));
 
-        Mockito.verify(jurorPoolRepository, Mockito.times(1))
-            .findByJurorJurorNumberAndIsActive(Mockito.any(), Mockito.anyBoolean());
-        Mockito.verify(jurorPoolRepository, Mockito.times(1)).save(Mockito.any());
+        Mockito.verify(jurorPoolService, Mockito.times(1))
+            .getJurorPoolFromUser(jurorNumber);
+        Mockito.verify(jurorPoolService, Mockito.times(1)).save(Mockito.any());
         Mockito.verify(jurorHistoryService, Mockito.times(1)).createUndeliveredSummonsHistory(jurorPool);
     }
 
@@ -118,25 +109,22 @@ class UndeliverableResponseServiceTest {
 
         JurorPool jurorPool1 = createValidJurorPool(jurorNumber1, OWNER);
         JurorPool jurorPool2 = createValidJurorPool(jurorNumber2, OWNER);
-        List<JurorPool> members1 = new ArrayList<>();
-        members1.add(jurorPool1);
 
-        List<JurorPool> members2 = new ArrayList<>();
-        members2.add(jurorPool2);
-
-        Mockito.doReturn(members1).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber1, true);
-        Mockito.doReturn(members2).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber2, true);
+        Mockito.doReturn(jurorPool1).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber1);
+        Mockito.doReturn(jurorPool2).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber2);
 
         undeliverableResponseService.markAsUndeliverable(List.of(jurorNumber1, jurorNumber2));
 
-        Mockito.verify(jurorPoolRepository, Mockito.times(1))
-            .findByJurorJurorNumberAndIsActive(jurorNumber1, true);
-        Mockito.verify(jurorPoolRepository, Mockito.times(1))
-            .findByJurorJurorNumberAndIsActive(jurorNumber2, true);
-        Mockito.verify(jurorPoolRepository, Mockito.times(1)).save(jurorPool1);
-        Mockito.verify(jurorPoolRepository, Mockito.times(1)).save(jurorPool2);
+        Mockito.verify(jurorPoolService, Mockito.times(1))
+            .getJurorPoolFromUser(jurorNumber1);
+        Mockito.verify(jurorPoolService, Mockito.times(1))
+            .getJurorPoolFromUser(jurorNumber2);
+        Mockito.verify(jurorPoolService, Mockito.times(1)).save(jurorPool1);
+        Mockito.verify(jurorPoolService, Mockito.times(1)).save(jurorPool2);
+
+
         Mockito.verify(jurorHistoryService, Mockito.times(1))
             .createUndeliveredSummonsHistory(jurorPool1);
         Mockito.verify(jurorHistoryService, Mockito.times(1))

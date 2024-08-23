@@ -65,6 +65,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
     private final JurorRecordService jurorRecordService;
     private final JurorAuditChangeService jurorAuditChangeService;
     private final JurorThirdPartyService jurorThirdPartyService;
+    private final JurorPoolService jurorPoolService;
 
     private static final String TITLE = "title";
     private static final String FIRST_NAME = "firstName";
@@ -91,7 +92,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
         log.debug("Updating status for juror {} to {}", jurorNumber, status.getDescription());
 
         final PaperResponse paperResponse = jurorPaperResponseRepository.findByJurorNumber(jurorNumber);
-        final JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
+        final JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
 
         // if there is no paper response found for the juror and status is to be updated to responded then update the
@@ -166,7 +167,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
             throw new JurorPaperResponseException.NoJurorPaperResponseRecordFound(jurorNumber);
         }
 
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
+        JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
 
         final String auditorUsername = payload.getLogin();
@@ -260,7 +261,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
             return;
         }
 
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
+        JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
         mergeReasonableAdjustments(jurorPool);
 
         // TODO - Processing a paper summons reply for a deceased juror is currently awaiting design/sign off
@@ -349,7 +350,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
     private void updateJurorAsResponded(String jurorNumber, String auditorUsername) {
         log.trace("Enter updateJurorPoolAsResponded for Juror Number: {}", jurorNumber);
 
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
+        JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
 
         Juror juror = jurorPool.getJuror();
         juror.setResponded(true);
@@ -370,7 +371,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
         int respondedStatusCode = 2;
 
         jurorStatusRepository.findById(respondedStatusCode).ifPresent(respondedStatus -> {
-            JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
+            JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
             jurorPool.setUserEdtq(auditorUsername);
             jurorPool.setStatus(respondedStatus);
             jurorPoolRepository.save(jurorPool);

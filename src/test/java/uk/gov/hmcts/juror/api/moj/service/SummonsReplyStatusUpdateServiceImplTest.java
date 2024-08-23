@@ -24,7 +24,6 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.exception.JurorPaperResponseException;
-import uk.gov.hmcts.juror.api.moj.exception.JurorRecordException;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -53,6 +52,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -91,6 +92,8 @@ public class SummonsReplyStatusUpdateServiceImplTest {
     private JurorThirdPartyService jurorThirdPartyService;
     @Mock
     private JurorResponseService jurorResponseService;
+    @Mock
+    private JurorPoolService jurorPoolService;
 
     @InjectMocks
     private SummonsReplyStatusUpdateServiceImpl summonsReplyStatusUpdateService;
@@ -105,8 +108,13 @@ public class SummonsReplyStatusUpdateServiceImplTest {
     //Interface method: updateJurorResponseStatus
     @Test
     public void test_updateJurorResponseStatus_noResponseFound() {
+        doReturn(null).when(jurorPaperResponseRepository).findByJurorNumber(any());
+        JurorPool jurorPool = createJuror("123456789");
+        JurorStatus jurorStatus = mock(JurorStatus.class);
+        jurorPool.setStatus(jurorStatus);
+        doReturn(IJurorStatus.RESPONDED).when(jurorStatus).getStatus();
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(any());
         BureauJwtPayload payload = buildPayload();
-        Mockito.doReturn(null).when(jurorPaperResponseRepository).findByJurorNumber(any());
         assertThatExceptionOfType(MojException.NotFound.class)
             .isThrownBy(() -> summonsReplyStatusUpdateService.updateJurorResponseStatus("123456789",
                 ProcessingStatus.CLOSED, payload));
@@ -131,7 +139,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
 
         final BureauJwtPayload payload = buildPayload();
 
-        Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         CourtLocation courtLocation = createCourtLocation("415", "CHESTER", "09:15");
         JurorPool jurorPool = createJuror(jurorNumber);
@@ -139,8 +147,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
 
         assertThatExceptionOfType(JurorPaperResponseException.JurorPaperResponseAlreadyExists.class)
             .isThrownBy(() -> summonsReplyStatusUpdateService.updateJurorResponseStatus(jurorNumber,
@@ -165,15 +172,14 @@ public class SummonsReplyStatusUpdateServiceImplTest {
 
         final BureauJwtPayload payload = buildPayload();
 
-        Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         CourtLocation courtLocation = createCourtLocation("415", "CHESTER", "09:15");
         JurorPool jurorPool = createJuror(jurorNumber);
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
 
         int invocationCounter = 1;
         List<ProcessingStatus> processStatusList = Arrays.stream(ProcessingStatus.values())
@@ -207,22 +213,21 @@ public class SummonsReplyStatusUpdateServiceImplTest {
 
         final BureauJwtPayload payload = buildPayload();
 
-        Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         CourtLocation courtLocation = createCourtLocation("415", "CHESTER", "09:15");
         JurorPool jurorPool = createJuror(jurorNumber);
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.doReturn(Collections.singletonList(createReasonableAdjustmentsPaper(jurorNumber)))
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        doReturn(Collections.singletonList(createReasonableAdjustmentsPaper(jurorNumber)))
             .when(jurorReasonableAdjustmentRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(Optional.of(createPoolStatus(respondedStatusCode))).when(jurorStatusRepository)
+        doReturn(Optional.of(createPoolStatus(respondedStatusCode))).when(jurorStatusRepository)
             .findById(respondedStatusCode);
-        Mockito.doReturn(null).when(jurorPoolRepository).save(any());
-        Mockito.doReturn(null).when(jurorPaperResponseRepository).save(any());
-        Mockito.doReturn(initChangedPropertiesMap(Boolean.TRUE)).when(jurorAuditChangeService)
+        doReturn(null).when(jurorPoolRepository).save(any());
+        doReturn(null).when(jurorPaperResponseRepository).save(any());
+        doReturn(initChangedPropertiesMap(Boolean.TRUE)).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class), any(AbstractJurorResponse.class));
         summonsReplyStatusUpdateService.updateJurorResponseStatus(jurorNumber,
             ProcessingStatus.CLOSED, payload);
@@ -258,16 +263,15 @@ public class SummonsReplyStatusUpdateServiceImplTest {
 
         final BureauJwtPayload payload = buildPayload();
 
-        Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.doReturn(Collections.singletonList(createReasonableAdjustmentsPaper(jurorNumber)))
+        doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        doReturn(Collections.singletonList(createReasonableAdjustmentsPaper(jurorNumber)))
             .when(jurorReasonableAdjustmentRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(Optional.of(createPoolStatus(respondedStatusCode))).when(jurorStatusRepository)
+        doReturn(Optional.of(createPoolStatus(respondedStatusCode))).when(jurorStatusRepository)
             .findById(respondedStatusCode);
-        Mockito.doReturn(null).when(jurorPoolRepository).save(any());
-        Mockito.doReturn(null).when(jurorPaperResponseRepository).save(any());
-        Mockito.doReturn(initChangedPropertiesMap(Boolean.FALSE)).when(jurorAuditChangeService)
+        doReturn(null).when(jurorPoolRepository).save(any());
+        doReturn(null).when(jurorPaperResponseRepository).save(any());
+        doReturn(initChangedPropertiesMap(Boolean.FALSE)).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class), any(AbstractJurorResponse.class));
         summonsReplyStatusUpdateService.updateJurorResponseStatus(jurorNumber,
             ProcessingStatus.CLOSED, payload);
@@ -289,7 +293,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
 
         final BureauJwtPayload payload = buildPayload();
 
-        Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         CourtLocation courtLocation = createCourtLocation("415", "CHESTER", "09:15");
         JurorPool jurorPool = createJuror(jurorNumber);
@@ -297,8 +301,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
 
         assertThatExceptionOfType(JurorPaperResponseException.JurorPaperResponseAlreadyExists.class).isThrownBy(() ->
             summonsReplyStatusUpdateService.updateJurorResponseStatus(jurorNumber,
@@ -320,39 +323,11 @@ public class SummonsReplyStatusUpdateServiceImplTest {
 
         BureauJwtPayload payload = buildPayload();
 
-        Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(new ArrayList<JurorPool>()).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
+        Mockito.doThrow(MojException.NotFound.class).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
 
         assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
-            summonsReplyStatusUpdateService.updateJurorResponseStatus(jurorNumber,
-                ProcessingStatus.CLOSED, payload));
-
-        verify(jurorPaperResponseRepository, times(1)).findByJurorNumber(jurorNumber);
-        verify(jurorPoolRepository, Mockito.never()).save(any());
-        verify(jurorPaperResponseRepository, Mockito.never()).save(any());
-        verify(jurorAuditChangeService, Mockito.never())
-            .initChangedPropertyMap(any(Juror.class), any(AbstractJurorResponse.class));
-    }
-
-    @Test
-    public void test_updateJurorResponseStatus_closingResponse_multipleJurorRecords() {
-        String jurorNumber = "123456789";
-        PaperResponse response = createPaperResponse(jurorNumber);
-        response.setProcessingComplete(false);
-        response.setProcessingStatus(auditRepository, ProcessingStatus.CLOSED);
-
-        final BureauJwtPayload payload = buildPayload();
-
-        List<JurorPool> jurorPools = new ArrayList<>();
-        jurorPools.add(createJuror(jurorNumber));
-        jurorPools.add(createJuror(jurorNumber));
-
-        Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(jurorPools).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-
-        assertThatExceptionOfType(JurorRecordException.MultipleJurorRecordsFound.class).isThrownBy(() ->
             summonsReplyStatusUpdateService.updateJurorResponseStatus(jurorNumber,
                 ProcessingStatus.CLOSED, payload));
 
@@ -372,12 +347,11 @@ public class SummonsReplyStatusUpdateServiceImplTest {
 
         final BureauJwtPayload payload = buildPayload();
 
-        List<JurorPool> jurorPools = new ArrayList<>();
-        jurorPools.add(createJuror(jurorNumber));
+        JurorPool jurorPool = createJuror(jurorNumber);
 
-        Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(jurorPools).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
 
         summonsReplyStatusUpdateService.updateJurorResponseStatus(jurorNumber,
             response.getProcessingStatus(), payload);
@@ -401,14 +375,12 @@ public class SummonsReplyStatusUpdateServiceImplTest {
 
         final BureauJwtPayload payload = buildPayload();
 
-        List<JurorPool> jurorPools = new ArrayList<>();
         JurorPool juror = createJuror(jurorNumber);
         juror.setOwner("415");
-        jurorPools.add(juror);
 
-        Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(jurorPools).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(juror).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
 
         assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
             summonsReplyStatusUpdateService.updateJurorResponseStatus(jurorNumber,
@@ -424,14 +396,12 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         BureauJwtPayload courtPayload = buildPayload();
         courtPayload.setOwner("411");
 
-        List<JurorPool> jurorPools = new ArrayList<>();
         JurorPool juror = createJuror(jurorNumber);
         juror.setOwner("411");
-        jurorPools.add(juror);
 
-        Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(jurorPools).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(juror).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
 
         assertThatExceptionOfType(
             JurorPaperResponseException.JurorPaperResponseMissingMandatoryFields.class).isThrownBy(() ->
@@ -455,14 +425,12 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         BureauJwtPayload payload = buildPayload();
         payload.setOwner("415");
 
-        List<JurorPool> jurorPools = new ArrayList<>();
         JurorPool juror = createJuror(jurorNumber);
         juror.setOwner("415");
-        jurorPools.add(juror);
 
-        Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(jurorPools).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(juror).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
 
         summonsReplyStatusUpdateService.updateJurorResponseStatus(jurorNumber,
             response.getProcessingStatus(), payload);
@@ -489,12 +457,11 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         BureauJwtPayload payload = buildPayload();
         payload.setOwner("415");
 
-        List<JurorPool> jurorPools = new ArrayList<>();
-        jurorPools.add(createJuror(jurorNumber));
+        JurorPool jurorPool = createJuror(jurorNumber);
 
-        Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(jurorPools).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
 
         assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
             summonsReplyStatusUpdateService.updateJurorResponseStatus(jurorNumber,
@@ -510,14 +477,12 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         BureauJwtPayload courtPayload = buildPayload();
         courtPayload.setOwner("411");
 
-        List<JurorPool> jurorPools = new ArrayList<>();
         JurorPool juror = createJuror(jurorNumber);
         juror.setOwner("411");
-        jurorPools.add(juror);
 
-        Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(jurorPools).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(juror).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
 
         assertThatExceptionOfType(
             JurorPaperResponseException.JurorPaperResponseMissingMandatoryFields.class).isThrownBy(() ->
@@ -540,14 +505,12 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         BureauJwtPayload courtPayload = buildPayload();
         courtPayload.setOwner("411");
 
-        List<JurorPool> jurorPools = new ArrayList<>();
         JurorPool juror = createJuror(jurorNumber);
         juror.setOwner("411");
-        jurorPools.add(juror);
 
-        Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(jurorPools).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(juror).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
 
         assertThatExceptionOfType(
             JurorPaperResponseException.JurorPaperResponseMissingMandatoryFields.class).isThrownBy(() ->
@@ -570,14 +533,12 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         BureauJwtPayload courtPayload = buildPayload();
         courtPayload.setOwner("411");
 
-        List<JurorPool> jurorPools = new ArrayList<>();
         JurorPool juror = createJuror(jurorNumber);
         juror.setOwner("411");
-        jurorPools.add(juror);
 
-        Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(jurorPools).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(juror).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
 
         assertThatExceptionOfType(
             JurorPaperResponseException.JurorPaperResponseMissingMandatoryFields.class).isThrownBy(() ->
@@ -600,14 +561,12 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         BureauJwtPayload courtPayload = buildPayload();
         courtPayload.setOwner("411");
 
-        List<JurorPool> jurorPools = new ArrayList<>();
         JurorPool juror = createJuror(jurorNumber);
         juror.setOwner("411");
-        jurorPools.add(juror);
 
-        Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(jurorPools).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(juror).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
 
         assertThatExceptionOfType(
             JurorPaperResponseException.JurorPaperResponseMissingMandatoryFields.class).isThrownBy(() ->
@@ -630,14 +589,12 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         BureauJwtPayload courtPayload = buildPayload();
         courtPayload.setOwner("411");
 
-        List<JurorPool> jurorPools = new ArrayList<>();
         JurorPool juror = createJuror(jurorNumber);
         juror.setOwner("411");
-        jurorPools.add(juror);
 
-        Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(jurorPools).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(juror).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
 
         assertThatExceptionOfType(
             JurorPaperResponseException.JurorPaperResponseMissingMandatoryFields.class).isThrownBy(() ->
@@ -660,14 +617,12 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         BureauJwtPayload courtPayload = buildPayload();
         courtPayload.setOwner("411");
 
-        List<JurorPool> jurorPools = new ArrayList<>();
         JurorPool juror = createJuror(jurorNumber);
         juror.setOwner("411");
-        jurorPools.add(juror);
 
-        Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(jurorPools).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(juror).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
 
         assertThatExceptionOfType(
             JurorPaperResponseException.JurorPaperResponseMissingMandatoryFields.class).isThrownBy(() ->
@@ -690,14 +645,12 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         BureauJwtPayload courtPayload = buildPayload();
         courtPayload.setOwner("411");
 
-        List<JurorPool> jurorPools = new ArrayList<>();
         JurorPool juror = createJuror(jurorNumber);
         juror.setOwner("411");
-        jurorPools.add(juror);
 
-        Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(jurorPools).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(juror).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
 
         assertThatExceptionOfType(
             JurorPaperResponseException.JurorPaperResponseMissingMandatoryFields.class).isThrownBy(() ->
@@ -720,14 +673,12 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         BureauJwtPayload courtPayload = buildPayload();
         courtPayload.setOwner("411");
 
-        List<JurorPool> jurorPools = new ArrayList<>();
         JurorPool juror = createJuror(jurorNumber);
         juror.setOwner("411");
-        jurorPools.add(juror);
 
-        Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(jurorPools).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(juror).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
 
         assertThatExceptionOfType(
             JurorPaperResponseException.JurorPaperResponseMissingMandatoryFields.class).isThrownBy(() ->
@@ -750,14 +701,12 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         BureauJwtPayload courtPayload = buildPayload();
         courtPayload.setOwner("411");
 
-        List<JurorPool> jurorPools = new ArrayList<>();
         JurorPool juror = createJuror(jurorNumber);
         juror.setOwner("411");
-        jurorPools.add(juror);
 
-        Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(jurorPools).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(juror).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
 
         assertThatExceptionOfType(
             JurorPaperResponseException.JurorPaperResponseMissingMandatoryFields.class).isThrownBy(() ->
@@ -780,14 +729,12 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         courtPayload.setOwner("411");
 
 
-        List<JurorPool> jurorPools = new ArrayList<>();
         JurorPool juror = createJuror(jurorNumber);
         juror.setOwner("411");
-        jurorPools.add(juror);
 
-        Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(jurorPools).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(juror).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
 
         assertThatExceptionOfType(
             JurorPaperResponseException.JurorPaperResponseMissingMandatoryFields.class).isThrownBy(() ->
@@ -810,14 +757,12 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         BureauJwtPayload courtPayload = buildPayload();
         courtPayload.setOwner("411");
 
-        List<JurorPool> jurorPools = new ArrayList<>();
         JurorPool juror = createJuror(jurorNumber);
         juror.setOwner("411");
-        jurorPools.add(juror);
 
-        Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(jurorPools).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(juror).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
 
         assertThatExceptionOfType(
             JurorPaperResponseException.JurorPaperResponseMissingMandatoryFields.class).isThrownBy(() ->
@@ -873,14 +818,14 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PaperResponse paperResponse = createPaperResponse(jurorNumber);
         paperResponse.setProcessingComplete(Boolean.FALSE);
 
-        Mockito.doReturn(new ArrayList<JurorPool>()).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doThrow(MojException.NotFound.class).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
 
         assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
             summonsReplyStatusUpdateService.mergePaperResponse(paperResponse, auditorUsername));
 
-        verify(jurorPoolRepository, times(1))
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolService, times(1))
+            .getJurorPoolFromUser(jurorNumber);
         verify(jurorPoolRepository, Mockito.never()).save(any(JurorPool.class));
         verify(jurorPaperResponseRepository, Mockito.never()).save(any(PaperResponse.class));
         verify(welshCourtLocationRepository, Mockito.never()).findByLocCode(any());
@@ -894,64 +839,14 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         DigitalResponse digitalResponse = createDigitalResponse(jurorNumber);
         digitalResponse.setProcessingComplete(Boolean.FALSE);
 
-        Mockito.doReturn(new ArrayList<JurorPool>()).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doThrow(MojException.NotFound.class).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
 
         assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
             summonsReplyStatusUpdateService.mergeDigitalResponse(digitalResponse, auditorUsername));
 
-        verify(jurorPoolRepository, times(1))
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        verify(jurorPoolRepository, Mockito.never()).save(any(JurorPool.class));
-        verify(jurorDigitalResponseRepository, Mockito.never()).save(any(DigitalResponse.class));
-        verify(welshCourtLocationRepository, Mockito.never()).findByLocCode(any());
-    }
-
-    @Test
-    public void test_paper_mergeJurorResponse_findActiveJurorPool_multipleRecordsFound() {
-        final String auditorUsername = "test_user";
-        final String jurorNumber = "123456789";
-
-        PaperResponse paperResponse = createPaperResponse(jurorNumber);
-        paperResponse.setProcessingComplete(Boolean.FALSE);
-
-        List<JurorPool> multipleJurorPoolRecords = new ArrayList<>();
-        multipleJurorPoolRecords.add(createJuror(jurorNumber));
-        multipleJurorPoolRecords.add(createJuror(jurorNumber));
-
-        Mockito.doReturn(multipleJurorPoolRecords).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-
-        assertThatExceptionOfType(JurorRecordException.MultipleJurorRecordsFound.class).isThrownBy(() ->
-            summonsReplyStatusUpdateService.mergePaperResponse(paperResponse, auditorUsername));
-
-        verify(jurorPoolRepository, times(1))
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        verify(jurorPoolRepository, Mockito.never()).save(any(JurorPool.class));
-        verify(jurorPaperResponseRepository, Mockito.never()).save(any(PaperResponse.class));
-        verify(welshCourtLocationRepository, Mockito.never()).findByLocCode(any());
-    }
-
-    @Test
-    public void test_digital_mergeJurorResponse_findActiveJurorPool_multipleRecordsFound() {
-        final String auditorUsername = "test_user";
-        String jurorNumber = "123456789";
-
-        DigitalResponse digitalResponse = createDigitalResponse(jurorNumber);
-        digitalResponse.setProcessingComplete(Boolean.FALSE);
-
-        List<JurorPool> multipleJurorPoolRecords = new ArrayList<>();
-        multipleJurorPoolRecords.add(createJuror(jurorNumber));
-        multipleJurorPoolRecords.add(createJuror(jurorNumber));
-
-        Mockito.doReturn(multipleJurorPoolRecords).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-
-        assertThatExceptionOfType(JurorRecordException.MultipleJurorRecordsFound.class).isThrownBy(() ->
-            summonsReplyStatusUpdateService.mergeDigitalResponse(digitalResponse, auditorUsername));
-
-        verify(jurorPoolRepository, times(1))
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolService, times(1))
+            .getJurorPoolFromUser(jurorNumber);
         verify(jurorPoolRepository, Mockito.never()).save(any(JurorPool.class));
         verify(jurorDigitalResponseRepository, Mockito.never()).save(any(DigitalResponse.class));
         verify(welshCourtLocationRepository, Mockito.never()).findByLocCode(any());
@@ -973,18 +868,17 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.doReturn(createmultipleReasonableAdjustmentsPaper(jurorNumber))
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        doReturn(createmultipleReasonableAdjustmentsPaper(jurorNumber))
             .when(jurorReasonableAdjustmentRepository)
             .findByJurorNumber(jurorNumber);
-        Mockito.doReturn(null).when(jurorPoolRepository).save(any());
-        Mockito.doReturn(null).when(jurorPaperResponseRepository).save(any(PaperResponse.class));
-        Mockito.doReturn(initChangedPropertiesMap(Boolean.TRUE)).when(jurorAuditChangeService)
+        doReturn(null).when(jurorPoolRepository).save(any());
+        doReturn(null).when(jurorPaperResponseRepository).save(any(PaperResponse.class));
+        doReturn(initChangedPropertiesMap(Boolean.TRUE)).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class), any(AbstractJurorResponse.class));
-        Mockito.doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
+        doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
             anyString(), anyString());
-        Mockito.doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
+        doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
 
         summonsReplyStatusUpdateService.mergePaperResponse(paperResponse, auditorUsername);
 
@@ -994,8 +888,8 @@ public class SummonsReplyStatusUpdateServiceImplTest {
 
         assertThat(juror.getReasonableAdjustmentCode()).isEqualTo("M");
 
-        verify(jurorPoolRepository, times(1))
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolService, times(1))
+            .getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
         verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorPaperResponseRepository, times(1)).save(any(PaperResponse.class));
@@ -1020,19 +914,18 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(createMultipleReasonableAdjustmentsDigital(jurorNumber))
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(createMultipleReasonableAdjustmentsDigital(jurorNumber))
             .when(jurorReasonableAdjustmentRepository)
             .findByJurorNumber(jurorNumber);
-        Mockito.doReturn(null).when(jurorPoolRepository).save(any());
-        Mockito.doReturn(null).when(jurorDigitalResponseRepository).save(any(DigitalResponse.class));
-        Mockito.doReturn(initChangedPropertiesMap(Boolean.TRUE)).when(jurorAuditChangeService)
+        doReturn(null).when(jurorPoolRepository).save(any());
+        doReturn(null).when(jurorDigitalResponseRepository).save(any(DigitalResponse.class));
+        doReturn(initChangedPropertiesMap(Boolean.TRUE)).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class), any(AbstractJurorResponse.class));
-        Mockito.doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
+        doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
             anyString(), anyString());
-        Mockito.doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
+        doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
 
         summonsReplyStatusUpdateService.mergeDigitalResponse(digitalResponse, auditorUsername);
 
@@ -1042,7 +935,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         Juror juror = jurorCaptor.getValue();
         assertThat(juror.getReasonableAdjustmentCode()).isEqualTo("M");
 
-        verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
         verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorDigitalResponseRepository, times(1)).save(any(DigitalResponse.class));
@@ -1067,17 +960,16 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.doReturn(Collections.singletonList(createReasonableAdjustmentsPaper(jurorNumber)))
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        doReturn(Collections.singletonList(createReasonableAdjustmentsPaper(jurorNumber)))
             .when(jurorReasonableAdjustmentRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(null).when(jurorPoolRepository).save(any());
-        Mockito.doReturn(null).when(jurorPaperResponseRepository).save(any(PaperResponse.class));
-        Mockito.doReturn(initChangedPropertiesMap(Boolean.TRUE)).when(jurorAuditChangeService)
+        doReturn(null).when(jurorPoolRepository).save(any());
+        doReturn(null).when(jurorPaperResponseRepository).save(any(PaperResponse.class));
+        doReturn(initChangedPropertiesMap(Boolean.TRUE)).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class), any(AbstractJurorResponse.class));
-        Mockito.doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
+        doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
             anyString(), anyString());
-        Mockito.doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
+        doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
 
         summonsReplyStatusUpdateService.mergePaperResponse(paperResponse, auditorUsername);
 
@@ -1087,7 +979,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         Juror juror = jurorCaptor.getValue();
         assertThat(juror.getReasonableAdjustmentCode()).isEqualTo("V");
 
-        verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
         verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorPaperResponseRepository, times(1)).save(any(PaperResponse.class));
@@ -1112,18 +1004,17 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(Collections.singletonList(createReasonableAdjustmentsDigital(jurorNumber)))
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(Collections.singletonList(createReasonableAdjustmentsDigital(jurorNumber)))
             .when(jurorReasonableAdjustmentRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(null).when(jurorPoolRepository).save(any());
-        Mockito.doReturn(null).when(jurorDigitalResponseRepository).save(any(DigitalResponse.class));
-        Mockito.doReturn(initChangedPropertiesMap(Boolean.TRUE)).when(jurorAuditChangeService)
+        doReturn(null).when(jurorPoolRepository).save(any());
+        doReturn(null).when(jurorDigitalResponseRepository).save(any(DigitalResponse.class));
+        doReturn(initChangedPropertiesMap(Boolean.TRUE)).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class), any(AbstractJurorResponse.class));
-        Mockito.doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
+        doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
             anyString(), anyString());
-        Mockito.doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
+        doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
 
         summonsReplyStatusUpdateService.mergeDigitalResponse(digitalResponse, auditorUsername);
 
@@ -1133,7 +1024,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         Juror juror = jurorCaptor.getValue();
         assertThat(juror.getReasonableAdjustmentCode()).isEqualTo("V");
 
-        verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
         verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorDigitalResponseRepository, times(1)).save(any(DigitalResponse.class));
@@ -1156,19 +1047,18 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.doReturn(null).when(jurorPoolRepository).save(any());
-        Mockito.doReturn(null).when(jurorPaperResponseRepository).save(any(PaperResponse.class));
-        Mockito.doReturn(initChangedPropertiesMap(Boolean.FALSE)).when(jurorAuditChangeService)
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        doReturn(null).when(jurorPoolRepository).save(any());
+        doReturn(null).when(jurorPaperResponseRepository).save(any(PaperResponse.class));
+        doReturn(initChangedPropertiesMap(Boolean.FALSE)).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class), any(AbstractJurorResponse.class));
-        Mockito.doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
+        doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
             anyString(), anyString());
-        Mockito.doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
+        doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
 
         summonsReplyStatusUpdateService.mergePaperResponse(paperResponse, auditorUsername);
 
-        verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
         verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorPaperResponseRepository, times(1)).save(any(PaperResponse.class));
@@ -1191,20 +1081,19 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(null).when(jurorPoolRepository).save(any());
-        Mockito.doReturn(null).when(jurorDigitalResponseRepository).save(any(DigitalResponse.class));
-        Mockito.doReturn(initChangedPropertiesMap(Boolean.FALSE)).when(jurorAuditChangeService)
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(null).when(jurorPoolRepository).save(any());
+        doReturn(null).when(jurorDigitalResponseRepository).save(any(DigitalResponse.class));
+        doReturn(initChangedPropertiesMap(Boolean.FALSE)).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class), any(AbstractJurorResponse.class));
-        Mockito.doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
+        doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
             anyString(), anyString());
-        Mockito.doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
+        doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
 
         summonsReplyStatusUpdateService.mergeDigitalResponse(digitalResponse, auditorUsername);
 
-        verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
         verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorDigitalResponseRepository, times(1)).save(any(DigitalResponse.class));
@@ -1232,17 +1121,16 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.doReturn(Collections.singletonList(createReasonableAdjustmentsPaper(jurorNumber)))
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        doReturn(Collections.singletonList(createReasonableAdjustmentsPaper(jurorNumber)))
             .when(jurorReasonableAdjustmentRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(null).when(jurorPoolRepository).save(any());
-        Mockito.doReturn(null).when(jurorPaperResponseRepository).save(any(PaperResponse.class));
-        Mockito.doReturn(changedProperties).when(jurorAuditChangeService)
+        doReturn(null).when(jurorPoolRepository).save(any());
+        doReturn(null).when(jurorPaperResponseRepository).save(any(PaperResponse.class));
+        doReturn(changedProperties).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class), any(AbstractJurorResponse.class));
-        Mockito.doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
+        doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
             anyString(), anyString());
-        Mockito.doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
+        doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
 
         summonsReplyStatusUpdateService.mergePaperResponse(paperResponse, auditorUsername);
 
@@ -1251,7 +1139,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
 
         assertThat(jurorCaptor.getValue().getReasonableAdjustmentCode()).isEqualTo("V");
 
-        verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
         verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorPaperResponseRepository, times(1)).save(any(PaperResponse.class));
@@ -1278,18 +1166,17 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(Collections.singletonList(createReasonableAdjustmentsDigital(jurorNumber)))
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(Collections.singletonList(createReasonableAdjustmentsDigital(jurorNumber)))
             .when(jurorReasonableAdjustmentRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(null).when(jurorPoolRepository).save(any());
-        Mockito.doReturn(null).when(jurorDigitalResponseRepository).save(any(DigitalResponse.class));
-        Mockito.doReturn(changedProperties).when(jurorAuditChangeService)
+        doReturn(null).when(jurorPoolRepository).save(any());
+        doReturn(null).when(jurorDigitalResponseRepository).save(any(DigitalResponse.class));
+        doReturn(changedProperties).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class), any(AbstractJurorResponse.class));
-        Mockito.doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
+        doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
             anyString(), anyString());
-        Mockito.doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
+        doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
 
         summonsReplyStatusUpdateService.mergeDigitalResponse(digitalResponse, auditorUsername);
 
@@ -1298,7 +1185,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
 
         assertThat(jurorCaptor.getValue().getReasonableAdjustmentCode()).isEqualTo("V");
 
-        verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
         verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorDigitalResponseRepository, times(1)).save(any(DigitalResponse.class));
@@ -1325,17 +1212,16 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.doReturn(Collections.singletonList(createReasonableAdjustmentsPaper(jurorNumber)))
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        doReturn(Collections.singletonList(createReasonableAdjustmentsPaper(jurorNumber)))
             .when(jurorReasonableAdjustmentRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(null).when(jurorPoolRepository).save(any());
-        Mockito.doReturn(null).when(jurorPaperResponseRepository).save(any(PaperResponse.class));
-        Mockito.doReturn(initChangedPropertiesMap(Boolean.FALSE)).when(jurorAuditChangeService)
+        doReturn(null).when(jurorPoolRepository).save(any());
+        doReturn(null).when(jurorPaperResponseRepository).save(any(PaperResponse.class));
+        doReturn(initChangedPropertiesMap(Boolean.FALSE)).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class), any(AbstractJurorResponse.class));
-        Mockito.doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
+        doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
             anyString(), anyString());
-        Mockito.doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
+        doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
 
         summonsReplyStatusUpdateService.mergePaperResponse(paperResponse, auditorUsername);
 
@@ -1347,7 +1233,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         assertThat(juror.getWorkPhone()).isEqualTo("07917 020202");
         assertThat(juror.getPhoneNumber()).isNull();
 
-        verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
         verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorPaperResponseRepository, times(1)).save(any(PaperResponse.class));
@@ -1374,18 +1260,17 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(Collections.singletonList(createReasonableAdjustmentsDigital(jurorNumber)))
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(Collections.singletonList(createReasonableAdjustmentsDigital(jurorNumber)))
             .when(jurorReasonableAdjustmentRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(null).when(jurorPoolRepository).save(any());
-        Mockito.doReturn(null).when(jurorDigitalResponseRepository).save(any(DigitalResponse.class));
-        Mockito.doReturn(initChangedPropertiesMap(Boolean.FALSE)).when(jurorAuditChangeService)
+        doReturn(null).when(jurorPoolRepository).save(any());
+        doReturn(null).when(jurorDigitalResponseRepository).save(any(DigitalResponse.class));
+        doReturn(initChangedPropertiesMap(Boolean.FALSE)).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class), any(AbstractJurorResponse.class));
-        Mockito.doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
+        doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
             anyString(), anyString());
-        Mockito.doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
+        doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
 
         summonsReplyStatusUpdateService.mergeDigitalResponse(digitalResponse, auditorUsername);
 
@@ -1397,7 +1282,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         assertThat(juror.getWorkPhone()).isEqualTo("07917 020202");
         assertThat(juror.getPhoneNumber()).isNull();
 
-        verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
         verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorDigitalResponseRepository, times(1)).save(any(DigitalResponse.class));
@@ -1424,12 +1309,11 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.doReturn(Collections.singletonList(createReasonableAdjustmentsPaper(jurorNumber)))
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        doReturn(Collections.singletonList(createReasonableAdjustmentsPaper(jurorNumber)))
             .when(jurorReasonableAdjustmentRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(null).when(jurorPoolRepository).save(any());
-        Mockito.doReturn(null).when(jurorPaperResponseRepository).save(any());
+        doReturn(null).when(jurorPoolRepository).save(any());
+        doReturn(null).when(jurorPaperResponseRepository).save(any());
 
         summonsReplyStatusUpdateService.mergePaperResponse(paperResponse, auditorUsername);
 
@@ -1441,7 +1325,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         assertThat(juror.getAltPhoneNumber()).isEqualTo("07917 020202");
         assertThat(juror.getWorkPhone()).isNull();
 
-        verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
         verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorPaperResponseRepository, times(1)).save(any(PaperResponse.class));
@@ -1467,18 +1351,17 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(Collections.singletonList(createReasonableAdjustmentsDigital(jurorNumber)))
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(Collections.singletonList(createReasonableAdjustmentsDigital(jurorNumber)))
             .when(jurorReasonableAdjustmentRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(null).when(jurorPoolRepository).save(any());
-        Mockito.doReturn(null).when(jurorDigitalResponseRepository).save(any());
-        Mockito.doReturn(initChangedPropertiesMap(Boolean.FALSE)).when(jurorAuditChangeService)
+        doReturn(null).when(jurorPoolRepository).save(any());
+        doReturn(null).when(jurorDigitalResponseRepository).save(any());
+        doReturn(initChangedPropertiesMap(Boolean.FALSE)).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class), any(AbstractJurorResponse.class));
-        Mockito.doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
+        doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
             anyString(), anyString());
-        Mockito.doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
+        doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
 
         summonsReplyStatusUpdateService.mergeDigitalResponse(digitalResponse, auditorUsername);
 
@@ -1490,7 +1373,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         assertThat(juror.getAltPhoneNumber()).isEqualTo("07917 020202");
         assertThat(juror.getWorkPhone()).isNull();
 
-        verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
         verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorDigitalResponseRepository, times(1)).save(any(DigitalResponse.class));
@@ -1518,17 +1401,16 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.doReturn(Collections.singletonList(createReasonableAdjustmentsPaper(jurorNumber)))
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        doReturn(Collections.singletonList(createReasonableAdjustmentsPaper(jurorNumber)))
             .when(jurorReasonableAdjustmentRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(null).when(jurorPoolRepository).save(any());
-        Mockito.doReturn(null).when(jurorPaperResponseRepository).save(any());
-        Mockito.doReturn(initChangedPropertiesMap(Boolean.FALSE)).when(jurorAuditChangeService)
+        doReturn(null).when(jurorPoolRepository).save(any());
+        doReturn(null).when(jurorPaperResponseRepository).save(any());
+        doReturn(initChangedPropertiesMap(Boolean.FALSE)).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class), any(AbstractJurorResponse.class));
-        Mockito.doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
+        doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
             anyString(), anyString());
-        Mockito.doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
+        doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
 
         summonsReplyStatusUpdateService.mergePaperResponse(paperResponse, auditorUsername);
 
@@ -1540,7 +1422,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         assertThat(juror.getWorkPhone()).isEqualTo("01274 020202");
         assertThat(juror.getAltPhoneNumber()).isNull();
 
-        verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
         verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorPaperResponseRepository, times(1)).save(any(PaperResponse.class));
@@ -1567,18 +1449,17 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(Collections.singletonList(createReasonableAdjustmentsDigital(jurorNumber)))
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(Collections.singletonList(createReasonableAdjustmentsDigital(jurorNumber)))
             .when(jurorReasonableAdjustmentRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(null).when(jurorPoolRepository).save(any());
-        Mockito.doReturn(null).when(jurorDigitalResponseRepository).save(any());
-        Mockito.doReturn(initChangedPropertiesMap(Boolean.FALSE)).when(jurorAuditChangeService)
+        doReturn(null).when(jurorPoolRepository).save(any());
+        doReturn(null).when(jurorDigitalResponseRepository).save(any());
+        doReturn(initChangedPropertiesMap(Boolean.FALSE)).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class), any(AbstractJurorResponse.class));
-        Mockito.doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
+        doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
             anyString(), anyString());
-        Mockito.doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
+        doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
 
         summonsReplyStatusUpdateService.mergeDigitalResponse(digitalResponse, auditorUsername);
 
@@ -1590,7 +1471,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         assertThat(juror.getWorkPhone()).isEqualTo("01274 020202");
         assertThat(juror.getAltPhoneNumber()).isNull();
 
-        verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
         verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorDigitalResponseRepository, times(1)).save(any(DigitalResponse.class));
@@ -1619,17 +1500,16 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.doReturn(Collections.singletonList(createReasonableAdjustmentsPaper(jurorNumber)))
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        doReturn(Collections.singletonList(createReasonableAdjustmentsPaper(jurorNumber)))
             .when(jurorReasonableAdjustmentRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(null).when(jurorPoolRepository).save(any());
-        Mockito.doReturn(null).when(jurorPaperResponseRepository).save(any(PaperResponse.class));
-        Mockito.doReturn(initChangedPropertiesMap(Boolean.FALSE)).when(jurorAuditChangeService)
+        doReturn(null).when(jurorPoolRepository).save(any());
+        doReturn(null).when(jurorPaperResponseRepository).save(any(PaperResponse.class));
+        doReturn(initChangedPropertiesMap(Boolean.FALSE)).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class), any(AbstractJurorResponse.class));
-        Mockito.doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
+        doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
             anyString(), anyString());
-        Mockito.doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
+        doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
 
         summonsReplyStatusUpdateService.mergePaperResponse(paperResponse, auditorUsername);
 
@@ -1641,7 +1521,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         assertThat(juror.getWorkPhone()).isNull();
         assertThat(juror.getAltPhoneNumber()).isNull();
 
-        verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
         verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorPaperResponseRepository, times(1)).save(any(PaperResponse.class));
@@ -1670,18 +1550,17 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(Collections.singletonList(createReasonableAdjustmentsDigital(jurorNumber)))
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(Collections.singletonList(createReasonableAdjustmentsDigital(jurorNumber)))
             .when(jurorReasonableAdjustmentRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(null).when(jurorPoolRepository).save(any());
-        Mockito.doReturn(null).when(jurorDigitalResponseRepository).save(any(DigitalResponse.class));
-        Mockito.doReturn(initChangedPropertiesMap(Boolean.FALSE)).when(jurorAuditChangeService)
+        doReturn(null).when(jurorPoolRepository).save(any());
+        doReturn(null).when(jurorDigitalResponseRepository).save(any(DigitalResponse.class));
+        doReturn(initChangedPropertiesMap(Boolean.FALSE)).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class), any(AbstractJurorResponse.class));
-        Mockito.doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
+        doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
             anyString(), anyString());
-        Mockito.doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
+        doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
 
         summonsReplyStatusUpdateService.mergeDigitalResponse(digitalResponse, auditorUsername);
 
@@ -1693,7 +1572,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         assertThat(juror.getWorkPhone()).isNull();
         assertThat(juror.getAltPhoneNumber()).isNull();
 
-        verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
         verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorDigitalResponseRepository, times(1)).save(any(DigitalResponse.class));
@@ -1720,17 +1599,16 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.doReturn(Collections.singletonList(createReasonableAdjustmentsPaper(jurorNumber)))
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        doReturn(Collections.singletonList(createReasonableAdjustmentsPaper(jurorNumber)))
             .when(jurorReasonableAdjustmentRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(null).when(jurorPoolRepository).save(any());
-        Mockito.doReturn(null).when(jurorPaperResponseRepository).save(any(PaperResponse.class));
-        Mockito.doReturn(initChangedPropertiesMap(Boolean.TRUE)).when(jurorAuditChangeService)
+        doReturn(null).when(jurorPoolRepository).save(any());
+        doReturn(null).when(jurorPaperResponseRepository).save(any(PaperResponse.class));
+        doReturn(initChangedPropertiesMap(Boolean.TRUE)).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class), any(AbstractJurorResponse.class));
-        Mockito.doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
+        doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
             anyString(), anyString());
-        Mockito.doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
+        doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
 
         summonsReplyStatusUpdateService.mergePaperResponse(paperResponse, auditorUsername);
 
@@ -1746,7 +1624,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         assertThat(juror.getPostcode()).isEqualTo("WA16 0PB");
         assertThat(juror.getDateOfBirth()).isEqualTo(birthDate);
 
-        verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
         verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorPaperResponseRepository, times(1)).save(any(PaperResponse.class));
@@ -1773,18 +1651,17 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(Collections.singletonList(createReasonableAdjustmentsDigital(jurorNumber)))
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(Collections.singletonList(createReasonableAdjustmentsDigital(jurorNumber)))
             .when(jurorReasonableAdjustmentRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(null).when(jurorPoolRepository).save(any());
-        Mockito.doReturn(null).when(jurorDigitalResponseRepository).save(any(DigitalResponse.class));
-        Mockito.doReturn(initChangedPropertiesMap(Boolean.TRUE)).when(jurorAuditChangeService)
+        doReturn(null).when(jurorPoolRepository).save(any());
+        doReturn(null).when(jurorDigitalResponseRepository).save(any(DigitalResponse.class));
+        doReturn(initChangedPropertiesMap(Boolean.TRUE)).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class), any(AbstractJurorResponse.class));
-        Mockito.doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
+        doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
             anyString(), anyString());
-        Mockito.doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
+        doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
 
         summonsReplyStatusUpdateService.mergeDigitalResponse(digitalResponse, auditorUsername);
 
@@ -1800,7 +1677,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         assertThat(juror.getPostcode()).isEqualTo("WA16 0PB");
         assertThat(juror.getDateOfBirth()).isEqualTo(birthDate);
 
-        verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
         verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorDigitalResponseRepository, times(1)).save(any(DigitalResponse.class));
@@ -1829,18 +1706,17 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         final WelshCourtLocation welshCourt = new WelshCourtLocation();
         welshCourt.setLocCode("457");
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.doReturn(Collections.singletonList(createReasonableAdjustmentsPaper(jurorNumber)))
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        doReturn(Collections.singletonList(createReasonableAdjustmentsPaper(jurorNumber)))
             .when(jurorReasonableAdjustmentRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(welshCourt).when(welshCourtLocationRepository).findByLocCode(anyString());
-        Mockito.doReturn(null).when(jurorPoolRepository).save(any());
-        Mockito.doReturn(null).when(jurorPaperResponseRepository).save(any());
-        Mockito.doReturn(initChangedPropertiesMap(Boolean.TRUE)).when(jurorAuditChangeService)
+        doReturn(welshCourt).when(welshCourtLocationRepository).findByLocCode(anyString());
+        doReturn(null).when(jurorPoolRepository).save(any());
+        doReturn(null).when(jurorPaperResponseRepository).save(any());
+        doReturn(initChangedPropertiesMap(Boolean.TRUE)).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class), any(AbstractJurorResponse.class));
-        Mockito.doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
+        doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
             anyString(), anyString());
-        Mockito.doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
+        doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
 
         summonsReplyStatusUpdateService.mergePaperResponse(paperResponse, auditorUsername);
 
@@ -1850,7 +1726,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         Juror juror = jurorCaptor.getValue();
         assertThat(juror.getWelsh()).isEqualTo(Boolean.TRUE);
 
-        verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
         verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorPaperResponseRepository, times(1)).save(any(PaperResponse.class));
@@ -1879,19 +1755,18 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         final WelshCourtLocation welshCourt = new WelshCourtLocation();
         welshCourt.setLocCode("457");
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(Collections.singletonList(createReasonableAdjustmentsDigital(jurorNumber)))
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(Collections.singletonList(createReasonableAdjustmentsDigital(jurorNumber)))
             .when(jurorReasonableAdjustmentRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(welshCourt).when(welshCourtLocationRepository).findByLocCode(anyString());
-        Mockito.doReturn(null).when(jurorPoolRepository).save(any());
-        Mockito.doReturn(null).when(jurorDigitalResponseRepository).save(any(DigitalResponse.class));
-        Mockito.doReturn(initChangedPropertiesMap(Boolean.TRUE)).when(jurorAuditChangeService)
+        doReturn(welshCourt).when(welshCourtLocationRepository).findByLocCode(anyString());
+        doReturn(null).when(jurorPoolRepository).save(any());
+        doReturn(null).when(jurorDigitalResponseRepository).save(any(DigitalResponse.class));
+        doReturn(initChangedPropertiesMap(Boolean.TRUE)).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class), any(AbstractJurorResponse.class));
-        Mockito.doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
+        doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
             anyString(), anyString());
-        Mockito.doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
+        doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
 
         summonsReplyStatusUpdateService.mergeDigitalResponse(digitalResponse, auditorUsername);
 
@@ -1901,7 +1776,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         Juror juror = jurorCaptor.getValue();
         assertThat(juror.getWelsh()).isEqualTo(Boolean.TRUE);
 
-        verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
         verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorDigitalResponseRepository, times(1)).save(any(DigitalResponse.class));
@@ -1927,17 +1802,16 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.doReturn(Collections.singletonList(createReasonableAdjustmentsPaper(jurorNumber)))
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        doReturn(Collections.singletonList(createReasonableAdjustmentsPaper(jurorNumber)))
             .when(jurorReasonableAdjustmentRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(null).when(jurorPoolRepository).save(any());
-        Mockito.doReturn(null).when(jurorPaperResponseRepository).save(any());
-        Mockito.doReturn(initChangedPropertiesMap(Boolean.TRUE)).when(jurorAuditChangeService)
+        doReturn(null).when(jurorPoolRepository).save(any());
+        doReturn(null).when(jurorPaperResponseRepository).save(any());
+        doReturn(initChangedPropertiesMap(Boolean.TRUE)).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class), any(AbstractJurorResponse.class));
-        Mockito.doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
+        doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
             anyString(), anyString());
-        Mockito.doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
+        doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
 
         summonsReplyStatusUpdateService.mergePaperResponse(paperResponse, auditorUsername);
 
@@ -1947,7 +1821,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         Juror juror = jurorCaptor.getValue();
         assertThat(juror.getWelsh()).isNull();
 
-        verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
         verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorPaperResponseRepository, times(1)).save(any(PaperResponse.class));
@@ -1974,18 +1848,17 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(Collections.singletonList(createReasonableAdjustmentsDigital(jurorNumber)))
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(Collections.singletonList(createReasonableAdjustmentsDigital(jurorNumber)))
             .when(jurorReasonableAdjustmentRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(null).when(jurorPoolRepository).save(any());
-        Mockito.doReturn(null).when(jurorDigitalResponseRepository).save(any());
-        Mockito.doReturn(initChangedPropertiesMap(Boolean.TRUE)).when(jurorAuditChangeService)
+        doReturn(null).when(jurorPoolRepository).save(any());
+        doReturn(null).when(jurorDigitalResponseRepository).save(any());
+        doReturn(initChangedPropertiesMap(Boolean.TRUE)).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class), any(AbstractJurorResponse.class));
-        Mockito.doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
+        doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
             anyString(), anyString());
-        Mockito.doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
+        doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
 
         summonsReplyStatusUpdateService.mergeDigitalResponse(digitalResponse, auditorUsername);
 
@@ -1995,7 +1868,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         Juror juror = jurorCaptor.getValue();
         assertThat(juror.getWelsh()).isNull();
 
-        verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
         verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorDigitalResponseRepository, times(1)).save(any(DigitalResponse.class));
@@ -2022,17 +1895,16 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.doReturn(Collections.singletonList(createReasonableAdjustmentsPaper(jurorNumber)))
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        doReturn(Collections.singletonList(createReasonableAdjustmentsPaper(jurorNumber)))
             .when(jurorReasonableAdjustmentRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(null).when(jurorPoolRepository).save(any());
-        Mockito.doReturn(null).when(jurorPaperResponseRepository).save(any());
-        Mockito.doReturn(initChangedPropertiesMap(Boolean.TRUE)).when(jurorAuditChangeService)
+        doReturn(null).when(jurorPoolRepository).save(any());
+        doReturn(null).when(jurorPaperResponseRepository).save(any());
+        doReturn(initChangedPropertiesMap(Boolean.TRUE)).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class), any(AbstractJurorResponse.class));
-        Mockito.doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
+        doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
             anyString(), anyString());
-        Mockito.doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
+        doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
 
         summonsReplyStatusUpdateService.mergePaperResponse(paperResponse, auditorUsername);
 
@@ -2040,7 +1912,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         assertThat(jurorPaperResponseCaptor.getValue().getProcessingComplete()).isEqualTo(Boolean.TRUE);
         assertThat(jurorPaperResponseCaptor.getValue().getCompletedAt()).isNotNull();
 
-        verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
         verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorPaperResponseRepository, times(1)).save(any(PaperResponse.class));
@@ -2067,18 +1939,17 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(Collections.singletonList(createReasonableAdjustmentsDigital(jurorNumber)))
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(Collections.singletonList(createReasonableAdjustmentsDigital(jurorNumber)))
             .when(jurorReasonableAdjustmentRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(null).when(jurorPoolRepository).save(any());
-        Mockito.doReturn(null).when(jurorDigitalResponseRepository).save(any(DigitalResponse.class));
-        Mockito.doReturn(initChangedPropertiesMap(Boolean.TRUE)).when(jurorAuditChangeService)
+        doReturn(null).when(jurorPoolRepository).save(any());
+        doReturn(null).when(jurorDigitalResponseRepository).save(any(DigitalResponse.class));
+        doReturn(initChangedPropertiesMap(Boolean.TRUE)).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class), any(AbstractJurorResponse.class));
-        Mockito.doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
+        doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
             anyString(), anyString());
-        Mockito.doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
+        doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
 
         summonsReplyStatusUpdateService.mergeDigitalResponse(digitalResponse, auditorUsername);
 
@@ -2086,7 +1957,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         assertThat(jurorDigitalResponseCaptor.getValue().getProcessingComplete()).isEqualTo(Boolean.TRUE);
         assertThat(jurorDigitalResponseCaptor.getValue().getCompletedAt()).isNotNull();
 
-        verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
         verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorDigitalResponseRepository, times(1)).save(any(DigitalResponse.class));
@@ -2116,17 +1987,16 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.doReturn(Collections.singletonList(createReasonableAdjustmentsPaper(jurorNumber)))
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        doReturn(Collections.singletonList(createReasonableAdjustmentsPaper(jurorNumber)))
             .when(jurorReasonableAdjustmentRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(null).when(jurorPoolRepository).save(any());
-        Mockito.doReturn(null).when(jurorPaperResponseRepository).save(any(PaperResponse.class));
-        Mockito.doReturn(changedProperties).when(jurorAuditChangeService)
+        doReturn(null).when(jurorPoolRepository).save(any());
+        doReturn(null).when(jurorPaperResponseRepository).save(any(PaperResponse.class));
+        doReturn(changedProperties).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class), any(AbstractJurorResponse.class));
-        Mockito.doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
+        doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
             anyString(), anyString());
-        Mockito.doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
+        doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
 
         summonsReplyStatusUpdateService.mergePaperResponse(paperResponse, auditorUsername);
 
@@ -2134,7 +2004,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         assertThat(jurorPaperResponseCaptor.getValue().getProcessingComplete()).isEqualTo(Boolean.TRUE);
         assertThat(jurorPaperResponseCaptor.getValue().getCompletedAt()).isNotNull();
 
-        verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
         verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorPaperResponseRepository, times(1)).save(any(PaperResponse.class));
@@ -2162,21 +2032,20 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(Collections.singletonList(createReasonableAdjustmentsDigital(jurorNumber)))
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(Collections.singletonList(createReasonableAdjustmentsDigital(jurorNumber)))
             .when(jurorReasonableAdjustmentRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(null).when(jurorPoolRepository).save(any());
-        Mockito.doReturn(null).when(jurorDigitalResponseRepository).save(any(DigitalResponse.class));
-        Mockito.doReturn(null).when(jurorReasonableAdjustmentRepository).save(any());
-        Mockito.doReturn(null).when(jurorDigitalResponseRepository).save(any(DigitalResponse.class));
-        Mockito.doReturn(changedProperties).when(jurorAuditChangeService)
+        doReturn(null).when(jurorPoolRepository).save(any());
+        doReturn(null).when(jurorDigitalResponseRepository).save(any(DigitalResponse.class));
+        doReturn(null).when(jurorReasonableAdjustmentRepository).save(any());
+        doReturn(null).when(jurorDigitalResponseRepository).save(any(DigitalResponse.class));
+        doReturn(changedProperties).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class), any(AbstractJurorResponse.class));
 
-        Mockito.doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
+        doReturn(Boolean.FALSE).when(jurorAuditChangeService).hasNameChanged(anyString(), anyString(),
             anyString(), anyString());
-        Mockito.doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
+        doReturn(Boolean.TRUE).when(jurorAuditChangeService).hasTitleChanged(anyString(), anyString());
 
         summonsReplyStatusUpdateService.mergeDigitalResponse(digitalResponse, auditorUsername);
 
@@ -2184,7 +2053,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         assertThat(jurorDigitalResponseCaptor.getValue().getProcessingComplete()).isEqualTo(Boolean.TRUE);
         assertThat(jurorDigitalResponseCaptor.getValue().getCompletedAt()).isNotNull();
 
-        verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
         verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorDigitalResponseRepository, times(1)).save(any(DigitalResponse.class));
@@ -2216,16 +2085,15 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.doReturn(Collections.singletonList(createReasonableAdjustmentsPaper(jurorNumber)))
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        doReturn(Collections.singletonList(createReasonableAdjustmentsPaper(jurorNumber)))
             .when(jurorReasonableAdjustmentRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(null).when(jurorPoolRepository).save(any());
-        Mockito.doReturn(null).when(jurorPaperResponseRepository).save(any(PaperResponse.class));
+        doReturn(null).when(jurorPoolRepository).save(any());
+        doReturn(null).when(jurorPaperResponseRepository).save(any(PaperResponse.class));
 
         summonsReplyStatusUpdateService.mergePaperResponse(paperResponse, auditorUsername);
 
-        verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
         verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorPaperResponseRepository, times(1)).save(any(PaperResponse.class));
@@ -2259,20 +2127,19 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         Map<String, Boolean> changedProperties = new HashMap<>();
         changedProperties.put("date Of Birth", Boolean.TRUE);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(Collections.singletonList(createReasonableAdjustmentsDigital(jurorNumber)))
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(Collections.singletonList(createReasonableAdjustmentsDigital(jurorNumber)))
             .when(jurorReasonableAdjustmentRepository).findByJurorNumber(jurorNumber);
-        Mockito.doReturn(null).when(jurorPoolRepository).save(any());
-        Mockito.doReturn(null).when(jurorDigitalResponseRepository).save(any(DigitalResponse.class));
-        Mockito.doReturn(changedProperties).when(jurorAuditChangeService)
+        doReturn(null).when(jurorPoolRepository).save(any());
+        doReturn(null).when(jurorDigitalResponseRepository).save(any(DigitalResponse.class));
+        doReturn(changedProperties).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class),
                 any(AbstractJurorResponse.class));
 
         summonsReplyStatusUpdateService.mergeDigitalResponse(digitalResponse, auditorUsername);
 
-        verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
         verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorDigitalResponseRepository, times(1)).save(any(DigitalResponse.class));
@@ -2299,9 +2166,9 @@ public class SummonsReplyStatusUpdateServiceImplTest {
 
         final BureauJwtPayload payload = buildPayload();
 
-        Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
+        doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
-        Mockito.doReturn(Optional.of(respondedStatus)).when(jurorStatusRepository).findById(IJurorStatus.RESPONDED);
+        doReturn(Optional.of(respondedStatus)).when(jurorStatusRepository).findById(IJurorStatus.RESPONDED);
 
         CourtLocation courtLocation = createCourtLocation("415", "CHESTER", "09:15");
         JurorPool jurorPool = createJuror(jurorNumber);
@@ -2309,8 +2176,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PoolRequest poolRequest = jurorPool.getPool();
         poolRequest.setCourtLocation(courtLocation);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
 
         summonsReplyStatusUpdateService.updateJurorResponseStatus(jurorNumber,
             ProcessingStatus.CLOSED, payload);

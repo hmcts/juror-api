@@ -70,6 +70,8 @@ public class StraightThroughProcessorServiceImplTest {
     private SummonsReplyMergeService mergeService;
     @Mock
     private JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
+    @Mock
+    private JurorPoolService jurorPoolService;
 
     @InjectMocks
     private StraightThroughProcessorServiceImpl straightThroughProcessorService;
@@ -531,8 +533,8 @@ public class StraightThroughProcessorServiceImplTest {
         paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         Assertions.assertThat(straightThroughProcessorService
@@ -556,8 +558,8 @@ public class StraightThroughProcessorServiceImplTest {
         paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         Assertions.assertThat(straightThroughProcessorService
@@ -581,8 +583,8 @@ public class StraightThroughProcessorServiceImplTest {
         setPaperResponseDetails(paperResponse);
         paperResponse.setFirstName("");
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         Assertions.assertThat(straightThroughProcessorService
@@ -606,8 +608,8 @@ public class StraightThroughProcessorServiceImplTest {
         setPaperResponseDetails(paperResponse);
         paperResponse.setLastName(null);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         Assertions.assertThat(straightThroughProcessorService
@@ -631,8 +633,8 @@ public class StraightThroughProcessorServiceImplTest {
         paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         Assertions.assertThat(straightThroughProcessorService
@@ -656,8 +658,8 @@ public class StraightThroughProcessorServiceImplTest {
         paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         Assertions.assertThat(straightThroughProcessorService
@@ -681,8 +683,8 @@ public class StraightThroughProcessorServiceImplTest {
         setPaperResponseDetails(paperResponse);
         paperResponse.setAddressLine3("Some Address 3");
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         Assertions.assertThat(straightThroughProcessorService
@@ -706,8 +708,8 @@ public class StraightThroughProcessorServiceImplTest {
         setPaperResponseDetails(paperResponse);
         paperResponse.setAddressLine4("Some Town/City");
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         Assertions.assertThat(straightThroughProcessorService
@@ -731,8 +733,8 @@ public class StraightThroughProcessorServiceImplTest {
         paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         Assertions.assertThat(straightThroughProcessorService
@@ -756,8 +758,8 @@ public class StraightThroughProcessorServiceImplTest {
         setPaperResponseDetails(paperResponse);
         paperResponse.setPostcode(null);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         Assertions.assertThat(straightThroughProcessorService
@@ -781,8 +783,8 @@ public class StraightThroughProcessorServiceImplTest {
         setPaperResponseDetails(paperResponse);
         paperResponse.setDateOfBirth(null);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         Assertions.assertThat(straightThroughProcessorService
@@ -805,8 +807,8 @@ public class StraightThroughProcessorServiceImplTest {
         paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         Assertions.assertThat(straightThroughProcessorService
@@ -830,8 +832,8 @@ public class StraightThroughProcessorServiceImplTest {
         setPaperResponseDetails(paperResponse);
         paperResponse.setRelationship("Brother");
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         Assertions.assertThat(straightThroughProcessorService
@@ -858,8 +860,9 @@ public class StraightThroughProcessorServiceImplTest {
         paperResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
+
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         Assertions.assertThat(straightThroughProcessorService
@@ -883,8 +886,8 @@ public class StraightThroughProcessorServiceImplTest {
         setPaperResponseDetails(paperResponse);
         paperResponse.setResidency(false);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         Assertions.assertThat(straightThroughProcessorService
@@ -908,8 +911,8 @@ public class StraightThroughProcessorServiceImplTest {
         setPaperResponseDetails(paperResponse);
         paperResponse.setResidency(null);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         Assertions.assertThat(straightThroughProcessorService
@@ -933,8 +936,8 @@ public class StraightThroughProcessorServiceImplTest {
         setPaperResponseDetails(paperResponse);
         paperResponse.setMentalHealthAct(true);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         Assertions.assertThat(straightThroughProcessorService
@@ -958,8 +961,8 @@ public class StraightThroughProcessorServiceImplTest {
         setPaperResponseDetails(paperResponse);
         paperResponse.setMentalHealthAct(null);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         Assertions.assertThat(straightThroughProcessorService
@@ -983,8 +986,8 @@ public class StraightThroughProcessorServiceImplTest {
         setPaperResponseDetails(paperResponse);
         paperResponse.setMentalHealthCapacity(true);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         Assertions.assertThat(straightThroughProcessorService
@@ -1008,8 +1011,8 @@ public class StraightThroughProcessorServiceImplTest {
         setPaperResponseDetails(paperResponse);
         paperResponse.setMentalHealthCapacity(null);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         Assertions.assertThat(straightThroughProcessorService
@@ -1033,8 +1036,8 @@ public class StraightThroughProcessorServiceImplTest {
         setPaperResponseDetails(paperResponse);
         paperResponse.setBail(true);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         Assertions.assertThat(straightThroughProcessorService
@@ -1058,8 +1061,8 @@ public class StraightThroughProcessorServiceImplTest {
         setPaperResponseDetails(paperResponse);
         paperResponse.setBail(null);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         Assertions.assertThat(straightThroughProcessorService
@@ -1083,8 +1086,8 @@ public class StraightThroughProcessorServiceImplTest {
         setPaperResponseDetails(paperResponse);
         paperResponse.setConvictions(true);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         Assertions.assertThat(straightThroughProcessorService
@@ -1108,8 +1111,8 @@ public class StraightThroughProcessorServiceImplTest {
         setPaperResponseDetails(paperResponse);
         paperResponse.setConvictions(null);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         Assertions.assertThat(straightThroughProcessorService
@@ -1133,8 +1136,8 @@ public class StraightThroughProcessorServiceImplTest {
         setPaperResponseDetails(paperResponse);
         paperResponse.setSigned(false);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         Assertions.assertThat(straightThroughProcessorService
@@ -1158,8 +1161,8 @@ public class StraightThroughProcessorServiceImplTest {
         setPaperResponseDetails(paperResponse);
         paperResponse.setSigned(null);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         Assertions.assertThat(straightThroughProcessorService
@@ -1183,8 +1186,8 @@ public class StraightThroughProcessorServiceImplTest {
         setPaperResponseDetails(paperResponse);
         paperResponse.setExcusal(true);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         Assertions.assertThat(straightThroughProcessorService
@@ -1208,8 +1211,8 @@ public class StraightThroughProcessorServiceImplTest {
         setPaperResponseDetails(paperResponse);
         paperResponse.setDeferral(true);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         Assertions.assertThat(straightThroughProcessorService
@@ -1234,8 +1237,8 @@ public class StraightThroughProcessorServiceImplTest {
         paperResponse.setDeferral(null);
         paperResponse.setExcusal(null);
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
         Assertions.assertThat(straightThroughProcessorService
@@ -1262,8 +1265,8 @@ public class StraightThroughProcessorServiceImplTest {
         cjsEmployment.setJurorNumber(jurorNumber);
         cjsEmployment.setCjsEmployer("POLICE");
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
         Mockito.doReturn(Collections.singletonList(cjsEmployment))
             .when(jurorResponseCjsEmploymentRepository).findByJurorNumber(jurorNumber);
@@ -1296,8 +1299,8 @@ public class StraightThroughProcessorServiceImplTest {
         adjustment2.setJurorNumber(jurorNumber);
         adjustment2.setReasonableAdjustment(new ReasonableAdjustments("W", "Wheelchair Access"));
 
-        Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        Mockito.doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
         Mockito.doReturn(Arrays.asList(adjustment1, adjustment2))
             .when(jurorReasonableAdjustmentRepository).findByJurorNumber(jurorNumber);

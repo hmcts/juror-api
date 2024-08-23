@@ -3271,6 +3271,8 @@ class JurorRecordServiceTest {
             JurorPool jurorPool = createValidJurorPool(jurorNumber, COURT_OWNER);
             TestUtils.mockCourtUser("415");
 
+            doReturn(jurorPool.getJuror()).when(jurorRepository)
+                .findByJurorNumber(any());
             doReturn(List.of(jurorPool)).when(jurorPoolRepository)
                 .findByJurorJurorNumberAndIsActive(any(), anyBoolean());
 

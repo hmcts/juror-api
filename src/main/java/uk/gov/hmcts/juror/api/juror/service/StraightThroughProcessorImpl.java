@@ -27,7 +27,6 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRep
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
-import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
@@ -412,7 +411,7 @@ public class StraightThroughProcessorImpl implements StraightThroughProcessor {
             final DigitalResponse savedDigitalResponse =
                 jurorDigitalResponseRepository.findByJurorNumber(digitalResponse.getJurorNumber());
             final JurorPool jurorDetails =
-                JurorPoolUtils.getSingleActiveJurorPool(jurorRepository, savedDigitalResponse.getJurorNumber());
+                jurorPoolService.getJurorPoolFromUser(savedDigitalResponse.getJurorNumber());
 
             // check the response for answers making it ineligible for straight through processing.
             //JDB-91 b. the response must not have been submitted by a third party
