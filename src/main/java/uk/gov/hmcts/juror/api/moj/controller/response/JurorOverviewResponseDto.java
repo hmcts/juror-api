@@ -127,7 +127,7 @@ public class JurorOverviewResponseDto {
         if (todayAppearance.isPresent() && todayAppearance.get().getTimeOut() != null) {
             this.location = null;
         } else {
-            this.location = getLocationFromPanel(panelRepository, jurorPool);
+            this.location = getLocationFromPanel(panelRepository, jurorPool, this.checkedInTodayTime != null);
         }
 
 
@@ -158,12 +158,16 @@ public class JurorOverviewResponseDto {
     }
 
     @JsonIgnore
-    private String getLocationFromPanel(PanelRepository panelRepository, JurorPool jurorPool) {
-        return getActivePanel(panelRepository, jurorPool)
-            .map(panel -> panel.getTrial().getCourtroom().getDescription())
-            .orElse(Optional.ofNullable(jurorPool.getCourt().getAssemblyRoom())
+    private String getLocationFromPanel(PanelRepository panelRepository, JurorPool jurorPool, boolean hasAppearance) {
+        Optional<String> locationFromPanel = getActivePanel(panelRepository, jurorPool)
+            .map(panel -> panel.getTrial().getCourtroom().getDescription());
+
+        if (locationFromPanel.isPresent() || !hasAppearance) {
+            return locationFromPanel.orElse(null);
+        }
+        return Optional.ofNullable(jurorPool.getCourt().getAssemblyRoom())
             .map(Courtroom::getDescription)
-            .orElse(null));
+            .orElse(null);
     }
 
     private Optional<Panel> getActivePanel(PanelRepository panelRepository, JurorPool jurorPool) {
