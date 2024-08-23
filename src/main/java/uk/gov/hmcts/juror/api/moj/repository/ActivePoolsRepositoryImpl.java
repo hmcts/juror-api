@@ -125,8 +125,8 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
             .where(POOL_REQUEST.poolType.description.in(PoolRequestUtils.POOL_TYPES_DESC_LIST))
             .where(POOL_REQUEST.nilPool.eq(false).and(POOL_REQUEST.returnDate.after(LocalDate.now()))
                 .or(JUROR_POOL.isActive.isTrue()
-                    .and(JUROR_POOL.status.status.in(Arrays.asList(3, 4))
-                        .or(JUROR_POOL.status.status.in(List.of(2))))));
+                    .and(JUROR_POOL.status.status.in(
+                        Arrays.asList(IJurorStatus.PANEL, IJurorStatus.JUROR, IJurorStatus.RESPONDED)))));
 
         if (SecurityUtil.isCourt()) {
             activePoolsQuery = activePoolsQuery.where(POOL_REQUEST.courtLocation.locCode.in(SecurityUtil.getCourts()));
