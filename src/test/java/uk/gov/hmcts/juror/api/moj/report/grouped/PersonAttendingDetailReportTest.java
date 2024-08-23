@@ -77,6 +77,7 @@ class PersonAttendingDetailReportTest extends AbstractGroupedReportTestSupport<P
             .reportType(report.getName())
             .date(LocalDate.now())
             .includeSummoned(false)
+            .includePanelMembers(false)
             .build();
     }
 
@@ -120,7 +121,34 @@ class PersonAttendingDetailReportTest extends AbstractGroupedReportTestSupport<P
         verify(query, times(1))
             .where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(locCode));
         verify(query, times(1))
-            .where(QJurorPool.jurorPool.status.status.in(IJurorStatus.SUMMONED, IJurorStatus.RESPONDED));
+            .where(QJurorPool.jurorPool.status.status.in(IJurorStatus.RESPONDED, IJurorStatus.SUMMONED));
+        verify(query, times(1)).orderBy(QJurorPool.jurorPool.juror.lastName.asc());
+
+        verifyNoMoreInteractions(query);
+    }
+
+    @Test
+    void positivePreProcessQueryWithPanelAndJuror() {
+        String locCode = "415";
+        TestUtils.mockSecurityUtil(BureauJwtPayload.builder().locCode(locCode).userType(UserType.COURT).build());
+
+        StandardReportRequest requestMock = mock(StandardReportRequest.class);
+        when(requestMock.getDate()).thenReturn(LocalDate.now());
+
+        JPAQuery<Tuple> query = mock(JPAQuery.class,
+            withSettings().defaultAnswer(RETURNS_SELF));
+        StandardReportRequest request = getValidRequest();
+
+        request.setIncludePanelMembers(true);
+
+        report.preProcessQuery(query, request);
+        verify(query, times(1))
+            .where(QJurorPool.jurorPool.nextDate.eq(requestMock.getDate()));
+        verify(query, times(1))
+            .where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(locCode));
+        verify(query, times(1))
+            .where(QJurorPool.jurorPool.status.status.in(IJurorStatus.RESPONDED,
+                IJurorStatus.PANEL, IJurorStatus.JUROR));
         verify(query, times(1)).orderBy(QJurorPool.jurorPool.juror.lastName.asc());
 
         verifyNoMoreInteractions(query);
@@ -166,6 +194,13 @@ class PersonAttendingDetailReportTest extends AbstractGroupedReportTestSupport<P
     void negativeMissingIncludeSummoned() {
         StandardReportRequest request = getValidRequest();
         request.setIncludeSummoned(null);
+        assertValidationFails(request, new ValidationFailure("includeSummoned", "must not be null"));
+    }
+
+    @Test
+    void negativeMissingIncludePanelMembers() {
+        StandardReportRequest request = getValidRequest();
+        request.setIncludePanelMembers(null);
         assertValidationFails(request, new ValidationFailure("includeSummoned", "must not be null"));
     }
 
