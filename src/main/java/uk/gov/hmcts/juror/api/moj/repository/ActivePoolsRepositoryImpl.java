@@ -78,6 +78,10 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
             .where(POOL_REQUEST.poolType.description.in(PoolRequestUtils.POOL_TYPES_DESC_LIST))
             .groupBy(POOL_REQUEST);
 
+        if (filterQuery.getSortField().equals(ActivePoolFilterQuery.SortField.COURT_NAME)) {
+            query.groupBy(POOL_REQUEST.courtLocation.name);
+        }
+
         if (StringUtils.isNotBlank(filterQuery.getLocCode())) {
             query.where(POOL_REQUEST.courtLocation.locCode.eq(filterQuery.getLocCode()));
         }
