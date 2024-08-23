@@ -431,8 +431,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
         private ResponseEntity<PaginatedList<TrialListDto>> invokeService() {
             ResponseEntity<PaginatedList<TrialListDto>> responseEntity = restTemplate.exchange(
                 new RequestEntity<>(getValidPayload(), httpHeaders, POST, URI.create(URL)),
-                new ParameterizedTypeReference<>() {
-                });
+                new ParameterizedTypeReference<>() {});
 
             assertThat(responseEntity.getStatusCode())
                 .as("Expect the HTTP GET request to be successful.")
@@ -682,21 +681,22 @@ class TrialControllerITest extends AbstractIntegrationTest {
                 URI.create(url)), Void.class);
 
         assertThat(responseEntity.getStatusCode()).as(ASSERT_POST_IS_SUCCESSFUL).isEqualTo(OK);
+        executeInTransaction(() -> {
+            List<Panel> panelList = panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(
+                "T10000000", "415");
 
-        List<Panel> panelList = panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(
-            "T10000000", "415");
-
-        for (Panel panel : panelList) {
-            assertThat(panel.getResult()).as("Expect result to be Returned")
-                .isEqualTo(PanelResult.RETURNED);
-            JurorPool jurorPool = PanelUtils.getAssociatedJurorPool(jurorPoolRepository, panel);
-            assertThat(jurorPool.getStatus().getStatus()).as(
-                "Expect status to be Responded (Juror in waiting)").isEqualTo(IJurorStatus.RESPONDED);
-            assertThat(
-                jurorHistoryRepository.findByJurorNumberOrderById(panel.getJurorNumber()).size())
-                .as("Expect one history item for juror " + panel.getJurorNumber())
-                .isEqualTo(1);
-        }
+            for (Panel panel : panelList) {
+                assertThat(panel.getResult()).as("Expect result to be Returned")
+                    .isEqualTo(PanelResult.RETURNED);
+                JurorPool jurorPool = PanelUtils.getAssociatedJurorPool(jurorPoolRepository, panel);
+                assertThat(jurorPool.getStatus().getStatus()).as(
+                    "Expect status to be Responded (Juror in waiting)").isEqualTo(IJurorStatus.RESPONDED);
+                assertThat(
+                    jurorHistoryRepository.findByJurorNumberOrderById(panel.getJurorNumber()).size())
+                    .as("Expect one history item for juror " + panel.getJurorNumber())
+                    .isEqualTo(1);
+            }
+        });
     }
 
     @Test
@@ -715,57 +715,58 @@ class TrialControllerITest extends AbstractIntegrationTest {
                 URI.create(url)), Void.class);
 
         assertThat(responseEntity.getStatusCode()).as(ASSERT_POST_IS_SUCCESSFUL).isEqualTo(OK);
+        executeInTransaction(() -> {
+            List<Panel> panelList = panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(
+                "T10000001", "415");
 
-        List<Panel> panelList = panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(
-            "T10000001", "415");
+            Map<String, Integer> auditNumberMap = new ConcurrentHashMap<>();
 
-        Map<String, Integer> auditNumberMap = new ConcurrentHashMap<>();
+            for (Panel panel : panelList) {
+                assertThat(panel.getResult()).as("Expect result to be Returned")
+                    .isEqualTo(PanelResult.RETURNED);
+                assertThat(panel.getReturnDate()).as("Expect result to be today's date")
+                    .isEqualTo(LocalDate.now());
 
-        for (Panel panel : panelList) {
-            assertThat(panel.getResult()).as("Expect result to be Returned")
-                .isEqualTo(PanelResult.RETURNED);
-            assertThat(panel.getReturnDate()).as("Expect result to be today's date")
-                .isEqualTo(LocalDate.now());
+                JurorPool jurorPool = PanelUtils.getAssociatedJurorPool(jurorPoolRepository, panel);
+                assertThat(jurorPool.getStatus().getStatus()).as(
+                    "Expect status to be Responded (Juror in waiting)").isEqualTo(IJurorStatus.RESPONDED);
+                assertThat(
+                    jurorHistoryRepository.findByJurorNumberOrderById(panel.getJurorNumber()).size())
+                    .as("Expect two history items for juror " + panel.getJurorNumber())
+                    .isEqualTo(2);
+                assertThat(panel.isCompleted()).as("Expected panel completed status to be true").isTrue();
 
-            JurorPool jurorPool = PanelUtils.getAssociatedJurorPool(jurorPoolRepository, panel);
-            assertThat(jurorPool.getStatus().getStatus()).as(
-                "Expect status to be Responded (Juror in waiting)").isEqualTo(IJurorStatus.RESPONDED);
-            assertThat(
-                jurorHistoryRepository.findByJurorNumberOrderById(panel.getJurorNumber()).size())
-                .as("Expect two history items for juror " + panel.getJurorNumber())
-                .isEqualTo(2);
-            assertThat(panel.isCompleted()).as("Expected panel completed status to be true").isTrue();
+                Appearance appearance =
+                    appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415", panel.getJurorNumber(),
+                        LocalDate.now()).orElseThrow(() ->
+                        new MojException.NotFound("No appearance record found", null));
 
-            Appearance appearance =
-                appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415", panel.getJurorNumber(),
-                    LocalDate.now()).orElseThrow(() ->
-                    new MojException.NotFound("No appearance record found", null));
+                assertThat(appearance.getAttendanceAuditNumber()).isNotNull();
 
-            assertThat(appearance.getAttendanceAuditNumber()).isNotNull();
+                auditNumberMap.putIfAbsent(appearance.getAttendanceAuditNumber(), 0);
+                auditNumberMap.computeIfPresent(appearance.getAttendanceAuditNumber(), (k, v) -> v + 1);
 
-            auditNumberMap.putIfAbsent(appearance.getAttendanceAuditNumber(), 0);
-            auditNumberMap.computeIfPresent(appearance.getAttendanceAuditNumber(), (k, v) -> v + 1);
+                assertThat(appearance.getTimeIn()).as("Expect time in to not be null").isNotNull();
+                assertThat(appearance.getTimeIn()).as("Expect time in to be 09:00").isEqualTo(LocalTime.parse(
+                    "09:00"));
 
-            assertThat(appearance.getTimeIn()).as("Expect time in to not be null").isNotNull();
-            assertThat(appearance.getTimeIn()).as("Expect time in to be 09:00").isEqualTo(LocalTime.parse(
-                "09:00"));
+                assertThat(appearance.getTimeOut()).as("Expect time out to not be null").isNotNull();
+                assertThat(appearance.getTimeOut()).as("Expect time out to be 10:00").isEqualTo(LocalTime.parse(
+                    "10:00"));
 
-            assertThat(appearance.getTimeOut()).as("Expect time out to not be null").isNotNull();
-            assertThat(appearance.getTimeOut()).as("Expect time out to be 10:00").isEqualTo(LocalTime.parse(
-                "10:00"));
+                assertThat(appearance.getSatOnJury()).isTrue();
+                assertThat(appearance.getAppearanceStage())
+                    .as("Expect appearance stage to be EXPENSE_ENTERED")
+                    .isEqualTo(AppearanceStage.EXPENSE_ENTERED);
 
-            assertThat(appearance.getSatOnJury()).isTrue();
-            assertThat(appearance.getAppearanceStage())
-                .as("Expect appearance stage to be EXPENSE_ENTERED")
-                .isEqualTo(AppearanceStage.EXPENSE_ENTERED);
+                assertThat(appearance.getAttendanceType())
+                    .as("Expect attendance type to be HALF_DAY")
+                    .isEqualTo(AttendanceType.HALF_DAY);
+            }
 
-            assertThat(appearance.getAttendanceType())
-                .as("Expect attendance type to be HALF_DAY")
-                .isEqualTo(AttendanceType.HALF_DAY);
-        }
-
-        // check we have the same audit number for all the jurors
-        assertThat(auditNumberMap.values().stream().findFirst().orElse(0)).isEqualTo(4);
+            // check we have the same audit number for all the jurors
+            assertThat(auditNumberMap.values().stream().findFirst().orElse(0)).isEqualTo(4);
+        });
     }
 
     @Test
@@ -784,41 +785,45 @@ class TrialControllerITest extends AbstractIntegrationTest {
                 URI.create(url)), Void.class);
 
         assertThat(responseEntity.getStatusCode()).as(ASSERT_POST_IS_SUCCESSFUL).isEqualTo(OK);
+        executeInTransaction(() -> {
+            List<Panel> panelList = panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(
+                "T10000001", "415");
 
-        List<Panel> panelList = panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(
-            "T10000001", "415");
+            for (Panel panel : panelList) {
+                assertThat(panel.getResult()).as("Expect result to be Returned")
+                    .isEqualTo(PanelResult.RETURNED);
+                assertThat(panel.getReturnDate()).as("Expect result to be today's date")
+                    .isEqualTo(LocalDate.now());
 
-        for (Panel panel : panelList) {
-            assertThat(panel.getResult()).as("Expect result to be Returned")
-                .isEqualTo(PanelResult.RETURNED);
-            assertThat(panel.getReturnDate()).as("Expect result to be today's date")
-                .isEqualTo(LocalDate.now());
+                JurorPool jurorPool = PanelUtils.getAssociatedJurorPool(jurorPoolRepository, panel);
+                assertThat(jurorPool.getStatus().getStatus()).as(
+                    "Expect status to be Responded").isEqualTo(IJurorStatus.RESPONDED);
+                assertThat(
+                    jurorHistoryRepository.findByJurorNumberOrderById(panel.getJurorNumber()).size())
+                    .as("Expect two history item for juror " + panel.getJurorNumber())
+                    .isEqualTo(2);
 
-            JurorPool jurorPool = PanelUtils.getAssociatedJurorPool(jurorPoolRepository, panel);
-            assertThat(jurorPool.getStatus().getStatus()).as(
-                "Expect status to be Responded").isEqualTo(IJurorStatus.RESPONDED);
-            assertThat(
-                jurorHistoryRepository.findByJurorNumberOrderById(panel.getJurorNumber()).size())
-                .as("Expect two history item for juror " + panel.getJurorNumber())
-                .isEqualTo(2);
-
-            Appearance appearance =
-                appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415", panel.getJurorNumber(),
-                    LocalDate.now()).orElseThrow(() ->
-                    new MojException.NotFound("No appearance record found", null));
-            assertThat(appearance.getTimeIn()).as("Expect time in to be null").isEqualTo(LocalTime.of(9, 30));
-            assertThat(appearance.getTimeOut()).as("Expect time out to be null").isNull();
-            assertThat(panel.isCompleted()).as("Expected panel completed status to be true").isTrue();
-            assertThat(appearance.getAppearanceStage())
-                .as("Expect appearance stage to be CHECKED_IN")
-                .isEqualTo(AppearanceStage.CHECKED_IN);
-            assertThat(appearance.getSatOnJury()).isTrue();
-        }
+                Appearance appearance =
+                    appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415", panel.getJurorNumber(),
+                        LocalDate.now()).orElseThrow(() ->
+                        new MojException.NotFound("No appearance record found", null));
+                assertThat(appearance.getTimeIn()).as("Expect time in to be null").isEqualTo(LocalTime.of(9, 30));
+                assertThat(appearance.getTimeOut()).as("Expect time out to be null").isNull();
+                assertThat(panel.isCompleted()).as("Expected panel completed status to be true").isTrue();
+                assertThat(appearance.getAppearanceStage())
+                    .as("Expect appearance stage to be CHECKED_IN")
+                    .isEqualTo(AppearanceStage.CHECKED_IN);
+                assertThat(appearance.getSatOnJury()).isTrue();
+            }
+        });
     }
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/ReturnJuryPanel.sql"})
-    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
+    @SuppressWarnings({
+        "PMD.AvoidInstantiatingObjectsInLoops",
+        "PMD.JUnitTestsShouldIncludeAssert"//False positive
+    })
     void testReturnJuryConfirmAttendanceAndCompleteService() {
         final String url = "/api/v1/moj/trial/return-jury?"
             + "trial_number=T10000001&"
@@ -830,50 +835,51 @@ class TrialControllerITest extends AbstractIntegrationTest {
         ResponseEntity<Void> responseEntity =
             restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, POST,
                 URI.create(url)), Void.class);
+        executeInTransaction(() -> {
+            assertThat(responseEntity.getStatusCode()).as(ASSERT_POST_IS_SUCCESSFUL).isEqualTo(OK);
 
-        assertThat(responseEntity.getStatusCode()).as(ASSERT_POST_IS_SUCCESSFUL).isEqualTo(OK);
+            List<Panel> panelList = panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(
+                "T10000001", "415");
 
-        List<Panel> panelList = panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(
-            "T10000001", "415");
+            for (Panel panel : panelList) {
+                assertThat(panel.getResult()).as("Expect result to be Returned")
+                    .isEqualTo(PanelResult.RETURNED);
+                assertThat(
+                    jurorHistoryRepository.findByJurorNumberOrderById(panel.getJurorNumber()).size())
+                    .as("Expect three history item for juror " + panel.getJurorNumber())
+                    .isEqualTo(3);
+                assertThat(panel.isCompleted()).as("Expect completed status to be true").isTrue();
+                assertThat(panel.getReturnDate()).as("Expect result to be today's date")
+                    .isEqualTo(LocalDate.now());
 
-        for (Panel panel : panelList) {
-            assertThat(panel.getResult()).as("Expect result to be Returned")
-                .isEqualTo(PanelResult.RETURNED);
-            assertThat(
-                jurorHistoryRepository.findByJurorNumberOrderById(panel.getJurorNumber()).size())
-                .as("Expect three history item for juror " + panel.getJurorNumber())
-                .isEqualTo(3);
-            assertThat(panel.isCompleted()).as("Expect completed status to be true").isTrue();
-            assertThat(panel.getReturnDate()).as("Expect result to be today's date")
-                .isEqualTo(LocalDate.now());
+                JurorPool jurorPool = PanelUtils.getAssociatedJurorPool(jurorPoolRepository, panel);
+                assertThat(jurorPool.getStatus().getStatus()).as("Expect status to be COMPLETED")
+                    .isEqualTo(IJurorStatus.COMPLETED);
+                assertThat(panel.getJuror().getCompletionDate()).as(
+                    "Expect completion date to be " + LocalDate.now()).isEqualTo(LocalDate.now());
 
-            JurorPool jurorPool = PanelUtils.getAssociatedJurorPool(jurorPoolRepository, panel);
-            assertThat(jurorPool.getStatus().getStatus()).as("Expect status to be COMPLETED")
-                .isEqualTo(IJurorStatus.COMPLETED);
-            assertThat(panel.getJuror().getCompletionDate()).as(
-                "Expect completion date to be " + LocalDate.now()).isEqualTo(LocalDate.now());
+                Appearance appearance =
+                    appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415", panel.getJurorNumber(),
+                        LocalDate.now()).orElseThrow(() ->
+                        new MojException.NotFound("No appearance record found", null));
 
-            Appearance appearance =
-                appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415", panel.getJurorNumber(),
-                    LocalDate.now()).orElseThrow(() ->
-                    new MojException.NotFound("No appearance record found", null));
+                assertThat(appearance.getTimeIn()).as("Expect time in to not be null").isNotNull();
+                assertThat(appearance.getTimeIn()).as("Expect time in to be 09:00").isEqualTo(LocalTime.parse(
+                    "09:00"));
 
-            assertThat(appearance.getTimeIn()).as("Expect time in to not be null").isNotNull();
-            assertThat(appearance.getTimeIn()).as("Expect time in to be 09:00").isEqualTo(LocalTime.parse(
-                "09:00"));
+                assertThat(appearance.getTimeOut()).as("Expect time out to not be null").isNotNull();
+                assertThat(appearance.getTimeOut()).as("Expect time out to be 10:00").isEqualTo(LocalTime.parse(
+                    "10:00"));
 
-            assertThat(appearance.getTimeOut()).as("Expect time out to not be null").isNotNull();
-            assertThat(appearance.getTimeOut()).as("Expect time out to be 10:00").isEqualTo(LocalTime.parse(
-                "10:00"));
+                assertThat(appearance.getSatOnJury()).isTrue();
+                assertThat(appearance.getAppearanceStage())
+                    .as("Expect appearance stage to be EXPENSE_ENTERED")
+                    .isEqualTo(AppearanceStage.EXPENSE_ENTERED);
 
-            assertThat(appearance.getSatOnJury()).isTrue();
-            assertThat(appearance.getAppearanceStage())
-                .as("Expect appearance stage to be EXPENSE_ENTERED")
-                .isEqualTo(AppearanceStage.EXPENSE_ENTERED);
-
-            assertThat(panel.getJuror().getCompletionDate()).as("Expect completion date to not be "
-                + "null").isNotNull();
-        }
+                assertThat(panel.getJuror().getCompletionDate()).as("Expect completion date to not be "
+                    + "null").isNotNull();
+            }
+        });
     }
 
     @Test

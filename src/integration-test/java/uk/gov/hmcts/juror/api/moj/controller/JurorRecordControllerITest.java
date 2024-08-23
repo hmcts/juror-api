@@ -469,31 +469,32 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode())
             .as("Expect the HTTP status to be NO CONTENT")
             .isEqualTo(HttpStatus.NO_CONTENT);
+        executeInTransaction(() -> {
+            JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
+            Juror juror = jurorPool.getJuror();
 
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
-        Juror juror = jurorPool.getJuror();
+            //Check data has been changed and now matches what was in the dto.
+            assertThat(juror.getTitle()).isEqualTo(requestDto.getTitle());
+            assertThat(juror.getFirstName()).isEqualTo(requestDto.getFirstName());
+            assertThat(juror.getLastName()).isEqualTo(requestDto.getLastName());
+            assertThat(juror.getAddressLine1()).isEqualTo(requestDto.getAddressLineOne());
+            assertThat(juror.getAddressLine2()).isEqualTo(requestDto.getAddressLineTwo());
+            assertThat(juror.getAddressLine3()).isEqualTo(requestDto.getAddressLineThree());
+            assertThat(juror.getAddressLine4()).isEqualTo(requestDto.getAddressTown());
+            assertThat(juror.getAddressLine5()).isEqualTo(requestDto.getAddressCounty());
+            assertThat(juror.getPostcode()).isEqualTo(requestDto.getAddressPostcode());
+            assertThat(juror.getDateOfBirth()).isEqualTo(requestDto.getDateOfBirth());
+            assertThat(juror.getPhoneNumber()).isEqualTo(requestDto.getPrimaryPhone());
+            assertThat(juror.getEmail()).isEqualTo(requestDto.getEmailAddress());
+            assertThat(juror.getReasonableAdjustmentCode()).isEqualTo(requestDto.getSpecialNeed());
+            assertThat(juror.getReasonableAdjustmentMessage()).isEqualTo(requestDto.getSpecialNeedMessage());
 
-        //Check data has been changed and now matches what was in the dto.
-        assertThat(juror.getTitle()).isEqualTo(requestDto.getTitle());
-        assertThat(juror.getFirstName()).isEqualTo(requestDto.getFirstName());
-        assertThat(juror.getLastName()).isEqualTo(requestDto.getLastName());
-        assertThat(juror.getAddressLine1()).isEqualTo(requestDto.getAddressLineOne());
-        assertThat(juror.getAddressLine2()).isEqualTo(requestDto.getAddressLineTwo());
-        assertThat(juror.getAddressLine3()).isEqualTo(requestDto.getAddressLineThree());
-        assertThat(juror.getAddressLine4()).isEqualTo(requestDto.getAddressTown());
-        assertThat(juror.getAddressLine5()).isEqualTo(requestDto.getAddressCounty());
-        assertThat(juror.getPostcode()).isEqualTo(requestDto.getAddressPostcode());
-        assertThat(juror.getDateOfBirth()).isEqualTo(requestDto.getDateOfBirth());
-        assertThat(juror.getPhoneNumber()).isEqualTo(requestDto.getPrimaryPhone());
-        assertThat(juror.getEmail()).isEqualTo(requestDto.getEmailAddress());
-        assertThat(juror.getReasonableAdjustmentCode()).isEqualTo(requestDto.getSpecialNeed());
-        assertThat(juror.getReasonableAdjustmentMessage()).isEqualTo(requestDto.getSpecialNeedMessage());
-
-        assertThat(juror.getOpticRef()).isEqualTo(requestDto.getOpticReference());
-        assertThat(juror.getPendingTitle()).isEqualTo(requestDto.getPendingTitle());
-        assertThat(juror.getPendingFirstName()).isEqualTo(requestDto.getPendingFirstName());
-        assertThat(juror.getPendingLastName()).isEqualTo(requestDto.getPendingLastName());
-        assertThat(juror.getWelsh()).isEqualTo(requestDto.getWelshLanguageRequired());
+            assertThat(juror.getOpticRef()).isEqualTo(requestDto.getOpticReference());
+            assertThat(juror.getPendingTitle()).isEqualTo(requestDto.getPendingTitle());
+            assertThat(juror.getPendingFirstName()).isEqualTo(requestDto.getPendingFirstName());
+            assertThat(juror.getPendingLastName()).isEqualTo(requestDto.getPendingLastName());
+            assertThat(juror.getWelsh()).isEqualTo(requestDto.getWelshLanguageRequired());
+        });
     }
 
     @Test
@@ -509,31 +510,32 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode())
             .as("Expect the HTTP status to be NO CONTENT")
             .isEqualTo(HttpStatus.NO_CONTENT);
+        executeInTransaction(() -> {
+            JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
+            Juror juror = jurorPool.getJuror();
 
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
-        Juror juror = jurorPool.getJuror();
+            //Check data has been changed and now matches what was in the dto.
+            assertThat(juror.getTitle()).isEqualTo(requestDto.getTitle());
+            assertThat(juror.getFirstName()).isEqualTo(requestDto.getFirstName());
+            assertThat(juror.getLastName()).isEqualTo(requestDto.getLastName());
+            assertThat(juror.getAddressLine1()).isEqualTo(requestDto.getAddressLineOne());
+            assertThat(juror.getAddressLine2()).isEqualTo(requestDto.getAddressLineTwo());
+            assertThat(juror.getAddressLine3()).isEqualTo(requestDto.getAddressLineThree());
+            assertThat(juror.getAddressLine4()).isEqualTo(requestDto.getAddressTown());
+            assertThat(juror.getAddressLine5()).isEqualTo(requestDto.getAddressCounty());
+            assertThat(juror.getPostcode()).isEqualTo(requestDto.getAddressPostcode());
+            assertThat(juror.getDateOfBirth()).isEqualTo(requestDto.getDateOfBirth());
+            assertThat(juror.getPhoneNumber()).isEqualTo(requestDto.getPrimaryPhone());
+            assertThat(juror.getEmail()).isEqualTo(requestDto.getEmailAddress());
+            assertThat(juror.getReasonableAdjustmentCode()).isEqualTo(requestDto.getSpecialNeed());
+            assertThat(juror.getReasonableAdjustmentMessage()).isEqualTo(requestDto.getSpecialNeedMessage());
 
-        //Check data has been changed and now matches what was in the dto.
-        assertThat(juror.getTitle()).isEqualTo(requestDto.getTitle());
-        assertThat(juror.getFirstName()).isEqualTo(requestDto.getFirstName());
-        assertThat(juror.getLastName()).isEqualTo(requestDto.getLastName());
-        assertThat(juror.getAddressLine1()).isEqualTo(requestDto.getAddressLineOne());
-        assertThat(juror.getAddressLine2()).isEqualTo(requestDto.getAddressLineTwo());
-        assertThat(juror.getAddressLine3()).isEqualTo(requestDto.getAddressLineThree());
-        assertThat(juror.getAddressLine4()).isEqualTo(requestDto.getAddressTown());
-        assertThat(juror.getAddressLine5()).isEqualTo(requestDto.getAddressCounty());
-        assertThat(juror.getPostcode()).isEqualTo(requestDto.getAddressPostcode());
-        assertThat(juror.getDateOfBirth()).isEqualTo(requestDto.getDateOfBirth());
-        assertThat(juror.getPhoneNumber()).isEqualTo(requestDto.getPrimaryPhone());
-        assertThat(juror.getEmail()).isEqualTo(requestDto.getEmailAddress());
-        assertThat(juror.getReasonableAdjustmentCode()).isEqualTo(requestDto.getSpecialNeed());
-        assertThat(juror.getReasonableAdjustmentMessage()).isEqualTo(requestDto.getSpecialNeedMessage());
-
-        assertThat(juror.getOpticRef()).isEqualTo(requestDto.getOpticReference());
-        assertThat(juror.getPendingTitle()).isEqualTo(requestDto.getPendingTitle());
-        assertThat(juror.getPendingFirstName()).isEqualTo(requestDto.getPendingFirstName());
-        assertThat(juror.getPendingLastName()).isEqualTo(requestDto.getPendingLastName());
-        assertThat(juror.getWelsh()).isEqualTo(requestDto.getWelshLanguageRequired());
+            assertThat(juror.getOpticRef()).isEqualTo(requestDto.getOpticReference());
+            assertThat(juror.getPendingTitle()).isEqualTo(requestDto.getPendingTitle());
+            assertThat(juror.getPendingFirstName()).isEqualTo(requestDto.getPendingFirstName());
+            assertThat(juror.getPendingLastName()).isEqualTo(requestDto.getPendingLastName());
+            assertThat(juror.getWelsh()).isEqualTo(requestDto.getWelshLanguageRequired());
+        });
     }
 
     @Test
@@ -584,18 +586,19 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode())
             .as("Expect the HTTP POST request to be CREATED")
             .isEqualTo(HttpStatus.CREATED);
+        executeInTransaction(() -> {
 
+            DigitalResponse digitalResponse = jurorResponseRepository.findByJurorNumber(jurorNumber);
+            assertThat(digitalResponse).isNotNull();
+            assertThat(digitalResponse.getProcessingStatus()).isEqualTo(AWAITING_COURT_REPLY);
 
-        DigitalResponse digitalResponse = jurorResponseRepository.findByJurorNumber(jurorNumber);
-        assertThat(digitalResponse).isNotNull();
-        assertThat(digitalResponse.getProcessingStatus()).isEqualTo(AWAITING_COURT_REPLY);
-
-        //assert optic ref is same as set above
-        JurorPool jurorPool =
-            jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber, poolNumber,
-                true).get();
-        Juror juror = jurorPool.getJuror();
-        assertThat(juror.getOpticRef()).isEqualTo(opticRef);
+            //assert optic ref is same as set above
+            JurorPool jurorPool =
+                jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber, poolNumber,
+                    true).get();
+            Juror juror = jurorPool.getJuror();
+            assertThat(juror.getOpticRef()).isEqualTo(opticRef);
+        });
     }
 
     @Test
@@ -612,18 +615,19 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode())
             .as("Expect the HTTP POST request to be CREATED")
             .isEqualTo(HttpStatus.CREATED);
+        executeInTransaction(() -> {
+            PaperResponse paperResponse =
+                jurorPaperResponseRepository.findByJurorNumber(jurorNumber);
+            assertThat(paperResponse).isNotNull();
+            assertThat(paperResponse.getProcessingStatus()).isEqualTo(AWAITING_COURT_REPLY);
 
-        PaperResponse paperResponse =
-            jurorPaperResponseRepository.findByJurorNumber(jurorNumber);
-        assertThat(paperResponse).isNotNull();
-        assertThat(paperResponse.getProcessingStatus()).isEqualTo(AWAITING_COURT_REPLY);
-
-        //assert optic ref is same as set above
-        JurorPool jurorPool =
-            jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber, poolNumber,
-                true).get();
-        Juror juror = jurorPool.getJuror();
-        assertThat(juror.getOpticRef()).isEqualTo(opticRef);
+            //assert optic ref is same as set above
+            JurorPool jurorPool =
+                jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber, poolNumber,
+                    true).get();
+            Juror juror = jurorPool.getJuror();
+            assertThat(juror.getOpticRef()).isEqualTo(opticRef);
+        });
     }
 
 
@@ -2458,15 +2462,16 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         BureauJurorDetailDto dto = response.getBody();
         assertThat(dto).isNotNull();
+        executeInTransaction(() -> {
+            JurorPool jurorPool =
+                jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true).stream().findFirst().get();
 
-        JurorPool jurorPool =
-            jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true).stream().findFirst().get();
-
-        validateJurorDetailsMapping(dto, jurorPool, "415220502");
-        // use snapshot loc_code 415 instead of latest, reassigned loc code 435
-        validateCourtDetails(dto, "415");
-        validateResponseDetails(dto);
-        assertThat(dto.isWelshCourt()).isFalse();
+            validateJurorDetailsMapping(dto, jurorPool, "415220502");
+            // use snapshot loc_code 415 instead of latest, reassigned loc code 435
+            validateCourtDetails(dto, "415");
+            validateResponseDetails(dto);
+            assertThat(dto.isWelshCourt()).isFalse();
+        });
     }
 
     @Test
@@ -2480,21 +2485,22 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET to return OK 200")
             .isEqualTo(HttpStatus.OK);
+        executeInTransaction(() -> {
+            BureauJurorDetailDto dto = response.getBody();
+            assertThat(dto).isNotNull();
 
-        BureauJurorDetailDto dto = response.getBody();
-        assertThat(dto).isNotNull();
+            JurorPool jurorPool =
+                jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true).stream().findFirst().get();
 
-        JurorPool jurorPool =
-            jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true).stream().findFirst().get();
+            assertThat(dto.getCurrentOwner())
+                .as("Expect current owner to be the owner of the transferred to pool")
+                .isEqualToIgnoringCase("471");
 
-        assertThat(dto.getCurrentOwner())
-            .as("Expect current owner to be the owner of the transferred to pool")
-            .isEqualToIgnoringCase("471");
-
-        validateJurorDetailsMapping(dto, jurorPool, "415240601");
-        validateCourtDetails(dto, "415");
-        validateResponseDetails(dto);
-        assertThat(dto.isWelshCourt()).isFalse();
+            validateJurorDetailsMapping(dto, jurorPool, "415240601");
+            validateCourtDetails(dto, "415");
+            validateResponseDetails(dto);
+            assertThat(dto.isWelshCourt()).isFalse();
+        });
     }
 
     @Test
@@ -2513,16 +2519,18 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         BureauJurorDetailDto dto = response.getBody();
         assertThat(dto).isNotNull();
+        executeInTransaction(() -> {
+            JurorPool jurorPool =
+                jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(bureauOwner, jurorNumber,
+                        poolNumber)
+                    .stream().findFirst().get();
 
-        JurorPool jurorPool =
-            jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(bureauOwner, jurorNumber, poolNumber)
-                .stream().findFirst().get();
-
-        validateJurorDetailsMapping(dto, jurorPool, poolNumber);
-        // use snapshot loc_code 415 instead of latest, reassigned loc code 435
-        validateCourtDetails(dto, "457");
-        validateResponseDetails(dto);
-        assertThat(dto.isWelshCourt()).isTrue();
+            validateJurorDetailsMapping(dto, jurorPool, poolNumber);
+            // use snapshot loc_code 415 instead of latest, reassigned loc code 435
+            validateCourtDetails(dto, "457");
+            validateResponseDetails(dto);
+            assertThat(dto.isWelshCourt()).isTrue();
+        });
     }
 
     @Test
@@ -2552,18 +2560,19 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         BureauJurorDetailDto dto = response.getBody();
         assertThat(dto).isNotNull();
+        executeInTransaction(() -> {
+            JurorPool jurorPool = jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(courtOwner,
+                jurorNumber, poolNumber).get();
 
-        JurorPool jurorPool = jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(courtOwner,
-            jurorNumber, poolNumber).get();
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP GET to return OK 200")
+                .isEqualTo(HttpStatus.OK);
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET to return OK 200")
-            .isEqualTo(HttpStatus.OK);
-
-        validateJurorDetailsMapping(dto, jurorPool, "415220502");
-        // Earliest summons history event should be used (location code 415)
-        validateCourtDetails(dto, "415");
-        validateResponseDetails(dto);
+            validateJurorDetailsMapping(dto, jurorPool, "415220502");
+            // Earliest summons history event should be used (location code 415)
+            validateCourtDetails(dto, "415");
+            validateResponseDetails(dto);
+        });
     }
 
     @Test
@@ -2814,47 +2823,49 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode())
             .as("Expect the HTTP PATCH request to be successful")
             .isEqualTo(HttpStatus.NO_CONTENT);
+        executeInTransaction(() -> {
+            JurorPool jurorPool =
+                jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(owner, jurorNumber,
+                    poolNumber).get();
+            Juror juror = jurorPool.getJuror();
 
-        JurorPool jurorPool = jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(owner, jurorNumber,
-            poolNumber).get();
-        Juror juror = jurorPool.getJuror();
+            assertThat(juror.getTitle()).isEqualTo(dto.getTitle());
+            assertThat(juror.getFirstName()).isEqualTo(dto.getFirstName());
+            assertThat(juror.getLastName()).isEqualTo(dto.getLastName());
+            assertThat(juror.getUserEdtq()).isEqualTo(username);
+            List<JurorHistory> jurorHistoryList = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
+            assertThat(jurorHistoryList.size()).isEqualTo(3);
+            for (JurorHistory jurorHistory : jurorHistoryList) {
+                assertThat(jurorHistory.getPoolNumber()).isEqualTo(jurorPool.getPoolNumber());
+                assertThat(jurorHistory.getHistoryCode()).isEqualTo(HistoryCodeMod.CHANGE_PERSONAL_DETAILS);
+            }
 
-        assertThat(juror.getTitle()).isEqualTo(dto.getTitle());
-        assertThat(juror.getFirstName()).isEqualTo(dto.getFirstName());
-        assertThat(juror.getLastName()).isEqualTo(dto.getLastName());
-        assertThat(juror.getUserEdtq()).isEqualTo(username);
-        List<JurorHistory> jurorHistoryList = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
-        assertThat(jurorHistoryList.size()).isEqualTo(3);
-        for (JurorHistory jurorHistory : jurorHistoryList) {
-            assertThat(jurorHistory.getPoolNumber()).isEqualTo(jurorPool.getPoolNumber());
-            assertThat(jurorHistory.getHistoryCode()).isEqualTo(HistoryCodeMod.CHANGE_PERSONAL_DETAILS);
-        }
+            List<String> historyInfoList = initChangedHistoryProperties();
 
-        List<String> historyInfoList = initChangedHistoryProperties();
+            for (String historyInfo : historyInfoList) {
+                assertThat(jurorHistoryList.stream().filter(hist ->
+                        hist.getOtherInformation().equalsIgnoreCase(historyInfo))
+                    .findFirst()
+                    .orElse(null))
+                    .isNotNull();
+            }
 
-        for (String historyInfo : historyInfoList) {
-            assertThat(jurorHistoryList.stream().filter(hist ->
-                    hist.getOtherInformation().equalsIgnoreCase(historyInfo))
-                .findFirst()
-                .orElse(null))
-                .isNotNull();
-        }
+            List<Juror> jurorAuditHistory =
+                jurorRepository.findRevisions(jurorNumber).stream()
+                    .sorted(Comparator.comparingLong(rev -> rev.getRevisionNumber().orElse(0L)))
+                    .map(Revision::getEntity).toList();
+            assertThat(jurorAuditHistory.size()).isEqualTo(2);
 
-        List<Juror> jurorAuditHistory =
-            jurorRepository.findRevisions(jurorNumber).stream()
-                .sorted(Comparator.comparingLong(rev -> rev.getRevisionNumber().orElse(0L)))
-                .map(Revision::getEntity).toList();
-        assertThat(jurorAuditHistory.size()).isEqualTo(2);
+            Juror originalJurorVersion = jurorAuditHistory.get(0);
+            assertThat(originalJurorVersion.getTitle()).isNull();
+            assertThat(originalJurorVersion.getFirstName()).isEqualToIgnoringCase("FNAMEONE");
+            assertThat(originalJurorVersion.getLastName()).isEqualToIgnoringCase("LNAMEONE");
 
-        Juror originalJurorVersion = jurorAuditHistory.get(0);
-        assertThat(originalJurorVersion.getTitle()).isNull();
-        assertThat(originalJurorVersion.getFirstName()).isEqualToIgnoringCase("FNAMEONE");
-        assertThat(originalJurorVersion.getLastName()).isEqualToIgnoringCase("LNAMEONE");
-
-        Juror updatedJurorVersion = jurorAuditHistory.get(1);
-        assertThat(updatedJurorVersion.getTitle()).isEqualToIgnoringCase("Mr");
-        assertThat(updatedJurorVersion.getFirstName()).isEqualToIgnoringCase("First");
-        assertThat(updatedJurorVersion.getLastName()).isEqualToIgnoringCase("Last");
+            Juror updatedJurorVersion = jurorAuditHistory.get(1);
+            assertThat(updatedJurorVersion.getTitle()).isEqualToIgnoringCase("Mr");
+            assertThat(updatedJurorVersion.getFirstName()).isEqualToIgnoringCase("First");
+            assertThat(updatedJurorVersion.getLastName()).isEqualToIgnoringCase("Last");
+        });
     }
 
     @Test
@@ -2876,48 +2887,50 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode())
             .as("Expect the HTTP PATCH request to be successful")
             .isEqualTo(HttpStatus.NO_CONTENT);
+        executeInTransaction(() -> {
+            JurorPool jurorPool =
+                jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(owner, jurorNumber, poolNumber)
+                    .get();
+            Juror juror = jurorPool.getJuror();
 
-        JurorPool jurorPool =
-            jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(owner, jurorNumber, poolNumber).get();
-        Juror juror = jurorPool.getJuror();
+            assertThat(juror.getTitle()).isEqualTo(dto.getTitle());
+            assertThat(juror.getFirstName()).isEqualTo(dto.getFirstName());
+            assertThat(juror.getLastName()).isEqualTo(dto.getLastName());
+            assertThat(juror.getUserEdtq()).isEqualTo(username);
 
-        assertThat(juror.getTitle()).isEqualTo(dto.getTitle());
-        assertThat(juror.getFirstName()).isEqualTo(dto.getFirstName());
-        assertThat(juror.getLastName()).isEqualTo(dto.getLastName());
-        assertThat(juror.getUserEdtq()).isEqualTo(username);
+            List<JurorHistory> jurorHistoryList = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
+            assertThat(jurorHistoryList.size()).isEqualTo(3);
+            for (JurorHistory jurorHistory : jurorHistoryList) {
+                assertThat(jurorHistory.getPoolNumber()).isEqualTo(jurorPool.getPoolNumber());
+                assertThat(jurorHistory.getHistoryCode()).isEqualTo(HistoryCodeMod.CHANGE_PERSONAL_DETAILS);
+            }
 
-        List<JurorHistory> jurorHistoryList = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
-        assertThat(jurorHistoryList.size()).isEqualTo(3);
-        for (JurorHistory jurorHistory : jurorHistoryList) {
-            assertThat(jurorHistory.getPoolNumber()).isEqualTo(jurorPool.getPoolNumber());
-            assertThat(jurorHistory.getHistoryCode()).isEqualTo(HistoryCodeMod.CHANGE_PERSONAL_DETAILS);
-        }
+            List<String> historyInfoList = initChangedHistoryProperties();
 
-        List<String> historyInfoList = initChangedHistoryProperties();
+            for (String historyInfo : historyInfoList) {
+                assertThat(jurorHistoryList.stream().filter(hist ->
+                        hist.getOtherInformation().equalsIgnoreCase(historyInfo))
+                    .findFirst()
+                    .orElse(null))
+                    .isNotNull();
+            }
 
-        for (String historyInfo : historyInfoList) {
-            assertThat(jurorHistoryList.stream().filter(hist ->
-                    hist.getOtherInformation().equalsIgnoreCase(historyInfo))
-                .findFirst()
-                .orElse(null))
-                .isNotNull();
-        }
+            List<Juror> jurorAuditHistory =
+                jurorRepository.findRevisions(jurorNumber).stream()
+                    .sorted(Comparator.comparingLong(rev -> rev.getRevisionNumber().orElse(0L)))
+                    .map(Revision::getEntity).toList();
+            assertThat(jurorAuditHistory.size()).isEqualTo(2);
 
-        List<Juror> jurorAuditHistory =
-            jurorRepository.findRevisions(jurorNumber).stream()
-                .sorted(Comparator.comparingLong(rev -> rev.getRevisionNumber().orElse(0L)))
-                .map(Revision::getEntity).toList();
-        assertThat(jurorAuditHistory.size()).isEqualTo(2);
+            Juror originalJurorVersion = jurorAuditHistory.get(0);
+            assertThat(originalJurorVersion.getTitle()).isNull();
+            assertThat(originalJurorVersion.getFirstName()).isEqualToIgnoringCase("FNAMEONE");
+            assertThat(originalJurorVersion.getLastName()).isEqualToIgnoringCase("LNAMEONE");
 
-        Juror originalJurorVersion = jurorAuditHistory.get(0);
-        assertThat(originalJurorVersion.getTitle()).isNull();
-        assertThat(originalJurorVersion.getFirstName()).isEqualToIgnoringCase("FNAMEONE");
-        assertThat(originalJurorVersion.getLastName()).isEqualToIgnoringCase("LNAMEONE");
-
-        Juror updatedJurorVersion = jurorAuditHistory.get(1);
-        assertThat(updatedJurorVersion.getTitle()).isEqualToIgnoringCase("Mr");
-        assertThat(updatedJurorVersion.getFirstName()).isEqualToIgnoringCase("First");
-        assertThat(updatedJurorVersion.getLastName()).isEqualToIgnoringCase("Last");
+            Juror updatedJurorVersion = jurorAuditHistory.get(1);
+            assertThat(updatedJurorVersion.getTitle()).isEqualToIgnoringCase("Mr");
+            assertThat(updatedJurorVersion.getFirstName()).isEqualToIgnoringCase("First");
+            assertThat(updatedJurorVersion.getLastName()).isEqualToIgnoringCase("Last");
+        });
     }
 
 
@@ -2958,59 +2971,61 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode())
             .as("Expect the HTTP PATCH request to be successful")
             .isEqualTo(HttpStatus.NO_CONTENT);
+        executeInTransaction(() -> {
+            JurorPool jurorPool =
+                jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(owner, jurorNumber, poolNumber)
+                    .get();
+            Juror juror = jurorPool.getJuror();
 
-        JurorPool jurorPool =
-            jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(owner, jurorNumber, poolNumber).get();
-        Juror juror = jurorPool.getJuror();
+            assertThat(juror.getTitle()).isEqualTo("Mr");
+            assertThat(juror.getFirstName()).isEqualTo("Test");
+            assertThat(juror.getLastName()).isEqualTo("Person");
+            assertThat(juror.getUserEdtq()).isEqualTo(username);
 
-        assertThat(juror.getTitle()).isEqualTo("Mr");
-        assertThat(juror.getFirstName()).isEqualTo("Test");
-        assertThat(juror.getLastName()).isEqualTo("Person");
-        assertThat(juror.getUserEdtq()).isEqualTo(username);
+            assertThat(juror.getPendingTitle()).isNull();
+            assertThat(juror.getPendingFirstName()).isNull();
+            assertThat(juror.getPendingLastName()).isNull();
 
-        assertThat(juror.getPendingTitle()).isNull();
-        assertThat(juror.getPendingFirstName()).isNull();
-        assertThat(juror.getPendingLastName()).isNull();
+            List<JurorHistory> jurorHistoryList = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
+            assertThat(jurorHistoryList.size()).isEqualTo(4);
+            for (JurorHistory jurorHistory : jurorHistoryList) {
+                assertThat(jurorHistory.getPoolNumber()).isEqualTo(jurorPool.getPoolNumber());
+                assertThat(jurorHistory.getHistoryCode()).isEqualTo(HistoryCodeMod.CHANGE_PERSONAL_DETAILS);
+            }
 
-        List<JurorHistory> jurorHistoryList = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
-        assertThat(jurorHistoryList.size()).isEqualTo(4);
-        for (JurorHistory jurorHistory : jurorHistoryList) {
-            assertThat(jurorHistory.getPoolNumber()).isEqualTo(jurorPool.getPoolNumber());
-            assertThat(jurorHistory.getHistoryCode()).isEqualTo(HistoryCodeMod.CHANGE_PERSONAL_DETAILS);
-        }
+            List<String> historyInfoList = initChangedHistoryProperties();
+            historyInfoList.add("Name change approved");
 
-        List<String> historyInfoList = initChangedHistoryProperties();
-        historyInfoList.add("Name change approved");
+            for (String historyInfo : historyInfoList) {
+                assertThat(jurorHistoryList.stream().filter(hist ->
+                        hist.getOtherInformation().equalsIgnoreCase(historyInfo))
+                    .findFirst()
+                    .orElse(null))
+                    .isNotNull();
+            }
 
-        for (String historyInfo : historyInfoList) {
-            assertThat(jurorHistoryList.stream().filter(hist ->
-                    hist.getOtherInformation().equalsIgnoreCase(historyInfo))
-                .findFirst()
-                .orElse(null))
-                .isNotNull();
-        }
+            List<Juror> jurorAuditHistory =
+                jurorRepository.findRevisions(jurorNumber).stream()
+                    .sorted(Comparator.comparingLong(rev -> rev.getRevisionNumber().orElse(0L)))
+                    .map(Revision::getEntity).toList();
+            assertThat(jurorAuditHistory.size()).isEqualTo(2);
 
-        List<Juror> jurorAuditHistory =
-            jurorRepository.findRevisions(jurorNumber).stream()
-                .sorted(Comparator.comparingLong(rev -> rev.getRevisionNumber().orElse(0L)))
-                .map(Revision::getEntity).toList();
-        assertThat(jurorAuditHistory.size()).isEqualTo(2);
+            Juror originalJurorVersion = jurorAuditHistory.get(0);
+            assertThat(originalJurorVersion.getTitle()).isNull();
+            assertThat(originalJurorVersion.getFirstName()).isEqualToIgnoringCase("FNAMEONE");
+            assertThat(originalJurorVersion.getLastName()).isEqualToIgnoringCase("LNAMEONE");
+            assertThat(originalJurorVersion.getPendingTitle()).isEqualToIgnoringCase("Mr");
+            assertThat(originalJurorVersion.getPendingFirstName()).isEqualToIgnoringCase("Test");
+            assertThat(originalJurorVersion.getPendingLastName()).isEqualToIgnoringCase("Person");
 
-        Juror originalJurorVersion = jurorAuditHistory.get(0);
-        assertThat(originalJurorVersion.getTitle()).isNull();
-        assertThat(originalJurorVersion.getFirstName()).isEqualToIgnoringCase("FNAMEONE");
-        assertThat(originalJurorVersion.getLastName()).isEqualToIgnoringCase("LNAMEONE");
-        assertThat(originalJurorVersion.getPendingTitle()).isEqualToIgnoringCase("Mr");
-        assertThat(originalJurorVersion.getPendingFirstName()).isEqualToIgnoringCase("Test");
-        assertThat(originalJurorVersion.getPendingLastName()).isEqualToIgnoringCase("Person");
-
-        Juror updatedJurorVersion = jurorAuditHistory.get(1);
-        assertThat(updatedJurorVersion.getTitle()).isEqualToIgnoringCase("Mr");
-        assertThat(updatedJurorVersion.getFirstName()).isEqualToIgnoringCase("Test");
-        assertThat(updatedJurorVersion.getLastName()).isEqualToIgnoringCase("Person");
-        assertThat(updatedJurorVersion.getPendingTitle()).isNull();
-        assertThat(updatedJurorVersion.getPendingFirstName()).isNull();
-        assertThat(updatedJurorVersion.getPendingLastName()).isNull();
+            Juror updatedJurorVersion = jurorAuditHistory.get(1);
+            assertThat(updatedJurorVersion.getTitle()).isEqualToIgnoringCase("Mr");
+            assertThat(updatedJurorVersion.getFirstName()).isEqualToIgnoringCase("Test");
+            assertThat(updatedJurorVersion.getLastName()).isEqualToIgnoringCase("Person");
+            assertThat(updatedJurorVersion.getPendingTitle()).isNull();
+            assertThat(updatedJurorVersion.getPendingFirstName()).isNull();
+            assertThat(updatedJurorVersion.getPendingLastName()).isNull();
+        });
     }
 
     @Test
@@ -3031,46 +3046,48 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode())
             .as("Expect the HTTP PATCH request to be successful")
             .isEqualTo(HttpStatus.NO_CONTENT);
+        executeInTransaction(() -> {
+            JurorPool jurorPool =
+                jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(owner, jurorNumber, poolNumber)
+                    .get();
+            Juror juror = jurorPool.getJuror();
+            assertThat(juror.getTitle()).isNull();
+            assertThat(juror.getFirstName()).isEqualTo("FNAMEONE");
+            assertThat(juror.getLastName()).isEqualTo("LNAMEONE");
+            assertThat(juror.getUserEdtq()).isEqualTo(username);
 
-        JurorPool jurorPool =
-            jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(owner, jurorNumber, poolNumber).get();
-        Juror juror = jurorPool.getJuror();
-        assertThat(juror.getTitle()).isNull();
-        assertThat(juror.getFirstName()).isEqualTo("FNAMEONE");
-        assertThat(juror.getLastName()).isEqualTo("LNAMEONE");
-        assertThat(juror.getUserEdtq()).isEqualTo(username);
+            assertThat(juror.getPendingTitle()).isNull();
+            assertThat(juror.getPendingFirstName()).isNull();
+            assertThat(juror.getPendingLastName()).isNull();
 
-        assertThat(juror.getPendingTitle()).isNull();
-        assertThat(juror.getPendingFirstName()).isNull();
-        assertThat(juror.getPendingLastName()).isNull();
+            List<JurorHistory> jurorHistoryList = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
+            assertThat(jurorHistoryList.size()).isEqualTo(1);
+            JurorHistory jurorHistory = jurorHistoryList.get(0);
+            assertThat(jurorHistory.getHistoryCode()).isEqualTo(HistoryCodeMod.CHANGE_PERSONAL_DETAILS);
+            assertThat(jurorHistory.getOtherInformation()).isEqualTo("Name change rejected");
 
-        List<JurorHistory> jurorHistoryList = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
-        assertThat(jurorHistoryList.size()).isEqualTo(1);
-        JurorHistory jurorHistory = jurorHistoryList.get(0);
-        assertThat(jurorHistory.getHistoryCode()).isEqualTo(HistoryCodeMod.CHANGE_PERSONAL_DETAILS);
-        assertThat(jurorHistory.getOtherInformation()).isEqualTo("Name change rejected");
+            List<Juror> jurorAuditHistory =
+                jurorRepository.findRevisions(jurorNumber).stream()
+                    .sorted(Comparator.comparingLong(rev -> rev.getRevisionNumber().orElse(0L)))
+                    .map(Revision::getEntity).toList();
+            assertThat(jurorAuditHistory.size()).isEqualTo(2);
 
-        List<Juror> jurorAuditHistory =
-            jurorRepository.findRevisions(jurorNumber).stream()
-                .sorted(Comparator.comparingLong(rev -> rev.getRevisionNumber().orElse(0L)))
-                .map(Revision::getEntity).toList();
-        assertThat(jurorAuditHistory.size()).isEqualTo(2);
+            Juror originalJurorVersion = jurorAuditHistory.get(0);
+            assertThat(originalJurorVersion.getTitle()).isNull();
+            assertThat(originalJurorVersion.getFirstName()).isEqualToIgnoringCase("FNAMEONE");
+            assertThat(originalJurorVersion.getLastName()).isEqualToIgnoringCase("LNAMEONE");
+            assertThat(originalJurorVersion.getPendingTitle()).isEqualToIgnoringCase("Mr");
+            assertThat(originalJurorVersion.getPendingFirstName()).isEqualToIgnoringCase("Test");
+            assertThat(originalJurorVersion.getPendingLastName()).isEqualToIgnoringCase("Person");
 
-        Juror originalJurorVersion = jurorAuditHistory.get(0);
-        assertThat(originalJurorVersion.getTitle()).isNull();
-        assertThat(originalJurorVersion.getFirstName()).isEqualToIgnoringCase("FNAMEONE");
-        assertThat(originalJurorVersion.getLastName()).isEqualToIgnoringCase("LNAMEONE");
-        assertThat(originalJurorVersion.getPendingTitle()).isEqualToIgnoringCase("Mr");
-        assertThat(originalJurorVersion.getPendingFirstName()).isEqualToIgnoringCase("Test");
-        assertThat(originalJurorVersion.getPendingLastName()).isEqualToIgnoringCase("Person");
-
-        Juror updatedJurorVersion = jurorAuditHistory.get(1);
-        assertThat(updatedJurorVersion.getTitle()).isNull();
-        assertThat(updatedJurorVersion.getFirstName()).isEqualToIgnoringCase("FNAMEONE");
-        assertThat(updatedJurorVersion.getLastName()).isEqualToIgnoringCase("LNAMEONE");
-        assertThat(updatedJurorVersion.getPendingTitle()).isNull();
-        assertThat(updatedJurorVersion.getPendingFirstName()).isNull();
-        assertThat(updatedJurorVersion.getPendingLastName()).isNull();
+            Juror updatedJurorVersion = jurorAuditHistory.get(1);
+            assertThat(updatedJurorVersion.getTitle()).isNull();
+            assertThat(updatedJurorVersion.getFirstName()).isEqualToIgnoringCase("FNAMEONE");
+            assertThat(updatedJurorVersion.getLastName()).isEqualToIgnoringCase("LNAMEONE");
+            assertThat(updatedJurorVersion.getPendingTitle()).isNull();
+            assertThat(updatedJurorVersion.getPendingFirstName()).isNull();
+            assertThat(updatedJurorVersion.getPendingLastName()).isNull();
+        });
     }
 
 
@@ -5275,11 +5292,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be OK")
                 .isEqualTo(HttpStatus.OK);
+            executeInTransaction(() -> {
+                JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumber(jurorNumber);
 
-            JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumber(jurorNumber);
-
-            assertThat(jurorPool.getStatus().getStatus()).isEqualTo(IJurorStatus.RESPONDED);
-            assertThat(jurorPool.getReturnDate()).isEqualTo(LocalDate.now().minusWeeks(2));
+                assertThat(jurorPool.getStatus().getStatus()).isEqualTo(IJurorStatus.RESPONDED);
+                assertThat(jurorPool.getReturnDate()).isEqualTo(LocalDate.now().minusWeeks(2));
+            });
 
         }
 
@@ -5299,12 +5317,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be OK")
                 .isEqualTo(HttpStatus.OK);
+            executeInTransaction(() -> {
+                JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumber(jurorNumber);
 
-            JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumber(jurorNumber);
-
-            assertThat(jurorPool.getStatus().getStatus()).isEqualTo(IJurorStatus.RESPONDED);
-            assertThat(jurorPool.getReturnDate()).isEqualTo(LocalDate.now().minusWeeks(2));
-
+                assertThat(jurorPool.getStatus().getStatus()).isEqualTo(IJurorStatus.RESPONDED);
+                assertThat(jurorPool.getReturnDate()).isEqualTo(LocalDate.now().minusWeeks(2));
+            });
         }
 
         @Test

@@ -10,7 +10,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
-import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.validation.JurorNumber;
 
 import java.io.Serializable;
@@ -50,7 +49,8 @@ public class ReissueLetterReponseDto implements Serializable {
 
         @JsonProperty("juror_status")
         @Schema(description = "Juror status")
-        private JurorStatus jurorStatus;
+        private JurorStatusDto jurorStatus;
+
 
     }
 
