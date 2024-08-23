@@ -93,19 +93,21 @@ public class UndeliverableResponseControllerITest extends AbstractIntegrationTes
     }
 
     private void assertUpdated(String jurorNumber) {
-        JurorPool jurorPool = jurorPoolRepository
-            .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue("415", jurorNumber);
-        Juror juror = jurorPool.getJuror();
+        executeInTransaction(() -> {
+            JurorPool jurorPool = jurorPoolRepository
+                .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue("415", jurorNumber);
+            Juror juror = jurorPool.getJuror();
 
-        assertThat(juror.isResponded()).isFalse();
-        assertThat(jurorPool.getStatus().getStatus()).isEqualTo(9);
-        assertThat(jurorPool.getNextDate()).isNull(); // next date is null
+            assertThat(juror.isResponded()).isFalse();
+            assertThat(jurorPool.getStatus().getStatus()).isEqualTo(9);
+            assertThat(jurorPool.getNextDate()).isNull(); // next date is null
 
-        // verify the history record has been created
-        LocalDate today = LocalDate.now();
-        List<JurorHistory> jurorHistoryList =
-            jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, today);
-        assertThat(jurorHistoryList).isNotNull();
+            // verify the history record has been created
+            LocalDate today = LocalDate.now();
+            List<JurorHistory> jurorHistoryList =
+                jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, today);
+            assertThat(jurorHistoryList).isNotNull();
+        });
     }
 
 

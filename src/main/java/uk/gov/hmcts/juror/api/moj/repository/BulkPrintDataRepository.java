@@ -32,4 +32,7 @@ public interface BulkPrintDataRepository extends IReissueLetterRepository, JpaRe
     List<BulkPrintData> findByJurorNoAndFormAttributeFormTypeInOrderByCreationDateDesc(String jurorNo,
                                                                                  List<String> formCodes);
 
+    List<BulkPrintData> findByJurorNoAndCreationDateAndFormAttributeFormTypeIn(String jurorNo, LocalDate creationDate,
+                                                                               List<String> formCodes);
+
 }

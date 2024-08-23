@@ -18,6 +18,8 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -39,16 +41,24 @@ public class PersonAttendingSummaryReport extends AbstractStandardReport {
         isCourtUserOnly();
     }
 
+    public static List<Integer> getSupportedStatus(StandardReportRequest request) {
+        List<Integer> allowedStatus = new ArrayList<>();
+        allowedStatus.add(IJurorStatus.RESPONDED);
+        if (request.getIncludeSummoned()) {
+            allowedStatus.add(IJurorStatus.SUMMONED);
+        }
+        if (request.getIncludePanelMembers()) {
+            allowedStatus.add(IJurorStatus.PANEL);
+            allowedStatus.add(IJurorStatus.JUROR);
+        }
+        return allowedStatus;
+    }
+
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QJurorPool.jurorPool.nextDate.eq(request.getDate()));
         query.where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(SecurityUtil.getLocCode()));
-        if (request.getIncludeSummoned()) {
-            query.where(QJurorPool.jurorPool.status.status
-                .in(IJurorStatus.SUMMONED, IJurorStatus.RESPONDED));
-        } else {
-            query.where(QJurorPool.jurorPool.status.status.in(IJurorStatus.RESPONDED));
-        }
+        query.where(QJurorPool.jurorPool.status.status.in(getSupportedStatus(request)));
         query.orderBy(QJurorPool.jurorPool.juror.lastName.asc());
     }
 
@@ -84,7 +94,8 @@ public class PersonAttendingSummaryReport extends AbstractStandardReport {
     public interface RequestValidator extends
         Validators.AbstractRequestValidator,
         Validators.RequireDate,
-        Validators.RequireIncludeSummoned {
+        Validators.RequireIncludeSummoned,
+        Validators.RequireIncludePanelMembers {
 
     }
 }

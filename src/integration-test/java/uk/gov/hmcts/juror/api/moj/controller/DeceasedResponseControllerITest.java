@@ -106,34 +106,36 @@ public class DeceasedResponseControllerITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode())
             .as("Expect the HTTP POST request to be OK")
             .isEqualTo(HttpStatus.OK);
+        executeInTransaction(() -> {
+            CourtLocation courtLocation = new CourtLocation();
+            courtLocation.setLocCode("415");
+            JurorPool jurorPool = JurorPoolUtils.getActiveJurorPool(jurorPoolRepository, jurorNumber, courtLocation);
+            Juror juror = jurorPool.getJuror();
 
-        CourtLocation courtLocation = new CourtLocation();
-        courtLocation.setLocCode("415");
-        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPool(jurorPoolRepository, jurorNumber, courtLocation);
-        Juror juror = jurorPool.getJuror();
+            // verify the status of the juror record has been updated
+            assertThat(juror.isResponded()).isTrue();
+            assertThat(juror.getExcusalDate()).isEqualTo(LocalDate.now()); // should be set to current date
+            assertThat(juror.getExcusalCode()).isEqualTo("D"); // deceased code
+            assertThat(jurorPool.getStatus().getStatus()).isEqualTo(5); // excused status
+            assertThat(jurorPool.getNextDate()).isNull(); // next date is null
 
-        // verify the status of the juror record has been updated
-        assertThat(juror.isResponded()).isTrue();
-        assertThat(juror.getExcusalDate()).isEqualTo(LocalDate.now()); // should be set to current date
-        assertThat(juror.getExcusalCode()).isEqualTo("D"); // deceased code
-        assertThat(jurorPool.getStatus().getStatus()).isEqualTo(5); // excused status
-        assertThat(jurorPool.getNextDate()).isNull(); // next date is null
+            // verify the history record has been created
+            List<JurorHistory> jurorHistList = jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(
+                jurorNumber, LocalDate.now());
 
-        // verify the history record has been created
-        List<JurorHistory> jurorHistList = jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(
-            jurorNumber, LocalDate.now());
+            assertThat(jurorHistList).isNotNull();
 
-        assertThat(jurorHistList).isNotNull();
+            // verify the contact log has been created
+            List<ContactLog> contactLog = contactLogRepository.findByJurorNumber(jurorNumber);
 
-        // verify the contact log has been created
-        List<ContactLog> contactLog = contactLogRepository.findByJurorNumber(jurorNumber);
+            assertThat(contactLog).isNotEmpty();
+            assertThat(contactLog.get(0).getNotes()).contains(PAPER_RESPONSE_EXISTS_TEXT);
 
-        assertThat(contactLog).isNotEmpty();
-        assertThat(contactLog.get(0).getNotes()).contains(PAPER_RESPONSE_EXISTS_TEXT);
-
-        // verify the paper response has been created
-        PaperResponse jurorPaperResponse = DataUtils.getJurorPaperResponse(jurorNumber, jurorPaperResponseRepository);
-        assertThat(jurorPaperResponse).isNotNull();
+            // verify the paper response has been created
+            PaperResponse jurorPaperResponse =
+                DataUtils.getJurorPaperResponse(jurorNumber, jurorPaperResponseRepository);
+            assertThat(jurorPaperResponse).isNotNull();
+        });
 
     }
 
@@ -154,31 +156,32 @@ public class DeceasedResponseControllerITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode())
             .as("Expect the HTTP POST request to be OK")
             .isEqualTo(HttpStatus.OK);
+        executeInTransaction(() -> {
+            // verify the status of the juror record has been updated
 
-        // verify the status of the juror record has been updated
+            Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
+            CourtLocation courtLocation = new CourtLocation();
+            courtLocation.setLocCode("415");
+            JurorPool jurorPool = JurorPoolUtils.getActiveJurorPool(jurorPoolRepository, jurorNumber, courtLocation);
 
-        Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
-        CourtLocation courtLocation = new CourtLocation();
-        courtLocation.setLocCode("415");
-        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPool(jurorPoolRepository, jurorNumber, courtLocation);
+            assertThat(juror.isResponded()).isTrue();
+            assertThat(juror.getExcusalDate()).isEqualTo(LocalDate.now()); // should be set to current date
+            assertThat(juror.getExcusalCode()).isEqualTo("D"); // deceased code
+            assertThat(jurorPool.getStatus().getStatus()).isEqualTo(5); // excused status
+            assertThat(jurorPool.getNextDate()).isNull(); // next date is null
 
-        assertThat(juror.isResponded()).isTrue();
-        assertThat(juror.getExcusalDate()).isEqualTo(LocalDate.now()); // should be set to current date
-        assertThat(juror.getExcusalCode()).isEqualTo("D"); // deceased code
-        assertThat(jurorPool.getStatus().getStatus()).isEqualTo(5); // excused status
-        assertThat(jurorPool.getNextDate()).isNull(); // next date is null
+            // verify the history record has been created
+            List<JurorHistory> jurorHistoryList =
+                jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(
+                    jurorNumber, LocalDate.now());
+            assertThat(jurorHistoryList).isNotNull();
 
-        // verify the history record has been created
-        List<JurorHistory> jurorHistoryList = jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(
-            jurorNumber, LocalDate.now());
-        assertThat(jurorHistoryList).isNotNull();
+            // verify the contact log has been created
+            List<ContactLog> contactLog = contactLogRepository.findByJurorNumber(jurorNumber);
 
-        // verify the contact log has been created
-        List<ContactLog> contactLog = contactLogRepository.findByJurorNumber(jurorNumber);
-
-        assertThat(contactLog).isNotEmpty();
-        assertThat(contactLog.get(0).getNotes()).doesNotContain(PAPER_RESPONSE_EXISTS_TEXT);
-
+            assertThat(contactLog).isNotEmpty();
+            assertThat(contactLog.get(0).getNotes()).doesNotContain(PAPER_RESPONSE_EXISTS_TEXT);
+        });
     }
 
     @Test

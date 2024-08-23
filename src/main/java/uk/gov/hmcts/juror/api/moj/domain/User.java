@@ -76,7 +76,7 @@ public class User implements Serializable {
     @Enumerated(EnumType.STRING)
     private UserType userType;
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(schema = "juror_mod", name = "user_roles", joinColumns = @JoinColumn(name = "username",
         referencedColumnName = "username"))
     @Enumerated(EnumType.STRING)
@@ -89,7 +89,7 @@ public class User implements Serializable {
         joinColumns = @JoinColumn(name = "username", referencedColumnName = "username"),
         inverseJoinColumns = @JoinColumn(name = "loc_code", referencedColumnName = "loc_code")
     )
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     private Set<CourtLocation> courts;
 
     @Column(name = "created_by", updatable = false)

@@ -251,6 +251,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             .build());
 
         PoolCreateRequestDto poolCreateRequest = setUpPoolCreateRequestDto();
+        poolCreateRequest.setNoRequested(9);
 
         final URI uri = URI.create("/api/v1/moj/pool-create/create-pool");
 
@@ -271,7 +272,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         RequestEntity<PoolMemberFilterRequestQuery> requestEntity2 = new RequestEntity<>(
             body, httpHeaders, HttpMethod.POST, uri2);
         ResponseEntity<PaginatedList<FilterPoolMember>> response2 = template.exchange(requestEntity2,
-            new ParameterizedTypeReference<PaginatedList<FilterPoolMember>>() {
+            new ParameterizedTypeReference<>() {
             });
         assertThat(response2.getStatusCode()).isEqualTo(HttpStatus.OK);
 
@@ -531,7 +532,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         PoolCreateRequestDto poolCreateRequestDto = new PoolCreateRequestDto();
         poolCreateRequestDto.setPoolNumber("415221201");
         poolCreateRequestDto.setStartDate(LocalDate.of(2022, 12, 4));
-        poolCreateRequestDto.setAttendTime(LocalDateTime.of(2022, 12, 04, 9, 0, 0));
+        poolCreateRequestDto.setAttendTime(LocalDateTime.of(2022, 12, 4, 9, 0, 0));
         poolCreateRequestDto.setNoRequested(5);
         poolCreateRequestDto.setBureauDeferrals(0);
         poolCreateRequestDto.setNumberRequired(4);

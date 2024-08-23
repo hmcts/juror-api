@@ -33,6 +33,7 @@ public final class ValidationConstants {
     public static final String TIME_FORMAT = "HH:mm";
 
     public static final int REASONABLE_ADJUSTMENT_MESSAGE_LENGTH_MAX = 2000;
+    public static final Long MAX_ITEMS = 500L;
 
     private ValidationConstants() {
 

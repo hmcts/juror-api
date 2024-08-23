@@ -82,7 +82,7 @@ class BallotPanelPoolReportTest extends AbstractStandardReportTestSupport<Ballot
         verify(query, times(1))
             .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED));
         verify(query, times(1))
-            .orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
+            .orderBy(QJurorPool.jurorPool.juror.lastName.asc(), QJurorPool.jurorPool.juror.jurorNumber.asc());
     }
 
     @Override

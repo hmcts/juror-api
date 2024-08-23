@@ -7,7 +7,9 @@ import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 
 @Repository
@@ -32,4 +34,18 @@ public interface FinancialAuditDetailsRepository
             appearance.getCourtLocation().getLocCode(),
             appearance.getVersion());
     }
+
+    @Query("SELECT fad FROM FinancialAuditDetails fad "
+        + "JOIN FinancialAuditDetailsAppearances fada on "
+        + "fad.id = fada .financialAuditId "
+        + "and fad.locCode = fada.locCode "
+        + "WHERE fad.jurorNumber=?1 "
+        + "AND fada.attendanceDate=?2 "
+        + "AND fad.locCode=?3 "
+        + "AND fad.type in ?4 "
+        + "ORDER BY fad.createdOn DESC "
+        + "LIMIT 1 ")
+    Optional<FinancialAuditDetails> findLastFinancialAuditDetailsByType(
+        String jurorNumber, LocalDate attendanceDate, String courtLocation,
+        Collection<FinancialAuditDetails.Type> type);
 }

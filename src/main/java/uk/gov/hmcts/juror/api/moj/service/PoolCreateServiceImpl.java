@@ -52,11 +52,11 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolTypeRepository;
-import uk.gov.hmcts.juror.api.moj.repository.VotersRepository;
 import uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDeferralsService;
 import uk.gov.hmcts.juror.api.moj.utils.PaginationUtil;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
+import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -89,7 +89,6 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     private final ManageDeferralsService manageDeferralsService;
     private final JurorPoolRepository jurorPoolRepository;
     private final JurorRepository jurorRepository;
-    private final VotersRepository votersRepository;
     private final CourtLocationService courtLocationService;
     private final PrintDataService printDataService;
     private final VotersService votersService;
@@ -105,6 +104,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     private final CoronerPoolRepository coronerPoolRepository;
 
     @Override
+    @Transactional
     public PoolRequestItemDto getPoolRequest(String poolNumber, String owner) {
 
 
@@ -138,6 +138,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     }
 
     @Override
+    @Transactional
     public SummonsFormResponseDto summonsForm(SummonsFormRequestDto summonsFormRequestDto) {
 
         // the number of bureau deferrals from the currently deferred view
@@ -164,6 +165,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
      * @return a count of deferral records matching the predicate criteria
      */
     @Override
+    @Transactional
     public int getBureauDeferrals(String locationCode, LocalDate deferredTo) {
         return (int) manageDeferralsService.getDeferralsCount(SecurityUtil.BUREAU_OWNER, locationCode, deferredTo);
     }
@@ -235,6 +237,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
      * - Update the Bulk Print Data table for summons letters for selected voters
      */
     @Override
+    @Transactional
     public void lockVotersAndSummonAdditionalCitizens(BureauJwtPayload payload,
                                                       PoolAdditionalSummonsDto poolAdditionalSummonsDto) {
 
@@ -541,6 +544,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     }
 
     @Override
+    @Transactional
     public PaginatedList<FilterPoolMember> getJurorPoolsList(BureauJwtPayload payload,
                                                              PoolMemberFilterRequestQuery search) {
         return PaginationUtil.toPaginatedList(
@@ -566,16 +570,18 @@ public class PoolCreateServiceImpl implements PoolCreateService {
 
                 return builder.build();
             },
-            500L
+            ValidationConstants.MAX_ITEMS
         );
     }
 
     @Override
+    @Transactional
     public List<String> getThinJurorPoolsList(String poolNumber, String owner) {
         return jurorPoolRepository.fetchThinPoolMembers(poolNumber, owner);
     }
 
     @Override
+    @Transactional
     public List<VotersLocPostcodeTotals.CourtCatchmentSummaryItem> getAvailableVotersByLocation(String areaCode,
                                                                                                 boolean isCoronerPool) {
 
@@ -610,6 +616,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     }
 
     @Override
+    @Transactional
     public NilPoolResponseDto checkForDeferrals(String owner, NilPoolRequestDto nilPoolRequestDto) {
 
         // validate court location
@@ -662,6 +669,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     }
 
     @Override
+    @Transactional
     public void createNilPool(String owner, NilPoolRequestDto nilPoolRequestDto) {
         // validate court location
         CourtLocation courtLocation = getLocation(nilPoolRequestDto);

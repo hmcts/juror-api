@@ -19,6 +19,7 @@ import java.time.LocalDate;
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class AppearanceCreationServiceImpl implements AppearanceCreationService {
     private final AppearanceRepository appearanceRepository;
+    private final UserService userService;
 
     @Override
     @Transactional

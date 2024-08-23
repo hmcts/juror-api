@@ -4,6 +4,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public interface FinancialAuditService {
@@ -27,4 +28,8 @@ public interface FinancialAuditService {
 
     FinancialAuditDetails getLastFinancialAuditDetailsFromTypes(FinancialAuditDetails financialAuditDetails,
                                                                 Set<FinancialAuditDetails.Type> forApproval);
+
+    Optional<FinancialAuditDetails> getLastFinancialAuditDetailsFromAppearanceAndGenericType(
+        Appearance appearance,
+        FinancialAuditDetails.Type.GenericType genericType);
 }

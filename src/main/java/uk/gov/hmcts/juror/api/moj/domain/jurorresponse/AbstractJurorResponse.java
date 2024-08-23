@@ -148,7 +148,7 @@ public class AbstractJurorResponse extends Address implements Serializable {
     @Pattern(regexp = NO_PIPES_REGEX)
     private String relationship;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "staff_login")
     private User staff;
 
@@ -190,7 +190,7 @@ public class AbstractJurorResponse extends Address implements Serializable {
     @Column(name = "staff_assignment_date")
     private LocalDate staffAssignmentDate;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @NotNull
     @JoinColumn(name = "reply_type")
     @Getter
