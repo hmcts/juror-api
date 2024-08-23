@@ -251,6 +251,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             .build());
 
         PoolCreateRequestDto poolCreateRequest = setUpPoolCreateRequestDto();
+        poolCreateRequest.setNoRequested(9);
 
         final URI uri = URI.create("/api/v1/moj/pool-create/create-pool");
 
