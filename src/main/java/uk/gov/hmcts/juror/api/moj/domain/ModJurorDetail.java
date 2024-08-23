@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.moj.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -275,7 +276,7 @@ public class ModJurorDetail implements Serializable {
     @NotNull
     private Boolean useJurorPhoneDetails = Boolean.TRUE;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "staff_login")
     private User assignedStaffMember;
 

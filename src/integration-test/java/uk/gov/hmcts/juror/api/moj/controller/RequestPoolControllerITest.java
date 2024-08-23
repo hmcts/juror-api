@@ -704,71 +704,80 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     }
 
     private void assertNewJurorPoolCreated(PoolRequest newPool, Map<String, String> jurorPoolIdMap) {
-        for (String jurorNumber : jurorPoolIdMap.keySet()) {
-            JurorPool newJurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber,
-                jurorPoolIdMap.get(jurorNumber), true).get();
-            Juror newJurorRecord = newJurorPool.getJuror();
-            assertThat(newJurorPool.getWasDeferred())
-                .as("Expect the new juror record to be created as was_deferred")
-                .isTrue();
-            assertThat(newJurorPool.getIsActive())
-                .as("Expect the new juror record to be created as active")
-                .isTrue();
-            assertThat(newJurorPool.getStatus().getStatus())
-                .as("Expect the new juror record to be created with a status of Responded")
-                .isEqualTo(2L);
-            assertThat(newJurorPool.getDeferralDate())
-                .as("Expect the new juror record to be created with a null deferral date")
-                .isNull();
-            assertThat(newJurorRecord.getExcusalDate())
-                .as("Expect the new juror record to be created with a null excusal date")
-                .isNull();
-            assertThat(newJurorRecord.getExcusalCode())
-                .as("Expect the new juror record to be created with a null excusal code")
-                .isNull();
-            assertThat(newJurorPool.getUserEdtq())
-                .as("Expect the new juror record to be created with the current user login recorded")
-                .isEqualTo("COURT_USER");
-            LocalDate returnDate = newPool.getReturnDate();
-            assertThat(newJurorPool.getNextDate())
-                .as("Expect the new juror record to be created with a next date matching the new pool's return date")
-                .hasYear(returnDate.getYear()).hasMonth(returnDate.getMonth())
-                .hasDayOfMonth(returnDate.getDayOfMonth());
-            assertThat(newJurorRecord.getExcusalRejected())
-                .as("Expect the new juror record to be created with a null excusal rejected value")
-                .isNull();
-            assertThat(newJurorRecord.getDisqualifyDate())
-                .as("Expect the new juror record to be created with a null disqualify date value")
-                .isNull();
-            assertThat(newJurorRecord.getDisqualifyCode())
-                .as("Expect the new juror record to be created with a null disqualify date value")
-                .isNull();
-            assertThat(newJurorPool.getPoolSequence())
-                .as("Expect the new juror record to be created with a valid pool member sequence number")
-                .isNotNull();
-        }
+        executeInTransaction(() -> {
+            for (String jurorNumber : jurorPoolIdMap.keySet()) {
+                JurorPool newJurorPool =
+                    jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber,
+                        jurorPoolIdMap.get(jurorNumber), true).get();
+                Juror newJurorRecord = newJurorPool.getJuror();
+                assertThat(newJurorPool.getWasDeferred())
+                    .as("Expect the new juror record to be created as was_deferred")
+                    .isTrue();
+                assertThat(newJurorPool.getIsActive())
+                    .as("Expect the new juror record to be created as active")
+                    .isTrue();
+                assertThat(newJurorPool.getStatus().getStatus())
+                    .as("Expect the new juror record to be created with a status of Responded")
+                    .isEqualTo(2L);
+                assertThat(newJurorPool.getDeferralDate())
+                    .as("Expect the new juror record to be created with a null deferral date")
+                    .isNull();
+                assertThat(newJurorRecord.getExcusalDate())
+                    .as("Expect the new juror record to be created with a null excusal date")
+                    .isNull();
+                assertThat(newJurorRecord.getExcusalCode())
+                    .as("Expect the new juror record to be created with a null excusal code")
+                    .isNull();
+                assertThat(newJurorPool.getUserEdtq())
+                    .as("Expect the new juror record to be created with the current user login recorded")
+                    .isEqualTo("COURT_USER");
+                LocalDate returnDate = newPool.getReturnDate();
+                assertThat(newJurorPool.getNextDate())
+                    .as("Expect the new juror record to be created with a next date matching the new pool's return "
+                        + "date")
+                    .hasYear(returnDate.getYear()).hasMonth(returnDate.getMonth())
+                    .hasDayOfMonth(returnDate.getDayOfMonth());
+                assertThat(newJurorRecord.getExcusalRejected())
+                    .as("Expect the new juror record to be created with a null excusal rejected value")
+                    .isNull();
+                assertThat(newJurorRecord.getDisqualifyDate())
+                    .as("Expect the new juror record to be created with a null disqualify date value")
+                    .isNull();
+                assertThat(newJurorRecord.getDisqualifyCode())
+                    .as("Expect the new juror record to be created with a null disqualify date value")
+                    .isNull();
+                assertThat(newJurorPool.getPoolSequence())
+                    .as("Expect the new juror record to be created with a valid pool member sequence number")
+                    .isNotNull();
+            }
+        });
     }
 
     private void assertJurorHistoryCreated(Iterable<JurorHistory> jurorHistRecords, Map<String, String> jurorHistMap,
                                            List<String> jurorNumbers) {
-        for (JurorHistory record : jurorHistRecords) {
-            assertThat(jurorNumbers)
-                .as("Expect a juror_history record to be created for each court deferral used in this newly requested"
+        executeInTransaction(() -> {
+            for (JurorHistory record : jurorHistRecords) {
+                assertThat(jurorNumbers)
+                    .as("Expect a juror_history record to be created for each court deferral used in this newly "
+                        + "requested"
+                        + " pool")
+                    .contains(record.getJurorNumber());
+                assertThat(record.getPoolNumber())
+                    .as("Expect a juror_history record to be created with the same Pool Number as the newly requested"
                     + " pool")
-                .contains(record.getJurorNumber());
-            assertThat(record.getPoolNumber())
-                .as("Expect a juror_history record to be created with the same Pool Number as the newly requested pool")
-                .isEqualTo(jurorHistMap.get("PoolNumber"));
-            assertThat(record.getHistoryCode().getCode())
-                .as("Expect a juror_history record to be created with History Code of 'PDEF'")
-                .isEqualTo(jurorHistMap.get("HistoryCode"));
-            assertThat(record.getOtherInformation())
-                .as("Expect a juror_history record to be created with the hard coded description 'Added to New Pool'")
-                .isEqualTo(jurorHistMap.get("Info"));
-            assertThat(record.getCreatedBy())
-                .as("Expect a juror_history record to be created with the current user's login as the User ID")
-                .isEqualTo(jurorHistMap.get("UserId"));
-        }
+                    .isEqualTo(jurorHistMap.get("PoolNumber"));
+                assertThat(record.getHistoryCode().getCode())
+                    .as("Expect a juror_history record to be created with History Code of 'PDEF'")
+                    .isEqualTo(jurorHistMap.get("HistoryCode"));
+                assertThat(record.getOtherInformation())
+                    .as("Expect a juror_history record to be created with the hard coded description 'Added to New "
+                        + "Pool'")
+                    .isEqualTo(jurorHistMap.get("Info"));
+                assertThat(record.getCreatedBy())
+                    .as("Expect a juror_history record to be created with the current user's login as the User ID")
+                    .isEqualTo(jurorHistMap.get("UserId"));
+            }
+        });
     }
 
     @Test

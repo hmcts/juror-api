@@ -846,25 +846,26 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             ResponseEntity<DeferralReasonRequestDto> response = template.exchange(requestEntity,
                 DeferralReasonRequestDto.class);
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+            executeInTransaction(() -> {
+                // grab old record to verify the properties have been updated correctly updated
+                List<JurorPool> jurorPools = jurorPoolRepository.findByJurorJurorNumberAndIsActive(JUROR_555555561,
+                    false);
 
-            // grab old record to verify the properties have been updated correctly updated
-            List<JurorPool> jurorPools = jurorPoolRepository.findByJurorJurorNumberAndIsActive(JUROR_555555561,
-                false);
+                assertThat(jurorPools.size()).isGreaterThan(0);
+                verifyActivePoolOldRecord(jurorPools.get(0));
 
-            assertThat(jurorPools.size()).isGreaterThan(0);
-            verifyActivePoolOldRecord(jurorPools.get(0));
+                // grab new record to verify it has been created and the properties have been updated correctly
+                Juror newJurorRecord = JurorPoolUtils.getActiveJurorRecord(jurorPoolRepository, JUROR_555555561);
 
-            // grab new record to verify it has been created and the properties have been updated correctly
-            Juror newJurorRecord = JurorPoolUtils.getActiveJurorRecord(jurorPoolRepository, JUROR_555555561);
+                verifyActiveJurorNewRecord(newJurorRecord,
+                    deferralReasonRequestDto.getPoolNumber(), deferralReasonRequestDto.getDeferralDate());
+                assertThat(newJurorRecord.getOpticRef())
+                    .as(String.format("Expected optic ref to be %s", OPTIC_REF_12345678)).isEqualTo(OPTIC_REF_12345678);
 
-            verifyActiveJurorNewRecord(newJurorRecord,
-                deferralReasonRequestDto.getPoolNumber(), deferralReasonRequestDto.getDeferralDate());
-            assertThat(newJurorRecord.getOpticRef())
-                .as(String.format("Expected optic ref to be %s", OPTIC_REF_12345678)).isEqualTo(OPTIC_REF_12345678);
-
-            // check to make sure no record was created for the deferral maintenance table
-            Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_555555561);
-            assertThat(deferral.isPresent()).isFalse();
+                // check to make sure no record was created for the deferral maintenance table
+                Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_555555561);
+                assertThat(deferral.isPresent()).isFalse();
+            });
         }
 
         @Test
@@ -911,25 +912,26 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             ResponseEntity<DeferralReasonRequestDto> response = template.exchange(requestEntity,
                 DeferralReasonRequestDto.class);
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+            executeInTransaction(() -> {
+                // grab old record to verify the properties have been updated correctly
+                List<JurorPool> jurorPools = jurorPoolRepository.findByJurorJurorNumberAndIsActive(JUROR_555555558,
+                    false);
+                assertThat(jurorPools.size()).isGreaterThan(0);
+                verifyActivePoolOldRecord(jurorPools.get(0));
 
-            // grab old record to verify the properties have been updated correctly
-            List<JurorPool> jurorPools = jurorPoolRepository.findByJurorJurorNumberAndIsActive(JUROR_555555558,
-                false);
-            assertThat(jurorPools.size()).isGreaterThan(0);
-            verifyActivePoolOldRecord(jurorPools.get(0));
+                // grab new record to verify it has been created and the properties have been updated correctly
+                Juror newJurorRecord = JurorPoolUtils.getActiveJurorRecord(jurorPoolRepository, JUROR_555555558);
+                verifyActiveJurorNewRecord(newJurorRecord,
+                    deferralReasonRequestDto.getPoolNumber(), deferralReasonRequestDto.getDeferralDate());
 
-            // grab new record to verify it has been created and the properties have been updated correctly
-            Juror newJurorRecord = JurorPoolUtils.getActiveJurorRecord(jurorPoolRepository, JUROR_555555558);
-            verifyActiveJurorNewRecord(newJurorRecord,
-                deferralReasonRequestDto.getPoolNumber(), deferralReasonRequestDto.getDeferralDate());
+                // check to make sure no record was created for the deferral maintenance table
+                Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_555555558);
+                assertThat(deferral.isPresent()).isFalse();
 
-            // check to make sure no record was created for the deferral maintenance table
-            Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_555555558);
-            assertThat(deferral.isPresent()).isFalse();
-
-            assertThat(newJurorRecord.getOpticRef())
-                .as(String.format("Expected optic ref to be %s", OPTIC_REF_12345678))
-                .isEqualTo(OPTIC_REF_12345678);
+                assertThat(newJurorRecord.getOpticRef())
+                    .as(String.format("Expected optic ref to be %s", OPTIC_REF_12345678))
+                    .isEqualTo(OPTIC_REF_12345678);
+            });
         }
 
         @Test
@@ -1096,22 +1098,24 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             ResponseEntity<DeferralReasonRequestDto> response = template.exchange(requestEntity,
                 DeferralReasonRequestDto.class);
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+            executeInTransaction(() -> {
+                // grab old record to verify the properties have been updated correctly
+                List<JurorPool> jurorPools =
+                    jurorPoolRepository.findByJurorJurorNumberAndIsActive(JUROR_555555558, false);
+                assertThat(jurorPools.size()).isGreaterThan(0);
 
-            // grab old record to verify the properties have been updated correctly
-            List<JurorPool> jurorPools = jurorPoolRepository.findByJurorJurorNumberAndIsActive(JUROR_555555558, false);
-            assertThat(jurorPools.size()).isGreaterThan(0);
+                verifyActivePoolOldRecordChangeDate(jurorPools.get(0), deferralReasonRequestDto.getPoolNumber());
 
-            verifyActivePoolOldRecordChangeDate(jurorPools.get(0), deferralReasonRequestDto.getPoolNumber());
+                // grab new record to verify it has been created and the properties have been updated correctly
+                jurorPools = jurorPoolRepository.findByJurorJurorNumberAndIsActive(JUROR_555555558, true);
 
-            // grab new record to verify it has been created and the properties have been updated correctly
-            jurorPools = jurorPoolRepository.findByJurorJurorNumberAndIsActive(JUROR_555555558, true);
+                verifyActivePoolNewRecordChangeDate(jurorPools.get(0),
+                    deferralReasonRequestDto.getPoolNumber(), deferralReasonRequestDto.getDeferralDate());
 
-            verifyActivePoolNewRecordChangeDate(jurorPools.get(0),
-                deferralReasonRequestDto.getPoolNumber(), deferralReasonRequestDto.getDeferralDate());
-
-            // check to make sure no record was created for the deferral maintenance table
-            Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_555555558);
-            assertThat(deferral.isPresent()).isFalse();
+                // check to make sure no record was created for the deferral maintenance table
+                Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_555555558);
+                assertThat(deferral.isPresent()).isFalse();
+            });
         }
 
         private void verifyActivePoolOldRecordChangeDate(JurorPool jurorPool, String poolNumber) {
@@ -1164,31 +1168,32 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
                 httpHeaders, POST, URI.create(URL));
             ResponseEntity<Void> response = template.exchange(requestEntity, Void.class);
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+            executeInTransaction(() -> {
+                // check to make sure the juror has been removed from maintenance
+                Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_555555557);
+                assertThat(deferral.isPresent())
+                    .as("Expected juror to be removed from deferral maintenance").isFalse();
 
-            // check to make sure the juror has been removed from maintenance
-            Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_555555557);
-            assertThat(deferral.isPresent())
-                .as("Expected juror to be removed from deferral maintenance").isFalse();
+                // add logic to check to see the content of the new pool member
+                List<JurorPool> jurorPools = jurorPoolRepository.findByPoolPoolNumberAndWasDeferredAndIsActive(
+                    POOL_415220503, true, true);
 
-            // add logic to check to see the content of the new pool member
-            List<JurorPool> jurorPools = jurorPoolRepository.findByPoolPoolNumberAndWasDeferredAndIsActive(
-                POOL_415220503, true, true);
+                assertThat(jurorPools.size()).as("Expected size to be one for the new pool member record")
+                    .isEqualTo(1);
 
-            assertThat(jurorPools.size()).as("Expected size to be one for the new pool member record")
-                .isEqualTo(1);
-
-            // check to make sure the new pool members record has been updated correctly
-            JurorPool jurorPool = jurorPools.get(0);
-            Juror juror = jurorPool.getJuror();
-            assertThat(jurorPool.getStatus().getStatusDesc()).isEqualTo(RESPONDED);
-            assertThat(jurorPool.getDeferralDate()).isNull();
-            assertThat(jurorPool.getIsActive()).isTrue();
-            assertThat(juror.isResponded()).isTrue();
-            assertThat(juror.getNoDefPos()).isEqualTo(1);
-            LocalDate expectedStartDate = LocalDate.now().plusWeeks(1);
-            assertThat(jurorPool.getNextDate()).isEqualTo(expectedStartDate);
-            assertThat(juror.getOpticRef())
-                .as(String.format("Expected optic ref to be %s", OPTIC_REF_12345678)).isEqualTo(OPTIC_REF_12345678);
+                // check to make sure the new pool members record has been updated correctly
+                JurorPool jurorPool = jurorPools.get(0);
+                Juror juror = jurorPool.getJuror();
+                assertThat(jurorPool.getStatus().getStatusDesc()).isEqualTo(RESPONDED);
+                assertThat(jurorPool.getDeferralDate()).isNull();
+                assertThat(jurorPool.getIsActive()).isTrue();
+                assertThat(juror.isResponded()).isTrue();
+                assertThat(juror.getNoDefPos()).isEqualTo(1);
+                LocalDate expectedStartDate = LocalDate.now().plusWeeks(1);
+                assertThat(jurorPool.getNextDate()).isEqualTo(expectedStartDate);
+                assertThat(juror.getOpticRef())
+                    .as(String.format("Expected optic ref to be %s", OPTIC_REF_12345678)).isEqualTo(OPTIC_REF_12345678);
+            });
         }
 
         @Test
@@ -1205,31 +1210,32 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
                 httpHeaders, POST, URI.create(URL));
             ResponseEntity<Void> response = template.exchange(requestEntity, Void.class);
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+            executeInTransaction(() -> {
+                // check to make sure the jurors has been removed from maintenance
+                for (String jurorNumber : jurorNumbers) {
+                    Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(jurorNumber);
+                    assertThat(deferral.isPresent())
+                        .as("Expected juror to be removed from deferral maintenance").isFalse();
+                }
 
-            // check to make sure the jurors has been removed from maintenance
-            for (String jurorNumber : jurorNumbers) {
-                Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(jurorNumber);
-                assertThat(deferral.isPresent())
-                    .as("Expected juror to be removed from deferral maintenance").isFalse();
-            }
+                // add logic to check to see the content of the new pool member
+                List<JurorPool> jurorPools = jurorPoolRepository.findByPoolPoolNumberAndWasDeferredAndIsActive(
+                    POOL_415220503, true, true);
 
-            // add logic to check to see the content of the new pool member
-            List<JurorPool> jurorPools = jurorPoolRepository.findByPoolPoolNumberAndWasDeferredAndIsActive(
-                POOL_415220503, true, true);
+                assertThat(jurorPools.size()).as("Expected size to be three for the juror pool records").isEqualTo(3);
 
-            assertThat(jurorPools.size()).as("Expected size to be three for the juror pool records").isEqualTo(3);
-
-            // check to make sure the new pool members record has been updated correctly
-            for (JurorPool jurorPool : jurorPools) {
-                Juror juror = jurorPool.getJuror();
-                assertThat(jurorPool.getStatus().getStatusDesc()).isEqualTo(RESPONDED);
-                assertThat(jurorPool.getDeferralDate()).isNull();
-                assertThat(jurorPool.getIsActive()).isTrue();
-                assertThat(juror.isResponded()).isTrue();
-                assertThat(juror.getNoDefPos()).isEqualTo(1);
-                LocalDate expectedStartDate = LocalDate.now().plusWeeks(1);
-                assertThat(jurorPool.getNextDate()).isEqualTo(expectedStartDate);
-            }
+                // check to make sure the new pool members record has been updated correctly
+                for (JurorPool jurorPool : jurorPools) {
+                    Juror juror = jurorPool.getJuror();
+                    assertThat(jurorPool.getStatus().getStatusDesc()).isEqualTo(RESPONDED);
+                    assertThat(jurorPool.getDeferralDate()).isNull();
+                    assertThat(jurorPool.getIsActive()).isTrue();
+                    assertThat(juror.isResponded()).isTrue();
+                    assertThat(juror.getNoDefPos()).isEqualTo(1);
+                    LocalDate expectedStartDate = LocalDate.now().plusWeeks(1);
+                    assertThat(jurorPool.getNextDate()).isEqualTo(expectedStartDate);
+                }
+            });
         }
 
         @Test
@@ -1360,19 +1366,20 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             ResponseEntity<Void> response = template.exchange(requestEntity, Void.class);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            executeInTransaction(() -> {
+                // check to make sure no record was deleted for the deferral maintenance table
+                Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_123456789);
+                assertThat(deferral.isPresent()).isFalse();
 
-            // check to make sure no record was deleted for the deferral maintenance table
-            Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_123456789);
-            assertThat(deferral.isPresent()).isFalse();
+                JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(
+                    JUROR_123456789, POOL_415220502, true).get();
+                assertThat(jurorPool).isNotNull();
 
-            JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(
-                JUROR_123456789, POOL_415220502, true).get();
-            assertThat(jurorPool).isNotNull();
+                Juror juror = jurorPool.getJuror();
 
-            Juror juror = jurorPool.getJuror();
-
-            assertThat(jurorPool.getStatus().getStatus()).isEqualTo(IJurorStatus.RESPONDED);
-            assertThat(juror.getNoDefPos()).isEqualTo(0);
+                assertThat(jurorPool.getStatus().getStatus()).isEqualTo(IJurorStatus.RESPONDED);
+                assertThat(juror.getNoDefPos()).isEqualTo(0);
+            });
         }
 
         @Test
@@ -1387,18 +1394,19 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             ResponseEntity<Void> response = template.exchange(requestEntity, Void.class);
 
             assertThat(response.getStatusCode()).isEqualTo(NOT_FOUND);
+            executeInTransaction(() -> {
+                // check to make sure no record was not deleted for the deferral maintenance table
+                Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById("123456789");
+                assertThat(deferral.isPresent()).isTrue();
 
-            // check to make sure no record was not deleted for the deferral maintenance table
-            Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById("123456789");
-            assertThat(deferral.isPresent()).isTrue();
+                JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(
+                    "123456789", "415220502", true).get();
+                assertThat(jurorPool).isNotNull();
 
-            JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(
-                "123456789", "415220502", true).get();
-            assertThat(jurorPool).isNotNull();
-
-            Juror juror = jurorPool.getJuror();
-            assertThat(jurorPool.getStatus().getStatus()).isEqualTo(IJurorStatus.DEFERRED);
-            assertThat(juror.getNoDefPos()).isEqualTo(1);
+                Juror juror = jurorPool.getJuror();
+                assertThat(jurorPool.getStatus().getStatus()).isEqualTo(IJurorStatus.DEFERRED);
+                assertThat(juror.getNoDefPos()).isEqualTo(1);
+            });
         }
 
         @Test
@@ -1413,17 +1421,18 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             ResponseEntity<Void> response = template.exchange(requestEntity, Void.class);
 
             assertThat(response.getStatusCode()).isEqualTo(NOT_FOUND);
+            executeInTransaction(() -> {
+                // check to make sure no record was not deleted for the deferral maintenance table
+                Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_123456789);
+                assertThat(deferral.isPresent()).isTrue();
 
-            // check to make sure no record was not deleted for the deferral maintenance table
-            Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_123456789);
-            assertThat(deferral.isPresent()).isTrue();
-
-            JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(
-                JUROR_123456789, "415220502", true).get();
-            assertThat(jurorPool).isNotNull();
-            Juror juror = jurorPool.getJuror();
-            assertThat(jurorPool.getStatus().getStatus()).isEqualTo(IJurorStatus.DEFERRED);
-            assertThat(juror.getNoDefPos()).isEqualTo(1);
+                JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(
+                    JUROR_123456789, "415220502", true).get();
+                assertThat(jurorPool).isNotNull();
+                Juror juror = jurorPool.getJuror();
+                assertThat(jurorPool.getStatus().getStatus()).isEqualTo(IJurorStatus.DEFERRED);
+                assertThat(juror.getNoDefPos()).isEqualTo(1);
+            });
         }
     }
 

@@ -3115,6 +3115,8 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
         @Nested
         @DisplayName("Summons Reminder Letter")
+        //False positive
+        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         class SummonsReminderLetter {
             @Test
             @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initSummonsReminderLetter.sql"})
@@ -3126,38 +3128,41 @@ class LetterControllerITest extends AbstractIntegrationTest {
                         .datePrinted(LocalDate.of(2024, 1, 31))
                         .build()
                 );
+                executeInTransaction(() -> {
+                    // verify letter added
+                    BulkPrintData bulkPrintData =
+                        bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted("555555561",
+                                FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now())
+                            .orElseThrow(() -> Failures.instance()
+                                .failure("Expected record to be found in bulk print data table"));
 
-                // verify letter added
-                BulkPrintData bulkPrintData = bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted("555555561",
-                    FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now()).orElseThrow(() -> Failures.instance()
-                    .failure("Expected record to be found in bulk print data table"));
+                    verifyDataResponse(bulkPrintData, "561", Boolean.FALSE, LocalDate.now(), null, false);
+                    // verify history added
+                    List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
+                        .findByJurorNumberAndDateCreatedGreaterThanEqual("555555561", LocalDate.now());
+                    assertThat(updatedJurorHistoryList).as("History record should have been added").isNotNull();
+                    assertThat(updatedJurorHistoryList.size()).as("Expect 1 history record").isEqualTo(1);
+                    verifyHistoryResponse(updatedJurorHistoryList.get(0), "561", "504");
 
-                verifyDataResponse(bulkPrintData, "561", Boolean.FALSE, LocalDate.now(), null, false);
-
-                // verify history added
-                List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
-                    .findByJurorNumberAndDateCreatedGreaterThanEqual("555555561", LocalDate.now());
-                assertThat(updatedJurorHistoryList).as("History record should have been added").isNotNull();
-                assertThat(updatedJurorHistoryList.size()).as("Expect 1 history record").isEqualTo(1);
-                verifyHistoryResponse(updatedJurorHistoryList.get(0), "561", "504");
+                });
             }
 
             @Test
             @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initSummonsReminderLetter.sql"})
             void summonsReminderLetterDoesNotExistCreateNewLetter() {
                 final String jurorNumber = "555555570";
-
-                // first verify letter doesn't already exist for today's date (this will be the date the letter is to
+                // first verify letter doesn't already exist for today's date (this will be the date the letter
+                // is to
                 // be created)
                 assertThat(bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(jurorNumber,
                     FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now()))
                     .as("Existing letter should not exist for today's date").isEmpty();
-
-                // verify history does not already exist for today's date
-                List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
-                    .findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, LocalDate.now());
-                assertThat(updatedJurorHistoryList).as("History record should not exist").isEmpty();
-
+                executeInTransaction(() -> {
+                    // verify history does not already exist for today's date
+                    List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
+                        .findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, LocalDate.now());
+                    assertThat(updatedJurorHistoryList).as("History record should not exist").isEmpty();
+                });
                 // invoke api
                 triggerValidBureau(
                     ReissueLetterRequestDto.ReissueLetterRequestData.builder()
@@ -3166,21 +3171,24 @@ class LetterControllerITest extends AbstractIntegrationTest {
                         .datePrinted(LocalDate.now())
                         .build()
                 );
+                executeInTransaction(() -> {
+                    // verify letter added
+                    BulkPrintData bulkPrintData =
+                        bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(jurorNumber,
+                                FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now())
+                            .orElseThrow(
+                                () -> Failures.instance()
+                                    .failure("Expected record to be found in bulk print data table"));
 
-                // verify letter added
-                BulkPrintData bulkPrintData = bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(jurorNumber,
-                        FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now())
-                    .orElseThrow(
-                        () -> Failures.instance().failure("Expected record to be found in bulk print data table"));
+                    verifyDataResponse(bulkPrintData, "570", Boolean.FALSE, LocalDate.now(), null, false);
 
-                verifyDataResponse(bulkPrintData, "570", Boolean.FALSE, LocalDate.now(), null, false);
-
-                // verify history added
-                updatedJurorHistoryList = jurorHistoryRepository
-                    .findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, LocalDate.now());
-                assertThat(updatedJurorHistoryList).as("History record should have been added").isNotNull();
-                assertThat(updatedJurorHistoryList.size()).isEqualTo(1);
-                verifyHistoryResponse(updatedJurorHistoryList.get(0), "570", "405");
+                    // verify history added
+                    List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
+                        .findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, LocalDate.now());
+                    assertThat(updatedJurorHistoryList).as("History record should have been added").isNotNull();
+                    assertThat(updatedJurorHistoryList.size()).isEqualTo(1);
+                    verifyHistoryResponse(updatedJurorHistoryList.get(0), "570", "405");
+                });
             }
 
             @Test
@@ -3198,21 +3206,24 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 );
 
                 // verify letter added
-                BulkPrintData bulkPrintData = bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(jurorNumber,
-                        FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now())
-                    .orElseThrow(
-                        () -> Failures.instance().failure("Expected record to be found in bulk print data table"));
+                executeInTransaction(() -> {
+                    BulkPrintData bulkPrintData =
+                        bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(jurorNumber,
+                                FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now())
+                            .orElseThrow(
+                                () -> Failures.instance()
+                                    .failure("Expected record to be found in bulk print data table"));
 
-                verifyDataResponse(bulkPrintData, "570", Boolean.FALSE, LocalDate.now(), null, false);
+                    verifyDataResponse(bulkPrintData, "570", Boolean.FALSE, LocalDate.now(), null, false);
 
-                // verify history added
-                List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
-                    .findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, LocalDate.now());
-                assertThat(updatedJurorHistoryList).isNotNull();
-                assertThat(updatedJurorHistoryList.size()).isEqualTo(1);
+                    // verify history added
+                    List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
+                        .findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, LocalDate.now());
+                    assertThat(updatedJurorHistoryList).isNotNull();
+                    assertThat(updatedJurorHistoryList.size()).isEqualTo(1);
 
-                verifyHistoryResponse(updatedJurorHistoryList.get(0), "570", "405");
-
+                    verifyHistoryResponse(updatedJurorHistoryList.get(0), "570", "405");
+                });
                 // invoke api again for same juror and letter
                 final URI uri = URI.create("/api/v1/moj/letter/reissue-letter");
                 final String bureauJwt = createJwtBureau("BUREAU_USER");
@@ -3293,17 +3304,19 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(jurorNumber,
                     FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now()))
                     .as("Existing letter should not exist for today's date").isEmpty();
+                executeInTransaction(() -> {
+                    // verify a previous letter exists - should be english
+                    BulkPrintData bulkPrintData =
+                        bulkPrintDataRepository.findByJurorNumberFormCodeAndExtracted(jurorNumber,
+                                FormCode.ENG_SUMMONS_REMINDER.getCode(), true)
+                            .orElseThrow(
+                                () -> Failures.instance()
+                                    .failure("Expected record to be found in bulk print data table"));
 
-                // verify a previous letter exists - should be english
-                BulkPrintData bulkPrintData = bulkPrintDataRepository.findByJurorNumberFormCodeAndExtracted(jurorNumber,
-                        FormCode.ENG_SUMMONS_REMINDER.getCode(), true)
-                    .orElseThrow(
-                        () -> Failures.instance().failure("Expected record to be found in bulk print data table"));
-
-                verifyDataResponse(bulkPrintData, "575", true,
-                    LocalDate.of(2024, 1, 31),
-                    LocalDate.of(2024, 1, 18), false);
-
+                    verifyDataResponse(bulkPrintData, "575", true,
+                        LocalDate.of(2024, 1, 31),
+                        LocalDate.of(2024, 1, 18), false);
+                });
                 // invoke service to reissue letter
                 triggerValidBureau(
                     ReissueLetterRequestDto.ReissueLetterRequestData.builder()
@@ -3313,20 +3326,24 @@ class LetterControllerITest extends AbstractIntegrationTest {
                         .build()
                 );
 
-                // verify letter added - should be welsh (welsh flag was updated - juror now wants welsh letters)
-                bulkPrintData = bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(jurorNumber,
-                        FormCode.BI_SUMMONS_REMINDER.getCode(), LocalDate.now())
-                    .orElseThrow(
-                        () -> Failures.instance().failure("Expected record to be found in bulk print data table"));
+                executeInTransaction(() -> {
+                    // verify letter added - should be welsh (welsh flag was updated - juror now wants welsh letters)
+                    BulkPrintData bulkPrintData =
+                        bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(jurorNumber,
+                                FormCode.BI_SUMMONS_REMINDER.getCode(), LocalDate.now())
+                            .orElseThrow(
+                                () -> Failures.instance()
+                                    .failure("Expected record to be found in bulk print data table"));
 
-                verifyDataResponse(bulkPrintData, "575", Boolean.FALSE, LocalDate.now(), null, true);
+                    verifyDataResponse(bulkPrintData, "575", Boolean.FALSE, LocalDate.now(), null, true);
 
-                // verify history added
-                List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
-                    .findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, LocalDate.now());
-                assertThat(updatedJurorHistoryList).as("History record should have been added").isNotNull();
-                assertThat(updatedJurorHistoryList.size()).isEqualTo(1);
-                verifyHistoryResponse(updatedJurorHistoryList.get(0), "575", "405");
+                    // verify history added
+                    List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
+                        .findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, LocalDate.now());
+                    assertThat(updatedJurorHistoryList).as("History record should have been added").isNotNull();
+                    assertThat(updatedJurorHistoryList.size()).isEqualTo(1);
+                    verifyHistoryResponse(updatedJurorHistoryList.get(0), "575", "405");
+                });
             }
 
             @Test
@@ -3340,14 +3357,17 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now()))
                     .as("Existing letter should not exist for today's date").isEmpty();
 
-                // verify a previous letter exists - should be welsh
-                BulkPrintData bulkPrintData = bulkPrintDataRepository.findByJurorNumberFormCodeAndExtracted(jurorNumber,
-                        FormCode.BI_SUMMONS_REMINDER.getCode(), true)
-                    .orElseThrow(() -> Failures.instance().failure("Expected record exist in bulk print data table"));
+                executeInTransaction(() -> {
+                    // verify a previous letter exists - should be welsh
+                    BulkPrintData bulkPrintData =
+                        bulkPrintDataRepository.findByJurorNumberFormCodeAndExtracted(jurorNumber,
+                                FormCode.BI_SUMMONS_REMINDER.getCode(), true)
+                            .orElseThrow(
+                                () -> Failures.instance().failure("Expected record exist in bulk print data table"));
 
-                verifyDataResponse(bulkPrintData, "576", true,
-                    LocalDate.of(2024, 1, 31), LocalDate.of(2024, 1, 18), true);
-
+                    verifyDataResponse(bulkPrintData, "576", true,
+                        LocalDate.of(2024, 1, 31), LocalDate.of(2024, 1, 18), true);
+                });
                 // invoke service to reissue letter
                 triggerValidBureau(
                     ReissueLetterRequestDto.ReissueLetterRequestData.builder()
@@ -3356,21 +3376,26 @@ class LetterControllerITest extends AbstractIntegrationTest {
                         .datePrinted(LocalDate.of(2024, 1, 31))
                         .build()
                 );
+                executeInTransaction(() -> {
+                    // verify letter added - should be english (welsh flag was updated - juror now wants english
+                    // letters)
+                    BulkPrintData bulkPrintData =
+                        bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(jurorNumber,
+                            FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now())
+                        .orElseThrow(
+                            () -> Failures.instance().failure("Expect record to exit in bulk print data table"));
 
-                // verify letter added - should be english (welsh flag was updated - juror now wants english letters)
-                bulkPrintData = bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(jurorNumber,
-                        FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now())
-                    .orElseThrow(() -> Failures.instance().failure("Expect record to exit in bulk print data table"));
+                    verifyDataResponse(bulkPrintData, "576", Boolean.FALSE, LocalDate.now(), null, false);
 
-                verifyDataResponse(bulkPrintData, "576", Boolean.FALSE, LocalDate.now(), null, false);
-
-                // verify history added
-                List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
-                    .findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, LocalDate.now());
-                assertThat(updatedJurorHistoryList).as("History record should have been added").isNotNull();
-                assertThat(updatedJurorHistoryList.size()).isEqualTo(1);
-                verifyHistoryResponse(updatedJurorHistoryList.get(0), "576", "405");
+                    // verify history added
+                    List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
+                        .findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, LocalDate.now());
+                    assertThat(updatedJurorHistoryList).as("History record should have been added").isNotNull();
+                    assertThat(updatedJurorHistoryList.size()).isEqualTo(1);
+                    verifyHistoryResponse(updatedJurorHistoryList.get(0), "576", "405");
+                });
             }
+
 
             @Test
             @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initSummonsReminderLetter.sql"})
@@ -3407,6 +3432,8 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             @Test
             @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initSummonsReminderLetter.sql"})
+            //False positive
+            @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
             void summonsReminderReissueLetterUsingADifferentCreationDate() {
                 triggerValidBureau(
                     ReissueLetterRequestDto.ReissueLetterRequestData.builder()
@@ -3415,46 +3442,48 @@ class LetterControllerITest extends AbstractIntegrationTest {
                         .datePrinted(LocalDate.of(2024, 1, 25))
                         .build()
                 );
+                executeInTransaction(() -> {
+                    // verify letter added - a new letter will be created for today's date if a match is not found
+                    BulkPrintData bulkPrintData = bulkPrintDataRepository
+                        .findByJurorNumberFormCodeDatePrinted("555555561",
+                            FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now())
+                        .orElseThrow(
+                            () -> Failures.instance().failure("Expected record to be found in bulk print data table"));
 
-                // verify letter added - a new letter will be created for today's date if a match is not found
-                BulkPrintData bulkPrintData = bulkPrintDataRepository
-                    .findByJurorNumberFormCodeDatePrinted("555555561",
-                        FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now())
-                    .orElseThrow(
-                        () -> Failures.instance().failure("Expected record to be found in bulk print data table"));
-
-                verifyDataResponse(bulkPrintData, "561", Boolean.FALSE, LocalDate.now(), null, false);
-
-                // verify history added
-                List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
-                    .findByJurorNumberAndDateCreatedGreaterThanEqual("555555561", LocalDate.now());
-                assertThat(updatedJurorHistoryList).as("History record should have been added").isNotNull();
-                assertThat(updatedJurorHistoryList.size()).isEqualTo(1);
-                verifyHistoryResponse(updatedJurorHistoryList.get(0), "561", "504");
+                    verifyDataResponse(bulkPrintData, "561", Boolean.FALSE, LocalDate.now(), null, false);
+                    // verify history added
+                    List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
+                        .findByJurorNumberAndDateCreatedGreaterThanEqual("555555561", LocalDate.now());
+                    assertThat(updatedJurorHistoryList).as("History record should have been added").isNotNull();
+                    assertThat(updatedJurorHistoryList.size()).isEqualTo(1);
+                    verifyHistoryResponse(updatedJurorHistoryList.get(0), "561", "504");
+                });
             }
 
             private void verifyDataResponse(BulkPrintData bulkPrintData,
                                             String jurorNumberPostfix,
                                             Boolean extractedFlag,
                                             LocalDate creationDate, LocalDate reprintRecDate, Boolean isWelsh) {
-                assertThat(bulkPrintData).isNotNull();
+                executeInTransaction(() -> {
+                    assertThat(bulkPrintData).isNotNull();
 
-                assertThat(bulkPrintData.isExtractedFlag()).isEqualTo(extractedFlag);
-                assertThat(bulkPrintData.getJurorNo()).isEqualTo("555555" + jurorNumberPostfix);
-                assertThat(bulkPrintData.getCreationDate()).isEqualTo(creationDate);
-                assertThat(bulkPrintData.isExtractedFlag()).isEqualTo(extractedFlag);
-                assertThat(bulkPrintData.isDigitalComms()).isFalse();
+                    assertThat(bulkPrintData.isExtractedFlag()).isEqualTo(extractedFlag);
+                    assertThat(bulkPrintData.getJurorNo()).isEqualTo("555555" + jurorNumberPostfix);
+                    assertThat(bulkPrintData.getCreationDate()).isEqualTo(creationDate);
+                    assertThat(bulkPrintData.isExtractedFlag()).isEqualTo(extractedFlag);
+                    assertThat(bulkPrintData.isDigitalComms()).isFalse();
 
-                verifyRecDate(bulkPrintData, reprintRecDate);
-                if (isWelsh) {
-                    assertThat(bulkPrintData.getFormAttribute().getDirectoryName()).isEqualTo("WEL_NON_RESP");
-                    assertThat(bulkPrintData.getFormAttribute().getMaxRecLen()).isEqualTo(691);
-                    assertThat(bulkPrintData.getFormAttribute().getFormType()).isEqualTo("5228C");
-                } else {
-                    assertThat(bulkPrintData.getFormAttribute().getDirectoryName()).isEqualTo("ENG_NON_RESP");
-                    assertThat(bulkPrintData.getFormAttribute().getMaxRecLen()).isEqualTo(670);
-                    assertThat(bulkPrintData.getFormAttribute().getFormType()).isEqualTo("5228");
-                }
+                    verifyRecDate(bulkPrintData, reprintRecDate);
+                    if (isWelsh) {
+                        assertThat(bulkPrintData.getFormAttribute().getDirectoryName()).isEqualTo("WEL_NON_RESP");
+                        assertThat(bulkPrintData.getFormAttribute().getMaxRecLen()).isEqualTo(691);
+                        assertThat(bulkPrintData.getFormAttribute().getFormType()).isEqualTo("5228C");
+                    } else {
+                        assertThat(bulkPrintData.getFormAttribute().getDirectoryName()).isEqualTo("ENG_NON_RESP");
+                        assertThat(bulkPrintData.getFormAttribute().getMaxRecLen()).isEqualTo(670);
+                        assertThat(bulkPrintData.getFormAttribute().getFormType()).isEqualTo("5228");
+                    }
+                });
             }
 
             private void verifyHistoryResponse(JurorHistory index, String jurorPostfix, String poolNumberPostfix) {

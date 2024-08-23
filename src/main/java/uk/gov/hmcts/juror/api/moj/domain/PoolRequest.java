@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.domain;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -57,7 +58,7 @@ public class PoolRequest implements Serializable {
     /**
      * Location code for the specific court the pool is being requested for.
      */
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "loc_code", nullable = false)
     private CourtLocation courtLocation;
 
@@ -74,7 +75,7 @@ public class PoolRequest implements Serializable {
     @Column(name = "no_requested")
     private Integer numberRequested;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pool_type")
     private PoolType poolType;
 
@@ -103,10 +104,10 @@ public class PoolRequest implements Serializable {
     @Column(name = "date_created", updatable = false)
     private LocalDateTime dateCreated;
 
-    @OneToMany(mappedBy = "pool", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "pool", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     private Set<PoolComment> poolComments;
 
-    @OneToMany(mappedBy = "pool")
+    @OneToMany(mappedBy = "pool", fetch = FetchType.LAZY)
     private List<JurorPool> jurorPools;
 
     @PrePersist

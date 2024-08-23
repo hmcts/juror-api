@@ -38,6 +38,7 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
             .where(QCombinedJurorResponse.combinedJurorResponse.processingStatus.in(processingStatus))
             .where(QCombinedJurorResponse.combinedJurorResponse.juror.bureauTransferDate.isNull())
             .where(QJurorPool.jurorPool.isActive.isTrue())
+            .where(QCombinedJurorResponse.combinedJurorResponse.juror.bureauTransferDate.isNull())
             .where(QJurorPool.jurorPool.owner.eq(SecurityUtil.BUREAU_OWNER));
 
         if (predicates != null && predicates.length > 0) {

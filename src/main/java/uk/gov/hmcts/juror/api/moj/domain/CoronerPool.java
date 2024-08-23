@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.moj.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -50,7 +51,7 @@ public class CoronerPool implements Serializable {
     /**
      * Location code for the specific court the pool is being requested for.
      */
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cor_court_loc")
     private CourtLocation courtLocation;
 
