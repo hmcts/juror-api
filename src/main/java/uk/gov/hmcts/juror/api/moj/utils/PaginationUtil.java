@@ -23,6 +23,13 @@ public final class PaginationUtil {
     public static <T, I> PaginatedList<T> toPaginatedList(JPQLQuery<I> query, IsPageable isPageable,
                                                           @NotNull SortMethod.HasComparableExpression defaultSortField,
                                                           @NotNull SortMethod defaultSortMethod,
+                                                          Function<I, T> dataMapper) {
+        return toPaginatedList(query, isPageable, defaultSortField, defaultSortMethod, dataMapper, null);
+    }
+
+    public static <T, I> PaginatedList<T> toPaginatedList(JPQLQuery<I> query, IsPageable isPageable,
+                                                          @NotNull SortMethod.HasComparableExpression defaultSortField,
+                                                          @NotNull SortMethod defaultSortMethod,
                                                           Function<I, T> dataMapper,
                                                           Long maxItems) {
         PaginatedList<T> paginatedList = new PaginatedList<>();

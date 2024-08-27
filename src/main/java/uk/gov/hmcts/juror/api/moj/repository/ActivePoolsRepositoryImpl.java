@@ -23,7 +23,6 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.utils.PaginationUtil;
 import uk.gov.hmcts.juror.api.moj.utils.PoolRequestUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
-import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -99,8 +98,7 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
                     .poolType(poolRequest.getPoolType().getDescription())
                     .attendanceDate(poolRequest.getReturnDate())
                     .build();
-            },
-            ValidationConstants.MAX_ITEMS
+            }
         );
     }
 
@@ -156,8 +154,7 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
                 .courtName(data.get(POOL_REQUEST.courtLocation.name))
                 .poolType(data.get(POOL_REQUEST.poolType.description))
                 .attendanceDate(data.get(POOL_REQUEST.returnDate))
-                .build(),
-            ValidationConstants.MAX_ITEMS
+                .build()
         );
     }
 }

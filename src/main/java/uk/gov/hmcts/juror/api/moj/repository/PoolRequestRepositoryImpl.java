@@ -22,7 +22,6 @@ import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
 import uk.gov.hmcts.juror.api.moj.utils.PaginationUtil;
 import uk.gov.hmcts.juror.api.moj.utils.PoolRequestUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
-import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -224,8 +223,7 @@ public class PoolRequestRepositoryImpl extends PoolRequestSearchQueries implemen
                 .courtName(poolRequest.getCourtLocation().getName())
                 .poolNumber(poolRequest.getPoolNumber())
                 .poolType(poolRequest.getPoolType().getPoolType())
-                .build(),
-            ValidationConstants.MAX_ITEMS
+                .build()
         );
     }
 
