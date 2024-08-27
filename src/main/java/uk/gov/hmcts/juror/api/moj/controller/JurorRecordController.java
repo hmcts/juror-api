@@ -302,7 +302,6 @@ public class JurorRecordController {
      * Perform a change of name, bypassing the approval process. This is intended to only be used for small "fixes" to
      * a juror's name to help them pass a police check, for example, removing special characters.
      * <p/>
-     * This can only be performed by court users and bureau team leaders
      *
      * @param payload             JSON Web Token containing user authentication context
      * @param jurorNameDetailsDto Update juror name details to persist on the juror record
