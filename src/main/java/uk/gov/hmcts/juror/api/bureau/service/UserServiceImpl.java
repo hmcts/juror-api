@@ -35,7 +35,6 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCommon;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QDigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.UserJurorResponseAudit;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -372,7 +371,6 @@ public class UserServiceImpl implements UserService {
     public AssignmentsListDto getStaffAssignments(AssignmentsMultiRequestDto responseListDto, String currentUser) {
         List<AssignmentListDataDto> assignmentListDataDtos = new ArrayList<>();
 
-        final QDigitalResponse query = QDigitalResponse.digitalResponse;
         List<JurorResponseCommon> jurorResponses =
             jurorResponseCommonRepositoryMod.findByJurorNumberIn(responseListDto.getJurorNumbers());
 
