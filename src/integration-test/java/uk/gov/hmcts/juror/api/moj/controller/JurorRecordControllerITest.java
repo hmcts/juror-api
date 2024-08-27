@@ -2931,26 +2931,6 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         });
     }
 
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_fixJurorName.sql"})
-    void testFixJurorNameBureauUserInsufficientRank() throws Exception {
-        String username = "BUREAU_USER";
-        String owner = "400";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initPayloadWithStaffRank(owner, username, UserType.BUREAU));
-
-        JurorNameDetailsDto dto = new JurorNameDetailsDto("Mr", "First", "Last");
-        String jurorNumber = "222222222";
-
-        ResponseEntity<Void> response =
-            restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                URI.create("/api/v1/moj/juror-record/fix-name/" + jurorNumber)), Void.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP PATCH request to be unsuccessful")
-            .isEqualTo(HttpStatus.FORBIDDEN);
-    }
-
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_processNameChangeApproval.sql"})
     void testProcessNameChangeApprovalCourtUserApprovedHappyPath() throws Exception {

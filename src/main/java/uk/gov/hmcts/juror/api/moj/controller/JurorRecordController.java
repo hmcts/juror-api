@@ -317,14 +317,6 @@ public class JurorRecordController {
                              @Size(min = 9, max = 9)
                              @PathVariable("jurorNumber")
                              @Valid @JurorNumber String jurorNumber) {
-        boolean isBureauUser = SecurityUtil.isBureau();
-        boolean isTeamLeader = SecurityUtil.isBureauManager();
-
-        if (isBureauUser && !isTeamLeader) {
-            throw new MojException.Forbidden("User has insufficient permission to perform "
-                + "the fix juror name action", null);
-        }
-
         jurorRecordService.fixErrorInJurorName(payload, jurorNumber, jurorNameDetailsDto);
     }
 
