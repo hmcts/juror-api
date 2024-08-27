@@ -224,8 +224,7 @@ public class PoolRequestRepositoryImpl extends PoolRequestSearchQueries implemen
                 .courtName(poolRequest.getCourtLocation().getName())
                 .poolNumber(poolRequest.getPoolNumber())
                 .poolType(poolRequest.getPoolType().getPoolType())
-                .build(),
-            ValidationConstants.MAX_ITEMS
+                .build()
         );
     }
 

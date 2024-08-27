@@ -99,8 +99,7 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
                     .poolType(poolRequest.getPoolType().getDescription())
                     .attendanceDate(poolRequest.getReturnDate())
                     .build();
-            },
-            ValidationConstants.MAX_ITEMS
+            }
         );
     }
 
@@ -156,8 +155,7 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
                 .courtName(data.get(POOL_REQUEST.courtLocation.name))
                 .poolType(data.get(POOL_REQUEST.poolType.description))
                 .attendanceDate(data.get(POOL_REQUEST.returnDate))
-                .build(),
-            ValidationConstants.MAX_ITEMS
+                .build()
         );
     }
 }
