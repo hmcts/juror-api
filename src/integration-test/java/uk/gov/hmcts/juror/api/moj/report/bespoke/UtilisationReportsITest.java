@@ -111,25 +111,25 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
 
             assertThat(day).isNotNull();
             assertThat(day.getDate()).isEqualTo(LocalDate.parse("2024-05-09", DateTimeFormatter.ISO_LOCAL_DATE));
-            assertThat(day.getJurorWorkingDays()).isEqualTo(21);
+            assertThat(day.getJurorWorkingDays()).isEqualTo(22);
             assertThat(day.getSittingDays()).isEqualTo(12);
             assertThat(day.getAttendanceDays()).isEqualTo(13);
-            assertThat(day.getNonAttendanceDays()).isEqualTo(8);
-            assertThat(Math.round(day.getUtilisation())).isEqualTo(Math.round(57.14));
+            assertThat(day.getNonAttendanceDays()).isEqualTo(9);
+            assertThat(Math.round(day.getUtilisation())).isEqualTo(Math.round(54.55));
 
             // validate the weekly totals for the week
-            assertThat(week.getWeeklyTotalJurorWorkingDays()).isEqualTo(98);
+            assertThat(week.getWeeklyTotalJurorWorkingDays()).isEqualTo(102);
             assertThat(week.getWeeklyTotalSittingDays()).isEqualTo(52);
             assertThat(week.getWeeklyTotalAttendanceDays()).isEqualTo(56);
-            assertThat(week.getWeeklyTotalNonAttendanceDays()).isEqualTo(42);
-            assertThat(Math.round(week.getWeeklyTotalUtilisation())).isEqualTo(Math.round(53.06));
+            assertThat(week.getWeeklyTotalNonAttendanceDays()).isEqualTo(46);
+            assertThat(Math.round(week.getWeeklyTotalUtilisation())).isEqualTo(Math.round(50.98));
 
             // validate the overall totals
-            assertThat(tableData.getOverallTotalJurorWorkingDays()).isEqualTo(221);
+            assertThat(tableData.getOverallTotalJurorWorkingDays()).isEqualTo(235);
             assertThat(tableData.getOverallTotalSittingDays()).isEqualTo(52);
             assertThat(tableData.getOverallTotalAttendanceDays()).isEqualTo(68);
-            assertThat(tableData.getOverallTotalNonAttendanceDays()).isEqualTo(153);
-            assertThat(Math.round(tableData.getOverallTotalUtilisation())).isEqualTo(Math.round(23.52));
+            assertThat(tableData.getOverallTotalNonAttendanceDays()).isEqualTo(167);
+            assertThat(Math.round(tableData.getOverallTotalUtilisation())).isEqualTo(Math.round(22.12));
 
         }
 
@@ -208,7 +208,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
 
             // validate the jurors
             assertThat(tableData.getJurors()).isNotNull();
-            assertThat(tableData.getJurors()).hasSize(21);
+            assertThat(tableData.getJurors()).hasSize(22);
 
             // validate a juror
             DailyUtilisationReportJurorsResponse.TableData.Juror juror = tableData.getJurors().get(0);
@@ -220,10 +220,10 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
             assertThat(juror.getNonAttendanceDay()).isEqualTo(0);
 
             // validate the totals
-            assertThat(tableData.getTotalJurorWorkingDays()).isEqualTo(21);
+            assertThat(tableData.getTotalJurorWorkingDays()).isEqualTo(22);
             assertThat(tableData.getTotalSittingDays()).isEqualTo(12);
             assertThat(tableData.getTotalAttendanceDays()).isEqualTo(13);
-            assertThat(tableData.getTotalNonAttendanceDays()).isEqualTo(8);
+            assertThat(tableData.getTotalNonAttendanceDays()).isEqualTo(9);
 
         }
 
@@ -281,17 +281,17 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
 
             MonthlyUtilisationReportResponse.TableData.Month month = tableData.getMonths().get(0);
             assertThat(month.getMonth()).isEqualTo("May 2024");
-            assertThat(month.getJurorWorkingDays()).isEqualTo(457);
+            assertThat(month.getJurorWorkingDays()).isEqualTo(479);
             assertThat(month.getSittingDays()).isEqualTo(52);
             assertThat(month.getAttendanceDays()).isEqualTo(56);
-            assertThat(month.getNonAttendanceDays()).isEqualTo(401);
+            assertThat(month.getNonAttendanceDays()).isEqualTo(423);
             assertThat(Math.round(month.getUtilisation())).isEqualTo(Math.round(11.38));
 
             // validate the totals - should be as per the month
-            assertThat(tableData.getTotalJurorWorkingDays()).isEqualTo(457);
+            assertThat(tableData.getTotalJurorWorkingDays()).isEqualTo(479);
             assertThat(tableData.getTotalSittingDays()).isEqualTo(52);
             assertThat(tableData.getTotalAttendanceDays()).isEqualTo(56);
-            assertThat(tableData.getTotalNonAttendanceDays()).isEqualTo(401);
+            assertThat(tableData.getTotalNonAttendanceDays()).isEqualTo(423);
             assertThat(Math.round(tableData.getTotalUtilisation())).isEqualTo(Math.round(11.38));
 
             LocalDate may2024 = LocalDate.parse("2024-05-01");
