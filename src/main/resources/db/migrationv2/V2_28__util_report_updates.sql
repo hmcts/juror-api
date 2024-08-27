@@ -1,7 +1,8 @@
 -- updated the trial participation list to remove duplicate juror entries for the same report date
 drop function if exists juror_mod.util_trial_participation_list;
 
--- function to return juror participation in a trial within the report window
+-- function to return juror participation in a trial within the report window, updated to return row number for deduplication
+-- only want to count one trial per juror per report date
 CREATE OR REPLACE FUNCTION juror_mod.util_trial_participation_list(p_loc_code text, p_start_date date, p_end_date date)
  RETURNS TABLE(juror_number character varying,
  report_from date,
@@ -42,6 +43,7 @@ return query select
 $function$
 ;
 
+-- function to return the de-duplicated trial participation list where row number = 1
 CREATE OR REPLACE FUNCTION juror_mod.util_trial_participation_list_dedup(p_loc_code text, p_start_date date, p_end_date date)
  RETURNS TABLE(juror_number character varying,
  report_from date,
@@ -65,6 +67,7 @@ return query
 $function$
 ;
 
+-- updated to invoke the deduplication trial participation function
 CREATE OR REPLACE FUNCTION juror_mod.util_report_main(p_loc_code text, p_start_date date, p_end_date date)
  RETURNS TABLE(juror_number character varying,
  report_from date,
