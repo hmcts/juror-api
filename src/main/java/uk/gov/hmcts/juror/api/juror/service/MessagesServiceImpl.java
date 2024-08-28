@@ -22,6 +22,7 @@ import uk.gov.hmcts.juror.api.moj.repository.MessageRepository;
 import uk.gov.hmcts.juror.api.moj.repository.RegionNotifyTemplateQueriesMod;
 import uk.gov.hmcts.juror.api.moj.repository.RegionNotifyTemplateRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
+import uk.gov.hmcts.juror.api.moj.utils.NotifyUtil;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
@@ -99,6 +100,8 @@ public class MessagesServiceImpl implements BureauProcessService {
         Map<String, TemplateDetails> templateDetailsMap = new HashMap<>();
 
         int errorCount = 0;
+        int invalidPhoneCount = 0;
+        int invalidEmailCount = 0;
         int missingApiKeyCount = 0;
         int missingEmailAndPhone = 0;
         int emailSuccess = 0;
@@ -201,10 +204,17 @@ public class MessagesServiceImpl implements BureauProcessService {
                     log.trace("Court Comms  sms messaging  Service :  response {}", response);
                 }
             } catch (NotificationClientException e) {
-                log.error("Failed to send via Notify", e);
+                log.info("Failed to send via Notify - {}", e.getMessage());
                 messagesDetail.setMessageRead(MESSAGE_READ_APP_ERROR);
                 updateMessageFlag(messagesDetail);
-                errorCount++;
+                if (NotifyUtil.isInvalidPhoneNumberError(e)) {
+                    invalidPhoneCount++;
+                } else if (NotifyUtil.isInvalidEmailAddressError(e)) {
+                    invalidEmailCount++;
+                } else {
+                    log.error("Failed to send via Notify", e);
+                    errorCount++;
+                }
             } catch (Exception e) {
                 log.error("Unexpected exception when sending details to notify", e);
                 errorCount++;
@@ -217,12 +227,15 @@ public class MessagesServiceImpl implements BureauProcessService {
                 ? SchedulerServiceClient.Result.Status.SUCCESS
                 : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS, null,
             Map.of(
-                "TOTAL_MESSAGES_TO_SEND","" + messageDetailList.size(),
-                "ERROR_COUNT", "" + errorCount,
-                "MISSING_API_KEY_COUNT", "" + missingApiKeyCount,
-                "MISSING_EMAIL_AND_PHONE", "" + missingEmailAndPhone,
-                "EMAIL_SUCCESS", "" + emailSuccess,
-                "SMS_SUCCESS", "" + smsSuccess
+                "TOTAL_MESSAGES_TO_SEND", String.valueOf(messageDetailList.size()),
+                "ERROR_COUNT", String.valueOf(errorCount),
+                "MISSING_API_KEY_COUNT", String.valueOf(missingApiKeyCount),
+                "MISSING_EMAIL_AND_PHONE", String.valueOf(missingEmailAndPhone),
+                "EMAIL_SUCCESS", String.valueOf(emailSuccess),
+                "SMS_SUCCESS", String.valueOf(smsSuccess),
+
+                "INVALID_PHONE_COUNT", String.valueOf(invalidPhoneCount),
+                "INVALID_EMAIL_COUNT", String.valueOf(invalidEmailCount)
             ));
     }
 

@@ -15,6 +15,7 @@ import uk.gov.hmcts.juror.api.moj.domain.BulkPrintDataNotifyCommsRepository;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.utils.NotifyUtil;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.text.SimpleDateFormat;
@@ -54,6 +55,7 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
         log.debug("jurorCommsPrintFiles {}", bulkPrintDataNotifyCommsList.size());
         int commsSent = 0;
         int commsfailed = 0;
+        int invalidEmailAddress = 0;
         if (!bulkPrintDataNotifyCommsList.isEmpty()) {
             for (BulkPrintDataNotifyComms printFile : bulkPrintDataNotifyCommsList) {
                 try {
@@ -74,18 +76,19 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
                     updatePrintFiles(printFile);
                     commsSent++;
                 } catch (JurorCommsNotificationServiceException e) {
-                    log.error(
-                        "Unable to send Letter comms for {} : {} {}",
-                        printFile.getJurorNo(),
-                        e.getMessage(),
-                        e.getCause().toString()
-                    );
-                    commsfailed++;
+                    if (NotifyUtil.isInvalidEmailAddressError(e.getCause())) {
+                        invalidEmailAddress++;
+                    } else {
+                        log.error(
+                            "Unable to send Letter comms for {}",
+                            printFile.getJurorNo(), e
+                        );
+                        commsfailed++;
+                    }
                 } catch (Exception e) {
                     commsfailed++;
                     log.error("Letter Comms Processing : Juror Comms failed : {}", e.getMessage());
                 }
-
             }
             log.info("LetterService : Summary, identified:{}, sent:{}, failed:{},",
                 bulkPrintDataNotifyCommsList.size(), commsSent, commsfailed
@@ -99,8 +102,11 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
             commsfailed == 0
                 ? SchedulerServiceClient.Result.Status.SUCCESS
                 : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS, null,
-            Map.of("COMMS_FAILED", "" + commsfailed,
-                "COMMNS_SENT", "" + commsSent));
+            Map.of(
+                "COMMS_FAILED", String.valueOf(commsfailed),
+                "COMMNS_SENT", String.valueOf(commsSent),
+                "INVALID_EMAIL_ADDRESS", String.valueOf(invalidEmailAddress)
+            ));
     }
 
     /**

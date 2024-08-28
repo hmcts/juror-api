@@ -15,6 +15,7 @@ import uk.gov.hmcts.juror.api.moj.client.contracts.SchedulerServiceClient;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolQueries;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.utils.NotifyUtil;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -54,6 +55,7 @@ public class JurorCommsWeeklyInfoServiceImpl implements BureauProcessService {
 
         int infoCommsSent = 0;
         int noEmailAddress = 0;
+        int invalidEmailAddress = 0;
         int infoCommsfailed = 0;
         for (JurorPool jurorDetail : jurordetailList) {
 
@@ -75,15 +77,17 @@ public class JurorCommsWeeklyInfoServiceImpl implements BureauProcessService {
                 update(jurorDetail);
 
             } catch (JurorCommsNotificationServiceException e) {
-                log.error(
-                    "Unable to send Informational comms for "
-                        + jurorDetail.getJurorNumber()
-                        + " : " + e.getMessage()
-                        + " " + e.getCause().toString(), e
-                );
-                infoCommsfailed++;
+                if (NotifyUtil.isInvalidEmailAddressError(e.getCause())) {
+                    invalidEmailAddress++;
+                } else {
+                    log.error(
+                        "Unable to send Informational comms for {}",
+                        jurorDetail.getJurorNumber(), e
+                    );
+                    infoCommsfailed++;
+                }
             } catch (Exception e) {
-                log.error("Informational Comms Processing : Juror Comms failed : " + e.getMessage(), e);
+                log.error("Informational Comms Processing : Juror Comms failed", e);
                 infoCommsfailed++;
             }
         }
@@ -96,9 +100,10 @@ public class JurorCommsWeeklyInfoServiceImpl implements BureauProcessService {
                 ? SchedulerServiceClient.Result.Status.SUCCESS
                 : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS, null,
             Map.of(
-                "INFO_COMMS_SENT", "" + infoCommsSent,
-                "INFO_COMMS_FAILED", "" + infoCommsfailed,
-                "NO_EMAIL_ADDRESS", "" + noEmailAddress
+                "INFO_COMMS_SENT", String.valueOf(infoCommsSent),
+                "INFO_COMMS_FAILED", String.valueOf(infoCommsfailed),
+                "NO_EMAIL_ADDRESS", String.valueOf(noEmailAddress),
+                "INVALID_EMAIL_ADDRESS", String.valueOf(invalidEmailAddress)
             ));
     }
 

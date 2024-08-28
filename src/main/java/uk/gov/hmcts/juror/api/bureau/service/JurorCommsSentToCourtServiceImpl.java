@@ -16,6 +16,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolQueries;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
+import uk.gov.hmcts.juror.api.moj.utils.NotifyUtil;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -59,6 +60,8 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
 
         Integer notificationsSent;
         int errorCount = 0;
+        int errorInvalidEmailCount = 0;
+        int errorInvalidPhoneCount = 0;
         int successCountEmail = 0;
         int successCountSms = 0;
         int errorCountEmail = 0;
@@ -118,18 +121,29 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
                 successCount++;
 
             } catch (JurorCommsNotificationServiceException e) {
-                log.error(
-                    "Unable to send sent to court comms for {} : {} {}",
-                    jurorDetail.getJurorNumber(),
-                    e.getMessage(),
-                    e.getCause().toString()
-                );
-                errorCount++;
+                boolean isError = false;
                 if (isEmail) {
-                    errorCountEmail++;
+                    if (NotifyUtil.isInvalidEmailAddressError(e.getCause())) {
+                        errorInvalidEmailCount++;
+                    } else {
+                        isError = true;
+                        errorCountEmail++;
+                    }
                 }
                 if (isSms) {
-                    errorCountSms++;
+                    if (NotifyUtil.isInvalidPhoneNumberError(e.getCause())) {
+                        errorInvalidPhoneCount++;
+                    } else {
+                        isError = true;
+                        errorCountSms++;
+                    }
+                }
+                if (isError) {
+                    errorCount++;
+                    log.error(
+                        "Unable to send sent to court comms for {}",
+                        jurorDetail.getJurorNumber(), e
+                    );
                 }
                 if (notificationsSent.equals(EMAIL_NOTIFICATION_SENT)) {
                     jurorDetail.getJuror().setNotifications(notificationsSent);
@@ -152,14 +166,17 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
                 ? SchedulerServiceClient.Result.Status.SUCCESS
                 : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS, null,
             Map.of(
-                "SUCCESS_COUNT_EMAIL", "" + successCountEmail,
-                "SUCCESS_COUNT_SMS", "" + successCountSms,
-                "ERROR_COUNT_EMAIL", "" + errorCountEmail,
-                "ERROR_COUNT_SMS", "" + errorCountSms,
+                "SUCCESS_COUNT_EMAIL", String.valueOf(successCountEmail),
+                "SUCCESS_COUNT_SMS", String.valueOf(successCountSms),
+                "ERROR_COUNT_EMAIL", String.valueOf(errorCountEmail),
+                "ERROR_COUNT_SMS", String.valueOf(errorCountSms),
 
-                "SUCCESS_COUNT", "" + successCount,
-                "ERROR_COUNT", "" + errorCount,
-                "TOTAL_JURORS", "" + jurordetailList.size()
+                "COUNT_INVALID_EMAIL", String.valueOf(errorInvalidEmailCount),
+                "COUNT_INVALID_PHONE", String.valueOf(errorInvalidPhoneCount),
+
+                "SUCCESS_COUNT", String.valueOf(successCount),
+                "ERROR_COUNT", String.valueOf(errorCount),
+                "TOTAL_JURORS", String.valueOf(jurordetailList.size())
             ));
     }
 

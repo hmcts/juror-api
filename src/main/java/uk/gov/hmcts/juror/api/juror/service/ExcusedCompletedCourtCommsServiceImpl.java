@@ -20,6 +20,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolQueries;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.RegionNotifyTemplateQueriesMod;
 import uk.gov.hmcts.juror.api.moj.repository.RegionNotifyTemplateRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.utils.NotifyUtil;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
@@ -99,24 +100,32 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
             excusalMetrics.errorCount == 0 && completedMetrics.errorCount == 0
                 ? SchedulerServiceClient.Result.Status.SUCCESS
                 : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS, null,
-            Map.of(
-                "EXCUSAL_IDENTIFIED", "" + excusalMetrics.jurorPoolsIdentified,
-                "EXCUSAL_ERROR_COUNT", "" + excusalMetrics.errorCount,
-                "EXCUSAL_SUCCESS_COUNT", "" + excusalMetrics.successCount,
-                "EXCUSAL_MISSING_EMAIL_PHONE", "" + excusalMetrics.missingEmailAndPhone,
+            getMetaData(excusalMetrics, completedMetrics));
+    }
 
-                "COMPLETED_IDENTIFIED", "" + completedMetrics.jurorPoolsIdentified,
-                "COMPLETED_ERROR_COUNT", "" + completedMetrics.errorCount,
-                "COMPLETED_SUCCESS_COUNT", "" + completedMetrics.successCount,
-                "COMPLETED_MISSING_EMAIL_PHONE", "" + completedMetrics.missingEmailAndPhone
-            ));
+    private static Map<String, String> getMetaData(Metrics excusalMetrics, Metrics completedMetrics) {
+        Map<String, String> metaData = new HashMap<>();
+        metaData.put("EXCUSAL_IDENTIFIED", String.valueOf(excusalMetrics.jurorPoolsIdentified));
+        metaData.put("EXCUSAL_ERROR_COUNT", String.valueOf(excusalMetrics.errorCount));
+        metaData.put("EXCUSAL_INVALID_PHONE_COUNT", String.valueOf(excusalMetrics.invalidPhoneCount));
+        metaData.put("EXCUSAL_INVALID_EMAIL_COUNT", String.valueOf(excusalMetrics.invalidEmailAddressCount));
+        metaData.put("EXCUSAL_SUCCESS_COUNT", String.valueOf(excusalMetrics.successCount));
+        metaData.put("EXCUSAL_MISSING_EMAIL_PHONE", String.valueOf(excusalMetrics.missingEmailAndPhone));
+
+        metaData.put("COMPLETED_IDENTIFIED", String.valueOf(completedMetrics.jurorPoolsIdentified));
+        metaData.put("COMPLETED_ERROR_COUNT", String.valueOf(completedMetrics.errorCount));
+        metaData.put("COMPLETED_INVALID_PHONE_COUNT", String.valueOf(completedMetrics.invalidPhoneCount));
+        metaData.put("COMPLETED_INVALID_EMAIL_COUNT", String.valueOf(completedMetrics.invalidEmailAddressCount));
+        metaData.put("COMPLETED_SUCCESS_COUNT", String.valueOf(completedMetrics.successCount));
+        metaData.put("COMPLETED_MISSING_EMAIL_PHONE", String.valueOf(completedMetrics.missingEmailAndPhone));
+        return metaData;
     }
 
     public Proxy setUpConnection() {
         final NotifyConfigurationProperties.Proxy setUpProxy = notifyConfigurationProperties.getProxy();
         if (setUpProxy != null && setUpProxy.isEnabled()) {
             String setupHost = setUpProxy.getHost();
-            Integer setupPort = Integer.valueOf(setUpProxy.getPort());
+            int setupPort = Integer.parseInt(setUpProxy.getPort());
             Proxy.Type setupType = setUpProxy.getType();
             final InetSocketAddress socketAddress = new InetSocketAddress(setupHost, setupPort);
             proxy = new Proxy(setupType, socketAddress);
@@ -134,14 +143,6 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
         } catch (TransactionSystemException e) {
             Throwable cause = e.getRootCause();
             if (poolCourtDetailCompletedList.getJuror().getServiceCompCommsStatus() == null) {
-                log.trace(
-                    "ServiceCompCommsStatus is : {} - logging error",
-                    poolCourtDetailCompletedList.getJuror().getServiceCompCommsStatus()
-                );
-                log.info(
-                    "ServiceCompCommsStatus is : {} - logging error",
-                    poolCourtDetailCompletedList.getJuror().getServiceCompCommsStatus()
-                );
                 log.error(
                     "Failed to update db to {}. Manual update required. {}",
                     poolCourtDetailCompletedList.getJuror().getServiceCompCommsStatus(),
@@ -170,14 +171,6 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
         } catch (TransactionSystemException e) {
             Throwable cause = e.getRootCause();
             if (poolCourtDetailExcusalList.getJuror().getServiceCompCommsStatus() == null) {
-                log.trace(
-                    "ServiceCompCommsStatus is : {} - logging error",
-                    poolCourtDetailExcusalList.getJuror().getServiceCompCommsStatus()
-                );
-                log.info(
-                    "ServiceCompCommsStatus is : {} - logging error",
-                    poolCourtDetailExcusalList.getJuror().getServiceCompCommsStatus()
-                );
                 log.error(
                     "Failed to update db to {}. Manual update required. {}",
                     poolCourtDetailExcusalList.getJuror().getServiceCompCommsStatus(),
@@ -212,7 +205,6 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
         for (CourtRegionMod courtRegion : courtRegions) {
             String courtregionIds = courtRegion.getRegionId();
             regionIds.add(courtregionIds);
-
             log.info("CourtRegions {}", courtRegion.getRegionId());
 
         }
@@ -230,6 +222,8 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
         );
 
         int errorCount = 0;
+        int invalidPhoneCount = 0;
+        int invalidEmailCount = 0;
         int successCount = 0;
         int missingEmailAndPhone = 0;
         int missingApiKeyCount = 0;
@@ -375,20 +369,26 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
                     }
                 }
             } catch (NotificationClientException e) {
-                log.error("Failed to send via Notify: {}", e.getMessage(), e);
-                log.trace("Unable to send notify: {}", e.getHttpResult());
-                log.info("Unable to send notify: {}", e.getHttpResult());
+                log.info("Unable to send notify: {}", e.getMessage());
                 jurorCourtDetailExcusalList.getJuror().setServiceCompCommsStatus(updateMessageStatusNotSent);
 
                 updateCommsStatusFlagExcusal(jurorCourtDetailExcusalList);
-                errorCount++;
+                if (NotifyUtil.isInvalidPhoneNumberError(e)) {
+                    invalidPhoneCount++;
+                } else if (NotifyUtil.isInvalidEmailAddressError(e)) {
+                    invalidEmailCount++;
+                } else {
+                    log.error("Failed to send via Notify: {}", e.getMessage(), e);
+                    errorCount++;
+                }
             } catch (Exception e) {
-                log.info("Unexpected exception: {}", e.getMessage(), e);
+                log.error("Unexpected exception: {}", e.getMessage(), e);
                 errorCount++;
             }
         }
         return new Metrics(jurorCourtDetailListExcusal.size(), errorCount, successCount,
-            missingEmailAndPhone, missingApiKeyCount);
+            missingEmailAndPhone, missingApiKeyCount,
+            invalidPhoneCount, invalidEmailCount);
     }
 
     private Metrics processCompleted(Proxy gotProxy, Map<String, String> myRegionMap) {
@@ -401,6 +401,8 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
             jurorCourtDetailListCompleted.size()
         );
         int errorCount = 0;
+        int invalidPhoneCount = 0;
+        int invalidEmailCount = 0;
         int successCount = 0;
         int missingEmailAndPhone = 0;
         int missingApiKeyCount = 0;
@@ -537,25 +539,32 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
                     }
                 }
             } catch (NotificationClientException e) {
-
-                log.error("Failed to send via Notify: {}", e);
-                log.trace("Unable to send notify: {}", e.getHttpResult());
-                log.info("Unable to send notify: {}", e.getHttpResult());
+                log.info("Unable to send notify: {}", e.getMessage());
                 jurorCourtDetailCompletedList.getJuror().setServiceCompCommsStatus(updateMessageStatusNotSent);
-
                 updateCommsStatusFlagCompleted(jurorCourtDetailCompletedList);
                 errorCount++;
+                if (NotifyUtil.isInvalidPhoneNumberError(e)) {
+                    invalidPhoneCount++;
+                } else if (NotifyUtil.isInvalidEmailAddressError(e)) {
+                    invalidEmailCount++;
+                } else {
+                    log.error("Failed to send via Notify: {}", e.getMessage(), e);
+                    errorCount++;
+                }
+
             } catch (Exception e) {
-                log.info("Unexpected exception: {}", e);
+                log.error("Unexpected exception:", e);
                 errorCount++;
             }
         }
         return new Metrics(jurorCourtDetailListCompleted.size(), errorCount, successCount,
-            missingEmailAndPhone, missingApiKeyCount);
+            missingEmailAndPhone, missingApiKeyCount,
+            invalidPhoneCount, invalidEmailCount);
     }
 
     public record Metrics(int jurorPoolsIdentified, int errorCount, int successCount,
-                          int missingEmailAndPhone, int missingApiKeyCount) {
+                          int missingEmailAndPhone, int missingApiKeyCount,
+                          int invalidPhoneCount, int invalidEmailAddressCount) {
 
     }
 }
