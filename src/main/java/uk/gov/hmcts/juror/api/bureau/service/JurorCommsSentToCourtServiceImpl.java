@@ -170,10 +170,8 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
                 "SUCCESS_COUNT_SMS", String.valueOf(successCountSms),
                 "ERROR_COUNT_EMAIL", String.valueOf(errorCountEmail),
                 "ERROR_COUNT_SMS", String.valueOf(errorCountSms),
-
                 "COUNT_INVALID_EMAIL", String.valueOf(errorInvalidEmailCount),
                 "COUNT_INVALID_PHONE", String.valueOf(errorInvalidPhoneCount),
-
                 "SUCCESS_COUNT", String.valueOf(successCount),
                 "ERROR_COUNT", String.valueOf(errorCount),
                 "TOTAL_JURORS", String.valueOf(jurordetailList.size())
