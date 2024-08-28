@@ -2,7 +2,6 @@ package uk.gov.hmcts.juror.api.juror.service;
 
 import com.google.common.collect.Lists;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,20 +38,32 @@ import java.util.UUID;
 
 @Slf4j
 @Service
-@AllArgsConstructor(onConstructor = @__(@Autowired))
 public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessService {
 
     private final JurorPoolRepository jurorRepository;
-
     private final CourtRegionModRepository courtRegionModRepository;
     private final RegionNotifyTemplateRepositoryMod regionNotifyTemplateRepositoryMod;
-    private Proxy proxy;
+    private final NotifyConfigurationProperties notifyConfigurationProperties;
+    private final NotifyRegionsConfigurationProperties notifyRegionsConfigurationProperties;
     private final String messagePlaceHolderJurorNumber = "JURORNUMBER";
     private final String messagePlaceHolderlocationCode = "lOCATIONCODE";
     private final String updateMessageStatusSent = "SENTNOTIFY";
     private final String updateMessageStatusNotSent = "NOTSENT";
-    private final NotifyConfigurationProperties notifyConfigurationProperties;
-    private final NotifyRegionsConfigurationProperties notifyRegionsConfigurationProperties;
+    private Proxy proxy;
+
+    @Autowired
+    public ExcusedCompletedCourtCommsServiceImpl(
+        final JurorPoolRepository jurorRepository,
+        final CourtRegionModRepository courtRegionModRepository,
+        final NotifyConfigurationProperties notifyConfigurationProperties,
+        final NotifyRegionsConfigurationProperties notifyRegionsConfigurationProperties,
+        final RegionNotifyTemplateRepositoryMod regionNotifyTemplateRepositoryMod) {
+        this.jurorRepository = jurorRepository;
+        this.courtRegionModRepository = courtRegionModRepository;
+        this.notifyConfigurationProperties = notifyConfigurationProperties;
+        this.notifyRegionsConfigurationProperties = notifyRegionsConfigurationProperties;
+        this.regionNotifyTemplateRepositoryMod = regionNotifyTemplateRepositoryMod;
+    }
 
     /**
      * Implements a specific job execution.
