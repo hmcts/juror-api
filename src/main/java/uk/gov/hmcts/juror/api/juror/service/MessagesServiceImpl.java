@@ -5,6 +5,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,7 +46,6 @@ public class MessagesServiceImpl implements BureauProcessService {
     private static final String MESSAGE_PLACEHOLDER_JUROR = "JURORNUMBER";
     private static final String MESSAGE_READ = "SN";
     private static final String MESSAGE_READ_APP_ERROR = "NS";
-    private static final String MESSAGE_NOT_READ = "NR";
     private static final int CHECK_NUM = 1;
 
     private static final String LOG_ERROR_MESSAGE_TEMPLATE_ID = " Missing templateId. Cannot send notify "
@@ -144,10 +144,12 @@ public class MessagesServiceImpl implements BureauProcessService {
                 personalisation.put(MESSAGE_PLACEHOLDER_JUROR, jurorNumber);
 
 
-                final boolean isEmail = messagesDetail.getEmail() != null;
-                final boolean isPhone = messagesDetail.getPhone() != null;
+                final boolean isEmail = StringUtils.isNotBlank(messagesDetail.getEmail());
+                final boolean isPhone = StringUtils.isNotBlank(messagesDetail.getPhone());
 
                 if (!isEmail && !isPhone) {
+                    messagesDetail.setMessageRead(MESSAGE_READ_APP_ERROR);
+                    updateMessageFlag(messagesDetail);
                     missingEmailAndPhone++;
                     continue;
                 }
