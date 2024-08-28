@@ -144,8 +144,8 @@ public class MessagesServiceImpl implements BureauProcessService {
                 personalisation.put(MESSAGE_PLACEHOLDER_JUROR, jurorNumber);
 
 
-                final boolean isEmail = StringUtils.isNotBlank(messagesDetail.getEmail());
-                final boolean isPhone = StringUtils.isNotBlank(messagesDetail.getPhone());
+                final boolean isEmail = StringUtils.isNotBlank(email);
+                final boolean isPhone = StringUtils.isNotBlank(phoneNumber);
 
                 if (!isEmail && !isPhone) {
                     messagesDetail.setMessageRead(MESSAGE_READ_APP_ERROR);
