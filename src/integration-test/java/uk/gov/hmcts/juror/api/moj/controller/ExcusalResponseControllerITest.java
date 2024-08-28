@@ -39,7 +39,6 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
-import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -91,7 +90,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql","/db/ExcusalResponse_initPaperResponse.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/ExcusalResponse_initPaperResponse.sql"})
     public void refuseExcusalRequest_paperResponse_bureauUser_bureauOwner() throws Exception {
         final String jurorNumber = "123456789";
         final String login = "BUREAU_USER";
@@ -106,17 +105,19 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
             HttpMethod.PUT, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        executeInTransaction(() -> {
+            PaperResponse jurorPaperResponse = jurorPaperResponseRepository.findByJurorNumber(jurorNumber);
+            validatePaperResponseExcusal(jurorPaperResponse, login);
 
-        PaperResponse jurorPaperResponse = jurorPaperResponseRepository.findByJurorNumber(jurorNumber);
-        validatePaperResponseExcusal(jurorPaperResponse, login);
-
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
-        validateRefuseExcusal(jurorPool, excusalDecisionDto, login);
-        validateExcusalDeniedLetter();
+            JurorPool jurorPool = jurorPoolRepository
+                .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue("415", jurorNumber);
+            validateRefuseExcusal(jurorPool, excusalDecisionDto, login);
+            validateExcusalDeniedLetter();
+        });
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql","/db/ExcusalResponse_initPaperResponse.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/ExcusalResponse_initPaperResponse.sql"})
     public void refuseExcusalRequest_paperResponse_courtUser_courtOwner() throws Exception {
         final String jurorNumber = "987654321";
         final String login = "COURT_USER";
@@ -131,31 +132,33 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
             HttpMethod.PUT, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        executeInTransaction(() -> {
+            PaperResponse jurorPaperResponse =
+                jurorPaperResponseRepository.findByJurorNumber(jurorNumber);
+            validatePaperResponseExcusal(jurorPaperResponse, login);
 
-        PaperResponse jurorPaperResponse =
-            jurorPaperResponseRepository.findByJurorNumber(jurorNumber);
-        validatePaperResponseExcusal(jurorPaperResponse, login);
+            JurorPool jurorPool = jurorPoolRepository
+                .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue("415", jurorNumber);
+            validateRefuseExcusal(jurorPool, excusalDecisionDto, login);
 
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
-        validateRefuseExcusal(jurorPool, excusalDecisionDto, login);
+            Iterable<BulkPrintData> bulkPrintDataIterable = bulkPrintDataRepository.findAll();
+            List<BulkPrintData> bulkPrintData = new ArrayList<>();
+            bulkPrintDataIterable.forEach((data) -> {
+                if (data.getFormAttribute().getFormType().equals(FormCode.BI_EXCUSALDENIED.getCode())
+                    || data.getFormAttribute().getFormType().equals(FormCode.ENG_EXCUSALDENIED.getCode())) {
+                    bulkPrintData.add(data);
+                }
+            });
 
-        Iterable<BulkPrintData> bulkPrintDataIterable = bulkPrintDataRepository.findAll();
-        List<BulkPrintData> bulkPrintData = new ArrayList<>();
-        bulkPrintDataIterable.forEach((data) -> {
-            if (data.getFormAttribute().getFormType().equals(FormCode.BI_EXCUSALDENIED.getCode())
-                || data.getFormAttribute().getFormType().equals(FormCode.ENG_EXCUSALDENIED.getCode())) {
-                bulkPrintData.add(data);
-            }
+            // there should be zero letters as this is a court journey
+            assertThat(bulkPrintData.size())
+                .as("Expect zero letters to be queued in the bulk print table")
+                .isEqualTo(0);
         });
-
-        // there should be zero letters as this is a court journey
-        assertThat(bulkPrintData.size())
-            .as("Expect zero letters to be queued in the bulk print table")
-            .isEqualTo(0);
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql","/db/ExcusalResponse_initPaperResponse.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/ExcusalResponse_initPaperResponse.sql"})
     public void grantExcusalRequest_paperResponse_bureauUser_bureauOwner() throws Exception {
         final String jurorNumber = "123456789";
         final String login = "BUREAU_USER";
@@ -171,19 +174,21 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
             HttpMethod.PUT, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        executeInTransaction(() -> {
+            PaperResponse jurorPaperResponse =
+                jurorPaperResponseRepository.findByJurorNumber(jurorNumber);
+            validatePaperResponseExcusal(jurorPaperResponse, login);
 
-        PaperResponse jurorPaperResponse =
-            jurorPaperResponseRepository.findByJurorNumber(jurorNumber);
-        validatePaperResponseExcusal(jurorPaperResponse, login);
+            JurorPool jurorPool = jurorPoolRepository
+                .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue("415", jurorNumber);
+            validateExcusal(jurorPool, excusalDecisionDto, login);
 
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
-        validateExcusal(jurorPool, excusalDecisionDto, login);
-
-        validateExcusalLetter(excusalDecisionDto.getExcusalReasonCode());
+            validateExcusalLetter(excusalDecisionDto.getExcusalReasonCode());
+        });
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql","/db/ExcusalResponse_initPaperResponse.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/ExcusalResponse_initPaperResponse.sql"})
     public void grantExcusalRequest_paperResponse_courtUser_courtOwner() throws Exception {
         final String jurorNumber = "987654321";
         final String login = "COURT_USER";
@@ -199,17 +204,19 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
             HttpMethod.PUT, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        executeInTransaction(() -> {
+            PaperResponse jurorPaperResponse =
+                jurorPaperResponseRepository.findByJurorNumber(jurorNumber);
+            validatePaperResponseExcusal(jurorPaperResponse, login);
 
-        PaperResponse jurorPaperResponse =
-            jurorPaperResponseRepository.findByJurorNumber(jurorNumber);
-        validatePaperResponseExcusal(jurorPaperResponse, login);
-
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
-        validateExcusal(jurorPool, excusalDecisionDto, login);
+            JurorPool jurorPool = jurorPoolRepository
+                .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue("415", jurorNumber);
+            validateExcusal(jurorPool, excusalDecisionDto, login);
+        });
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql","/db/ExcusalResponse_initDigitalResponse.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/ExcusalResponse_initDigitalResponse.sql"})
     public void refuseExcusalRequest_digitalResponse_bureauUser_bureauOwner() throws Exception {
         final String jurorNumber = "111222333";
         final String login = "BUREAU_USER";
@@ -225,17 +232,19 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
             HttpMethod.PUT, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        executeInTransaction(() -> {
+            DigitalResponse jurorResponse = jurorResponseRepository.findByJurorNumber(jurorNumber);
+            validateDigitalResponseExcusal(jurorResponse, login);
 
-        DigitalResponse jurorResponse = jurorResponseRepository.findByJurorNumber(jurorNumber);
-        validateDigitalResponseExcusal(jurorResponse, login);
-
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
-        validateRefuseExcusal(jurorPool, excusalDecisionDto, login);
-        validateExcusalDeniedLetter();
+            JurorPool jurorPool = jurorPoolRepository
+                .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue("415", jurorNumber);
+            validateRefuseExcusal(jurorPool, excusalDecisionDto, login);
+            validateExcusalDeniedLetter();
+        });
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql","/db/ExcusalResponse_initDigitalResponse.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/ExcusalResponse_initDigitalResponse.sql"})
     public void refuseExcusalRequest_digitalResponse_courtUser_courtOwner() throws Exception {
         final String jurorNumber = "333222111";
         final String login = "COURT_USER";
@@ -251,25 +260,27 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
             HttpMethod.PUT, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        executeInTransaction(() -> {
+            DigitalResponse jurorResponse = jurorResponseRepository.findByJurorNumber(jurorNumber);
+            validateDigitalResponseExcusal(jurorResponse, login);
 
-        DigitalResponse jurorResponse = jurorResponseRepository.findByJurorNumber(jurorNumber);
-        validateDigitalResponseExcusal(jurorResponse, login);
+            JurorPool jurorPool = jurorPoolRepository
+                .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue("415", jurorNumber);
+            validateRefuseExcusal(jurorPool, excusalDecisionDto, login);
+            Iterable<BulkPrintData> bulkPrintDataIterable = bulkPrintDataRepository.findAll();
+            List<BulkPrintData> bulkPrintData = new ArrayList<>();
+            bulkPrintDataIterable.forEach((data) -> {
+                if (data.getFormAttribute().getFormType().equals(FormCode.BI_EXCUSALDENIED.getCode())
+                    || data.getFormAttribute().getFormType().equals(FormCode.ENG_EXCUSALDENIED.getCode())) {
+                    bulkPrintData.add(data);
+                }
+            });
 
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
-        validateRefuseExcusal(jurorPool, excusalDecisionDto, login);
-        Iterable<BulkPrintData> bulkPrintDataIterable = bulkPrintDataRepository.findAll();
-        List<BulkPrintData> bulkPrintData = new ArrayList<>();
-        bulkPrintDataIterable.forEach((data) -> {
-            if (data.getFormAttribute().getFormType().equals(FormCode.BI_EXCUSALDENIED.getCode())
-                || data.getFormAttribute().getFormType().equals(FormCode.ENG_EXCUSALDENIED.getCode())) {
-                bulkPrintData.add(data);
-            }
+            // there should be zero letters as this is a court journey
+            assertThat(bulkPrintData.size())
+                .as("Expect zero letters to be queued in the bulk print table")
+                .isEqualTo(0);
         });
-
-        // there should be zero letters as this is a court journey
-        assertThat(bulkPrintData.size())
-            .as("Expect zero letters to be queued in the bulk print table")
-            .isEqualTo(0);
     }
 
     @Test
@@ -290,17 +301,19 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
             HttpMethod.PUT, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        executeInTransaction(() -> {
+            DigitalResponse jurorResponse = jurorResponseRepository.findByJurorNumber(jurorNumber);
+            validateDigitalResponseExcusal(jurorResponse, login);
 
-        DigitalResponse jurorResponse = jurorResponseRepository.findByJurorNumber(jurorNumber);
-        validateDigitalResponseExcusal(jurorResponse, login);
-
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
-        validateExcusal(jurorPool, excusalDecisionDto, login);
-        validateExcusalLetter(excusalDecisionDto.getExcusalReasonCode());
+            JurorPool jurorPool = jurorPoolRepository
+                .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue("415", jurorNumber);
+            validateExcusal(jurorPool, excusalDecisionDto, login);
+            validateExcusalLetter(excusalDecisionDto.getExcusalReasonCode());
+        });
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql","/db/ExcusalResponse_initDigitalResponse.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/ExcusalResponse_initDigitalResponse.sql"})
     public void grantExcusalRequest_digitalResponse_courtUser_courtOwner() throws Exception {
         final String jurorNumber = "333222111";
         final String login = "COURT_USER";
@@ -317,16 +330,18 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
             HttpMethod.PUT, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        executeInTransaction(() -> {
+            DigitalResponse jurorResponse = jurorResponseRepository.findByJurorNumber(jurorNumber);
+            validateDigitalResponseExcusal(jurorResponse, login);
 
-        DigitalResponse jurorResponse = jurorResponseRepository.findByJurorNumber(jurorNumber);
-        validateDigitalResponseExcusal(jurorResponse, login);
-
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
-        validateExcusal(jurorPool, excusalDecisionDto, login);
+            JurorPool jurorPool = jurorPoolRepository
+                .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue("415", jurorNumber);
+            validateExcusal(jurorPool, excusalDecisionDto, login);
+        });
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql","/db/ExcusalResponse_initPaperResponse.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/ExcusalResponse_initPaperResponse.sql"})
     public void grantExcusalRequest_excusalCodeDeceased() throws Exception {
         final String jurorNumber = "123456789";
         final String login = "BUREAU_USER";
@@ -343,17 +358,19 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
             HttpMethod.PUT, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        executeInTransaction(() -> {
+            PaperResponse jurorPaperResponse = jurorPaperResponseRepository.findByJurorNumber(jurorNumber);
+            validatePaperResponseExcusal(jurorPaperResponse, login);
 
-        PaperResponse jurorPaperResponse = jurorPaperResponseRepository.findByJurorNumber(jurorNumber);
-        validatePaperResponseExcusal(jurorPaperResponse, login);
-
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
-        validateExcusal(jurorPool, excusalDecisionDto, login);
-        validateExcusalLetter(excusalDecisionDto.getExcusalReasonCode());
+            JurorPool jurorPool = jurorPoolRepository
+                .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue("415", jurorNumber);
+            validateExcusal(jurorPool, excusalDecisionDto, login);
+            validateExcusalLetter(excusalDecisionDto.getExcusalReasonCode());
+        });
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql","/db/ExcusalResponse_initPaperResponse.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/ExcusalResponse_initPaperResponse.sql"})
     public void excusalRequest_bureauUser_courtOwner() throws Exception {
         final String jurorNumber = "987654321";
         final String login = "BUREAU_USER";
@@ -371,7 +388,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql","/db/ExcusalResponse_initPaperResponse.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/ExcusalResponse_initPaperResponse.sql"})
     public void excusalRequest_courtUser_bureauOwner() throws Exception {
         final String jurorNumber = "123456789";
         final String login = "COURT_USER";
@@ -389,7 +406,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql","/db/ExcusalResponse_initPaperResponse.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/ExcusalResponse_initPaperResponse.sql"})
     public void excusalRequest_paperResponse_alreadyProcessed() throws Exception {
         final String jurorNumber = "111111111";
         final String login = "BUREAU_USER";
@@ -407,17 +424,19 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
             HttpMethod.PUT, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        executeInTransaction(() -> {
+            PaperResponse jurorPaperResponse = jurorPaperResponseRepository.findByJurorNumber(jurorNumber);
+            validatePaperResponseExcusal(jurorPaperResponse, login);
 
-        PaperResponse jurorPaperResponse = jurorPaperResponseRepository.findByJurorNumber(jurorNumber);
-        validatePaperResponseExcusal(jurorPaperResponse, login);
-
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
-        validateExcusal(jurorPool, excusalDecisionDto, login);
-        validateExcusalLetter(excusalDecisionDto.getExcusalReasonCode());
+            JurorPool jurorPool = jurorPoolRepository
+                .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue("415", jurorNumber);
+            validateExcusal(jurorPool, excusalDecisionDto, login);
+            validateExcusalLetter(excusalDecisionDto.getExcusalReasonCode());
+        });
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql","/db/ExcusalResponse_initDigitalResponse.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/ExcusalResponse_initDigitalResponse.sql"})
     public void excusalRequest_digitalResponse_alreadyProcessed() throws Exception {
         final String jurorNumber = "222222222";
         final String login = "BUREAU_USER";
@@ -438,7 +457,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql","/db/ExcusalResponse_initPaperResponse.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/ExcusalResponse_initPaperResponse.sql"})
     public void excusalRequest_invalidExcusalCode() throws Exception {
         final String jurorNumber = "123456789";
         final String login = "BUREAU_USER";
@@ -457,7 +476,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql","/db/ExcusalResponse_initPaperResponse.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/ExcusalResponse_initPaperResponse.sql"})
     public void excusalRequest_paperResponse_doesNotExist() throws Exception {
         final String jurorNumber = "222222222";
         final String login = "BUREAU_USER";
@@ -472,10 +491,12 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
             HttpMethod.PUT, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
-        validateExcusal(jurorPool, excusalDecisionDto, login);
-        validateExcusalLetter(excusalDecisionDto.getExcusalReasonCode());
+        executeInTransaction(() -> {
+            JurorPool jurorPool = jurorPoolRepository
+                .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue("415", jurorNumber);
+            validateExcusal(jurorPool, excusalDecisionDto, login);
+            validateExcusalLetter(excusalDecisionDto.getExcusalReasonCode());
+        });
     }
 
     private void validatePaperResponseExcusal(PaperResponse jurorPaperResponse, String login) {
@@ -497,101 +518,110 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
     }
 
     private void validateRefuseExcusal(JurorPool jurorPool, ExcusalDecisionDto excusalDecisionDto, String login) {
-        Juror juror = jurorPool.getJuror();
-        assertThat(juror.isResponded())
-            .as("Juror record should be updated and marked as responded")
-            .isTrue();
-        assertThat(juror.getExcusalDate())
-            .as("Juror record should be updated with an excusal date")
-            .isNotNull();
-        assertThat(juror.getExcusalCode())
-            .as("Juror record should be update with an excusal code")
-            .isEqualTo(excusalDecisionDto.getExcusalReasonCode());
-        assertThat(juror.getUserEdtq())
-            .as("Current user should be recorded in juror record as last to make changes")
-            .isEqualTo(login);
-        assertThat(juror.getExcusalRejected())
-            .as("Juror record should be updated to show excusal was rejected")
-            .isEqualTo("Y");
-        assertThat(jurorPool.getStatus().getStatus())
-            .as("Juror record should be updated to show they have responded")
-            .isEqualTo(IJurorStatus.RESPONDED);
+        executeInTransaction(() -> {
+            Juror juror = jurorPool.getJuror();
+            assertThat(juror.isResponded())
+                .as("Juror record should be updated and marked as responded")
+                .isTrue();
+            assertThat(juror.getExcusalDate())
+                .as("Juror record should be updated with an excusal date")
+                .isNotNull();
+            assertThat(juror.getExcusalCode())
+                .as("Juror record should be update with an excusal code")
+                .isEqualTo(excusalDecisionDto.getExcusalReasonCode());
+            assertThat(juror.getUserEdtq())
+                .as("Current user should be recorded in juror record as last to make changes")
+                .isEqualTo(login);
+            assertThat(juror.getExcusalRejected())
+                .as("Juror record should be updated to show excusal was rejected")
+                .isEqualTo("Y");
+            assertThat(jurorPool.getStatus().getStatus())
+                .as("Juror record should be updated to show they have responded")
+                .isEqualTo(IJurorStatus.RESPONDED);
 
-        LocalDate yesterday = LocalDate.now().minusDays(1);
-        List<JurorHistory> jurorHistory = jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(
-            jurorPool.getJurorNumber(), yesterday);
-        assertThat(jurorHistory.stream()
-            .anyMatch(jurorHist -> jurorHist.getHistoryCode().equals(HistoryCodeMod.RESPONDED_POSITIVELY)))
-            .as("Expect history record to be created to show juror now responded")
-            .isTrue();
+            LocalDate yesterday = LocalDate.now().minusDays(1);
+            List<JurorHistory> jurorHistory = jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(
+                jurorPool.getJurorNumber(), yesterday);
+            assertThat(jurorHistory.stream()
+                .anyMatch(jurorHist -> jurorHist.getHistoryCode().equals(HistoryCodeMod.RESPONDED_POSITIVELY)))
+                .as("Expect history record to be created to show juror now responded")
+                .isTrue();
+        });
     }
 
     private void validateExcusalDeniedLetter() {
-        Iterable<BulkPrintData> bulkPrintDataIterable = bulkPrintDataRepository.findAll();
-        List<BulkPrintData> bulkPrintData = new ArrayList<>();
-        bulkPrintDataIterable.forEach((data) -> {
-            if (data.getFormAttribute().getFormType().equals(FormCode.BI_EXCUSALDENIED.getCode())
-                || data.getFormAttribute().getFormType().equals(FormCode.ENG_EXCUSALDENIED.getCode())) {
-                bulkPrintData.add(data);
-            }
-        })
-        ;
+        executeInTransaction(() -> {
+            Iterable<BulkPrintData> bulkPrintDataIterable = bulkPrintDataRepository.findAll();
+            List<BulkPrintData> bulkPrintData = new ArrayList<>();
+            bulkPrintDataIterable.forEach((data) -> {
+                if (data.getFormAttribute().getFormType().equals(FormCode.BI_EXCUSALDENIED.getCode())
+                    || data.getFormAttribute().getFormType().equals(FormCode.ENG_EXCUSALDENIED.getCode())) {
+                    bulkPrintData.add(data);
+                }
+            })
+            ;
 
-        assertThat(bulkPrintData.size())
-            .as("Expect a single excusal denied letter to exist")
-            .isEqualTo(1);
+            assertThat(bulkPrintData.size())
+                .as("Expect a single excusal denied letter to exist")
+                .isEqualTo(1);
+        });
     }
 
     private void validateExcusal(JurorPool jurorPool, ExcusalDecisionDto excusalDecisionDto, String login) {
-        Juror juror = jurorPool.getJuror();
-        assertThat(juror.isResponded())
-            .as("Juror record should be updated and marked as responded")
-            .isTrue();
-        assertThat(juror.getExcusalDate())
-            .as("Juror record should be updated with an excusal date")
-            .isNotNull();
-        assertThat(juror.getExcusalCode())
-            .as("Juror record should be update with an excusal code")
-            .isEqualTo(excusalDecisionDto.getExcusalReasonCode());
-        assertThat(juror.getUserEdtq())
-            .as("Current user should be recorded in juror record as last to make changes")
-            .isEqualTo(login);
-        if (excusalDecisionDto.getExcusalDecision().equals(REFUSE)) {
-            assertThat(jurorPool.getStatus().getStatus())
-                .as("Juror record should be updated to show they are responded")
-                .isEqualTo(IJurorStatus.RESPONDED);
-        } else {
-            assertThat(jurorPool.getStatus().getStatus())
-                .as("Juror record should be updated to show they are excused")
-                .isEqualTo(IJurorStatus.EXCUSED);
-        }
-        assertThat(jurorPool.getNextDate())
-            .as("Next date should be set to null as Juror has been excused")
-            .isNull();
+        executeInTransaction(() -> {
+            Juror juror = jurorPool.getJuror();
+            assertThat(juror.isResponded())
+                .as("Juror record should be updated and marked as responded")
+                .isTrue();
+            assertThat(juror.getExcusalDate())
+                .as("Juror record should be updated with an excusal date")
+                .isNotNull();
+            assertThat(juror.getExcusalCode())
+                .as("Juror record should be update with an excusal code")
+                .isEqualTo(excusalDecisionDto.getExcusalReasonCode());
+            assertThat(juror.getUserEdtq())
+                .as("Current user should be recorded in juror record as last to make changes")
+                .isEqualTo(login);
+            if (excusalDecisionDto.getExcusalDecision().equals(REFUSE)) {
+                assertThat(jurorPool.getStatus().getStatus())
+                    .as("Juror record should be updated to show they are responded")
+                    .isEqualTo(IJurorStatus.RESPONDED);
+            } else {
+                assertThat(jurorPool.getStatus().getStatus())
+                    .as("Juror record should be updated to show they are excused")
+                    .isEqualTo(IJurorStatus.EXCUSED);
+            }
+            assertThat(jurorPool.getNextDate())
+                .as("Next date should be set to null as Juror has been excused")
+                .isNull();
 
-        LocalDate yesterday = LocalDate.now().minusDays(1);
-        List<JurorHistory> jurorHistoryList = jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(
-            juror.getJurorNumber(), yesterday);
-        assertThat(jurorHistoryList.stream()
-            .anyMatch(jurorHistory -> jurorHistory.getHistoryCode().equals(HistoryCodeMod.EXCUSE_POOL_MEMBER)))
-            .as("Expect history record to be created for excusal refusal")
-            .isTrue();
+            LocalDate yesterday = LocalDate.now().minusDays(1);
+            List<JurorHistory> jurorHistoryList =
+                jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(
+                    juror.getJurorNumber(), yesterday);
+            assertThat(jurorHistoryList.stream()
+                .anyMatch(jurorHistory -> jurorHistory.getHistoryCode().equals(HistoryCodeMod.EXCUSE_POOL_MEMBER)))
+                .as("Expect history record to be created for excusal refusal")
+                .isTrue();
+        });
     }
 
     private void validateExcusalLetter(String excusalCode) {
-        Iterable<BulkPrintData> excusalLetterIterable = bulkPrintDataRepository.findAll();
-        List<BulkPrintData> excusalLetters = new ArrayList<>();
-        excusalLetterIterable.forEach(excusalLetters::add);
+        executeInTransaction(() -> {
+            Iterable<BulkPrintData> excusalLetterIterable = bulkPrintDataRepository.findAll();
+            List<BulkPrintData> excusalLetters = new ArrayList<>();
+            excusalLetterIterable.forEach(excusalLetters::add);
 
-        if (ExcusalCodeEnum.D.getCode().equals(excusalCode)) {
-            assertThat(excusalLetters.size())
-                .as("Expect no excusal letter for deceased jurors")
-                .isEqualTo(0);
-        } else {
-            assertThat(excusalLetters.size())
-                .as("Expect a single excusal letter to exist")
-                .isEqualTo(1);
-        }
+            if (ExcusalCodeEnum.D.getCode().equals(excusalCode)) {
+                assertThat(excusalLetters.size())
+                    .as("Expect no excusal letter for deceased jurors")
+                    .isEqualTo(0);
+            } else {
+                assertThat(excusalLetters.size())
+                    .as("Expect a single excusal letter to exist")
+                    .isEqualTo(1);
+            }
+        });
     }
 
     private ExcusalDecisionDto createExcusalDecisionDto() {

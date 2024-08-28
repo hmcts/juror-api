@@ -58,7 +58,6 @@ import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.PoolMemberSequenceService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.service.SummonsReplyMergeService;
-import uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
@@ -205,7 +204,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             updateJurorHistory(newJurorPool, newJurorPool.getPoolNumber(), auditorUsername,
                 JurorHistory.ADDED, HistoryCodeMod.DEFERRED_POOL_MEMBER);
 
-            printDeferralAndConfirmationLetters(payload.getOwner(), jurorPool, newJurorPool);
+            printDeferralLetter(payload.getOwner(), jurorPool);
+            printConfirmationLetter(payload.getOwner(), newJurorPool);
         } else {
             //this is for the deferral journey to move them to deferred state
             setupDeferralEntry(deferralReasonDto, auditorUsername, jurorPool);
@@ -256,7 +256,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             updateJurorHistory(newJurorPool, newJurorPool.getPoolNumber(), auditorUsername, JurorHistory.ADDED,
                 HistoryCodeMod.DEFERRED_POOL_MEMBER);
 
-            printDeferralAndConfirmationLetters(payload.getOwner(), jurorPool, newJurorPool);
+            printConfirmationLetter(payload.getOwner(), newJurorPool);
+            printDeferralLetter(payload.getOwner(), jurorPool);
 
         } else {
             //this is for the deferral journey to move them to DEFER_DBF
@@ -646,44 +647,25 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         jurorRepository.save(juror);
     }
 
-    private void printDeferralAndConfirmationLetters(String owner, JurorPool jurorPool, JurorPool newJurorPool) {
-        // send letters via bulk print for Bureau users only
-        if (JurorDigitalApplication.JUROR_OWNER.equals(owner)) {
-            printDataService.checkLetterInBulkPrint(jurorPool.getJurorNumber(), getLetterCode(newJurorPool),
-                LocalDate.now(), false);
-
-            printDataService.printDeferralLetter(jurorPool);
-            jurorHistoryService.createDeferredLetterHistory(jurorPool);
-            Juror juror = jurorPool.getJuror();
-            if (juror.getPoliceCheck() != null && juror.getPoliceCheck().isChecked()) {
-                printDataService.printConfirmationLetter(newJurorPool);
-                jurorHistoryService.createConfirmationLetterHistory(newJurorPool, "Confirmation Letter");
-            }
-        }
-    }
-
     private void printDeferralLetter(String owner, JurorPool jurorPool) {
         // send letter via bulk print for Bureau users only
         if (JurorDigitalApplication.JUROR_OWNER.equals(owner)) {
-            printDataService.checkLetterInBulkPrint(jurorPool.getJurorNumber(), getLetterCode(jurorPool),
-                LocalDate.now(), false);
+
+            printDataService.removeQueuedLetterForJuror(jurorPool, List.of(FormCode.ENG_DEFERRAL,
+                FormCode.BI_DEFERRAL));
 
             printDataService.printDeferralLetter(jurorPool);
             jurorHistoryService.createDeferredLetterHistory(jurorPool);
         }
-    }
-
-    private String getLetterCode(JurorPool jurorPool) {
-        CourtLocation courtLocation = jurorPool.getCourt();
-
-        return CourtLocationUtils.isWelshCourtLocation(welshCourtLocationRepository,
-            courtLocation.getLocCode())
-            ? FormCode.BI_DEFERRAL.getCode() : FormCode.ENG_DEFERRAL.getCode();
     }
 
     private void printConfirmationLetter(String owner, JurorPool jurorPool) {
         if (JurorDigitalApplication.JUROR_OWNER.equals(owner)) {
             // send letter via bulk print for Bureau users only
+
+            printDataService.removeQueuedLetterForJuror(jurorPool, List.of(FormCode.ENG_CONFIRMATION,
+                FormCode.BI_CONFIRMATION));
+
             Juror juror = jurorPool.getJuror();
             if (juror.getPoliceCheck() != null && juror.getPoliceCheck().isChecked()) {
                 printDataService.printConfirmationLetter(jurorPool);

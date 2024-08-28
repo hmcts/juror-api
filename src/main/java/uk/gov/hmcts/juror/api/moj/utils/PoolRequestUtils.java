@@ -5,10 +5,14 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
 public final class PoolRequestUtils {
+
+    public static final List<String> POOL_TYPES_DESC_LIST = Arrays.asList("CIVIL COURT", "CROWN COURT", "HIGH COURT");
 
     private PoolRequestUtils() {
 

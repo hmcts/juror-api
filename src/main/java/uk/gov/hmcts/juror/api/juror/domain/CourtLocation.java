@@ -155,7 +155,7 @@ public class CourtLocation implements Serializable, ICourtLocation {
     private Integer votersLock;
 
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "region_id")
     @NotAudited
     private CourtRegionMod courtRegion;
@@ -177,7 +177,7 @@ public class CourtLocation implements Serializable, ICourtLocation {
     @NotAudited
     private Courtroom assemblyRoom;
 
-    @OneToMany(mappedBy = "courtLocation")
+    @OneToMany(mappedBy = "courtLocation", fetch = FetchType.LAZY)
     @NotAudited
     private List<PoolRequest> poolRequests;
 

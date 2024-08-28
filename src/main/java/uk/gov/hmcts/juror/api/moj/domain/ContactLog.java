@@ -68,7 +68,7 @@ public class ContactLog implements Serializable {
     private LocalDateTime endCall;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "enquiry_type", referencedColumnName = "enquiry_code")
     @Enumerated(EnumType.STRING)
     private ContactCode enquiryType;

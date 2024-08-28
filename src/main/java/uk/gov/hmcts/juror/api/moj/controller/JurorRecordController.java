@@ -302,7 +302,6 @@ public class JurorRecordController {
      * Perform a change of name, bypassing the approval process. This is intended to only be used for small "fixes" to
      * a juror's name to help them pass a police check, for example, removing special characters.
      * <p/>
-     * This can only be performed by court users and bureau team leaders
      *
      * @param payload             JSON Web Token containing user authentication context
      * @param jurorNameDetailsDto Update juror name details to persist on the juror record
@@ -317,14 +316,6 @@ public class JurorRecordController {
                              @Size(min = 9, max = 9)
                              @PathVariable("jurorNumber")
                              @Valid @JurorNumber String jurorNumber) {
-        boolean isBureauUser = SecurityUtil.isBureau();
-        boolean isTeamLeader = SecurityUtil.isBureauManager();
-
-        if (isBureauUser && !isTeamLeader) {
-            throw new MojException.Forbidden("User has insufficient permission to perform "
-                + "the fix juror name action", null);
-        }
-
         jurorRecordService.fixErrorInJurorName(payload, jurorNumber, jurorNameDetailsDto);
     }
 

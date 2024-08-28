@@ -1808,37 +1808,40 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     }
 
     private void validateReassignedJuror(String jurorNumber, String sourcePool, String receivingPool) {
-        // check the old record is now inactive
-        JurorPool oldJurorPool = jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber("400", jurorNumber,
-            sourcePool).get();
-        assertThat(oldJurorPool).isNotNull();
-        assertThat(oldJurorPool.getStatus().getStatus()).isEqualTo(8L);
-        assertThat(oldJurorPool.getNextDate()).isNull();
+        executeInTransaction(() -> {
+            // check the old record is now inactive
+            JurorPool oldJurorPool =
+                jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber("400", jurorNumber,
+                    sourcePool).get();
+            assertThat(oldJurorPool).isNotNull();
+            assertThat(oldJurorPool.getStatus().getStatus()).isEqualTo(8L);
+            assertThat(oldJurorPool.getNextDate()).isNull();
 
-        // check there is a new record created for reassigned juror
-        JurorPool newJurorPool = jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber("400", jurorNumber,
-            receivingPool).get();
-        assertThat(newJurorPool).isNotNull();
-        assertThat(newJurorPool.getStatus().getStatus()).isEqualTo(2L);
+            // check there is a new record created for reassigned juror
+            JurorPool newJurorPool =
+                jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber("400", jurorNumber,
+                    receivingPool).get();
+            assertThat(newJurorPool).isNotNull();
+            assertThat(newJurorPool.getStatus().getStatus()).isEqualTo(2L);
 
-        assertThat(newJurorPool.getIsActive()).isTrue();
+            assertThat(newJurorPool.getIsActive()).isTrue();
 
-        verifyCopiedFields(oldJurorPool.getJuror(), newJurorPool.getJuror());
+            verifyCopiedFields(oldJurorPool.getJuror(), newJurorPool.getJuror());
 
-        // database should have service start date 10 days in the future
-        LocalDate serviceStartDate = LocalDate.now().plusDays(10);
-        assertThat(newJurorPool.getNextDate()).isEqualTo(serviceStartDate);
+            // database should have service start date 10 days in the future
+            LocalDate serviceStartDate = LocalDate.now().plusDays(10);
+            assertThat(newJurorPool.getNextDate()).isEqualTo(serviceStartDate);
 
-        // check there is a cert letter queued, should be one only
-        Optional<BulkPrintData> confirmLetter = bulkPrintDataRepository.findLatestPendingLetterForJuror(jurorNumber,
-            FormCode.ENG_CONFIRMATION.getCode());
+            // check there is a cert letter queued, should be one only
+            Optional<BulkPrintData> confirmLetter = bulkPrintDataRepository.findLatestPendingLetterForJuror(jurorNumber,
+                FormCode.ENG_CONFIRMATION.getCode());
 
-        if (confirmLetter.isPresent()) {
-            assertThat(confirmLetter.get().getJurorNo()).isEqualTo(jurorNumber);
-        } else {
-            fail("No confirmation letter found for juror: " + jurorNumber);
-        }
-
+            if (confirmLetter.isPresent()) {
+                assertThat(confirmLetter.get().getJurorNo()).isEqualTo(jurorNumber);
+            } else {
+                fail("No confirmation letter found for juror: " + jurorNumber);
+            }
+        });
     }
 
     private static void verifyCopiedFields(Juror oldJuror, Juror newJuror) {
@@ -1966,220 +1969,223 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     private void transferJurorPoolValidateNewlyCreatedJurorPool(String jurorNumber, String sourcePoolNumber,
                                                                 String targetPoolNumber, String targetLocCode,
                                                                 LocalDate targetStartDate, String currentUser) {
-        JurorPool sourceJurorPool =
-            jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber,
-                sourcePoolNumber, true).get();
-        JurorPool targetJurorPool =
-            jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber,
-                targetPoolNumber, true).get();
+        executeInTransaction(() -> {
+            JurorPool sourceJurorPool =
+                jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber,
+                    sourcePoolNumber, true).get();
+            JurorPool targetJurorPool =
+                jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber,
+                    targetPoolNumber, true).get();
 
-        // derived properties
-        assertThat(targetJurorPool.getOwner())
-            .as("Expect property to be derived for new juror record")
-            .isEqualTo(targetLocCode);
-        assertThat(targetJurorPool.getPoolNumber())
-            .as("Expect property to be derived for new juror record")
-            .isEqualTo(targetPoolNumber);
-        assertThat(targetJurorPool.getNextDate())
-            .as("Expect property to be derived for new juror record")
-            .isEqualTo(targetStartDate);
-        assertThat(targetJurorPool.getUserEdtq())
-            .as("Expect property to be derived for new juror record")
-            .isEqualTo(currentUser);
-        assertThat(targetJurorPool.getCourt().getLocCode())
-            .as("Expect property to be derived for new juror record")
-            .isEqualTo(targetLocCode);
+            // derived properties
+            assertThat(targetJurorPool.getOwner())
+                .as("Expect property to be derived for new juror record")
+                .isEqualTo(targetLocCode);
+            assertThat(targetJurorPool.getPoolNumber())
+                .as("Expect property to be derived for new juror record")
+                .isEqualTo(targetPoolNumber);
+            assertThat(targetJurorPool.getNextDate())
+                .as("Expect property to be derived for new juror record")
+                .isEqualTo(targetStartDate);
+            assertThat(targetJurorPool.getUserEdtq())
+                .as("Expect property to be derived for new juror record")
+                .isEqualTo(currentUser);
+            assertThat(targetJurorPool.getCourt().getLocCode())
+                .as("Expect property to be derived for new juror record")
+                .isEqualTo(targetLocCode);
 
-        // copied properties
-        Juror targetJuror = targetJurorPool.getJuror();
-        Juror sourceJuror = sourceJurorPool.getJuror();
-        assertThat(targetJuror.getJurorNumber())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJurorPool.getJurorNumber());
-        assertThat(targetJuror.getPollNumber())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getPollNumber());
-        assertThat(targetJuror.getTitle())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getTitle());
-        assertThat(targetJuror.getFirstName())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getFirstName());
-        assertThat(targetJuror.getLastName())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getLastName());
-        assertThat(targetJuror.getDateOfBirth().compareTo(sourceJuror.getDateOfBirth()))
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(0);
-        assertThat(targetJuror.getAddressLine1())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getAddressLine1());
-        assertThat(targetJuror.getAddressLine2())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getAddressLine2());
-        assertThat(targetJuror.getAddressLine3())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getAddressLine3());
-        assertThat(targetJuror.getAddressLine4())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getAddressLine4());
-        assertThat(targetJuror.getAddressLine5())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getAddressLine5());
-        assertThat(targetJuror.getPostcode())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getPostcode());
-        assertThat(targetJuror.getPhoneNumber())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getPhoneNumber());
-        assertThat(targetJuror.getAltPhoneNumber())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getAltPhoneNumber());
-        assertThat(targetJuror.getWorkPhone())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getWorkPhone());
-        assertThat(targetJuror.getWorkPhoneExtension())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getWorkPhoneExtension());
-        assertThat(targetJurorPool.getDeferralDate())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(targetJurorPool.getDeferralDate());
-        assertThat(targetJuror.isResponded())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.isResponded());
-        assertThat(targetJuror.getExcusalDate())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getExcusalDate());
-        assertThat(targetJuror.getExcusalCode())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getExcusalCode());
-        assertThat(targetJuror.getExcusalRejected())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getExcusalRejected());
-        assertThat(targetJuror.getDisqualifyDate())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getDisqualifyDate());
-        assertThat(targetJuror.getDisqualifyCode())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getDisqualifyCode());
-        assertThat(targetJuror.getNotes())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getNotes());
-        assertThat(targetJurorPool.getNoAttendances())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJurorPool.getNoAttendances());
-        assertThat(targetJurorPool.getIsActive())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJurorPool.getIsActive());
-        assertThat(targetJuror.getNoDefPos())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getNoDefPos());
-        assertThat(targetJuror.getPermanentlyDisqualify())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getPermanentlyDisqualify());
-        assertThat(targetJuror.getReasonableAdjustmentCode())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getReasonableAdjustmentCode());
-        assertThat(targetJuror.getReasonableAdjustmentMessage())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getReasonableAdjustmentMessage());
-        assertThat(targetJuror.getSortCode())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getSortCode());
-        assertThat(targetJuror.getBankAccountName())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getBankAccountName());
-        assertThat(targetJuror.getBankAccountNumber())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getBankAccountNumber());
-        assertThat(targetJuror.getBuildingSocietyRollNumber())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getBuildingSocietyRollNumber());
-        assertThat(targetJurorPool.getWasDeferred())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJurorPool.getWasDeferred());
-        assertThat(targetJurorPool.getIdChecked())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJurorPool.getIdChecked());
-        assertThat(targetJurorPool.getPostpone())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJurorPool.getPostpone());
-        assertThat(targetJuror.getWelsh())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getWelsh());
-        assertThat(targetJuror.getPoliceCheck())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getPoliceCheck());
-        assertThat(targetJuror.getEmail())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getEmail());
-        assertThat(targetJuror.getContactPreference())
-            .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
-            .isEqualTo(sourceJuror.getContactPreference());
+            // copied properties
+            Juror targetJuror = targetJurorPool.getJuror();
+            Juror sourceJuror = sourceJurorPool.getJuror();
+            assertThat(targetJuror.getJurorNumber())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJurorPool.getJurorNumber());
+            assertThat(targetJuror.getPollNumber())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getPollNumber());
+            assertThat(targetJuror.getTitle())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getTitle());
+            assertThat(targetJuror.getFirstName())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getFirstName());
+            assertThat(targetJuror.getLastName())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getLastName());
+            assertThat(targetJuror.getDateOfBirth().compareTo(sourceJuror.getDateOfBirth()))
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(0);
+            assertThat(targetJuror.getAddressLine1())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getAddressLine1());
+            assertThat(targetJuror.getAddressLine2())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getAddressLine2());
+            assertThat(targetJuror.getAddressLine3())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getAddressLine3());
+            assertThat(targetJuror.getAddressLine4())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getAddressLine4());
+            assertThat(targetJuror.getAddressLine5())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getAddressLine5());
+            assertThat(targetJuror.getPostcode())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getPostcode());
+            assertThat(targetJuror.getPhoneNumber())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getPhoneNumber());
+            assertThat(targetJuror.getAltPhoneNumber())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getAltPhoneNumber());
+            assertThat(targetJuror.getWorkPhone())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getWorkPhone());
+            assertThat(targetJuror.getWorkPhoneExtension())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getWorkPhoneExtension());
+            assertThat(targetJurorPool.getDeferralDate())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(targetJurorPool.getDeferralDate());
+            assertThat(targetJuror.isResponded())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.isResponded());
+            assertThat(targetJuror.getExcusalDate())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getExcusalDate());
+            assertThat(targetJuror.getExcusalCode())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getExcusalCode());
+            assertThat(targetJuror.getExcusalRejected())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getExcusalRejected());
+            assertThat(targetJuror.getDisqualifyDate())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getDisqualifyDate());
+            assertThat(targetJuror.getDisqualifyCode())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getDisqualifyCode());
+            assertThat(targetJuror.getNotes())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getNotes());
+            assertThat(targetJurorPool.getNoAttendances())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJurorPool.getNoAttendances());
+            assertThat(targetJurorPool.getIsActive())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJurorPool.getIsActive());
+            assertThat(targetJuror.getNoDefPos())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getNoDefPos());
+            assertThat(targetJuror.getPermanentlyDisqualify())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getPermanentlyDisqualify());
+            assertThat(targetJuror.getReasonableAdjustmentCode())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getReasonableAdjustmentCode());
+            assertThat(targetJuror.getReasonableAdjustmentMessage())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getReasonableAdjustmentMessage());
+            assertThat(targetJuror.getSortCode())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getSortCode());
+            assertThat(targetJuror.getBankAccountName())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getBankAccountName());
+            assertThat(targetJuror.getBankAccountNumber())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getBankAccountNumber());
+            assertThat(targetJuror.getBuildingSocietyRollNumber())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getBuildingSocietyRollNumber());
+            assertThat(targetJurorPool.getWasDeferred())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJurorPool.getWasDeferred());
+            assertThat(targetJurorPool.getIdChecked())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJurorPool.getIdChecked());
+            assertThat(targetJurorPool.getPostpone())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJurorPool.getPostpone());
+            assertThat(targetJuror.getWelsh())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getWelsh());
+            assertThat(targetJuror.getPoliceCheck())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getPoliceCheck());
+            assertThat(targetJuror.getEmail())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getEmail());
+            assertThat(targetJuror.getContactPreference())
+                .as(EXPECT_PROPERTY_TO_BE_COPIED_FROM_SOURCE_JUROR)
+                .isEqualTo(sourceJuror.getContactPreference());
 
-        assertThat(targetJuror.getOpticRef())
-            .as("Expect optic reference to be copied from source juror")
-            .isEqualTo(sourceJuror.getOpticRef());
+            assertThat(targetJuror.getOpticRef())
+                .as("Expect optic reference to be copied from source juror")
+                .isEqualTo(sourceJuror.getOpticRef());
 
-        // default/not copied properties
-        assertThat(targetJurorPool.getTimesSelected())
-            .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
-            .isNull();
-        assertThat(targetJurorPool.getLocation())
-            .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
-            .isNull();
-        assertThat(targetJurorPool.getStatus().getStatus())
-            .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
-            .isEqualTo(2L);
-        assertThat(targetJurorPool.getNoAttended())
-            .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
-            .isNull();
-        assertThat(targetJurorPool.getFailedToAttendCount())
-            .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
-            .isNull();
-        assertThat(targetJurorPool.getUnauthorisedAbsenceCount())
-            .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
-            .isNull();
-        assertThat(targetJurorPool.getEditTag())
-            .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
-            .isNull();
-        assertThat(targetJurorPool.getOnCall())
-            .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
-            .isFalse();
-        assertThat(targetJurorPool.getSmartCard())
-            .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
-            .isNull();
-        assertThat(targetJurorPool.getPaidCash())
-            .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
-            .isNull();
-        assertThat(targetJurorPool.getScanCode())
-            .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
-            .isNull();
-        assertThat(targetJuror.getSummonsFile())
-            .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
-            .isNull();
-        assertThat(targetJurorPool.getReminderSent())
-            .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
-            .isNull();
-        assertThat(targetJuror.getNotifications())
-            .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
-            .isEqualTo(0);
-        assertThat(targetJurorPool.getTransferDate())
-            .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
-            .isNull();
+            // default/not copied properties
+            assertThat(targetJurorPool.getTimesSelected())
+                .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
+                .isNull();
+            assertThat(targetJurorPool.getLocation())
+                .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
+                .isNull();
+            assertThat(targetJurorPool.getStatus().getStatus())
+                .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
+                .isEqualTo(2L);
+            assertThat(targetJurorPool.getNoAttended())
+                .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
+                .isNull();
+            assertThat(targetJurorPool.getFailedToAttendCount())
+                .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
+                .isNull();
+            assertThat(targetJurorPool.getUnauthorisedAbsenceCount())
+                .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
+                .isNull();
+            assertThat(targetJurorPool.getEditTag())
+                .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
+                .isNull();
+            assertThat(targetJurorPool.getOnCall())
+                .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
+                .isFalse();
+            assertThat(targetJurorPool.getSmartCard())
+                .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
+                .isNull();
+            assertThat(targetJurorPool.getPaidCash())
+                .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
+                .isNull();
+            assertThat(targetJurorPool.getScanCode())
+                .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
+                .isNull();
+            assertThat(targetJuror.getSummonsFile())
+                .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
+                .isNull();
+            assertThat(targetJurorPool.getReminderSent())
+                .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
+                .isNull();
+            assertThat(targetJuror.getNotifications())
+                .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
+                .isEqualTo(0);
+            assertThat(targetJurorPool.getTransferDate())
+                .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
+                .isNull();
+        });
     }
 
     private void transferJurorPoolValidateExistingTransferredJurorPool(String jurorNumber, String poolNumber) {
-        JurorPool jurorPool =
-            jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber,
-                poolNumber, false).get();
+        executeInTransaction(() -> {
+            JurorPool jurorPool =
+                jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber,
+                    poolNumber, false).get();
 
-        assertThat(jurorPool)
-            .as("A juror record should exist in a now inactive and read only state")
-            .isNotNull();
-        assertThat(jurorPool.getStatus().getStatus())
-            .as("Old juror should be set to Transferred (10)")
-            .isEqualTo(10L);
+            assertThat(jurorPool)
+                .as("A juror record should exist in a now inactive and read only state")
+                .isNotNull();
+            assertThat(jurorPool.getStatus().getStatus())
+                .as("Old juror should be set to Transferred (10)")
+                .isEqualTo(10L);
+        });
     }
-
 }

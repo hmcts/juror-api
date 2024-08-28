@@ -54,7 +54,7 @@ public class Trial implements Serializable {
 
     @Id
     @NotNull
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "loc_code", nullable = false)
     private CourtLocation courtLocation;
 
@@ -64,12 +64,12 @@ public class Trial implements Serializable {
     private String description;
 
     @NotNull
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "courtroom", nullable = false)
     private Courtroom courtroom;
 
     @NotNull
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "judge", nullable = false)
     private Judge judge;
 

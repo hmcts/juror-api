@@ -150,7 +150,6 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     @ExceptionHandler(value = {SQLException.class, PSQLException.class,
         DateException.DateParseException.class,
         JurorPaperResponseException.UnableToFindJurorRecord.class,
-        JurorRecordException.MultipleJurorRecordsFound.class,
         PoolCreateException.UnableToCreatePool.class,
         JurorSequenceException.SequenceNextValNotFound.class
     })

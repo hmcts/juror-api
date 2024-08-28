@@ -2591,8 +2591,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 "/db/JurorExpenseControllerITest_approveExpenseSetUp.sql",
                 "/db/JurorExpenseControllerITest_expenseRates.sql",
                 "/db/JurorExpenseControllerITest_ApproveExpensesSupport.sql"
-            }
-            )
+            })
             void typicalReApproved() throws Exception {
                 ApproveExpenseDto approveExpenseDto = ApproveExpenseDto.builder()
                     .jurorNumber(JUROR_NUMBER)

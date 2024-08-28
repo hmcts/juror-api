@@ -1,9 +1,10 @@
 package uk.gov.hmcts.juror.api.moj.repository;
 
 import com.querydsl.core.Tuple;
-import com.querydsl.core.types.OrderSpecifier;
+import uk.gov.hmcts.juror.api.moj.controller.request.PoolRequestedFilterQuery;
+import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestDataDto;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
-import uk.gov.hmcts.juror.api.moj.domain.PoolRequestListAndCount;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,13 +15,6 @@ import java.util.List;
  * Allowing for additional query functions to be explicitly declared
  */
 public interface IPoolRequestRepository extends IPoolRequestSearchQueries {
-
-    PoolRequestListAndCount findBureauPoolRequestsList(List<String> poolTypes, String courtLocation, int offset,
-                                                       int pageSize, OrderSpecifier<?> order);
-
-    PoolRequestListAndCount findCourtsPoolRequestsList(List<String> courts, List<String> poolTypes,
-                                                       String courtLocation, int offset, int pageSize,
-                                                       OrderSpecifier<?> order);
 
     // This will get all numbers from a single court for a given prefix
     List<Tuple> findAllPoolNumbersByPoolNumberPrefix(String poolNumberPrefix);
@@ -38,4 +32,6 @@ public interface IPoolRequestRepository extends IPoolRequestSearchQueries {
     List<Tuple> findActivePoolsForDateRangeWithCourtCreatedRestriction(String owner, String locCode,
                                                                        LocalDate minDate,
                                                                        LocalDateTime courtCreationMinDate);
+
+    PaginatedList<PoolRequestDataDto> getPoolRequestList(PoolRequestedFilterQuery filterQuery);
 }

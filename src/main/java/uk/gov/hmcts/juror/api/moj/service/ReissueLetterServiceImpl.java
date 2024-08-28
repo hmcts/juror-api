@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterListRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorStatusDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterReponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
@@ -19,6 +20,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.letter.LetterType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
@@ -41,6 +43,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
     private final JurorStatusRepository jurorStatusRepository;
     private final JurorHistoryService jurorHistoryService;
     private final JurorPoolService jurorPoolService;
+    private final JurorRepository jurorRepository;
 
 
     @Transactional
@@ -154,7 +157,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
                         .jurorNumber(letter.getJurorNumber())
                         .firstName(jurorPool.getJuror().getFirstName())
                         .lastName(jurorPool.getJuror().getLastName())
-                        .jurorStatus(jurorPool.getStatus())
+                        .jurorStatus(JurorStatusDto.of(jurorPool.getStatus()))
                         .build();
                 response.getJurors().add(jurorData);
             }
@@ -255,7 +258,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
 
                 // determine form code based on Welsh flag
                 String jurorNumber = datum.get(jurorNumberIndex).toString();
-                Juror juror = JurorPoolUtils.getActiveJurorRecord(jurorPoolRepository, jurorNumber);
+                Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
 
                 if (juror.isWelsh()) {
                     newData.add(formCodeIndex, FormCode.BI_SUMMONS_REMINDER.getCode());

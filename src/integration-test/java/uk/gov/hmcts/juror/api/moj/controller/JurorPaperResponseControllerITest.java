@@ -15,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.CjsEmploymentDetailsDto;
@@ -53,7 +52,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -170,7 +168,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             HttpMethod.POST, uri);
         ResponseEntity<SaveJurorPaperReplyResponseDto> response = template.exchange(requestEntity,
             SaveJurorPaperReplyResponseDto.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test
@@ -221,7 +219,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             HttpMethod.POST, uri);
         ResponseEntity<SaveJurorPaperReplyResponseDto> response = template.exchange(requestEntity,
             SaveJurorPaperReplyResponseDto.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test
@@ -260,28 +258,30 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         ResponseEntity<SaveJurorPaperReplyResponseDto> response =
             template.exchange(requestEntity, SaveJurorPaperReplyResponseDto.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        executeInTransaction(() -> {
+            SaveJurorPaperReplyResponseDto responseDto = response.getBody();
+            assertThat(responseDto).isNotNull();
 
-        SaveJurorPaperReplyResponseDto responseDto = response.getBody();
-        assertThat(responseDto).isNotNull();
+            assertThat(responseDto.isStraightThroughAcceptance()).isFalse();
 
-        assertThat(responseDto.isStraightThroughAcceptance()).isFalse();
+            PaperResponse jurorPaperResponse = getJurorPaperResponse(jurorNumber);
 
-        PaperResponse jurorPaperResponse = getJurorPaperResponse(jurorNumber);
+            verifyRequestDtoMappingPersonalDetails(jurorPaperResponse, requestDto);
+            verifyRequestDtoMappingContactDetails(jurorPaperResponse, requestDto);
 
-        verifyRequestDtoMappingPersonalDetails(jurorPaperResponse, requestDto);
-        verifyRequestDtoMappingContactDetails(jurorPaperResponse, requestDto);
+            Optional<JurorPool> jurorPoolOpt =
+                jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber, POOL_415220502,
+                    true);
 
-        Optional<JurorPool> jurorPoolOpt =
-            jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber, POOL_415220502, true);
+            assertThat(jurorPoolOpt.isPresent()).isTrue();
 
-        assertThat(jurorPoolOpt.isPresent()).isTrue();
+            JurorPool jurorPool = jurorPoolOpt.get();
 
-        JurorPool jurorPool = jurorPoolOpt.get();
+            assertThat(jurorPool.getJuror().isResponseEntered()).isTrue();
 
-        assertThat(jurorPool.getJuror().isResponseEntered()).isTrue();
-
-        validateMergedJurorRecord(jurorPool, jurorPaperResponse, IJurorStatus.DISQUALIFIED);
-        verifyAgeDisqualification(jurorPool);
+            validateMergedJurorRecord(jurorPool, jurorPaperResponse, IJurorStatus.DISQUALIFIED);
+            verifyAgeDisqualification(jurorPool);
+        });
     }
 
     @Test
@@ -302,28 +302,29 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         ResponseEntity<SaveJurorPaperReplyResponseDto> response = template.exchange(requestEntity,
             SaveJurorPaperReplyResponseDto.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        executeInTransaction(() -> {
+            SaveJurorPaperReplyResponseDto responseDto = response.getBody();
+            assertThat(responseDto).isNotNull();
 
-        SaveJurorPaperReplyResponseDto responseDto = response.getBody();
-        assertThat(responseDto).isNotNull();
+            assertThat(responseDto.isStraightThroughAcceptance()).isFalse();
 
-        assertThat(responseDto.isStraightThroughAcceptance()).isFalse();
+            PaperResponse jurorPaperResponse = getJurorPaperResponse(jurorNumber);
+            verifyRequestDtoMappingPersonalDetails(jurorPaperResponse, requestDto);
+            verifyRequestDtoMappingContactDetails(jurorPaperResponse, requestDto);
 
-        PaperResponse jurorPaperResponse = getJurorPaperResponse(jurorNumber);
-        verifyRequestDtoMappingPersonalDetails(jurorPaperResponse, requestDto);
-        verifyRequestDtoMappingContactDetails(jurorPaperResponse, requestDto);
+            Optional<JurorPool> jurorPoolOpt =
+                jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber,
+                    POOL_411220502, true);
 
-        Optional<JurorPool> jurorPoolOpt =
-            jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber,
-                POOL_411220502, true);
+            assertThat(jurorPoolOpt.isPresent()).isTrue();
 
-        assertThat(jurorPoolOpt.isPresent()).isTrue();
+            JurorPool jurorPool = jurorPoolOpt.get();
 
-        JurorPool jurorPool = jurorPoolOpt.get();
+            assertThat(jurorPool.getJuror().isResponseEntered()).isTrue();
 
-        assertThat(jurorPool.getJuror().isResponseEntered()).isTrue();
-
-        validateMergedJurorRecord(jurorPool, jurorPaperResponse, IJurorStatus.DISQUALIFIED);
-        verifyAgeDisqualification(jurorPool);
+            validateMergedJurorRecord(jurorPool, jurorPaperResponse, IJurorStatus.DISQUALIFIED);
+            verifyAgeDisqualification(jurorPool);
+        });
     }
 
     @Test
@@ -344,23 +345,25 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         ResponseEntity<SaveJurorPaperReplyResponseDto> response = template.exchange(requestEntity,
             SaveJurorPaperReplyResponseDto.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        executeInTransaction(() -> {
+            SaveJurorPaperReplyResponseDto responseDto = response.getBody();
+            assertThat(responseDto).isNotNull();
 
-        SaveJurorPaperReplyResponseDto responseDto = response.getBody();
-        assertThat(responseDto).isNotNull();
+            assertThat(responseDto.isStraightThroughAcceptance()).isFalse();
 
-        assertThat(responseDto.isStraightThroughAcceptance()).isFalse();
+            PaperResponse jurorPaperResponse = getJurorPaperResponse(jurorNumber);
 
-        PaperResponse jurorPaperResponse = getJurorPaperResponse(jurorNumber);
+            Optional<JurorPool> jurorPool =
+                jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber, POOL_411220502,
+                    true);
 
-        Optional<JurorPool> jurorPool =
-            jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber, POOL_411220502, true);
+            assertThat(jurorPool.isPresent()).isTrue();
 
-        assertThat(jurorPool.isPresent()).isTrue();
+            assertThat(jurorPool.get().getJuror().isResponseEntered()).isTrue();
 
-        assertThat(jurorPool.get().getJuror().isResponseEntered()).isTrue();
-
-        verifyStraightThroughAgeDisqualificationNotProcessed(jurorPaperResponse, jurorPool.get(),
-            IJurorStatus.DEFERRED);
+            verifyStraightThroughAgeDisqualificationNotProcessed(jurorPaperResponse, jurorPool.get(),
+                IJurorStatus.DEFERRED);
+        });
     }
 
     @Test
@@ -382,23 +385,25 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         ResponseEntity<SaveJurorPaperReplyResponseDto> response = template.exchange(requestEntity,
             SaveJurorPaperReplyResponseDto.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        executeInTransaction(() -> {
+            SaveJurorPaperReplyResponseDto responseDto = response.getBody();
+            assertThat(responseDto).isNotNull();
 
-        SaveJurorPaperReplyResponseDto responseDto = response.getBody();
-        assertThat(responseDto).isNotNull();
+            assertThat(responseDto.isStraightThroughAcceptance()).isFalse();
 
-        assertThat(responseDto.isStraightThroughAcceptance()).isFalse();
+            PaperResponse jurorPaperResponse = getJurorPaperResponse(jurorNumber);
 
-        PaperResponse jurorPaperResponse = getJurorPaperResponse(jurorNumber);
+            Optional<JurorPool> jurorPool =
+                jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber, POOL_415220502,
+                    true);
 
-        Optional<JurorPool> jurorPool =
-            jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber, POOL_415220502, true);
+            assertThat(jurorPool.isPresent()).isTrue();
 
-        assertThat(jurorPool.isPresent()).isTrue();
+            assertThat(jurorPool.get().getJuror().isResponseEntered()).isTrue();
 
-        assertThat(jurorPool.get().getJuror().isResponseEntered()).isTrue();
-
-        verifyStraightThroughAgeDisqualificationNotProcessed(jurorPaperResponse, jurorPool.get(),
-            IJurorStatus.SUMMONED);
+            verifyStraightThroughAgeDisqualificationNotProcessed(jurorPaperResponse, jurorPool.get(),
+                IJurorStatus.SUMMONED);
+        });
     }
 
     @Test
@@ -423,48 +428,51 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
         SaveJurorPaperReplyResponseDto responseDto = response.getBody();
         assertThat(responseDto).isNotNull();
+        executeInTransaction(() -> {
+            assertThat(responseDto.isStraightThroughAcceptance()).isFalse();
 
-        assertThat(responseDto.isStraightThroughAcceptance()).isFalse();
+            PaperResponse jurorPaperResponse = getJurorPaperResponse(jurorNumber);
 
-        PaperResponse jurorPaperResponse = getJurorPaperResponse(jurorNumber);
+            verifyRequestDtoMappingPersonalDetails(jurorPaperResponse, requestDto);
+            verifyRequestDtoMappingContactDetails(jurorPaperResponse, requestDto);
 
-        verifyRequestDtoMappingPersonalDetails(jurorPaperResponse, requestDto);
-        verifyRequestDtoMappingContactDetails(jurorPaperResponse, requestDto);
+            Optional<JurorPool> jurorPoolOpt =
+                jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber, POOL_411220502,
+                    true);
 
-        Optional<JurorPool> jurorPoolOpt =
-            jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber, POOL_411220502, true);
+            assertThat(jurorPoolOpt.isPresent()).isTrue();
+            JurorPool jurorPool = jurorPoolOpt.get();
 
-        assertThat(jurorPoolOpt.isPresent()).isTrue();
-        JurorPool jurorPool = jurorPoolOpt.get();
+            assertThat(jurorPool.getJuror().isResponseEntered()).isTrue();
 
-        assertThat(jurorPool.getJuror().isResponseEntered()).isTrue();
+            validateMergedJurorRecord(jurorPool, jurorPaperResponse, IJurorStatus.DISQUALIFIED);
+            verifyAgeDisqualification(jurorPool);
 
-        validateMergedJurorRecord(jurorPool, jurorPaperResponse, IJurorStatus.DISQUALIFIED);
-        verifyAgeDisqualification(jurorPool);
+            LocalDate yesterday = LocalDate.now().minusDays(1);
+            List<JurorHistory> jurorHistoryList =
+                jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, yesterday);
+            assertThat(
+                jurorHistoryList.stream()
+                    .anyMatch(ph -> ph.getHistoryCode().equals(HistoryCodeMod.DISQUALIFY_POOL_MEMBER)))
+                .as("Expect history record to be created for juror disqualification")
+                .isTrue();
+            assertThat(
+                jurorHistoryList.stream().anyMatch(ph -> ph.getHistoryCode().equals(HistoryCodeMod.WITHDRAWAL_LETTER)))
+                .as("Expect history record to be created for disqualification letter")
+                .isTrue();
 
-        LocalDate yesterday = LocalDate.now().minusDays(1);
-        List<JurorHistory> jurorHistoryList =
-            jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, yesterday);
-        assertThat(
-            jurorHistoryList.stream().anyMatch(ph -> ph.getHistoryCode().equals(HistoryCodeMod.DISQUALIFY_POOL_MEMBER)))
-            .as("Expect history record to be created for juror disqualification")
-            .isTrue();
-        assertThat(
-            jurorHistoryList.stream().anyMatch(ph -> ph.getHistoryCode().equals(HistoryCodeMod.WITHDRAWAL_LETTER)))
-            .as("Expect history record to be created for disqualification letter")
-            .isTrue();
+            Iterable<BulkPrintData> disqualifyLetterIterator = bulkPrintDataRepository.findAll();
+            List<BulkPrintData> disqualificationLetters = new ArrayList<>();
+            disqualifyLetterIterator.forEach(bulkPrintData -> {
+                if (Set.of("5224", "5224C").contains(bulkPrintData.getFormAttribute().getFormType())) {
+                    disqualificationLetters.add(bulkPrintData);
+                }
+            });
 
-        Iterable<BulkPrintData> disqualifyLetterIterator = bulkPrintDataRepository.findAll();
-        List<BulkPrintData> disqualificationLetters = new ArrayList<>();
-        disqualifyLetterIterator.forEach(bulkPrintData -> {
-            if (Set.of("5224", "5224C").contains(bulkPrintData.getFormAttribute().getFormType())) {
-                disqualificationLetters.add(bulkPrintData);
-            }
+            assertThat(disqualificationLetters.size())
+                .as("Expect a single disqualification letter to exist (existing record updated)")
+                .isEqualTo(1);
         });
-
-        assertThat(disqualificationLetters.size())
-            .as("Expect a single disqualification letter to exist (existing record updated)")
-            .isEqualTo(1);
     }
 
     @Test
@@ -487,15 +495,18 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         SaveJurorPaperReplyResponseDto responseDto = response.getBody();
         assertThat(responseDto).isNotNull();
 
-        Optional<JurorPool> jurorPoolOpt =
-            jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber, POOL_415220502, true);
+        executeInTransaction(() -> {
+            Optional<JurorPool> jurorPoolOpt =
+                jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber, POOL_415220502,
+                    true);
 
-        assertThat(jurorPoolOpt.isPresent()).isTrue();
-        JurorPool jurorPool = jurorPoolOpt.get();
+            assertThat(jurorPoolOpt.isPresent()).isTrue();
+            JurorPool jurorPool = jurorPoolOpt.get();
 
-        assertThat(jurorPool.getJuror().getJurorNumber()).isEqualTo(jurorNumber);
+            assertThat(jurorPool.getJuror().getJurorNumber()).isEqualTo(jurorNumber);
 
-        assertThat(jurorPool.getJuror().isResponseEntered()).isTrue();
+            assertThat(jurorPool.getJuror().isResponseEntered()).isTrue();
+        });
     }
 
     @Test
@@ -674,24 +685,25 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         RequestEntity<Void> requestEntity = new RequestEntity<>(httpHeaders, HttpMethod.PUT, uri);
         ResponseEntity<Void> response = template.exchange(requestEntity, Void.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+        executeInTransaction(() -> {
+            Optional<JurorPool> jurorPoolOpt =
+                jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive("111111111", POOL_411220502,
+                    true);
 
-        Optional<JurorPool> jurorPoolOpt =
-            jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive("111111111", POOL_411220502, true);
+            assertThat(jurorPoolOpt.isPresent()).isTrue();
+            JurorPool jurorPool = jurorPoolOpt.get();
 
-        assertThat(jurorPoolOpt.isPresent()).isTrue();
-        JurorPool jurorPool = jurorPoolOpt.get();
+            PaperResponse summonsReplyData = jurorPaperResponseRepository.findByJurorNumber("111111111");
 
-        PaperResponse summonsReplyData = jurorPaperResponseRepository.findByJurorNumber("111111111");
+            validateMergedJurorRecord(jurorPool, summonsReplyData, IJurorStatus.RESPONDED);
+            assertThat(jurorPool.getUserEdtq()).isEqualToIgnoringCase("BUREAU_USER");
 
-        validateMergedJurorRecord(jurorPool, summonsReplyData, IJurorStatus.RESPONDED);
-        assertThat(jurorPool.getUserEdtq()).isEqualToIgnoringCase("BUREAU_USER");
-
-        Juror juror = jurorPool.getJuror();
-        // Summons reply was not completed by a third party so contact details should be merged
-        validateMergedJurorRecordContactDetails(juror, summonsReplyData);
-        // no mobile number present so numbers should be mapped to home phone and work phone only
-        assertThat(juror.getAltPhoneNumber()).isNull();
-
+            Juror juror = jurorPool.getJuror();
+            // Summons reply was not completed by a third party so contact details should be merged
+            validateMergedJurorRecordContactDetails(juror, summonsReplyData);
+            // no mobile number present so numbers should be mapped to home phone and work phone only
+            assertThat(juror.getAltPhoneNumber()).isNull();
+        });
     }
 
     @Test
@@ -1752,161 +1764,154 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_updatePaperResponseStatus.sql"})
-    public void updateJurorPaperResponseStatus_bureauUser_multipleJurorRecords() throws Exception {
-        final String bureauJwt = createJwtBureau("BUREAU_USER");
-        final URI uri = URI.create("/api/v1/moj/juror-paper-response/update-status/444444444/CLOSED");
-
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-        RequestEntity<Void> requestEntity = new RequestEntity<>(httpHeaders, HttpMethod.PUT, uri);
-        ResponseEntity<Void> response = template.exchange(requestEntity, Void.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_updatePaperResponseStatus.sql"})
     public void updateJurorPaperResponseStatus_courtUser_thirdParty() throws Exception {
-        final String bureauJwt = initCourtsJwt("411", Arrays.asList("411", "774"));
+        final String bureauJwt = getSatelliteCourtJwt("411","411", "774");
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/update-status/555555555/CLOSED");
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
         RequestEntity<Void> requestEntity = new RequestEntity<>(httpHeaders, HttpMethod.PUT, uri);
         ResponseEntity<Void> response = template.exchange(requestEntity, Void.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+        executeInTransaction(() -> {
+            List<JurorPool> jurorPoolList =
+                jurorPoolRepository.findByJurorJurorNumberAndIsActive("555555555", true);
 
-        List<JurorPool> jurorPoolList =
-            jurorPoolRepository.findByJurorJurorNumberAndIsActive("555555555", true);
+            assertThat(jurorPoolList.size()).isGreaterThan(0);
+            JurorPool jurorPool = jurorPoolList.get(0);
+            Juror juror = jurorPool.getJuror();
 
-        assertThat(jurorPoolList.size()).isGreaterThan(0);
-        JurorPool jurorPool = jurorPoolList.get(0);
-        Juror juror = jurorPool.getJuror();
+            PaperResponse summonsReplyData = jurorPaperResponseRepository.findByJurorNumber(
+                "555555555");
 
-        PaperResponse summonsReplyData = jurorPaperResponseRepository.findByJurorNumber(
-            "555555555");
+            validateMergedJurorRecord(jurorPool, summonsReplyData, IJurorStatus.RESPONDED);
+            assertThat(jurorPool.getUserEdtq()).isEqualToIgnoringCase("test_court_standard");
 
-        validateMergedJurorRecord(jurorPool, summonsReplyData, IJurorStatus.RESPONDED);
-        assertThat(jurorPool.getUserEdtq()).isEqualToIgnoringCase("COURT_USER");
-
-        // juror contact details are omitted from merge when completed by a third party
-        assertThat(juror.getPhoneNumber()).isNull();
-        assertThat(juror.getWorkPhone()).isNull();
-        assertThat(juror.getAltPhoneNumber()).isNull();
-        assertThat(juror.getEmail()).isNull();
+            // juror contact details are omitted from merge when completed by a third party
+            assertThat(juror.getPhoneNumber()).isNull();
+            assertThat(juror.getWorkPhone()).isNull();
+            assertThat(juror.getAltPhoneNumber()).isNull();
+            assertThat(juror.getEmail()).isNull();
+        });
     }
 
-    @SuppressWarnings({"PMD.NcssCount", "PMD.NPathComplexity"})
+    @SuppressWarnings({"PMD.NcssCount", "PMD.NPathComplexity", "PMD.CognitiveComplexity"})
     private void verifyResponseDtoMapping(JurorPaperResponseDetailDto responseDetailDto, String owner) {
-        PaperResponse jurorPaperResponse =
-            jurorPaperResponseRepository.findByJurorNumber(responseDetailDto.getJurorNumber());
-        assertThat(jurorPaperResponse).isNotNull();
+        executeInTransaction(() -> {
+            PaperResponse jurorPaperResponse =
+                jurorPaperResponseRepository.findByJurorNumber(responseDetailDto.getJurorNumber());
+            assertThat(jurorPaperResponse).isNotNull();
 
-        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository,
-            responseDetailDto.getJurorNumber(), owner);
+            JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository,
+                responseDetailDto.getJurorNumber(), owner);
 
-        assertThat(jurorPool.getOwner().equals(responseDetailDto.getCurrentOwner()));
+            assertThat(jurorPool.getOwner().equals(responseDetailDto.getCurrentOwner()));
 
-        assertThat(jurorPool).isNotNull();
+            assertThat(jurorPool).isNotNull();
 
-        SummonsSnapshot summonsSnapshot = summonsSnapshotRepository.findById(jurorPool.getJurorNumber())
-            .orElse(null);
+            SummonsSnapshot summonsSnapshot = summonsSnapshotRepository.findById(jurorPool.getJurorNumber())
+                .orElse(null);
 
-        assertThat(responseDetailDto.getJurorNumber()).isEqualTo(jurorPool.getJurorNumber());
-        if (summonsSnapshot != null) {
-            assertThat(responseDetailDto.getPoolNumber()).isEqualTo(summonsSnapshot.getPoolNumber());
-            assertThat(responseDetailDto.getServiceStartDate()).isEqualTo(summonsSnapshot.getServiceStartDate());
-            assertThat(responseDetailDto.getCourtName()).isEqualTo(summonsSnapshot.getCourtLocationName());
-            assertThat(responseDetailDto.isWelshCourt()).isEqualTo(
-                CourtLocationUtils.isWelshCourtLocation(welshCourtLocationRepository,
-                    summonsSnapshot.getCourtLocationCode()));
-        } else {
-            assertThat(responseDetailDto.getPoolNumber()).isEqualTo(jurorPool.getPoolNumber());
-            assertThat(responseDetailDto.getServiceStartDate()).isEqualTo(jurorPool.getReturnDate());
-            assertThat(responseDetailDto.getCourtName()).isEqualTo(jurorPool.getCourt().getName());
-            assertThat(responseDetailDto.isWelshCourt()).isEqualTo(
-                CourtLocationUtils.isWelshCourtLocation(welshCourtLocationRepository,
-                    jurorPool.getCourt().getLocCode()));
-        }
-        assertThat(responseDetailDto.getJurorStatus()).isEqualTo(jurorPool.getStatus().getStatusDesc());
+            assertThat(responseDetailDto.getJurorNumber()).isEqualTo(jurorPool.getJurorNumber());
+            if (summonsSnapshot != null) {
+                assertThat(responseDetailDto.getPoolNumber()).isEqualTo(summonsSnapshot.getPoolNumber());
+                assertThat(responseDetailDto.getServiceStartDate()).isEqualTo(summonsSnapshot.getServiceStartDate());
+                assertThat(responseDetailDto.getCourtName()).isEqualTo(summonsSnapshot.getCourtLocationName());
+                assertThat(responseDetailDto.isWelshCourt()).isEqualTo(
+                    CourtLocationUtils.isWelshCourtLocation(welshCourtLocationRepository,
+                        summonsSnapshot.getCourtLocationCode()));
+            } else {
+                assertThat(responseDetailDto.getPoolNumber()).isEqualTo(jurorPool.getPoolNumber());
+                assertThat(responseDetailDto.getServiceStartDate()).isEqualTo(jurorPool.getReturnDate());
+                assertThat(responseDetailDto.getCourtName()).isEqualTo(jurorPool.getCourt().getName());
+                assertThat(responseDetailDto.isWelshCourt()).isEqualTo(
+                    CourtLocationUtils.isWelshCourtLocation(welshCourtLocationRepository,
+                        jurorPool.getCourt().getLocCode()));
+            }
+            assertThat(responseDetailDto.getJurorStatus()).isEqualTo(jurorPool.getStatus().getStatusDesc());
 
-        assertThat(responseDetailDto.getTitle()).isEqualTo(jurorPaperResponse.getTitle());
-        assertThat(responseDetailDto.getFirstName()).isEqualTo(jurorPaperResponse.getFirstName());
-        assertThat(responseDetailDto.getLastName()).isEqualTo(jurorPaperResponse.getLastName());
-        assertThat(responseDetailDto.getDateOfBirth()).isEqualTo(jurorPaperResponse.getDateOfBirth());
-        assertThat(responseDetailDto.getPrimaryPhone()).isEqualTo(jurorPaperResponse.getPhoneNumber());
-        assertThat(responseDetailDto.getSecondaryPhone()).isEqualTo(jurorPaperResponse.getAltPhoneNumber());
-        assertThat(responseDetailDto.getEmailAddress()).isEqualTo(jurorPaperResponse.getEmail());
+            assertThat(responseDetailDto.getTitle()).isEqualTo(jurorPaperResponse.getTitle());
+            assertThat(responseDetailDto.getFirstName()).isEqualTo(jurorPaperResponse.getFirstName());
+            assertThat(responseDetailDto.getLastName()).isEqualTo(jurorPaperResponse.getLastName());
+            assertThat(responseDetailDto.getDateOfBirth()).isEqualTo(jurorPaperResponse.getDateOfBirth());
+            assertThat(responseDetailDto.getPrimaryPhone()).isEqualTo(jurorPaperResponse.getPhoneNumber());
+            assertThat(responseDetailDto.getSecondaryPhone()).isEqualTo(jurorPaperResponse.getAltPhoneNumber());
+            assertThat(responseDetailDto.getEmailAddress()).isEqualTo(jurorPaperResponse.getEmail());
 
-        assertThat(responseDetailDto.getAddressLineOne()).isEqualTo(jurorPaperResponse.getAddressLine1());
-        assertThat(responseDetailDto.getAddressLineTwo()).isEqualTo(jurorPaperResponse.getAddressLine2());
-        assertThat(responseDetailDto.getAddressLineThree()).isEqualTo(jurorPaperResponse.getAddressLine3());
-        assertThat(responseDetailDto.getAddressTown()).isEqualTo(jurorPaperResponse.getAddressLine4());
-        assertThat(responseDetailDto.getAddressCounty()).isEqualTo(jurorPaperResponse.getAddressLine5());
-        assertThat(responseDetailDto.getAddressPostcode()).isEqualTo(jurorPaperResponse.getPostcode());
+            assertThat(responseDetailDto.getAddressLineOne()).isEqualTo(jurorPaperResponse.getAddressLine1());
+            assertThat(responseDetailDto.getAddressLineTwo()).isEqualTo(jurorPaperResponse.getAddressLine2());
+            assertThat(responseDetailDto.getAddressLineThree()).isEqualTo(jurorPaperResponse.getAddressLine3());
+            assertThat(responseDetailDto.getAddressTown()).isEqualTo(jurorPaperResponse.getAddressLine4());
+            assertThat(responseDetailDto.getAddressCounty()).isEqualTo(jurorPaperResponse.getAddressLine5());
+            assertThat(responseDetailDto.getAddressPostcode()).isEqualTo(jurorPaperResponse.getPostcode());
 
-        List<JurorResponseCjsEmployment> cjsEmployments =
-            jurorPaperResponseCjsRepository.findByJurorNumber(responseDetailDto.getJurorNumber());
-        if (cjsEmployments != null && !cjsEmployments.isEmpty()) {
-            JurorResponseCjsEmployment actualCjs = cjsEmployments.get(0);
-            JurorPaperResponseDetailDto.CjsEmployment expectedCjs = responseDetailDto.getCjsEmployment().get(0);
-            assertThat(expectedCjs.getCjsEmployer()).isEqualTo(actualCjs.getCjsEmployer());
-            assertThat(expectedCjs.getCjsEmployerDetails()).isEqualTo(actualCjs.getCjsEmployerDetails());
-        }
+            List<JurorResponseCjsEmployment> cjsEmployments =
+                jurorPaperResponseCjsRepository.findByJurorNumber(responseDetailDto.getJurorNumber());
+            if (cjsEmployments != null && !cjsEmployments.isEmpty()) {
+                JurorResponseCjsEmployment actualCjs = cjsEmployments.get(0);
+                JurorPaperResponseDetailDto.CjsEmployment expectedCjs = responseDetailDto.getCjsEmployment().get(0);
+                assertThat(expectedCjs.getCjsEmployer()).isEqualTo(actualCjs.getCjsEmployer());
+                assertThat(expectedCjs.getCjsEmployerDetails()).isEqualTo(actualCjs.getCjsEmployerDetails());
+            }
 
-        List<JurorReasonableAdjustment> reasonableAdjustments =
-            jurorReasonableAdjustmentRepository.findByJurorNumber(responseDetailDto.getJurorNumber());
-        if (reasonableAdjustments != null && !reasonableAdjustments.isEmpty()) {
-            JurorReasonableAdjustment actualReasonableAdjustment = reasonableAdjustments.get(0);
-            JurorPaperResponseDetailDto.ReasonableAdjustment expectedSpecialNeeds =
-                responseDetailDto.getReasonableAdjustments().get(0);
-            assertThat(expectedSpecialNeeds.getAssistanceType()).isEqualTo(
-                actualReasonableAdjustment.getReasonableAdjustment().getCode());
-            assertThat(expectedSpecialNeeds.getAssistanceTypeDetails()).isEqualTo(
-                actualReasonableAdjustment.getReasonableAdjustmentDetail());
-        }
+            List<JurorReasonableAdjustment> reasonableAdjustments =
+                jurorReasonableAdjustmentRepository.findByJurorNumber(responseDetailDto.getJurorNumber());
+            if (reasonableAdjustments != null && !reasonableAdjustments.isEmpty()) {
+                JurorReasonableAdjustment actualReasonableAdjustment = reasonableAdjustments.get(0);
+                JurorPaperResponseDetailDto.ReasonableAdjustment expectedSpecialNeeds =
+                    responseDetailDto.getReasonableAdjustments().get(0);
+                assertThat(expectedSpecialNeeds.getAssistanceType()).isEqualTo(
+                    actualReasonableAdjustment.getReasonableAdjustment().getCode());
+                assertThat(expectedSpecialNeeds.getAssistanceTypeDetails()).isEqualTo(
+                    actualReasonableAdjustment.getReasonableAdjustmentDetail());
+            }
 
-        assertThat(responseDetailDto.getDeferral()).isEqualTo(jurorPaperResponse.getDeferral());
-        assertThat(responseDetailDto.getExcusal()).isEqualTo(jurorPaperResponse.getExcusal());
+            assertThat(responseDetailDto.getDeferral()).isEqualTo(jurorPaperResponse.getDeferral());
+            assertThat(responseDetailDto.getExcusal()).isEqualTo(jurorPaperResponse.getExcusal());
 
-        if (jurorPaperResponse.getResidency() != null || jurorPaperResponse.getMentalHealthAct() != null
-            || jurorPaperResponse.getMentalHealthCapacity() != null || jurorPaperResponse.getBail() != null
-            || jurorPaperResponse.getConvictions() != null) {
-            JurorPaperResponseDetailDto.Eligibility eligibility = responseDetailDto.getEligibility();
-            assertThat(eligibility.getLivedConsecutive()).isEqualTo(jurorPaperResponse.getResidency());
-            assertThat(eligibility.getMentalHealthAct()).isEqualTo(jurorPaperResponse.getMentalHealthAct());
-            assertThat(eligibility.getMentalHealthCapacity()).isEqualTo(jurorPaperResponse.getMentalHealthCapacity());
-            assertThat(eligibility.getOnBail()).isEqualTo(jurorPaperResponse.getBail());
-            assertThat(eligibility.getConvicted()).isEqualTo(jurorPaperResponse.getConvictions());
-        }
+            if (jurorPaperResponse.getResidency() != null || jurorPaperResponse.getMentalHealthAct() != null
+                || jurorPaperResponse.getMentalHealthCapacity() != null || jurorPaperResponse.getBail() != null
+                || jurorPaperResponse.getConvictions() != null) {
+                JurorPaperResponseDetailDto.Eligibility eligibility = responseDetailDto.getEligibility();
+                assertThat(eligibility.getLivedConsecutive()).isEqualTo(jurorPaperResponse.getResidency());
+                assertThat(eligibility.getMentalHealthAct()).isEqualTo(jurorPaperResponse.getMentalHealthAct());
+                assertThat(eligibility.getMentalHealthCapacity()).isEqualTo(
+                    jurorPaperResponse.getMentalHealthCapacity());
+                assertThat(eligibility.getOnBail()).isEqualTo(jurorPaperResponse.getBail());
+                assertThat(eligibility.getConvicted()).isEqualTo(jurorPaperResponse.getConvictions());
+            }
 
-        assertThat(responseDetailDto.getSigned()).isEqualTo(jurorPaperResponse.getSigned());
+            assertThat(responseDetailDto.getSigned()).isEqualTo(jurorPaperResponse.getSigned());
 
-        if (jurorPaperResponse.getRelationship() != null && !jurorPaperResponse.getRelationship().isEmpty()) {
-            JurorPaperResponseDetailDto.ThirdParty thirdParty = responseDetailDto.getThirdParty();
-            assertThat(thirdParty.getRelationship()).isEqualTo(jurorPaperResponse.getRelationship());
-            assertThat(thirdParty.getThirdPartyReason()).isEqualTo(jurorPaperResponse.getThirdPartyReason());
-        }
+            if (jurorPaperResponse.getRelationship() != null && !jurorPaperResponse.getRelationship().isEmpty()) {
+                JurorPaperResponseDetailDto.ThirdParty thirdParty = responseDetailDto.getThirdParty();
+                assertThat(thirdParty.getRelationship()).isEqualTo(jurorPaperResponse.getRelationship());
+                assertThat(thirdParty.getThirdPartyReason()).isEqualTo(jurorPaperResponse.getThirdPartyReason());
+            }
 
-        assertThat(responseDetailDto.getWelsh()).isEqualTo(jurorPaperResponse.getWelsh());
-        assertThat(responseDetailDto.getDateReceived()).isEqualTo(jurorPaperResponse.getDateReceived().toLocalDate());
-        assertThat(responseDetailDto.getProcessingStatus()).isEqualTo(
-            jurorPaperResponse.getProcessingStatus().getDescription());
+            assertThat(responseDetailDto.getWelsh()).isEqualTo(jurorPaperResponse.getWelsh());
+            assertThat(responseDetailDto.getDateReceived()).isEqualTo(
+                jurorPaperResponse.getDateReceived().toLocalDate());
+            assertThat(responseDetailDto.getProcessingStatus()).isEqualTo(
+                jurorPaperResponse.getProcessingStatus().getDescription());
 
-        if (jurorPaperResponse.getRelationship() != null && !jurorPaperResponse.getRelationship().isEmpty()) {
-            JurorPaperResponseDetailDto.ThirdParty thirdParty = responseDetailDto.getThirdParty();
-            assertThat(thirdParty.getRelationship()).isEqualTo(jurorPaperResponse.getRelationship());
-            assertThat(thirdParty.getThirdPartyReason()).isEqualTo(jurorPaperResponse.getThirdPartyReason());
-        }
+            if (jurorPaperResponse.getRelationship() != null && !jurorPaperResponse.getRelationship().isEmpty()) {
+                JurorPaperResponseDetailDto.ThirdParty thirdParty = responseDetailDto.getThirdParty();
+                assertThat(thirdParty.getRelationship()).isEqualTo(jurorPaperResponse.getRelationship());
+                assertThat(thirdParty.getThirdPartyReason()).isEqualTo(jurorPaperResponse.getThirdPartyReason());
+            }
 
-        Juror juror = jurorPool.getJuror();
+            Juror juror = jurorPool.getJuror();
 
-        assertThat(responseDetailDto.getExistingTitle()).isEqualTo(juror.getTitle());
-        assertThat(responseDetailDto.getExistingFirstName()).isEqualTo(juror.getFirstName());
-        assertThat(responseDetailDto.getExistingLastName()).isEqualTo(juror.getLastName());
-        assertThat(responseDetailDto.getExistingAddressLineOne()).isEqualTo(juror.getAddressLine1());
-        assertThat(responseDetailDto.getExistingAddressLineTwo()).isEqualTo(juror.getAddressLine2());
-        assertThat(responseDetailDto.getExistingAddressLineThree()).isEqualTo(juror.getAddressLine3());
-        assertThat(responseDetailDto.getExistingAddressTown()).isEqualTo(juror.getAddressLine4());
-        assertThat(responseDetailDto.getExistingAddressCounty()).isEqualTo(juror.getAddressLine5());
-        assertThat(responseDetailDto.getExistingAddressPostcode()).isEqualTo(juror.getPostcode());
+            assertThat(responseDetailDto.getExistingTitle()).isEqualTo(juror.getTitle());
+            assertThat(responseDetailDto.getExistingFirstName()).isEqualTo(juror.getFirstName());
+            assertThat(responseDetailDto.getExistingLastName()).isEqualTo(juror.getLastName());
+            assertThat(responseDetailDto.getExistingAddressLineOne()).isEqualTo(juror.getAddressLine1());
+            assertThat(responseDetailDto.getExistingAddressLineTwo()).isEqualTo(juror.getAddressLine2());
+            assertThat(responseDetailDto.getExistingAddressLineThree()).isEqualTo(juror.getAddressLine3());
+            assertThat(responseDetailDto.getExistingAddressTown()).isEqualTo(juror.getAddressLine4());
+            assertThat(responseDetailDto.getExistingAddressCounty()).isEqualTo(juror.getAddressLine5());
+            assertThat(responseDetailDto.getExistingAddressPostcode()).isEqualTo(juror.getPostcode());
+        });
     }
 
     private PaperResponse getJurorPaperResponse(String jurorNumber) {
@@ -2064,16 +2069,6 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             .build();
 
         jurorPaperResponseDto.setThirdParty(thirdParty);
-    }
-
-    private String initCourtsJwt(String owner, List<String> courts) throws Exception {
-
-        return mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .login("COURT_USER")
-            .owner(owner)
-            .staff(BureauJwtPayload.Staff.builder().courts(courts).build())
-            .build());
     }
 
     private void validateMergedJurorRecord(JurorPool jurorPool, PaperResponse summonsReplyData,

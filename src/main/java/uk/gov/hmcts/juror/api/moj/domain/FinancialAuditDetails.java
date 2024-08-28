@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -54,7 +55,7 @@ public class FinancialAuditDetails implements Serializable {
     @Column(name = "created_on")
     private LocalDateTime createdOn;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", referencedColumnName = "username")
     private User createdBy;
 
@@ -73,7 +74,7 @@ public class FinancialAuditDetails implements Serializable {
     private Type type;
 
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.LAZY)
     @JoinColumns({
         @JoinColumn(name = "financial_audit_id", referencedColumnName = "id"),
         @JoinColumn(name = "loc_code", referencedColumnName = "loc_code")

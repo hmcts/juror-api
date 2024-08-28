@@ -9,11 +9,11 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResp
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
-import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.report.ReportGroupBy;
+import uk.gov.hmcts.juror.api.moj.report.standard.PersonAttendingSummaryReport;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
@@ -51,12 +51,7 @@ public class PersonAttendingDetailReport extends AbstractGroupedReport {
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QJurorPool.jurorPool.nextDate.eq(request.getDate()));
         query.where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(SecurityUtil.getLocCode()));
-        if (request.getIncludeSummoned()) {
-            query.where(QJurorPool.jurorPool.status.status
-                .in(IJurorStatus.SUMMONED, IJurorStatus.RESPONDED));
-        } else {
-            query.where(QJurorPool.jurorPool.status.status.in(IJurorStatus.RESPONDED));
-        }
+        query.where(QJurorPool.jurorPool.status.status.in(PersonAttendingSummaryReport.getSupportedStatus(request)));
         query.orderBy(QJurorPool.jurorPool.juror.lastName.asc());
     }
 
@@ -92,6 +87,7 @@ public class PersonAttendingDetailReport extends AbstractGroupedReport {
     public interface RequestValidator extends
         Validators.AbstractRequestValidator,
         Validators.RequireDate,
-        Validators.RequireIncludeSummoned {
+        Validators.RequireIncludeSummoned,
+        Validators.RequireIncludePanelMembers {
     }
 }

@@ -317,55 +317,56 @@ class PanelControllerITest extends AbstractIntegrationTest {
         assertThat(responseEntity.getStatusCode())
             .as("Expected status code to be ok")
             .isEqualTo(HttpStatus.OK);
-
-        assert responseEntity.getBody() != null;
-        assertThat(responseEntity.getBody().length).as("Expected length to be 4").isEqualTo(4);
-        for (PanelListDto panelListDto : responseEntity.getBody()) {
-            assertThat(panelListDto.getJurorStatus())
-                .as("Expect the status to be Juror")
-                .isEqualTo("Juror");
-        }
-
-        List<Panel> panel = panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(dto.getTrialNumber(),
-            dto.getCourtLocationCode());
-
-        panel = panel.stream().filter(p -> p.getResult() != null).collect(Collectors.toList());
-
-        int jurorCount = 0;
-        int notUsedCount = 0;
-        int challengedCount = 0;
-
-        for (Panel panelMember : panel) {
-            assertThat(panelMember.getResult()).as("Result should not be null").isNotNull();
-            switch (panelMember.getResult()) {
-                case NOT_USED -> {
-                    assertThat(panelMember.getEmpanelledDate()).as("date should be null").isNull();
-                    validateNotUsedChallengedHistory(panelMember);
-                    notUsedCount++;
-                }
-                case CHALLENGED -> {
-                    assertThat(panelMember.getEmpanelledDate()).as("date should be null").isNull();
-                    validateNotUsedChallengedHistory(panelMember);
-                    challengedCount++;
-                }
-                case JUROR -> {
-                    assertThat(panelMember.getEmpanelledDate()).as("date should be today").isEqualTo(LocalDate.now());
-                    List<JurorHistory> jurorHistories =
-                        jurorHistoryRepository.findByJurorNumberOrderById(panelMember.getJurorNumber());
-                    assertThat(jurorHistories.size()).as("Expected history items to be one").isEqualTo(1);
-                    assertThat(jurorHistories.get(0).getHistoryCode().getCode()).as(
-                            "Expected history code to be TADD")
-                        .isEqualTo("TADD");
-                    jurorCount++;
-                }
-                default -> throw new IllegalStateException();
+        executeInTransaction(() -> {
+            assert responseEntity.getBody() != null;
+            assertThat(responseEntity.getBody().length).as("Expected length to be 4").isEqualTo(4);
+            for (PanelListDto panelListDto : responseEntity.getBody()) {
+                assertThat(panelListDto.getJurorStatus())
+                    .as("Expect the status to be Juror")
+                    .isEqualTo("Juror");
             }
-        }
 
-        assertThat(jurorCount).as("Expected total jurors on a jury to be 4").isEqualTo(4);
-        assertThat(notUsedCount).as("Expected total not used jurors to be 4").isEqualTo(4);
-        assertThat(challengedCount).as("Expected total challenged jurors to be 4").isEqualTo(4);
+            List<Panel> panel = panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(dto.getTrialNumber(),
+                dto.getCourtLocationCode());
 
+            panel = panel.stream().filter(p -> p.getResult() != null).collect(Collectors.toList());
+
+            int jurorCount = 0;
+            int notUsedCount = 0;
+            int challengedCount = 0;
+
+            for (Panel panelMember : panel) {
+                assertThat(panelMember.getResult()).as("Result should not be null").isNotNull();
+                switch (panelMember.getResult()) {
+                    case NOT_USED -> {
+                        assertThat(panelMember.getEmpanelledDate()).as("date should be null").isNull();
+                        validateNotUsedChallengedHistory(panelMember);
+                        notUsedCount++;
+                    }
+                    case CHALLENGED -> {
+                        assertThat(panelMember.getEmpanelledDate()).as("date should be null").isNull();
+                        validateNotUsedChallengedHistory(panelMember);
+                        challengedCount++;
+                    }
+                    case JUROR -> {
+                        assertThat(panelMember.getEmpanelledDate()).as("date should be today")
+                            .isEqualTo(LocalDate.now());
+                        List<JurorHistory> jurorHistories =
+                            jurorHistoryRepository.findByJurorNumberOrderById(panelMember.getJurorNumber());
+                        assertThat(jurorHistories.size()).as("Expected history items to be one").isEqualTo(1);
+                        assertThat(jurorHistories.get(0).getHistoryCode().getCode()).as(
+                                "Expected history code to be TADD")
+                            .isEqualTo("TADD");
+                        jurorCount++;
+                    }
+                    default -> throw new IllegalStateException();
+                }
+            }
+
+            assertThat(jurorCount).as("Expected total jurors on a jury to be 4").isEqualTo(4);
+            assertThat(notUsedCount).as("Expected total not used jurors to be 4").isEqualTo(4);
+            assertThat(challengedCount).as("Expected total challenged jurors to be 4").isEqualTo(4);
+        });
     }
 
     @Test

@@ -28,7 +28,7 @@ import static org.mockito.Mockito.withSettings;
 
 public final class TestUtils {
     public static final ObjectMapper objectMapper;
-    private static MockedStatic<SecurityUtil> SECURITY_UTIL_MOCK;
+    private static MockedStatic<SecurityUtil> securityUtilMock;
 
     static {
         objectMapper = new ObjectMapper().findAndRegisterModules();
@@ -159,17 +159,17 @@ public final class TestUtils {
 
     @AfterAll
     public static void afterAll() {
-        if (SECURITY_UTIL_MOCK != null) {
-            SECURITY_UTIL_MOCK.close();
-            SECURITY_UTIL_MOCK = null;
+        if (securityUtilMock != null) {
+            securityUtilMock.close();
+            securityUtilMock = null;
         }
     }
 
     public static MockedStatic<SecurityUtil> getSecurityUtilMock() {
-        if (SECURITY_UTIL_MOCK == null) {
-            SECURITY_UTIL_MOCK = mockStatic(SecurityUtil.class, withSettings().defaultAnswer(CALLS_REAL_METHODS));
+        if (securityUtilMock == null) {
+            securityUtilMock = mockStatic(SecurityUtil.class, withSettings().defaultAnswer(CALLS_REAL_METHODS));
         }
-        return SECURITY_UTIL_MOCK;
+        return securityUtilMock;
     }
 
     public static BureauJwtPayload mockSecurityUtil(BureauJwtPayload payload) {

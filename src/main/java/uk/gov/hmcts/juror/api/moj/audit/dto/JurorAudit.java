@@ -32,7 +32,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REG
 @ToString
 public class JurorAudit extends Address {
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "revision", referencedColumnName = "revision_number",
         insertable = false, updatable = false, nullable = false)
     @Id
