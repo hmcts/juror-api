@@ -1130,6 +1130,11 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             log.debug("Juror {} police check has insufficient information adding part history", jurorNumber);
             jurorHistoryService.createPoliceCheckInsufficientInformationHistory(jurorPool);
         }
+        if (!SecurityUtil.BUREAU_OWNER.equals(jurorPool.getOwner())) {
+            log.info("Police check status updated by court to {} ", newPoliceCheckValue);
+        } else {
+            log.info("Police check status updated by bureau to {} ", newPoliceCheckValue);
+        }
         jurorPoolRepository.save(jurorPool);
         jurorRepository.save(juror);
         return new PoliceCheckStatusDto(newPoliceCheckValue);
