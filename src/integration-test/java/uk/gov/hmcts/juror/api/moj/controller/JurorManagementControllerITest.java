@@ -607,7 +607,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             AttendanceDetailsResponse.Summary summary = response.getBody().getSummary();
             assertThat(summary)
                 .extracting(AttendanceDetailsResponse.Summary::getCheckedOut)
-                .isEqualTo(3L);
+                .isEqualTo(5L);
 
             assertThat(summary)
                 .extracting(AttendanceDetailsResponse.Summary::getPanelled)
@@ -1032,7 +1032,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             AttendanceDetailsResponse.Summary summary = response.getBody().getSummary();
             assertThat(summary)
                 .extracting(AttendanceDetailsResponse.Summary::getCheckedIn)
-                .isEqualTo(4L);
+                .isEqualTo(5L);
 
             assertThat(summary)
                 .extracting(AttendanceDetailsResponse.Summary::getAbsent)
