@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
@@ -31,6 +33,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -49,12 +52,30 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
     @SuppressWarnings("SpringJavaAutowiredMembersInspection")
     @Autowired
     protected JdbcTemplate jdbcTemplate;
+    @Autowired
+    private PlatformTransactionManager transactionManager;
+    private TransactionTemplate transactionTemplate;
 
     @Value("${jwt.secret.bureau}")
     protected String bureauSecret;
 
     @Value("${jwt.secret.hmac}")
     protected String hmacSecret;
+
+
+    protected void executeInTransaction(Runnable supplier) {
+        executeInTransaction(() -> {
+            supplier.run();
+            return null;
+        });
+    }
+
+    protected <R> R executeInTransaction(Supplier<R> supplier) {
+        if (transactionTemplate == null) {
+            transactionTemplate = new TransactionTemplate(transactionManager);
+        }
+        return transactionTemplate.execute(status -> supplier.get());
+    }
 
     protected HttpHeaders initialiseHeaders(String loginUser, UserType userType, Set<Role> roles, String owner) {
         BureauJwtPayload payload = createBureauJwtPayload(loginUser, userType, roles, owner);

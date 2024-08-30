@@ -5,7 +5,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
@@ -29,13 +28,12 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjust
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAuditChangeService;
 
-import java.util.Collections;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -76,6 +74,8 @@ public class JurorResponseStatusUpdateServiceImplTest {
     private JurorAuditChangeService jurorAuditChangeService;
     @Mock
     private JurorRepository jurorRepository;
+    @Mock
+    private JurorPoolService jurorPoolService;
 
     @InjectMocks
     private SummonsReplyStatusUpdateServiceImpl summonsReplyStatusUpdateService;
@@ -175,8 +175,8 @@ public class JurorResponseStatusUpdateServiceImplTest {
         given(jurorResponseRepository.findByJurorNumber(any(String.class))).willReturn(mockJurorResponse);
         given(mockJurorResponse.getProcessingStatus()).willReturn(currentProcessingStatus);
         given(mockJurorResponse.getStaff()).willReturn(null);
-        Mockito.doReturn(Collections.singletonList(createJurorPool(jurorNumber))).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(createJurorPool(jurorNumber)).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
 
         // Execute logic
         summonsReplyStatusUpdateService.updateDigitalJurorResponseStatus(jurorNumber, ProcessingStatus.TODO, payload);
@@ -278,9 +278,9 @@ public class JurorResponseStatusUpdateServiceImplTest {
     }
 
     private void configureBureauMocks(String jurorNumber, DigitalResponse mockJurorResponse) {
-        Mockito.doReturn(mockJurorResponse).when(jurorResponseRepository).findByJurorNumber(any(String.class));
-        Mockito.doReturn(Collections.singletonList(createJurorPool(jurorNumber))).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(mockJurorResponse).when(jurorResponseRepository).findByJurorNumber(any(String.class));
+        JurorPool jurorPool = createJurorPool(jurorNumber);
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
     }
 
     private void configureCourtMocks(ProcessingStatus currentProcessingStatus, String jurorNumber,
@@ -290,15 +290,14 @@ public class JurorResponseStatusUpdateServiceImplTest {
         courtOwnedMember.setOwner("415");
         given(mockJurorResponse.getProcessingStatus()).willReturn(currentProcessingStatus);
         given(mockJurorResponse.getJurorNumber()).willReturn(jurorNumber);
-        Mockito.doReturn(Collections.singletonList(courtOwnedMember)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(courtOwnedMember).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
     }
 
 
     private void assertNoMergeVerification() {
         // as we're not setting the status to CLOSED, we should not be merging data to Juror
-        verify(jurorPoolRepository, times(1))
-            .findByJurorJurorNumberAndIsActive(any(String.class), eq(true));
+        verify(jurorPoolService, times(1))
+            .getJurorPoolFromUser(any(String.class));
         verify(jurorPoolRepository, times(0)).save(any(JurorPool.class));
         verify(jurorHistoryRepository, times(0)).save(any(JurorHistory.class));
     }

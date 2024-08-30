@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
-import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -18,8 +17,8 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class UndeliverableResponseServiceImpl implements UndeliverableResponseService {
-    private final JurorPoolRepository jurorPoolRepository;
     private final JurorHistoryService jurorHistoryService;
+    private final JurorPoolService jurorPoolService;
 
     @Override
     @Transactional
@@ -31,7 +30,7 @@ public class UndeliverableResponseServiceImpl implements UndeliverableResponseSe
         for (String jurorNumber : jurorNumbers) {
             log.debug("Begin processing mark as undeliverable for juror {} by user {}", jurorNumber, username);
 
-            JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
+            JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
             JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, owner);
 
             JurorStatus jurorStatus = new JurorStatus();
@@ -41,7 +40,7 @@ public class UndeliverableResponseServiceImpl implements UndeliverableResponseSe
             jurorPool.setUserEdtq(username);
             jurorPool.setNextDate(null);
             jurorHistoryService.createUndeliveredSummonsHistory(jurorPool);
-            jurorPoolRepository.save(jurorPool);
+            jurorPoolService.save(jurorPool);
         }
     }
 }

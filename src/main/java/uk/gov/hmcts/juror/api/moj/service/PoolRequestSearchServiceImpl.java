@@ -21,6 +21,7 @@ import uk.gov.hmcts.juror.api.moj.domain.SortDirection;
 import uk.gov.hmcts.juror.api.moj.repository.CoronerPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.utils.PaginationUtil;
+import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -83,7 +84,7 @@ public class PoolRequestSearchServiceImpl implements PoolRequestSearchService {
                     .requestedBy(tuple.get(QCoronerPool.coronerPool.name));
                 return builder.build();
             },
-            500L
+            ValidationConstants.MAX_ITEMS
         );
     }
 

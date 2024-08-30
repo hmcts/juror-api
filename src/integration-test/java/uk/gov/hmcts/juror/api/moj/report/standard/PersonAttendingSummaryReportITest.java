@@ -36,6 +36,7 @@ class PersonAttendingSummaryReportITest extends AbstractStandardReportController
         return addReportType(StandardReportRequest.builder()
             .date(LocalDate.now().plusDays(1))
             .includeSummoned(false)
+            .includePanelMembers(false)
             .build());
     }
 

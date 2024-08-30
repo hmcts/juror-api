@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
-import com.querydsl.core.Tuple;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,6 +56,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.ContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
+import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.IContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -71,7 +71,6 @@ import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.domain.PoolHistory;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.PoolType;
-import uk.gov.hmcts.juror.api.moj.domain.QReportsJurorPayments;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
@@ -95,7 +94,6 @@ import uk.gov.hmcts.juror.api.moj.repository.PendingJurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolTypeRepository;
-import uk.gov.hmcts.juror.api.moj.repository.juror.JurorPaymentsSummaryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
@@ -219,9 +217,9 @@ class JurorRecordServiceTest {
     @Mock
     private UserServiceModImpl userServiceMod;
     @Mock
-    private JurorPaymentsSummaryRepository jurorPaymentsSummaryRepository;
-    @Mock
     private JurorPoolService jurorPoolService;
+    @Mock
+    private FinancialAuditService financialAuditService;
     @Mock
     private JurorThirdPartyService jurorThirdPartyService;
 
@@ -2278,7 +2276,7 @@ class JurorRecordServiceTest {
 
         verify(jurorPoolRepository, times(1)).save(jurorPool);
 
-        assertThat(jurorPool.getOnCall()).isTrue();
+        assertThat(jurorPool.isOnCall()).isTrue();
         assertThat(jurorPool.getNextDate()).isNull();
 
     }
@@ -2305,7 +2303,7 @@ class JurorRecordServiceTest {
         verify(jurorPoolRepository, times(1)).save(jurorPool);
 
         assertThat(jurorPool.getNextDate()).isEqualTo(dto.getNextDate());
-        assertThat(jurorPool.getOnCall()).isFalse();
+        assertThat(jurorPool.isOnCall()).isFalse();
 
     }
 
@@ -3228,85 +3226,70 @@ class JurorRecordServiceTest {
     @Nested
     @DisplayName("public JurorPaymentsResponseDto getJurorPayments(String jurorNumber)")
     class GetJurorPayments {
-        Tuple generateData(Integer value) {
-            Tuple tuple = mock(Tuple.class);
+        Appearance generateData(Integer value) {
+            Appearance appearance = spy(new Appearance());
 
-            doReturn(LocalDate.now().minusDays(value + 3)).when(tuple)
-                .get(QReportsJurorPayments.reportsJurorPayments.attendanceDate);
-
+            appearance.setAttendanceDate(LocalDate.now().minusDays(value + 3));
+            appearance.setDraftExpense(false);
             if (value == 0) {
-                doReturn(true).when(tuple).get(QReportsJurorPayments.reportsJurorPayments.nonAttendance);
+                appearance.setAttendanceType(AttendanceType.NON_ATTENDANCE);
             } else {
-                doReturn(false).when(tuple).get(QReportsJurorPayments.reportsJurorPayments.nonAttendance);
-                doReturn(String.valueOf(value)).when(tuple)
-                    .get(QReportsJurorPayments.reportsJurorPayments.attendanceAudit);
+                appearance.setAttendanceType(AttendanceType.FULL_DAY);
+                appearance.setFinancialAudit(Long.valueOf(value));
 
-                doReturn(BigDecimal.valueOf(value)).when(tuple)
-                    .get(QReportsJurorPayments.reportsJurorPayments.totalTravelDue);
-                doReturn(BigDecimal.valueOf(value)).when(tuple)
-                    .get(QReportsJurorPayments.reportsJurorPayments.totalFinancialLossDue);
-                doReturn(BigDecimal.valueOf(value)).when(tuple)
-                    .get(QReportsJurorPayments.reportsJurorPayments.subsistenceDue);
-                doReturn(BigDecimal.valueOf(value)).when(tuple)
-                    .get(QReportsJurorPayments.reportsJurorPayments.smartCardDue);
-                doReturn(BigDecimal.valueOf(2 * value)).when(tuple)
-                    .get(QReportsJurorPayments.reportsJurorPayments.totalDue);
+                doReturn(BigDecimal.valueOf(value)).when(appearance)
+                    .getTotalTravelDue();
+                doReturn(BigDecimal.valueOf(value)).when(appearance)
+                    .getTotalFinancialLossDue();
+                appearance.setSubsistenceDue(BigDecimal.valueOf(value));
+                appearance.setSmartCardAmountDue(BigDecimal.valueOf(value));
+                doReturn(BigDecimal.valueOf(2 * value)).when(appearance)
+                    .getTotalDue();
 
                 if (value < 3) {
-                    doReturn(String.valueOf(value)).when(tuple)
-                        .get(QReportsJurorPayments.reportsJurorPayments.latestPaymentFAuditId);
-                    doReturn(LocalDateTime.now().minusDays(value)).when(tuple)
-                        .get(QReportsJurorPayments.reportsJurorPayments.paymentDate);
-                    doReturn(BigDecimal.valueOf(2 * value)).when(tuple)
-                        .get(QReportsJurorPayments.reportsJurorPayments.totalPaid);
+                    doReturn(Long.valueOf(value)).when(appearance)
+                        .getFinancialAudit();
+                    doReturn(BigDecimal.valueOf(2 * value)).when(appearance)
+                        .getTotalPaid();
+
+                    doReturn(Optional.of(
+                        FinancialAuditDetails.builder()
+                            .id(Long.valueOf(value))
+                            .createdOn(LocalDateTime.now().minusDays(value))
+                            .build()
+                    )).when(financialAuditService)
+                        .getLastFinancialAuditDetailsFromAppearanceAndGenericType(appearance,
+                            FinancialAuditDetails.Type.GenericType.APPROVED);
                 }
             }
-
-            return tuple;
+            return appearance;
         }
 
         @Test
         void positiveGetPayments() {
             String jurorNumber = "641500094";
             JurorPool jurorPool = createValidJurorPool(jurorNumber, COURT_OWNER);
-            TestUtils.mockSecurityUtil(
-                BureauJwtPayload.builder()
-                    .owner("415")
-                    .build()
-            );
+            TestUtils.mockCourtUser("415");
 
+            doReturn(jurorPool.getJuror()).when(jurorRepository)
+                .findByJurorNumber(any());
             doReturn(List.of(jurorPool)).when(jurorPoolRepository)
                 .findByJurorJurorNumberAndIsActive(any(), anyBoolean());
 
             doReturn(List.of(generateData(0), generateData(1), generateData(2), generateData(3)))
-                .when(jurorPaymentsSummaryRepository).fetchPaymentLogByJuror(jurorNumber);
+                .when(appearanceRepository).findAllByCourtLocationLocCodeAndJurorNumberAndAppearanceStageIn(
+                    "415", jurorNumber, AppearanceStage.getConfirmedAppearanceStages());
 
             JurorPaymentsResponseDto payments = jurorRecordService.getJurorPayments(jurorNumber);
 
             assertEquals(3, payments.getAttendances(), "Incorrect number of attendances");
             assertEquals(1, payments.getNonAttendances(), "Incorrect number of non-attendances");
-            assertEquals(BigDecimal.valueOf(6).setScale(2), payments.getFinancialLoss(),
+            assertEquals(BigDecimal.valueOf(6), payments.getFinancialLoss(),
                 "Incorrect financial loss total");
-            assertEquals(BigDecimal.valueOf(6).setScale(2), payments.getTravel(), "Incorrect travel total");
-            assertEquals(BigDecimal.valueOf(6).setScale(2), payments.getSubsistence(), "Incorrect subsistence total");
-            assertEquals(BigDecimal.valueOf(6).setScale(2), payments.getTotalPaid(), "Incorrect total paid");
+            assertEquals(BigDecimal.valueOf(6), payments.getTravel(), "Incorrect travel total");
+            assertEquals(new BigDecimal("6.00"), payments.getSubsistence(), "Incorrect subsistence total");
+            assertEquals(BigDecimal.valueOf(6), payments.getTotalPaid(), "Incorrect total paid");
             assertEquals(4, payments.getData().size(), "Incorrect number of attendance entries");
-        }
-
-        @Test
-        void negativeNoPermission() {
-            String jurorNumber = "641500094";
-            JurorPool jurorPool = createValidJurorPool(jurorNumber, COURT_OWNER);
-            TestUtils.mockSecurityUtil(
-                BureauJwtPayload.builder()
-                    .owner("416")
-                    .build()
-            );
-
-            doReturn(List.of(jurorPool)).when(jurorPoolRepository)
-                .findByJurorJurorNumberAndIsActive(any(), anyBoolean());
-
-            assertThrows(MojException.Forbidden.class, () -> jurorRecordService.getJurorPayments(jurorNumber));
         }
     }
 
@@ -3351,22 +3334,6 @@ class JurorRecordServiceTest {
             JurorHistoryResponseDto history = jurorRecordService.getJurorHistory(jurorNumber);
 
             assertEquals(2, history.data.size(), "Incorrect history length");
-        }
-
-        @Test
-        void negativeNoPermission() {
-            String jurorNumber = "641500094";
-            JurorPool jurorPool = createValidJurorPool(jurorNumber, COURT_OWNER);
-            TestUtils.mockSecurityUtil(
-                BureauJwtPayload.builder()
-                    .owner("416")
-                    .build()
-            );
-
-            doReturn(List.of(jurorPool)).when(jurorPoolRepository)
-                .findByJurorJurorNumberAndIsActive(any(), anyBoolean());
-
-            assertThrows(MojException.Forbidden.class, () -> jurorRecordService.getJurorPayments(jurorNumber));
         }
     }
 

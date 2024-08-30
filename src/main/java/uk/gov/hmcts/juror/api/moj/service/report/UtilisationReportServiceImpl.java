@@ -159,6 +159,11 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
                 for (String result : results) {
 
                     List<String> res = List.of(result.split(","));
+
+                    if (res.get(1).equals("null")) {
+                        continue;
+                    }
+
                     DailyUtilisationReportJurorsResponse.TableData.Juror jurors =
                         DailyUtilisationReportJurorsResponse.TableData.Juror.builder()
                             .juror(res.get(1))

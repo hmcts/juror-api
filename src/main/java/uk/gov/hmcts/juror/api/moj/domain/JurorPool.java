@@ -40,12 +40,12 @@ import java.util.List;
 public class JurorPool implements Serializable {
 
     @Id
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "juror_number", nullable = false)
     private Juror juror;
 
     @Id
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pool_number", nullable = false)
     private PoolRequest pool;
 
@@ -61,7 +61,7 @@ public class JurorPool implements Serializable {
     @Column(name = "is_active")
     private Boolean isActive;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "status")
     private JurorStatus status;
 
@@ -98,7 +98,7 @@ public class JurorPool implements Serializable {
     private LocalDate nextDate;
 
     @Column(name = "on_call")
-    private Boolean onCall;
+    private boolean onCall;
 
     @Length(max = 20)
     @Column(name = "smart_card")

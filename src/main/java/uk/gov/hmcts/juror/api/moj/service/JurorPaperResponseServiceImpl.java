@@ -1,7 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
 import io.jsonwebtoken.lang.Collections;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +35,6 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.SummonsSnapshotRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
-import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
@@ -63,28 +61,17 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
     private static final String INVALID_CJS_EMPLOYMENT_ERROR_MESSAGE = "Invalid CJS Employment supplied for Juror %s";
     private static final String INVALID_SPECIAL_NEED_ERROR_MESSAGE = "Invalid special need supplied for Juror %s";
     static final String RESPONSE_UPDATED_LOG = "Paper response for Juror %s will be updated with new value for %s";
-    @NonNull
     private final JurorPaperResponseRepositoryMod paperResponseRepository;
-    @NonNull
     private final JurorResponseCjsEmploymentRepositoryMod jurorResponseCjsEmploymentRepository;
-    @NonNull
     private final JurorReasonableAdjustmentRepository reasonableAdjustmentsRepository;
-    @NonNull
     private final UserRepository userRepository;
-    @NonNull
-    private final JurorDigitalResponseRepositoryMod jurorDigitalResponseRepositoryMod;
-    @NonNull
     private final JurorPoolRepository jurorPoolRepository;
-    @NonNull
     private final SummonsSnapshotRepository summonsSnapshotRepository;
-    @NonNull
     private final WelshCourtLocationRepository welshCourtLocationRepository;
-    @NonNull
     private final StraightThroughProcessorService straightThroughProcessorService;
-
-    @NonNull
     private final JurorRepository jurorRepository;
-
+    private final JurorPoolService jurorPoolService;
+    
     @Override
     @Transactional
     public JurorPaperResponseDetailDto getJurorPaperResponse(final String jurorNumber, BureauJwtPayload payload) {
@@ -317,7 +304,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         log.info(String.format("Saving paper response for Juror %s, by user %s", jurorNumber, payload.getLogin()));
 
         // Check if the current user has access to the Juror record (and also that the record exists)
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
+        JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
 
         //check if Juror Paper response already exists - then send back error

@@ -43,6 +43,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -70,30 +71,31 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
 
     private void validateJurorWasCompleted(LocalDate completionTime, String jurorNumber, String poolNumber,
                                            boolean isDismissal) {
-        JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, poolNumber);
-        assertEquals(true, jurorPool.getIsActive(),
-            "Juror pool should be active");
-        assertEquals(false, jurorPool.getOnCall(),
-            "Juror pool should not be on call");
-        assertEquals(IJurorStatus.COMPLETED, jurorPool.getStatus().getStatus(),
-            "Juror pool status should be completed");
-        Juror juror = jurorPool.getJuror();
+        executeInTransaction(() -> {
+            JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, poolNumber);
+            assertEquals(true, jurorPool.getIsActive(),
+                "Juror pool should be active");
+            assertFalse(jurorPool.isOnCall(), "Juror pool should not be on call");
+            assertEquals(IJurorStatus.COMPLETED, jurorPool.getStatus().getStatus(),
+                "Juror pool status should be completed");
+            Juror juror = jurorPool.getJuror();
 
-        assertEquals(completionTime, juror.getCompletionDate(),
-            "Juror completion date should match");
+            assertEquals(completionTime, juror.getCompletionDate(),
+                "Juror completion date should match");
 
-        if (isDismissal) {
-            assertThat(jurorPool.getNextDate()).isNull();
-            assertThat(jurorPool.getOnCall()).isFalse();
-        }
-        List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
-        assertEquals(1, jurorHistories.size(), "Should only be one history entry");
-        JurorHistory jurorHistory = jurorHistories.get(0);
-        assertEquals(poolNumber, jurorHistory.getPoolNumber(), "Pool number should match");
-        assertEquals(jurorNumber, jurorHistory.getJurorNumber(), "Juror number should match");
-        assertEquals("COURT_USER", jurorHistory.getCreatedBy(), "User id should match");
-        assertEquals(HistoryCodeMod.COMPLETE_SERVICE, jurorHistory.getHistoryCode(), "History code should match");
-        assertEquals(completionTime, jurorHistory.getOtherInformationDate(), "Date should match");
+            if (isDismissal) {
+                assertThat(jurorPool.getNextDate()).isNull();
+                assertThat(jurorPool.isOnCall()).isFalse();
+            }
+            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
+            assertEquals(1, jurorHistories.size(), "Should only be one history entry");
+            JurorHistory jurorHistory = jurorHistories.get(0);
+            assertEquals(poolNumber, jurorHistory.getPoolNumber(), "Pool number should match");
+            assertEquals(jurorNumber, jurorHistory.getJurorNumber(), "Juror number should match");
+            assertEquals("COURT_USER", jurorHistory.getCreatedBy(), "User id should match");
+            assertEquals(HistoryCodeMod.COMPLETE_SERVICE, jurorHistory.getHistoryCode(), "History code should match");
+            assertEquals(completionTime, jurorHistory.getOtherInformationDate(), "Date should match");
+        });
     }
 
     @Nested
@@ -176,13 +178,15 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
                         + "\"message\":\"Juror number 941500004 not found in pool 415220901\","
                         + "\"path\":\"/api/v1/moj/complete-service/415220901/complete\"}",
                     response.getBody(), false);
-
-            JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber("641500005", "415220901");
-            assertEquals(IJurorStatus.RESPONDED, jurorPool.getStatus().getStatus(),
-                "Juror pool status should not be updated");
-            Juror juror = jurorPool.getJuror();
-            assertNull(juror.getCompletionDate(),
-                "Completion date should not be update to provided completion date");
+            executeInTransaction(() -> {
+                JurorPool jurorPool =
+                    jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber("641500005", "415220901");
+                assertEquals(IJurorStatus.RESPONDED, jurorPool.getStatus().getStatus(),
+                    "Juror pool status should not be updated");
+                Juror juror = jurorPool.getJuror();
+                assertNull(juror.getCompletionDate(),
+                    "Completion date should not be update to provided completion date");
+            });
         }
 
         @Test
@@ -210,24 +214,25 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
                     + "\"message\":\"Unable to complete the service for the following juror number(s) due to invalid "
                     + "state: 641500003\","
                     + "\"code\":\"COMPLETE_SERVICE_JUROR_IN_INVALID_STATE\"}", response.getBody(), false);
+            executeInTransaction(() -> {
+                JurorPool jurorPool1 = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber("641500005",
+                    "415220901");
+                assertEquals(IJurorStatus.COMPLETED, jurorPool1.getStatus().getStatus(),
+                    "Juror pool status should not change as transaction should rollback");
+                Juror juror1 = jurorPool1.getJuror();
+                assertNotNull(juror1.getCompletionDate(),
+                    "Completion date should not be null.");
+                assertEquals(completionTime, juror1.getCompletionDate(),
+                    "Completion date should be equal to 2023-11-23");
 
-            JurorPool jurorPool1 = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber("641500005",
-                "415220901");
-            assertEquals(IJurorStatus.COMPLETED, jurorPool1.getStatus().getStatus(),
-                "Juror pool status should not change as transaction should rollback");
-            Juror juror1 = jurorPool1.getJuror();
-            assertNotNull(juror1.getCompletionDate(),
-                "Completion date should not be null.");
-            assertEquals(completionTime, juror1.getCompletionDate(),
-                "Completion date should be equal to 2023-11-23");
-
-            JurorPool jurorPool2 = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber("641500003",
-                "415220901");
-            assertEquals(IJurorStatus.FAILED_TO_ATTEND, jurorPool2.getStatus().getStatus(),
-                "Juror pool status should not change as juror is in invalid state for completion");
-            Juror juror2 = jurorPool2.getJuror();
-            assertNull(juror2.getCompletionDate(),
-                "Completion date should not change as transaction should rollback");
+                JurorPool jurorPool2 = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber("641500003",
+                    "415220901");
+                assertEquals(IJurorStatus.FAILED_TO_ATTEND, jurorPool2.getStatus().getStatus(),
+                    "Juror pool status should not change as juror is in invalid state for completion");
+                Juror juror2 = jurorPool2.getJuror();
+                assertNull(juror2.getCompletionDate(),
+                    "Completion date should not change as transaction should rollback");
+            });
         }
 
         @Test
@@ -521,14 +526,16 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
                         + "\"message\":\"Juror number 941700009 not found in database\","
                         + "\"path\":\"/api/v1/moj/complete-service/dismissal\"}",
                     response.getBody(), false);
+            executeInTransaction(() -> {
+                JurorPool jurorPool =
+                    jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber("641700003", "417230101");
+                assertEquals(IJurorStatus.RESPONDED, jurorPool.getStatus().getStatus(),
+                    "Juror pool status should not change as transaction should rollback");
 
-            JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber("641700003", "417230101");
-            assertEquals(IJurorStatus.RESPONDED, jurorPool.getStatus().getStatus(),
-                "Juror pool status should not change as transaction should rollback");
-
-            Juror juror = jurorPool.getJuror();
-            assertNull(juror.getCompletionDate(),
-                "Completion date should not change as transaction should rollback");
+                Juror juror = jurorPool.getJuror();
+                assertNull(juror.getCompletionDate(),
+                    "Completion date should not change as transaction should rollback");
+            });
         }
 
         @Test
@@ -601,22 +608,26 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
         public static final String URL = BASE_URL + "/uncomplete";
 
         private void validateJurorWasUncompleted(String jurorNumber, String poolNumber) {
-            JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, poolNumber);
-            assertEquals(IJurorStatus.RESPONDED, jurorPool.getStatus().getStatus(),
-                "Juror pool status should be responded");
-            Juror juror = jurorPool.getJuror();
+            executeInTransaction(() -> {
+                JurorPool jurorPool =
+                    jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, poolNumber);
+                assertEquals(IJurorStatus.RESPONDED, jurorPool.getStatus().getStatus(),
+                    "Juror pool status should be responded");
+                Juror juror = jurorPool.getJuror();
 
-            assertNull(juror.getCompletionDate(),
-                "Juror completion date should be null");
+                assertNull(juror.getCompletionDate(),
+                    "Juror completion date should be null");
 
-            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
-            assertEquals(1, jurorHistories.size(), "Should only be one history entry");
-            JurorHistory jurorHistory = jurorHistories.get(0);
-            assertEquals(poolNumber, jurorHistory.getPoolNumber(), "Pool number should match");
-            assertEquals(jurorNumber, jurorHistory.getJurorNumber(), "Juror number should match");
-            assertEquals("COURT_USER", jurorHistory.getCreatedBy(), "User id should match");
-            assertEquals(HistoryCodeMod.COMPLETE_SERVICE, jurorHistory.getHistoryCode(), "History code should match");
-            assertEquals("Completion date removed", jurorHistory.getOtherInformation(), "Info should match");
+                List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
+                assertEquals(1, jurorHistories.size(), "Should only be one history entry");
+                JurorHistory jurorHistory = jurorHistories.get(0);
+                assertEquals(poolNumber, jurorHistory.getPoolNumber(), "Pool number should match");
+                assertEquals(jurorNumber, jurorHistory.getJurorNumber(), "Juror number should match");
+                assertEquals("COURT_USER", jurorHistory.getCreatedBy(), "User id should match");
+                assertEquals(HistoryCodeMod.COMPLETE_SERVICE, jurorHistory.getHistoryCode(),
+                    "History code should match");
+                assertEquals("Completion date removed", jurorHistory.getOtherInformation(), "Info should match");
+            });
         }
 
         @Test

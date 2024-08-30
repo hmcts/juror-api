@@ -228,6 +228,29 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
         }
 
         @Test
+        void viewDailyUtilisationJurorsNoUtilisation() {
+            ResponseEntity<DailyUtilisationReportJurorsResponse> responseEntity =
+                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                        URI.create(DAILY_UTILISATION_JURORS_URL
+                            + "/415?reportDate=2024-03-01")),
+                    DailyUtilisationReportJurorsResponse.class);
+
+            assertThat(responseEntity.getStatusCode()).as("Expect HTTP OK response").isEqualTo(HttpStatus.OK);
+            DailyUtilisationReportJurorsResponse responseBody = responseEntity.getBody();
+            assertThat(responseBody).isNotNull();
+
+            // validate the table data
+            DailyUtilisationReportJurorsResponse.TableData tableData = responseBody.getTableData();
+            assertThat(tableData).isNotNull();
+            assertThat(tableData.getHeadings()).isNotNull();
+            assertThat(tableData.getHeadings()).hasSize(5);
+
+            // validate the jurors
+            assertThat(tableData.getJurors()).isNotNull();
+            assertThat(tableData.getJurors()).hasSize(0);
+        }
+
+        @Test
         void viewDailyUtilisationJurorsInvalidUserType() {
 
             final String bureauJwt = createBureauJwt();

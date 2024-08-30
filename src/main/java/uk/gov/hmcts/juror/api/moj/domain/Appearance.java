@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
@@ -27,6 +28,8 @@ import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 import org.hibernate.envers.RelationTargetAuditMode;
 import org.hibernate.validator.constraints.Length;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.LastModifiedBy;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
@@ -128,9 +131,11 @@ public class Appearance implements Serializable {
     private boolean payCash = false;
 
     @Column(name = "last_updated_by")
+    @LastModifiedBy
     private String lastUpdatedBy;
 
     @Column(name = "created_by")
+    @CreatedBy
     private String createdBy;
 
     // transport expenses
@@ -250,7 +255,7 @@ public class Appearance implements Serializable {
     private Boolean noShow;
 
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "expense_rates_id", referencedColumnName = "id")
     @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private ExpenseRates expenseRates;
@@ -334,7 +339,6 @@ public class Appearance implements Serializable {
         return this.attendanceType.getIsLongTrial();
     }
 
-    //TODO add travel time and court time together
     public LocalTime getEffectiveTime() {
         return this.getTimeSpentAtCourt().plusNanos(this.getTravelTime().toNanoOfDay());
     }

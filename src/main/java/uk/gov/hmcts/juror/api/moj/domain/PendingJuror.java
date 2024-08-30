@@ -100,7 +100,7 @@ public class PendingJuror extends Address implements Serializable {
     @Column(name = "next_date")
     private LocalDate nextDate;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "added_by")
     private User addedBy;
 
@@ -118,7 +118,7 @@ public class PendingJuror extends Address implements Serializable {
     @Column(name = "pool_seq")
     private String poolSequence;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @NotNull
     @JoinColumn(name = "status")
     private PendingJurorStatus status;

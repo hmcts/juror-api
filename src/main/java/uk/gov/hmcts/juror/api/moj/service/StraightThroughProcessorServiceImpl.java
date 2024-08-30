@@ -53,6 +53,7 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
     private final PrintDataService printDataService;
     private final JurorHistoryService jurorHistoryService;
     private final JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
+    private final JurorPoolService jurorPoolService;
 
 
     /**
@@ -73,7 +74,7 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
         log.trace("Enter isValidForStraightThroughAcceptance");
 
         // Check if the current user has access to the Juror record (and also that the record exists)
-        JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
+        JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, owner);
 
         PaperResponse paperResponse = DataUtils.getJurorPaperResponse(jurorNumber,
