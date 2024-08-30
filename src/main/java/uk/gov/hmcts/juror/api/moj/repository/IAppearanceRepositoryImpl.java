@@ -93,9 +93,10 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             || commonData.getTag().equals(RetrieveAttendanceDetailsTag.PANELLED)) {
             query = query.where(APPEARANCE.appearanceStage.eq(AppearanceStage.CHECKED_IN));
         } else if (commonData.getTag().equals(RetrieveAttendanceDetailsTag.CONFIRM_ATTENDANCE)) {
-            // a confirmed juror can have appStage of CheckedIn or CheckedOut therefore cannot rely on appStage. A
-            // confirmed juror will always have TimeIn.
-            query = query.where(APPEARANCE.timeIn.isNotNull());
+            query = query.where(APPEARANCE.timeIn.isNotNull())
+                .where(APPEARANCE.appearanceStage.in(AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT))
+                .where(APPEARANCE.attendanceAuditNumber.isNull())
+                .where(APPEARANCE.appearanceConfirmed.isFalse());
         }
 
         // execute the query and return the results
@@ -294,13 +295,13 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
         try {
             return
                 Optional.ofNullable((Appearance) AuditReaderFactory.get(entityManager)
-                .createQuery()
-                .forRevisionsOfEntity(Appearance.class, true, false)
-                .add(AuditEntity.property("jurorNumber").eq(jurorNumber))
-                .add(AuditEntity.property("locCode").eq(locCode))
-                .add(AuditEntity.property("attendanceDate").eq(attendanceDate))
-                .add(AuditEntity.property("version").eq(appearanceVersion))
-                .getSingleResult());
+                    .createQuery()
+                    .forRevisionsOfEntity(Appearance.class, true, false)
+                    .add(AuditEntity.property("jurorNumber").eq(jurorNumber))
+                    .add(AuditEntity.property("locCode").eq(locCode))
+                    .add(AuditEntity.property("attendanceDate").eq(attendanceDate))
+                    .add(AuditEntity.property("version").eq(appearanceVersion))
+                    .getSingleResult());
         } catch (NoResultException e) {
             return Optional.empty();
         }
