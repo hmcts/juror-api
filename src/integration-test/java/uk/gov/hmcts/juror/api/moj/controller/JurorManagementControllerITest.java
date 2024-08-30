@@ -1282,7 +1282,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             // check the on-call flag before invoking the api
             Boolean onCallFlagBefore =
-                jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(JUROR6, POOL_NUMBER_415230101).getOnCall();
+                jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(JUROR6, POOL_NUMBER_415230101).isOnCall();
             assertThat(onCallFlagBefore).as("On-call flag should be True").isEqualTo(Boolean.TRUE);
 
             ResponseEntity<String> responseEntity =
@@ -1296,7 +1296,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             // verify the on-call flag was updated successfully
             Boolean onCallFlagAfter =
-                jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(JUROR6, POOL_NUMBER_415230101).getOnCall();
+                jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(JUROR6, POOL_NUMBER_415230101).isOnCall();
             assertThat(onCallFlagAfter).as("On-call flag should be False").isEqualTo(Boolean.FALSE);
         }
 
