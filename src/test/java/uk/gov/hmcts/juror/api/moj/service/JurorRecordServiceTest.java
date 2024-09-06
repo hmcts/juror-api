@@ -2276,7 +2276,7 @@ class JurorRecordServiceTest {
 
         verify(jurorPoolRepository, times(1)).save(jurorPool);
 
-        assertThat(jurorPool.getOnCall()).isTrue();
+        assertThat(jurorPool.isOnCall()).isTrue();
         assertThat(jurorPool.getNextDate()).isNull();
 
     }
@@ -2303,7 +2303,7 @@ class JurorRecordServiceTest {
         verify(jurorPoolRepository, times(1)).save(jurorPool);
 
         assertThat(jurorPool.getNextDate()).isEqualTo(dto.getNextDate());
-        assertThat(jurorPool.getOnCall()).isFalse();
+        assertThat(jurorPool.isOnCall()).isFalse();
 
     }
 

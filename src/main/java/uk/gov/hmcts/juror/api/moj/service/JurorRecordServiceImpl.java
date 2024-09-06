@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.text.WordUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.history.Revision;
@@ -602,7 +601,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
 
     private void validateOnCall(JurorPool jurorPool) {
-        if (jurorPool.getOnCall() != null && jurorPool.getOnCall().equals(true)) {
+        if (jurorPool.isOnCall()) {
             throw new MojException.BadRequest("Juror status is already on call", null);
         }
     }
@@ -1197,7 +1196,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         responseDto.setNonAttendances((int) jurorAttendanceDetails.stream()
             .filter(p -> AttendanceType.NON_ATTENDANCE.equals(p.getAttendanceType())).count());
 
-        responseDto.setOnCall(ObjectUtils.defaultIfNull(jurorPool.getOnCall(), false));
+        responseDto.setOnCall(jurorPool.isOnCall());
         responseDto.setNextDate(jurorPool.getNextDate());
 
         return responseDto;
