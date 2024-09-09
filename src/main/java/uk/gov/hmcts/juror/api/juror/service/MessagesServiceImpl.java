@@ -5,6 +5,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ import uk.gov.hmcts.juror.api.moj.repository.MessageRepository;
 import uk.gov.hmcts.juror.api.moj.repository.RegionNotifyTemplateQueriesMod;
 import uk.gov.hmcts.juror.api.moj.repository.RegionNotifyTemplateRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
+import uk.gov.hmcts.juror.api.moj.utils.NotifyUtil;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
@@ -45,7 +47,6 @@ public class MessagesServiceImpl implements BureauProcessService {
     private static final String MESSAGE_PLACEHOLDER_JUROR = "JURORNUMBER";
     private static final String MESSAGE_READ = "SN";
     private static final String MESSAGE_READ_APP_ERROR = "NS";
-    private static final String MESSAGE_NOT_READ = "NR";
     private static final int CHECK_NUM = 1;
 
     private static final String LOG_ERROR_MESSAGE_TEMPLATE_ID = " Missing templateId. Cannot send notify "
@@ -78,14 +79,10 @@ public class MessagesServiceImpl implements BureauProcessService {
         // keys as values
 
         Map<String, String> myRegionMap = new HashMap<>();
-        @SuppressWarnings("PMD.VariableDeclarationUsageDistance")
-        int errorCount = 0;
 
         List<String> notifyRegionKeys = setUpNotifyRegionKeys();
         List<String> regionIds = setUpRegionIds();
-        for (int i = 0;
-             i < notifyRegionKeys.size();
-             i++) {
+        for (int i = 0; i < notifyRegionKeys.size(); i++) {
             myRegionMap.put(regionIds.get(i), notifyRegionKeys.get(i));
         }
 
@@ -102,6 +99,13 @@ public class MessagesServiceImpl implements BureauProcessService {
 
         Map<String, TemplateDetails> templateDetailsMap = new HashMap<>();
 
+        int errorCount = 0;
+        int invalidPhoneCount = 0;
+        int invalidEmailCount = 0;
+        int missingApiKeyCount = 0;
+        int missingEmailAndPhone = 0;
+        int emailSuccess = 0;
+        int smsSuccess = 0;
 
         for (Message messagesDetail : messageDetailList) {
             log.info("messagesDetail  Juror number : {}", messagesDetail.getJurorNumber());
@@ -124,9 +128,6 @@ public class MessagesServiceImpl implements BureauProcessService {
                 final String textMessage = messagesDetail.getMessageText();
                 final String reference = (messagesDetail.getJurorNumber());
 
-
-                //     String apiKey = (messagesDetail != null ? messagesDetail.getLocationCode().getCourtRegion()
-                //     .getNotifyAccountKey() : null);
                 final String regionId = messagesDetail.getLocationCode().getCourtRegion().getRegionId();
                 final String regionApikey = myRegionMap.get(regionId);
                 log.debug("regionApikey {} ", regionApikey);
@@ -137,7 +138,7 @@ public class MessagesServiceImpl implements BureauProcessService {
                         regionId);
                     messagesDetail.setMessageRead(MESSAGE_READ_APP_ERROR);
                     updateMessageFlag(messagesDetail);
-
+                    missingApiKeyCount++;
                     continue;
                 }
 
@@ -146,10 +147,13 @@ public class MessagesServiceImpl implements BureauProcessService {
                 personalisation.put(MESSAGE_PLACEHOLDER_JUROR, jurorNumber);
 
 
-                final boolean isEmail = messagesDetail.getEmail() != null;
-                final boolean isPhone = messagesDetail.getPhone() != null;
+                final boolean isEmail = StringUtils.isNotBlank(email);
+                final boolean isPhone = StringUtils.isNotBlank(phoneNumber);
 
                 if (!isEmail && !isPhone) {
+                    messagesDetail.setMessageRead(MESSAGE_READ_APP_ERROR);
+                    updateMessageFlag(messagesDetail);
+                    missingEmailAndPhone++;
                     continue;
                 }
 
@@ -184,11 +188,13 @@ public class MessagesServiceImpl implements BureauProcessService {
                             smsTemplateId, email, personalisation, reference);
                         response = emailResponse;
                         notificationId = emailResponse.getNotificationId();
+                        emailSuccess++;
                     } else if (isPhone) {
                         SendSmsResponse smsResponse =
                             notifyClient.sendSms(smsTemplateId, phoneNumber, personalisation, reference);
                         response = smsResponse;
                         notificationId = smsResponse.getNotificationId();
+                        smsSuccess++;
                     }
 
                     if (notificationId != null) {
@@ -198,10 +204,17 @@ public class MessagesServiceImpl implements BureauProcessService {
                     log.trace("Court Comms  sms messaging  Service :  response {}", response);
                 }
             } catch (NotificationClientException e) {
-                log.error("Failed to send via Notify", e);
+                log.info("Failed to send via Notify - {}", e.getMessage());
                 messagesDetail.setMessageRead(MESSAGE_READ_APP_ERROR);
                 updateMessageFlag(messagesDetail);
-                errorCount++;
+                if (NotifyUtil.isInvalidPhoneNumberError(e)) {
+                    invalidPhoneCount++;
+                } else if (NotifyUtil.isInvalidEmailAddressError(e)) {
+                    invalidEmailCount++;
+                } else {
+                    log.error("Failed to send via Notify", e);
+                    errorCount++;
+                }
             } catch (Exception e) {
                 log.error("Unexpected exception when sending details to notify", e);
                 errorCount++;
@@ -213,7 +226,17 @@ public class MessagesServiceImpl implements BureauProcessService {
             errorCount == 0
                 ? SchedulerServiceClient.Result.Status.SUCCESS
                 : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS, null,
-            Map.of("ERROR_COUNT", "" + errorCount));
+            Map.of(
+                "TOTAL_MESSAGES_TO_SEND", String.valueOf(messageDetailList.size()),
+                "ERROR_COUNT", String.valueOf(errorCount),
+                "MISSING_API_KEY_COUNT", String.valueOf(missingApiKeyCount),
+                "MISSING_EMAIL_AND_PHONE", String.valueOf(missingEmailAndPhone),
+                "EMAIL_SUCCESS", String.valueOf(emailSuccess),
+                "SMS_SUCCESS", String.valueOf(smsSuccess),
+
+                "INVALID_PHONE_COUNT", String.valueOf(invalidPhoneCount),
+                "INVALID_EMAIL_COUNT", String.valueOf(invalidEmailCount)
+            ));
     }
 
     private TemplateDetails createTemplateDetails(Message messagesDetail) {
