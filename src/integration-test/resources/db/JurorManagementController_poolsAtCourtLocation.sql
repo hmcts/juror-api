@@ -112,18 +112,18 @@ INSERT INTO juror_mod.juror (juror_number, last_name, first_name, dob, address_l
 ('641800003', 'PERSON', 'TEST', '1990-05-16', '542 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, '2023-10-24');
 
 INSERT INTO juror_mod.juror_pool (owner, juror_number, pool_number, is_active, next_date, status, on_call) VALUES
-('400', '641600001', '416230101', true, '2023-01-23', 2, false),
-('416', '641600002', '416230103', true, '2023-01-23', 13, false),
-('415', '641500001', '415230101', true, current_date - 10, 13, false),
-('415', '641500002', '415230101', true, current_date - 10, 7, false),
-('415', '641500003', '415230101', true, current_date - 10, 2, false),
+('400', '641600001', '416230101', true, '2023-01-23', 2, null),
+('416', '641600002', '416230103', true, '2023-01-23', 13, null),
+('415', '641500001', '415230101', true, current_date - 10, 13, null),
+('415', '641500002', '415230101', true, current_date - 10, 7, null),
+('415', '641500003', '415230101', true, current_date - 10, 2, null),
 ('415', '641500004', '415230101', true, current_date - 10, 2, true),
-('415', '641500005', '415230101', true, current_date - 10, 4, false),
-('415', '641500006', '415230101', true, current_date - 10, 2, false),
-('415', '641500007', '415230101', true, current_date - 10, 2, false),
-('418', '641800001', '418230101', true, '2023-10-25', 2, false),
-('418', '641800002', '418230102', true, '2023-10-23', 2, false),
-('418', '641800003', '418230103', true, '2023-10-23', 13, false);
+('415', '641500005', '415230101', true, current_date - 10, 4, null),
+('415', '641500006', '415230101', true, current_date - 10, 2, null),
+('415', '641500007', '415230101', true, current_date - 10, 2, null),
+('418', '641800001', '418230101', true, '2023-10-25', 2, null),
+('418', '641800002', '418230102', true, '2023-10-23', 2, null),
+('418', '641800003', '418230103', true, '2023-10-23', 13, null);
 
 INSERT INTO juror_mod.appearance (attendance_date,juror_number,pool_number,loc_code,f_audit,time_in,time_out,travel_time,appearance_stage,non_attendance) VALUES
 	(current_date,'641500003','415230101','415',123456789,'09:30:00',null,'01:12','CHECKED_IN',false);

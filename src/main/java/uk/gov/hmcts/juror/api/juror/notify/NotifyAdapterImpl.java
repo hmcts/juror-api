@@ -9,12 +9,14 @@ import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
 import uk.gov.service.notify.SendSmsResponse;
+//import uk.gov.service.notify.NotificationClient;
 
 @Component
 @Slf4j
 public class NotifyAdapterImpl implements NotifyAdapter {
     private final NotifyConfigurationProperties notifyProperties;
     private final NotificationClientApi notifyClient;
+    //  private final NotificationClient notificationClient;
 
     private static final String MESSAGE_1 = "Notify send is disabled? {}";
     private static final String MESSAGE_2 = "Notify http response code: {}";
@@ -22,12 +24,15 @@ public class NotifyAdapterImpl implements NotifyAdapter {
 
     @Autowired
     public NotifyAdapterImpl(final NotifyConfigurationProperties notifyProperties,
+                             //                         final NotificationClient notificationClient,
                              final NotificationClientApi notifyClient) {
         Assert.notNull(notifyProperties, "NotifyConfigurationProperties cannot be null");
         Assert.notNull(notifyClient, "NotificationClient cannot be null");
+        //   Assert.notNull(notificationClient, "NotificationClient cannot be null");
 
         this.notifyProperties = notifyProperties;
         this.notifyClient = notifyClient;
+        //    this.notificationClient = notificationClient;
     }
 
     @Override
@@ -110,6 +115,7 @@ public class NotifyAdapterImpl implements NotifyAdapter {
                     log.warn("Juror Comms Notify response was null!");
                 }
             } catch (NotificationClientException e) {
+                //log.error("Failed to send via Notify: {}", e);
                 log.trace(MESSAGE_2, e.getHttpResult());
                 throw new NotifyApiException("Failed to send Juror Comms via Notify: {}", e);
             } catch (Exception e) {
@@ -146,6 +152,8 @@ public class NotifyAdapterImpl implements NotifyAdapter {
                     notification.getPayload(),
                     notification.getReferenceNumber()
                 );
+                //final SendEmailResponse sendEmailResponse = notifyClient.sendEmail(notification.getTemplateId(),
+                // notification.getRecipientEmail(), notification.getPayload(), notification.getReferenceNumber());
                 if (log.isTraceEnabled()) {
                     log.trace("Juror Comms SMS Notify responded: {}", sendSmsResponse);
                 }
@@ -156,6 +164,7 @@ public class NotifyAdapterImpl implements NotifyAdapter {
                     log.warn("Juror Comms SMS Notify response was null!");
                 }
             } catch (NotificationClientException e) {
+                //log.error("Failed to send via Notify: {}", e);
                 log.trace(MESSAGE_2, e.getHttpResult());
                 throw new NotifyApiException("Failed to send Juror Comms SMS via Notify: {}", e);
             } catch (Exception e) {

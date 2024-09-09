@@ -73,8 +73,7 @@ public class UrgentStatusScheduler implements ScheduledService {
                     SecurityUtil.BUREAU_OWNER);
 
                 if (jurorDetails == null) {
-                    log.error("Can not find active bureau owned juror pool for juror: {}",
-                        backlogItem.getJurorNumber());
+                    log.error("Can not find active bureau owned juror pool for juror: " + backlogItem.getJurorNumber());
                     failedToFindJurorCount++;
                     continue;
                 }
@@ -105,9 +104,9 @@ public class UrgentStatusScheduler implements ScheduledService {
                 ? SchedulerServiceClient.Result.Status.SUCCESS
                 : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS, null,
             Map.of(
-                "TOTAL_PROCESSED", String.valueOf(totalResponsesProcessed),
-                "TOTAL_MARKED_URGENT", String.valueOf(totalUrgentResponses),
-                "TOTAL_FAILED_TO_FIND", String.valueOf(failedToFindJurorCount)
+                "TOTAL_PROCESSED", "" + totalResponsesProcessed,
+                "TOTAL_MARKED_URGENT", "" + totalUrgentResponses,
+                "TOTAL_FAILED_TO_FIND", "" + failedToFindJurorCount
             ));
 
     }

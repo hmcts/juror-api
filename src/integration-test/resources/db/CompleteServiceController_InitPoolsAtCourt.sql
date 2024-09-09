@@ -105,18 +105,18 @@ INSERT INTO juror_mod.juror (juror_number, last_name, first_name, dob, address_l
 ('641800002', 'PERSON', 'TEST', '1990-05-16', '542 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, null),
 ('641800003', 'PERSON', 'TEST', '1990-05-16', '542 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, '2023-10-24');
 
-INSERT INTO juror_mod.juror_pool (owner, juror_number, pool_number, is_active, next_date, status) VALUES
-('400', '641600001', '416230101', true, '2023-01-23', 2),
-('416', '641600002', '416230103', true, '2023-01-23', 13),
-('417', '641700001', '417230101', true, '2023-01-09', 13),
-('417', '641700002', '417230101', true, '2023-01-09', 7),
-('417', '641700003', '417230101', true, '2023-01-09', 2),
-('417', '641700004', '417230101', true, '2023-01-09', 2),
-('417', '641700005', '417230101', true, '2023-01-09', 4),
-('417', '641700006', '417230101', true, '2023-01-09', 2),
-('418', '641800001', '418230101', true, '2023-10-25', 2),
-('418', '641800002', '418230102', true, '2023-10-23', 2),
-('418', '641800003', '418230103', true, '2023-10-23', 13);
+INSERT INTO juror_mod.juror_pool (owner, juror_number, pool_number, is_active, next_date, status, on_call) VALUES
+('400', '641600001', '416230101', true, '2023-01-23', 2, null),
+('416', '641600002', '416230103', true, '2023-01-23', 13, null),
+('417', '641700001', '417230101', true, '2023-01-09', 13, null),
+('417', '641700002', '417230101', true, '2023-01-09', 7, null),
+('417', '641700003', '417230101', true, '2023-01-09', 2, null),
+('417', '641700004', '417230101', true, '2023-01-09', 2, true),
+('417', '641700005', '417230101', true, '2023-01-09', 4, null),
+('417', '641700006', '417230101', true, '2023-01-09', 2, null),
+('418', '641800001', '418230101', true, '2023-10-25', 2, null),
+('418', '641800002', '418230102', true, '2023-10-23', 2, null),
+('418', '641800003', '418230103', true, '2023-10-23', 13, null);
 
 
 INSERT INTO juror_mod.appearance (attendance_date,juror_number,pool_number,loc_code,f_audit,time_in,time_out,travel_time,appearance_stage,non_attendance) VALUES

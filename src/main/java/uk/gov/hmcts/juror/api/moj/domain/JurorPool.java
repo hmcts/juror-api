@@ -98,7 +98,7 @@ public class JurorPool implements Serializable {
     private LocalDate nextDate;
 
     @Column(name = "on_call")
-    private boolean onCall;
+    private Boolean onCall;
 
     @Length(max = 20)
     @Column(name = "smart_card")

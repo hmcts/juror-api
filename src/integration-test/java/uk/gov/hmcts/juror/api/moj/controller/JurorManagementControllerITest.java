@@ -607,7 +607,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             AttendanceDetailsResponse.Summary summary = response.getBody().getSummary();
             assertThat(summary)
                 .extracting(AttendanceDetailsResponse.Summary::getCheckedOut)
-                .isEqualTo(5L);
+                .isEqualTo(3L);
 
             assertThat(summary)
                 .extracting(AttendanceDetailsResponse.Summary::getPanelled)
@@ -1032,7 +1032,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             AttendanceDetailsResponse.Summary summary = response.getBody().getSummary();
             assertThat(summary)
                 .extracting(AttendanceDetailsResponse.Summary::getCheckedIn)
-                .isEqualTo(5L);
+                .isEqualTo(4L);
 
             assertThat(summary)
                 .extracting(AttendanceDetailsResponse.Summary::getAbsent)
@@ -1282,7 +1282,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             // check the on-call flag before invoking the api
             Boolean onCallFlagBefore =
-                jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(JUROR6, POOL_NUMBER_415230101).isOnCall();
+                jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(JUROR6, POOL_NUMBER_415230101).getOnCall();
             assertThat(onCallFlagBefore).as("On-call flag should be True").isEqualTo(Boolean.TRUE);
 
             ResponseEntity<String> responseEntity =
@@ -1296,7 +1296,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             // verify the on-call flag was updated successfully
             Boolean onCallFlagAfter =
-                jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(JUROR6, POOL_NUMBER_415230101).isOnCall();
+                jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(JUROR6, POOL_NUMBER_415230101).getOnCall();
             assertThat(onCallFlagAfter).as("On-call flag should be False").isEqualTo(Boolean.FALSE);
         }
 

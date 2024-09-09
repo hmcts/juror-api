@@ -800,8 +800,8 @@ class TrialControllerITest extends AbstractIntegrationTest {
                     "Expect status to be Responded").isEqualTo(IJurorStatus.RESPONDED);
                 assertThat(
                     jurorHistoryRepository.findByJurorNumberOrderById(panel.getJurorNumber()).size())
-                    .as("Expect one history item for juror " + panel.getJurorNumber())
-                    .isEqualTo(1);
+                    .as("Expect two history item for juror " + panel.getJurorNumber())
+                    .isEqualTo(2);
 
                 Appearance appearance =
                     appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415", panel.getJurorNumber(),

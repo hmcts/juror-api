@@ -447,7 +447,7 @@ class TrialServiceImplTest {
         verify(panelRepository, times(1))
             .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
         verify(panelRepository, times(panelMembers.size())).saveAndFlush(any());
-        verify(jurorHistoryService, never()).createJuryAttendanceHistory(any(), any(), any());
+        verify(jurorHistoryService, times(panelMembers.size())).createJuryAttendanceHistory(any(), any(), any());
         verify(jurorAppearanceService, times(panelMembers.size())).realignAttendanceType(any(Appearance.class));
     }
 

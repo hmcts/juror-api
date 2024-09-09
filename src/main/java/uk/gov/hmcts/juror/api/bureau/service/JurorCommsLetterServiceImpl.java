@@ -1,7 +1,7 @@
 package uk.gov.hmcts.juror.api.bureau.service;
 
 import com.google.common.collect.Lists;
-import lombok.AllArgsConstructor;
+import io.jsonwebtoken.lang.Assert;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,6 @@ import uk.gov.hmcts.juror.api.moj.domain.BulkPrintDataNotifyCommsRepository;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
-import uk.gov.hmcts.juror.api.moj.utils.NotifyUtil;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.text.SimpleDateFormat;
@@ -28,7 +27,6 @@ import java.util.Map;
  */
 @Slf4j
 @Service
-@AllArgsConstructor(onConstructor = @__(@Autowired))
 public class JurorCommsLetterServiceImpl implements BureauProcessService {
 
 
@@ -36,6 +34,24 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
     private final BulkPrintDataNotifyCommsRepository bulkPrintDataNotifyCommsRepository;
     private final BulkPrintDataRepository bulkPrintDataRepository;
     private final JurorPoolRepository jurorRepository;
+
+    @Autowired
+    public JurorCommsLetterServiceImpl(
+        final JurorCommsNotificationService jurorCommsNotificationService,
+        final BulkPrintDataNotifyCommsRepository bulkPrintDataNotifyCommsRepository,
+        final BulkPrintDataRepository bulkPrintDataRepository,
+        final JurorPoolRepository jurorRepository) {
+        Assert.notNull(jurorCommsNotificationService, "JurorCommsNotificationService cannot be null.");
+        Assert.notNull(bulkPrintDataRepository, "BulkPrintDataRepository cannot be null.");
+        Assert.notNull(bulkPrintDataNotifyCommsRepository, "BulkPrintDataNotifyCommsRepository cannot be null.");
+        Assert.notNull(jurorRepository, "JurorRepository cannot be null.");
+
+        this.jurorCommsNotificationService = jurorCommsNotificationService;
+        this.bulkPrintDataRepository = bulkPrintDataRepository;
+        this.bulkPrintDataNotifyCommsRepository = bulkPrintDataNotifyCommsRepository;
+        this.jurorRepository = jurorRepository;
+
+    }
 
     /**
      * Implements a specific job execution.
@@ -55,8 +71,9 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
         log.debug("jurorCommsPrintFiles {}", bulkPrintDataNotifyCommsList.size());
         int commsSent = 0;
         int commsfailed = 0;
-        int invalidEmailAddress = 0;
         if (!bulkPrintDataNotifyCommsList.isEmpty()) {
+
+
             for (BulkPrintDataNotifyComms printFile : bulkPrintDataNotifyCommsList) {
                 try {
                     log.trace("LetterService :  jurorNumber {}", printFile.getJurorNo());
@@ -76,19 +93,18 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
                     updatePrintFiles(printFile);
                     commsSent++;
                 } catch (JurorCommsNotificationServiceException e) {
-                    if (NotifyUtil.isInvalidEmailAddressError(e.getCause())) {
-                        invalidEmailAddress++;
-                    } else {
-                        log.error(
-                            "Unable to send Letter comms for {}",
-                            printFile.getJurorNo(), e
-                        );
-                        commsfailed++;
-                    }
+                    log.error(
+                        "Unable to send Letter comms for {} : {} {}",
+                        printFile.getJurorNo(),
+                        e.getMessage(),
+                        e.getCause().toString()
+                    );
+                    commsfailed++;
                 } catch (Exception e) {
                     commsfailed++;
                     log.error("Letter Comms Processing : Juror Comms failed : {}", e.getMessage());
                 }
+
             }
             log.info("LetterService : Summary, identified:{}, sent:{}, failed:{},",
                 bulkPrintDataNotifyCommsList.size(), commsSent, commsfailed
@@ -102,11 +118,8 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
             commsfailed == 0
                 ? SchedulerServiceClient.Result.Status.SUCCESS
                 : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS, null,
-            Map.of(
-                "COMMS_FAILED", String.valueOf(commsfailed),
-                "COMMNS_SENT", String.valueOf(commsSent),
-                "INVALID_EMAIL_ADDRESS", String.valueOf(invalidEmailAddress)
-            ));
+            Map.of("COMMS_FAILED", "" + commsfailed,
+                "COMMNS_SENT", "" + commsSent));
     }
 
     /**

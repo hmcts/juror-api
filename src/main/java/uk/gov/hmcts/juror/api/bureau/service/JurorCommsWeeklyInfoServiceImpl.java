@@ -3,7 +3,7 @@ package uk.gov.hmcts.juror.api.bureau.service;
 
 import com.google.common.collect.Lists;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import lombok.AllArgsConstructor;
+import io.jsonwebtoken.lang.Assert;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,6 @@ import uk.gov.hmcts.juror.api.moj.client.contracts.SchedulerServiceClient;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolQueries;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
-import uk.gov.hmcts.juror.api.moj.utils.NotifyUtil;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -27,13 +26,25 @@ import java.util.Map;
  */
 @Slf4j
 @Service
-@AllArgsConstructor(onConstructor = @__(@Autowired))
 public class JurorCommsWeeklyInfoServiceImpl implements BureauProcessService {
 
 
     private static final Integer NOTIFICATION_SENT = 1;
     private final JurorCommsNotificationService jurorCommsNotificationService;
+
+
     private final JurorPoolRepository jurorRepository;
+
+    @Autowired
+    public JurorCommsWeeklyInfoServiceImpl(
+        final JurorCommsNotificationService jurorCommsNotificationService,
+        final JurorPoolRepository jurorRepository) {
+        Assert.notNull(jurorCommsNotificationService, "JurorCommsNotificationService cannot be null.");
+        Assert.notNull(jurorRepository, "JurorRepository cannot be null.");
+        this.jurorCommsNotificationService = jurorCommsNotificationService;
+        this.jurorRepository = jurorRepository;
+
+    }
 
     /**
      * Implements a specific job execution.
@@ -55,7 +66,6 @@ public class JurorCommsWeeklyInfoServiceImpl implements BureauProcessService {
 
         int infoCommsSent = 0;
         int noEmailAddress = 0;
-        int invalidEmailAddress = 0;
         int infoCommsfailed = 0;
         for (JurorPool jurorDetail : jurordetailList) {
 
@@ -77,17 +87,15 @@ public class JurorCommsWeeklyInfoServiceImpl implements BureauProcessService {
                 update(jurorDetail);
 
             } catch (JurorCommsNotificationServiceException e) {
-                if (NotifyUtil.isInvalidEmailAddressError(e.getCause())) {
-                    invalidEmailAddress++;
-                } else {
-                    log.error(
-                        "Unable to send Informational comms for {}",
-                        jurorDetail.getJurorNumber(), e
-                    );
-                    infoCommsfailed++;
-                }
+                log.error(
+                    "Unable to send Informational comms for "
+                        + jurorDetail.getJurorNumber()
+                        + " : " + e.getMessage()
+                        + " " + e.getCause().toString(), e
+                );
+                infoCommsfailed++;
             } catch (Exception e) {
-                log.error("Informational Comms Processing : Juror Comms failed", e);
+                log.error("Informational Comms Processing : Juror Comms failed : " + e.getMessage(), e);
                 infoCommsfailed++;
             }
         }
@@ -100,10 +108,9 @@ public class JurorCommsWeeklyInfoServiceImpl implements BureauProcessService {
                 ? SchedulerServiceClient.Result.Status.SUCCESS
                 : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS, null,
             Map.of(
-                "INFO_COMMS_SENT", String.valueOf(infoCommsSent),
-                "INFO_COMMS_FAILED", String.valueOf(infoCommsfailed),
-                "NO_EMAIL_ADDRESS", String.valueOf(noEmailAddress),
-                "INVALID_EMAIL_ADDRESS", String.valueOf(invalidEmailAddress)
+                "INFO_COMMS_SENT", "" + infoCommsSent,
+                "INFO_COMMS_FAILED", "" + infoCommsfailed,
+                "NO_EMAIL_ADDRESS", "" + noEmailAddress
             ));
     }
 

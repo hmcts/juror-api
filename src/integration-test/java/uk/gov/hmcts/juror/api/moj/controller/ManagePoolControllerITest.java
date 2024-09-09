@@ -2147,7 +2147,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
             assertThat(targetJurorPool.getEditTag())
                 .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
                 .isNull();
-            assertThat(targetJurorPool.isOnCall())
+            assertThat(targetJurorPool.getOnCall())
                 .as(EXPECT_PROPERTY_TO_BE_USE_A_DEFAULT_VALUE)
                 .isFalse();
             assertThat(targetJurorPool.getSmartCard())

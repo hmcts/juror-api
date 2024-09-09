@@ -1,11 +1,11 @@
 package uk.gov.hmcts.juror.api.bureau.scheduler;
 
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 import uk.gov.hmcts.juror.api.bureau.service.ScheduledService;
 import uk.gov.hmcts.juror.api.moj.client.contracts.SchedulerServiceClient;
 
@@ -16,11 +16,20 @@ import java.util.Date;
 
 @Component
 @Slf4j
-@RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class BureauBatchScheduler {
 
     private final BureauBatchProcessFactory bureauBatchProcessFactory;
     private final SchedulerServiceClient schedulerServiceClient;
+
+    @Autowired
+    public BureauBatchScheduler(
+        final BureauBatchProcessFactory bureauBatchProcessFactory,
+        final SchedulerServiceClient schedulerServiceClient) {
+        Assert.notNull(bureauBatchProcessFactory, "BureauBatchProcessFactory cannot be null.");
+        this.bureauBatchProcessFactory = bureauBatchProcessFactory;
+        this.schedulerServiceClient = schedulerServiceClient;
+
+    }
 
     /**
      * General Entry point for externally hosted cron jobs. ( server crontab and not via springboot).

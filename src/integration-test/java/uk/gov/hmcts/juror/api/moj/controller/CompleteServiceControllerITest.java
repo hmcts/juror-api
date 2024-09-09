@@ -43,7 +43,6 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -75,7 +74,8 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
             JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, poolNumber);
             assertEquals(true, jurorPool.getIsActive(),
                 "Juror pool should be active");
-            assertFalse(jurorPool.isOnCall(), "Juror pool should not be on call");
+            assertEquals(false, jurorPool.getOnCall(),
+                "Juror pool should not be on call");
             assertEquals(IJurorStatus.COMPLETED, jurorPool.getStatus().getStatus(),
                 "Juror pool status should be completed");
             Juror juror = jurorPool.getJuror();
@@ -85,7 +85,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
 
             if (isDismissal) {
                 assertThat(jurorPool.getNextDate()).isNull();
-                assertThat(jurorPool.isOnCall()).isFalse();
+                assertThat(jurorPool.getOnCall()).isFalse();
             }
             List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
             assertEquals(1, jurorHistories.size(), "Should only be one history entry");
