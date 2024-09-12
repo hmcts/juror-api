@@ -11,6 +11,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.moj.domain.Permission;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
@@ -44,6 +45,7 @@ public class BureauJwtPayload {
     private UserType activeUserType;
 
     private Collection<Role> roles;
+    private Collection<Permission> permissions;
 
     public BureauJwtPayload(User user, String locCode, List<CourtLocation> courtLocations) {
         this(user, user.getUserType(), locCode, courtLocations);
@@ -70,6 +72,12 @@ public class BureauJwtPayload {
                 .toList();
         }
 
+        this.permissions = user.getPermissions()
+            .stream()
+            .distinct()
+            .sorted()
+            .toList();
+
         List<String> courts = new ArrayList<>(courtLocations.stream()
             .map(CourtLocation::getLocCode)
             .sorted()
@@ -85,7 +93,7 @@ public class BureauJwtPayload {
 
     public BureauJwtPayload(String owner, String login, String userLevel,
                             Staff staff) {
-        this(null, owner, null, login, userLevel, staff, null, null, null);
+        this(null, owner, null, login, userLevel, staff, null, null, null, null);
     }
 
     public List<GrantedAuthority> getGrantedAuthority() {
@@ -108,6 +116,7 @@ public class BureauJwtPayload {
         data.put("userLevel", userLevel);
         data.put("staff", staff.toClaims());
         data.put("roles", roles);
+        data.put("permissions", permissions);
         data.put("userType", userType);
         data.put("activeUserType", activeUserType);
         return data;
@@ -127,6 +136,14 @@ public class BureauJwtPayload {
         final List<Role> roles = roleString
             .stream()
             .map(o -> Role.valueOf(String.valueOf(o)))
+            .toList();
+
+        final List<String> permissionString =
+            claims.containsKey("permissions") ? claims.get("permissions", List.class) : Collections.emptyList();
+
+        final List<Permission> permissions = permissionString
+            .stream()
+            .map(o -> Permission.valueOf(String.valueOf(o)))
             .toList();
 
         UserType userType = claims.containsKey("userType")
