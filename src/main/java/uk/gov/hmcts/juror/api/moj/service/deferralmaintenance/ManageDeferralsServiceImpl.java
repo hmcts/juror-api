@@ -176,6 +176,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
 
+        validateJurorPool(deferralReasonDto, jurorPool);
+
         // if not empty then we need to move the juror to the active pool
         if (!StringUtils.isEmpty(deferralReasonDto.poolNumber)) {
             // update old record
@@ -224,6 +226,9 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                                         DeferralReasonRequestDto deferralReasonDto) {
         String auditorUsername = payload.getLogin();
         JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
+
+        validateJurorPool(deferralReasonDto, jurorPool);
+
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
 
         // if not empty then we need to move the juror to the active pool
@@ -645,6 +650,13 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         juror.setUserEdtq(auditorUsername);
 
         jurorRepository.save(juror);
+    }
+
+    private void validateJurorPool(DeferralReasonRequestDto deferralReasonDto, JurorPool jurorPool) {
+        if (jurorPool.getPoolNumber().equalsIgnoreCase(deferralReasonDto.getPoolNumber())) {
+            throw new MojException.BusinessRuleViolation("Cannot change deferral to the existing pool",
+                MojException.BusinessRuleViolation.ErrorCode.CANNOT_DEFER_TO_EXISTING_POOL);
+        }
     }
 
     private void printDeferralLetter(String owner, JurorPool jurorPool) {
