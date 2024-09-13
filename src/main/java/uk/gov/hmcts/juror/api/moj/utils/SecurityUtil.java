@@ -6,6 +6,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.config.public1.PublicJwtAuthentication;
+import uk.gov.hmcts.juror.api.moj.domain.Permission;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -160,6 +161,7 @@ public final class SecurityUtil {
     }
 
     public static boolean isManager() {
+        BureauJwtPayload activeUsersBureauPayload = getActiveUsersBureauPayload();
         return getActiveUsersBureauPayload().getRoles().contains(Role.MANAGER);
     }
 
@@ -169,6 +171,14 @@ public final class SecurityUtil {
 
     public static boolean hasRole(Role role) {
         return getActiveUsersBureauPayload().getRoles().contains(role);
+    }
+
+    public static boolean hasPermission(Permission permission) {
+        BureauJwtPayload activeUsersBureauPayload = getActiveUsersBureauPayload();
+        if(getActiveUsersBureauPayload().getPermissions() == null) {
+            return false;
+        }
+        return getActiveUsersBureauPayload().getPermissions().contains(permission);
     }
 
     public static boolean canEditApprovalLimit() {

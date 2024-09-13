@@ -163,6 +163,7 @@ public class BureauJwtPayload {
             .activeUserType(activeUserType)
             .staff(staff)
             .roles(roles)
+            .permissions(permissions)
             .userType(userType)
             .build();
     }

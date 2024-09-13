@@ -8,6 +8,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.ContactLogRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.EditJurorRecordRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.FilterableJurorDetailsRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorCreateRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorManualCreationRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNameDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorOpticRefRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorRecordFilterRequestQuery;
@@ -103,4 +104,6 @@ public interface JurorRecordService {
     void markResponded(String jurorNumber);
 
     PaginatedList<FilterJurorRecord> searchForJurorRecords(JurorRecordFilterRequestQuery query);
+
+    void createJurorManual(JurorManualCreationRequestDto jurorCreateRequestDto);
 }
