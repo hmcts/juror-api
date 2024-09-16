@@ -106,8 +106,8 @@ public class JwtServiceImpl implements JwtService {
         String lastDigit = value.substring(value.length() - 1).toLowerCase();
         long number = Long.parseLong(value.substring(0, value.length() - 1));
         return switch (lastDigit) {
-            case "h" -> number * 3600000;
-            case "m" -> number * 60000;
+            case "h" -> number * 3_600_000;
+            case "m" -> number * 60_000;
             case "s" -> number * 1000;
             default -> throw new MojException.InternalServerError("Unknown number format:  '" + value + "'", null);
         };

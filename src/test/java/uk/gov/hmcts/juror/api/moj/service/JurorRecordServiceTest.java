@@ -35,6 +35,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.FilterableJurorDetailsReque
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAddressDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorCreateRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorCreateRequestDtoTest;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorManualCreationRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNameDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessNameChangeRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessPendingJurorRequestDto;
@@ -222,6 +223,8 @@ class JurorRecordServiceTest {
     private FinancialAuditService financialAuditService;
     @Mock
     private JurorThirdPartyService jurorThirdPartyService;
+    @Mock
+    private PoolMemberSequenceService poolMemberSequenceService;
 
     @Mock
     private Clock clock;
@@ -3032,6 +3035,106 @@ class JurorRecordServiceTest {
     }
 
     @Nested
+    @DisplayName("public void createJurorManual(JurorManualCreationRequestDto jurorCreationRequestDto)")
+    class CreateManualJurorRecord {
+
+        private BureauJwtPayload createBureauJwtPayload(String owner, String login) {
+            BureauJwtPayload payload = new BureauJwtPayload();
+            payload.setOwner(owner);
+            payload.setLogin(login);
+            return payload;
+        }
+
+        @Test
+        void positiveTypical() {
+            TestUtils.mockCourtUser("415");
+            final BureauJwtPayload payload = createBureauJwtPayload("415", "COURT_USER");
+
+            String poolNumber = "415220502";
+            final JurorManualCreationRequestDto requestDto = JurorManualCreationRequestDto.builder()
+                .poolNumber(poolNumber)
+                .locationCode("415")
+                .title("Mr")
+                .firstName("John")
+                .lastName("Smith")
+                .dateOfBirth(LocalDate.now().minusYears(20))
+                .address(JurorAddressDto.builder()
+                    .lineOne("1 High Street")
+                    .lineTwo("Test")
+                    .lineThree("Test")
+                    .town("Chester")
+                    .county("Test")
+                    .postcode("CH1 2AB")
+                    .build())
+                .primaryPhone("01234567890")
+                .emailAddress("test@test.com")
+                .notes("A manually created juror")
+                .build();
+
+            PoolRequest poolRequest = mock(PoolRequest.class);
+            when(poolRequest.getOwner()).thenReturn("400");
+            when(poolRequest.getPoolNumber()).thenReturn(poolNumber);
+            when(poolRequest.getReturnDate()).thenReturn(LocalDate.now().plusDays(10));
+
+            when(pendingJurorRepository.generatePendingJurorNumber(requestDto.getLocationCode()))
+                .thenReturn("041500022");
+
+            when(poolRequestRepository.findById(requestDto.getPoolNumber())).thenReturn(Optional.of(poolRequest));
+
+            JurorStatus jurorStatus = new JurorStatus();
+            jurorStatus.setStatus(IJurorStatus.SUMMONED);
+            when(jurorStatusRepository.findById(IJurorStatus.SUMMONED)).thenReturn(Optional.of(jurorStatus));
+
+            when(poolMemberSequenceService.getPoolMemberSequenceNumber(poolNumber)).thenReturn(22);
+
+            when(poolMemberSequenceService.leftPadInteger(1)).thenReturn("0022");
+
+            jurorRecordService.createJurorManual(requestDto);
+
+            ArgumentCaptor<Juror> jurorArgumentCaptor = ArgumentCaptor.forClass(Juror.class);
+
+            verify(jurorRepository, times(1))
+                .save(jurorArgumentCaptor.capture());
+
+            Juror juror = jurorArgumentCaptor.getValue();
+            assertEquals("041500022", juror.getJurorNumber(), "Juror number must match");
+
+            assertEquals("Mr", juror.getTitle(), "Title must match");
+            assertEquals("John", juror.getFirstName(), "First name must match");
+            assertEquals("Smith", juror.getLastName(), "Last name must match");
+            assertEquals(LocalDate.now().minusYears(20), juror.getDateOfBirth(), "Date of birth must match");
+
+            //Validate address
+            JurorAddressDto expected = requestDto.getAddress();
+            assertEquals(expected.getLineOne(), juror.getAddressLine1(), "Address line one must match");
+            assertEquals(expected.getLineTwo(), juror.getAddressLine2(), "Address line two must match");
+            assertEquals(expected.getLineThree(), juror.getAddressLine3(), "Address line three must match");
+            assertEquals(expected.getTown(), juror.getAddressLine4(), "Address town must match");
+            assertEquals(expected.getCounty(), juror.getAddressLine5(), "Address county must match");
+            assertEquals(expected.getPostcode(), juror.getPostcode(), "Address postcode must match");
+            assertEquals(requestDto.getPrimaryPhone(), juror.getPhoneNumber(), "Primary phone must match");
+            assertEquals(requestDto.getEmailAddress(), juror.getEmail(), "Email address must match");
+            assertEquals(requestDto.getNotes(), juror.getNotes(), "Notes must match");
+
+            ArgumentCaptor<JurorPool> jurorPoolArgumentCaptor = ArgumentCaptor.forClass(JurorPool.class);
+
+            verify(jurorPoolRepository, times(1))
+                .save(jurorPoolArgumentCaptor.capture());
+
+            JurorPool jurorPool = jurorPoolArgumentCaptor.getValue();
+            assertEquals("041500022", jurorPool.getJuror().getJurorNumber(), "Juror number must match");
+            assertEquals(poolNumber, jurorPool.getPoolNumber(), "Pool number must match");
+            assertEquals(IJurorStatus.SUMMONED, jurorPool.getStatus().getStatus(), "Status must match");
+            assertEquals(LocalDate.now().plusDays(10), jurorPool.getNextDate(), "Return date must match");
+
+            verify(jurorStatusRepository, times(1)).findById(IJurorStatus.SUMMONED);
+            verify(poolMemberSequenceService, times(1)).getPoolMemberSequenceNumber(poolNumber);
+            verify(poolMemberSequenceService, times(1)).leftPadInteger(22);
+
+        }
+    }
+
+        @Nested
     @DisplayName("public JurorAttendanceDetailsResponseDto getJurorAttendanceDetails(String jurorNumber,"
         + " String poolNumber, BureauJWTPayload payload) ")
     class JurorRecordAttendanceTab {

@@ -123,12 +123,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static org.springframework.transaction.annotation.Propagation.REQUIRED;
@@ -623,7 +623,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         printSummonsLetter(juror, jurorPool);
 
-        log.info("Created manual juror {}", juror.getJurorNumber());
+        log.info("Created manual juror {} in pool {}", juror.getJurorNumber(), jurorPool.getPoolNumber());
 
     }
 
@@ -1350,7 +1350,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
                 PaymentSummaryData::add
             );
 
-        Map<Long, Optional<FinancialAuditDetails>> auditDetailsMap = new HashMap<>();
+        Map<Long, Optional<FinancialAuditDetails>> auditDetailsMap = new ConcurrentHashMap<>();
         return JurorPaymentsResponseDto.builder()
             .attendances(appearances.size() - nonAttendanceCount)
             .nonAttendances(nonAttendanceCount)

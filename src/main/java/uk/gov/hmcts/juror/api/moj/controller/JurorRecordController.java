@@ -194,9 +194,9 @@ public class JurorRecordController {
     @Operation(summary = "Send a payload to manually create a Juror Record at the Bureau")
     public ResponseEntity<Void> createJurorRecord(
         @Valid @RequestBody JurorManualCreationRequestDto jurorCreationRequestDto) {
-
+        log.info("User {} request to manually create juror", SecurityUtil.getActiveLogin());
         if (!SecurityUtil.isBureauManager() || !SecurityUtil.hasPermission(Permission.CREATE_JUROR)) {
-            log.error("User does not have permission to create juror");
+            log.error("User {} does not have permission to create juror", SecurityUtil.getActiveLogin());
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
