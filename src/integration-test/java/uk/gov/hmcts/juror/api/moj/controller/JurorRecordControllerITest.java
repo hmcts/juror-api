@@ -5385,8 +5385,114 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 .as("Expect the HTTP POST request to be CREATED")
                 .isEqualTo(HttpStatus.CREATED);
 
+            validateCreatedJuror(poolNumber);
+        }
 
-           // validatePendingJuror(requestDto, poolNumber, pool.getReturnDate());
+        private void validateCreatedJuror(String poolNumber) {
+            // expect this to be the first juror manually created for court 415
+            Juror juror = jurorRepository.findByJurorNumber("041500001");
+            assertThat(juror).isNotNull();
+
+            JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(juror.getJurorNumber(),
+                poolNumber);
+            assertThat(jurorPool).isNotNull();
+            assertThat(jurorPool.getStatus().getStatus()).isEqualTo(IJurorStatus.SUMMONED);
+
+            List<JurorHistory> jurorHistory = jurorHistoryRepository.findByJurorNumberOrderById(juror.getJurorNumber());
+            assertThat(jurorHistory).isNotEmpty();
+            assertThat(jurorHistory.get(0).getHistoryCode()).isEqualTo(HistoryCodeMod.PRINT_SUMMONS);
+
+            List<BulkPrintData> letters = bulkPrintDataRepository.findByJurorNo(juror.getJurorNumber());
+            assertThat(letters).isNotEmpty();
+            BulkPrintData bulkPrintData = letters.get(0);
+            assertThat(bulkPrintData.getJurorNo()).isEqualTo(juror.getJurorNumber());
+            assertThat(bulkPrintData.getFormAttribute().getFormType()).isEqualTo(FormCode.ENG_SUMMONS.getCode());
+        }
+
+
+        @Test
+        void createManualJurorRecordBureauManagerNoCreateForbidden() throws Exception {
+            String poolNumber = "415220502";
+            JurorManualCreationRequestDto requestDto = JurorManualCreationRequestDto.builder()
+                .poolNumber(poolNumber)
+                .locationCode("415")
+                .title("Mr")
+                .firstName("John")
+                .lastName("Smith")
+                .address(JurorAddressDto.builder()
+                    .lineOne("1 High Street")
+                    .lineTwo("Test")
+                    .lineThree("Test")
+                    .town("Chester")
+                    .county("Test")
+                    .postcode("CH1 2AB")
+                    .build())
+                .primaryPhone("01234567890")
+                .emailAddress("test@test.com")
+                .notes("A manually created juror")
+                .build();
+
+            Set<Role> roles = new HashSet<>();
+            roles.add(Role.MANAGER);
+            Set<Permission> permissions = new HashSet<>();
+            User user = User.builder()
+                .username("BUREAU2")
+                .roles(roles)
+                .permissions(permissions)
+                .build();
+
+            BureauJwtPayload bureauJwtPayload = new BureauJwtPayload(user, UserType.BUREAU, "400",
+                Collections.singletonList(CourtLocation.builder()
+                    .locCode("400")
+                    .name("Bureau")
+                    .owner("400")
+                    .build()));
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(bureauJwtPayload));
+
+            ResponseEntity<?> response =
+                restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
+                    URI.create(URL)), String.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP POST request to be FORBIDDEN")
+                .isEqualTo(HttpStatus.FORBIDDEN);
+
+        }
+
+        @Test
+        void createManualJurorRecordCourtUserForbidden() throws Exception {
+            String poolNumber = "415220502";
+            JurorManualCreationRequestDto requestDto = JurorManualCreationRequestDto.builder()
+                .poolNumber(poolNumber)
+                .locationCode("415")
+                .title("Mr")
+                .firstName("John")
+                .lastName("Smith")
+                .address(JurorAddressDto.builder()
+                    .lineOne("1 High Street")
+                    .lineTwo("Test")
+                    .lineThree("Test")
+                    .town("Chester")
+                    .county("Test")
+                    .postcode("CH1 2AB")
+                    .build())
+                .primaryPhone("01234567890")
+                .emailAddress("test@test.com")
+                .notes("A manually created juror")
+                .build();
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION,  initCourtsJwt("415", Collections.singletonList("415"),
+                UserType.COURT));
+
+            ResponseEntity<?> response =
+                restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
+                    URI.create(URL)), String.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP POST request to be FORBIDDEN")
+                .isEqualTo(HttpStatus.FORBIDDEN);
+
         }
 
     }

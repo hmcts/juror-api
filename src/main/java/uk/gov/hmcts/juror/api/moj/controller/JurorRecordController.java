@@ -512,7 +512,6 @@ public class JurorRecordController {
     @IsBureauUser
     @Operation(summary = "Send a payload to manually create a Juror Record at the Bureau")
     public ResponseEntity<Void> createJurorRecord(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Valid @RequestBody JurorManualCreationRequestDto jurorCreationRequestDto) {
 
         if (!SecurityUtil.isBureauManager() || !SecurityUtil.hasPermission(Permission.CREATE_JUROR)) {

@@ -1,8 +1,10 @@
-insert into juror_mod.users(created_by, updated_by, username, name, email)
-values ('BUREAU1', 'BUREAU1', 'BUREAU_USER', 'BUREAU_USER', 'BUREAU_USER@test.net');
+insert into juror_mod.users(created_by, updated_by, username, name, email) values
+('BUREAU1', 'BUREAU1', 'BUREAU_USER', 'BUREAU_USER', 'BUREAU_USER@test.net'),
+('BUREAU1', 'BUREAU1', 'BUREAU2', 'BUREAU USER2', 'BUREAU2@test.net');
 
 INSERT INTO juror_mod.user_roles (username,"role") VALUES
-	 ('BUREAU_USER','MANAGER');
+	 ('BUREAU_USER','MANAGER'),
+	 ('BUREAU2','MANAGER');
 
 INSERT INTO juror_mod.user_permissions (username,"permission") VALUES
 	 ('BUREAU_USER','CREATE_JUROR');

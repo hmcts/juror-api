@@ -174,10 +174,6 @@ public final class SecurityUtil {
     }
 
     public static boolean hasPermission(Permission permission) {
-        BureauJwtPayload activeUsersBureauPayload = getActiveUsersBureauPayload();
-        if(getActiveUsersBureauPayload().getPermissions() == null) {
-            return false;
-        }
         return getActiveUsersBureauPayload().getPermissions().contains(permission);
     }
 
