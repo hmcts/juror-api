@@ -99,6 +99,7 @@ public final class TestUtil {
         claimsMap.put("staff", payload.getStaff());
 
         claimsMap.put("roles", payload.getRoles());
+        claimsMap.put("permissions", payload.getPermissions());
         claimsMap.put("userType", payload.getUserType());
         claimsMap.put("activeUserType", payload.getActiveUserType() == null
             ? payload.getUserType() : payload.getActiveUserType());

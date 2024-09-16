@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -29,6 +30,7 @@ import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.config.security.IsBureauUser;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.config.security.IsSeniorCourtUser;
 import uk.gov.hmcts.juror.api.moj.controller.request.ConfirmIdentityDto;
@@ -36,6 +38,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.ContactLogRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.EditJurorRecordRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.FilterableJurorDetailsRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorCreateRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorManualCreationRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNameDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNotesRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberAndPoolNumberDto;
@@ -62,6 +65,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorPaymentsRespons
 import uk.gov.hmcts.juror.api.moj.domain.FilterJurorRecord;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PendingJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.Permission;
 import uk.gov.hmcts.juror.api.moj.enumeration.PendingJurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.BulkService;
@@ -73,6 +77,7 @@ import java.util.List;
 
 @RestController
 @Validated
+@Slf4j
 @RequestMapping(value = "/api/v1/moj/juror-record", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Juror Management")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
@@ -501,5 +506,21 @@ public class JurorRecordController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok().body(jurorRecords);
+    }
+
+    @PostMapping("/create-juror-manual")
+    @IsBureauUser
+    @Operation(summary = "Send a payload to manually create a Juror Record at the Bureau")
+    public ResponseEntity<Void> createJurorRecord(
+        @Valid @RequestBody JurorManualCreationRequestDto jurorCreationRequestDto) {
+
+        if (!SecurityUtil.isBureauManager() || !SecurityUtil.hasPermission(Permission.CREATE_JUROR)) {
+            log.error("User does not have permission to create juror");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        jurorRecordService.createJurorManual(jurorCreationRequestDto);
+
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }
