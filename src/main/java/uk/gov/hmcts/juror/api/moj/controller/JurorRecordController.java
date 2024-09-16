@@ -189,6 +189,22 @@ public class JurorRecordController {
         jurorRecordService.createJurorRecord(payload, jurorCreateRequestDto);
     }
 
+    @PostMapping("/create-juror-manual")
+    @IsBureauUser
+    @Operation(summary = "Send a payload to manually create a Juror Record at the Bureau")
+    public ResponseEntity<Void> createJurorRecord(
+        @Valid @RequestBody JurorManualCreationRequestDto jurorCreationRequestDto) {
+
+        if (!SecurityUtil.isBureauManager() || !SecurityUtil.hasPermission(Permission.CREATE_JUROR)) {
+            log.error("User does not have permission to create juror");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        jurorRecordService.createJurorManual(jurorCreationRequestDto);
+
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
     @GetMapping("/pending-jurors/{loc_code}")
     @Operation(summary = "Get a list of pending jurors for a given location code")
     @IsCourtUser
@@ -508,19 +524,4 @@ public class JurorRecordController {
         return ResponseEntity.ok().body(jurorRecords);
     }
 
-    @PostMapping("/create-juror-manual")
-    @IsBureauUser
-    @Operation(summary = "Send a payload to manually create a Juror Record at the Bureau")
-    public ResponseEntity<Void> createJurorRecord(
-        @Valid @RequestBody JurorManualCreationRequestDto jurorCreationRequestDto) {
-
-        if (!SecurityUtil.isBureauManager() || !SecurityUtil.hasPermission(Permission.CREATE_JUROR)) {
-            log.error("User does not have permission to create juror");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-
-        jurorRecordService.createJurorManual(jurorCreationRequestDto);
-
-        return ResponseEntity.status(HttpStatus.CREATED).build();
-    }
 }

@@ -5339,7 +5339,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_createManualJurorRecord.sql"})
         void createManualJurorRecordPoolHappyPath() throws Exception {
             String poolNumber = "415220502";
-            JurorManualCreationRequestDto requestDto = JurorManualCreationRequestDto.builder()
+            final JurorManualCreationRequestDto requestDto = JurorManualCreationRequestDto.builder()
                 .poolNumber(poolNumber)
                 .locationCode("415")
                 .title("Mr")
@@ -5368,7 +5368,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 .permissions(permissions)
                 .build();
 
-            BureauJwtPayload bureauJwtPayload = new BureauJwtPayload(user, UserType.BUREAU, "400",
+            final BureauJwtPayload bureauJwtPayload = new BureauJwtPayload(user, UserType.BUREAU, "400",
                 Collections.singletonList(CourtLocation.builder()
                     .locCode("400")
                     .name("Bureau")

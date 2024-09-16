@@ -606,7 +606,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     @Override
     @Transactional
-    public void createJurorManual(JurorManualCreationRequestDto jurorCreateRequestDto){
+    public void createJurorManual(JurorManualCreationRequestDto jurorCreateRequestDto) {
 
         String locCode = jurorCreateRequestDto.getLocationCode();
         String poolNumber = jurorCreateRequestDto.getPoolNumber();
