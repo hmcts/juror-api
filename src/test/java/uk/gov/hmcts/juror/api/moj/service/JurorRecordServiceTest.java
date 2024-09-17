@@ -3038,17 +3038,8 @@ class JurorRecordServiceTest {
     @DisplayName("public void createJurorManual(JurorManualCreationRequestDto jurorCreationRequestDto)")
     class CreateManualJurorRecord {
 
-        private BureauJwtPayload createBureauJwtPayload(String owner, String login) {
-            BureauJwtPayload payload = new BureauJwtPayload();
-            payload.setOwner(owner);
-            payload.setLogin(login);
-            return payload;
-        }
-
         @Test
         void positiveTypical() {
-            TestUtils.mockCourtUser("415");
-            final BureauJwtPayload payload = createBureauJwtPayload("415", "COURT_USER");
 
             String poolNumber = "415220502";
             final JurorManualCreationRequestDto requestDto = JurorManualCreationRequestDto.builder()
@@ -3091,6 +3082,9 @@ class JurorRecordServiceTest {
 
             jurorRecordService.createJurorManual(requestDto);
 
+            verify(poolRequestRepository, times(1))
+                .findById(requestDto.getPoolNumber());
+
             ArgumentCaptor<Juror> jurorArgumentCaptor = ArgumentCaptor.forClass(Juror.class);
 
             verify(jurorRepository, times(1))
@@ -3132,9 +3126,101 @@ class JurorRecordServiceTest {
             verify(poolMemberSequenceService, times(1)).leftPadInteger(22);
 
         }
+
+        @Test
+        void invalidPool() {
+
+            String poolNumber = "415220502";
+            final JurorManualCreationRequestDto requestDto = JurorManualCreationRequestDto.builder()
+                .poolNumber(poolNumber)
+                .locationCode("415")
+                .title("Mr")
+                .firstName("John")
+                .lastName("Smith")
+                .dateOfBirth(LocalDate.now().minusYears(20))
+                .address(JurorAddressDto.builder()
+                    .lineOne("1 High Street")
+                    .lineTwo("Test")
+                    .lineThree("Test")
+                    .town("Chester")
+                    .county("Test")
+                    .postcode("CH1 2AB")
+                    .build())
+                .primaryPhone("01234567890")
+                .emailAddress("test@test.com")
+                .notes("A manually created juror")
+                .build();
+
+            when(poolRequestRepository.findById(requestDto.getPoolNumber())).thenReturn(Optional.empty());
+
+            MojException.NotFound exception =
+                assertThrows(MojException.NotFound.class,
+                    () -> jurorRecordService.createJurorManual(requestDto),
+                    "Unable to find a valid Record in the database for 415220502.");
+            assertEquals("Unable to find a valid Record in the database for 415220502.",
+                exception.getMessage(),
+                "Exception message must match");
+
+            verify(poolRequestRepository, times(1))
+                .findById(requestDto.getPoolNumber());
+
+            verifyNoMoreInteractions(poolRequestRepository);
+            verifyNoInteractions(jurorRepository, jurorStatusRepository, poolMemberSequenceService, jurorPoolRepository);
+        }
+
+        @Test
+        void errorGeneratingJurorNumber() {
+
+            String poolNumber = "415220502";
+            final JurorManualCreationRequestDto requestDto = JurorManualCreationRequestDto.builder()
+                .poolNumber(poolNumber)
+                .locationCode("415")
+                .title("Mr")
+                .firstName("John")
+                .lastName("Smith")
+                .dateOfBirth(LocalDate.now().minusYears(20))
+                .address(JurorAddressDto.builder()
+                    .lineOne("1 High Street")
+                    .lineTwo("Test")
+                    .lineThree("Test")
+                    .town("Chester")
+                    .county("Test")
+                    .postcode("CH1 2AB")
+                    .build())
+                .primaryPhone("01234567890")
+                .emailAddress("test@test.com")
+                .notes("A manually created juror")
+                .build();
+
+            PoolRequest poolRequest = mock(PoolRequest.class);
+            when(poolRequest.getOwner()).thenReturn("400");
+            when(poolRequest.getPoolNumber()).thenReturn(poolNumber);
+            when(poolRequest.getReturnDate()).thenReturn(LocalDate.now().plusDays(10));
+
+            when(pendingJurorRepository.generatePendingJurorNumber(requestDto.getLocationCode()))
+                .thenReturn("null");
+
+            when(poolRequestRepository.findById(requestDto.getPoolNumber())).thenReturn(Optional.of(poolRequest));
+
+            MojException.InternalServerError exception =
+                assertThrows(MojException.InternalServerError.class,
+                    () -> jurorRecordService.createJurorManual(requestDto),
+                    "Error generating new Juror Number");
+            assertEquals("Error generating new Juror Number",
+                exception.getMessage(),
+                "Exception message must match");
+
+            verify(poolRequestRepository, times(1))
+                .findById(requestDto.getPoolNumber());
+            verify(pendingJurorRepository, times(1))
+                .generatePendingJurorNumber(requestDto.getLocationCode());
+
+            verifyNoMoreInteractions(poolRequestRepository, poolMemberSequenceService);
+            verifyNoInteractions(jurorRepository, jurorStatusRepository, jurorPoolRepository);
+        }
     }
 
-        @Nested
+    @Nested
     @DisplayName("public JurorAttendanceDetailsResponseDto getJurorAttendanceDetails(String jurorNumber,"
         + " String poolNumber, BureauJWTPayload payload) ")
     class JurorRecordAttendanceTab {

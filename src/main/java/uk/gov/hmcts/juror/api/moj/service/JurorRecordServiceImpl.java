@@ -617,6 +617,10 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         // generating juror number as it does not exist in voters table
         String jurorNumber = pendingJurorRepository.generatePendingJurorNumber(locCode);
 
+        if (jurorNumber == null || "null".equals(jurorNumber)) {
+            throw new MojException.InternalServerError("Error generating new Juror Number", null);
+        }
+
         Juror juror = createManualJurorRecord(jurorCreateRequestDto, jurorNumber);
 
         JurorPool jurorPool = createManualJurorPool(poolNumber, poolRequest, juror);
