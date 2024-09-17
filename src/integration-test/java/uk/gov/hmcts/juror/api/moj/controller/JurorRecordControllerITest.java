@@ -5392,13 +5392,31 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             // expect this to be the first juror manually created for court 415
             Juror juror = jurorRepository.findByJurorNumber("041500001");
             assertThat(juror).isNotNull();
+            assertThat(juror.getTitle()).isEqualTo("Mr");
+            assertThat(juror.getFirstName()).isEqualTo("John");
+            assertThat(juror.getLastName()).isEqualTo("Smith");
+            assertThat(juror.getDateOfBirth()).isNull();
+            assertThat(juror.getPhoneNumber()).isEqualTo("01234567890");
+            assertThat(juror.getEmail()).isEqualTo("test@test.com");
+            assertThat(juror.getNotes()).isEqualTo("A manually created juror");
+
+            assertThat(juror.getAddressLine1()).isEqualTo("1 High Street");
+            assertThat(juror.getAddressLine2()).isEqualTo("Test");
+            assertThat(juror.getAddressLine3()).isEqualTo("Test");
+            assertThat(juror.getAddressLine4()).isEqualTo("Chester");
+            assertThat(juror.getAddressLine5()).isEqualTo("Test");
+            assertThat(juror.getPostcode()).isEqualTo("CH1 2AB");
 
             JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(juror.getJurorNumber(),
                 poolNumber);
             assertThat(jurorPool).isNotNull();
             assertThat(jurorPool.getStatus().getStatus()).isEqualTo(IJurorStatus.SUMMONED);
+            assertThat(jurorPool.getOwner()).isEqualTo("400");
+            assertThat(jurorPool.getNextDate()).isEqualTo(LocalDate.now().plusDays(10));
+            assertThat(jurorPool.getPoolNumber()).isEqualTo(poolNumber);
 
-            List<JurorHistory> jurorHistory = jurorHistoryRepository.findByJurorNumberOrderById(juror.getJurorNumber());
+            List<JurorHistory> jurorHistory = jurorHistoryRepository
+                .findByJurorNumberOrderById(juror.getJurorNumber());
             assertThat(jurorHistory).isNotEmpty();
             assertThat(jurorHistory.get(0).getHistoryCode()).isEqualTo(HistoryCodeMod.PRINT_SUMMONS);
 
