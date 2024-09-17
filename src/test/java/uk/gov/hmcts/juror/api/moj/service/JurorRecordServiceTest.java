@@ -3165,7 +3165,8 @@ class JurorRecordServiceTest {
                 .findById(requestDto.getPoolNumber());
 
             verifyNoMoreInteractions(poolRequestRepository);
-            verifyNoInteractions(jurorRepository, jurorStatusRepository, poolMemberSequenceService, jurorPoolRepository);
+            verifyNoInteractions(jurorRepository, jurorStatusRepository, poolMemberSequenceService,
+                jurorPoolRepository);
         }
 
         @Test
