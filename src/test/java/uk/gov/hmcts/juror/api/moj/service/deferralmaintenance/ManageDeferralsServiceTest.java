@@ -61,7 +61,6 @@ import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.PoolMemberSequenceService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.service.SummonsReplyMergeService;
-import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -728,7 +727,7 @@ class ManageDeferralsServiceTest {
 
     @Test
     @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
-    void useCourtDeferrals_deferralsUsed_noPoolRequest() {
+    void useCourtDeferralsDeferralsUsedNoPoolRequest() {
         String courtLocation = "415";
         LocalDate newAttendanceDate = LocalDate.now();
 
@@ -776,7 +775,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void useBureauDeferrals_deferralsUsed_happyPath() {
+    void useBureauDeferralsDeferralsUsedHappyPath() {
         LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
         LocalDate newAttendanceDate = LocalDate.now();
         String courtLocation = "415";
@@ -832,7 +831,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void useBureauDeferrals_deferralsUsed_noJurorPool() {
+    void useBureauDeferralsDeferralsUsedNoJurorPool() {
         LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
         LocalDate newAttendanceDate = LocalDate.now();
         String courtLocation = "415";
@@ -878,7 +877,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void useBureauDeferrals_deferralsUsed_noPoolRequest() {
+    void useBureauDeferralsDeferralsUsedNoPoolRequest() {
         String courtLocation = "415";
         LocalDate newAttendanceDate = LocalDate.now();
 
@@ -974,7 +973,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void processJuror_deferral_digital_happy_path_moveToActivePool() {
+    void processJurorDeferralDigitalHappyPathMoveToActivePool() {
         TestUtils.mockBureauUser();
         LocalDate newAttendanceDate = LocalDate.now();
         LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
@@ -1014,7 +1013,7 @@ class ManageDeferralsServiceTest {
 
 
     @Test
-    void processJuror_deferral_digital_unhappy_moveToCurrentPool() {
+    void processJurorDeferralDigitalUnhappyMoveToCurrentPool() {
         TestUtils.mockBureauUser();
         LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
         final BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
@@ -1046,13 +1045,14 @@ class ManageDeferralsServiceTest {
             "Exception should be thrown");
 
         assertThat(exception).isNotNull();
-        assertThat(exception.getErrorCode()).isEqualTo(MojException.BusinessRuleViolation.ErrorCode.CANNOT_DEFER_TO_EXISTING_POOL);
+        assertThat(exception.getErrorCode()).isEqualTo(MojException.BusinessRuleViolation
+            .ErrorCode.CANNOT_DEFER_TO_EXISTING_POOL);
         assertThat(exception.getMessage()).isEqualTo(
             "Cannot change deferral to the existing pool");
     }
 
     @Test
-    void changeDeferralDate_happy_path_moveToActivePool() {
+    void changeDeferralDateHappyPathMoveToActivePool() {
         TestUtils.mockBureauUser();
         LocalDate newAttendanceDate = LocalDate.now();
         LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
@@ -1086,7 +1086,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void changeDeferralDate_unhappy_moveToCurrentPool() {
+    void changeDeferralDateUnhappyMoveToCurrentPool() {
         TestUtils.mockBureauUser();
         LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
         final BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
@@ -1113,12 +1113,13 @@ class ManageDeferralsServiceTest {
 
         when(jurorPoolService.getJurorPoolFromUser(jurorNumber)).thenReturn(jurorPool);
 
-        MojException.BusinessRuleViolation exception = Assertions.assertThrows(MojException.BusinessRuleViolation.class,
+        MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
             () -> manageDeferralsService.changeJurorDeferralDate(bureauPayload, jurorNumber, dto),
             "Exception should be thrown");
 
         assertThat(exception).isNotNull();
-        assertThat(exception.getErrorCode()).isEqualTo(MojException.BusinessRuleViolation.ErrorCode.CANNOT_DEFER_TO_EXISTING_POOL);
+        assertThat(exception.getErrorCode()).isEqualTo(MojException.BusinessRuleViolation
+            .ErrorCode.CANNOT_DEFER_TO_EXISTING_POOL);
         assertThat(exception.getMessage()).isEqualTo(
             "Cannot change deferral to the existing pool");
 
@@ -1161,7 +1162,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void changeDeferralDate_happy_path_moveToDeferralMaintenance() {
+    void changeDeferralDateHappyPathMoveToDeferralMaintenance() {
         TestUtils.mockBureauUser();
         final BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
         String jurorNumber = "123456789";
