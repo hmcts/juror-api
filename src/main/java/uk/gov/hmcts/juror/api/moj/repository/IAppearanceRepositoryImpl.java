@@ -383,5 +383,4 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
         return new JPAQueryFactory(entityManager);
     }
 
-
 }
