@@ -30,6 +30,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorAppearanceResponseDto
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsOnTrialResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsToDismissResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.AttendanceDetailsResponse;
+import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.UnconfirmedJurorResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
@@ -1845,6 +1846,30 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         }
     }
 
+    @Nested
+    @DisplayName("Unconfirmed Jurors")
+    @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UnconfirmedJurors.sql"})
+    class UnconfirmedJurors {
+
+        String URL_BASE = "/api/v1/moj/juror-management/unconfirmed-jurors";
+
+        @Test
+        @DisplayName("Retrieve unconfirmed jurors - happy path")
+        void retrieveAttendanceConfirmAttendanceTag() {
+
+            String attendanceDate = now().minusDays(2).toString();
+
+            ResponseEntity<UnconfirmedJurorResponseDto> response =
+                restTemplate.exchange(new RequestEntity<>(null, httpHeaders, GET,
+                    URI.create(URL_BASE + "/415?attendanceDate=" + attendanceDate)), UnconfirmedJurorResponseDto.class);
+
+            assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
+
+            UnconfirmedJurorResponseDto data = response.getBody();
+
+        }
+
+    }
 
     @Nested
     @DisplayName("Jurors on Trial tests")

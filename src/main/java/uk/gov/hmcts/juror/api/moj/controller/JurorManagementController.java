@@ -38,6 +38,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorAppearanceResponseDto
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsOnTrialResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsToDismissResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.AttendanceDetailsResponse;
+import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.UnconfirmedJurorResponseDto;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
@@ -180,4 +181,15 @@ public class JurorManagementController {
                 null);
         }
     }
+
+    @GetMapping("/unconfirmed-jurors/{location-code}")
+    @Operation(description = "Retrieve a list of jurors who have not confirmed their attendance")
+    @IsCourtUser
+    public ResponseEntity<UnconfirmedJurorResponseDto> retrieveUnconfirmedJurors(
+        @PathVariable(name = "location-code") @CourtLocationCode @Valid String locationCode,
+        @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate attendanceDate) {
+
+        return ResponseEntity.ok(jurorAppearanceService.retrieveUnconfirmedJurors(locationCode, attendanceDate));
+    }
+
 }

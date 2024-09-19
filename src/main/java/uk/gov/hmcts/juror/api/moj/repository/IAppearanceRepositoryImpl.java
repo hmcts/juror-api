@@ -33,6 +33,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.utils.PaginationUtil;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -378,9 +379,41 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
                 .build(), null);
     }
 
+    @Override
+    public boolean isDayConfirmed(String locationCode, LocalDate attendanceDate) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        return queryFactory.selectFrom(APPEARANCE)
+            .where(APPEARANCE.courtLocation.locCode.eq(locationCode))
+            .where(APPEARANCE.attendanceDate.eq(attendanceDate))
+            .where(APPEARANCE.appearanceConfirmed.eq(true))
+            .fetchCount() > 0;
+    }
+
+    @Override
+    public List<Tuple> getUnconfirmedJurors(String locationCode, LocalDate attendanceDate) {
+
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        return queryFactory.select(APPEARANCE.jurorNumber,
+                JUROR.firstName,
+                JUROR.lastName,
+                JUROR_POOL.status.status,
+                APPEARANCE.timeIn,
+                APPEARANCE.timeOut)
+            .from(APPEARANCE)
+            .join(JUROR)
+            .on(APPEARANCE.jurorNumber.eq(JUROR.jurorNumber))
+            .join(JUROR_POOL)
+            .on(APPEARANCE.jurorNumber.eq(JUROR_POOL.juror.jurorNumber))
+            .where(APPEARANCE.courtLocation.locCode.eq(locationCode))
+            .where(APPEARANCE.attendanceDate.eq(attendanceDate))
+            .where(APPEARANCE.appearanceStage.in(AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT))
+            .where(APPEARANCE.appearanceConfirmed.eq(false))
+            .where(JUROR_POOL.isActive.isTrue())
+            .where(JUROR_POOL.owner.eq(SecurityUtil.getActiveOwner()))
+            .fetch();
+    }
+
     JPAQueryFactory getQueryFactory() {
         return new JPAQueryFactory(entityManager);
     }
-
-
 }

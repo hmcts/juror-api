@@ -13,6 +13,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorAppearanceResponseDto
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsOnTrialResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsToDismissResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.AttendanceDetailsResponse;
+import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.UnconfirmedJurorResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
 
@@ -62,4 +63,6 @@ public interface JurorAppearanceService {
     void realignAttendanceType(Appearance appearance);
 
     void realignAttendanceType(String jurorNumber);
+
+    UnconfirmedJurorResponseDto retrieveUnconfirmedJurors(String locationCode, LocalDate attendanceDate);
 }

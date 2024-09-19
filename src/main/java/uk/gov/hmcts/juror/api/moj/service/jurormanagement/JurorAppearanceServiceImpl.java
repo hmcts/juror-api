@@ -21,6 +21,8 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorAppearanceResponseDto
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsOnTrialResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsToDismissResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.AttendanceDetailsResponse;
+import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.UnconfirmedJurorDataDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.UnconfirmedJurorResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.AppearanceId;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -1269,6 +1271,48 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                 isLongTrialDay(localDates, appearance1.getAttendanceDate())));
 
         appearanceRepository.saveAll(appearances);
+    }
+
+    @Override
+    public UnconfirmedJurorResponseDto retrieveUnconfirmedJurors(String locationCode, LocalDate attendanceDate) {
+        log.info("Retrieving unconfirmed jurors for location {} on date {}", locationCode, attendanceDate);
+
+        //confirm user has access to location
+        SecurityUtil.validateIsLocCode(locationCode);
+
+        // check if the day is not confirmed
+        if (!appearanceRepository.isDayConfirmed(locationCode, attendanceDate)) {
+            log.error("Attendance for location {} on date {} is not confirmed", locationCode, attendanceDate);
+            // throw bad request exception
+            throw new MojException.BadRequest("Attendance for location " + locationCode + " on date "
+                + attendanceDate + " is not confirmed", null);
+        }
+
+        List<Tuple> unconfirmedJurors = appearanceRepository.getUnconfirmedJurors(locationCode, attendanceDate);
+
+        if (unconfirmedJurors.isEmpty()) {
+            log.info("No unconfirmed jurors found for location {} on date {}", locationCode, attendanceDate);
+            return new UnconfirmedJurorResponseDto();
+        }
+
+        log.info("Unconfirmed jurors found for location {} on date {}", locationCode, attendanceDate);
+
+        List<UnconfirmedJurorDataDto> unconfirmedJurorDataList = new ArrayList<>();
+
+        unconfirmedJurors.forEach(tuple -> {
+            UnconfirmedJurorDataDto unconfirmedJurorData =
+                UnconfirmedJurorDataDto.builder()
+                    .jurorNumber(tuple.get(0, String.class))
+                    .firstName(tuple.get(1, String.class))
+                    .lastName(tuple.get(2, String.class))
+                    .status(tuple.get(3, IJurorStatus.class))
+                    .checkInTime(tuple.get(4, LocalTime.class))
+                    .checkOutTime(tuple.get(5, LocalTime.class))
+                    .build();
+            unconfirmedJurorDataList.add(unconfirmedJurorData);
+        });
+
+        return new UnconfirmedJurorResponseDto(unconfirmedJurorDataList);
     }
 
 
