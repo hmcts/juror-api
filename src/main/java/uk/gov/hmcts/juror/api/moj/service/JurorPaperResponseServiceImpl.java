@@ -151,7 +151,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
         if (jurorPaperResponse.getStaff() != null) {
             // set the assignee if there is one
-            try{
+            try {
                 jurorPaperResponseDetailDto.setAssignedStaffMember(new UserDetailsDto(jurorPaperResponse.getStaff()));
             } catch (Exception e) {
                 log.error("Error setting assigned staff member for response for juror {}",
