@@ -8,7 +8,7 @@ AS SELECT j.police_check,
     j.juror_number,
     regexp_replace(j.first_name::text, '\s.*'::text, ''::text) AS first_name,
     NULLIF(regexp_replace(j.first_name::text, '.*?\s'::text, ''::text), j.first_name::text) AS middle_name,
-    regexp_replace(j.last_name::text, '\s.*'::text, ''::text) AS last_name,
+    regexp_replace(j.last_name::text, '\s', '', 'g') AS last_name,
     j.dob AS date_of_birth,
     upper(regexp_replace(j.postcode::text, '\s+'::text, ''::text)) AS post_code
    FROM juror_mod.juror j
