@@ -34,6 +34,7 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
+import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.UpdateAttendanceStatus;
@@ -1305,10 +1306,10 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                     .jurorNumber(tuple.get(0, String.class))
                     .firstName(tuple.get(1, String.class))
                     .lastName(tuple.get(2, String.class))
-                    .status(tuple.get(3, Integer.class))
                     .checkInTime(tuple.get(4, LocalTime.class))
                     .checkOutTime(tuple.get(5, LocalTime.class))
                     .build();
+            unconfirmedJurorData.setStatus(JurorStatusEnum.fromStatus(tuple.get(3, Integer.class)));
             unconfirmedJurorDataList.add(unconfirmedJurorData);
         });
 

@@ -38,6 +38,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
+import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.UpdateAttendanceStatus;
@@ -1876,7 +1877,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(juror.getJurorNumber()).isEqualTo("333333333");
             assertThat(juror.getFirstName()).isEqualTo("TEST");
             assertThat(juror.getLastName()).isEqualTo("THREE");
-            assertThat(juror.getStatus()).isEqualTo(IJurorStatus.PANEL);
+            assertThat(juror.getStatus()).isEqualTo(JurorStatusEnum.PANEL);
             assertThat(juror.getCheckInTime()).isEqualTo(LocalTime.of(9, 30));
             assertThat(juror.getCheckOutTime()).isNull();
 
@@ -1884,7 +1885,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(juror.getJurorNumber()).isEqualTo("666666666");
             assertThat(juror.getFirstName()).isEqualTo("TEST");
             assertThat(juror.getLastName()).isEqualTo("SIX");
-            assertThat(juror.getStatus()).isEqualTo(IJurorStatus.RESPONDED);
+            assertThat(juror.getStatus()).isEqualTo(JurorStatusEnum.RESPONDED);
             assertThat(juror.getCheckInTime()).isEqualTo(LocalTime.of(9, 30));
             assertThat(juror.getCheckOutTime()).isNull();
 
@@ -1892,7 +1893,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(juror.getJurorNumber()).isEqualTo("777777777");
             assertThat(juror.getFirstName()).isEqualTo("TEST");
             assertThat(juror.getLastName()).isEqualTo("SEVEN");
-            assertThat(juror.getStatus()).isEqualTo(IJurorStatus.RESPONDED);
+            assertThat(juror.getStatus()).isEqualTo(JurorStatusEnum.RESPONDED);
             assertThat(juror.getCheckInTime()).isNull();
             assertThat(juror.getCheckOutTime()).isEqualTo(LocalTime.of(12, 30));
         }
@@ -1914,6 +1915,20 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             List<UnconfirmedJurorDataDto> unconfirmedJurors = responseDto.getJurors();
             assertThat(unconfirmedJurors).isEmpty();
+
+        }
+
+        @Test
+        @DisplayName("Retrieve unconfirmed jurors - invalid court location")
+        void invalidCourtLocation() {
+
+            String attendanceDate = now().minusDays(1).toString();
+
+            ResponseEntity<UnconfirmedJurorResponseDto> response =
+                restTemplate.exchange(new RequestEntity<>(null, httpHeaders, GET,
+                    URI.create(urlBase + "/416?attendanceDate=" + attendanceDate)), UnconfirmedJurorResponseDto.class);
+
+            assertThat(response.getStatusCode()).as("User forbidden message").isEqualTo(FORBIDDEN);
 
         }
 
