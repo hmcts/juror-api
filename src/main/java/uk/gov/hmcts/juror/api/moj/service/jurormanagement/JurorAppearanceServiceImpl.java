@@ -1292,7 +1292,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
         if (unconfirmedJurors.isEmpty()) {
             log.info("No unconfirmed jurors found for location {} on date {}", locationCode, attendanceDate);
-            return new UnconfirmedJurorResponseDto();
+            return new UnconfirmedJurorResponseDto(new ArrayList<>());
         }
 
         log.info("Unconfirmed jurors found for location {} on date {}", locationCode, attendanceDate);
@@ -1305,7 +1305,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                     .jurorNumber(tuple.get(0, String.class))
                     .firstName(tuple.get(1, String.class))
                     .lastName(tuple.get(2, String.class))
-                    .status(tuple.get(3, IJurorStatus.class))
+                    .status(tuple.get(3, Integer.class))
                     .checkInTime(tuple.get(4, LocalTime.class))
                     .checkOutTime(tuple.get(5, LocalTime.class))
                     .build();

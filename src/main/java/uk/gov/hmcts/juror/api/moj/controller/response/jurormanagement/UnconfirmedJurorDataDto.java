@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 
 import java.time.LocalTime;
 
@@ -31,7 +30,7 @@ public class UnconfirmedJurorDataDto {
 
     @JsonProperty("status")
     @Schema(description = "The Juror's status", requiredMode = Schema.RequiredMode.REQUIRED)
-    private IJurorStatus status;
+    private int status;
 
     @JsonProperty("check_in_time")
     @Schema(description = "Check in time of the juror", implementation = String.class, pattern = "HH24:mm")

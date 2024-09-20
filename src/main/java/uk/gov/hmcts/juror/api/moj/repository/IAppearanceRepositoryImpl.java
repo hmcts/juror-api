@@ -410,6 +410,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .where(APPEARANCE.appearanceConfirmed.eq(false))
             .where(JUROR_POOL.isActive.isTrue())
             .where(JUROR_POOL.owner.eq(SecurityUtil.getActiveOwner()))
+            .orderBy(APPEARANCE.jurorNumber.asc())
             .fetch();
     }
 

@@ -30,6 +30,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorAppearanceResponseDto
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsOnTrialResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsToDismissResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.AttendanceDetailsResponse;
+import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.UnconfirmedJurorDataDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.UnconfirmedJurorResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -1851,21 +1852,96 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UnconfirmedJurors.sql"})
     class UnconfirmedJurors {
 
-        String URL_BASE = "/api/v1/moj/juror-management/unconfirmed-jurors";
+        String urlBase = "/api/v1/moj/juror-management/unconfirmed-jurors";
 
         @Test
         @DisplayName("Retrieve unconfirmed jurors - happy path")
-        void retrieveAttendanceConfirmAttendanceTag() {
+        void unconfirmedJurorsHappyPath() {
 
             String attendanceDate = now().minusDays(2).toString();
 
             ResponseEntity<UnconfirmedJurorResponseDto> response =
                 restTemplate.exchange(new RequestEntity<>(null, httpHeaders, GET,
-                    URI.create(URL_BASE + "/415?attendanceDate=" + attendanceDate)), UnconfirmedJurorResponseDto.class);
+                    URI.create(urlBase + "/415?attendanceDate=" + attendanceDate)), UnconfirmedJurorResponseDto.class);
 
             assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
 
-            UnconfirmedJurorResponseDto data = response.getBody();
+            UnconfirmedJurorResponseDto responseDto = response.getBody();
+            assertThat(responseDto).isNotNull();
+
+            List<UnconfirmedJurorDataDto> unconfirmedJurors = responseDto.getJurors();
+            assertThat(unconfirmedJurors).hasSize(3);
+
+            UnconfirmedJurorDataDto juror = unconfirmedJurors.get(0);
+            assertThat(juror.getJurorNumber()).isEqualTo("333333333");
+            assertThat(juror.getFirstName()).isEqualTo("TEST");
+            assertThat(juror.getLastName()).isEqualTo("THREE");
+            assertThat(juror.getStatus()).isEqualTo(IJurorStatus.PANEL);
+            assertThat(juror.getCheckInTime()).isEqualTo(LocalTime.of(9, 30));
+            assertThat(juror.getCheckOutTime()).isNull();
+
+            juror = unconfirmedJurors.get(1);
+            assertThat(juror.getJurorNumber()).isEqualTo("666666666");
+            assertThat(juror.getFirstName()).isEqualTo("TEST");
+            assertThat(juror.getLastName()).isEqualTo("SIX");
+            assertThat(juror.getStatus()).isEqualTo(IJurorStatus.RESPONDED);
+            assertThat(juror.getCheckInTime()).isEqualTo(LocalTime.of(9, 30));
+            assertThat(juror.getCheckOutTime()).isNull();
+
+            juror = unconfirmedJurors.get(2);
+            assertThat(juror.getJurorNumber()).isEqualTo("777777777");
+            assertThat(juror.getFirstName()).isEqualTo("TEST");
+            assertThat(juror.getLastName()).isEqualTo("SEVEN");
+            assertThat(juror.getStatus()).isEqualTo(IJurorStatus.RESPONDED);
+            assertThat(juror.getCheckInTime()).isNull();
+            assertThat(juror.getCheckOutTime()).isEqualTo(LocalTime.of(12, 30));
+        }
+
+        @Test
+        @DisplayName("Retrieve unconfirmed jurors - no unconfirmed jurors")
+        void noUnconfirmedJurors() {
+
+            String attendanceDate = now().minusDays(3).toString();
+
+            ResponseEntity<UnconfirmedJurorResponseDto> response =
+                restTemplate.exchange(new RequestEntity<>(null, httpHeaders, GET,
+                    URI.create(urlBase + "/415?attendanceDate=" + attendanceDate)), UnconfirmedJurorResponseDto.class);
+
+            assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
+
+            UnconfirmedJurorResponseDto responseDto = response.getBody();
+            assertThat(responseDto).isNotNull();
+
+            List<UnconfirmedJurorDataDto> unconfirmedJurors = responseDto.getJurors();
+            assertThat(unconfirmedJurors).isEmpty();
+
+        }
+
+        @Test
+        @DisplayName("Retrieve unconfirmed jurors - day not confirmed yet")
+        void dayNotConfirmedYet() {
+
+            String attendanceDate = now().minusDays(1).toString();
+
+            ResponseEntity<UnconfirmedJurorResponseDto> response =
+                restTemplate.exchange(new RequestEntity<>(null, httpHeaders, GET,
+                    URI.create(urlBase + "/415?attendanceDate=" + attendanceDate)), UnconfirmedJurorResponseDto.class);
+
+            assertThat(response.getStatusCode()).as(HTTP_STATUS_BAD_REQUEST_MESSAGE).isEqualTo(BAD_REQUEST);
+
+        }
+
+        @Test
+        @DisplayName("Retrieve unconfirmed jurors - no Juror has been checked in yet")
+        void noJurorCheckedInYet() {
+
+            String attendanceDate = now().toString();
+
+            ResponseEntity<UnconfirmedJurorResponseDto> response =
+                restTemplate.exchange(new RequestEntity<>(null, httpHeaders, GET,
+                    URI.create(urlBase + "/415?attendanceDate=" + attendanceDate)), UnconfirmedJurorResponseDto.class);
+
+            assertThat(response.getStatusCode()).as(HTTP_STATUS_BAD_REQUEST_MESSAGE).isEqualTo(BAD_REQUEST);
 
         }
 
