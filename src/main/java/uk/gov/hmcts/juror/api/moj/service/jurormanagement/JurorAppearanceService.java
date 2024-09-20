@@ -4,6 +4,7 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.AddAttendanceDayDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAppearanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorsToDismissRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.ConfirmAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.JurorNonAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.ModifyConfirmedAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAttendanceDetailsDto;
@@ -65,4 +66,6 @@ public interface JurorAppearanceService {
     void realignAttendanceType(String jurorNumber);
 
     UnconfirmedJurorResponseDto retrieveUnconfirmedJurors(String locationCode, LocalDate attendanceDate);
+
+    void confirmAttendance(ConfirmAttendanceDto request);
 }

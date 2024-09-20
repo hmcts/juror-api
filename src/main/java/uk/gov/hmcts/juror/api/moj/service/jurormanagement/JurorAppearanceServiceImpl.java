@@ -12,6 +12,7 @@ import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.AddAttendanceDayDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAppearanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorsToDismissRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.ConfirmAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.JurorNonAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.ModifyConfirmedAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAttendanceDetailsDto;
@@ -1306,14 +1307,95 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                     .jurorNumber(tuple.get(0, String.class))
                     .firstName(tuple.get(1, String.class))
                     .lastName(tuple.get(2, String.class))
+                    .status(JurorStatusEnum.fromStatus(tuple.get(3, Integer.class)))
                     .checkInTime(tuple.get(4, LocalTime.class))
                     .checkOutTime(tuple.get(5, LocalTime.class))
                     .build();
-            unconfirmedJurorData.setStatus(JurorStatusEnum.fromStatus(tuple.get(3, Integer.class)));
             unconfirmedJurorDataList.add(unconfirmedJurorData);
         });
 
         return new UnconfirmedJurorResponseDto(unconfirmedJurorDataList);
+    }
+
+    @Override
+    @Transactional
+    public void confirmAttendance(ConfirmAttendanceDto request) {
+        log.info("Confirming attendance for juror {} on date {}", request.getJurorNumber(),
+            request.getAttendanceDate());
+
+        final String owner = SecurityUtil.getActiveOwner();
+        final String locCode = request.getLocationCode();
+        final String jurorNumber = request.getJurorNumber();
+
+        CourtLocation courtLocation =
+            courtLocationRepository.findByLocCode(locCode)
+                .orElseThrow(() -> new MojException.NotFound("Court location not found", null));
+
+        // validate the juror record exists and user has ownership of the record
+        validateJuror(owner, jurorNumber);
+
+        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPool(jurorPoolRepository, jurorNumber,
+            courtLocation);
+
+        // get the juror appearance record if it exists
+        Appearance appearance = getAppearance(jurorNumber, request.getAttendanceDate(), locCode)
+            .orElseGet(() -> appearanceRepository.save(
+                appearanceCreationService.createAppearance(
+                    jurorNumber,
+                    request.getAttendanceDate(),
+                    courtLocation,
+                    jurorPool.getPool().getPoolNumber(),
+                    false
+                )));
+
+        Panel panel = panelRepository.findByDateSelectedCourtLocationLocCodeAndJurorJurorNumber(
+            request.getAttendanceDate(), locCode, jurorNumber);
+
+        String juryAttendancePrefix;
+        if (appearance.getTrialNumber() != null || panel != null) {
+            juryAttendancePrefix = "J";
+            appearance.setSatOnJury(true);
+        } else {
+            juryAttendancePrefix = "P";
+        }
+
+        appearance.setAttendanceAuditNumber(getAttendanceAuditNumber(juryAttendancePrefix));
+
+        if (panel != null) {
+            appearance.setTrialNumber(panel.getTrial().getTrialNumber());
+            jurorHistoryService.createJuryAttendanceHistory(jurorPool, appearance, panel);
+        }
+
+        if (appearance.getAppearanceStage() != null
+            && AppearanceStage.getConfirmedAppearanceStages().contains(appearance.getAppearanceStage())) {
+            throw new MojException.BusinessRuleViolation(
+                "Juror " + jurorNumber + " has already confirmed their attendance for this day",
+                MojException.BusinessRuleViolation.ErrorCode.DAY_ALREADY_CONFIRMED);
+        }
+
+        // update the check-in time if there is none
+        if (appearance.getTimeIn() == null) {
+            appearance.setTimeIn(request.getCheckInTime());
+        }
+
+        // update the check-out time if there is none
+        if (appearance.getTimeOut() == null) {
+            appearance.setTimeOut(request.getCheckOutTime());
+        }
+
+        appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
+        realignAttendanceType(appearance);
+        appearance.setAppearanceConfirmed(Boolean.TRUE);
+
+        appearanceRepository.saveAndFlush(appearance);
+        jurorExpenseService.applyDefaultExpenses(appearance, jurorPool.getJuror());
+
+        // update the juror next date and clear on call flag in case it is set
+        jurorPool.setNextDate(request.getAttendanceDate());
+        jurorPool.setOnCall(false);
+        jurorPoolRepository.saveAndFlush(jurorPool);
+
+        log.info("Attendance confirmed for juror {} on date {}", jurorNumber, request.getAttendanceDate());
     }
 
 

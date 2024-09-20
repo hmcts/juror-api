@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.PanelId;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -41,4 +42,8 @@ public interface PanelRepository extends IPanelRepository, JpaRepository<Panel, 
     Panel findActivePanelByCourtGroup(List<String> locCode, String jurorNumber);
 
     long countByJurorJurorNumberAndTrialCourtLocationLocCode(String jurorNumber, String locCode);
+
+    Panel findByDateSelectedCourtLocationLocCodeAndJurorJurorNumber(LocalDate dateSelected, String locCode,
+                                                                    String jurorNumber);
+
 }

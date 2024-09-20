@@ -29,6 +29,7 @@ import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.moj.controller.request.AddAttendanceDayDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAppearanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorsToDismissRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.ConfirmAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.JurorNonAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.ModifyConfirmedAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAttendanceDetailsDto;
@@ -173,6 +174,15 @@ public class JurorManagementController {
     public void confirmJuryAttendance(
         @RequestBody @Valid UpdateAttendanceDto request) {
         jurorAppearanceService.confirmJuryAttendance(request);
+    }
+
+    @PatchMapping("/confirm-attendance")
+    @Operation(description = "Confirm attendance for jurors who need confirmation of attendance for date")
+    @IsCourtUser
+    @ResponseStatus(HttpStatus.OK)
+    public void confirmAttendance(
+        @RequestBody @Valid ConfirmAttendanceDto request) {
+        jurorAppearanceService.confirmAttendance(request);
     }
 
     private void validateOwner(BureauJwtPayload payload) {

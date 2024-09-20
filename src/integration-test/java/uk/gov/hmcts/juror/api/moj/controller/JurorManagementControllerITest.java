@@ -22,6 +22,7 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.AddAttendanceDayDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAppearanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorsToDismissRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.ConfirmAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.JurorNonAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAttendanceDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDateDto;
@@ -1958,6 +1959,42 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             assertThat(response.getStatusCode()).as(HTTP_STATUS_BAD_REQUEST_MESSAGE).isEqualTo(BAD_REQUEST);
 
+        }
+
+    }
+
+
+    @Nested
+    @DisplayName("Confirm attendance for jurors")
+    @Sql({"/db/mod/truncate.sql",
+        "/db/JurorExpenseControllerITest_expenseRates.sql",
+        "/db/jurormanagement/UnconfirmedJurors.sql"})
+    class ConfirmAttendanceForJuror {
+
+        String urlBase = "/api/v1/moj/juror-management/confirm-attendance";
+
+        @Test
+        @DisplayName("Confirm attendance for a juror - happy path")
+        void confirmAttendanceForJurorHappyPath() {
+
+            ConfirmAttendanceDto confirmAttendanceDto = buildConfirmAttendanceDto();
+
+            ResponseEntity<Void> response =
+                restTemplate.exchange(new RequestEntity<>(confirmAttendanceDto, httpHeaders, PATCH,
+                    URI.create(urlBase)), Void.class);
+
+            assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
+
+        }
+
+        private ConfirmAttendanceDto buildConfirmAttendanceDto() {
+            ConfirmAttendanceDto confirmAttendanceDto = new ConfirmAttendanceDto();
+            confirmAttendanceDto.setJurorNumber("666666666");
+            confirmAttendanceDto.setAttendanceDate(now().minusDays(2));
+            confirmAttendanceDto.setLocationCode("415");
+            confirmAttendanceDto.setCheckInTime(LocalTime.of(9, 30));
+            confirmAttendanceDto.setCheckOutTime(LocalTime.of(17, 00));
+            return confirmAttendanceDto;
         }
 
     }
