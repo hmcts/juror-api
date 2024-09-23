@@ -1348,11 +1348,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                     false
                 )));
 
-        Panel panel = panelRepository.findByDateSelectedCourtLocationLocCodeAndJurorJurorNumber(
-            request.getAttendanceDate(), locCode, jurorNumber);
-
         String juryAttendancePrefix;
-        if (appearance.getTrialNumber() != null || panel != null) {
+        if (appearance.getTrialNumber() != null) {
             juryAttendancePrefix = "J";
             appearance.setSatOnJury(true);
         } else {
@@ -1360,11 +1357,6 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         }
 
         appearance.setAttendanceAuditNumber(getAttendanceAuditNumber(juryAttendancePrefix));
-
-        if (panel != null) {
-            appearance.setTrialNumber(panel.getTrial().getTrialNumber());
-            jurorHistoryService.createJuryAttendanceHistory(jurorPool, appearance, panel);
-        }
 
         if (appearance.getAppearanceStage() != null
             && AppearanceStage.getConfirmedAppearanceStages().contains(appearance.getAppearanceStage())) {
