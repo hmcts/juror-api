@@ -39,15 +39,18 @@ public class ConfirmAttendanceDto {
 
     @JsonProperty("locationCode")
     @Size(min = 3, max = 3)
+    @NotBlank
     @NumericString
     @Schema(description = "Unique 3 digit code to identify a court location")
     private String locationCode;
 
     @JsonProperty("checkInTime")
+    @NotNull(message = "Check in time is mandatory")
     @Schema(description = "Check in time of the juror", implementation = String.class, pattern = "HH24:mm")
     private LocalTime checkInTime;
 
     @JsonProperty("checkOutTime")
+    @NotNull(message = "Check out time is mandatory")
     @Schema(description = "Check out time of the juror", implementation = String.class, pattern = "HH24:mm")
     private LocalTime checkOutTime;
 

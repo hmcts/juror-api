@@ -38,6 +38,7 @@ import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
+import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
@@ -1934,6 +1935,24 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
+        @DisplayName("Retrieve unconfirmed jurors - Bureau user")
+        void invalidBureauUser() {
+
+            String attendanceDate = now().minusDays(1).toString();
+
+            final String bureauJwt = getBureauJwt();
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            ResponseEntity<UnconfirmedJurorResponseDto> response =
+                restTemplate.exchange(new RequestEntity<>(null, httpHeaders, GET,
+                    URI.create(urlBase + "/415?attendanceDate=" + attendanceDate)), UnconfirmedJurorResponseDto.class);
+
+            assertThat(response.getStatusCode()).as("User forbidden message").isEqualTo(FORBIDDEN);
+
+        }
+
+        @Test
         @DisplayName("Retrieve unconfirmed jurors - day not confirmed yet")
         void dayNotConfirmedYet() {
 
@@ -1963,9 +1982,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
     }
 
-
     @Nested
-    @DisplayName("Confirm attendance for jurors")
+    @DisplayName("Confirm attendance for juror")
     @Sql({"/db/mod/truncate.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql",
         "/db/jurormanagement/UnconfirmedJurors.sql"})
@@ -1974,10 +1992,10 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         String urlBase = "/api/v1/moj/juror-management/confirm-attendance";
 
         @Test
-        @DisplayName("Confirm attendance for a juror - happy path")
-        void confirmAttendanceForJurorHappyPath() {
+        @DisplayName("Confirm attendance for a juror - Checked In juror")
+        void confirmAttendanceForCheckedInJuror() {
 
-            ConfirmAttendanceDto confirmAttendanceDto = buildConfirmAttendanceDto();
+            ConfirmAttendanceDto confirmAttendanceDto = buildConfirmAttendanceDto("666666666", now().minusDays(2));
 
             ResponseEntity<Void> response =
                 restTemplate.exchange(new RequestEntity<>(confirmAttendanceDto, httpHeaders, PATCH,
@@ -1985,12 +2003,62 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
 
+            // verify the attendance record has been updated
+            Optional<Appearance> appearanceOpt =
+                appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(
+                    "415", "666666666", now().minusDays(2));
+            assertThat(appearanceOpt).isNotEmpty();
+            Appearance appearance = appearanceOpt.get();
+            assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));
+            assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 00));
+            assertThat(appearance.getAttendanceType()).isEqualTo(AttendanceType.FULL_DAY);
+            assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
+
         }
 
-        private ConfirmAttendanceDto buildConfirmAttendanceDto() {
+        @Test
+        @DisplayName("Confirm attendance for a juror - Checked Out juror")
+        void confirmAttendanceForCheckedOutJuror() {
+
+            ConfirmAttendanceDto confirmAttendanceDto = buildConfirmAttendanceDto("777777777", now().minusDays(2));
+
+            ResponseEntity<Void> response =
+                restTemplate.exchange(new RequestEntity<>(confirmAttendanceDto, httpHeaders, PATCH,
+                    URI.create(urlBase)), Void.class);
+
+            assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
+
+            // verify the attendance record has been updated
+            Optional<Appearance> appearanceOpt =
+                appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(
+                    "415", "777777777", now().minusDays(2));
+            assertThat(appearanceOpt).isNotEmpty();
+            Appearance appearance = appearanceOpt.get();
+            assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));
+            assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 00));
+            assertThat(appearance.getAttendanceType()).isEqualTo(AttendanceType.FULL_DAY);
+            assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
+
+        }
+
+        @Test
+        @DisplayName("Confirm attendance for a juror - Confirmed juror")
+        void confirmAttendanceForConfirmedJuror() {
+
+            ConfirmAttendanceDto confirmAttendanceDto = buildConfirmAttendanceDto("222222222", now().minusDays(2));
+
+            ResponseEntity<Void> response =
+                restTemplate.exchange(new RequestEntity<>(confirmAttendanceDto, httpHeaders, PATCH,
+                    URI.create(urlBase)), Void.class);
+
+            assertThat(response.getStatusCode()).as("Unprocessable entity response").isEqualTo(UNPROCESSABLE_ENTITY);
+
+        }
+
+        private ConfirmAttendanceDto buildConfirmAttendanceDto(String jurorNumber, LocalDate attendanceDate) {
             ConfirmAttendanceDto confirmAttendanceDto = new ConfirmAttendanceDto();
-            confirmAttendanceDto.setJurorNumber("666666666");
-            confirmAttendanceDto.setAttendanceDate(now().minusDays(2));
+            confirmAttendanceDto.setJurorNumber(jurorNumber);
+            confirmAttendanceDto.setAttendanceDate(attendanceDate);
             confirmAttendanceDto.setLocationCode("415");
             confirmAttendanceDto.setCheckInTime(LocalTime.of(9, 30));
             confirmAttendanceDto.setCheckOutTime(LocalTime.of(17, 00));

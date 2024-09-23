@@ -1348,6 +1348,14 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                     false
                 )));
 
+        if (appearance.getAppearanceStage() != null
+            && AppearanceStage.getConfirmedAppearanceStages().contains(appearance.getAppearanceStage())) {
+            throw new MojException.BusinessRuleViolation(
+                "Juror " + jurorNumber + " has already confirmed their attendance for date"
+                    + " " + request.getAttendanceDate(),
+                MojException.BusinessRuleViolation.ErrorCode.DAY_ALREADY_CONFIRMED);
+        }
+
         String juryAttendancePrefix;
         if (appearance.getTrialNumber() != null) {
             juryAttendancePrefix = "J";
@@ -1358,22 +1366,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
         appearance.setAttendanceAuditNumber(getAttendanceAuditNumber(juryAttendancePrefix));
 
-        if (appearance.getAppearanceStage() != null
-            && AppearanceStage.getConfirmedAppearanceStages().contains(appearance.getAppearanceStage())) {
-            throw new MojException.BusinessRuleViolation(
-                "Juror " + jurorNumber + " has already confirmed their attendance for this day",
-                MojException.BusinessRuleViolation.ErrorCode.DAY_ALREADY_CONFIRMED);
-        }
-
-        // update the check-in time if there is none
-        if (appearance.getTimeIn() == null) {
-            appearance.setTimeIn(request.getCheckInTime());
-        }
-
-        // update the check-out time if there is none
-        if (appearance.getTimeOut() == null) {
-            appearance.setTimeOut(request.getCheckOutTime());
-        }
+        appearance.setTimeIn(request.getCheckInTime());
+        appearance.setTimeOut(request.getCheckOutTime());
 
         appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
         realignAttendanceType(appearance);
