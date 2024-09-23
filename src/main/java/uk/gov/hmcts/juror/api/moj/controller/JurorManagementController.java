@@ -177,7 +177,7 @@ public class JurorManagementController {
     }
 
     @PatchMapping("/confirm-attendance")
-    @Operation(description = "Confirm attendance for jurors who need confirmation of attendance for date")
+    @Operation(description = "Confirm attendance for juror who needs confirmation of attendance for date")
     @IsCourtUser
     @ResponseStatus(HttpStatus.OK)
     public void confirmAttendance(
