@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.juror.api.moj.controller.response.jurorresponse.IJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
 import uk.gov.hmcts.juror.api.moj.domain.User;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
  * @see uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetail
  */
 @Data
+@Slf4j
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "All Details available on a juror in the system ")
@@ -423,8 +425,15 @@ public class BureauJurorDetailDto implements Serializable, IJurorResponse {
         this.excusalReason = jurorDetails.getExcusalReason();
         this.useJurorEmailDetails = jurorDetails.getUseJurorEmailDetails();
         this.useJurorPhoneDetails = jurorDetails.getUseJurorPhoneDetails();
-        this.assignedStaffMember = jurorDetails.getAssignedStaffMember() != null
-            ? new StaffDto(jurorDetails.getAssignedStaffMember()) : null;
+        try {
+            this.assignedStaffMember = jurorDetails.getAssignedStaffMember() != null
+                ? new StaffDto(jurorDetails.getAssignedStaffMember())
+                : null;
+        } catch (Exception e) {
+            log.error("Error setting assigned staff member for response for juror {}",
+                jurorDetails.getJurorNumber() + " -- " + e.getMessage());
+        }
+
         this.staffAssignmentDate = jurorDetails.getStaffAssignmentDate();
         this.assignmentAllowed = jurorDetails.getAssignmentAllowed();
         this.phoneLogs = jurorDetails.getContactLogs().stream().map(ContactLogDto::new).collect(Collectors.toList());

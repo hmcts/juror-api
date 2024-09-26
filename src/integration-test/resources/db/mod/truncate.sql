@@ -37,6 +37,7 @@ DELETE FROM juror_mod.user_roles_audit;
 DELETE FROM juror_mod.user_courts_audit;
 DELETE FROM juror_mod.users_audit;
 
+DELETE FROM juror_mod.user_permissions;
 DELETE FROM juror_mod.user_roles;
 DELETE FROM juror_mod.user_courts;
 DELETE FROM juror_mod.users;

@@ -147,7 +147,7 @@ class ElectronicPoliceCheckReportITest extends AbstractStandardReportControllerI
                             .build(),
                         StandardReportResponse.TableData.Heading.builder()
                             .id("police_check_timed_out")
-                            .name("Checks completed")
+                            .name("Checks timed out")
                             .dataType("Long")
                             .headings(null)
                             .build(),

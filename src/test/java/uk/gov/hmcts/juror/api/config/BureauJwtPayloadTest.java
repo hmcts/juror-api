@@ -116,12 +116,14 @@ class BureauJwtPayloadTest {
             ),
             UserType.COURT,
             UserType.COURT,
-            Set.of(Role.MANAGER)
+            Set.of(Role.MANAGER),
+            Collections.emptyList()
         );
         assertThat(payload.toClaims())
-            .hasSize(9)
+            .hasSize(10)
             .containsEntry("email", "email@email.com")
             .containsEntry("owner", "owner")
+            .containsEntry("permissions", Collections.emptyList())
             .containsEntry("locCode", "locCode")
             .containsEntry("login", "login")
             .containsEntry("userLevel", "userLevel")
@@ -177,7 +179,8 @@ class BureauJwtPayloadTest {
                     ),
                     UserType.COURT,
                     UserType.COURT,
-                    List.of(Role.MANAGER)
+                    List.of(Role.MANAGER),
+                    Collections.emptyList()
                 )
             );
     }
@@ -221,6 +224,7 @@ class BureauJwtPayloadTest {
                     ),
                     null,
                     null,
+                    Collections.emptyList(),
                     Collections.emptyList()
                 )
             );
