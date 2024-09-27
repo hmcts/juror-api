@@ -393,7 +393,6 @@ class ManageDeferralsServiceTest {
             verify(printDataService, never()).printConfirmationLetter(any());
             verify(printDataService, never()).printPostponeLetter(any());
             verify(currentlyDeferredRepository, never()).save(any());
-
         }
 
         @Test
@@ -784,7 +783,7 @@ class ManageDeferralsServiceTest {
 
     @Test
     @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
-    void useCourtDeferrals_deferralsUsed_noPoolRequest() {
+    void useCourtDeferralsDeferralsUsedNoPoolRequest() {
         String courtLocation = "415";
         LocalDate newAttendanceDate = LocalDate.now();
 
@@ -832,7 +831,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void useBureauDeferrals_deferralsUsed_happyPath() {
+    void useBureauDeferralsDeferralsUsedHappyPath() {
         LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
         LocalDate newAttendanceDate = LocalDate.now();
         String courtLocation = "415";
@@ -888,7 +887,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void useBureauDeferrals_deferralsUsed_noJurorPool() {
+    void useBureauDeferralsDeferralsUsedNoJurorPool() {
         LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
         LocalDate newAttendanceDate = LocalDate.now();
         String courtLocation = "415";
@@ -934,7 +933,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void useBureauDeferrals_deferralsUsed_noPoolRequest() {
+    void useBureauDeferralsDeferralsUsedNoPoolRequest() {
         String courtLocation = "415";
         LocalDate newAttendanceDate = LocalDate.now();
 
@@ -2101,7 +2100,7 @@ class ManageDeferralsServiceTest {
             index++;
         }
 
-         MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
+        MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
             () -> manageDeferralsService.allocateJurorsToActivePool(payload, dto),
             "Expected exception to be thrown when juror Dob is missing");
 
@@ -2125,7 +2124,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void test_moveJurorsToActivePool_multipleJuror() {
+    void testMoveJurorsToActivePoolMultipleJuror() {
         TestUtils.mockBureauUser();
         final BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         final String courtLocationCode = "415";
@@ -2173,7 +2172,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void test_moveJurorsToActivePool_poolRequestNotFound() {
+    void testMoveJurorsToActivePoolPoolRequestNotFound() {
         final BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         final String courtLocationCode = "415";
         String poolNumber = "123456789";
@@ -2217,7 +2216,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void test_getDeferralsByCourtLocationCode() {
+    void testGetDeferralsByCourtLocationCode() {
         String poolNumber = "123456789";
         List<String> courtJurors = new ArrayList<>();
         courtJurors.add("111111111");
@@ -2262,7 +2261,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void test_findActivePoolsForCourtLocation() {
+    void testFindActivePoolsForCourtLocation() {
         final BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         final String courtLocationCode = "415";
 
