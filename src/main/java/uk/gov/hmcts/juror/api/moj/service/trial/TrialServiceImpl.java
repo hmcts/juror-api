@@ -269,13 +269,15 @@ public class TrialServiceImpl implements TrialService {
                         appearance.setTimeOut(LocalTime.parse(returnJuryDto.getCheckOut()));
                         log.debug("setting time out for juror %s".formatted(jurorNumber));
                     }
-                    //Only give them an attendance number if they were checked out via this process
-                    appearance.setAttendanceAuditNumber("J" + attendanceAuditNumber);
+                    if (appearance.getAttendanceAuditNumber() == null) {
+                        //Only give them an attendance number if they were checked out via this process
+                        appearance.setAttendanceAuditNumber("J" + attendanceAuditNumber);
+                        jurorHistoryService.createJuryAttendanceHistory(jurorPool, appearance, panel);
+                    }
                 }
                 appearance.setTrialNumber(trialNumber);
                 appearance.setSatOnJury(true);
                 jurorAppearanceService.realignAttendanceType(appearance);
-                jurorHistoryService.createJuryAttendanceHistory(jurorPool, appearance, panel);
             }
 
             panel.setResult(PanelResult.RETURNED);

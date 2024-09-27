@@ -31,10 +31,10 @@ insert into juror_mod.juror_pool (owner, juror_number, pool_number, next_date, d
 
 --JUROR_MOD.APPEARANCE
 insert into juror_mod.appearance (attendance_date,juror_number,loc_code,time_in,time_out,non_attendance,appearance_stage,attendance_type) values
-(current_date - interval '1 day','111111111','415','09:31:00',null,false,null,'FULL_DAY'),
-(current_date - interval '2 days','111111111','415','09:30:00',null,false,null,'FULL_DAY'),
+(current_date - interval '1 day','111111111','415','09:31:00',null,false,'CHECKED_IN','FULL_DAY'),
+(current_date - interval '2 days','111111111','415','09:30:00',null,false,'CHECKED_IN','FULL_DAY'),
 (current_date - interval '2 days','222222222','415','09:30:00',null,false,'CHECKED_IN','FULL_DAY'),
 (current_date - interval '2 days','333333333','415','09:30:00',null,false,'CHECKED_IN','FULL_DAY'),
-(current_date - interval '2 days','555555555','415',null,null,false,null,'FULL_DAY'),
+(current_date - interval '2 days','555555555','415','06:30:00',null,false,'CHECKED_IN','FULL_DAY'),
 (current_date - interval '2 days','666666666','415','09:30:00',null,false,'CHECKED_IN','FULL_DAY'),
 (current_date - interval '2 days','777777777','415','15:53','12:30',false,'CHECKED_IN','FULL_DAY');

@@ -60,6 +60,7 @@ public class JurorRepositoryImpl implements IJurorRepository {
     }
 
     @Override
+    @SuppressWarnings("PMD.CognitiveComplexity")
     public JPAQuery<Tuple> fetchFilteredJurorRecords(JurorRecordFilterRequestQuery query) {
 
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
@@ -89,7 +90,7 @@ public class JurorRepositoryImpl implements IJurorRepository {
             String[] names = jurorName.split(" ");
 
             if (names.length == 2) {
-                partialQuery.where((JUROR.firstName.containsIgnoreCase(names[0]))
+                partialQuery.where(JUROR.firstName.containsIgnoreCase(names[0])
                     .and(JUROR.lastName.containsIgnoreCase(names[1]))
                     .or(JUROR.firstName.concat(" ").concat(JUROR.lastName).containsIgnoreCase(jurorName)));
             } else if (names.length > 2) {
