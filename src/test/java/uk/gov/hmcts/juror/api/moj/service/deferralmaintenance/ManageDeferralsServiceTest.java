@@ -339,6 +339,64 @@ class ManageDeferralsServiceTest {
         }
 
         @Test
+        void processJurorPostponementHappyPathMoveToActivePoolNoDob() {
+            TestUtils.mockBureauUser();
+            LocalDate newAttendanceDate = LocalDate.now();
+            LocalDate oldAttendanceDate = LocalDate.of(2023, 6, 6);
+
+            final BureauJwtPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER,
+                UserType.BUREAU, Collections.singletonList(Role.MANAGER));
+
+            final PoolRequest oldPoolRequest = createPoolRequest(BUREAU_OWNER, POOL_111111111, LOC_CODE_415,
+                oldAttendanceDate);
+
+            final PoolRequest newPoolRequest = createPoolRequest(BUREAU_OWNER, POOL_111111112, LOC_CODE_415,
+                newAttendanceDate);
+
+            JurorStatus jurorStatus = new JurorStatus();
+            jurorStatus.setStatus(IJurorStatus.RESPONDED);
+
+            JurorPool jurorPool1 = createJurorPool(JUROR_123456789);
+            jurorPool1.getJuror().setDateOfBirth(null);
+            doReturn(jurorPool1).when(jurorPoolService)
+                .getJurorPoolFromUser(JUROR_123456789);
+
+            doReturn(Optional.of(oldPoolRequest)).when(poolRequestRepository).findByPoolNumber(POOL_111111111);
+            doReturn(Optional.of(jurorStatus)).when(jurorStatusRepository).findById(anyInt());
+
+            doReturn(Optional.of(newPoolRequest)).when(poolRequestRepository).findByPoolNumber(anyString());
+
+            ProcessJurorPostponementRequestDto request = createProcessJurorRequestDto();
+            List<String> jurorNumbers = new ArrayList<>();
+            jurorNumbers.add(JUROR_123456789);
+            request.setJurorNumbers(jurorNumbers);
+
+            // should not throw an exception
+            MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
+                () -> manageDeferralsService.processJurorPostponement(bureauPayload, request),
+                "Expected exception to be thrown when juror Dob is missing");
+
+            assertThat(exception.getMessage())
+                .as("Verify exception message")
+                .isEqualTo("Date of birth is missing for juror number: 123456789");
+
+            verify(jurorPoolService, times(1)).getJurorPoolFromUser(any());
+            verify(jurorPoolRepository, never()).saveAndFlush(any());
+            verify(jurorPoolRepository, never()).save(any());
+            verify(jurorHistoryRepository, never()).save(any());
+            verify(jurorHistoryService, never()).createPostponementLetterHistory(any(), anyString());
+            verify(poolRequestRepository, never()).findByPoolNumber(anyString());
+            verify(poolMemberSequenceService, never()).getPoolMemberSequenceNumber(any(String.class));
+            verify(poolRequestRepository, never()).save(any());
+            verify(poolRequestRepository, never()).saveAndFlush(any());
+            verify(poolMemberSequenceService, never()).leftPadInteger(any(int.class));
+            verify(printDataService, never()).printConfirmationLetter(any());
+            verify(printDataService, never()).printPostponeLetter(any());
+            verify(currentlyDeferredRepository, never()).save(any());
+
+        }
+
+        @Test
         void processJurorPostponementUnhappyPathInvalidReasonCode() {
             TestUtils.mockBureauUser();
             final BureauJwtPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
@@ -1206,6 +1264,55 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
+    void processJuror_deferral_paper_moveToActivePool_noDob() {
+        TestUtils.mockBureauUser();
+        LocalDate newAttendanceDate = LocalDate.now();
+        LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
+        final BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        String jurorNumber = "123456789";
+        final PoolRequest oldPoolRequest = createPoolRequest("400", "111111111", "415",
+            oldAttendanceDate);
+        final PoolRequest newPoolRequest = createPoolRequest("400", "111111112", "415",
+            newAttendanceDate
+        );
+
+        List<JurorPool> jurorPools = new ArrayList<>();
+        JurorPool jurorPool = createJurorPool(jurorNumber);
+        jurorPool.getJuror().setDateOfBirth(null);
+        jurorPools.add(jurorPool);
+
+        PaperResponse paperResponse = new PaperResponse();
+        paperResponse.setJurorNumber(jurorNumber);
+
+        final DeferralReasonRequestDto dto = createDeferralReasonRequestDtoToActivePool(ReplyMethod.PAPER);
+
+        JurorStatus jurorStatus = new JurorStatus();
+        jurorStatus.setStatus(IJurorStatus.RESPONDED);
+
+        setupProcessJurorTestToActivePool(oldPoolRequest, newPoolRequest, jurorNumber, jurorPools, jurorStatus);
+        doReturn(paperResponse).when(paperResponseRepository)
+            .findByJurorNumber(any(String.class));
+
+        MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
+            () -> manageDeferralsService.processJurorDeferral(bureauPayload,
+                jurorNumber, dto),
+            "Expected exception to be thrown when juror Dob is missing");
+
+        assertThat(exception.getMessage())
+            .as("Verify exception message")
+            .isEqualTo("Date of birth is missing for juror number: 123456789");
+
+        verify(jurorPoolRepository, never()).saveAndFlush(any());
+        verify(poolRequestRepository, never()).save(any());
+        verify(poolRequestRepository, never()).saveAndFlush(any());
+        verify(jurorHistoryRepository, never()).save(any());
+        verify(jurorHistoryService, never()).createDeferredLetterHistory(any());
+        verify(printDataService, never()).printDeferralLetter(any());
+        verify(printDataService, never()).printConfirmationLetter(any());
+
+    }
+
+    @Test
     void processJurorDeferralCourtUser() {
         TestUtils.mockCourtUser("415");
         final BureauJwtPayload courtPayload = TestUtils.createJwt("415", "COURT_USER");
@@ -1956,6 +2063,54 @@ class ManageDeferralsServiceTest {
         verifyAllocateJurorsToActivePool(jurorNumbers);
     }
 
+    @Test
+    void test_moveJurorsToActivePool_singleJuror_noDob() {
+        TestUtils.mockBureauUser();
+        final BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        final String courtLocationCode = "415";
+        String poolNumber = "123456789";
+        List<String> jurorNumbers = new ArrayList<>();
+        jurorNumbers.add("111111111");
+        DeferralAllocateRequestDto dto = new DeferralAllocateRequestDto();
+        dto.setJurors(jurorNumbers);
+        dto.setPoolNumber(poolNumber);
+
+        final List<JurorPool> poolMembers = createJurorPools(jurorNumbers, poolNumber, payload.getOwner(),
+            courtLocationCode);
+
+        poolMembers.get(0).getJuror().setDateOfBirth(null);
+
+        final List<CurrentlyDeferred> deferrals = createDeferrals(payload.getOwner(), courtLocationCode, jurorNumbers,
+            LocalDate.now().plusWeeks(5));
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber(poolNumber);
+
+        JurorStatus status = new JurorStatus();
+        status.setStatus(2);
+        doReturn(Optional.of(status)).when(jurorStatusRepository).findById(2);
+
+        doReturn(Optional.of(poolRequest)).when(poolRequestRepository).findById(any());
+
+        int index = 0;
+        for (String juror : jurorNumbers) {
+            doReturn(poolMembers.get(index)).when(jurorPoolService)
+                .getJurorPoolFromUser(eq(juror));
+            doReturn(Optional.of(deferrals.get(index)))
+                .when(currentlyDeferredRepository)
+                .findById(juror);
+            index++;
+        }
+
+         MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
+            () -> manageDeferralsService.allocateJurorsToActivePool(payload, dto),
+            "Expected exception to be thrown when juror Dob is missing");
+
+        assertThat(exception.getMessage())
+            .as("Verify exception message")
+            .isEqualTo("Date of birth is missing for juror number: 111111111");
+
+    }
+
     private void verifyAllocateJurorsToActivePool(List<String> jurorNumbers) {
         verify(poolRequestRepository, times(1)).findById(any());
         verify(poolRequestRepository, times(jurorNumbers.size())).save(any());
@@ -2488,6 +2643,7 @@ class ManageDeferralsServiceTest {
         juror.setAddressLine4("Address Town");
         juror.setAddressLine5("Address County");
         juror.setPostcode("CH1 2AN");
+        juror.setDateOfBirth(LocalDate.of(1990, 6, 1));
         juror.setNoDefPos(0);
         juror.setPoliceCheck(PoliceCheck.ELIGIBLE);
 
@@ -2538,6 +2694,7 @@ class ManageDeferralsServiceTest {
             juror.setAddressLine4("Address Town");
             juror.setAddressLine5("Address County");
             juror.setPostcode("CH1 2AN");
+            juror.setDateOfBirth(LocalDate.of(1990, 6, 1));
             juror.setPoliceCheck(PoliceCheck.ELIGIBLE);
 
             JurorPool jurorPool = new JurorPool();
