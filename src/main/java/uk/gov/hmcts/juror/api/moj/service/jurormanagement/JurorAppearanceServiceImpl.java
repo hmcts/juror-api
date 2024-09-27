@@ -12,6 +12,7 @@ import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.AddAttendanceDayDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAppearanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorsToDismissRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.ConfirmAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.JurorNonAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.ModifyConfirmedAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAttendanceDetailsDto;
@@ -21,6 +22,8 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorAppearanceResponseDto
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsOnTrialResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsToDismissResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.AttendanceDetailsResponse;
+import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.UnconfirmedJurorDataDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.UnconfirmedJurorResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.AppearanceId;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -32,6 +35,7 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
+import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.UpdateAttendanceStatus;
@@ -1269,6 +1273,115 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                 isLongTrialDay(localDates, appearance1.getAttendanceDate())));
 
         appearanceRepository.saveAll(appearances);
+    }
+
+    @Override
+    public UnconfirmedJurorResponseDto retrieveUnconfirmedJurors(String locationCode, LocalDate attendanceDate) {
+        log.info("Retrieving unconfirmed jurors for location {} on date {}", locationCode, attendanceDate);
+
+        //confirm user has access to location
+        SecurityUtil.validateIsLocCode(locationCode);
+
+        // check if the day is not confirmed
+        if (!appearanceRepository.isDayConfirmed(locationCode, attendanceDate)) {
+            log.error("Attendance for location {} on date {} is not confirmed", locationCode, attendanceDate);
+            // throw bad request exception
+            throw new MojException.BadRequest("Attendance for location " + locationCode + " on date "
+                + attendanceDate + " is not confirmed", null);
+        }
+
+        List<Tuple> unconfirmedJurors = appearanceRepository.getUnconfirmedJurors(locationCode, attendanceDate);
+
+        if (unconfirmedJurors.isEmpty()) {
+            log.info("No unconfirmed jurors found for location {} on date {}", locationCode, attendanceDate);
+            return new UnconfirmedJurorResponseDto(new ArrayList<>());
+        }
+
+        log.info("Unconfirmed jurors found for location {} on date {}", locationCode, attendanceDate);
+
+        List<UnconfirmedJurorDataDto> unconfirmedJurorDataList = new ArrayList<>();
+
+        unconfirmedJurors.forEach(tuple -> {
+            UnconfirmedJurorDataDto unconfirmedJurorData =
+                UnconfirmedJurorDataDto.builder()
+                    .jurorNumber(tuple.get(0, String.class))
+                    .firstName(tuple.get(1, String.class))
+                    .lastName(tuple.get(2, String.class))
+                    .status(JurorStatusEnum.fromStatus(tuple.get(3, Integer.class)))
+                    .checkInTime(tuple.get(4, LocalTime.class))
+                    .checkOutTime(tuple.get(5, LocalTime.class))
+                    .build();
+            unconfirmedJurorDataList.add(unconfirmedJurorData);
+        });
+
+        return new UnconfirmedJurorResponseDto(unconfirmedJurorDataList);
+    }
+
+    @Override
+    @Transactional
+    public void confirmAttendance(ConfirmAttendanceDto request) {
+        log.info("Confirming attendance for juror {} on date {}", request.getJurorNumber(),
+            request.getAttendanceDate());
+
+        final String owner = SecurityUtil.getActiveOwner();
+        final String locCode = request.getLocationCode();
+        final String jurorNumber = request.getJurorNumber();
+
+        CourtLocation courtLocation =
+            courtLocationRepository.findByLocCode(locCode)
+                .orElseThrow(() -> new MojException.NotFound("Court location not found", null));
+
+        // validate the juror record exists and user has ownership of the record
+        validateJuror(owner, jurorNumber);
+
+        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPool(jurorPoolRepository, jurorNumber,
+            courtLocation);
+
+        // get the juror appearance record if it exists
+        Appearance appearance = getAppearance(jurorNumber, request.getAttendanceDate(), locCode)
+            .orElseGet(() -> appearanceRepository.save(
+                appearanceCreationService.createAppearance(
+                    jurorNumber,
+                    request.getAttendanceDate(),
+                    courtLocation,
+                    jurorPool.getPool().getPoolNumber(),
+                    false
+                )));
+
+        if (appearance.getAppearanceStage() != null
+            && AppearanceStage.getConfirmedAppearanceStages().contains(appearance.getAppearanceStage())) {
+            throw new MojException.BusinessRuleViolation(
+                "Juror " + jurorNumber + " has already confirmed their attendance for date"
+                    + " " + request.getAttendanceDate(),
+                MojException.BusinessRuleViolation.ErrorCode.DAY_ALREADY_CONFIRMED);
+        }
+
+        String juryAttendancePrefix;
+        if (appearance.getTrialNumber() != null) {
+            juryAttendancePrefix = "J";
+            appearance.setSatOnJury(true);
+        } else {
+            juryAttendancePrefix = "P";
+        }
+
+        appearance.setAttendanceAuditNumber(getAttendanceAuditNumber(juryAttendancePrefix));
+
+        appearance.setTimeIn(request.getCheckInTime());
+        appearance.setTimeOut(request.getCheckOutTime());
+
+        appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
+        realignAttendanceType(appearance);
+        appearance.setAppearanceConfirmed(Boolean.TRUE);
+
+        appearanceRepository.saveAndFlush(appearance);
+        jurorExpenseService.applyDefaultExpenses(appearance, jurorPool.getJuror());
+
+        // update the juror next date and clear on call flag in case it is set
+        jurorPool.setNextDate(request.getAttendanceDate());
+        jurorPool.setOnCall(false);
+        jurorPoolRepository.saveAndFlush(jurorPool);
+
+        log.info("Attendance confirmed for juror {} on date {}", jurorNumber, request.getAttendanceDate());
     }
 
 
