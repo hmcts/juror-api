@@ -161,7 +161,6 @@ public class LetterBase {
         String welshMonth = XeroxConstants.WELSH_DATE_TRANSLATION_MAP
             .get(dateParts[1].substring(0, dateParts[1].length() - 1));
 
-       // return formatter.format(cal.getTime()).toUpperCase();
         return format("%s %s %s", dateParts[0], welshMonth, dateParts[2]);
     }
 
