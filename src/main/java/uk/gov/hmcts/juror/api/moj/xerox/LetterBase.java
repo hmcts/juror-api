@@ -158,9 +158,7 @@ public class LetterBase {
 
         String dateString = formatter.format(cal.getTime()).toUpperCase();
         String[] dateParts = dateString.split("\\s");
-        String welshMonth = XeroxConstants.WELSH_DATE_TRANSLATION_MAP
-            .get(dateParts[1].substring(0, dateParts[1].length() - 1));
-
+        String welshMonth = XeroxConstants.WELSH_DATE_TRANSLATION_MAP.get(dateParts[1]);
         return format("%s %s %s", dateParts[0], welshMonth, dateParts[2]);
     }
 
