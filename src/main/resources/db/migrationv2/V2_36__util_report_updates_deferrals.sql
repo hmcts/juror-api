@@ -24,8 +24,7 @@ begin
                           left join juror_mod.appearance a
                                     on jp.juror_number = a.juror_number
                  where p.loc_code = a.loc_code
-                   and (((jp.status in (2,3,4,10,13) or (jp.status = 7 and a.attendance_date is not null and a.attendance_date between p_start_date and p_end_date))) and jp
-                   .is_active = true)
+                   and (((jp.status in (2,3,4,10,13) or (jp.status = 7 and a.attendance_date is not null and a.attendance_date between p_start_date and p_end_date)) and jp.is_active = true)
                      or (jp.status = 8 and a.attendance_date is not null and j.completion_date is not null))
                    and (a.non_attendance is null or a.non_attendance = false) and (a.no_show is null or a.no_show = false)
                    and p.loc_code = p_loc_code
