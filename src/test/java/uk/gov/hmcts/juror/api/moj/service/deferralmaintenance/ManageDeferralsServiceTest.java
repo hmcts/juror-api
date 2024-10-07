@@ -1344,55 +1344,6 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void processJuror_deferral_paper_moveToActivePool_noDob() {
-        TestUtils.mockBureauUser();
-        LocalDate newAttendanceDate = LocalDate.now();
-        LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
-        final BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
-        String jurorNumber = "123456789";
-        final PoolRequest oldPoolRequest = createPoolRequest("400", "111111111", "415",
-            oldAttendanceDate);
-        final PoolRequest newPoolRequest = createPoolRequest("400", "111111112", "415",
-            newAttendanceDate
-        );
-
-        List<JurorPool> jurorPools = new ArrayList<>();
-        JurorPool jurorPool = createJurorPool(jurorNumber);
-        jurorPool.getJuror().setDateOfBirth(null);
-        jurorPools.add(jurorPool);
-
-        PaperResponse paperResponse = new PaperResponse();
-        paperResponse.setJurorNumber(jurorNumber);
-
-        final DeferralReasonRequestDto dto = createDeferralReasonRequestDtoToActivePool(ReplyMethod.PAPER);
-
-        JurorStatus jurorStatus = new JurorStatus();
-        jurorStatus.setStatus(IJurorStatus.RESPONDED);
-
-        setupProcessJurorTestToActivePool(oldPoolRequest, newPoolRequest, jurorNumber, jurorPools, jurorStatus);
-        doReturn(paperResponse).when(paperResponseRepository)
-            .findByJurorNumber(any(String.class));
-
-        MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
-            () -> manageDeferralsService.processJurorDeferral(bureauPayload,
-                jurorNumber, dto),
-            "Expected exception to be thrown when juror Dob is missing");
-
-        assertThat(exception.getMessage())
-            .as("Verify exception message")
-            .isEqualTo("Date of birth is missing for juror number: 123456789");
-
-        verify(jurorPoolRepository, never()).saveAndFlush(any());
-        verify(poolRequestRepository, never()).save(any());
-        verify(poolRequestRepository, never()).saveAndFlush(any());
-        verify(jurorHistoryRepository, never()).save(any());
-        verify(jurorHistoryService, never()).createDeferredLetterHistory(any());
-        verify(printDataService, never()).printDeferralLetter(any());
-        verify(printDataService, never()).printConfirmationLetter(any());
-
-    }
-
-    @Test
     void processJurorDeferralCourtUser() {
         TestUtils.mockCourtUser("415");
         final BureauJwtPayload courtPayload = TestUtils.createJwt("415", "COURT_USER");

@@ -181,7 +181,10 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         // if not empty then we need to move the juror to the active pool
         if (!StringUtils.isEmpty(deferralReasonDto.getPoolNumber())) {
 
-            checkDobPresent(jurorNumber, jurorPool);
+            // only check the DOB if there is no reply method as the DOB may not be present yet
+            if (deferralReasonDto.getReplyMethod() == null) {
+                checkDobPresent(jurorNumber, jurorPool);
+            }
 
             // update old record
             setDeferralPoolMember(jurorPool, deferralReasonDto, auditorUsername, true);
@@ -227,7 +230,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     @Transactional
     public void changeJurorDeferralDate(BureauJwtPayload payload, String jurorNumber,
                                         DeferralReasonRequestDto deferralReasonDto) {
-        String auditorUsername = payload.getLogin();
+        final String auditorUsername = payload.getLogin();
 
         log.info("Processing deferral request for juror: {}", jurorNumber);
 
