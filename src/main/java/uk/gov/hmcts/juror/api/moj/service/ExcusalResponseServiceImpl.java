@@ -17,7 +17,10 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.exception.ExcusalResponseException;
-import uk.gov.hmcts.juror.api.moj.repository.*;
+import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
@@ -46,7 +49,6 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
     private final JurorPoolService jurorPoolService;
     private final JurorResponseService jurorResponseService;
 
-    private final PoolRequestRepository poolRequestRepository;
 
 
 
@@ -145,13 +147,8 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
             jurorPool.setStatus(getPoolStatus(IJurorStatus.RESPONDED));
         }
         if (jurorPool.getNextDate() == null) {
-            poolRequestRepository.findByPoolNumber(jurorPool.getPoolNumber()).ifPresent(poolRequest -> {
-                jurorPool.setNextDate(poolRequest.getReturnDate());
-                jurorPool.setStatus(getPoolStatus(IJurorStatus.RESPONDED));
-                jurorPoolRepository.save(jurorPool);
-            });
-
-
+            jurorPool.setNextDate(jurorPool.getPool().getReturnDate());
+            jurorPool.setStatus(getPoolStatus(IJurorStatus.RESPONDED));
         }
 
         jurorPool.setUserEdtq(payload.getLogin());
