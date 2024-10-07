@@ -49,6 +49,9 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
     private final JurorPoolService jurorPoolService;
     private final JurorResponseService jurorResponseService;
 
+
+
+
     @Override
     @Transactional
     public void respondToExcusalRequest(BureauJwtPayload payload, ExcusalDecisionDto excusalDecisionDto,
@@ -141,6 +144,10 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
         jurorRepository.save(juror);
 
         if (jurorPool.getStatus().getStatus() == IJurorStatus.SUMMONED) {
+            jurorPool.setStatus(getPoolStatus(IJurorStatus.RESPONDED));
+        }
+        if (jurorPool.getNextDate() == null) {
+            jurorPool.setNextDate(jurorPool.getPool().getReturnDate());
             jurorPool.setStatus(getPoolStatus(IJurorStatus.RESPONDED));
         }
 
