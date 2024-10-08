@@ -568,42 +568,53 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
     }
 
     private void validateExcusal(JurorPool jurorPool, ExcusalDecisionDto excusalDecisionDto, String login) {
-        executeInTransaction(() -> {
-            Juror juror = jurorPool.getJuror();
-            assertThat(juror.isResponded())
-                .as("Juror record should be updated and marked as responded")
-                .isTrue();
-            assertThat(juror.getExcusalDate())
-                .as("Juror record should be updated with an excusal date")
-                .isNotNull();
-            assertThat(juror.getExcusalCode())
-                .as("Juror record should be update with an excusal code")
-                .isEqualTo(excusalDecisionDto.getExcusalReasonCode());
-            assertThat(juror.getUserEdtq())
-                .as("Current user should be recorded in juror record as last to make changes")
-                .isEqualTo(login);
-            if (excusalDecisionDto.getExcusalDecision().equals(REFUSE)) {
-                assertThat(jurorPool.getStatus().getStatus())
-                    .as("Juror record should be updated to show they are responded")
-                    .isEqualTo(IJurorStatus.RESPONDED);
-            } else {
-                assertThat(jurorPool.getStatus().getStatus())
-                    .as("Juror record should be updated to show they are excused")
-                    .isEqualTo(IJurorStatus.EXCUSED);
-            }
-            assertThat(jurorPool.getNextDate())
+        executeInTransaction(
+            () -> {
+                Juror juror = jurorPool.getJuror();
+                assertThat(juror.isResponded())
+              .as("Juror record should be updated and marked as responded")
+                    .isTrue();
+                assertThat(juror.getExcusalDate())
+              .as("Juror record should be updated with an excusal date")
+                    .isNotNull();
+                assertThat(juror.getExcusalCode())
+              .as("Juror record should be update with an excusal code")
+                    .isEqualTo(excusalDecisionDto.getExcusalReasonCode());
+                assertThat(juror.getUserEdtq())
+              .as("Current user should be recorded in juror record as last to make changes")
+                    .isEqualTo(login);
+                if (excusalDecisionDto.getExcusalDecision().equals(REFUSE)) {
+                    assertThat(jurorPool.getStatus().getStatus())
+                .as("Juror record should be updated to show they are responded")
+                        .isEqualTo(IJurorStatus.RESPONDED);
+                } else {
+                    assertThat(jurorPool.getStatus().getStatus())
+                .as("Juror record should be updated to show they are excused")
+                        .isEqualTo(IJurorStatus.EXCUSED);
+                }
+                if (excusalDecisionDto.getExcusalDecision().equals(REFUSE)) {
+                    assertThat(jurorPool.getNextDate())
+                .as("Next date should be set as Juror has refusal excused")
+                        .isNotNull();
+                } else {
+                    assertThat(jurorPool.getNextDate())
                 .as("Next date should be set to null as Juror has been excused")
-                .isNull();
-
-            LocalDate yesterday = LocalDate.now().minusDays(1);
-            List<JurorHistory> jurorHistoryList =
-                jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(
+                        .isNull();
+                }
+                LocalDate yesterday = LocalDate.now().minusDays(1);
+                List<JurorHistory> jurorHistoryList =
+                    jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(
                     juror.getJurorNumber(), yesterday);
-            assertThat(jurorHistoryList.stream()
-                .anyMatch(jurorHistory -> jurorHistory.getHistoryCode().equals(HistoryCodeMod.EXCUSE_POOL_MEMBER)))
-                .as("Expect history record to be created for excusal refusal")
-                .isTrue();
-        });
+                assertThat(
+                  jurorHistoryList.stream()
+                      .anyMatch(
+                          jurorHistory ->
+                              jurorHistory
+                                  .getHistoryCode()
+                                  .equals(HistoryCodeMod.EXCUSE_POOL_MEMBER)))
+              .as("Expect history record to be created for excusal refusal")
+                    .isTrue();
+            });
     }
 
     private void validateExcusalLetter(String excusalCode) {
