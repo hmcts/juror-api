@@ -22,6 +22,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
+import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_DEFER_JUROR_WITH_APPEARANCE;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_REFUSE_FIRST_DEFERRAL;
 
 /**
@@ -56,6 +58,7 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
     private final JurorPoolService jurorPoolService;
     private final JurorStatusRepository jurorStatusRepository;
     private final JurorResponseService jurorResponseService;
+    private final JurorAppearanceService jurorAppearanceService;
 
     @Override
     @Transactional
@@ -63,9 +66,17 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
 
         final String jurorNumber = deferralRequestDto.getJurorNumber();
         final String owner = payload.getOwner();
+        log.info("Begin process for response to deferral request for juror {}", jurorNumber);
 
         JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, owner);
+
+        // check if the juror has already been checked in/out
+        if (jurorAppearanceService.hasAttendances(jurorNumber)) {
+            log.error("Juror {} has already been checked in/out", jurorNumber);
+            throw new MojException.BusinessRuleViolation("Juror has already been checked in/out",
+                                                         CANNOT_DEFER_JUROR_WITH_APPEARANCE);
+        }
 
         checkExcusalCodeIsValid(deferralRequestDto.getDeferralReason());
         Juror juror = jurorPool.getJuror();
