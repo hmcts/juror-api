@@ -58,6 +58,7 @@ import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.PoolMemberSequenceService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.service.SummonsReplyMergeService;
+import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
@@ -116,6 +117,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     private final JurorHistoryService jurorHistoryService;
     private final PrintDataService printDataService;
     private final JurorPoolService jurorPoolService;
+    private final JurorAppearanceService jurorAppearanceService;
 
     /**
      * When Jurors defer their service to a future date, a record gets added to the currently_deferred table.
@@ -226,6 +228,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
 
+        ManageDeferralsService.checkIfJurorHasAttendances(jurorAppearanceService, jurorNumber);
+
         // if not empty then we need to move the juror to the active pool
         if (!StringUtils.isEmpty(deferralReasonDto.poolNumber)) {
 
@@ -313,6 +317,10 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                                                         ProcessJurorPostponementRequestDto request) {
         final String auditorUsername = payload.getLogin();
         final String reasonCode = request.getExcusalReasonCode();
+
+        request.jurorNumbers.forEach(jurorNumber ->
+            ManageDeferralsService.checkIfJurorHasAttendances(jurorAppearanceService, jurorNumber)
+        );
 
         int countJurorsPostponed = 0;
         for (String jurorNumber : request.jurorNumbers) {

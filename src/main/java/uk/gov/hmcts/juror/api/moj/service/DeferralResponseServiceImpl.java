@@ -22,6 +22,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
+import uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDeferralsService;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
@@ -34,7 +35,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_DEFER_JUROR_WITH_APPEARANCE;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_REFUSE_FIRST_DEFERRAL;
 
 /**
@@ -71,12 +71,7 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
         JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, owner);
 
-        // check if the juror has already been checked in/out
-        if (jurorAppearanceService.hasAttendances(jurorNumber)) {
-            log.error("Juror {} has already been checked in/out", jurorNumber);
-            throw new MojException.BusinessRuleViolation("Juror has already been checked in/out",
-                                                         CANNOT_DEFER_JUROR_WITH_APPEARANCE);
-        }
+        ManageDeferralsService.checkIfJurorHasAttendances(jurorAppearanceService, jurorNumber);
 
         checkExcusalCodeIsValid(deferralRequestDto.getDeferralReason());
         Juror juror = jurorPool.getJuror();
