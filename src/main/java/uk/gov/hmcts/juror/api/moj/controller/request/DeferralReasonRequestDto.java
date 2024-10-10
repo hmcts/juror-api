@@ -23,21 +23,21 @@ public class DeferralReasonRequestDto {
     @JsonProperty("deferralDate")
     @Schema(description = "Selected deferral date", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull
-    public LocalDate deferralDate;
+    private LocalDate deferralDate;
 
     @JsonProperty("excusalReasonCode")
     @Schema(description = "Deferral reason code", requiredMode = Schema.RequiredMode.REQUIRED)
     @Length(max = 2)
     @NotEmpty
     @NotNull
-    public String excusalReasonCode;
+    private String excusalReasonCode;
 
     @JsonProperty("poolNumber")
     @Schema(description = "Active pool number for selected date")
-    public String poolNumber;
+    private String poolNumber;
 
     @JsonProperty("replyMethod")
     @Schema(description = "Reply method type (PAPER/DIGITAL)")
-    public ReplyMethod replyMethod;
+    private ReplyMethod replyMethod;
 
 }

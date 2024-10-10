@@ -22,6 +22,7 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.AddAttendanceDayDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAppearanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorsToDismissRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.ConfirmAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.JurorNonAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAttendanceDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDateDto;
@@ -30,12 +31,16 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorAppearanceResponseDto
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsOnTrialResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsToDismissResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.AttendanceDetailsResponse;
+import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.UnconfirmedJurorDataDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.UnconfirmedJurorResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
+import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
+import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.UpdateAttendanceStatus;
@@ -1845,6 +1850,222 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         }
     }
 
+    @Nested
+    @DisplayName("Unconfirmed Jurors")
+    @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UnconfirmedJurors.sql"})
+    class UnconfirmedJurors {
+
+        String urlBase = "/api/v1/moj/juror-management/unconfirmed-jurors";
+
+        @Test
+        @DisplayName("Retrieve unconfirmed jurors - happy path")
+        void unconfirmedJurorsHappyPath() {
+
+            String attendanceDate = now().minusDays(2).toString();
+
+            ResponseEntity<UnconfirmedJurorResponseDto> response =
+                restTemplate.exchange(new RequestEntity<>(null, httpHeaders, GET,
+                    URI.create(urlBase + "/415?attendanceDate=" + attendanceDate)), UnconfirmedJurorResponseDto.class);
+
+            assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
+
+            UnconfirmedJurorResponseDto responseDto = response.getBody();
+            assertThat(responseDto).isNotNull();
+
+            List<UnconfirmedJurorDataDto> unconfirmedJurors = responseDto.getJurors();
+            assertThat(unconfirmedJurors).hasSize(3);
+
+            UnconfirmedJurorDataDto juror = unconfirmedJurors.get(0);
+            assertThat(juror.getJurorNumber()).isEqualTo("333333333");
+            assertThat(juror.getFirstName()).isEqualTo("TEST");
+            assertThat(juror.getLastName()).isEqualTo("THREE");
+            assertThat(juror.getStatus()).isEqualTo(JurorStatusEnum.PANEL);
+            assertThat(juror.getCheckInTime()).isEqualTo(LocalTime.of(9, 30));
+            assertThat(juror.getCheckOutTime()).isNull();
+
+            juror = unconfirmedJurors.get(1);
+            assertThat(juror.getJurorNumber()).isEqualTo("666666666");
+            assertThat(juror.getFirstName()).isEqualTo("TEST");
+            assertThat(juror.getLastName()).isEqualTo("SIX");
+            assertThat(juror.getStatus()).isEqualTo(JurorStatusEnum.RESPONDED);
+            assertThat(juror.getCheckInTime()).isEqualTo(LocalTime.of(9, 30));
+            assertThat(juror.getCheckOutTime()).isNull();
+
+            juror = unconfirmedJurors.get(2);
+            assertThat(juror.getJurorNumber()).isEqualTo("777777777");
+            assertThat(juror.getFirstName()).isEqualTo("TEST");
+            assertThat(juror.getLastName()).isEqualTo("SEVEN");
+            assertThat(juror.getStatus()).isEqualTo(JurorStatusEnum.RESPONDED);
+            assertThat(juror.getCheckInTime()).isNull();
+            assertThat(juror.getCheckOutTime()).isEqualTo(LocalTime.of(12, 30));
+        }
+
+        @Test
+        @DisplayName("Retrieve unconfirmed jurors - no unconfirmed jurors")
+        void noUnconfirmedJurors() {
+
+            String attendanceDate = now().minusDays(3).toString();
+
+            ResponseEntity<UnconfirmedJurorResponseDto> response =
+                restTemplate.exchange(new RequestEntity<>(null, httpHeaders, GET,
+                    URI.create(urlBase + "/415?attendanceDate=" + attendanceDate)), UnconfirmedJurorResponseDto.class);
+
+            assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
+
+            UnconfirmedJurorResponseDto responseDto = response.getBody();
+            assertThat(responseDto).isNotNull();
+
+            List<UnconfirmedJurorDataDto> unconfirmedJurors = responseDto.getJurors();
+            assertThat(unconfirmedJurors).isEmpty();
+
+        }
+
+        @Test
+        @DisplayName("Retrieve unconfirmed jurors - invalid court location")
+        void invalidCourtLocation() {
+
+            String attendanceDate = now().minusDays(1).toString();
+
+            ResponseEntity<UnconfirmedJurorResponseDto> response =
+                restTemplate.exchange(new RequestEntity<>(null, httpHeaders, GET,
+                    URI.create(urlBase + "/416?attendanceDate=" + attendanceDate)), UnconfirmedJurorResponseDto.class);
+
+            assertThat(response.getStatusCode()).as("User forbidden message").isEqualTo(FORBIDDEN);
+
+        }
+
+        @Test
+        @DisplayName("Retrieve unconfirmed jurors - Bureau user")
+        void invalidBureauUser() {
+
+            String attendanceDate = now().minusDays(1).toString();
+
+            final String bureauJwt = getBureauJwt();
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            ResponseEntity<UnconfirmedJurorResponseDto> response =
+                restTemplate.exchange(new RequestEntity<>(null, httpHeaders, GET,
+                    URI.create(urlBase + "/415?attendanceDate=" + attendanceDate)), UnconfirmedJurorResponseDto.class);
+
+            assertThat(response.getStatusCode()).as("User forbidden message").isEqualTo(FORBIDDEN);
+
+        }
+
+        @Test
+        @DisplayName("Retrieve unconfirmed jurors - day not confirmed yet")
+        void dayNotConfirmedYet() {
+
+            String attendanceDate = now().minusDays(1).toString();
+
+            ResponseEntity<UnconfirmedJurorResponseDto> response =
+                restTemplate.exchange(new RequestEntity<>(null, httpHeaders, GET,
+                    URI.create(urlBase + "/415?attendanceDate=" + attendanceDate)), UnconfirmedJurorResponseDto.class);
+
+            assertThat(response.getStatusCode()).as(HTTP_STATUS_BAD_REQUEST_MESSAGE).isEqualTo(BAD_REQUEST);
+
+        }
+
+        @Test
+        @DisplayName("Retrieve unconfirmed jurors - no Juror has been checked in yet")
+        void noJurorCheckedInYet() {
+
+            String attendanceDate = now().toString();
+
+            ResponseEntity<UnconfirmedJurorResponseDto> response =
+                restTemplate.exchange(new RequestEntity<>(null, httpHeaders, GET,
+                    URI.create(urlBase + "/415?attendanceDate=" + attendanceDate)), UnconfirmedJurorResponseDto.class);
+
+            assertThat(response.getStatusCode()).as(HTTP_STATUS_BAD_REQUEST_MESSAGE).isEqualTo(BAD_REQUEST);
+
+        }
+
+    }
+
+    @Nested
+    @DisplayName("Confirm attendance for juror")
+    @Sql({"/db/mod/truncate.sql",
+        "/db/JurorExpenseControllerITest_expenseRates.sql",
+        "/db/jurormanagement/UnconfirmedJurors.sql"})
+    class ConfirmAttendanceForJuror {
+
+        String urlBase = "/api/v1/moj/juror-management/confirm-attendance";
+
+        @Test
+        @DisplayName("Confirm attendance for a juror - Checked In juror")
+        void confirmAttendanceForCheckedInJuror() {
+
+            ConfirmAttendanceDto confirmAttendanceDto = buildConfirmAttendanceDto("666666666", now().minusDays(2));
+
+            ResponseEntity<Void> response =
+                restTemplate.exchange(new RequestEntity<>(confirmAttendanceDto, httpHeaders, PATCH,
+                    URI.create(urlBase)), Void.class);
+
+            assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
+
+            // verify the attendance record has been updated
+            Optional<Appearance> appearanceOpt =
+                appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(
+                    "415", "666666666", now().minusDays(2));
+            assertThat(appearanceOpt).isNotEmpty();
+            Appearance appearance = appearanceOpt.get();
+            assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));
+            assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 00));
+            assertThat(appearance.getAttendanceType()).isEqualTo(AttendanceType.FULL_DAY);
+            assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
+
+        }
+
+        @Test
+        @DisplayName("Confirm attendance for a juror - Checked Out juror")
+        void confirmAttendanceForCheckedOutJuror() {
+
+            ConfirmAttendanceDto confirmAttendanceDto = buildConfirmAttendanceDto("777777777", now().minusDays(2));
+
+            ResponseEntity<Void> response =
+                restTemplate.exchange(new RequestEntity<>(confirmAttendanceDto, httpHeaders, PATCH,
+                    URI.create(urlBase)), Void.class);
+
+            assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
+
+            // verify the attendance record has been updated
+            Optional<Appearance> appearanceOpt =
+                appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(
+                    "415", "777777777", now().minusDays(2));
+            assertThat(appearanceOpt).isNotEmpty();
+            Appearance appearance = appearanceOpt.get();
+            assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));
+            assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 00));
+            assertThat(appearance.getAttendanceType()).isEqualTo(AttendanceType.FULL_DAY);
+            assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
+
+        }
+
+        @Test
+        @DisplayName("Confirm attendance for a juror - Confirmed juror")
+        void confirmAttendanceForConfirmedJuror() {
+
+            ConfirmAttendanceDto confirmAttendanceDto = buildConfirmAttendanceDto("222222222", now().minusDays(2));
+
+            ResponseEntity<Void> response =
+                restTemplate.exchange(new RequestEntity<>(confirmAttendanceDto, httpHeaders, PATCH,
+                    URI.create(urlBase)), Void.class);
+
+            assertThat(response.getStatusCode()).as("Unprocessable entity response").isEqualTo(UNPROCESSABLE_ENTITY);
+
+        }
+
+        private ConfirmAttendanceDto buildConfirmAttendanceDto(String jurorNumber, LocalDate attendanceDate) {
+            ConfirmAttendanceDto confirmAttendanceDto = new ConfirmAttendanceDto();
+            confirmAttendanceDto.setJurorNumber(jurorNumber);
+            confirmAttendanceDto.setAttendanceDate(attendanceDate);
+            confirmAttendanceDto.setLocationCode("415");
+            confirmAttendanceDto.setCheckInTime(LocalTime.of(9, 30));
+            confirmAttendanceDto.setCheckOutTime(LocalTime.of(17, 00));
+            return confirmAttendanceDto;
+        }
+
+    }
 
     @Nested
     @DisplayName("Jurors on Trial tests")

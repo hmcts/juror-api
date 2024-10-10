@@ -44,7 +44,7 @@ public class SummonsLetter extends LetterBase {
     protected void setupWelsh() {
         setFormCode(FormCode.BI_SUMMONS);
         sharedJurorSetup();
-        addData(LetterDataType.DATE_OF_LETTER, 18);
+        addData(LetterDataType.WELSH_DATE_OF_LETTER, 18);
         addData(LetterDataType.DATE_OF_ATTENDANCE, 32);
         addData(LetterDataType.WELSH_DATE_OF_ATTENDANCE, 32);
         addData(LetterDataType.TIME_OF_ATTENDANCE, 8);
