@@ -95,6 +95,7 @@ public class MojException extends RuntimeException {
             COULD_NOT_FIND_ENOUGH_VOTERS,
             COULD_NOT_FIND_ENOUGH_ELIGIBLE_VOTERS,
             DAY_ALREADY_CONFIRMED,
+            CANNOT_DEFER_TO_EXISTING_POOL,
             CANNOT_DEFER_JUROR_WITH_APPEARANCE
         }
     }

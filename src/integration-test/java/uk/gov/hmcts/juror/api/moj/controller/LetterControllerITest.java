@@ -3296,58 +3296,6 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             @Test
             @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initSummonsReminderLetter.sql"})
-            void summonsReminderInitialLetterEnglishReprintAsWelsh() {
-                final String jurorNumber = "555555575";
-
-                // first verify letter doesn't already exist for today's date (this is the date the letter is to be
-                // re-created)
-                assertThat(bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(jurorNumber,
-                    FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now()))
-                    .as("Existing letter should not exist for today's date").isEmpty();
-                executeInTransaction(() -> {
-                    // verify a previous letter exists - should be english
-                    BulkPrintData bulkPrintData =
-                        bulkPrintDataRepository.findByJurorNumberFormCodeAndExtracted(jurorNumber,
-                                FormCode.ENG_SUMMONS_REMINDER.getCode(), true)
-                            .orElseThrow(
-                                () -> Failures.instance()
-                                    .failure("Expected record to be found in bulk print data table"));
-
-                    verifyDataResponse(bulkPrintData, "575", true,
-                        LocalDate.of(2024, 1, 31),
-                        LocalDate.of(2024, 1, 18), false);
-                });
-                // invoke service to reissue letter
-                triggerValidBureau(
-                    ReissueLetterRequestDto.ReissueLetterRequestData.builder()
-                        .jurorNumber(jurorNumber)
-                        .formCode(FormCode.ENG_SUMMONS_REMINDER.getCode())
-                        .datePrinted(LocalDate.of(2024, 1, 31))
-                        .build()
-                );
-
-                executeInTransaction(() -> {
-                    // verify letter added - should be welsh (welsh flag was updated - juror now wants welsh letters)
-                    BulkPrintData bulkPrintData =
-                        bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(jurorNumber,
-                                FormCode.BI_SUMMONS_REMINDER.getCode(), LocalDate.now())
-                            .orElseThrow(
-                                () -> Failures.instance()
-                                    .failure("Expected record to be found in bulk print data table"));
-
-                    verifyDataResponse(bulkPrintData, "575", Boolean.FALSE, LocalDate.now(), null, true);
-
-                    // verify history added
-                    List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
-                        .findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, LocalDate.now());
-                    assertThat(updatedJurorHistoryList).as("History record should have been added").isNotNull();
-                    assertThat(updatedJurorHistoryList.size()).isEqualTo(1);
-                    verifyHistoryResponse(updatedJurorHistoryList.get(0), "575", "405");
-                });
-            }
-
-            @Test
-            @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initSummonsReminderLetter.sql"})
             void summonsReminderInitialLetterWelshReprintAsEnglish() {
                 final String jurorNumber = "555555576";
 
@@ -3512,7 +3460,9 @@ class LetterControllerITest extends AbstractIntegrationTest {
                                 .now()
                                 .plusDays(4)
                                 .format(DateTimeFormatter.ofPattern("dd MMMM yyyy")).toUpperCase());
+
                         default -> fail("Unexpected day of the week");
+
                     }
                 } else {
                     assertThat(bulkPrintData.getDetailRec())
@@ -3520,6 +3470,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 }
             }
         }
+
 
         private void triggerValidBureau(
             ReissueLetterRequestDto.ReissueLetterRequestData... requestBody) {

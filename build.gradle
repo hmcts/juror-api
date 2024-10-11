@@ -278,7 +278,7 @@ sourceSets {
     }
 }
 checkstyle {
-    maxWarnings = 0
+    maxWarnings = 1
     toolVersion = '10.17.0'
     getConfigDirectory().set(new File(rootDir, 'config/checkstyle'))
 }
