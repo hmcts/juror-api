@@ -61,6 +61,7 @@ import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.PoolMemberSequenceService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.service.SummonsReplyMergeService;
+import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -142,6 +143,8 @@ class ManageDeferralsServiceTest {
     private WelshCourtLocationRepository welshCourtLocationRepository;
     @Mock
     private JurorPoolService jurorPoolService;
+    @Mock
+    private JurorAppearanceService jurorAppearanceService;
 
     @InjectMocks
     ManageDeferralsServiceImpl manageDeferralsService;

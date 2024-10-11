@@ -1286,6 +1286,9 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         responseDto.setNonAttendances((int) jurorAttendanceDetails.stream()
             .filter(p -> AttendanceType.NON_ATTENDANCE.equals(p.getAttendanceType())).count());
 
+        // the hasAttendances method does not care if appearance is confirmed or not
+        responseDto.setHasAppearances(jurorAppearanceService.hasAttendances(jurorNumber));
+
         responseDto.setOnCall(jurorPool.isOnCall());
         responseDto.setNextDate(jurorPool.getNextDate());
 

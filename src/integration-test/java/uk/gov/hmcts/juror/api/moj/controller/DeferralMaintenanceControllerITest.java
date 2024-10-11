@@ -57,6 +57,7 @@ import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription.CONFIRMED;
 import static uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription.NEEDED;
 import static uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription.SURPLUS;
@@ -1097,6 +1098,21 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             });
         }
 
+        @Test
+        void courtUserChangeDateActivePoolAlreadyCheckedIn() {
+            final String courtJwt = createJwt(COURT_USER, OWNER_415);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
+            DeferralReasonRequestDto deferralReasonRequestDto = createDeferralReasonRequestDtoToActivePool(null);
+            RequestEntity<DeferralReasonRequestDto> requestEntity =
+                new RequestEntity<>(deferralReasonRequestDto,
+                                    httpHeaders, POST, URI.create(URL_PREFIX + JUROR_555555560));
+            ResponseEntity<DeferralReasonRequestDto> response = template.exchange(requestEntity,
+                                                                                  DeferralReasonRequestDto.class);
+            assertThat(response.getStatusCode()).as("Expect the status to be unprocessable entity")
+                .isEqualTo(UNPROCESSABLE_ENTITY);
+        }
+
         private void verifyActivePoolOldRecordChangeDate(JurorPool jurorPool, String poolNumber) {
             assertThat(jurorPool.getPoolNumber()).isNotEqualTo(poolNumber);
             assertThat(jurorPool.getStatus().getStatusDesc()).isEqualTo("Deferred");
@@ -1603,6 +1619,19 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
             assertThat(response.getStatusCode()).as("Expect the status to be a bad request")
                 .isEqualTo(NOT_FOUND);
+        }
+
+        @Test
+        @Sql({"/db/mod/truncate.sql", "/db/DeferralMaintenanceController_postponeJuror.sql"})
+        void courtPostponeJurorAlreadyCheckedIn() {
+            setHeaders(COURT_USER, OWNER_415, UserType.COURT);
+
+            ResponseEntity<MojException.BadRequest> response = template.exchange(new RequestEntity<>(
+                createProcessJurorPostponementRequestDto(Collections.singletonList(JUROR_555555560)),
+                httpHeaders, POST, URI.create(URL)), MojException.BadRequest.class);
+
+            assertThat(response.getStatusCode()).as("Expect the status to be unprocessable entity")
+                .isEqualTo(UNPROCESSABLE_ENTITY);
         }
 
         @Test

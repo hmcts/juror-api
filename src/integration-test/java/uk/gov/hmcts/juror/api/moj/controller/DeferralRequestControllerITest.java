@@ -211,6 +211,27 @@ public class DeferralRequestControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/DeferralRequestController_createInitialPoolRecords.sql"})
+    public void grant_Deferral_unhappyPath_appearances_exist() {
+        String jurorNumber = "222222222";
+        String deferralReason = "B";
+
+        DeferralRequestDto requestDto = createGrantDeferralDecisionDto(jurorNumber, deferralReason);
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwtCourt("COURT_USER", Set.of(), "415"));
+
+        requestDto.setAllowMultipleDeferrals(false);
+        ResponseEntity<DeferralRequestDto> response =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PUT,
+                                                      URI.create("/api/v1/moj/deferral-response/juror/"
+                                                                     + jurorNumber)),
+                                  DeferralRequestDto.class);
+
+        assertThat(response.getStatusCode())
+            .as("Expect the HTTP PUT request to be OK")
+            .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/DeferralRequestController_createInitialPoolRecords.sql"})
     public void grant_Deferral_Unhappy_MissingDate() {
         String jurorNumber = "987654321";
         String deferralReason = "B";
