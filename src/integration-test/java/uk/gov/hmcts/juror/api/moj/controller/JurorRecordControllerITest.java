@@ -3378,6 +3378,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertThat(jurorAttendanceDetailsResponseDto.getData().size()).isEqualTo(5);
 
             assertThat(jurorAttendanceDetailsResponseDto.getAttendances()).isEqualTo(3);
+            assertThat(jurorAttendanceDetailsResponseDto.isHasAppearances()).isEqualTo(true);
             assertThat(jurorAttendanceDetailsResponseDto.getAbsences()).isEqualTo(1);
             assertThat(jurorAttendanceDetailsResponseDto.getNonAttendances()).isEqualTo(1);
             assertThat(jurorAttendanceDetailsResponseDto.getNextDate()).isEqualTo(LocalDate.now().minusDays(4));

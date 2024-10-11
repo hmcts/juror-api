@@ -9,9 +9,13 @@ import uk.gov.hmcts.juror.api.moj.controller.response.DeferralListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralOptionsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 
 import java.time.LocalDate;
 import java.util.List;
+
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_DEFER_JUROR_WITH_APPEARANCE;
 
 public interface ManageDeferralsService {
 
@@ -49,4 +53,12 @@ public interface ManageDeferralsService {
 
     DeferralResponseDto processJurorPostponement(BureauJwtPayload payload,
                                                  ProcessJurorPostponementRequestDto processJurorRequestDto);
+
+    static void checkIfJurorHasAttendances(JurorAppearanceService jurorAppearanceService, String jurorNumber) {
+        // check if the juror has already been checked in/out
+        if (jurorAppearanceService.hasAttendances(jurorNumber)) {
+            throw new MojException.BusinessRuleViolation("Juror has already been checked in/out",
+                                                         CANNOT_DEFER_JUROR_WITH_APPEARANCE);
+        }
+    }
 }
