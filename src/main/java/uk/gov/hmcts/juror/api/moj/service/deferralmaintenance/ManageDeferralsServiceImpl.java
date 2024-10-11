@@ -176,8 +176,16 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
 
+        validateJurorPool(deferralReasonDto, jurorPool);
+
         // if not empty then we need to move the juror to the active pool
-        if (!StringUtils.isEmpty(deferralReasonDto.poolNumber)) {
+        if (!StringUtils.isEmpty(deferralReasonDto.getPoolNumber())) {
+
+            // only check the DOB if there is no reply method as the DOB may not be present yet
+            if (deferralReasonDto.getReplyMethod() == null) {
+                checkDobPresent(jurorNumber, jurorPool);
+            }
+
             // update old record
             setDeferralPoolMember(jurorPool, deferralReasonDto, auditorUsername, true);
             Optional<PoolRequest> poolRequest = poolRequestRepository.findByPoolNumber(
@@ -213,7 +221,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             printDeferralLetter(payload.getOwner(), jurorPool);
         }
 
-        if (deferralReasonDto.replyMethod != null) {
+        if (deferralReasonDto.getReplyMethod() != null) {
             updateJurorResponse(jurorNumber, deferralReasonDto, auditorUsername);
         }
     }
@@ -222,12 +230,21 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     @Transactional
     public void changeJurorDeferralDate(BureauJwtPayload payload, String jurorNumber,
                                         DeferralReasonRequestDto deferralReasonDto) {
-        String auditorUsername = payload.getLogin();
+        final String auditorUsername = payload.getLogin();
+
+        log.info("Processing deferral request for juror: {}", jurorNumber);
+
         JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
+
+        validateJurorPool(deferralReasonDto, jurorPool);
+
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
 
         // if not empty then we need to move the juror to the active pool
-        if (!StringUtils.isEmpty(deferralReasonDto.poolNumber)) {
+        if (!StringUtils.isEmpty(deferralReasonDto.getPoolNumber())) {
+
+            //check if there is a DOB for juror as status could become responded and police check will be made
+            checkDobPresent(jurorNumber, jurorPool);
 
             // update old record
             setDeferralPoolMember(jurorPool, deferralReasonDto, auditorUsername, false);
@@ -293,6 +310,10 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             // Add deferred member to active pool
             log.trace("Juror {} - adding pool member to requested active pool", jurorNumber);
             JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
+
+            // check if juror has DOB as police check will be made
+            checkDobPresent(jurorNumber, jurorPool);
+
             JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
 
             JurorPool newJurorPool = addMemberToNewPool(poolRequest, jurorPool, payload.getLogin(),
@@ -314,6 +335,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         final String auditorUsername = payload.getLogin();
         final String reasonCode = request.getExcusalReasonCode();
 
+        log.info("Processing postponement request for juror(s): {}", request.jurorNumbers);
+
         int countJurorsPostponed = 0;
         for (String jurorNumber : request.jurorNumbers) {
             // validation
@@ -329,7 +352,11 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             }
 
             // start the process to postpone and move the juror to the active pool
-            if (!StringUtils.isEmpty(request.poolNumber)) {
+            if (!StringUtils.isEmpty(request.getPoolNumber())) {
+
+                // checking if DOB is present when postponing into a pool as police check will be made
+                checkDobPresent(jurorPool.getJurorNumber(), jurorPool);
+
                 // update old record
                 setDeferralPoolMember(jurorPool, request, auditorUsername, true);
 
@@ -645,6 +672,13 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         juror.setUserEdtq(auditorUsername);
 
         jurorRepository.save(juror);
+    }
+
+    private void validateJurorPool(DeferralReasonRequestDto deferralReasonDto, JurorPool jurorPool) {
+        if (jurorPool.getPoolNumber().equalsIgnoreCase(deferralReasonDto.getPoolNumber())) {
+            throw new MojException.BusinessRuleViolation("Cannot change deferral to the existing pool",
+                MojException.BusinessRuleViolation.ErrorCode.CANNOT_DEFER_TO_EXISTING_POOL);
+        }
     }
 
     private void printDeferralLetter(String owner, JurorPool jurorPool) {
@@ -979,5 +1013,13 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         int numberRequested = unboxIntegerValues(requested);
 
         return numberRequested - poolMemberCount;
+    }
+
+    private void checkDobPresent(String jurorNumber, JurorPool jurorPool) {
+        //check if there is a DOB for juror as status could become responded and police check will be made
+        if (jurorPool.getJuror().getDateOfBirth() == null) {
+            throw new MojException.BusinessRuleViolation("Date of birth is missing for juror number: "
+                + jurorNumber, MojException.BusinessRuleViolation.ErrorCode.JUROR_DATE_OF_BIRTH_REQUIRED);
+        }
     }
 }
