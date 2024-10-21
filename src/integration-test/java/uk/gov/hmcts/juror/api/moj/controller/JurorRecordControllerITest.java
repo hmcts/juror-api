@@ -894,7 +894,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             .isEqualTo("Responded");
         assertThat(jurorDetails.getCommonDetails().getCourtName())
             .as("Expect the Juror record to be in Chichester Crown Court")
-            .isEqualTo("THE CROWN COURT AT CHICHESTER");
+            .isEqualTo("LEWES SITTING AT CHICHESTER");
         assertThat(thirdParty.getThirdPartyFName())
             .as("Expect the third party first name to be TPFIRSTNAME")
             .isEqualTo("TPFIRSTNAME");
