@@ -14,11 +14,12 @@ DECLARE
 BEGIN
     p_print_msg := NULL; -- reset
 
-    CREATE TEMPORARY TABLE IF NOT EXISTS deleted_financial_audit (financial_audit_id INTEGER);
+    CREATE TEMPORARY TABLE IF NOT EXISTS deleted_financial_audit (financial_audit_id INTEGER, loc_code VARCHAR(3));
 
     <<Deletes>>
 	-- Perform the deletion
 	BEGIN
+
 		-- Juror child records
 		DELETE FROM juror_mod.bulk_print_data bpd WHERE bpd.juror_no = p_juror_number;
 		-- check if timeout has elapsed - if so exit loop
@@ -42,11 +43,11 @@ BEGIN
 			DELETE
 			FROM juror_mod.financial_audit_details_appearances fada
 			using juror_mod.financial_audit_details fad
-			where fad.id = fada.financial_audit_id and fad.juror_number = p_juror_number
-			RETURNING fada.financial_audit_id
+			where fad.id = fada.financial_audit_id and fad.juror_number = p_juror_number and fada.loc_code = fad.loc_code
+			RETURNING fada.financial_audit_id, fada.loc_code
 		)
-		INSERT INTO deleted_financial_audit (financial_audit_id)
-		SELECT d.financial_audit_id
+		INSERT INTO deleted_financial_audit (financial_audit_id, loc_code)
+		SELECT d.financial_audit_id, d.loc_code
 		FROM deleted d;
 	   -- check if timeout has elapsed - if so exit loop
 	    SELECT juror_mod.check_time_expired(p_start_time_int,p_max_timeout) INTO v_timed_out;
@@ -54,15 +55,7 @@ BEGIN
 			p_print_msg := 'ERROR:-> TIMED OUT';
 			EXIT Deletes;
 		END IF;
-
-
-	   -- check if timeout has elapsed - if so exit loop
-	    SELECT juror_mod.check_time_expired(p_start_time_int,p_max_timeout) INTO v_timed_out;
-		IF v_timed_out THEN
-			p_print_msg := 'ERROR:-> TIMED OUT';
-			EXIT Deletes;
-		END IF;
-
+		
 
 		DELETE FROM juror_mod.message m WHERE m.juror_number = p_juror_number;
 		-- check if timeout has elapsed - if so exit loop
@@ -81,21 +74,21 @@ BEGIN
 			EXIT Deletes;
 		END IF;
 
-	    -- must remove juror_mod.financial_audit_details before juror_mod.appearance
-		if exists (
-		   SELECT 1
-			   FROM information_schema.tables
-			   WHERE table_type = 'LOCAL TEMPORARY'
-			   AND table_name = 'deleted_financial_audit'
-			) then
-				-- clean up the financial audit details
-				DELETE
-				FROM juror_mod.financial_audit_details fda
-				USING deleted_financial_audit dfa
-				WHERE fda.id = dfa.financial_audit_id;
+    -- must remove juror_mod.financial_audit_details before juror_mod.appearance
+    if exists (
+       SELECT 1
+         FROM information_schema.tables
+         WHERE table_type = 'LOCAL TEMPORARY'
+         AND table_name = 'deleted_financial_audit'
+      ) then
+        -- clean up the financial audit details
+        DELETE
+        FROM juror_mod.financial_audit_details fad
+        USING deleted_financial_audit dfa
+        WHERE fad.id = dfa.financial_audit_id and fad.loc_code = dfa.loc_code and juror_number = p_juror_number;
 
-				drop table deleted_financial_audit;
-		end if;
+        drop table deleted_financial_audit;
+    end if;
 
 		-- check if timeout has elapsed - if so exit loop
 	    SELECT juror_mod.check_time_expired(p_start_time_int,p_max_timeout) INTO v_timed_out;
@@ -104,29 +97,29 @@ BEGIN
 			EXIT Deletes;
 		END IF;
 
-        DELETE FROM juror_mod.bureau_snapshot bss WHERE bss.juror_number = p_juror_number;
-        -- check if timeout has elapsed - if so exit loop
-        SELECT juror_mod.check_time_expired(p_start_time_int,p_max_timeout) INTO v_timed_out;
-        IF v_timed_out THEN
-            p_print_msg := 'ERROR:-> TIMED OUT';
-            EXIT Deletes;
-        END IF;
+    DELETE FROM juror_mod.bureau_snapshot bss WHERE bss.juror_number = p_juror_number;
+    -- check if timeout has elapsed - if so exit loop
+    SELECT juror_mod.check_time_expired(p_start_time_int,p_max_timeout) INTO v_timed_out;
+    IF v_timed_out THEN
+        p_print_msg := 'ERROR:-> TIMED OUT';
+        EXIT Deletes;
+    END IF;
 
-        DELETE FROM juror_mod.juror_third_party tp WHERE tp.juror_number = p_juror_number;
-        -- check if timeout has elapsed - if so exit loop
-        SELECT juror_mod.check_time_expired(p_start_time_int,p_max_timeout) INTO v_timed_out;
-        IF v_timed_out THEN
-            p_print_msg := 'ERROR:-> TIMED OUT';
-            EXIT Deletes;
-        END IF;
+    DELETE FROM juror_mod.juror_third_party tp WHERE tp.juror_number = p_juror_number;
+    -- check if timeout has elapsed - if so exit loop
+    SELECT juror_mod.check_time_expired(p_start_time_int,p_max_timeout) INTO v_timed_out;
+    IF v_timed_out THEN
+        p_print_msg := 'ERROR:-> TIMED OUT';
+        EXIT Deletes;
+    END IF;
 
-        DELETE FROM juror_mod.juror_third_party_audit tpa WHERE tpa.juror_number = p_juror_number;
-        -- check if timeout has elapsed - if so exit loop
-        SELECT juror_mod.check_time_expired(p_start_time_int,p_max_timeout) INTO v_timed_out;
-        IF v_timed_out THEN
-            p_print_msg := 'ERROR:-> TIMED OUT';
-            EXIT Deletes;
-        END IF;
+    DELETE FROM juror_mod.juror_third_party_audit tpa WHERE tpa.juror_number = p_juror_number;
+    -- check if timeout has elapsed - if so exit loop
+    SELECT juror_mod.check_time_expired(p_start_time_int,p_max_timeout) INTO v_timed_out;
+    IF v_timed_out THEN
+        p_print_msg := 'ERROR:-> TIMED OUT';
+        EXIT Deletes;
+    END IF;
 
 		DELETE FROM juror_mod.appearance a WHERE a.juror_number = p_juror_number;
 		-- check if timeout has elapsed - if so exit loop
