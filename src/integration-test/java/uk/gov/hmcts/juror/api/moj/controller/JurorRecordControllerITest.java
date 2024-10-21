@@ -894,7 +894,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             .isEqualTo("Responded");
         assertThat(jurorDetails.getCommonDetails().getCourtName())
             .as("Expect the Juror record to be in Chichester Crown Court")
-            .isEqualTo("THE CROWN COURT AT CHICHESTER");
+            .isEqualTo("LEWES SITTING AT CHICHESTER");
         assertThat(thirdParty.getThirdPartyFName())
             .as("Expect the third party first name to be TPFIRSTNAME")
             .isEqualTo("TPFIRSTNAME");
@@ -952,7 +952,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             .isEqualTo("Responded");
         assertThat(jurorDetails.getCommonDetails().getCourtName())
             .as("Expect the Juror record to be in Chichester Crown Court")
-            .isEqualTo("THE CROWN COURT AT CHICHESTER");
+            .isEqualTo("LEWES SITTING AT CHICHESTER");
         assertThat(jurorDetails.getThirdParty())
             .as("Expect the Juror third party details to be null")
             .isEqualTo(null);
@@ -3378,6 +3378,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertThat(jurorAttendanceDetailsResponseDto.getData().size()).isEqualTo(5);
 
             assertThat(jurorAttendanceDetailsResponseDto.getAttendances()).isEqualTo(3);
+            assertThat(jurorAttendanceDetailsResponseDto.isHasAppearances()).isEqualTo(true);
             assertThat(jurorAttendanceDetailsResponseDto.getAbsences()).isEqualTo(1);
             assertThat(jurorAttendanceDetailsResponseDto.getNonAttendances()).isEqualTo(1);
             assertThat(jurorAttendanceDetailsResponseDto.getNextDate()).isEqualTo(LocalDate.now().minusDays(4));
