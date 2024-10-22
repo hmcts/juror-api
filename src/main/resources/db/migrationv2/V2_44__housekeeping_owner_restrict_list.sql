@@ -1,4 +1,3 @@
-@@ -0,0 +1,107 @@
 -- This list is used to exclude owners from housekeeping.
 -- set the value to 'YES' to include in housekeeping, 'NO' to exclude from housekeeping
 -- this script sets loc code 428 (Battersea) to be included in housekeeping for the first run
