@@ -15,19 +15,19 @@ BEGIN
 		-- child records
 		WITH aged_trials AS
 		(
-			SELECT t.trial_number
+			SELECT t.trial_number, t.loc_code
 			FROM juror_mod.trial t
 			WHERE t.trial_end_date < CURRENT_DATE - p_max_threshold
 		), excluded_trials AS
     (
       SELECT jt.trial_number
       FROM juror_mod.juror_trial jt
-      INNER JOIN aged_trials agt ON jt.trial_number = agt.trial_number
+      INNER JOIN aged_trials agt ON jt.trial_number = agt.trial_number and jt.loc_code = agt.loc_code
     )
 		DELETE
 		FROM juror_mod.accused a
 		USING aged_trials agt
-		WHERE a.trial_no = agt.trial_number and agt.trial_number not in (select et.trial_number from excluded_trials et);
+		WHERE a.trial_no = agt.trial_number and a.loc_code = agt.loc_code and agt.trial_number not in (select et.trial_number from excluded_trials et);
 
 		-- check if timeout has elapsed - if so exit the process
 	    SELECT juror_mod.check_time_expired(p_start_time_int,p_max_timeout) INTO v_timed_out;
@@ -39,19 +39,19 @@ BEGIN
 		-- delete the parent record where there is no reference to it from juror_trial
 		WITH aged_trials AS
 		(
-			SELECT t.trial_number
+			SELECT t.trial_number, t.loc_code
 			FROM juror_mod.trial t
 			WHERE t.trial_end_date < CURRENT_DATE - p_max_threshold
 		), excluded_trials AS
     (
       SELECT jt.trial_number
       FROM juror_mod.juror_trial jt
-      INNER JOIN aged_trials agt ON jt.trial_number = agt.trial_number
+      INNER JOIN aged_trials agt ON jt.trial_number = agt.trial_number and jt.loc_code = agt.loc_code
     )
 		DELETE
 		FROM juror_mod.trial t
 		USING aged_trials agt
-		WHERE t.trial_no = agt.trial_number and agt.trial_number not in (select et.trial_number from excluded_trials et);
+		WHERE t.trial_no = agt.trial_number and t.loc_code = agt.loc_code and agt.trial_number not in (select et.trial_number from excluded_trials et);
 
 		-- check if timeout has elapsed - if so exit the process
 	    SELECT juror_mod.check_time_expired(p_start_time_int,p_max_timeout) INTO v_timed_out;

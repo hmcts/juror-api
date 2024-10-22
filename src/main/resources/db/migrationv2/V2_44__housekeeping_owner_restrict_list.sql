@@ -1,107 +1,80 @@
--- This list is used to exclude owners from housekeeping.
--- set the value to 'YES' to include in housekeeping, 'NO' to exclude from housekeeping
--- this script sets loc code 768 to be included in housekeeping for the first run
-
-insert into juror_mod.hk_owner_restrict values (472,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (476,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (459,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (478,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (443,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (470,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (626,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (447,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (449,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (404,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (471,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (446,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (460,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (453,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (437,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (467,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (421,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (429,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (462,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (454,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (426,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (769,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (455,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (427,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (403,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (408,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (765,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (475,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (442,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (432,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (796,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (420,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (406,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (425,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (799,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (414,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (431,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (419,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (772,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (433,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (448,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (469,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (435,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (473,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (424,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (410,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (762,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (468,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (401,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (774,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (474,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (430,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (465,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (412,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (445,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (480,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (416,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (436,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (452,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (440,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (761,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (477,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (0,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (463,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (422,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (795,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (794,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (444,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (451,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (457,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (754,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (768,'including in housekeeping','YES', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (756,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (797,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (464,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (450,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (458,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (755,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (758,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (428,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (751,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (400,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (461,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (798,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (127,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (777,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (407,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (479,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (409,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (767,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (418,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (423,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (417,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (415,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (439,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (434,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (411,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (750,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (441,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (402,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (466,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (456,'excluding from housekeeping','NO', current_timestamp);
-insert into juror_mod.hk_owner_restrict values (413,'excluding from housekeeping','NO', current_timestamp);
+INSERT INTO juror_mod.hk_owner_restrict (id,description,value,last_updated) VALUES
+	(459,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(407,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(477,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(409,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(416,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(415,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(465,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(478,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(474,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(439,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(404,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(408,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(440,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(458,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(401,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(433,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(411,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(430,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(421,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(472,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(424,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(422,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(442,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(420,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(428,'including from housekeeping','YES','2024-10-21 17:50:24'),
+	(455,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(480,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(450,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(444,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(468,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(463,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(410,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(423,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(471,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(429,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(470,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(402,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(451,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(466,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(449,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(453,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(473,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(406,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(435,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(434,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(457,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(437,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(419,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(467,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(452,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(412,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(799,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(443,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(418,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(414,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(469,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(476,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(413,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(400,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(425,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(417,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(626,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(456,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(454,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(448,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(432,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(447,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(426,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(461,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(431,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(769,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(403,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(460,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(446,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(436,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(445,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(475,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(479,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
+	(427,'excluding from housekeeping','NO','2024-10-21 17:50:24');
