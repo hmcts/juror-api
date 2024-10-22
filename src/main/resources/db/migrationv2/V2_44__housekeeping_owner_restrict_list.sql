@@ -1,3 +1,8 @@
+@@ -0,0 +1,107 @@
+-- This list is used to exclude owners from housekeeping.
+-- set the value to 'YES' to include in housekeeping, 'NO' to exclude from housekeeping
+-- this script sets loc code 428 (Battersea) to be included in housekeeping for the first run
+
 INSERT INTO juror_mod.hk_owner_restrict (id,description,value,last_updated) VALUES
 	(459,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
 	(407,'excluding from housekeeping','NO','2024-10-21 17:50:24'),
