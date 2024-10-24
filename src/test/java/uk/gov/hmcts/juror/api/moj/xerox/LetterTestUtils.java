@@ -134,7 +134,7 @@ public final class LetterTestUtils {
         courtLocation.setCourtAttendTime(LocalTime.of(10,0));
         courtLocation.setLocCode("457");
         courtLocation.setInsertIndicators("TWO WEEKS");
-        courtLocation.setLocCourtName("SWANSEA CROWN COURT");
+        courtLocation.setLocCourtName("THE CROWN COURT AT SWANSEA");
         courtLocation.setName("SWANSEA");
         courtLocation.setAddress1("THE LAW COURTS");
         courtLocation.setAddress2("ST HELENS ROAD");

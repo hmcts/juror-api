@@ -22,6 +22,8 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
+import uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDeferralsService;
+import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
@@ -56,6 +58,7 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
     private final JurorPoolService jurorPoolService;
     private final JurorStatusRepository jurorStatusRepository;
     private final JurorResponseService jurorResponseService;
+    private final JurorAppearanceService jurorAppearanceService;
 
     @Override
     @Transactional
@@ -63,9 +66,12 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
 
         final String jurorNumber = deferralRequestDto.getJurorNumber();
         final String owner = payload.getOwner();
+        log.info("Begin process for response to deferral request for juror {}", jurorNumber);
 
         JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, owner);
+
+        ManageDeferralsService.checkIfJurorHasAttendances(jurorAppearanceService, jurorNumber);
 
         checkExcusalCodeIsValid(deferralRequestDto.getDeferralReason());
         Juror juror = jurorPool.getJuror();
