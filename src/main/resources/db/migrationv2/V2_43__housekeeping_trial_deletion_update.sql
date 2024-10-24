@@ -18,7 +18,7 @@ BEGIN
 		(
 			SELECT t.trial_number, t.loc_code
 			FROM juror_mod.trial t
-			WHERE t.trial_end_date < CURRENT_DATE - 2557
+			WHERE t.trial_end_date < CURRENT_DATE - p_max_threshold
 		), excluded_trials AS
     (
       SELECT jt.trial_number, jt.loc_code
