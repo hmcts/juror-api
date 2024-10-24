@@ -53,7 +53,7 @@ BEGIN
 		FROM juror_mod.trial t
 		USING aged_trials agt
 		WHERE t.trial_number = agt.trial_number and t.loc_code = agt.loc_code
-		and agt.trial_number not in (select et.trial_number from excluded_trials et where et.loc_code = t.loc_code););
+		and agt.trial_number not in (select et.trial_number from excluded_trials et where et.loc_code = t.loc_code);
 
 		-- check if timeout has elapsed - if so exit the process
 	    SELECT juror_mod.check_time_expired(p_start_time_int,p_max_timeout) INTO v_timed_out;
