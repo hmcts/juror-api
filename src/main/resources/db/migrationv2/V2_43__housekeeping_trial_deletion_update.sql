@@ -13,22 +13,23 @@ BEGIN
 	<<Deletes>>
 	BEGIN
 		-- child records
-		WITH aged_trials AS
+
+	WITH aged_trials AS
 		(
 			SELECT t.trial_number, t.loc_code
 			FROM juror_mod.trial t
-			WHERE t.trial_end_date < CURRENT_DATE - p_max_threshold
+			WHERE t.trial_end_date < CURRENT_DATE - 2557
 		), excluded_trials AS
     (
       SELECT jt.trial_number, jt.loc_code
       FROM juror_mod.juror_trial jt
       INNER JOIN aged_trials agt ON jt.trial_number = agt.trial_number and jt.loc_code = agt.loc_code
     )
-		DELETE
+		delete
 		FROM juror_mod.accused a
 		USING aged_trials agt
-		WHERE a.trial_number = agt.trial_number and a.loc_code = agt.loc_code
-		and agt.trial_number not in (select et.trial_number from excluded_trials et where et.loc_code = t.loc_code);
+		WHERE a.trial_no = agt.trial_number and a.owner = agt.loc_code
+		and agt.trial_number not in (select et.trial_number from excluded_trials et where et.loc_code = a.owner);
 
 		-- check if timeout has elapsed - if so exit the process
 	    SELECT juror_mod.check_time_expired(p_start_time_int,p_max_timeout) INTO v_timed_out;
