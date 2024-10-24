@@ -62,8 +62,8 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
     public List<JurorAppearanceResponseDto.JurorAppearanceResponseData> getAppearanceRecords(
         String locCode, LocalDate date, String jurorNumber, JurorStatusGroup group) {
 
-        List<Integer> jurorStatuses = group.getStatusList();
-        JPAQuery<Tuple> query = sqlFetchAppearanceRecords(locCode, date, jurorStatuses,
+        //List<Integer> jurorStatuses = group.getStatusList();
+        JPAQuery<Tuple> query = sqlFetchAppearanceRecords(locCode, date,
             group == JurorStatusGroup.IN_WAITING);
 
 
@@ -82,11 +82,11 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
         final RetrieveAttendanceDetailsDto.CommonData commonData = request.getCommonData();
 
         // depending on what is to be updated, filter the query based on juror status
-        List<Integer> jurorStatuses = sqlFilterQueryJurorStatus(commonData.getTag(), request.isJurorInWaiting());
+        //List<Integer> jurorStatuses = sqlFilterQueryJurorStatus(commonData.getTag(), request.isJurorInWaiting());
 
         // start building the query
         JPAQuery<Tuple> query = sqlFetchAppearanceRecords(commonData.getLocationCode(), commonData.getAttendanceDate(),
-            jurorStatuses, request.isJurorInWaiting());
+            request.isJurorInWaiting());
 
         if (commonData.getTag().equals(RetrieveAttendanceDetailsTag.JUROR_NUMBER)) {
             query = query.where(APPEARANCE.jurorNumber.in(request.getJuror()));
@@ -143,7 +143,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
         }
     }
 
-    private JPAQuery<Tuple> sqlFetchAppearanceRecords(String locCode, LocalDate date, List<Integer> jurorStatuses,
+    private JPAQuery<Tuple> sqlFetchAppearanceRecords(String locCode, LocalDate date,
                                                       boolean excludeJuryAttendances) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
 
@@ -165,13 +165,18 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .join(APPEARANCE)
             .on(JUROR.jurorNumber.eq(APPEARANCE.jurorNumber)
                 .and(APPEARANCE.courtLocation.eq(JUROR_POOL.pool.courtLocation)))
+            .leftJoin(PANEL)
+            .on(APPEARANCE.jurorNumber.eq(PANEL.juror.jurorNumber)
+                .and(APPEARANCE.trialNumber.eq(PANEL.trial.trialNumber)))
             .where(APPEARANCE.courtLocation.locCode.eq(locCode))
             .where(APPEARANCE.attendanceDate.eq(date))
-            .where(JUROR_POOL.status.status.in(jurorStatuses))
             .where(JUROR_POOL.isActive.isTrue());
         if (excludeJuryAttendances) {
             query.where(APPEARANCE.attendanceAuditNumber.isNull()
                 .or(APPEARANCE.attendanceAuditNumber.startsWith("J").not()));
+            query.where(APPEARANCE.trialNumber.isNull()
+                            .or(APPEARANCE.trialNumber.isNotNull()
+                                    .and(PANEL.empanelledDate.isNull().or(PANEL.empanelledDate.after(date)))));
         }
         return query;
     }
