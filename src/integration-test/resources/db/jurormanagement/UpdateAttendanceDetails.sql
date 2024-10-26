@@ -1,4 +1,17 @@
 alter sequence attendance_audit_seq restart with 10000000;
+ALTER SEQUENCE juror_mod.judge_id_seq
+RESTART WITH 1;
+ALTER SEQUENCE juror_mod.courtroom_id_seq
+RESTART WITH 1;
+
+insert into juror_mod.judge (owner, code, description) values
+('415', '9999', 'judge jose');
+
+insert into juror_mod.courtroom (loc_code, room_number, description) values
+('415', '99995', 'big room');
+
+insert into juror_mod.trial (trial_number, loc_code, description, judge, trial_type, trial_start_date, anonymous,courtroom)
+values ('T10000000', '415', 'TEST DEFENDANT', 1, 'CIV', current_date - 2, false, 1);
 
 --JUROR_MOD.POOL
 insert into juror_mod.pool (owner, pool_no, return_date, total_no_required, no_requested, pool_type,loc_code, new_request, last_update) values
@@ -30,11 +43,15 @@ insert into juror_mod.juror_pool (owner, juror_number, pool_number, next_date, d
 ('415', '999999999', '415230101', current_date - interval '2 days', NULL, 2, TRUE, FALSE);
 
 --JUROR_MOD.APPEARANCE
-insert into juror_mod.appearance (attendance_date,juror_number,loc_code,time_in,time_out,non_attendance,appearance_stage,attendance_type) values
-(current_date - interval '1 day','111111111','415','09:31:00',null,false,'CHECKED_IN','FULL_DAY'),
-(current_date - interval '2 days','111111111','415','09:30:00',null,false,'CHECKED_IN','FULL_DAY'),
-(current_date - interval '2 days','222222222','415','09:30:00',null,false,'CHECKED_IN','FULL_DAY'),
-(current_date - interval '2 days','333333333','415','09:30:00',null,false,'CHECKED_IN','FULL_DAY'),
-(current_date - interval '2 days','555555555','415','06:30:00',null,false,'CHECKED_IN','FULL_DAY'),
-(current_date - interval '2 days','666666666','415','09:30:00',null,false,'CHECKED_IN','FULL_DAY'),
-(current_date - interval '2 days','777777777','415','15:53','12:30',false,'CHECKED_IN','FULL_DAY');
+insert into juror_mod.appearance (attendance_date,juror_number,loc_code,time_in,time_out,non_attendance,appearance_stage,attendance_type, trial_number) values
+(current_date - interval '1 day','111111111','415','09:31:00',null,false,'CHECKED_IN','FULL_DAY',null),
+(current_date - interval '2 days','111111111','415','09:30:00',null,false,'CHECKED_IN','FULL_DAY',null),
+(current_date - interval '2 days','222222222','415','09:30:00',null,false,'CHECKED_IN','FULL_DAY','T10000000'),
+(current_date - interval '2 days','333333333','415','09:30:00',null,false,'CHECKED_IN','FULL_DAY','T10000000'),
+(current_date - interval '2 days','555555555','415','06:30:00',null,false,'CHECKED_IN','FULL_DAY',null),
+(current_date - interval '2 days','666666666','415','09:30:00',null,false,'CHECKED_IN','FULL_DAY',null),
+(current_date - interval '2 days','777777777','415','12:30','15:50',false,'CHECKED_IN','FULL_DAY',null);
+
+INSERT INTO juror_mod.juror_trial (loc_code, juror_number, trial_number, rand_number, date_selected, "result",completed, empanelled_date) values
+('415', '222222222', 'T10000000', 10,current_date - interval '2 days' + time '09:00:00', 'J', null, current_date - interval '2 days'),
+('415', '333333333', 'T10000000', 10,current_date - interval '2 days' + time '09:00:00', null, null, null);

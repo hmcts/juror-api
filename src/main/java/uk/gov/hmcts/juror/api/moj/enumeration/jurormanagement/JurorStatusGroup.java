@@ -12,7 +12,7 @@ public enum JurorStatusGroup {
     IN_WAITING(IJurorStatus.getAllExcluding(IJurorStatus.JUROR)),
     ON_TRIAL(List.of(IJurorStatus.JUROR)),
     COMPLETED(List.of(IJurorStatus.COMPLETED)),
-
+    PANELLED(List.of(IJurorStatus.PANEL)),
 
     ALL(IJurorStatus.getAllExcluding());
 
