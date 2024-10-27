@@ -292,6 +292,9 @@ public class Juror extends Address implements Serializable {
     @OneToMany(mappedBy = "juror", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     private Set<JurorPool> associatedPools;
 
+    @Column(name = "lock_time")
+    @NotAudited
+    private LocalDateTime lockTime;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "juror_number", referencedColumnName = "juror_number")
