@@ -20,6 +20,8 @@ import uk.gov.hmcts.juror.api.moj.service.JurorServiceModImpl;
 import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseServiceImpl;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Collections;
 
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.WHITESPACE_MATCHER;
@@ -34,6 +36,8 @@ public class PublicAuthenticationServiceImpl implements PublicAuthenticationServ
     private static final String JUROR_ROLE = "juror";
     private static final String JUROR_ALREADY_RESPONDED = "Juror already responded";
     private static final Integer MAX_FAILED_LOGIN_ATTEMPTS = 3;
+
+    private static final long LOCK_TIME_DURATION = 30 * 60 * 1000; // 1 minutes
     private final JurorPoolRepository jurorPoolRepository;
     private final JurorRepository jurorRepository;
     private final JurorServiceModImpl jurorServiceModImpl;
@@ -64,8 +68,13 @@ public class PublicAuthenticationServiceImpl implements PublicAuthenticationServ
                 });
 
             if (juror.isLocked()) {
-                log.debug("Account locked: {}", credentials.getJurorNumber());
-                throw new JurorAccountBlockedException("Juror account is locked");
+                log.info("Checking account can be unlocked for juror {}",credentials.getJurorNumber());
+                if (unlockWhenTimePassed(juror)) {
+                    log.info("Juror account unlocked for {}", credentials.getJurorNumber());
+                } else {
+                    log.debug("Account locked: {}", credentials.getJurorNumber());
+                    throw new JurorAccountBlockedException("Juror account is locked");
+                }
             } else if (!isValidCredentials(juror, credentials)) {
                 log.debug("Credentials do not match");
                 saveFailedLoginAttempts(juror);
@@ -148,6 +157,20 @@ public class PublicAuthenticationServiceImpl implements PublicAuthenticationServ
         juror.setLoginAttempts(0);
         jurorRepository.save(juror);
         log.debug("Juror {} login attempts cleared.", juror.getJurorNumber());
+    }
+
+    public boolean unlockWhenTimePassed(Juror juror) {
+        if (juror.isLocked()) {
+            long lockTime = juror.getLockTime().toInstant(ZoneOffset.UTC).toEpochMilli();
+            long currentTime = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli();
+            if (currentTime - lockTime >= LOCK_TIME_DURATION){
+                juror.setLocked(false);
+                juror.setLockTime(null);
+                jurorRepository.save(juror);
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
