@@ -128,6 +128,7 @@ public class PublicAuthenticationServiceImpl implements PublicAuthenticationServ
         if (loginAttempts >= MAX_FAILED_LOGIN_ATTEMPTS) {
             log.debug("Locking juror for reaching 3 failed attempts {}", juror.getJurorNumber());
             juror.setLocked(true);
+            juror.setLockTime(LocalDateTime.now());
 
             if (log.isTraceEnabled()) {
                 log.trace("Locking {}", juror.getJurorNumber());

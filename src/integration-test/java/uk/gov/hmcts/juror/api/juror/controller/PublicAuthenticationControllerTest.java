@@ -362,7 +362,7 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
             });
 
         assertThat(exchangeLocked).isNotNull();
-        assertThat(exchangeLocked.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(exchangeLocked.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
         assertThat(exchangeLocked.getBody().getStatus()).isNotEqualTo(HttpStatus.OK.value())
             .isEqualTo(exchangeLocked.getStatusCode().value());
         assertThat(exchangeLocked.getBody().getException()).isEqualTo(
