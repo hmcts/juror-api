@@ -553,9 +553,9 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             AttendanceDetailsResponse.Summary summary = response.getBody().getSummary();
             assertThat(summary)
-                .as("Expect 2 jurors to be checked in")
+                .as("Expect 4 jurors to be checked in")
                 .extracting(AttendanceDetailsResponse.Summary::getCheckedIn)
-                .isEqualTo(3L);
+                .isEqualTo(4L);
 
             assertThat(summary)
                 .as("Expect 2 jurors to be absent")
@@ -619,6 +619,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             // verify attendance details have been updated
             List<String> jurors = new ArrayList<>();
+            jurors.add(JUROR1); // checked-out (updated)
+            jurors.add(JUROR5); // checked-out (updated)
             jurors.add(JUROR6); // checked-out (updated)
             jurors.add(JUROR7); // checked-out (updated)
             jurors.add(JUROR3); // panelled (no change)
@@ -633,22 +635,24 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                 .containsExactlyInAnyOrder(
                     LocalTime.of(9, 30),
                     LocalTime.of(9, 30),
+                    LocalTime.of(6, 30), // JUROR5
                     LocalTime.of(9, 30),
-                    LocalTime.of(15, 53));
+                    LocalTime.of(12, 30)); // JUROR3
 
-            // check-out time should only have been updated JUROR2, JUROR6, JUROR7
+            // check-out time should have been updated for this scenario except for JUROR3
             assertThat(retrievedDetails)
                 .extracting(AttendanceDetailsResponse.Details::getCheckOutTime)
                 .containsExactlyInAnyOrder(
                     LocalTime.of(17, 51),
                     LocalTime.of(17, 51),
                     LocalTime.of(17, 51),
-                    null);
+                    LocalTime.of(17, 51),
+                    null); // JUROR3
 
-            // app-stage should only have been updated for JUROR2, JUROR6, JUROR7
+            // Juror 3 should not have been updated
             assertThat(retrievedDetails)
                 .extracting(AttendanceDetailsResponse.Details::getAppearanceStage)
-                .containsExactlyInAnyOrder(CHECKED_OUT, CHECKED_OUT, CHECKED_OUT, CHECKED_IN);
+                .containsExactlyInAnyOrder(CHECKED_OUT, CHECKED_OUT, CHECKED_OUT, CHECKED_OUT, CHECKED_IN);
 
             for (Appearance appearance : appearanceRepository.findAll()) {
                 assertThat(appearance.getSatOnJury()).isNull();
@@ -954,7 +958,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             // check-out time
             assertThat(retrievedDetails)
                 .extracting(AttendanceDetailsResponse.Details::getCheckOutTime)
-                .containsExactlyInAnyOrder(null, null, null, null, null, LocalTime.of(12, 30));
+                .containsExactlyInAnyOrder(null, null, null, null, null, LocalTime.of(15, 50));
 
             // app-stage should only have been updated for JUROR2, JUROR6, JUROR7
             assertThat(retrievedDetails)

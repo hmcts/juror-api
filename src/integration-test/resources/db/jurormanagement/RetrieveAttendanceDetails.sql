@@ -1,3 +1,18 @@
+alter sequence attendance_audit_seq restart with 10000000;
+ALTER SEQUENCE juror_mod.judge_id_seq
+RESTART WITH 1;
+ALTER SEQUENCE juror_mod.courtroom_id_seq
+RESTART WITH 1;
+
+insert into juror_mod.judge (owner, code, description) values
+('415', '9999', 'judge jose');
+
+insert into juror_mod.courtroom (loc_code, room_number, description) values
+('415', '99995', 'big room');
+
+insert into juror_mod.trial (trial_number, loc_code, description, judge, trial_type, trial_start_date, anonymous,courtroom)
+values ('T10000000', '415', 'TEST DEFENDANT', 1, 'CIV', current_date - 2, false, 1);
+
 --JUROR_MOD.POOL
 INSERT INTO JUROR_MOD.POOL (OWNER, POOL_NO, RETURN_DATE, TOTAL_NO_REQUIRED, NO_REQUESTED, POOL_TYPE,LOC_CODE, NEW_REQUEST, LAST_UPDATE)
 VALUES ('415', '415230101', current_date - interval '2 weeks', 10, 10, 'CRO','415', 'N', TIMESTAMP'2022-02-02 09:22:09.0');
@@ -79,13 +94,17 @@ INSERT INTO juror_mod.appearance (attendance_date,juror_number,loc_code,time_in,
 VALUES (current_date - interval '2 days','333333333','415','09:30:00',null,false,'CHECKED_IN');
 
 INSERT INTO juror_mod.appearance (attendance_date,juror_number,loc_code,time_in,time_out,non_attendance)
-VALUES (current_date - interval '2 days','555555555','415',null,null,false);
+VALUES (current_date - interval '2 days','555555555','415','09:30:00',null,false);
 
 INSERT INTO juror_mod.appearance (attendance_date,juror_number,loc_code,time_in,time_out,non_attendance,appearance_stage)
 VALUES (current_date - interval '2 days','666666666','415','09:30:00',null,false,'CHECKED_IN');
 
 -- intentional rogue entry (time_out without time_in)
-INSERT INTO juror_mod. appearance (attendance_date,juror_number,loc_code,time_in,time_out,non_attendance,appearance_stage)
+INSERT INTO juror_mod.appearance (attendance_date,juror_number,loc_code,time_in,time_out,non_attendance,appearance_stage)
 VALUES (current_date - interval '2 days','777777777','415',null,'12:30',false,'CHECKED_OUT');
 -- Note: do not include juror_numbers 888888888, 999999999 in the appearance table - these are set up in juror_pool
 -- table to test absent jurors
+
+INSERT INTO juror_mod.juror_trial (loc_code, juror_number, trial_number, rand_number, date_selected, "result",completed, empanelled_date) values
+('415', '222222222', 'T10000000', 10,current_date - interval '2 days' + time '09:00:00', 'J', null, current_date - interval '2 days'),
+('415', '333333333', 'T10000000', 10,current_date - interval '2 days' + time '09:00:00', null, null, null);

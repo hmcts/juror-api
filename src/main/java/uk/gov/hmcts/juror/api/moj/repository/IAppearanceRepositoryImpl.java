@@ -7,7 +7,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
-import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
@@ -36,10 +35,8 @@ import uk.gov.hmcts.juror.api.moj.utils.PaginationUtil;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -85,7 +82,8 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
 
         if (commonData.getTag().equals(RetrieveAttendanceDetailsTag.PANELLED)) {
             statusGroup = JurorStatusGroup.PANELLED;
-        } else if (commonData.getTag().equals(RetrieveAttendanceDetailsTag.CONFIRM_ATTENDANCE)) {
+        } else if (commonData.getTag().equals(RetrieveAttendanceDetailsTag.CONFIRM_ATTENDANCE)
+            || request.isJurorInWaiting()) {
             statusGroup = JurorStatusGroup.IN_WAITING;
         } else {
             statusGroup = JurorStatusGroup.ALL;
@@ -177,7 +175,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
                                      .and(PANEL.dateSelected.before(date.atTime(23, 59)))));
         }
 
-        if(statusGroup == JurorStatusGroup.ON_TRIAL) {
+        if (statusGroup == JurorStatusGroup.ON_TRIAL) {
             query.where(APPEARANCE.trialNumber.isNotNull());
             query.where(PANEL.empanelledDate.isNotNull()
                             .and(APPEARANCE.trialNumber.eq(PANEL.trial.trialNumber))
