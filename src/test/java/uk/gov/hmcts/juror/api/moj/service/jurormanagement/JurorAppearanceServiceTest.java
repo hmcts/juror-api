@@ -3231,7 +3231,7 @@ class JurorAppearanceServiceTest {
         @DisplayName("Get unconfirmed jurors happy path")
         void unconfirmedJurorsHappy() {
             final String locationCode = "415";
-            final LocalDate attendanceDate = now().minusDays(1);
+            final LocalDate attendanceDate = now().minusDays(7);
 
             LocalTime checkInTime = LocalTime.of(9, 00);
             LocalTime checkOutTime = LocalTime.of(16, 00);

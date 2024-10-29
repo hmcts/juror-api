@@ -800,6 +800,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         @Test
         @DisplayName("PATCH Update attendance - check out all panelled jurors")
         @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql"})
+        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False Positive
         void updateAttendanceCheckOutAllPanelledJurors() {
             UpdateAttendanceDto request = buildUpdateAttendanceDto(null);
             request.getCommonData().setStatus(UpdateAttendanceStatus.CHECK_OUT_PANELLED);
