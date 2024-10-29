@@ -3230,10 +3230,8 @@ class JurorAppearanceServiceTest {
         @Test
         @DisplayName("Get unconfirmed jurors happy path")
         void unconfirmedJurorsHappy() {
-            String locationCode = "415";
-            LocalDate attendanceDate = now().minusDays(1);
-
-            when(appearanceRepository.isDayConfirmed(locationCode, attendanceDate)).thenReturn(true);
+            final String locationCode = "415";
+            final LocalDate attendanceDate = now().minusDays(7);
 
             LocalTime checkInTime = LocalTime.of(9, 00);
             LocalTime checkOutTime = LocalTime.of(16, 00);
@@ -3272,7 +3270,6 @@ class JurorAppearanceServiceTest {
             assertThat(jurors.get(1).getCheckInTime()).isEqualTo(checkInTime);
             assertThat(jurors.get(1).getCheckOutTime()).isEqualTo(checkOutTime);
 
-            verify(appearanceRepository, times(1)).isDayConfirmed(locationCode, attendanceDate);
             verify(appearanceRepository, times(1)).getUnconfirmedJurors(locationCode, attendanceDate);
 
         }
@@ -3283,15 +3280,12 @@ class JurorAppearanceServiceTest {
             String locationCode = "415";
             LocalDate attendanceDate = now().minusDays(1);
 
-            when(appearanceRepository.isDayConfirmed(locationCode, attendanceDate)).thenReturn(false);
-
             assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
                     jurorAppearanceService.retrieveUnconfirmedJurors(
                         locationCode, attendanceDate)).as("Day not confirmed")
                 .withMessageContaining("Attendance for location " + locationCode + " on date "
                     + attendanceDate + " is not confirmed");
 
-            verify(appearanceRepository, times(1)).isDayConfirmed(locationCode, attendanceDate);
             verify(appearanceRepository, never()).getUnconfirmedJurors(locationCode, attendanceDate);
         }
 
