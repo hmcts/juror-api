@@ -1282,8 +1282,9 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         //confirm user has access to location
         SecurityUtil.validateIsLocCode(locationCode);
 
-        // check if the day is not confirmed
-        if (!appearanceRepository.isDayConfirmed(locationCode, attendanceDate)) {
+        LocalDate today = LocalDate.now();
+        // check if the day is not confirmed, e.g. less than 7 days before today
+        if (today.minusDays(7).isBefore(attendanceDate)) {
             log.error("Attendance for location {} on date {} is not confirmed", locationCode, attendanceDate);
             // throw bad request exception
             throw new MojException.BadRequest("Attendance for location " + locationCode + " on date "

@@ -390,16 +390,6 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
     }
 
     @Override
-    public boolean isDayConfirmed(String locationCode, LocalDate attendanceDate) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-        return queryFactory.selectFrom(APPEARANCE)
-            .where(APPEARANCE.courtLocation.locCode.eq(locationCode))
-            .where(APPEARANCE.attendanceDate.eq(attendanceDate))
-            .where(APPEARANCE.appearanceConfirmed.eq(true))
-            .fetchCount() > 0;
-    }
-
-    @Override
     public List<Tuple> getUnconfirmedJurors(String locationCode, LocalDate attendanceDate) {
 
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);

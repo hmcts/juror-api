@@ -1867,7 +1867,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         @DisplayName("Retrieve unconfirmed jurors - happy path")
         void unconfirmedJurorsHappyPath() {
 
-            String attendanceDate = now().minusDays(2).toString();
+            String attendanceDate = now().minusDays(8).toString();
 
             ResponseEntity<UnconfirmedJurorResponseDto> response =
                 restTemplate.exchange(new RequestEntity<>(null, httpHeaders, GET,
@@ -1910,7 +1910,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         @DisplayName("Retrieve unconfirmed jurors - no unconfirmed jurors")
         void noUnconfirmedJurors() {
 
-            String attendanceDate = now().minusDays(3).toString();
+            String attendanceDate = now().minusDays(9).toString();
 
             ResponseEntity<UnconfirmedJurorResponseDto> response =
                 restTemplate.exchange(new RequestEntity<>(null, httpHeaders, GET,
