@@ -21,7 +21,7 @@ public final class XeroxConstants {
         {"APRIL", "Ebrill"},
         {"MAY", "Mai"},
         {"JUNE", "Mehefin"},
-        {"JULY", "Gorffenaf"},
+        {"JULY", "Gorffennaf"},
         {"AUGUST", "Awst"},
         {"SEPTEMBER", "Medi"},
         {"OCTOBER", "Hydref"},
