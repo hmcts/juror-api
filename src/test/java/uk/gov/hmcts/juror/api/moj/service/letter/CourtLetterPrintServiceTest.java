@@ -498,8 +498,8 @@ public class CourtLetterPrintServiceTest {
                         .as("Expect date to contain Mehefin")
                         .contains("Mehefin");
                     case JULY -> assertThat(dto.getDeferredToDate())
-                        .as("Expect date to contain Gorffenaf")
-                        .contains("Gorffenaf");
+                        .as("Expect date to contain Gorffennaf")
+                        .contains("Gorffennaf");
                     case AUGUST -> assertThat(dto.getDeferredToDate())
                         .as("Expect date to contain Awst")
                         .contains("Awst");

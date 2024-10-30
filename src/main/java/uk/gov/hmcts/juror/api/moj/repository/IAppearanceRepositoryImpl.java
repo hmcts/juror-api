@@ -166,8 +166,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             query.where(APPEARANCE.trialNumber.isNull()
                             .or(APPEARANCE.trialNumber.isNotNull()
                                     .and(APPEARANCE.trialNumber.eq(PANEL.trial.trialNumber))
-                                    .and(PANEL.empanelledDate.isNull().or(PANEL.empanelledDate.after(date))
-                                             .or(PANEL.returnDate.eq(date)))));
+                                    .and(PANEL.empanelledDate.isNull().or(PANEL.empanelledDate.after(date)))));
         }
 
         if (statusGroup == JurorStatusGroup.PANELLED) {
