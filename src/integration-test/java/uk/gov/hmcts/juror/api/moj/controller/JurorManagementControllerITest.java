@@ -2071,6 +2071,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
     @DisplayName("Jurors on Trial tests")
     class JurorsOnTrial {
 
+        public static final String CONFIRM_JURY_ATTENDANCE_URL = "/api/v1/moj/juror-management/confirm-jury-attendance";
+
         @Test
         @DisplayName("Get Jurors on Trials - happy path")
         @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/JurorsOnTrial.sql"})
@@ -2134,10 +2136,11 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         void confirmAttendanceHappy() {
 
             UpdateAttendanceDto request = buildUpdateAttendanceDto();
+            request.setTrialNumber("T10000001");
 
             ResponseEntity<Void> response =
                 restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH,
-                    URI.create("/api/v1/moj/juror-management/confirm-jury-attendance")), Void.class);
+                    URI.create(CONFIRM_JURY_ATTENDANCE_URL)), Void.class);
 
             assertThat(response.getStatusCode()).as("HTTP status OK expected")
                 .isEqualTo(OK);
@@ -2176,6 +2179,45 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                     && "J10123456".equalsIgnoreCase(jh.getOtherInformationRef()))).isTrue();
         }
 
+
+        @Test
+        @DisplayName("Confirm attendance for jurors on a trial - partial jurors")
+        @Sql({"/db/mod/truncate.sql",
+            "/db/administration/createJudges.sql",
+            "/db/administration/createCourtRooms.sql",
+            "/db/jurormanagement/ConfirmJuryAttendancePartiallyConfirmed.sql",
+            "/db/JurorExpenseControllerITest_expenseRates.sql"})
+        void confirmAttendancePartiallyConfirmed() {
+
+            UpdateAttendanceDto request = buildUpdateAttendanceDto();
+            request.setJuror(Collections.singletonList("333333333"));
+            request.setTrialNumber("T10000000");
+
+            ResponseEntity<Void> response =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH,
+                                                          URI.create(CONFIRM_JURY_ATTENDANCE_URL)), Void.class);
+
+            assertThat(response.getStatusCode()).as("HTTP status OK expected")
+                .isEqualTo(OK);
+
+            // verify remaining attendance record have been updated
+            Optional<Appearance> appearanceOpt = appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(
+                "415", "333333333", now().minusDays(2));
+            assertThat(appearanceOpt).isNotEmpty();
+            Appearance appearance = appearanceOpt.get();
+            assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));
+            assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 0));
+            assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
+            assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J10000012");
+            assertThat(appearance.getSatOnJury()).isTrue();
+            assertThat(appearance.isAppearanceConfirmed()).isTrue();
+
+            // verify juror history records have been created
+            assertThat(jurorHistoryRepository.findByJurorNumberOrderById("333333333")
+                           .stream().anyMatch(jh -> jh.getHistoryCode().equals(HistoryCodeMod.JURY_ATTENDANCE)
+                    && "J10000012".equalsIgnoreCase(jh.getOtherInformationRef()))).isTrue();
+        }
+
         @Test
         @DisplayName("Confirm attendance for jurors on a trial - Bureau no access")
         void confirmAttendanceBureauNoAccess() {
@@ -2184,7 +2226,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<Void> response =
                 restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH,
-                    URI.create("/api/v1/moj/juror-management/confirm-jury-attendance")), Void.class);
+                    URI.create(CONFIRM_JURY_ATTENDANCE_URL)), Void.class);
 
             assertThat(response.getStatusCode()).as("HTTP status Forbidden expected")
                 .isEqualTo(FORBIDDEN);
