@@ -318,12 +318,14 @@ public class PanelServiceImpl implements PanelService {
     }
 
     @Override
-    public List<PanelListDto> getPanelSummary(String trialNumber, String locCode) {
+    public List<PanelListDto> getPanelSummary(String trialNumber, String locCode, LocalDate date) {
         List<PanelListDto> dtoList = new ArrayList<>();
         List<Panel> panelList =
             panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, locCode);
         for (Panel panel : panelList) {
-            if (panel.getResult() == null || panel.getResult() == PanelResult.JUROR) {
+            if (panel.getResult() == null || panel.getResult() == PanelResult.JUROR
+                || (date != null && panel.getReturnDate() != null && panel.getReturnDate().isAfter(date)
+                && date.atTime(23,59).isAfter(panel.getDateSelected()))) {
                 dtoList.add(createPanelListDto(panel));
             }
         }

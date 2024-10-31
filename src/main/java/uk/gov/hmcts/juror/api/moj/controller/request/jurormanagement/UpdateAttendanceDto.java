@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -11,6 +12,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.UpdateAttendanceStatus;
 import uk.gov.hmcts.juror.api.validation.NumericString;
 
@@ -33,6 +35,11 @@ public class UpdateAttendanceDto {
     @JsonProperty("juror")
     @Schema(description = "List of (one or more) jurors to update attendance record of")
     private List<String> juror;
+
+    @JsonProperty("trial_number")
+    @Schema(description = "Trial number of the jurors that attendance is being updated for, where applicable")
+    @Length(max = 16)
+    private String trialNumber;
 
     @AllArgsConstructor
     @NoArgsConstructor
