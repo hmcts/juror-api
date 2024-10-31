@@ -588,9 +588,22 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         final String owner = SecurityUtil.getActiveOwner();
         final String locCode = request.getCommonData().getLocationCode();
 
-        // one attendance audit number applies to ALL jurors in this batch of attendances being confirmed
+        // see if there is an attendance record for the date to get the audit number
+        List<Appearance> appearances = appearanceRepository.findByLocCodeAndAttendanceDateAndTrialNumber(locCode,
+            request.getCommonData().getAttendanceDate(), request.getTrialNumber());
+
         final String juryAttendancePrefix = "J";
-        final String juryAttendanceNumber = getAttendanceAuditNumber(juryAttendancePrefix);
+        String juryAttendanceNumber;
+
+        if (!appearances.isEmpty()) {
+            // check if there is an attendance_audit_number already set and retrieve it
+            juryAttendanceNumber = appearances.stream()
+                .map(Appearance::getAttendanceAuditNumber)
+                .filter(ObjectUtils::isNotEmpty)
+                .findFirst().orElse(getAttendanceAuditNumber(juryAttendancePrefix));
+        } else {
+            juryAttendanceNumber = getAttendanceAuditNumber(juryAttendancePrefix);
+        }
 
         CourtLocation courtLocation =
             courtLocationRepository.findByLocCode(locCode)
