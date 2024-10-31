@@ -164,7 +164,7 @@ public class PublicAuthenticationServiceImpl implements PublicAuthenticationServ
         if (juror.isLocked()) {
             long lockTime = juror.getLockTime().toInstant(ZoneOffset.UTC).toEpochMilli();
             long currentTime = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli();
-            if (currentTime - lockTime >= LOCK_TIME_DURATION){
+            if (currentTime - lockTime >= LOCK_TIME_DURATION) {
                 juror.setLocked(false);
                 juror.setLockTime(null);
                 jurorRepository.save(juror);
