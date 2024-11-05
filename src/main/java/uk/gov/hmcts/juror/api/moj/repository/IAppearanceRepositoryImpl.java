@@ -163,11 +163,8 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
         if (statusGroup == JurorStatusGroup.IN_WAITING) {
             query.where(APPEARANCE.attendanceAuditNumber.isNull()
                 .or(APPEARANCE.attendanceAuditNumber.startsWith("J").not()));
-            query.where(APPEARANCE.trialNumber.isNull()
-                            .or(APPEARANCE.trialNumber.isNotNull()
-                                    .and(APPEARANCE.trialNumber.eq(PANEL.trial.trialNumber))
-                                    .and(PANEL.empanelledDate.isNull().or(PANEL.empanelledDate.after(date))
-                                             .or(PANEL.returnDate.eq(date)))));
+            query.where(PANEL.empanelledDate.isNull().or(PANEL.empanelledDate.after(date))
+                                    .or(PANEL.returnDate.loe(date)));
         }
 
         if (statusGroup == JurorStatusGroup.PANELLED) {
@@ -177,10 +174,15 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
         }
 
         if (statusGroup == JurorStatusGroup.ON_TRIAL) {
-            query.where(APPEARANCE.trialNumber.isNotNull());
-            query.where(PANEL.empanelledDate.isNotNull()
-                            .and(APPEARANCE.trialNumber.eq(PANEL.trial.trialNumber))
-                            .and(PANEL.empanelledDate.eq(date).or(PANEL.empanelledDate.before(date))));
+            query.where((APPEARANCE.trialNumber.isNotNull().and(APPEARANCE.trialNumber.eq(PANEL.trial.trialNumber)
+                                                                   .and(PANEL.empanelledDate.isNotNull()
+                                                                            .and(PANEL.empanelledDate.loe(date)
+                                                                                     .and(PANEL.returnDate.isNull()
+                                                                                              .or(PANEL.returnDate
+                                                                                                      .goe(date)))))))
+                .or(PANEL.empanelledDate.isNotNull()
+                            .and(PANEL.empanelledDate.loe(date))
+                            .and(PANEL.returnDate.isNull().or(PANEL.returnDate.goe(date)))));
         }
 
         return query;

@@ -93,8 +93,8 @@ VALUES (current_date - interval '2 days','222222222','415','09:30:00','17:30',fa
 INSERT INTO juror_mod.appearance (attendance_date,juror_number,loc_code,time_in,time_out,non_attendance,appearance_stage)
 VALUES (current_date - interval '2 days','333333333','415','09:30:00',null,false,'CHECKED_IN');
 
-INSERT INTO juror_mod.appearance (attendance_date,juror_number,loc_code,time_in,time_out,non_attendance)
-VALUES (current_date - interval '2 days','555555555','415','09:30:00',null,false);
+INSERT INTO juror_mod.appearance (attendance_date,juror_number,loc_code,time_in,time_out,non_attendance,appearance_stage)
+VALUES (current_date - interval '2 days','555555555','415','09:30:00',null,false,'CHECKED_IN');
 
 INSERT INTO juror_mod.appearance (attendance_date,juror_number,loc_code,time_in,time_out,non_attendance,appearance_stage)
 VALUES (current_date - interval '2 days','666666666','415','09:30:00',null,false,'CHECKED_IN');

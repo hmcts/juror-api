@@ -62,6 +62,7 @@ import uk.gov.hmcts.juror.api.moj.service.AppearanceCreationServiceImpl;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryServiceImpl;
 import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
+import uk.gov.hmcts.juror.api.moj.service.trial.PanelService;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -124,6 +125,8 @@ class JurorAppearanceServiceTest {
     private JurorHistoryServiceImpl jurorHistoryService;
     @Mock
     private JurorPoolService jurorPoolService;
+    @Mock
+    private PanelService panelService;
 
     @Mock(answer = Answers.CALLS_REAL_METHODS)
     private AppearanceCreationServiceImpl appearanceCreationService;

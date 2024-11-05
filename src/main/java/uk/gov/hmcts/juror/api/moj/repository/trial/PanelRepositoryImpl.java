@@ -11,6 +11,7 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public class PanelRepositoryImpl implements IPanelRepository {
@@ -46,6 +47,24 @@ public class PanelRepositoryImpl implements IPanelRepository {
             .where(PANEL.result.isNull().or(PANEL.result.eq(PanelResult.JUROR)))
             .where(JUROR_POOL.status.status.in(IJurorStatus.JUROR, IJurorStatus.PANEL))
             .fetch();
+    }
+
+    @Override
+    public boolean isEmpanelledJuror(String jurorNumber, String locationCode, LocalDate date) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        return !queryFactory
+            .select(PANEL)
+            .from(PANEL)
+            .join(JUROR_POOL)
+            .on(PANEL.juror.eq(JUROR_POOL.juror))
+            .where(PANEL.juror.jurorNumber.eq(jurorNumber))
+            .where(JUROR_POOL.pool.courtLocation.locCode.eq(locationCode))
+            .where(JUROR_POOL.isActive.isTrue())
+            .where(PANEL.completed.isTrue())
+            .where(PANEL.empanelledDate.isNotNull().and(PANEL.empanelledDate.loe(date)
+                                                            .and(PANEL.returnDate.isNull()
+                                                                     .or(PANEL.returnDate.goe(date)))))
+            .fetch().isEmpty();
     }
 
 }
