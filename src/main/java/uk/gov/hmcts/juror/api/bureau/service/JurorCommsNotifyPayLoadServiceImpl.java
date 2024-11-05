@@ -78,8 +78,17 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
 
         List<NotifyTemplateFieldMod> fields = getPayLoadFieldsForTemplate(templateId);
         NotifyTemplateMapperMod.Context context = NotifyTemplateMapperMod.Context.from(juror);
+
         context.setDetailData(detailData);
-        log.trace("payloadService. generating payloadMap. fields {}", fields.size());
+
+        context.setAbstractResponse(commonResponseRepositoryMod.findByJurorNumber(juror.getJurorNumber()));
+        context.setActualCourtLocation(context.getCourtLocation());
+        final WelshCourtLocation welshCourtLocation = getWelshCourtLocation(context.getCourtLocation().getLocCode());
+        context.setWelshCourtLocation(welshCourtLocation);
+        Boolean isWelshCourt = isWelshCourtAndComms(juror.getJuror().getWelsh(), welshCourtLocation);
+
+
+
         final Map<String, String> map = new HashMap<>();
         Object fieldValue = null;
         try {
@@ -90,12 +99,30 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
                 context.setPositionTo(field.getPositionTo());
                 context.setDetailData(detailData);
                 if (field.getTemplateField().equals(SERVICE_START_DATE)) {
-                    fieldValue = invokeGetter(context, mapperObject);
+
                     String formattedDate;
+                    assert fieldValue != null;
+                    String formattedDateWelsh = WELSH_DATE_TIME_FORMATTER.format((LocalDate) fieldValue);
+                    String str;
+
+                    if (isWelshCourt) {
+                        Map<String, String> myWelshTranslationMap;
+                        myWelshTranslationMap = setUpTranslationMap();
+
+                        for (Map.Entry<String, String> entry : myWelshTranslationMap.entrySet()) {
+                            str = formattedDateWelsh.replace(entry.getKey(), entry.getValue());
+                            formattedDateWelsh = str;
+                        }
+                    }
+
+                    fieldValue = invokeGetter(context, mapperObject);
                     if (mapperObject == NotifyTemplateMapperMod.BULK_PRINT_DATA) {
                         formattedDate = fieldValue.toString();
                     } else {
                         formattedDate = ENGLISH_DATE_TIME_FORMATTER.format((LocalDate) fieldValue);
+                        if (isWelshCourt) {
+                            formattedDate = formattedDateWelsh;
+                        }
                     }
                     map.put(field.getTemplateField(), formattedDate);
                 } else if (field.getTemplateField().equals(SERVICE_START_TIME)) {
@@ -114,6 +141,7 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
                     map.put(field.getTemplateField(), fieldValue.toString());
                 }
                 log.trace("fieldValue: {} ", fieldValue);
+
             }
 
 
