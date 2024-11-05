@@ -469,8 +469,9 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             jurors.add(JUROR2);
 
             ResponseEntity<AttendanceDetailsResponse> response =
-                restTemplate.exchange(new RequestEntity<>(buildRetrieveAttendanceDetailsDto(jurors), httpHeaders, GET,
-                    URI.create(URL_ATTENDANCE)), AttendanceDetailsResponse.class);
+                restTemplate.exchange(new RequestEntity<>(buildRetrieveAttendanceDetailsDto(jurors), httpHeaders,
+                                                          POST, URI.create(URL_ATTENDANCE)),
+                                      AttendanceDetailsResponse.class);
 
             assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
 
@@ -502,7 +503,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             request.getCommonData().setTag(RetrieveAttendanceDetailsTag.NOT_CHECKED_OUT);
 
             ResponseEntity<AttendanceDetailsResponse> response =
-                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, GET,
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
                     URI.create(URL_ATTENDANCE)), AttendanceDetailsResponse.class);
 
             assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
@@ -535,7 +536,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             request.getCommonData().setTag(RetrieveAttendanceDetailsTag.CONFIRM_ATTENDANCE);
 
             ResponseEntity<AttendanceDetailsResponse> response =
-                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, GET,
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
                     URI.create(URL_ATTENDANCE)), AttendanceDetailsResponse.class);
 
             assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
@@ -572,7 +573,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             jurors.add(JUROR9);
 
             ResponseEntity<AttendanceDetailsResponse> response =
-                restTemplate.exchange(new RequestEntity<>(buildRetrieveAttendanceDetailsDto(jurors), httpHeaders, GET,
+                restTemplate.exchange(new RequestEntity<>(buildRetrieveAttendanceDetailsDto(jurors), httpHeaders, POST,
                     URI.create(URL_ATTENDANCE)), AttendanceDetailsResponse.class);
 
             assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
@@ -1508,7 +1509,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             JurorsToDismissRequestDto request = createJurorsToDismissRequestDto(pools, true, true, 3);
 
             ResponseEntity<JurorsToDismissResponseDto> response =
-                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, GET,
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
                     URI.create(URL)), JurorsToDismissResponseDto.class);
 
             assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
@@ -1526,7 +1527,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             JurorsToDismissRequestDto request = createJurorsToDismissRequestDto(pools, true, true, 4);
 
             ResponseEntity<JurorsToDismissResponseDto> response =
-                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, GET,
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
                     URI.create(URL)), JurorsToDismissResponseDto.class);
 
             assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
@@ -1566,7 +1567,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             JurorsToDismissRequestDto request = createJurorsToDismissRequestDto(pools, true, true, 3);
 
             ResponseEntity<JurorsToDismissResponseDto> response =
-                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, GET,
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
                     URI.create(URL)), JurorsToDismissResponseDto.class);
 
             assertThat(response.getStatusCode()).as("Expect HTTP Status of Forbidden").isEqualTo(FORBIDDEN);
@@ -1581,7 +1582,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             JurorsToDismissRequestDto request = createJurorsToDismissRequestDto(pools, true, true, 3);
 
             ResponseEntity<JurorsToDismissResponseDto> response =
-                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, GET,
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
                     URI.create(URL)), JurorsToDismissResponseDto.class);
 
             assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);

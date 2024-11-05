@@ -114,7 +114,7 @@ class JurorManagementControllerTest {
         when(jurorAppearanceService.retrieveAttendanceDetails(null, request))
             .thenReturn(buildAttendanceDetailsResponse());
 
-        mockMvc.perform(get(BASE_URL)
+        mockMvc.perform(post(BASE_URL)
                 .principal(mock(BureauJwtAuthentication.class))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(request)))
@@ -132,7 +132,7 @@ class JurorManagementControllerTest {
         when(jurorAppearanceService.retrieveAttendanceDetails(null, request))
             .thenReturn(buildAttendanceDetailsResponse());
 
-        MvcResult mvcResult = mockMvc.perform(get(BASE_URL)
+        MvcResult mvcResult = mockMvc.perform(post(BASE_URL)
                 .principal(mock(BureauJwtAuthentication.class))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(request)))
