@@ -1338,7 +1338,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             assertThat(dto.getDeferralPoolsSummary().size()).isEqualTo(1);
             assertThat(dto.getDeferralPoolsSummary().get(0).getDeferralOptions().size()).isEqualTo(1);
             assertThat(dto.getDeferralPoolsSummary().get(0).getWeekCommencing())
-                .isEqualTo(DateUtils.getStartOfWeekFromDate(LocalDate.now().plusWeeks(1)));
+                .isEqualTo(DateUtils.getStartOfWeekFromDate(LocalDate.now()));
             assertThat(dto.getDeferralPoolsSummary().get(0).getDeferralOptions().get(0).getUtilisation())
                 .isEqualTo(4);
         }
