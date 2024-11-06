@@ -99,9 +99,8 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
                 context.setPositionTo(field.getPositionTo());
                 context.setDetailData(detailData);
                 if (field.getTemplateField().equals(SERVICE_START_DATE)) {
-
+                    fieldValue = invokeGetter(context, mapperObject);
                     String formattedDate;
-                    assert fieldValue != null;
                     String formattedDateWelsh = WELSH_DATE_TIME_FORMATTER.format((LocalDate) fieldValue);
                     String str;
 
@@ -115,7 +114,6 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
                         }
                     }
 
-                    fieldValue = invokeGetter(context, mapperObject);
                     if (mapperObject == NotifyTemplateMapperMod.BULK_PRINT_DATA) {
                         formattedDate = fieldValue.toString();
                     } else {
