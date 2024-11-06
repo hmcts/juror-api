@@ -509,22 +509,23 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             List<AttendanceDetailsResponse.Details> data = response.getBody().getDetails();
             assertThat(data)
-                .as("Expect 2 records to be returned")
-                .hasSize(2)
+                .as("Expect 3 records to be returned")
+                .hasSize(3)
                 .extracting(AttendanceDetailsResponse.Details::getJurorNumber)
-                .containsExactlyInAnyOrder(JUROR6, JUROR3);
+                .containsExactlyInAnyOrder(JUROR6, JUROR3, JUROR5);
 
             assertThat(data)
                 .as("Expect check-in time to be 09:30")
                 .extracting(AttendanceDetailsResponse.Details::getCheckInTime)
                 .containsExactlyInAnyOrder(
                     LocalTime.of(9, 30),
+                    LocalTime.of(9, 30),
                     LocalTime.of(9, 30));
 
             assertThat(data)
                 .as("Expect check-out time to be null")
                 .extracting(AttendanceDetailsResponse.Details::getCheckOutTime)
-                .containsExactlyInAnyOrder(null, null);
+                .containsExactlyInAnyOrder(null, null, null);
         }
 
         @Test
@@ -1065,7 +1066,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             assertThat(details)
                 .extracting(AttendanceDetailsResponse.Details::getAppearanceStage)
-                .containsExactlyInAnyOrder(EXPENSE_ENTERED, EXPENSE_ENTERED, EXPENSE_ENTERED, EXPENSE_ENTERED, EXPENSE_ENTERED);
+                .containsExactlyInAnyOrder(EXPENSE_ENTERED, EXPENSE_ENTERED, EXPENSE_ENTERED, EXPENSE_ENTERED,
+                                           EXPENSE_ENTERED);
 
             assertThat(details)
                 .extracting(AttendanceDetailsResponse.Details::getIsNoShow)

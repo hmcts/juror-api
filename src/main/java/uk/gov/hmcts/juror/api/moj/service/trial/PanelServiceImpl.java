@@ -112,6 +112,11 @@ public class PanelServiceImpl implements PanelService {
             .isEmpty();
     }
 
+    @Override
+    public boolean isEmpanelledJuror(String jurorNumber, String locationCode, LocalDate date) {
+        return panelRepository.isEmpanelledJuror(jurorNumber, locationCode, date);
+    }
+
     private void createPanelValidationChecks(int numberRequested, String trialNumber, String courtLocationCode) {
         if (!trialRepository.existsByTrialNumberAndCourtLocationLocCode(trialNumber, courtLocationCode)) {
             throw new MojException.NotFound(String.format("Cannot find trial with number: %s for court location %s",

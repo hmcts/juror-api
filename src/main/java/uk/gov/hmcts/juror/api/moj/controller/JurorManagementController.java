@@ -149,7 +149,7 @@ public class JurorManagementController {
     }
 
     @PostMapping("/jurors-to-dismiss")
-    @Operation(description= "GET With Body",
+    @Operation(description = "GET With Body",
         summary = "Retrieve a list of jurors to dismiss based on their attendance (appearance) status")
     @IsCourtUser
     public ResponseEntity<JurorsToDismissResponseDto> retrieveJurorsToDismiss(
