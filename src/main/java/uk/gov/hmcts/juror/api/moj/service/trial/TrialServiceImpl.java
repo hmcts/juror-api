@@ -60,7 +60,8 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 @Service
 @SuppressWarnings({
     "PMD.ExcessiveImports",
-    "PMD.TooManyMethods"
+    "PMD.TooManyMethods",
+    "PMD.UselessParentheses" //false positive
 })
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class TrialServiceImpl implements TrialService {
