@@ -137,7 +137,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
 
         JPAQuery<Tuple> query = queryFactory.select(
-                JUROR.jurorNumber.as("juror_number"),
+                APPEARANCE.jurorNumber.as("juror_number"),
                 JUROR.firstName.as("first_name"),
                 JUROR.lastName.as("last_name"),
                 JUROR_POOL.status.status.as("status"),
@@ -163,8 +163,13 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
         if (statusGroup == JurorStatusGroup.IN_WAITING) {
             query.where(APPEARANCE.attendanceAuditNumber.isNull()
                 .or(APPEARANCE.attendanceAuditNumber.startsWith("J").not()));
-            query.where(PANEL.empanelledDate.isNull().or(PANEL.empanelledDate.after(date))
-                                    .or(PANEL.returnDate.loe(date)));
+            query.where((APPEARANCE.trialNumber.isNull().or(APPEARANCE.trialNumber.eq(PANEL.trial.trialNumber)
+                                                                .and(PANEL.empanelledDate.isNull()
+                                                                         .or(PANEL.empanelledDate.after(date)
+                                                                                 .and(PANEL.returnDate.isNull()
+                                                                                          .or(PANEL.returnDate
+                                                                                                  .before(date)))))))
+                            .and(PANEL.result.isNull().or(PANEL.result.ne(PanelResult.JUROR))));
         }
 
         if (statusGroup == JurorStatusGroup.PANELLED) {
