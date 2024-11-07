@@ -136,7 +136,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
                                                       JurorStatusGroup statusGroup) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
 
-        JPAQuery<Tuple> query = queryFactory.select(
+        JPAQuery<Tuple> query = queryFactory.selectDistinct(
                 APPEARANCE.jurorNumber.as("juror_number"),
                 JUROR.firstName.as("first_name"),
                 JUROR.lastName.as("last_name"),
