@@ -1119,7 +1119,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         Juror activeJurorRecord = validateOwnership(owner, jurorNumber);
 
         // check juror status to make sure they can be checked in or out
-        validateJurorStatus(activeJurorRecord, false);
+        validateJurorStatus(activeJurorRecord, true);
     }
 
     private Juror validateOwnership(String owner, String jurorNumber) {
