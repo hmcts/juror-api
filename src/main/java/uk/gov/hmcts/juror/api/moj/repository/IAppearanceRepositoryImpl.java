@@ -163,13 +163,15 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
         if (statusGroup == JurorStatusGroup.IN_WAITING) {
             query.where(APPEARANCE.attendanceAuditNumber.isNull()
                 .or(APPEARANCE.attendanceAuditNumber.startsWith("J").not()));
-            query.where((APPEARANCE.trialNumber.isNull().or(APPEARANCE.trialNumber.eq(PANEL.trial.trialNumber)
-                                                                .and(PANEL.empanelledDate.isNull()
-                                                                         .or(PANEL.empanelledDate.after(date)
-                                                                                 .and(PANEL.returnDate.isNull()
-                                                                                          .or(PANEL.returnDate
-                                                                                                  .before(date)))))))
-                            .and(PANEL.result.isNull().or(PANEL.result.ne(PanelResult.JUROR))));
+            query.where(APPEARANCE.trialNumber.isNull().or(APPEARANCE.trialNumber.eq(PANEL.trial.trialNumber)
+                                                           .and((PANEL.returnDate.isNotNull()
+                                                               .and(PANEL.returnDate.loe(date)
+                                                                    .and(PANEL.empanelledDate.isNull())))
+                                                                    .or(PANEL.returnDate.isNotNull()
+                                                                       .and(PANEL.empanelledDate.isNotNull())
+                                                                       .and(PANEL.returnDate.before(date)
+                                                                       .or(PANEL.empanelledDate.after(date)))))));
+
         }
 
         if (statusGroup == JurorStatusGroup.PANELLED) {
