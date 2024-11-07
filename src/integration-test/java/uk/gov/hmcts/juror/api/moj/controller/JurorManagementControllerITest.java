@@ -534,6 +534,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         void retrieveAttendanceConfirmAttendanceTag() {
             RetrieveAttendanceDetailsDto request = buildRetrieveAttendanceDetailsDto(null);
             request.getCommonData().setTag(RetrieveAttendanceDetailsTag.CONFIRM_ATTENDANCE);
+            request.setJurorInWaiting(true);
 
             ResponseEntity<AttendanceDetailsResponse> response =
                 restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
@@ -555,9 +556,9 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             AttendanceDetailsResponse.Summary summary = response.getBody().getSummary();
             assertThat(summary)
-                .as("Expect 4 jurors to be checked in")
+                .as("Expect 3 jurors to be checked in")
                 .extracting(AttendanceDetailsResponse.Summary::getCheckedIn)
-                .isEqualTo(4L);
+                .isEqualTo(3L);
 
             assertThat(summary)
                 .as("Expect 2 jurors to be absent")
@@ -1045,7 +1046,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             AttendanceDetailsResponse.Summary summary = response.getBody().getSummary();
             assertThat(summary)
                 .extracting(AttendanceDetailsResponse.Summary::getCheckedIn)
-                .isEqualTo(5L);
+                .isEqualTo(4L);
 
             assertThat(summary)
                 .extracting(AttendanceDetailsResponse.Summary::getAbsent)
@@ -1054,7 +1055,6 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             // verify attendance details have been updated x 3 checked in
             List<String> jurors = new ArrayList<>();
             jurors.add(JUROR1); // checked-in
-            jurors.add(JUROR3); // checked-in
             jurors.add(JUROR5); // checked-in
             jurors.add(JUROR6); // checked-in
             jurors.add(JUROR7); // checked-in
@@ -1066,12 +1066,11 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             assertThat(details)
                 .extracting(AttendanceDetailsResponse.Details::getAppearanceStage)
-                .containsExactlyInAnyOrder(EXPENSE_ENTERED, EXPENSE_ENTERED, EXPENSE_ENTERED, EXPENSE_ENTERED,
-                                           EXPENSE_ENTERED);
+                .containsExactlyInAnyOrder(EXPENSE_ENTERED, EXPENSE_ENTERED, EXPENSE_ENTERED, EXPENSE_ENTERED);
 
             assertThat(details)
                 .extracting(AttendanceDetailsResponse.Details::getIsNoShow)
-                .containsExactlyInAnyOrder(null, null, null, null, null);
+                .containsExactlyInAnyOrder(null, null, null, null);
 
             jurors.clear();
             details.clear();
