@@ -547,7 +547,7 @@ class PanelServiceImplTest {
         doReturn(createPanelMembers(10)).when(panelRepository)
             .findByTrialTrialNumberAndTrialCourtLocationLocCode(anyString(), anyString());
 
-        List<PanelListDto> dtoList = panelService.getPanelSummary("T11111111", "415");
+        List<PanelListDto> dtoList = panelService.getPanelSummary("T11111111", "415", null);
         assertThat(dtoList.size()).as("Expected size to be 4").isEqualTo(4);//Only jurors/paneled should be returned
     }
 

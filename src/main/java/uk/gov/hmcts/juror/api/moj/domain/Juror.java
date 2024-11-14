@@ -288,6 +288,10 @@ public class Juror extends Address implements Serializable {
     @NotAudited
     private boolean responseEntered;
 
+    @Column(name = "lock_time")
+    @NotAudited
+    private LocalDateTime lockTime;
+
     @NotAudited
     @OneToMany(mappedBy = "juror", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     private Set<JurorPool> associatedPools;

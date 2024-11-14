@@ -340,7 +340,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         final String reasonCode = request.getExcusalReasonCode();
 
         log.info("Processing postponement request for juror(s): {}", request.jurorNumbers);
-        
+
         request.jurorNumbers.forEach(jurorNumber ->
             ManageDeferralsService.checkIfJurorHasAttendances(jurorAppearanceService, jurorNumber)
         );
@@ -430,7 +430,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     @Override
     public DeferralOptionsDto findActivePoolsForCourtLocation(BureauJwtPayload payload, String courtLocation) {
         DeferralOptionsDto.OptionSummaryDto poolSummary = new DeferralOptionsDto.OptionSummaryDto();
-        LocalDate weekCommencing = DateUtils.getStartOfWeekFromDate(LocalDate.now().plusWeeks(1));
+        LocalDate weekCommencing = DateUtils.getStartOfWeekFromDate(LocalDate.now());
         poolSummary.setWeekCommencing(weekCommencing);
 
         //MIN Date needed (start of the next working week), max date can be null which should get all of them

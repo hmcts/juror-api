@@ -50,6 +50,7 @@ import uk.gov.hmcts.juror.api.moj.service.AppearanceCreationService;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryServiceImpl;
 import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
+import uk.gov.hmcts.juror.api.moj.service.trial.PanelService;
 import uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
@@ -66,6 +67,7 @@ import java.util.Set;
 
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.APPEARANCE_RECORD_BEFORE_SERVICE_START_DATE;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.ATTENDANCE_RECORD_ALREADY_EXISTS;
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_PROCESS_EMPANELLED_JUROR;
 import static uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils.getNextWorkingDay;
 import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.isEmptyOrNull;
 import static uk.gov.hmcts.juror.api.moj.utils.JurorUtils.checkOwnershipForCurrentUser;
@@ -87,6 +89,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     private final PanelRepository panelRepository;
     private final JurorPoolService jurorPoolService;
     private final AppearanceCreationService appearanceCreationService;
+    private final PanelService panelService;
 
     @Override
     @Transactional
@@ -171,8 +174,13 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         checkOwnershipForCurrentUser(juror, payload.getOwner());
 
         // check juror status to make sure they can be checked in
-        final JurorPool jurorPool = validateJurorStatus(juror, isCompleted,
-            appearanceStage, jurorAppearanceDto.isJurorInWaiting());
+        final JurorPool jurorPool = validateJurorStatus(juror, isCompleted);
+
+        // check if juror has been empanelled
+        if (panelService.isEmpanelledJuror(jurorNumber, locCode, appearanceDate)) {
+            throw new MojException.BusinessRuleViolation("Juror has been empanelled: " + jurorNumber,
+                                                         CANNOT_PROCESS_EMPANELLED_JUROR);
+        }
 
         Optional<Appearance> appearanceOpt = getAppearance(jurorNumber, appearanceDate, locCode);
         Appearance appearance;
@@ -588,9 +596,22 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         final String owner = SecurityUtil.getActiveOwner();
         final String locCode = request.getCommonData().getLocationCode();
 
-        // one attendance audit number applies to ALL jurors in this batch of attendances being confirmed
+        // see if there is an attendance record for the date to get the audit number
+        List<Appearance> appearances = appearanceRepository.findByLocCodeAndAttendanceDateAndTrialNumber(locCode,
+            request.getCommonData().getAttendanceDate(), request.getTrialNumber());
+
         final String juryAttendancePrefix = "J";
-        final String juryAttendanceNumber = getAttendanceAuditNumber(juryAttendancePrefix);
+        String juryAttendanceNumber;
+
+        if (!appearances.isEmpty()) {
+            // check if there is an attendance_audit_number already set and retrieve it
+            juryAttendanceNumber = appearances.stream()
+                .map(Appearance::getAttendanceAuditNumber)
+                .filter(ObjectUtils::isNotEmpty)
+                .findFirst().orElse(getAttendanceAuditNumber(juryAttendancePrefix));
+        } else {
+            juryAttendanceNumber = getAttendanceAuditNumber(juryAttendancePrefix);
+        }
 
         CourtLocation courtLocation =
             courtLocationRepository.findByLocCode(locCode)
@@ -975,7 +996,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         List<Appearance> checkedOutJurors = new ArrayList<>();
 
         request.getJuror().forEach(jurorNumber -> {
-            validateJuror(owner, jurorNumber, AppearanceStage.CHECKED_OUT, request.isJurorInWaiting());
+            validateJuror(owner, jurorNumber);
 
             // retrieve the current attendance details
             List<JurorAppearanceResponseDto.JurorAppearanceResponseData> currentAttendanceDetails =
@@ -1098,16 +1119,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         Juror activeJurorRecord = validateOwnership(owner, jurorNumber);
 
         // check juror status to make sure they can be checked in or out
-        validateJurorStatus(activeJurorRecord, false);
-    }
-
-    private void validateJuror(String owner, String jurorNumber,
-                               AppearanceStage appearanceStage, Boolean jurorInWaiting) {
-        // validate the juror record exists, and user has ownership of the record
-        Juror activeJurorRecord = validateOwnership(owner, jurorNumber);
-
-        // check juror status to make sure they can be checked in or out
-        validateJurorStatus(activeJurorRecord, false, appearanceStage, jurorInWaiting);
+        validateJurorStatus(activeJurorRecord, true);
     }
 
     private Juror validateOwnership(String owner, String jurorNumber) {
@@ -1165,22 +1177,6 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             throw new MojException.BadRequest("Cannot check in or out a juror with an invalid status",
                 null);
         }
-    }
-
-    private JurorPool validateJurorStatus(Juror juror, boolean isCompleted,
-                                          AppearanceStage appearanceStage, boolean jurorInWaiting) {
-        JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(juror.getJurorNumber());
-
-        final int status = jurorPool.getStatus().getStatus();
-        if (jurorInWaiting && appearanceStage == AppearanceStage.CHECKED_OUT) {
-            if (status == IJurorStatus.JUROR) {
-                throw new MojException.BadRequest("Can not check out juror in waiting "
-                    + "with a juror status of JUROR", null);
-            }
-        } else {
-            validateJurorStatus(status, isCompleted);
-        }
-        return jurorPool;
     }
 
     private void validateTheNumberOfJurorsToUpdate(UpdateAttendanceDto request) {
@@ -1282,8 +1278,9 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         //confirm user has access to location
         SecurityUtil.validateIsLocCode(locationCode);
 
-        // check if the day is not confirmed
-        if (!appearanceRepository.isDayConfirmed(locationCode, attendanceDate)) {
+        LocalDate today = LocalDate.now();
+        // check if the day is not confirmed, e.g. less than 7 days before today
+        if (today.minusDays(7).isBefore(attendanceDate)) {
             log.error("Attendance for location {} on date {} is not confirmed", locationCode, attendanceDate);
             // throw bad request exception
             throw new MojException.BadRequest("Attendance for location " + locationCode + " on date "
@@ -1333,6 +1330,12 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
         // validate the juror record exists and user has ownership of the record
         validateJuror(owner, jurorNumber);
+
+        // check if juror has been empanelled
+        if (panelService.isEmpanelledJuror(jurorNumber, locCode, request.getAttendanceDate())) {
+            throw new MojException.BusinessRuleViolation("Juror has been empanelled: " + jurorNumber,
+                                                         CANNOT_PROCESS_EMPANELLED_JUROR);
+        }
 
         JurorPool jurorPool = JurorPoolUtils.getActiveJurorPool(jurorPoolRepository, jurorNumber,
             courtLocation);

@@ -21,7 +21,7 @@ public interface PanelService {
 
     List<PanelListDto> processEmpanelled(JurorListRequestDto dto, BureauJwtPayload payload);
 
-    List<PanelListDto> getPanelSummary(String trialId, String locCode);
+    List<PanelListDto> getPanelSummary(String trialId, String locCode, LocalDate date);
 
     List<PanelListDto> getJurySummary(String trialId, String locCode);
 
@@ -30,4 +30,6 @@ public interface PanelService {
                                        LocalDate attendanceDate);
 
     Boolean getPanelStatus(String trialNumber, String courtLocationCode);
+
+    boolean isEmpanelledJuror(String jurorNumber, String locationCode, LocalDate date);
 }

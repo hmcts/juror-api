@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,6 +28,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.trial.PanelListDto;
 import uk.gov.hmcts.juror.api.moj.service.trial.PanelService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -100,8 +102,10 @@ public class PanelController {
     public ResponseEntity<List<PanelListDto>> getPanel(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestParam("trial_number") @PathVariable("trialNumber") String trialNumber,
-        @RequestParam("court_location_code") @PathVariable("courtLocationCode") String courtLocationCode) {
-        List<PanelListDto> dto = panelService.getPanelSummary(trialNumber, courtLocationCode);
+        @RequestParam("court_location_code") @PathVariable("courtLocationCode") String courtLocationCode,
+        @RequestParam(value = "date", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd")
+            @Valid LocalDate date) {
+        List<PanelListDto> dto = panelService.getPanelSummary(trialNumber, courtLocationCode, date);
         return ResponseEntity.ok(dto);
     }
 

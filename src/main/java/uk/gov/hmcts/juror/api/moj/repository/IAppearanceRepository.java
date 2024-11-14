@@ -49,7 +49,5 @@ public interface IAppearanceRepository {
     PaginatedList<UnpaidExpenseSummaryResponseDto> findUnpaidExpenses(String locCode,
                                                                       UnpaidExpenseSummaryRequestDto search);
 
-    boolean isDayConfirmed(String locationCode, LocalDate attendanceDate);
-
     List<Tuple> getUnconfirmedJurors(String locationCode, LocalDate attendanceDate);
 }

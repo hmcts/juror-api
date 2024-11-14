@@ -83,8 +83,9 @@ public class JurorManagementController {
         return ResponseEntity.ok(appearanceData);
     }
 
-    @GetMapping("/attendance")
-    @Operation(description = "Retrieve a list of juror attendance details based on attendance (appearance) status")
+    @PostMapping("/attendance")
+    @Operation(description = "GET With Body",
+        summary = "Retrieve a list of juror attendance details based on attendance (appearance) status")
     public ResponseEntity<AttendanceDetailsResponse> retrieveAttendanceDetails(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid RetrieveAttendanceDetailsDto request) {
@@ -144,16 +145,15 @@ public class JurorManagementController {
     @Operation(description = "Add a non-attendance day for a juror")
     public void addNonAttendance(
         @RequestBody @Valid JurorNonAttendanceDto jurorNonAttendanceDto) {
-
         jurorAppearanceService.addNonAttendance(jurorNonAttendanceDto);
     }
 
-    @GetMapping("/jurors-to-dismiss")
-    @Operation(description = "Retrieve a list of jurors to dismiss based on their attendance (appearance) status")
+    @PostMapping("/jurors-to-dismiss")
+    @Operation(description = "GET With Body",
+        summary = "Retrieve a list of jurors to dismiss based on their attendance (appearance) status")
     @IsCourtUser
     public ResponseEntity<JurorsToDismissResponseDto> retrieveJurorsToDismiss(
         @RequestBody @Valid JurorsToDismissRequestDto request) {
-
         return ResponseEntity.ok(jurorAppearanceService.retrieveJurorsToDismiss(request));
     }
 
@@ -163,7 +163,6 @@ public class JurorManagementController {
     public ResponseEntity<JurorsOnTrialResponseDto> retrieveJurorsToDismiss(
         @P("location-code") @PathVariable("location-code") @CourtLocationCode @Valid String locationCode,
         @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate attendanceDate) {
-
         return ResponseEntity.ok(jurorAppearanceService.retrieveJurorsOnTrials(locationCode, attendanceDate));
     }
 

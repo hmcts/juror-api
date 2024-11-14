@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.service.trial;
 import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,7 +60,8 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 @Service
 @SuppressWarnings({
     "PMD.ExcessiveImports",
-    "PMD.TooManyMethods"
+    "PMD.TooManyMethods",
+    "PMD.UselessParentheses" //false positive
 })
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class TrialServiceImpl implements TrialService {
@@ -241,9 +243,20 @@ public class TrialServiceImpl implements TrialService {
 
         log.info(String.format("found %d jury members to be returned", juryMembersToBeReturned.size()));
 
+        // see if there is an attendance record for the date to get the audit number
+        List<Appearance> appearances = appearanceRepository.findByLocCodeAndAttendanceDateAndTrialNumber(locationCode,
+                                                          returnJuryDto.getAttendanceDate(), trialNumber);
 
-        // get the next available attendance number from the database sequence
-        final long attendanceAuditNumber = appearanceRepository.getNextAttendanceAuditNumber();
+        final String juryAttendancePrefix = "J";
+        String juryAttendanceNumber = juryAttendancePrefix + appearanceRepository.getNextAttendanceAuditNumber();
+
+        if (!appearances.isEmpty()) {
+            // check if there is an attendance_audit_number already set and retrieve it
+            juryAttendanceNumber = appearances.stream()
+                .map(Appearance::getAttendanceAuditNumber)
+                .filter(ObjectUtils::isNotEmpty)
+                .findFirst().orElse(juryAttendanceNumber);
+        }
 
         for (Panel panel : juryMembersToBeReturned) {
 
@@ -271,7 +284,7 @@ public class TrialServiceImpl implements TrialService {
                     }
                     if (appearance.getAttendanceAuditNumber() == null) {
                         //Only give them an attendance number if they were checked out via this process
-                        appearance.setAttendanceAuditNumber("J" + attendanceAuditNumber);
+                        appearance.setAttendanceAuditNumber(juryAttendanceNumber);
                         jurorHistoryService.createJuryAttendanceHistory(jurorPool, appearance, panel);
                     }
                 }
