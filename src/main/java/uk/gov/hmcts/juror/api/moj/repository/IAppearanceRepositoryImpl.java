@@ -169,7 +169,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
                                                                     .and(PANEL.empanelledDate.isNull())))
                                                                     .or(PANEL.returnDate.isNotNull()
                                                                        .and(PANEL.empanelledDate.isNotNull())
-                                                                       .and(PANEL.returnDate.before(date)
+                                                                       .and(PANEL.returnDate.loe(date)
                                                                        .or(PANEL.empanelledDate.after(date)))))));
 
         }

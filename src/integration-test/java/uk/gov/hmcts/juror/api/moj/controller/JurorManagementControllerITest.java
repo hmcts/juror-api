@@ -2099,7 +2099,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             // verify returned data
             JurorsOnTrialResponseDto jurorsOnTrialResponseDto = response.getBody();
             assertThat(jurorsOnTrialResponseDto.getTrialsList().size()).as("Expect 2 records to be returned")
-                .isEqualTo(2);
+                .isEqualTo(3);
 
             JurorsOnTrialResponseDto.JurorsOnTrialResponseData first = jurorsOnTrialResponseDto.getTrialsList().get(0);
             assertThat(first.getTrialNumber()).isEqualTo("T10000001");
@@ -2120,6 +2120,16 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(second.getNumberAttended()).isEqualTo(2);
             assertThat(second.getTotalJurors()).isEqualTo(3);
             assertThat(second.getAttendanceAudit()).isEqualTo("J00000003");
+
+            JurorsOnTrialResponseDto.JurorsOnTrialResponseData third = jurorsOnTrialResponseDto.getTrialsList().get(2);
+            assertThat(third.getTrialNumber()).isEqualTo("T10000003");
+            assertThat(third.getParties()).isEqualTo("test trial");
+            assertThat(third.getTrialType()).isEqualTo("Civil");
+            assertThat(third.getJudge()).isEqualTo("judge Jack");
+            assertThat(third.getCourtroom()).isEqualTo("outer room");
+            assertThat(third.getNumberAttended()).isEqualTo(0);
+            assertThat(third.getTotalJurors()).isEqualTo(6);
+            assertThat(third.getAttendanceAudit()).isEqualTo(null);
         }
 
         @Test

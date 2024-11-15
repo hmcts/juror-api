@@ -68,17 +68,20 @@ insert into juror_mod.juror_pool(owner, juror_number, pool_number, status, is_ac
 insert into juror_mod.judge (owner, code, description) values
 ('415', '0001', 'judge dredd'),
 ('415', '0002', 'judge jose'),
-('415', '0003', 'judge June');
+('415', '0003', 'judge June'),
+('415', '0004', 'judge Jack');
 
 insert into juror_mod.courtroom (loc_code, room_number, description) values
 ('415', '1', 'big room'),
 ('415', '2', 'small room'),
-('415', '3', 'other room');
+('415', '3', 'other room'),
+('415', '4', 'outer room');
 
 insert into juror_mod.trial (trial_number,loc_code,description,courtroom,judge,trial_type,trial_start_date,anonymous) values
 ('T10000000', '415', 'test trial', 1, 1, 'CIV', current_date, false),
 ('T10000001', '415', 'test trial', 2, 2, 'CIV', current_date, false),
-('T10000002', '415', 'test trial', 3, 3, 'CIV', current_date, false);
+('T10000002', '415', 'test trial', 3, 3, 'CIV', current_date, false),
+('T10000003', '415', 'test trial', 4, 4, 'CIV', current_date, false);
 
 insert into juror_mod.appearance (attendance_date, juror_number, loc_code, time_in, time_out, non_attendance,
 attendance_type, trial_number, appearance_stage, attendance_audit_number) values
@@ -104,23 +107,24 @@ attendance_type, trial_number, appearance_stage, attendance_audit_number) values
 (current_date, '415000020', '415', current_time,current_time,true,'NON_ATTENDANCE_LONG_TRIAL','T10000002','EXPENSE_ENTERED',null);
 
 
-insert into juror_mod.juror_trial (loc_code, juror_number, trial_number, rand_number, date_selected, "result", completed) values
-('415', '415000001','T10000000', 10, current_date - 30, 'P', false),
-('415', '415000003','T10000000', 11, current_date - 30, 'P', false),
-('415', '415000004','T10000000', 1, current_date - 30, 'P', false),
-('415', '415000005','T10000000', 3, current_date - 30, 'P', false),
-('415', '415000006','T10000000', 4, current_date - 30, 'P', false),
-('415', '415000007','T10000000', 7, current_date - 30, 'P', false),
-('415', '415000008','T10000000', 8, current_date - 30, 'P', false),
-('415', '415000009','T10000000', 13, current_date - 30, 'P', false),
-('415', '415000010','T10000000', 12, current_date - 30, 'P', false),
-('415', '415000011','T10000000', 6, current_date - 30, 'P', false),
-('415', '415000012','T10000000', 2, current_date - 30, 'P', false),
-('415', '415000013','T10000000', 9, current_date - 30, 'P', false),
-('415', '415000014','T10000001', 14, current_date - 30, 'J', false),
-('415', '415000015','T10000001', 15, current_date - 30, 'J', false),
-('415', '415000016','T10000001', 16, current_date - 30, 'J', false),
-('415', '415000017','T10000001', 17, current_date - 30, 'J', false),
-('415', '415000018','T10000002', 18, current_date - 30, 'J', false),
-('415', '415000019','T10000002', 20, current_date - 30, 'J', false),
-('415', '415000020','T10000002', 19, current_date - 30, 'J', false);
+insert into juror_mod.juror_trial (loc_code, juror_number, trial_number, rand_number, date_selected, "result", completed, return_date) values
+('415', '415000001','T10000000', 10, current_date - 30, 'R', false, current_date - 30),
+('415', '415000002','T10000000', 5, current_date - 30, 'R', false, current_date - 30),
+('415', '415000003','T10000000', 11, current_date - 30, 'R', false, current_date - 30),
+('415', '415000004','T10000000', 1, current_date - 30, 'R', false, current_date - 30),
+('415', '415000005','T10000000', 3, current_date - 30, 'R', false, current_date - 30),
+('415', '415000006','T10000000', 4, current_date - 30, 'R', false, current_date - 30),
+('415', '415000007','T10000000', 7, current_date - 30, 'R', false, current_date - 30),
+('415', '415000008','T10000003', 8, current_date - 30, 'P', false, null),
+('415', '415000009','T10000003', 13, current_date - 30, 'P', false, null),
+('415', '415000010','T10000003', 12, current_date - 30, 'P', false, null),
+('415', '415000011','T10000003', 6, current_date - 30, 'P', false, null),
+('415', '415000012','T10000003', 2, current_date - 30, 'P', false, null),
+('415', '415000013','T10000003', 9, current_date - 30, 'P', false, null),
+('415', '415000014','T10000001', 14, current_date - 30, 'J', false, null),
+('415', '415000015','T10000001', 15, current_date - 30, 'J', false, null),
+('415', '415000016','T10000001', 16, current_date - 30, 'J', false, null),
+('415', '415000017','T10000001', 17, current_date - 30, 'J', false, null),
+('415', '415000018','T10000002', 18, current_date - 30, 'J', false, null),
+('415', '415000019','T10000002', 20, current_date - 30, 'J', false, null),
+('415', '415000020','T10000002', 19, current_date - 30, 'J', false, null);
