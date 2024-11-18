@@ -2265,7 +2265,7 @@ class JurorRecordServiceTest {
 
         UpdateAttendanceRequestDto dto = new UpdateAttendanceRequestDto();
         dto.setOnCall(true);
-        dto.setJurorNumber(jurorNumber);
+        dto.setJurorNumbers(Collections.singletonList(jurorNumber));
         dto.setNextDate(null);
 
         JurorPool jurorPool = createValidJurorPool(jurorNumber, courtOwner);
@@ -2291,7 +2291,7 @@ class JurorRecordServiceTest {
 
         UpdateAttendanceRequestDto dto = new UpdateAttendanceRequestDto();
         dto.setOnCall(false);
-        dto.setJurorNumber(jurorNumber);
+        dto.setJurorNumbers(Collections.singletonList(jurorNumber));
         dto.setNextDate(LocalDate.now().plusWeeks(3));
 
         JurorPool jurorPool = createValidJurorPool(jurorNumber, courtOwner);
@@ -2316,7 +2316,7 @@ class JurorRecordServiceTest {
         String jurorNumber = "111111111";
 
         UpdateAttendanceRequestDto dto = new UpdateAttendanceRequestDto();
-        dto.setJurorNumber(jurorNumber);
+        dto.setJurorNumbers(Collections.singletonList(jurorNumber));
         dto.setOnCall(true);
         dto.setNextDate(LocalDate.now().plusWeeks(2));
 
@@ -2339,7 +2339,7 @@ class JurorRecordServiceTest {
         String jurorNumberNotExist = "000111222";
 
         UpdateAttendanceRequestDto dto = new UpdateAttendanceRequestDto();
-        dto.setJurorNumber(jurorNumberNotExist);
+        dto.setJurorNumbers(Collections.singletonList(jurorNumberNotExist));
         dto.setOnCall(true);
         dto.setNextDate(null);
 
@@ -2361,7 +2361,7 @@ class JurorRecordServiceTest {
         String jurorNumber = "111111111";
 
         UpdateAttendanceRequestDto dto = new UpdateAttendanceRequestDto();
-        dto.setJurorNumber(jurorNumber);
+        dto.setJurorNumbers(Collections.singletonList(jurorNumber));
         dto.setOnCall(true);
         dto.setNextDate(null);
 

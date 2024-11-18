@@ -581,26 +581,26 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     }
 
     @Override
+    @Transactional
     public void updateAttendance(UpdateAttendanceRequestDto dto) {
-        log.info("Placing juror on call for juror {} ", dto.getJurorNumber());
 
-        JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(dto.getJurorNumber());
-        validateUpdateAttendance(dto);
+        dto.getJurorNumbers().forEach(juror -> {
+            JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(juror);
+            validateUpdateAttendance(dto);
 
-        if (dto.isOnCall()) {
-            validateOnCall(jurorPool);
-            jurorPool.setOnCall(true);
-            jurorPool.setNextDate(null);
-        } else if (dto.getNextDate() != null) {
-            jurorPool.setOnCall(false);
-            jurorPool.setNextDate(dto.getNextDate());
-        } else {
-            throw new MojException.BadRequest("Must select either on call or enter new date",
-                null);
-        }
+            if (dto.isOnCall()) {
+                validateOnCall(jurorPool);
+                jurorPool.setOnCall(true);
+                jurorPool.setNextDate(null);
+                log.info("Juror {} has been placed on call", juror);
+            } else if (dto.getNextDate() != null) {
+                jurorPool.setOnCall(false);
+                jurorPool.setNextDate(dto.getNextDate());
+                log.info("Updating next attendance date for juror {} ", juror);
+            }
 
-        jurorPoolRepository.save(jurorPool);
-
+            jurorPoolRepository.save(jurorPool);
+        });
     }
 
     @Override
@@ -700,6 +700,11 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         if (dto.isOnCall() && dto.getNextDate() != null) {
             throw new MojException.BadRequest("Cannot place juror on call and have a next date",
                 null);
+        } else if (!dto.isOnCall() && dto.getNextDate() == null) {
+            throw new MojException.BadRequest(
+                "Must select either on call or enter new date",
+                null
+            );
         }
     }
 

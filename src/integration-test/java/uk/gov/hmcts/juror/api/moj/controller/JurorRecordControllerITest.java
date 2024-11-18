@@ -4847,7 +4847,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             UpdateAttendanceRequestDto dto = new UpdateAttendanceRequestDto();
             dto.setOnCall(true);
-            dto.setJurorNumber("121212121");
+            dto.setJurorNumbers(Collections.singletonList("121212121"));
             dto.setNextDate(null);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
@@ -4855,7 +4855,30 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<?> response =
                 restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url + "?juror_number=121212121")), String.class);
+                    URI.create(url)), String.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP POST request to be ACCEPTED")
+                .isEqualTo(HttpStatus.ACCEPTED);
+        }
+
+
+        @Test
+        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_updateAttendance.sql"})
+        void updateAttendanceHappyPathPlaceOnCallMultiple() throws Exception {
+            final String url = BASE_URL + "/update-attendance";
+
+            UpdateAttendanceRequestDto dto = new UpdateAttendanceRequestDto();
+            dto.setOnCall(true);
+            dto.setJurorNumbers(Arrays.asList("121212121", "131313131"));
+            dto.setNextDate(null);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
+                                                                     UserType.COURT));
+
+            ResponseEntity<?> response =
+                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
+                                                          URI.create(url)), String.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be ACCEPTED")
@@ -4869,7 +4892,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             UpdateAttendanceRequestDto dto = new UpdateAttendanceRequestDto();
             dto.setOnCall(false);
-            dto.setJurorNumber("121212121");
+            dto.setJurorNumbers(Collections.singletonList("121212121"));
             dto.setNextDate(LocalDate.now().plusWeeks(4));
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
@@ -4877,7 +4900,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<?> response =
                 restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url + "?juror_number=121212121")), String.class);
+                    URI.create(url)), String.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be ACCEPTED")
@@ -4891,7 +4914,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             UpdateAttendanceRequestDto dto = new UpdateAttendanceRequestDto();
             dto.setOnCall(true);
-            dto.setJurorNumber("111111111");
+            dto.setJurorNumbers(Collections.singletonList("111111111"));
             dto.setNextDate(null);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
@@ -4899,7 +4922,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<?> response =
                 restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url + "?juror_number=111111111")), String.class);
+                    URI.create(url)), String.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be NOT_FOUND")
@@ -4913,7 +4936,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             UpdateAttendanceRequestDto dto = new UpdateAttendanceRequestDto();
             dto.setOnCall(true);
-            dto.setJurorNumber("641600096");
+            dto.setJurorNumbers(Collections.singletonList("641600096"));
             dto.setNextDate(null);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
@@ -4921,7 +4944,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<?> response =
                 restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url + "?juror_number=641600096")), String.class);
+                    URI.create(url)), String.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be NOT_FOUND")
@@ -4936,12 +4959,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             UpdateAttendanceRequestDto dto = new UpdateAttendanceRequestDto();
             dto.setOnCall(true);
-            dto.setJurorNumber("641600096");
+            dto.setJurorNumbers(Collections.singletonList("641600096"));
             dto.setNextDate(null);
 
             ResponseEntity<?> response =
                 restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url + "?juror_number=641600096")), String.class);
+                    URI.create(url)), String.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be NOT_FOUND")
