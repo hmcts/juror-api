@@ -584,9 +584,10 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     @Transactional
     public void updateAttendance(UpdateAttendanceRequestDto dto) {
 
+        validateUpdateAttendance(dto);
+
         dto.getJurorNumbers().forEach(juror -> {
             JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(juror);
-            validateUpdateAttendance(dto);
 
             if (dto.isOnCall()) {
                 validateOnCall(jurorPool);
