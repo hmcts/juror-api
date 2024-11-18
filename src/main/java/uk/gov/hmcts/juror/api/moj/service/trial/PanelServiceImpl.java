@@ -329,7 +329,7 @@ public class PanelServiceImpl implements PanelService {
             panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, locCode);
         for (Panel panel : panelList) {
             if (panel.getResult() == null || panel.getResult() == PanelResult.JUROR
-                || (date != null && panel.getReturnDate() != null && panel.getReturnDate().isAfter(date)
+                || (date != null && panel.getReturnDate() != null && panel.getReturnDate().isAfter(date.minusDays(1))
                 && date.atTime(23,59).isAfter(panel.getDateSelected()))) {
                 dtoList.add(createPanelListDto(panel));
             }

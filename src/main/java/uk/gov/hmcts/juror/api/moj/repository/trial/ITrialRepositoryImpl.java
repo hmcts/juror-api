@@ -81,9 +81,10 @@ public class ITrialRepositoryImpl implements ITrialRepository {
             .where(TRIAL.trialStartDate.loe(attendanceDate))
             .where(TRIAL.trialEndDate.isNull().or(TRIAL.trialEndDate.goe(attendanceDate)))
             //If they are a JUROR or Panelled or have an appearance with a jury confirmation audit number
-            .where((PANEL.result.eq(PanelResult.JUROR).or(PANEL.result.isNull()))
-                       .and(PANEL.returnDate.isNull().or(PANEL.returnDate.goe(attendanceDate)))
-                .or(APPEARANCE.isNotNull()))
+            .where((PANEL.empanelledDate.isNotNull().and(PANEL.returnDate.isNull()
+                                                             .or(PANEL.returnDate.goe(attendanceDate))))
+                .or(APPEARANCE.isNotNull())
+                       .or(PANEL.empanelledDate.isNull().and(PANEL.result.isNull())))
             .groupBy(TRIAL.trialNumber, TRIAL.description, TRIAL.trialType, TRIAL.courtroom.description,
                 TRIAL.judge.name)
             .fetch();

@@ -164,13 +164,12 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             query.where(APPEARANCE.attendanceAuditNumber.isNull()
                 .or(APPEARANCE.attendanceAuditNumber.startsWith("J").not()));
             query.where(APPEARANCE.trialNumber.isNull().or(APPEARANCE.trialNumber.eq(PANEL.trial.trialNumber)
-                                                           .and((PANEL.returnDate.isNotNull()
-                                                               .and(PANEL.returnDate.loe(date)
-                                                                    .and(PANEL.empanelledDate.isNull())))
+                                                           .and(PANEL.empanelledDate.isNull()
+                                                                    .and(PANEL.result.isNotNull()))
                                                                     .or(PANEL.returnDate.isNotNull()
                                                                        .and(PANEL.empanelledDate.isNotNull())
-                                                                       .and(PANEL.returnDate.before(date)
-                                                                       .or(PANEL.empanelledDate.after(date)))))));
+                                                                       .and(PANEL.returnDate.loe(date)
+                                                                       .or(PANEL.empanelledDate.after(date))))));
 
         }
 
