@@ -71,7 +71,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
     private final StraightThroughProcessorService straightThroughProcessorService;
     private final JurorRepository jurorRepository;
     private final JurorPoolService jurorPoolService;
-    
+
     @Override
     @Transactional
     public JurorPaperResponseDetailDto getJurorPaperResponse(final String jurorNumber, BureauJwtPayload payload) {
@@ -172,8 +172,13 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
         // copy third party
         jurorPaperResponseDetailDto.setThirdParty(new JurorPaperResponseDetailDto.ThirdParty(
-            jurorPaperResponse.getRelationship(), jurorPaperResponse.getThirdPartyReason()
+            jurorPaperResponse.getThirdPartyFName(),jurorPaperResponse.getThirdPartyLName(),
+            jurorPaperResponse.getMainPhone(),jurorPaperResponse.getEmail(),
+            jurorPaperResponse.getThirdPartyOtherReason(),jurorPaperResponse.getOtherPhone(),
+            jurorPaperResponse.getRelationship(), jurorPaperResponse.getThirdPartyReason(),
+            jurorPaperResponse.getJurorPhoneDetails(), jurorPaperResponse.getJurorEmailDetails()
         ));
+
 
         // copy address details
         copyAddressToDto(jurorPaperResponse, jurorPaperResponseDetailDto);
@@ -378,6 +383,11 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         // set up third party details
         JurorPaperResponseDto.ThirdParty thirdParty = paperResponseDto.getThirdParty();
         if (thirdParty != null) {
+            jurorPaperResponse.setThirdPartyFName(thirdParty.getThirdPartyFName());
+            jurorPaperResponse.setThirdPartyLName(thirdParty.getThirdPartyLName());
+            jurorPaperResponse.setMainPhone(thirdParty.getMainPhone());
+            jurorPaperResponse.setEmailAddress(thirdParty.getEmailAddress());
+            jurorPaperResponse.setThirdPartyOtherReason(thirdParty.getThirdPartyOtherReason());
             jurorPaperResponse.setRelationship(thirdParty.getRelationship());
             jurorPaperResponse.setThirdPartyReason(thirdParty.getThirdPartyReason());
         }
