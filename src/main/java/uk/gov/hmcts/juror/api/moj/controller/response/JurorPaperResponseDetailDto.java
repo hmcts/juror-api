@@ -343,6 +343,7 @@ public class JurorPaperResponseDetailDto implements IJurorResponse {
         private String cjsEmployerDetails;
     }
 
+    @Builder
     @AllArgsConstructor
     @NoArgsConstructor
     @Getter
