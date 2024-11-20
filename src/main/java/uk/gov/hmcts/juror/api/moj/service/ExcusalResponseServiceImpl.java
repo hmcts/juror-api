@@ -143,9 +143,10 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
         juror.setExcusalRejected("Y");
         jurorRepository.save(juror);
 
-        if (jurorPool.getStatus().getStatus() == IJurorStatus.SUMMONED) {
+        if (jurorPool.getStatus().getStatus() == IJurorStatus.SUMMONED && juror.getDateOfBirth() != null) {
             jurorPool.setStatus(getPoolStatus(IJurorStatus.RESPONDED));
         }
+
         if (jurorPool.getNextDate() == null) {
             jurorPool.setNextDate(jurorPool.getPool().getReturnDate());
             jurorPool.setStatus(getPoolStatus(IJurorStatus.RESPONDED));
