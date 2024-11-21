@@ -1,33 +1,13 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
-import uk.gov.hmcts.juror.api.moj.controller.request.ConfirmIdentityDto;
-import uk.gov.hmcts.juror.api.moj.controller.request.ContactLogRequestDto;
-import uk.gov.hmcts.juror.api.moj.controller.request.EditJurorRecordRequestDto;
-import uk.gov.hmcts.juror.api.moj.controller.request.FilterableJurorDetailsRequestDto;
-import uk.gov.hmcts.juror.api.moj.controller.request.JurorCreateRequestDto;
-import uk.gov.hmcts.juror.api.moj.controller.request.JurorManualCreationRequestDto;
-import uk.gov.hmcts.juror.api.moj.controller.request.JurorNameDetailsDto;
-import uk.gov.hmcts.juror.api.moj.controller.request.JurorOpticRefRequestDto;
-import uk.gov.hmcts.juror.api.moj.controller.request.JurorRecordFilterRequestQuery;
-import uk.gov.hmcts.juror.api.moj.controller.request.PoliceCheckStatusDto;
-import uk.gov.hmcts.juror.api.moj.controller.request.ProcessNameChangeRequestDto;
-import uk.gov.hmcts.juror.api.moj.controller.request.ProcessPendingJurorRequestDto;
-import uk.gov.hmcts.juror.api.moj.controller.request.RequestBankDetailsDto;
-import uk.gov.hmcts.juror.api.moj.controller.request.UpdateAttendanceRequestDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.ContactEnquiryTypeListDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.ContactLogListDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.FilterableJurorDetailsResponseDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.JurorAttendanceDetailsResponseDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.JurorBankDetailsDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsResponseDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.JurorNotesDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.JurorOverviewResponseDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.JurorRecordSearchDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.JurorSummonsReplyResponseDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.PendingJurorsResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.*;
+import uk.gov.hmcts.juror.api.moj.controller.response.*;
 import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorHistoryResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorPaymentsResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.FilterJurorRecord;
@@ -35,6 +15,8 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PendingJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
+
+import java.util.List;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public interface JurorRecordService {
@@ -106,4 +88,6 @@ public interface JurorRecordService {
     PaginatedList<FilterJurorRecord> searchForJurorRecords(JurorRecordFilterRequestQuery query);
 
     void createJurorManual(JurorManualCreationRequestDto jurorCreateRequestDto);
+
+    JurorSimpleDetailsResponseDto getJurorSimpleDetails(JurorSimpleDetailsRequestDto request);
 }

@@ -40,6 +40,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.JurorNotesRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberAndPoolNumberDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorOpticRefRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorRecordFilterRequestQuery;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorSimpleDetailsRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoliceCheckStatusDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessNameChangeRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessPendingJurorRequestDto;
@@ -56,6 +57,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorNotesDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorOverviewResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorPoolDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorRecordSearchDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorSimpleDetailsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorSummonsReplyResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.NameDetails;
 import uk.gov.hmcts.juror.api.moj.controller.response.PaymentDetails;
@@ -74,6 +76,7 @@ import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PendingJuror;
 import uk.gov.hmcts.juror.api.moj.domain.Permission;
@@ -92,6 +95,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.IdCheckCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.PendingJurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
+import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
@@ -5926,6 +5930,55 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 .isEqualTo("Responded");
         }
 
+    }
+
+    @Nested
+    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_searchForJurorRecords.sql"})
+    class GetJurorSimpleDetails {
+
+        @Test
+        void getJurorSimpleDetailsHappy() {
+
+            String jurorNumber = "641500101";
+            String url = BASE_URL + "/simple-details";
+
+            JurorSimpleDetailsRequestDto requestDto = new JurorSimpleDetailsRequestDto();
+            requestDto.setJurorNumbers(Collections.singletonList(jurorNumber));
+            requestDto.setLocationCode("767");
+
+            ResponseEntity<JurorSimpleDetailsResponseDto> response =
+                restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
+                    URI.create(url)), JurorSimpleDetailsResponseDto.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP GET request to be OK")
+                .isEqualTo(HttpStatus.OK);
+
+            JurorSimpleDetailsResponseDto responseBody = response.getBody();
+            assertThat(responseBody).isNotNull();
+            assertThat(responseBody.getJurorDetails()).hasSize(1);
+            JurorSimpleDetailsResponseDto.SimpleDetails jurorDetails = responseBody.getJurorDetails().get(0);
+            assertThat(jurorDetails.getJurorNumber()).isEqualTo(jurorNumber);
+            assertThat(jurorDetails.getFirstName()).isEqualTo("Fnamenineten");
+            assertThat(jurorDetails.getLastName()).isEqualTo("Lnamenineten");
+            assertThat(jurorDetails.getStatus()).isEqualTo(JurorStatusEnum.RESPONDED);
+
+        }
+        
+        @Test
+        void getJurorSimpleDetailsMultipleHappy() {
+            // TODO: implement
+        }
+
+        @Test
+        void noJuror() {
+            // TODO: implement
+        }
+
+        @Test
+        void noPermissions() {
+            // TODO: implement
+        }
     }
 
     private void verifyBulkPrintData(String jurorNumber, String formCode) {
