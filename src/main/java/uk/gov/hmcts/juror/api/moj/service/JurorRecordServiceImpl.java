@@ -29,6 +29,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.JurorManualCreationRequestD
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNameDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorOpticRefRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorRecordFilterRequestQuery;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorSimpleDetailsRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoliceCheckStatusDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessNameChangeRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessPendingJurorRequestDto;
@@ -44,6 +45,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorNotesDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorOverviewResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorRecordSearchDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorSimpleDetailsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorSummonsReplyResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PendingJurorsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorHistoryResponseDto;
@@ -80,6 +82,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.PendingJurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
+import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.PoolCreateException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
@@ -344,6 +347,40 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             jurorDetailsResponseDto.setReplyProcessingStatus(response.getProcessingStatus().getDescription());
         }
         return jurorDetailsResponseDto;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public JurorSimpleDetailsResponseDto getJurorSimpleDetails(JurorSimpleDetailsRequestDto request) {
+
+        log.info("User {} Retrieving juror simple details for juror numbers {} ", SecurityUtil.getActiveLogin(),
+                 request.getJurorNumbers());
+
+        // get jurors location
+        CourtLocation courtLocation = courtLocationService.getCourtLocation(request.getLocationCode());
+
+        List<JurorSimpleDetailsResponseDto.SimpleDetails> jurorDetails = new ArrayList<>();
+
+        request.getJurorNumbers().forEach(jurorNumber -> {
+            Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
+
+            JurorPool jurorPool = JurorPoolUtils.getActiveJurorPool(jurorPoolRepository, jurorNumber, courtLocation);
+
+            // check if user owns the juror record
+            JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, SecurityUtil.getActiveOwner());
+
+            JurorStatusEnum status = JurorStatusEnum.fromStatus(jurorPool.getStatus().getStatus());
+            JurorSimpleDetailsResponseDto.SimpleDetails simpleDetails = JurorSimpleDetailsResponseDto
+                .SimpleDetails.builder()
+                .jurorNumber(jurorNumber)
+                .status(status)
+                .firstName(juror.getFirstName())
+                .lastName(juror.getLastName())
+                .build();
+            jurorDetails.add(simpleDetails);
+        });
+
+        return new JurorSimpleDetailsResponseDto(jurorDetails);
     }
 
 

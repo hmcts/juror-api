@@ -12,6 +12,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.JurorManualCreationRequestD
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNameDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorOpticRefRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorRecordFilterRequestQuery;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorSimpleDetailsRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoliceCheckStatusDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessNameChangeRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessPendingJurorRequestDto;
@@ -26,6 +27,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorNotesDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorOverviewResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorRecordSearchDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorSimpleDetailsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorSummonsReplyResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PendingJurorsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorHistoryResponseDto;
@@ -106,4 +108,6 @@ public interface JurorRecordService {
     PaginatedList<FilterJurorRecord> searchForJurorRecords(JurorRecordFilterRequestQuery query);
 
     void createJurorManual(JurorManualCreationRequestDto jurorCreateRequestDto);
+
+    JurorSimpleDetailsResponseDto getJurorSimpleDetails(JurorSimpleDetailsRequestDto request);
 }
