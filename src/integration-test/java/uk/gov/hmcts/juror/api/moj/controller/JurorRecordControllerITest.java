@@ -76,7 +76,6 @@ import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
-import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PendingJuror;
 import uk.gov.hmcts.juror.api.moj.domain.Permission;
@@ -5951,7 +5950,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                     URI.create(url)), JurorSimpleDetailsResponseDto.class);
 
             assertThat(response.getStatusCode())
-                .as("Expect the HTTP GET request to be OK")
+                .as("Expect the HTTP POST request to be OK")
                 .isEqualTo(HttpStatus.OK);
 
             JurorSimpleDetailsResponseDto responseBody = response.getBody();
@@ -5964,20 +5963,71 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertThat(jurorDetails.getStatus()).isEqualTo(JurorStatusEnum.RESPONDED);
 
         }
-        
+
         @Test
         void getJurorSimpleDetailsMultipleHappy() {
-            // TODO: implement
+            String bureauJwt = createBureauJwt("Court_User", "415", "415");
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            String url = BASE_URL + "/simple-details";
+
+            JurorSimpleDetailsRequestDto requestDto = new JurorSimpleDetailsRequestDto();
+            requestDto.setJurorNumbers(Arrays.asList("641500091","641500092","641500093","641500094","641500095"));
+            requestDto.setLocationCode("415");
+
+            ResponseEntity<JurorSimpleDetailsResponseDto> response =
+                restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
+                                                          URI.create(url)), JurorSimpleDetailsResponseDto.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP POST request to be OK")
+                .isEqualTo(HttpStatus.OK);
+
+            JurorSimpleDetailsResponseDto responseBody = response.getBody();
+            assertThat(responseBody).isNotNull();
+            assertThat(responseBody.getJurorDetails()).hasSize(5);
         }
 
         @Test
-        void noJuror() {
-            // TODO: implement
+        void jurorNotFound() {
+            // "123456789" is not a valid juror number
+
+            String bureauJwt = createBureauJwt("Court_User", "415", "415");
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            String url = BASE_URL + "/simple-details";
+
+            JurorSimpleDetailsRequestDto requestDto = new JurorSimpleDetailsRequestDto();
+            requestDto.setJurorNumbers(Arrays.asList("641500091","123456789","641500093","641500094","641500095"));
+            requestDto.setLocationCode("415");
+
+            ResponseEntity<JurorSimpleDetailsResponseDto> response =
+                restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
+                                                          URI.create(url)), JurorSimpleDetailsResponseDto.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP POST request to be OK")
+                .isEqualTo(HttpStatus.NOT_FOUND);
+
         }
 
         @Test
         void noPermissions() {
-            // TODO: implement
+            String jurorNumber = "641500091";
+            String url = BASE_URL + "/simple-details";
+
+            JurorSimpleDetailsRequestDto requestDto = new JurorSimpleDetailsRequestDto();
+            requestDto.setJurorNumbers(Collections.singletonList(jurorNumber));
+            requestDto.setLocationCode("415");
+
+            ResponseEntity<JurorSimpleDetailsResponseDto> response =
+                restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
+                                                          URI.create(url)), JurorSimpleDetailsResponseDto.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP POST request to be OK")
+                .isEqualTo(HttpStatus.FORBIDDEN);
+
         }
     }
 

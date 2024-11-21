@@ -19,8 +19,35 @@ import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
-import uk.gov.hmcts.juror.api.moj.controller.request.*;
-import uk.gov.hmcts.juror.api.moj.controller.response.*;
+import uk.gov.hmcts.juror.api.moj.controller.request.ConfirmIdentityDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.ContactLogRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.EditJurorRecordRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.FilterableJurorDetailsRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorAddressDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorCreateRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorManualCreationRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorNameDetailsDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorOpticRefRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorRecordFilterRequestQuery;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorSimpleDetailsRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.PoliceCheckStatusDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.ProcessNameChangeRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.ProcessPendingJurorRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.RequestBankDetailsDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.UpdateAttendanceRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.ContactEnquiryTypeListDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.ContactLogListDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.FilterableJurorDetailsResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorAttendanceDetailsResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorBankDetailsDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsCommonResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorNotesDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorOverviewResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorRecordSearchDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorSimpleDetailsResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorSummonsReplyResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.PendingJurorsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorHistoryResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorPaymentsResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
@@ -324,7 +351,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     @Override
     @Transactional(readOnly = true)
-    public JurorSimpleDetailsResponseDto getJurorSimpleDetails(JurorSimpleDetailsRequestDto request){
+    public JurorSimpleDetailsResponseDto getJurorSimpleDetails(JurorSimpleDetailsRequestDto request) {
 
         log.info("User {} Retrieving juror simple details for juror numbers {} ", SecurityUtil.getActiveLogin(),
                  request.getJurorNumbers());
@@ -334,7 +361,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         List<JurorSimpleDetailsResponseDto.SimpleDetails> jurorDetails = new ArrayList<>();
 
-        request.getJurorNumbers().forEach( jurorNumber -> {
+        request.getJurorNumbers().forEach(jurorNumber -> {
             Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
 
             JurorPool jurorPool = JurorPoolUtils.getActiveJurorPool(jurorPoolRepository, jurorNumber, courtLocation);
@@ -343,7 +370,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, SecurityUtil.getActiveOwner());
 
             JurorStatusEnum status = JurorStatusEnum.fromStatus(jurorPool.getStatus().getStatus());
-            JurorSimpleDetailsResponseDto.SimpleDetails simpleDetails = JurorSimpleDetailsResponseDto.SimpleDetails.builder()
+            JurorSimpleDetailsResponseDto.SimpleDetails simpleDetails = JurorSimpleDetailsResponseDto
+                .SimpleDetails.builder()
                 .jurorNumber(jurorNumber)
                 .status(status)
                 .firstName(juror.getFirstName())
