@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.service.trial;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.EndTrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorPanelReassignRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReturnJuryDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialSearch;
@@ -28,4 +29,6 @@ public interface TrialService {
     void endTrial(EndTrialDto dto);
 
     TrialSummaryDto editTrial(TrialDto trialDto);
+
+    void reassignPanelMembers(JurorPanelReassignRequestDto request);
 }

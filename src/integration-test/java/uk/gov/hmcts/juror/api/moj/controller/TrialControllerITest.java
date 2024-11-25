@@ -19,6 +19,7 @@ import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.EndTrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorPanelReassignRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReturnJuryDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialSearch;
@@ -50,6 +51,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -1014,6 +1016,31 @@ class TrialControllerITest extends AbstractIntegrationTest {
         assertThat(responseEntity.getStatusCode()).as("Expect HTTP Response to be Forbidden")
             .isEqualTo(FORBIDDEN);
     }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/trial/ReassignPanel.sql"})
+    void reassignPanelMembersHappyPath() {
+        final String url = "/api/v1/moj/trial/reassign-panel-members";
+        final String locationCode = "415";
+
+        JurorPanelReassignRequestDto dto = new JurorPanelReassignRequestDto();
+        dto.setSourceTrialNumber("T10000001");
+        dto.setSourceTrialLocCode(locationCode);
+        dto.setTargetTrialNumber("T10000002");
+        dto.setTargetTrialLocCode(locationCode);
+
+        dto.setJurors(Arrays.asList("415000006", "415000007", "415000008"));
+
+        initialiseHeader(singletonList(locationCode), locationCode, COURT_USER);
+
+        ResponseEntity<Void> responseEntity =
+            restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, POST,
+                                                      URI.create(url)), Void.class);
+
+        assertThat(responseEntity.getStatusCode()).as("Expect status code to be 200 (ok)").isEqualTo(OK);
+
+    }
+
 
     private void initialiseHeader(List<String> courts, String owner, String loginUserType) {
         BureauJwtPayload.Staff staff = createStaff(courts, "MsCourt");
