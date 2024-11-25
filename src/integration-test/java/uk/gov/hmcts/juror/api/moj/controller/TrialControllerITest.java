@@ -29,6 +29,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialSummaryDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
@@ -37,6 +38,7 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
+import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.TrialType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -66,6 +68,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static uk.gov.hmcts.juror.api.TestUtils.staffBuilder;
 import static uk.gov.hmcts.juror.api.utils.DataConversionUtil.getExceptionDetails;
 
@@ -1038,6 +1041,61 @@ class TrialControllerITest extends AbstractIntegrationTest {
                                                       URI.create(url)), Void.class);
 
         assertThat(responseEntity.getStatusCode()).as("Expect status code to be 200 (ok)").isEqualTo(OK);
+
+        executeInTransaction(() -> {
+            // confirm that the jurors have been reassigned
+            List<Panel> panelList = panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(
+                "T10000002", locationCode);
+
+            assertThat(panelList).hasSize(3);
+            assertThat(panelList).extracting(Panel::getJurorNumber)
+                .containsExactlyInAnyOrder("415000006", "415000007", "415000008");
+
+            // confirm that the jurors have been removed from the source trial
+            List<Panel> sourcePanelList = panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(
+                "T10000001", locationCode);
+
+            // confirm the result of the source panel is now 3 returned, 2 null
+            assertThat(sourcePanelList).hasSize(5);
+            assertThat(sourcePanelList).extracting(Panel::getResult)
+                .containsExactlyInAnyOrder(
+                    PanelResult.RETURNED,
+                    PanelResult.RETURNED,
+                    PanelResult.RETURNED,
+                    null,
+                    null);
+
+            // confirm panel reassigned history
+            List<JurorHistory> jurorHistory = jurorHistoryRepository.findByJurorNumberOrderById("415000006");
+            assertThat(jurorHistory).hasSize(1);
+            assertThat(jurorHistory.get(0).getHistoryCode()).isEqualTo(HistoryCodeMod.REASSIGN_PANEL);
+        });
+
+    }
+
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/trial/ReassignPanel.sql"})
+    void reassignPanelMembersAlreadyEmpanelled() {
+        final String url = "/api/v1/moj/trial/reassign-panel-members";
+        final String locationCode = "415";
+
+        JurorPanelReassignRequestDto dto = new JurorPanelReassignRequestDto();
+        dto.setSourceTrialNumber("T10000000");
+        dto.setSourceTrialLocCode(locationCode);
+        dto.setTargetTrialNumber("T10000001");
+        dto.setTargetTrialLocCode(locationCode);
+
+        dto.setJurors(Arrays.asList("415000001", "415000002", "415000003"));
+
+        initialiseHeader(singletonList(locationCode), locationCode, COURT_USER);
+
+        ResponseEntity<Void> responseEntity =
+            restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, POST,
+                                                      URI.create(url)), Void.class);
+
+        assertThat(responseEntity.getStatusCode()).as("Expect status code to be 422 (unprocessable entity)")
+            .isEqualTo(UNPROCESSABLE_ENTITY);
 
     }
 

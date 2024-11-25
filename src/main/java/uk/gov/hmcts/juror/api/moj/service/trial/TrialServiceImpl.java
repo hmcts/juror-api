@@ -191,11 +191,7 @@ public class TrialServiceImpl implements TrialService {
         ));
 
         // validate the user has access to both source and target court locations
-        BureauJwtPayload payload = SecurityUtil.getActiveUsersBureauPayload();
-        if (!payload.getStaff().getCourts().contains(sourceTrialLocCode)
-            || !payload.getStaff().getCourts().contains(targetTrialLocCode)) {
-            throw new MojException.Forbidden("User does not have access to the court location", null);
-        }
+        validateTrialsAndAccess(request);
 
         // validate the source and target targetTrials exist
         Trial targetTrial = getTrial(targetTrialNumber, targetTrialLocCode);
@@ -212,7 +208,6 @@ public class TrialServiceImpl implements TrialService {
         validateSourceTrialPanel(request, sourcePanelList, countJurorsToMove);
 
         List<Panel> targetPanelList = getPanelList(targetTrialNumber, sourceTrialLocCode);
-        validateTargetTrialPanel(request, targetPanelList);
 
         // move the panel members to the target targetTrial where they match the juror numbers
         request.getJurors().forEach(jurorNumber -> {
@@ -236,20 +231,52 @@ public class TrialServiceImpl implements TrialService {
             panel.setCompleted(true);
             panelRepository.saveAndFlush(panel);
 
-            //TODO: need to confirm if a juror can be put back into a previous panel
+            Optional<Panel> targetPanel = targetPanelList.stream().filter(p -> p.getJurorNumber().equals(jurorNumber))
+                .findFirst();
 
-            Panel newPanel = new Panel();
-            newPanel.setTrial(targetTrial);
-            newPanel.setJuror(jurorRecord);
-            newPanel.setDateSelected(LocalDateTime.now());
-            newPanel.setTrial(sourceTrial);
-            panelRepository.save(newPanel);
+            Panel newPanel;
 
+            if (targetPanel.isPresent()) {
+
+                newPanel = targetPanel.get();
+
+                // check if the juror was empanelled on target trial before
+                if (targetTrial.getTrialStartDate() != null) {
+                    newPanel.setReturnDate(null);
+                    newPanel.setResult(PanelResult.JUROR);
+                } else {
+                    // was a panel juror before
+                    newPanel.setDateSelected(LocalDateTime.now());
+                    newPanel.setResult(null);
+                }
+
+                newPanel.setCompleted(false);
+            } else {
+                newPanel = new Panel();
+                newPanel.setTrial(targetTrial);
+                newPanel.setJuror(jurorRecord);
+                newPanel.setDateSelected(LocalDateTime.now());
+            }
+
+            panelRepository.saveAndFlush(newPanel);
             // add history for the juror
             jurorHistoryService.createReassignedToPanelHistory(jurorPool, newPanel);
 
         });
 
+    }
+
+    private static void validateTrialsAndAccess(JurorPanelReassignRequestDto request) {
+
+        if (request.getSourceTrialNumber().equals(request.getTargetTrialNumber())) {
+            throw new MojException.BadRequest("Source and target trial numbers cannot be the same", null);
+        }
+
+        BureauJwtPayload payload = SecurityUtil.getActiveUsersBureauPayload();
+        if (!payload.getStaff().getCourts().contains(request.getSourceTrialLocCode())
+            || !payload.getStaff().getCourts().contains(request.getTargetTrialLocCode())) {
+            throw new MojException.Forbidden("User does not have access to the court locations", null);
+        }
     }
 
     private List<Panel> getPanelList(String sourceTrialNumber, String locCode) {
@@ -270,7 +297,8 @@ public class TrialServiceImpl implements TrialService {
             ), null));
     }
 
-    private void validateSourceTrialPanel(JurorPanelReassignRequestDto request, List<Panel> panelList, int countJurorsToMove) {
+    private void validateSourceTrialPanel(JurorPanelReassignRequestDto request, List<Panel> panelList,
+                                          int countJurorsToMove) {
         if (panelList.isEmpty()) {
             throw new MojException.NotFound("No panel members found on the source trial", null);
         }
@@ -282,14 +310,6 @@ public class TrialServiceImpl implements TrialService {
         request.getJurors().forEach(jurorNumber -> {
             if (panelList.stream().noneMatch(panel -> panel.getJurorNumber().equals(jurorNumber))) {
                 throw new MojException.NotFound("Juror %s not found on the source trial".formatted(jurorNumber), null);
-            }
-        });
-    }
-
-    private void validateTargetTrialPanel(JurorPanelReassignRequestDto request, List<Panel> panelList) {
-        request.getJurors().forEach(jurorNumber -> {
-            if (panelList.stream().anyMatch(panel -> panel.getJurorNumber().equals(jurorNumber))) {
-                throw new MojException.BadRequest("Juror %s already found on the target trial".formatted(jurorNumber), null);
             }
         });
     }
