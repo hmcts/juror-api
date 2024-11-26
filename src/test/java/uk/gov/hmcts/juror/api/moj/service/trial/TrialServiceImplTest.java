@@ -15,6 +15,7 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.EndTrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorPanelReassignRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReturnJuryDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialSearch;
@@ -50,6 +51,7 @@ import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
@@ -506,6 +508,33 @@ class TrialServiceImplTest {
         dto.setTrialNumber("T1");
         Assertions.assertThrows(MojException.NotFound.class, () -> trialService.endTrial(dto));
     }
+
+    @Test
+    void reassignPanelMembersHappy() {
+        final String trialNumber = "T100000000";
+        List<Panel> panelMembers = createPanelMembers(10, null, trialNumber, IJurorStatus.PANEL);
+        when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415"))
+            .thenReturn(panelMembers);
+
+        trialService.reassignPanelMembers(createReassignPanelMembersRequestDto());
+
+        verify(panelRepository, times(1))
+            .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
+        verify(panelRepository, times(panelMembers.size())).saveAndFlush(any());
+        verify(jurorHistoryService, times(panelMembers.size())).createReassignedToPanelHistory(any(), any());
+    }
+
+    private JurorPanelReassignRequestDto createReassignPanelMembersRequestDto() {
+
+        JurorPanelReassignRequestDto dto = new JurorPanelReassignRequestDto();
+        dto.setJurors(Arrays.asList("111111101", "111111102", "111111103"));
+        dto.setSourceTrialNumber("T100000000");
+        dto.setSourceTrialLocCode("415");
+        dto.setTargetTrialNumber("T100000002");
+        dto.setTargetTrialLocCode("415");
+        return dto;
+    }
+
 
     private Trial createTrial(String trialNumber) {
         Trial trial = new Trial();

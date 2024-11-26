@@ -10,7 +10,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
@@ -70,6 +69,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static uk.gov.hmcts.juror.api.TestUtils.staffBuilder;
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_PROCESS_EMPANELLED_JUROR;
 import static uk.gov.hmcts.juror.api.utils.DataConversionUtil.getExceptionDetails;
 
 /**
@@ -922,7 +922,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
 
         assertThat(responseEntity.getStatusCode())
             .as("Expect status code to be 422 (ok)")
-            .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+            .isEqualTo(UNPROCESSABLE_ENTITY);
 
         assertThat(responseEntity.getBody()).as("Expect response to have json string").isNotNull();
 
@@ -1090,12 +1090,17 @@ class TrialControllerITest extends AbstractIntegrationTest {
 
         initialiseHeader(singletonList(locationCode), locationCode, COURT_USER);
 
-        ResponseEntity<Void> responseEntity =
+        ResponseEntity<String> responseEntity =
             restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, POST,
-                                                      URI.create(url)), Void.class);
+                                                      URI.create(url)), String.class);
 
         assertThat(responseEntity.getStatusCode()).as("Expect status code to be 422 (unprocessable entity)")
             .isEqualTo(UNPROCESSABLE_ENTITY);
+
+        assertBusinessRuleViolation(responseEntity,
+                                    "Cannot reassign a juror that has been empanelled",
+                                    CANNOT_PROCESS_EMPANELLED_JUROR
+        );
 
     }
 
