@@ -11,6 +11,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import uk.gov.hmcts.juror.api.TestUtils;
+import uk.gov.hmcts.juror.api.config.SecurityConfig;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.EndTrialDto;
@@ -52,6 +54,7 @@ import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
@@ -511,29 +514,72 @@ class TrialServiceImplTest {
 
     @Test
     void reassignPanelMembersHappy() {
-        final String trialNumber = "T100000000";
-        List<Panel> panelMembers = createPanelMembers(10, null, trialNumber, IJurorStatus.PANEL);
-        when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415"))
+
+        payload = TestUtils.createJwt("415", "COURT_USER", "1", Collections.singletonList("415"));
+        TestUtils.mockSecurityUtil(payload);
+        final String sourceTrialNumber = "T100000000";
+        final String targetTrialNumber = "T100000001";
+        final String locCode = "415";
+        final List<String> jurors = Arrays.asList("111111101", "111111102", "111111103");
+        List<Panel> panelMembers = createPanelMembers(10, null, sourceTrialNumber, IJurorStatus.PANEL);
+
+        Trial trial = createTrial(targetTrialNumber);
+        when(trialRepository.findByTrialNumberAndCourtLocationLocCode(targetTrialNumber, locCode))
+            .thenReturn(Optional.of(trial));
+
+        when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(sourceTrialNumber, "415"))
             .thenReturn(panelMembers);
 
-        trialService.reassignPanelMembers(createReassignPanelMembersRequestDto());
+        when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(targetTrialNumber, "415"))
+            .thenReturn(Collections.emptyList());
+
+        trialService.reassignPanelMembers(createReassignPanelMembersRequestDto(
+            jurors, sourceTrialNumber, targetTrialNumber, locCode));
 
         verify(panelRepository, times(1))
-            .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
-        verify(panelRepository, times(panelMembers.size())).saveAndFlush(any());
-        verify(jurorHistoryService, times(panelMembers.size())).createReassignedToPanelHistory(any(), any());
+            .findByTrialTrialNumberAndTrialCourtLocationLocCode(sourceTrialNumber, "415");
+        verify(panelRepository, times(6)).saveAndFlush(any()); // 2 * 3 jurors
+        verify(jurorHistoryService, times(jurors.size())).createReassignedToPanelHistory(any(), any());
     }
 
-    private JurorPanelReassignRequestDto createReassignPanelMembersRequestDto() {
+    @Test
+    void reassignPanelMembersTrialEnded() {
+
+        payload = TestUtils.createJwt("415", "COURT_USER", "1", Collections.singletonList("415"));
+        TestUtils.mockSecurityUtil(payload);
+        final String sourceTrialNumber = "T100000000";
+        final String targetTrialNumber = "T100000001";
+        final String locCode = "415";
+        final List<String> jurors = Arrays.asList("111111101", "111111102", "111111103");
+
+        Trial trial = createTrial(targetTrialNumber);
+        trial.setTrialEndDate(now());
+
+        when(trialRepository.findByTrialNumberAndCourtLocationLocCode(targetTrialNumber, locCode))
+            .thenReturn(Optional.of(trial));
+
+        assertThatExceptionOfType(MojException.BusinessRuleViolation.class).isThrownBy(() ->
+            trialService.reassignPanelMembers(createReassignPanelMembersRequestDto(
+            jurors, sourceTrialNumber, targetTrialNumber, locCode)));
+
+        verify(panelRepository, never()).findByTrialTrialNumberAndTrialCourtLocationLocCode(anyString(), anyString());
+        verify(panelRepository, never()).saveAndFlush(any());
+        verify(jurorHistoryService, never()).createReassignedToPanelHistory(any(), any());
+
+    }
+
+    private JurorPanelReassignRequestDto createReassignPanelMembersRequestDto(List<String> jurors,
+        String sourceTrialNumber, String targetTrialNumber, String locCode) {
 
         JurorPanelReassignRequestDto dto = new JurorPanelReassignRequestDto();
-        dto.setJurors(Arrays.asList("111111101", "111111102", "111111103"));
-        dto.setSourceTrialNumber("T100000000");
-        dto.setSourceTrialLocCode("415");
-        dto.setTargetTrialNumber("T100000002");
-        dto.setTargetTrialLocCode("415");
+        dto.setJurors(jurors);
+        dto.setSourceTrialNumber(sourceTrialNumber);
+        dto.setSourceTrialLocCode(locCode);
+        dto.setTargetTrialNumber(targetTrialNumber);
+        dto.setTargetTrialLocCode(locCode);
         return dto;
     }
+
 
 
     private Trial createTrial(String trialNumber) {

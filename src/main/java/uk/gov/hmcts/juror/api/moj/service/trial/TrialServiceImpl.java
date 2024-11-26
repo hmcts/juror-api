@@ -58,6 +58,7 @@ import java.util.Optional;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_EDIT_COMPLETED_TRIAL;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_EDIT_TRIAL_WITH_JURORS;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_PROCESS_EMPANELLED_JUROR;
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_RE_ADD_JUROR_TO_PANEL;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.TRIAL_HAS_MEMBERS;
 
 @Slf4j
@@ -195,7 +196,6 @@ public class TrialServiceImpl implements TrialService {
 
         // validate the source and target targetTrials exist
         Trial targetTrial = getTrial(targetTrialNumber, targetTrialLocCode);
-        Trial sourceTrial = getTrial(sourceTrialNumber, sourceTrialLocCode);
 
         // check if targetTrial has already ended
         if (targetTrial.getTrialEndDate() != null) {
@@ -234,29 +234,16 @@ public class TrialServiceImpl implements TrialService {
             Optional<Panel> targetPanel = targetPanelList.stream().filter(p -> p.getJurorNumber().equals(jurorNumber))
                 .findFirst();
 
-            Panel newPanel;
-
             if (targetPanel.isPresent()) {
-
-                newPanel = targetPanel.get();
-
-                // check if the juror was empanelled on target trial before
-                if (targetTrial.getTrialStartDate() != null) {
-                    newPanel.setReturnDate(null);
-                    newPanel.setResult(PanelResult.JUROR);
-                } else {
-                    // was a panel juror before
-                    newPanel.setDateSelected(LocalDateTime.now());
-                    newPanel.setResult(null);
-                }
-
-                newPanel.setCompleted(false);
-            } else {
-                newPanel = new Panel();
-                newPanel.setTrial(targetTrial);
-                newPanel.setJuror(jurorRecord);
-                newPanel.setDateSelected(LocalDateTime.now());
+                // throw an exception if the juror is already on the target panel
+                throw new MojException.BusinessRuleViolation("Juror %s was already in the target panel"
+                    .formatted(jurorNumber), CANNOT_RE_ADD_JUROR_TO_PANEL);
             }
+
+            Panel newPanel = new Panel();
+            newPanel.setTrial(targetTrial);
+            newPanel.setJuror(jurorRecord);
+            newPanel.setDateSelected(LocalDateTime.now());
 
             panelRepository.saveAndFlush(newPanel);
             // add history for the juror

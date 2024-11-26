@@ -70,6 +70,7 @@ import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static uk.gov.hmcts.juror.api.TestUtils.staffBuilder;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_PROCESS_EMPANELLED_JUROR;
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_RE_ADD_JUROR_TO_PANEL;
 import static uk.gov.hmcts.juror.api.utils.DataConversionUtil.getExceptionDetails;
 
 /**
@@ -83,6 +84,7 @@ import static uk.gov.hmcts.juror.api.utils.DataConversionUtil.getExceptionDetail
     "PMD.TooManyMethods"
 })
 class TrialControllerITest extends AbstractIntegrationTest {
+    private static final String REASSIGN_PANEL_MEMBERS = "/api/v1/moj/trial/reassign-panel-members";
     private static final String ASSERT_POST_IS_SUCCESSFUL = "Expect the HTTP POST request to be successful.";
     private static final String URL_CREATE = "/api/v1/moj/trial/create";
 
@@ -1023,7 +1025,6 @@ class TrialControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/ReassignPanel.sql"})
     void reassignPanelMembersHappyPath() {
-        final String url = "/api/v1/moj/trial/reassign-panel-members";
         final String locationCode = "415";
 
         JurorPanelReassignRequestDto dto = new JurorPanelReassignRequestDto();
@@ -1038,7 +1039,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<Void> responseEntity =
             restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, POST,
-                                                      URI.create(url)), Void.class);
+                                                      URI.create(REASSIGN_PANEL_MEMBERS)), Void.class);
 
         assertThat(responseEntity.getStatusCode()).as("Expect status code to be 200 (ok)").isEqualTo(OK);
 
@@ -1077,7 +1078,6 @@ class TrialControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/ReassignPanel.sql"})
     void reassignPanelMembersAlreadyEmpanelled() {
-        final String url = "/api/v1/moj/trial/reassign-panel-members";
         final String locationCode = "415";
 
         JurorPanelReassignRequestDto dto = new JurorPanelReassignRequestDto();
@@ -1092,7 +1092,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<String> responseEntity =
             restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, POST,
-                                                      URI.create(url)), String.class);
+                                                      URI.create(REASSIGN_PANEL_MEMBERS)), String.class);
 
         assertThat(responseEntity.getStatusCode()).as("Expect status code to be 422 (unprocessable entity)")
             .isEqualTo(UNPROCESSABLE_ENTITY);
@@ -1100,6 +1100,36 @@ class TrialControllerITest extends AbstractIntegrationTest {
         assertBusinessRuleViolation(responseEntity,
                                     "Cannot reassign a juror that has been empanelled",
                                     CANNOT_PROCESS_EMPANELLED_JUROR
+        );
+
+    }
+
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/trial/ReassignPanel.sql"})
+    void reassignPanelMembersWasOnTargetPanel() {
+        final String locationCode = "415";
+
+        JurorPanelReassignRequestDto dto = new JurorPanelReassignRequestDto();
+        dto.setSourceTrialNumber("T10000000");
+        dto.setSourceTrialLocCode(locationCode);
+        dto.setTargetTrialNumber("T10000001");
+        dto.setTargetTrialLocCode(locationCode);
+
+        dto.setJurors(singletonList("415000006"));
+
+        initialiseHeader(singletonList(locationCode), locationCode, COURT_USER);
+
+        ResponseEntity<String> responseEntity =
+            restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, POST,
+                                                      URI.create(REASSIGN_PANEL_MEMBERS)), String.class);
+
+        assertThat(responseEntity.getStatusCode()).as("Expect status code to be 422 (unprocessable entity)")
+            .isEqualTo(UNPROCESSABLE_ENTITY);
+
+        assertBusinessRuleViolation(responseEntity,
+                                    "Juror 415000006 was already in the target panel",
+                                    CANNOT_RE_ADD_JUROR_TO_PANEL
         );
 
     }
