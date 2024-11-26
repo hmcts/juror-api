@@ -568,6 +568,46 @@ class TrialServiceImplTest {
 
     }
 
+    @Test
+    void reassignPanelMembersSameTrialNumbers() {
+
+        payload = TestUtils.createJwt("415", "COURT_USER", "1", Collections.singletonList("415"));
+        TestUtils.mockSecurityUtil(payload);
+        final String sourceTrialNumber = "T100000000";
+        final String targetTrialNumber = "T100000000";
+        final String locCode = "415";
+        final List<String> jurors = Arrays.asList("111111101", "111111102", "111111103");
+
+        assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
+                                                   trialService.reassignPanelMembers(createReassignPanelMembersRequestDto(
+                                                       jurors, sourceTrialNumber, targetTrialNumber, locCode)));
+
+        verify(panelRepository, never()).findByTrialTrialNumberAndTrialCourtLocationLocCode(anyString(), anyString());
+        verify(panelRepository, never()).saveAndFlush(any());
+        verify(jurorHistoryService, never()).createReassignedToPanelHistory(any(), any());
+
+    }
+
+    @Test
+    void reassignPanelMembersInvalidCourtLocation() {
+
+        payload = TestUtils.createJwt("415", "COURT_USER", "1", Collections.singletonList("415"));
+        TestUtils.mockSecurityUtil(payload);
+        final String sourceTrialNumber = "T100000000";
+        final String targetTrialNumber = "T100000001";
+        final String locCode = "416";
+        final List<String> jurors = Arrays.asList("111111101", "111111102", "111111103");
+
+        assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
+                                                                                trialService.reassignPanelMembers(createReassignPanelMembersRequestDto(
+                                                                                    jurors, sourceTrialNumber, targetTrialNumber, locCode)));
+
+        verify(panelRepository, never()).findByTrialTrialNumberAndTrialCourtLocationLocCode(anyString(), anyString());
+        verify(panelRepository, never()).saveAndFlush(any());
+        verify(jurorHistoryService, never()).createReassignedToPanelHistory(any(), any());
+
+    }
+
     private JurorPanelReassignRequestDto createReassignPanelMembersRequestDto(List<String> jurors,
         String sourceTrialNumber, String targetTrialNumber, String locCode) {
 
