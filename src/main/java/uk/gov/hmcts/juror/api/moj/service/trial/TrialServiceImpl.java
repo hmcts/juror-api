@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
@@ -52,6 +53,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -60,6 +62,7 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_PROCESS_EMPANELLED_JUROR;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_RE_ADD_JUROR_TO_PANEL;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.TRIAL_HAS_MEMBERS;
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.UNCONFIRMED_ATTENDANCE_EXISTS;
 
 @Slf4j
 @Service
@@ -218,6 +221,10 @@ public class TrialServiceImpl implements TrialService {
                 .orElseThrow(() -> new MojException
                     .NotFound("Juror %s not found on the source targetTrial".formatted(jurorNumber), null));
 
+            // check if juror has gap in attendance since being panelled
+            validateAppearances(jurorNumber, panel, sourceTrialLocCode);
+
+
             // check if juror is empanelled, if so, cannot reassign
             if (panel.getResult() == PanelResult.JUROR) {
                 throw new MojException.BusinessRuleViolation("Cannot reassign a juror that has been empanelled",
@@ -251,6 +258,30 @@ public class TrialServiceImpl implements TrialService {
 
         });
 
+    }
+
+    private void validateAppearances(String jurorNumber, Panel panel, String sourceTrialLocCode) {
+        List<Appearance> appearances = jurorAppearanceService.getAppearancesSince(
+            jurorNumber, panel.getDateSelected().toLocalDate(),
+            sourceTrialLocCode
+        );
+
+        final int appearanceCount = appearances.size();
+        final int daysSincePanelled = panel.getDateSelected().toLocalDate().until(LocalDate.now()).getDays();
+
+        if (appearanceCount < daysSincePanelled - 1) { // ignore current day
+            throw new MojException.BusinessRuleViolation("Juror %s has gaps in attendance since being panelled"
+                .formatted(jurorNumber), UNCONFIRMED_ATTENDANCE_EXISTS);
+        }
+
+        appearances.forEach(appearance -> {
+            if (appearance.getAttendanceDate().isBefore(LocalDate.now())
+                && Arrays.asList(AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT)
+                    .contains(appearance.getAppearanceStage())) {
+                throw new MojException.BusinessRuleViolation("Juror %s has unconfirmed attendance in current "
+                    + "panel".formatted(jurorNumber), UNCONFIRMED_ATTENDANCE_EXISTS);
+            }
+        });
     }
 
     private static void validateTrialsAndAccess(JurorPanelReassignRequestDto request) {

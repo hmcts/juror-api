@@ -12,7 +12,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.TestUtils;
-import uk.gov.hmcts.juror.api.config.SecurityConfig;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.EndTrialDto;
@@ -579,7 +578,8 @@ class TrialServiceImplTest {
         final List<String> jurors = Arrays.asList("111111101", "111111102", "111111103");
 
         assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
-                                                   trialService.reassignPanelMembers(createReassignPanelMembersRequestDto(
+                                                   trialService.reassignPanelMembers(
+                                                       createReassignPanelMembersRequestDto(
                                                        jurors, sourceTrialNumber, targetTrialNumber, locCode)));
 
         verify(panelRepository, never()).findByTrialTrialNumberAndTrialCourtLocationLocCode(anyString(), anyString());
@@ -599,8 +599,8 @@ class TrialServiceImplTest {
         final List<String> jurors = Arrays.asList("111111101", "111111102", "111111103");
 
         assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
-                                                                                trialService.reassignPanelMembers(createReassignPanelMembersRequestDto(
-                                                                                    jurors, sourceTrialNumber, targetTrialNumber, locCode)));
+                                            trialService.reassignPanelMembers(createReassignPanelMembersRequestDto(
+                                                jurors, sourceTrialNumber, targetTrialNumber, locCode)));
 
         verify(panelRepository, never()).findByTrialTrialNumberAndTrialCourtLocationLocCode(anyString(), anyString());
         verify(panelRepository, never()).saveAndFlush(any());
@@ -619,8 +619,6 @@ class TrialServiceImplTest {
         dto.setTargetTrialLocCode(locCode);
         return dto;
     }
-
-
 
     private Trial createTrial(String trialNumber) {
         Trial trial = new Trial();
@@ -750,6 +748,7 @@ class TrialServiceImplTest {
              i++) {
             Panel temp = createSinglePanelData(panelResult, trialNumber, status, String.format(jurorNumber, i + 1));
             temp.getJuror().setJurorNumber(jurorNumber.formatted(i + 1));
+            temp.setDateSelected(now().atStartOfDay());
             temp.setResult(panelResult);
             panelList.add(temp);
 
