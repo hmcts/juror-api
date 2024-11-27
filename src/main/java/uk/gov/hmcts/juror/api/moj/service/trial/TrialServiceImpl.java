@@ -63,6 +63,7 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_RE_ADD_JUROR_TO_PANEL;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.TRIAL_HAS_MEMBERS;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.UNCONFIRMED_ATTENDANCE_EXISTS;
+import static uk.gov.hmcts.juror.api.moj.utils.DateUtils.getWorkingDaysBetween;
 
 @Slf4j
 @Service
@@ -224,7 +225,6 @@ public class TrialServiceImpl implements TrialService {
             // check if juror has gap in attendance since being panelled
             validateAppearances(jurorNumber, panel, sourceTrialLocCode);
 
-
             // check if juror is empanelled, if so, cannot reassign
             if (panel.getResult() == PanelResult.JUROR) {
                 throw new MojException.BusinessRuleViolation("Cannot reassign a juror that has been empanelled",
@@ -261,28 +261,45 @@ public class TrialServiceImpl implements TrialService {
     }
 
     private void validateAppearances(String jurorNumber, Panel panel, String sourceTrialLocCode) {
+
         List<Appearance> appearances = jurorAppearanceService.getAppearancesSince(
-            jurorNumber, panel.getDateSelected().toLocalDate(),
-            sourceTrialLocCode
-        );
+            jurorNumber, panel.getDateSelected().toLocalDate().minusDays(1), sourceTrialLocCode);
 
-        final int appearanceCount = appearances.size();
-        final int daysSincePanelled = panel.getDateSelected().toLocalDate().until(LocalDate.now()).getDays();
-
-        if (appearanceCount < daysSincePanelled - 1) { // ignore current day
-            throw new MojException.BusinessRuleViolation("Juror %s has gaps in attendance since being panelled"
-                .formatted(jurorNumber), UNCONFIRMED_ATTENDANCE_EXISTS);
-        }
-
+        // check for any unconfirmed attendance in the source panel
         appearances.forEach(appearance -> {
             if (appearance.getAttendanceDate().isBefore(LocalDate.now())
                 && Arrays.asList(AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT)
-                    .contains(appearance.getAppearanceStage())) {
-                throw new MojException.BusinessRuleViolation("Juror %s has unconfirmed attendance in current "
-                    + "panel".formatted(jurorNumber), UNCONFIRMED_ATTENDANCE_EXISTS);
+                .contains(appearance.getAppearanceStage())) {
+                throw new MojException.BusinessRuleViolation(
+                    "Juror %s has unconfirmed attendance in current panel".formatted(jurorNumber),
+                    UNCONFIRMED_ATTENDANCE_EXISTS);
             }
         });
+
+        final int appearanceCount = appearances.size();
+        final long daysSincePanelled = getWorkingDaysBetween(panel.getDateSelected().toLocalDate(), LocalDate.now());
+
+        // need to make sure we don't count weekend days, just working days
+        if (appearanceCount < daysSincePanelled - 1) { // -1 to exclude the day the juror is reassigned
+            throw new MojException.BusinessRuleViolation("Juror %s has gaps in attendance since being panelled"
+                                                             .formatted(jurorNumber), UNCONFIRMED_ATTENDANCE_EXISTS);
+        }
+
+        // check if there is an appearance for current date or create one
+        jurorAppearanceService.getAppearance(jurorNumber, panel.getDateSelected().toLocalDate(), sourceTrialLocCode)
+            .ifPresentOrElse(appearance -> appearance.setTrialNumber(panel.getTrial().getTrialNumber()), () -> {
+                // need to create a default appearance for the day the juror was panelled
+                Appearance appearance = new Appearance();
+                appearance.setJurorNumber(jurorNumber);
+                appearance.setAttendanceDate(panel.getDateSelected().toLocalDate());
+                appearance.setTrialNumber(panel.getTrial().getTrialNumber());
+                appearance.setAppearanceStage(AppearanceStage.CHECKED_IN);
+                appearance.setTimeIn(LocalTime.of(9, 0));
+                jurorAppearanceService.saveAppearance(appearance);
+            });
+
     }
+
 
     private static void validateTrialsAndAccess(JurorPanelReassignRequestDto request) {
 

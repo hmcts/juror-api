@@ -45,16 +45,16 @@ insert into juror_mod.juror_pool(owner, juror_number, pool_number, status, is_ac
 ('415', '415000010', '415231103', 3, true,'415');
 
 insert into juror_mod.appearance (attendance_date, juror_number,loc_code, time_in, time_out, attendance_type, appearance_stage) values
-(current_date, '415000001', '415', '09:00','16:00','FULL_DAY','EXPENSE_ENTERED' ),
-(current_date, '415000002', '415', '09:00','16:00','FULL_DAY','EXPENSE_ENTERED' ),
-(current_date, '415000003', '415', '09:00','16:00','FULL_DAY','EXPENSE_ENTERED' ),
-(current_date, '415000004', '415', '09:00','16:00','FULL_DAY','EXPENSE_ENTERED' ),
-(current_date, '415000005', '415','09:00','16:00','FULL_DAY','EXPENSE_ENTERED' ),
-(current_date, '415000006', '415', '09:00','16:00','FULL_DAY','EXPENSE_ENTERED' ),
-(current_date, '415000007', '415', '09:00','16:00','FULL_DAY','EXPENSE_ENTERED' ),
-(current_date, '415000008', '415', '09:00','16:00','FULL_DAY','EXPENSE_ENTERED' ),
-(current_date, '415000009', '415', '09:00','16:00','FULL_DAY','EXPENSE_ENTERED' ),
-(current_date, '415000010', '415', '09:00','16:00','FULL_DAY','EXPENSE_ENTERED' );
+(current_date - 1, '415000001', '415', '09:00','16:00','FULL_DAY','EXPENSE_ENTERED' ),
+(current_date - 1, '415000002', '415', '09:00','16:00','FULL_DAY','EXPENSE_ENTERED' ),
+(current_date - 1, '415000003', '415', '09:00','16:00','FULL_DAY','EXPENSE_ENTERED' ),
+(current_date - 1, '415000004', '415', '09:00','16:00','FULL_DAY','EXPENSE_ENTERED' ),
+(current_date - 1, '415000005', '415','09:00','16:00','FULL_DAY','EXPENSE_ENTERED' ),
+(current_date - 1, '415000006', '415', '09:00','16:00','FULL_DAY','EXPENSE_ENTERED' ),
+(current_date - 1, '415000007', '415', '09:00','16:00','FULL_DAY','EXPENSE_ENTERED' ),
+(current_date - 1, '415000008', '415', '09:00','16:00','FULL_DAY','EXPENSE_ENTERED' ),
+(current_date - 1, '415000009', '415', '09:00','16:00','FULL_DAY','EXPENSE_ENTERED' ),
+(current_date - 1, '415000010', '415', '09:00','16:00','FULL_DAY','EXPENSE_ENTERED' );
 
 insert into juror_mod.judge (owner, code, description) values
 ('415', '0001', 'judge dredd'),

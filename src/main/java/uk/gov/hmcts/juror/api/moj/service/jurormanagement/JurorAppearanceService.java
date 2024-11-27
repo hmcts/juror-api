@@ -71,4 +71,6 @@ public interface JurorAppearanceService {
     void confirmAttendance(ConfirmAttendanceDto request);
 
     List<Appearance> getAppearancesSince(String jurorNumber, LocalDate appearanceDate, String locCode);
+
+    Appearance saveAppearance(Appearance appearance);
 }
