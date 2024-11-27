@@ -63,7 +63,7 @@ public class PanelRepositoryImpl implements IPanelRepository {
             .where(PANEL.completed.isTrue())
             .where(PANEL.empanelledDate.isNotNull().and(PANEL.empanelledDate.loe(date)
                                                             .and(PANEL.returnDate.isNull()
-                                                                     .or(PANEL.returnDate.goe(date)))))
+                                                                     .or(PANEL.returnDate.after(date)))))
             .fetch().isEmpty();
     }
 
