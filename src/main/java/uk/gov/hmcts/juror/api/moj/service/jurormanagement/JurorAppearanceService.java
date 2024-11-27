@@ -20,6 +20,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @SuppressWarnings("PMD.TooManyMethods")
@@ -68,4 +69,8 @@ public interface JurorAppearanceService {
     UnconfirmedJurorResponseDto retrieveUnconfirmedJurors(String locationCode, LocalDate attendanceDate);
 
     void confirmAttendance(ConfirmAttendanceDto request);
+
+    List<Appearance> getAppearancesSince(String jurorNumber, LocalDate appearanceDate, String locCode);
+
+    Appearance saveAppearance(Appearance appearance);
 }

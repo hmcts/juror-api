@@ -1387,6 +1387,17 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         log.info("Attendance confirmed for juror {} on date {}", jurorNumber, request.getAttendanceDate());
     }
 
+    @Override
+    public List<Appearance> getAppearancesSince(String jurorNumber, LocalDate appearanceDate, String locCode) {
+        return appearanceRepository
+            .findAllByJurorNumberAndAttendanceDateGreaterThanEqualAndLocCodeOrderByAttendanceDateDesc(
+            jurorNumber, appearanceDate, locCode);
+    }
+
+    public Appearance saveAppearance(Appearance appearance) {
+        return appearanceRepository.save(appearance);
+    }
+
 
     private void realignAttendanceTypeInternal(Appearance appearance, boolean isLongTrialDay) {
         if ((!Boolean.TRUE.equals(appearance.getNonAttendanceDay())

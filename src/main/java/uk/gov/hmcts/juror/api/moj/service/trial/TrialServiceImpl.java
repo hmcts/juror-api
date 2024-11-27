@@ -5,12 +5,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.juror.service.JurorService;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.EndTrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorPanelReassignRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReturnJuryDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialSearch;
@@ -20,6 +23,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialSummaryDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
@@ -49,12 +53,17 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_EDIT_COMPLETED_TRIAL;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_EDIT_TRIAL_WITH_JURORS;
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_PROCESS_EMPANELLED_JUROR;
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_RE_ADD_JUROR_TO_PANEL;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.TRIAL_HAS_MEMBERS;
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.UNCONFIRMED_ATTENDANCE_EXISTS;
+import static uk.gov.hmcts.juror.api.moj.utils.DateUtils.getWorkingDaysBetween;
 
 @Slf4j
 @Service
@@ -77,6 +86,7 @@ public class TrialServiceImpl implements TrialService {
     private final JurorAppearanceService jurorAppearanceService;
     private final JurorHistoryService jurorHistoryService;
     private final AppearanceCreationService appearanceCreationService;
+    private final JurorService juror;
 
     private static final String CANNOT_FIND_TRIAL_ERROR_MESSAGE = "Cannot find trial with number: %s for "
         + "court location %s";
@@ -131,10 +141,7 @@ public class TrialServiceImpl implements TrialService {
         }
 
         // check the trial exists
-        Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialDto.getCaseNumber(),
-                trialDto.getCourtLocation())
-            .orElseThrow(() -> new MojException.NotFound(String.format(CANNOT_FIND_TRIAL_ERROR_MESSAGE,
-                trialDto.getCaseNumber(), trialDto.getCourtLocation()), null));
+        Trial trial = getTrial(trialDto.getCaseNumber(), trialDto.getCourtLocation());
 
         // check the trial is not completed
         if (trial.getTrialEndDate() != null) {
@@ -172,6 +179,176 @@ public class TrialServiceImpl implements TrialService {
         return createTrialSummary(trial, trial.getCourtroom(), trial.getJudge(), false);
     }
 
+    @Override
+    @Transactional
+    public void reassignPanelMembers(JurorPanelReassignRequestDto request) {
+
+        final String sourceTrialNumber = request.getSourceTrialNumber();
+        final String targetTrialNumber = request.getTargetTrialNumber();
+        final String targetTrialLocCode = request.getTargetTrialLocCode();
+        final String sourceTrialLocCode = request.getSourceTrialLocCode();
+        final int countJurorsToMove = request.getJurors().size();
+
+        log.info("Reassigning %s panel members from trial %s to trial %s".formatted(
+            countJurorsToMove,
+            sourceTrialNumber,
+            targetTrialNumber
+        ));
+
+        // validate the user has access to both source and target court locations
+        validateTrialsAndAccess(request);
+
+        // validate the source and target targetTrials exist
+        Trial targetTrial = getTrial(targetTrialNumber, targetTrialLocCode);
+
+        // check if targetTrial has already ended
+        if (targetTrial.getTrialEndDate() != null) {
+            throw new MojException.BusinessRuleViolation("Cannot move panel members to a completed targetTrial",
+                CANNOT_EDIT_COMPLETED_TRIAL);
+        }
+
+        // get the panel members from the source targetTrial
+        List<Panel> sourcePanelList = getPanelList(sourceTrialNumber, sourceTrialLocCode);
+        validateSourceTrialPanel(request, sourcePanelList, countJurorsToMove);
+
+        List<Panel> targetPanelList = getPanelList(targetTrialNumber, sourceTrialLocCode);
+
+        // move the panel members to the target targetTrial where they match the juror numbers
+        request.getJurors().forEach(jurorNumber -> {
+
+            Panel panel = sourcePanelList.stream()
+                .filter(p -> p.getJurorNumber().equals(jurorNumber))
+                .findFirst()
+                .orElseThrow(() -> new MojException
+                    .NotFound("Juror %s not found on the source targetTrial".formatted(jurorNumber), null));
+
+            // check if juror has gap in attendance since being panelled
+            validateAppearances(jurorNumber, panel, sourceTrialLocCode);
+
+            // check if juror is empanelled, if so, cannot reassign
+            if (panel.getResult() == PanelResult.JUROR) {
+                throw new MojException.BusinessRuleViolation("Cannot reassign a juror that has been empanelled",
+                                                             CANNOT_PROCESS_EMPANELLED_JUROR);
+            }
+
+            JurorPool jurorPool = PanelUtils.getAssociatedJurorPool(jurorPoolRepository, panel);
+            final Juror jurorRecord = jurorPool.getJuror();
+
+            panel.setResult(PanelResult.RETURNED); // return the juror from source panel
+            panel.setCompleted(true);
+            panelRepository.saveAndFlush(panel);
+
+            Optional<Panel> targetPanel = targetPanelList.stream().filter(p -> p.getJurorNumber().equals(jurorNumber))
+                .findFirst();
+
+            if (targetPanel.isPresent()) {
+                // throw an exception if the juror is already on the target panel
+                throw new MojException.BusinessRuleViolation("Juror %s was already in the target panel"
+                    .formatted(jurorNumber), CANNOT_RE_ADD_JUROR_TO_PANEL);
+            }
+
+            Panel newPanel = new Panel();
+            newPanel.setTrial(targetTrial);
+            newPanel.setJuror(jurorRecord);
+            newPanel.setDateSelected(LocalDateTime.now());
+
+            panelRepository.saveAndFlush(newPanel);
+            // add history for the juror
+            jurorHistoryService.createReassignedToPanelHistory(jurorPool, newPanel);
+
+        });
+
+    }
+
+    private void validateAppearances(String jurorNumber, Panel panel, String sourceTrialLocCode) {
+
+        List<Appearance> appearances = jurorAppearanceService.getAppearancesSince(
+            jurorNumber, panel.getDateSelected().toLocalDate().minusDays(1), sourceTrialLocCode);
+
+        // check for any unconfirmed attendance in the source panel
+        appearances.forEach(appearance -> {
+            if (appearance.getAttendanceDate().isBefore(LocalDate.now())
+                && Arrays.asList(AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT)
+                .contains(appearance.getAppearanceStage())) {
+                throw new MojException.BusinessRuleViolation(
+                    "Juror %s has unconfirmed attendance in current panel".formatted(jurorNumber),
+                    UNCONFIRMED_ATTENDANCE_EXISTS);
+            }
+        });
+
+        final int appearanceCount = appearances.size();
+        final long daysSincePanelled = getWorkingDaysBetween(panel.getDateSelected().toLocalDate(), LocalDate.now());
+
+        // need to make sure we don't count weekend days, just working days
+        if (appearanceCount < daysSincePanelled - 1) { // -1 to exclude the day the juror is reassigned
+            throw new MojException.BusinessRuleViolation("Juror %s has gaps in attendance since being panelled"
+                                                             .formatted(jurorNumber), UNCONFIRMED_ATTENDANCE_EXISTS);
+        }
+
+        // check if there is an appearance for current date or create one
+        jurorAppearanceService.getAppearance(jurorNumber, panel.getDateSelected().toLocalDate(), sourceTrialLocCode)
+            .ifPresentOrElse(appearance -> appearance.setTrialNumber(panel.getTrial().getTrialNumber()), () -> {
+                // need to create a default appearance for the day the juror was panelled
+                Appearance appearance = new Appearance();
+                appearance.setJurorNumber(jurorNumber);
+                appearance.setAttendanceDate(panel.getDateSelected().toLocalDate());
+                appearance.setTrialNumber(panel.getTrial().getTrialNumber());
+                appearance.setAppearanceStage(AppearanceStage.CHECKED_IN);
+                appearance.setTimeIn(LocalTime.of(9, 0));
+                jurorAppearanceService.saveAppearance(appearance);
+            });
+
+    }
+
+
+    private static void validateTrialsAndAccess(JurorPanelReassignRequestDto request) {
+
+        if (request.getSourceTrialNumber().equals(request.getTargetTrialNumber())) {
+            throw new MojException.BadRequest("Source and target trial numbers cannot be the same", null);
+        }
+
+        BureauJwtPayload payload = SecurityUtil.getActiveUsersBureauPayload();
+        if (!payload.getStaff().getCourts().contains(request.getSourceTrialLocCode())
+            || !payload.getStaff().getCourts().contains(request.getTargetTrialLocCode())) {
+            throw new MojException.Forbidden("User does not have access to the court locations", null);
+        }
+    }
+
+    private List<Panel> getPanelList(String sourceTrialNumber, String locCode) {
+        return panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(
+            sourceTrialNumber,
+            locCode
+        );
+    }
+
+    private Trial getTrial(String trialNumber, String locCode) {
+        return trialRepository.findByTrialNumberAndCourtLocationLocCode(
+                trialNumber,
+                locCode
+            )
+            .orElseThrow(() -> new MojException.NotFound(String.format(CANNOT_FIND_TRIAL_ERROR_MESSAGE,
+                                                                       trialNumber,
+                                                                       locCode
+            ), null));
+    }
+
+    private void validateSourceTrialPanel(JurorPanelReassignRequestDto request, List<Panel> panelList,
+                                          int countJurorsToMove) {
+        if (panelList.isEmpty()) {
+            throw new MojException.NotFound("No panel members found on the source trial", null);
+        }
+
+        if (panelList.size() < countJurorsToMove) {
+            throw new MojException.NotFound("Not all jurors are on the source trial", null);
+        }
+
+        request.getJurors().forEach(jurorNumber -> {
+            if (panelList.stream().noneMatch(panel -> panel.getJurorNumber().equals(jurorNumber))) {
+                throw new MojException.NotFound("Juror %s not found on the source trial".formatted(jurorNumber), null);
+            }
+        });
+    }
+
     private boolean hasJurorsOnTrial(Trial trial) {
 
         List<Panel> panelList = panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(
@@ -193,9 +370,7 @@ public class TrialServiceImpl implements TrialService {
                 + "to view the trial details for the court location", null);
         }
 
-        Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNo, locCode)
-            .orElseThrow(() -> new MojException.NotFound(String.format(CANNOT_FIND_TRIAL_ERROR_MESSAGE,
-                trialNo, locCode), null));
+        Trial trial = getTrial(trialNo, locCode);
 
         return createTrialSummary(trial, trial.getCourtroom(), trial.getJudge(), true);
     }
@@ -327,10 +502,7 @@ public class TrialServiceImpl implements TrialService {
                 TRIAL_HAS_MEMBERS);
         }
 
-        Trial trial = trialRepository
-            .findByTrialNumberAndCourtLocationLocCode(dto.getTrialNumber(), dto.getLocationCode())
-            .orElseThrow(() -> new MojException.NotFound(String.format(CANNOT_FIND_TRIAL_ERROR_MESSAGE,
-                dto.getTrialNumber(), dto.getLocationCode()), null));
+        Trial trial = getTrial(dto.getTrialNumber(), dto.getLocationCode());
 
 
         trial.setTrialEndDate(dto.getTrialEndDate());
