@@ -180,15 +180,9 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
         }
 
         if (statusGroup == JurorStatusGroup.ON_TRIAL) {
-            query.where((APPEARANCE.trialNumber.isNotNull().and(APPEARANCE.trialNumber.eq(PANEL.trial.trialNumber)
-                                                                   .and(PANEL.empanelledDate.isNotNull()
-                                                                            .and(PANEL.empanelledDate.loe(date)
-                                                                                     .and(PANEL.returnDate.isNull()
-                                                                                              .or(PANEL.returnDate
-                                                                                                      .goe(date)))))))
-                .or(PANEL.empanelledDate.isNotNull()
+            query.where(PANEL.empanelledDate.isNotNull()
                             .and(PANEL.empanelledDate.loe(date))
-                            .and(PANEL.returnDate.isNull().or(PANEL.returnDate.after(date)))));
+                            .and(PANEL.returnDate.isNull().or(PANEL.returnDate.after(date))));
         }
 
         return query;
