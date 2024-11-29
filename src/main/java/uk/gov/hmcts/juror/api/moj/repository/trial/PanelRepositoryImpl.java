@@ -5,6 +5,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
@@ -22,6 +23,7 @@ public class PanelRepositoryImpl implements IPanelRepository {
     private static final QTrial TRIAL = QTrial.trial;
     private static final QCourtLocation COURT_LOCATION = QCourtLocation.courtLocation;
     private static final QJurorPool JUROR_POOL = QJurorPool.jurorPool;
+    private static final QAppearance APPEARANCE = QAppearance.appearance;
 
     /**
      * Retrieves members that are on trial i.e. panel/jury.
@@ -57,13 +59,17 @@ public class PanelRepositoryImpl implements IPanelRepository {
             .from(PANEL)
             .join(JUROR_POOL)
             .on(PANEL.juror.eq(JUROR_POOL.juror))
+            .leftJoin(APPEARANCE)
+            .on(PANEL.trial.trialNumber.eq(APPEARANCE.trialNumber)
+                    .and(PANEL.juror.jurorNumber.eq(APPEARANCE.jurorNumber))
+                    .and(APPEARANCE.attendanceDate.eq(date)))
             .where(PANEL.juror.jurorNumber.eq(jurorNumber))
             .where(JUROR_POOL.pool.courtLocation.locCode.eq(locationCode))
             .where(JUROR_POOL.isActive.isTrue())
             .where(PANEL.completed.isTrue())
             .where(PANEL.empanelledDate.isNotNull().and(PANEL.empanelledDate.loe(date)
                                                             .and(PANEL.returnDate.isNull()
-                                                                     .or(PANEL.returnDate.goe(date)))))
+                                                                     .or(PANEL.returnDate.after(date)))))
             .fetch().isEmpty();
     }
 
