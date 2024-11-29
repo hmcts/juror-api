@@ -2164,38 +2164,43 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode()).as("HTTP status OK expected")
                 .isEqualTo(OK);
 
-            // verify attendance records have been updated
-            Optional<Appearance> appearanceOpt =
-                appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(
-                    "415", "222222222", now().minusDays(2));
-            assertThat(appearanceOpt).isNotEmpty();
-            Appearance appearance = appearanceOpt.get();
-            assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));
-            assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 00));
-            assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
-            assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J10123456");
-            assertThat(appearance.getSatOnJury()).isTrue();
-            assertThat(appearance.isAppearanceConfirmed()).isTrue();
+            executeInTransaction(() -> {
 
-            appearanceOpt = appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(
-                "415", "333333333", now().minusDays(2));
-            assertThat(appearanceOpt).isNotEmpty();
-            appearance = appearanceOpt.get();
-            assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));
-            assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 0));
-            assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
-            assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J10123456");
-            assertThat(appearance.getSatOnJury()).isTrue();
-            assertThat(appearance.isAppearanceConfirmed()).isTrue();
+                // verify attendance records have been updated
+                Optional<Appearance> appearanceOpt =
+                    appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(
+                        "415", "222222222", now().minusDays(2));
+                assertThat(appearanceOpt).isNotEmpty();
+                Appearance appearance = appearanceOpt.get();
+                assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));
+                assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 00));
+                assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
+                assertThat(appearance.getTrialNumber()).isEqualTo("T10000001");
+                assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J10123456");
+                assertThat(appearance.getSatOnJury()).isTrue();
+                assertThat(appearance.isAppearanceConfirmed()).isTrue();
 
-            // verify juror history records have been created
-            assertThat(jurorHistoryRepository.findByJurorNumberOrderById("222222222")
-                .stream().anyMatch(jh -> jh.getHistoryCode().equals(HistoryCodeMod.JURY_ATTENDANCE)
-                    && "J10123456".equalsIgnoreCase(jh.getOtherInformationRef()))).isTrue();
+                appearanceOpt = appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(
+                    "415", "333333333", now().minusDays(2));
+                assertThat(appearanceOpt).isNotEmpty();
+                appearance = appearanceOpt.get();
+                assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));
+                assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 0));
+                assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
+                assertThat(appearance.getTrialNumber()).isEqualTo("T10000001");
+                assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J10123456");
+                assertThat(appearance.getSatOnJury()).isTrue();
+                assertThat(appearance.isAppearanceConfirmed()).isTrue();
 
-            assertThat(jurorHistoryRepository.findByJurorNumberOrderById("333333333")
-                .stream().anyMatch(jh -> jh.getHistoryCode().equals(HistoryCodeMod.JURY_ATTENDANCE)
-                    && "J10123456".equalsIgnoreCase(jh.getOtherInformationRef()))).isTrue();
+                // verify juror history records have been created
+                assertThat(jurorHistoryRepository.findByJurorNumberOrderById("222222222")
+                    .stream().anyMatch(jh -> jh.getHistoryCode().equals(HistoryCodeMod.JURY_ATTENDANCE)
+                        && "J10123456".equalsIgnoreCase(jh.getOtherInformationRef()))).isTrue();
+
+                assertThat(jurorHistoryRepository.findByJurorNumberOrderById("333333333")
+                    .stream().anyMatch(jh -> jh.getHistoryCode().equals(HistoryCodeMod.JURY_ATTENDANCE)
+                        && "J10123456".equalsIgnoreCase(jh.getOtherInformationRef()))).isTrue();
+            });
         }
 
 
