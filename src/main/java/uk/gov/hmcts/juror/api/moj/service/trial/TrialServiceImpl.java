@@ -252,6 +252,22 @@ public class TrialServiceImpl implements TrialService {
             newPanel.setJuror(jurorRecord);
             newPanel.setDateSelected(LocalDateTime.now());
 
+            // check if there is an appearance for current date or create one
+            jurorAppearanceService.getAppearance(jurorNumber, LocalDate.now(), sourceTrialLocCode)
+                .ifPresentOrElse(appearance -> appearance.setTrialNumber(targetTrial.getTrialNumber()), () -> {
+                    // need to create a default appearance for the day the juror was panelled
+                    Appearance appearance = new Appearance();
+                    appearance.setJurorNumber(jurorNumber);
+                    appearance.setPoolNumber(jurorPool.getPoolNumber());
+                    appearance.setCourtLocation(targetTrial.getCourtLocation());
+                    appearance.setAttendanceDate(LocalDate.now());
+                    appearance.setTrialNumber(targetTrial.getTrialNumber());
+                    appearance.setAppearanceStage(AppearanceStage.CHECKED_IN);
+                    appearance.setTimeIn(LocalTime.of(9, 0));
+                    appearance.setCreatedBy(SecurityUtil.getActiveLogin());
+                    jurorAppearanceService.saveAppearance(appearance);
+                });
+
             panelRepository.saveAndFlush(newPanel);
             // add history for the juror
             jurorHistoryService.createReassignedToPanelHistory(jurorPool, newPanel);
@@ -284,20 +300,6 @@ public class TrialServiceImpl implements TrialService {
             throw new MojException.BusinessRuleViolation("Juror %s has gaps in attendance since being panelled"
                                                              .formatted(jurorNumber), UNCONFIRMED_ATTENDANCE_EXISTS);
         }
-
-        // check if there is an appearance for current date or create one
-        jurorAppearanceService.getAppearance(jurorNumber, panel.getDateSelected().toLocalDate(), sourceTrialLocCode)
-            .ifPresentOrElse(appearance -> appearance.setTrialNumber(panel.getTrial().getTrialNumber()), () -> {
-                // need to create a default appearance for the day the juror was panelled
-                Appearance appearance = new Appearance();
-                appearance.setJurorNumber(jurorNumber);
-                appearance.setAttendanceDate(panel.getDateSelected().toLocalDate());
-                appearance.setTrialNumber(panel.getTrial().getTrialNumber());
-                appearance.setAppearanceStage(AppearanceStage.CHECKED_IN);
-                appearance.setTimeIn(LocalTime.of(9, 0));
-                jurorAppearanceService.saveAppearance(appearance);
-            });
-
     }
 
 
