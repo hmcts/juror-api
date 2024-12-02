@@ -155,7 +155,8 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .on(JUROR.jurorNumber.eq(APPEARANCE.jurorNumber)
                 .and(APPEARANCE.courtLocation.eq(JUROR_POOL.pool.courtLocation)))
             .leftJoin(PANEL)
-            .on(APPEARANCE.jurorNumber.eq(PANEL.juror.jurorNumber))
+            .on(APPEARANCE.jurorNumber.eq(PANEL.juror.jurorNumber)
+                    .and(APPEARANCE.trialNumber.eq(PANEL.trial.trialNumber)))
             .where(APPEARANCE.courtLocation.locCode.eq(locCode))
             .where(APPEARANCE.attendanceDate.eq(date))
             .where(JUROR_POOL.isActive.isTrue());
@@ -163,13 +164,12 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
         if (statusGroup == JurorStatusGroup.IN_WAITING) {
             query.where(APPEARANCE.attendanceAuditNumber.isNull()
                 .or(APPEARANCE.attendanceAuditNumber.startsWith("J").not()));
-            query.where(APPEARANCE.trialNumber.isNull().or(APPEARANCE.trialNumber.eq(PANEL.trial.trialNumber)
-                                                           .and(PANEL.empanelledDate.isNull()
+            query.where(APPEARANCE.trialNumber.isNull().or(PANEL.empanelledDate.isNull()
                                                                     .and(PANEL.result.isNotNull()))
                                                                     .or(PANEL.returnDate.isNotNull()
                                                                        .and(PANEL.empanelledDate.isNotNull())
                                                                        .and(PANEL.returnDate.loe(date)
-                                                                       .or(PANEL.empanelledDate.after(date))))));
+                                                                       .or(PANEL.empanelledDate.after(date)))));
 
         }
 
@@ -180,15 +180,9 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
         }
 
         if (statusGroup == JurorStatusGroup.ON_TRIAL) {
-            query.where((APPEARANCE.trialNumber.isNotNull().and(APPEARANCE.trialNumber.eq(PANEL.trial.trialNumber)
-                                                                   .and(PANEL.empanelledDate.isNotNull()
-                                                                            .and(PANEL.empanelledDate.loe(date)
-                                                                                     .and(PANEL.returnDate.isNull()
-                                                                                              .or(PANEL.returnDate
-                                                                                                      .goe(date)))))))
-                .or(PANEL.empanelledDate.isNotNull()
+            query.where(PANEL.empanelledDate.isNotNull()
                             .and(PANEL.empanelledDate.loe(date))
-                            .and(PANEL.returnDate.isNull().or(PANEL.returnDate.goe(date)))));
+                            .and(PANEL.returnDate.isNull().or(PANEL.returnDate.after(date))));
         }
 
         return query;

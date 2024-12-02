@@ -597,8 +597,11 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         final String locCode = request.getCommonData().getLocationCode();
 
         // see if there is an attendance record for the date to get the audit number
+        String trialNumber = request.getTrialNumber();
         List<Appearance> appearances = appearanceRepository.findByLocCodeAndAttendanceDateAndTrialNumber(locCode,
-            request.getCommonData().getAttendanceDate(), request.getTrialNumber());
+                                                                         request.getCommonData().getAttendanceDate(),
+                                                                         trialNumber
+        );
 
         final String juryAttendancePrefix = "J";
         String juryAttendanceNumber;
@@ -660,14 +663,21 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             appearance.setSatOnJury(true);
 
             // update appearance by adding the trial number
-            if (IJurorStatus.JUROR == jurorPool.getStatus().getStatus()) {
-                // get the currently active trial the juror is on
-                Panel panel = panelRepository.findActivePanel(locCode, jurorNumber);
-                if (panel != null) {
-                    appearance.setTrialNumber(panel.getTrial().getTrialNumber());
-                    jurorHistoryService.createJuryAttendanceHistory(jurorPool, appearance, panel);
-                }
+            Panel panel;
+            if (trialNumber == null) {
+                panel = panelRepository.findActivePanel(locCode, jurorNumber);
+            } else {
+                panel = panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumber(
+                    trialNumber, locCode, jurorNumber);
             }
+
+            if (panel == null) {
+                log.info("Panel not found for juror {} on trial {}", jurorNumber, trialNumber);
+                throw new MojException.NotFound("Panel not found for juror " + jurorNumber, null);
+            }
+
+            appearance.setTrialNumber(panel.getTrial().getTrialNumber());
+            jurorHistoryService.createJuryAttendanceHistory(jurorPool, appearance, panel);
 
             appearanceRepository.saveAndFlush(appearance);
             jurorExpenseService.applyDefaultExpenses(appearance, jurorPool.getJuror());

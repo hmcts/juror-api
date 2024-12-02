@@ -1,11 +1,12 @@
 insert into juror_mod.trial (trial_number, loc_code, description, judge, trial_type, trial_start_date, anonymous,
                              courtroom)
-values ('T10000000', '415', 'TEST DEFENDANT', 999992, 'CIV', current_date, false, 99995);
+values ('T10000000', '415', 'TEST DEFENDANT', 999992, 'CIV', current_date, false, 99995),
+       ('T10000001', '415', 'TEST DEFENDANT2', 999992, 'CIV', current_date, false, 99995);
 
 INSERT INTO juror_mod.juror_trial (loc_code, juror_number, trial_number, rand_number, date_selected, "result",
                                    completed)
-values ('415', '222222222', 'T10000000', 10, '2024-02-22 13:50:59.110', 'J', true),
-       ('415', '333333333', 'T10000000', 5, '2024-02-22 13:50:58.821', 'J', true);
+values ('415', '222222222', 'T10000001', 10, '2024-02-22 13:50:59.110', 'J', true),
+       ('415', '333333333', 'T10000001', 5, '2024-02-22 13:50:58.821', 'J', true);
 
 --JUROR_MOD.POOL
 INSERT INTO JUROR_MOD.POOL (OWNER, POOL_NO, RETURN_DATE, TOTAL_NO_REQUIRED, NO_REQUESTED, POOL_TYPE, LOC_CODE,
