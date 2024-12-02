@@ -50,7 +50,7 @@ public class DeferredListByCourtReport extends AbstractGroupedReport {
     public void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QJurorPool.jurorPool.deferralDate.isNotNull());
         query.where(QJurorPool.jurorPool.deferralDate.goe(LocalDate.now()));
-        if (SecurityUtil.isCourt()) {
+        if (SecurityUtil.isCourt() || (SecurityUtil.isBureau() && request.getFilterOwnedDeferrals())) {
             query.where(QJurorPool.jurorPool.owner.eq(SecurityUtil.getActiveOwner()));
         }
         query.orderBy(QJurorPool.jurorPool.deferralDate.asc());
