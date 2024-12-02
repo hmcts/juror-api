@@ -151,6 +151,7 @@ class DeferredListByCourtReportTest extends AbstractGroupedReportTestSupport<Def
     protected StandardReportRequest getValidRequest() {
         return StandardReportRequest.builder()
             .reportType(report.getName())
+            .filterOwnedDeferrals(false)
             .build();
     }
 }
