@@ -143,6 +143,7 @@ class DeferredListByDateReportTest extends AbstractStandardReportTestSupport<Def
     protected StandardReportRequest getValidRequest() {
         return StandardReportRequest.builder()
             .reportType(report.getName())
+            .filterOwnedDeferrals(false)
             .build();
     }
 }

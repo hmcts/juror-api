@@ -134,4 +134,7 @@ public class StandardReportRequest {
     @NotEmpty(groups = AbstractReport.Validators.RequireCourts.class)
     @NotNull(groups = AbstractReport.Validators.RequireCourts.class)
     private List<@CourtLocationCode(groups = AbstractReport.Validators.RequireCourts.class) String> courts;
+
+    @NotNull(groups = AbstractReport.Validators.RequireFilterOwnedDeferrals.class)
+    private Boolean filterOwnedDeferrals;
 }
