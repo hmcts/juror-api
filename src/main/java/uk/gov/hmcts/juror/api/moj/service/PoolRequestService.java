@@ -4,7 +4,6 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.ActivePoolFilterQuery;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolRequestedFilterQuery;
-import uk.gov.hmcts.juror.api.moj.controller.response.ActivePoolsAtCourtListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolNumbersListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestActiveDataDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestDataDto;
@@ -32,7 +31,7 @@ public interface PoolRequestService {
 
     PoolsAtCourtLocationListDto getActivePoolsAtCourtLocation(String locCode);
 
-    ActivePoolsAtCourtListDto getAllActivePoolsAtCourtLocation(String locCode);
+    PoolsAtCourtLocationListDto getAllActivePoolsAtCourtLocation(String locCode);
 
     /**
      * Retrieves the pool attendance time for a pool ID (if one is specified in the JUROR.UNIQUE_POOL table)
