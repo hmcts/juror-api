@@ -54,7 +54,7 @@ public class DeferredListByCourtReport extends AbstractGroupedReport {
         if (SecurityUtil.isCourt() || (SecurityUtil.isBureau() && request.getFilterOwnedDeferrals())) {
             query.where(QJurorPool.jurorPool.owner.eq(SecurityUtil.getActiveOwner()));
         }
-        query.orderBy(QJurorPool.jurorPool.deferralDate.asc());
+        query.orderBy(QCourtLocation.courtLocation.name.asc());
         query.groupBy(
             QCourtLocation.courtLocation.name,
             QCourtLocation.courtLocation.locCode,
