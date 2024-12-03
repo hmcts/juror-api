@@ -43,6 +43,10 @@ public interface PoolRequestRepository extends IPoolRequestRepository, JpaReposi
     @Query(value = "SELECT * from juror_mod.get_active_pools_at_court_location(:LocCode)", nativeQuery = true)
     List<String> findPoolsByCourtLocation(@Param("LocCode") String locCode) throws SQLException;
 
+    // As findPoolsByCourtLocation but also includes pools with return date in future
+    @Query(value = "SELECT * from juror_mod.get_all_active_pools_at_court_location(:LocCode)", nativeQuery = true)
+    List<String> findAllPoolsByCourtLocation(@Param("LocCode") String locCode) throws SQLException;
+
 }
 
 

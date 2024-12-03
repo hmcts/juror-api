@@ -300,35 +300,68 @@ public class PoolRequestServiceImpl implements PoolRequestService {
         List<PoolsAtCourtLocationListDto.PoolsAtCourtLocationDataDto> data = new ArrayList<>();
         try {
             List<String> poolsListing = poolRequestRepository.findPoolsByCourtLocation(locCode);
-            log.debug("Found {} active pool records for current user, {}", poolsListing.size(), userLogin);
-
-            poolsListing.forEach(pool -> {
-                List<String> poolDetails = Arrays.asList(pool.split(","));
-
-                int jurorsInAttendance = poolDetails.get(2).equals("null") ? 0 : Integer.parseInt(poolDetails.get(2));
-                int jurorsOnCall = Integer.parseInt(poolDetails.get(3));
-
-                // total possible in attendance - in attendance
-                int others = Integer.parseInt(poolDetails.get(1)) - jurorsInAttendance;
-
-                PoolsAtCourtLocationListDto.PoolsAtCourtLocationDataDto poolsAtCourtLocationDataDto =
-                    PoolsAtCourtLocationListDto.PoolsAtCourtLocationDataDto.builder()
-                        .poolNumber(poolDetails.get(0))
-                        .jurorsInAttendance(jurorsInAttendance)
-                        .jurorsOnCall(jurorsOnCall)
-                        .otherJurors(others)
-                        .totalJurors(jurorsInAttendance + jurorsOnCall + others)
-                        .jurorsOnTrials(poolDetails.get(4).equals("null") ? 0 : Integer.parseInt(poolDetails.get(4)))
-                        .poolType(poolDetails.get(6))
-                        .serviceStartDate(LocalDate.parse(poolDetails.get(7)))
-                        .build();
-                data.add(poolsAtCourtLocationDataDto);
-            });
+            logRecordsFound(poolsListing, userLogin);
+            populatePoolsListing(poolsListing, data);
         } catch (Exception e) {
-            log.error("Error retrieving active pools at court location {}", locCode);
+            logErrorRetrievingPools(locCode);
             throw new MojException.InternalServerError("Error retrieving pools at court location " + locCode, e);
         }
         return new PoolsAtCourtLocationListDto(data);
+    }
+
+    private static void logErrorRetrievingPools(String locCode) {
+        log.error("Error retrieving active pools at court location {}", locCode);
+    }
+
+    private static void logRecordsFound(List<String> poolsListing, String userLogin) {
+        log.debug("Found {} active pool records for current user, {}", poolsListing.size(), userLogin);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PoolsAtCourtLocationListDto getAllActivePoolsAtCourtLocation(String locCode) {
+        BureauJwtPayload payload = SecurityUtil.getActiveUsersBureauPayload();
+        String userLogin = payload.getLogin();
+
+        //check if user is allowed to query the locCode supplied
+        CourtLocationUtils.validateAccessToCourtLocation(locCode, payload.getOwner(), courtLocationRepository);
+
+        log.debug("User {}, Retrieving all active Pool Requests at Court location {}", userLogin, locCode);
+        List<PoolsAtCourtLocationListDto.PoolsAtCourtLocationDataDto> data = new ArrayList<>();
+        try {
+            List<String> poolsListing = poolRequestRepository.findAllPoolsByCourtLocation(locCode);
+            logRecordsFound(poolsListing, userLogin);
+            populatePoolsListing(poolsListing, data);
+        } catch (Exception e) {
+            logErrorRetrievingPools(locCode);
+            throw new MojException.InternalServerError("Error retrieving pools at court location " + locCode, e);
+        }
+        return new PoolsAtCourtLocationListDto(data);
+    }
+
+    private static void populatePoolsListing(List<String> poolsListing, List<PoolsAtCourtLocationListDto.PoolsAtCourtLocationDataDto> data) {
+        poolsListing.forEach(pool -> {
+            List<String> poolDetails = Arrays.asList(pool.split(","));
+
+            int jurorsInAttendance = poolDetails.get(2).equals("null") ? 0 : Integer.parseInt(poolDetails.get(2));
+            int jurorsOnCall = Integer.parseInt(poolDetails.get(3));
+
+            // total possible in attendance - in attendance
+            int others = Integer.parseInt(poolDetails.get(1)) - jurorsInAttendance;
+
+            PoolsAtCourtLocationListDto.PoolsAtCourtLocationDataDto poolsAtCourtLocationDataDto =
+                PoolsAtCourtLocationListDto.PoolsAtCourtLocationDataDto.builder()
+                    .poolNumber(poolDetails.get(0))
+                    .jurorsInAttendance(jurorsInAttendance)
+                    .jurorsOnCall(jurorsOnCall)
+                    .otherJurors(others)
+                    .totalJurors(jurorsInAttendance + jurorsOnCall + others)
+                    .jurorsOnTrials(poolDetails.get(4).equals("null") ? 0 : Integer.parseInt(poolDetails.get(4)))
+                    .poolType(poolDetails.get(6))
+                    .serviceStartDate(LocalDate.parse(poolDetails.get(7)))
+                    .build();
+            data.add(poolsAtCourtLocationDataDto);
+        });
     }
 
     @Override

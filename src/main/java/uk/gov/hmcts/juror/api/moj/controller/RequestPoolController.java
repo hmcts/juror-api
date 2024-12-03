@@ -226,4 +226,22 @@ public class RequestPoolController {
         return ResponseEntity.ok().body(pools);
     }
 
+    /**
+     * Get a list of All Active pools at a specified Court location.
+     *
+     * @return A list of all active pools at a Court location, including future pools
+     */
+    @GetMapping("/active-pools-by-court")
+    @IsCourtUser
+    @Operation(summary = "Retrieve a list of all active pools owned by court")
+    public ResponseEntity<PoolsAtCourtLocationListDto> getAllActivePoolsAtCourtLocation(
+        @RequestParam(required = false) @Size(min = 3, max = 3) @Valid String locCode) {
+
+        PoolsAtCourtLocationListDto pools = poolRequestService.getAllActivePoolsAtCourtLocation(locCode);
+
+        return ResponseEntity.ok().body(pools);
+    }
+
+
+
 }
