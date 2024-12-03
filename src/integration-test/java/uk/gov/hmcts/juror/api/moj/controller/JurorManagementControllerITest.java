@@ -723,7 +723,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
 
         @Test
-        @DisplayName("PATCH Update attendance - check out single juror but already confirmed")
+        @DisplayName("PATCH Update attendance - check out single juror but already confirmed - unhappy path")
         @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql"})
         void updateAttendanceCheckOutSingleJurorAlreadyConfirmed() {
             List<String> jurors = new ArrayList<>();
@@ -994,7 +994,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("PATCH Update attendance - check in all jurors updated one already confirmed")
+        @DisplayName("PATCH Update attendance - check in all jurors updated one already confirmed - unhappy path")
         @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql"})
         void updateAttendanceCheckInAlreadyConfirmed() {
             UpdateAttendanceDto request = buildUpdateAttendanceDto(null);
@@ -1060,6 +1060,27 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                 assertThat(appearance.getSatOnJury()).isNull();
             }
         }
+
+        @Test
+        @DisplayName("PATCH Update attendance - check in and out of juror confirmed juror - unhappy path")
+        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql"})
+        void updateAttendanceCheckInAndOutAlreadyConfirmed() {
+            List<String> jurors = new ArrayList<>();
+            jurors.add(JUROR10);
+            UpdateAttendanceDto request = buildUpdateAttendanceDto(jurors);
+            request.getCommonData().setStatus(UpdateAttendanceStatus.CHECK_IN_AND_OUT);
+            request.getCommonData().setCheckInTime(LocalTime.of(9, 30));
+            request.getCommonData().setCheckOutTime(LocalTime.of(17, 30));
+            request.getCommonData().setSingleJuror(Boolean.TRUE);
+
+            ResponseEntity<AttendanceDetailsResponse> response =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH,
+                                                          URI.create(URL_ATTENDANCE)), AttendanceDetailsResponse.class);
+
+            assertThat(response.getStatusCode()).as("Unprocessable entity").isEqualTo(UNPROCESSABLE_ENTITY);
+
+        }
+
 
         @Test
         @DisplayName("PATCH Update attendance - confirm attendance (no shows)")
