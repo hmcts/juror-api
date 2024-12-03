@@ -1002,7 +1002,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         return response;
     }
 
-    private static void checkConfirmedAttendance(String jurorNumber, Appearance appearance) {
+    private void checkConfirmedAttendance(String jurorNumber, Appearance appearance) {
         if (!Arrays.asList(AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT)
             .contains(appearance.getAppearanceStage())) {
             throw new MojException.BusinessRuleViolation(CANNOT_UPDATE_CONFIRMED_JUROR + jurorNumber,
