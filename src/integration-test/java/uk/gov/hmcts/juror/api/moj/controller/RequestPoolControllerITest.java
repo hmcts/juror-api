@@ -2319,7 +2319,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<PoolsAtCourtLocationListDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-                                                          HttpMethod.GET, URI.create(requestUrl)), PoolsAtCourtLocationListDto.class);
+                HttpMethod.GET, URI.create(requestUrl)), PoolsAtCourtLocationListDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
@@ -2336,7 +2336,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         // sort the list of pools by pool number or else the order is not guaranteed
         List<PoolsAtCourtLocationListDto.PoolsAtCourtLocationDataDto> poolsAtCourtLocationDataDtos =
             poolsAtCourtLocationDataDtosUnsorted.stream().sorted(Comparator.comparing(PoolsAtCourtLocationListDto
-                                                                                          .PoolsAtCourtLocationDataDto::getPoolNumber)).collect(Collectors.toList());
+                .PoolsAtCourtLocationDataDto::getPoolNumber)).collect(Collectors.toList());
 
         PoolsAtCourtLocationListDto.PoolsAtCourtLocationDataDto poolsAtCourtLocationDataDto
             = poolsAtCourtLocationDataDtos.get(0);
