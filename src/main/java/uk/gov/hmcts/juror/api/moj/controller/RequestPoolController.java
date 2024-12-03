@@ -229,10 +229,11 @@ public class RequestPoolController {
     /**
      * Get a list of All Active pools at a specified Court location.
      *
-     * @return A list of active pools at a Bureau location
+     * @return A list of all active pools at a Court location, including future pools
      */
     @GetMapping("/active-pools-by-court")
-    @Operation(summary = "Retrieve a list of all active pools owned by court for Bureau users")
+    @IsCourtUser
+    @Operation(summary = "Retrieve a list of all active pools owned by court")
     public ResponseEntity<PoolsAtCourtLocationListDto> getAllActivePoolsAtCourtLocation(
         @RequestParam(required = false) @Size(min = 3, max = 3) @Valid String locCode) {
 
