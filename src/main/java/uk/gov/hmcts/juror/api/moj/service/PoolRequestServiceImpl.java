@@ -15,6 +15,7 @@ import uk.gov.hmcts.juror.api.juror.domain.HolidaysRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.ActivePoolFilterQuery;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolRequestedFilterQuery;
+import uk.gov.hmcts.juror.api.moj.controller.response.ActivePoolsAtCourtListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolNumbersListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestActiveDataDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestDataDto;
@@ -329,6 +330,50 @@ public class PoolRequestServiceImpl implements PoolRequestService {
             throw new MojException.InternalServerError("Error retrieving pools at court location " + locCode, e);
         }
         return new PoolsAtCourtLocationListDto(data);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ActivePoolsAtCourtListDto getAllActivePoolsAtCourtLocation(String locCode) {
+        BureauJwtPayload payload = SecurityUtil.getActiveUsersBureauPayload();
+        String userLogin = payload.getLogin();
+
+        //check if user is allowed to query the locCode supplied
+        CourtLocationUtils.validateAccessToCourtLocation(locCode, payload.getOwner(), courtLocationRepository);
+
+        log.debug("User {}, Retrieving all active Pool Requests at Court location {}", userLogin, locCode);
+        List<ActivePoolsAtCourtListDto.ActivePoolsAtCourtLocationDataDto> data = new ArrayList<>();
+        try {
+            List<String> poolsListing = poolRequestRepository.findPoolsByCourtLocation(locCode);
+            log.debug("Found {} active pool records for current user, {}", poolsListing.size(), userLogin);
+
+            poolsListing.forEach(pool -> {
+                List<String> poolDetails = Arrays.asList(pool.split(","));
+
+                int jurorsInAttendance = poolDetails.get(2).equals("null") ? 0 : Integer.parseInt(poolDetails.get(2));
+                int jurorsOnCall = Integer.parseInt(poolDetails.get(3));
+
+                // total possible in attendance - in attendance
+                int others = Integer.parseInt(poolDetails.get(1)) - jurorsInAttendance;
+
+                ActivePoolsAtCourtListDto.ActivePoolsAtCourtLocationDataDto poolsAtCourtLocationDataDto =
+                    ActivePoolsAtCourtListDto.ActivePoolsAtCourtLocationDataDto.builder()
+                        .poolNumber(poolDetails.get(0))
+                        .jurorsInAttendance(jurorsInAttendance)
+                        .jurorsOnCall(jurorsOnCall)
+                        .otherJurors(others)
+                        .totalJurors(jurorsInAttendance + jurorsOnCall + others)
+                        .jurorsOnTrials(poolDetails.get(4).equals("null") ? 0 : Integer.parseInt(poolDetails.get(4)))
+                        .poolType(poolDetails.get(6))
+                        .serviceStartDate(LocalDate.parse(poolDetails.get(7)))
+                        .build();
+                data.add(poolsAtCourtLocationDataDto);
+            });
+        } catch (Exception e) {
+            log.error("Error retrieving active pools at court location {}", locCode);
+            throw new MojException.InternalServerError("Error retrieving pools at court location " + locCode, e);
+        }
+        return new ActivePoolsAtCourtListDto(data);
     }
 
     @Override

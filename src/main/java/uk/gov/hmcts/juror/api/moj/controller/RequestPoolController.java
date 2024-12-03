@@ -28,6 +28,7 @@ import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.moj.controller.request.ActivePoolFilterQuery;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolRequestedFilterQuery;
+import uk.gov.hmcts.juror.api.moj.controller.response.ActivePoolsAtCourtListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.CourtLocationListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolNumbersListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestActiveDataDto;
@@ -225,5 +226,22 @@ public class RequestPoolController {
 
         return ResponseEntity.ok().body(pools);
     }
+
+    /**
+     * Get a list of All Active pools at a specified Court location.
+     *
+     * @return A list of active pools at a Bureau location
+     */
+    @GetMapping("/active-pools-by-court")
+    @Operation(summary = "Retrieve a list of all active pools owned by court for Bureau users")
+    public ResponseEntity<ActivePoolsAtCourtListDto> getAllActivePoolsAtCourtLocation(
+        @RequestParam(required = false) @Size(min = 3, max = 3) @Valid String locCode) {
+
+        ActivePoolsAtCourtListDto pools = poolRequestService.getAllActivePoolsAtCourtLocation(locCode);
+
+        return ResponseEntity.ok().body(pools);
+    }
+
+
 
 }
