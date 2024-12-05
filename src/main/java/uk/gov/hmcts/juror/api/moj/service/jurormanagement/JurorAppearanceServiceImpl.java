@@ -611,6 +611,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             juryAttendanceNumber = appearances.stream()
                 .map(Appearance::getAttendanceAuditNumber)
                 .filter(ObjectUtils::isNotEmpty)
+                .filter(auditNumber -> auditNumber.startsWith(juryAttendancePrefix))
                 .findFirst().orElse(getAttendanceAuditNumber(juryAttendancePrefix));
         } else {
             juryAttendanceNumber = getAttendanceAuditNumber(juryAttendancePrefix);
