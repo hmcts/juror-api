@@ -77,7 +77,7 @@ class DeferredListByCourtReportTest extends AbstractGroupedReportTestSupport<Def
         verify(query, times(1))
             .where(QJurorPool.jurorPool.deferralDate.isNotNull());
         verify(query, times(1))
-            .orderBy(QJurorPool.jurorPool.deferralDate.asc());
+            .orderBy(QCourtLocation.courtLocation.name.asc());
         verify(query,times(1))
             .where(QJurorPool.jurorPool.deferralDate.goe(LocalDate.now()));
         verify(query, times(1))
@@ -108,7 +108,7 @@ class DeferredListByCourtReportTest extends AbstractGroupedReportTestSupport<Def
             QJurorPool.jurorPool.deferralDate
         );
         verify(query, times(1))
-            .orderBy(QJurorPool.jurorPool.deferralDate.asc());
+            .orderBy(QCourtLocation.courtLocation.name.asc());
         verify(query,times(1))
             .where(QJurorPool.jurorPool.deferralDate.goe(LocalDate.now()));
         verifyNoMoreInteractions(query);
@@ -151,6 +151,7 @@ class DeferredListByCourtReportTest extends AbstractGroupedReportTestSupport<Def
     protected StandardReportRequest getValidRequest() {
         return StandardReportRequest.builder()
             .reportType(report.getName())
+            .filterOwnedDeferrals(false)
             .build();
     }
 }

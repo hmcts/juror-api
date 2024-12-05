@@ -102,4 +102,6 @@ public interface JurorHistoryService {
     void createTransferCourtHistory(JurorPool sourceJurorPool, JurorPool targetJurorPool);
 
     void createDeleteAdditionalInfoLetterHistory(JurorPool jurorPool);
+
+    void createReassignedToPanelHistory(JurorPool jurorPool, Panel panelMember);
 }

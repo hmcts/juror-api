@@ -1,7 +1,3 @@
-delete from juror_mod.juror_history;
-delete from juror_mod.juror_pool;
-delete from juror_mod.juror;
-
 -- Create Pool Members
 
 insert into juror_mod.pool(pool_no, owner, return_date, date_created, total_no_required, loc_code)
@@ -12,13 +8,18 @@ INSERT INTO juror_mod.juror (juror_number,poll_number,last_name,first_name,dob,a
 	 ('123456789','543','LNAME','FNAME','1989-03-31 00:00:00','543 STREET NAME','ANYTOWN','PO19 1SX','Y','BUREAU_USER_1',1,0,'SOME EXAMPLE NOTES'),
 	 ('987654321','543','LNAME','FNAME','1989-03-31 00:00:00','543 STREET NAME','ANYTOWN','CH1 2AN','Y','BUREAU_USER_1',0,0,''),
 	 ('111111111','543','LNAME','FNAME','1989-03-31 00:00:00','543 STREET NAME','ANYTOWN','CH1 2AN','Y','BUREAU_USER_1',0,0,''),
-	 ('222222222','543','LNAME','FNAME','1989-03-31 00:00:00','543 STREET NAME','ANYTOWN','CH1 2AN','Y','BUREAU_USER_1',0,0,'');
+	 ('222222222','543','LNAME','FNAME','1989-03-31 00:00:00','543 STREET NAME','ANYTOWN','CH1 2AN','Y','BUREAU_USER_1',0,0,''),
+	 ('333333333','543','LNAME','FNAME','1989-03-31 00:00:00','543 STREET NAME','ANYTOWN','CH1 2AN','Y','BUREAU_USER_1',0,0,''),
+	 ('444444444','543','LNAME','FNAME',null,'543 STREET NAME','ANYTOWN','CH1 2AN','Y','BUREAU_USER_1',0,0,'');
+
 
 INSERT INTO juror_mod.juror_pool ("owner",juror_number,pool_number,next_date,user_edtq,status,is_active,pool_seq,"location",on_call) VALUES
-	 ('400','123456789','415220502',NULL,'BUREAU_USER_1',2,'Y','0109','415','N'),
-	 ('415','987654321','415220502',NULL,'BUREAU_USER_1',2,'Y','0109','415','N'),
-	 ('400','111111111','415220502',NULL,'BUREAU_USER_1',2,'Y','0109','415','N'),
-	 ('400','222222222','415220502',NULL,'BUREAU_USER_1',2,'Y','0109','415','N');
+	 ('400','123456789','415220502','2023-03-08','BUREAU_USER_1',2,'Y','0109','415','N'),
+	 ('415','987654321','415220502','2023-03-08','BUREAU_USER_1',2,'Y','0109','415','N'),
+	 ('400','111111111','415220502','2023-03-08','BUREAU_USER_1',2,'Y','0109','415','N'),
+	 ('400','222222222','415220502','2023-03-08','BUREAU_USER_1',2,'Y','0109','415','N'),
+	 ('400','333333333','415220502','2023-03-08','BUREAU_USER_1',1,'Y','0109','415','N'),
+	 ('400','444444444','415220502','2023-03-08','BUREAU_USER_1',1,'Y','0109','415','N');
 
 
 -- Create Paper Reply entries

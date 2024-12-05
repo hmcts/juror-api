@@ -499,6 +499,55 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
         });
     }
 
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/ExcusalResponse_initPaperResponse.sql"})
+    public void excusalRequestRefuseExcusalSummonedJurorHasDob() throws Exception {
+        final String jurorNumber = "333333333";
+        final String login = "BUREAU_USER";
+        final String bureauJwt = createJwt(login, "400");
+        final URI uri = URI.create("/api/v1/moj/excusal-response/juror/" + jurorNumber);
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+        ExcusalDecisionDto excusalDecisionDto = createExcusalDecisionDto();
+
+        RequestEntity<ExcusalDecisionDto> requestEntity = new RequestEntity<>(excusalDecisionDto, httpHeaders,
+                                                                              HttpMethod.PUT, uri);
+        ResponseEntity<String> response = template.exchange(requestEntity, String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        executeInTransaction(() -> {
+            JurorPool jurorPool = jurorPoolRepository
+                .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue("415", jurorNumber);
+            validateExcusal(jurorPool, excusalDecisionDto, login);
+            validateExcusalLetter(excusalDecisionDto.getExcusalReasonCode());
+        });
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/ExcusalResponse_initPaperResponse.sql"})
+    public void excusalRequestRefuseExcusalSummonedJurorHasNoDob() throws Exception {
+        final String jurorNumber = "444444444";
+        final String login = "BUREAU_USER";
+        final String bureauJwt = createJwt(login, "400");
+        final URI uri = URI.create("/api/v1/moj/excusal-response/juror/" + jurorNumber);
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+        ExcusalDecisionDto excusalDecisionDto = createExcusalDecisionDto();
+
+        RequestEntity<ExcusalDecisionDto> requestEntity = new RequestEntity<>(excusalDecisionDto, httpHeaders,
+                                                                              HttpMethod.PUT, uri);
+        ResponseEntity<String> response = template.exchange(requestEntity, String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        executeInTransaction(() -> {
+            JurorPool jurorPool = jurorPoolRepository
+                .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue("415", jurorNumber);
+            assertThat(jurorPool.getStatus().getStatus()).as("Juror should be in summoned status")
+                .isEqualTo(IJurorStatus.SUMMONED);
+            validateExcusalLetter(excusalDecisionDto.getExcusalReasonCode());
+        });
+    }
+
     private void validatePaperResponseExcusal(PaperResponse jurorPaperResponse, String login) {
         assertThat(jurorPaperResponse.getProcessingStatus())
             .as("Paper response should be marked as closed")

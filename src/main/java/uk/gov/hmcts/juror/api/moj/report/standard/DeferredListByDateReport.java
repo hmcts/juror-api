@@ -35,7 +35,7 @@ public class DeferredListByDateReport extends AbstractStandardReport {
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QJurorPool.jurorPool.deferralDate.isNotNull());
         query.where(QJurorPool.jurorPool.deferralDate.goe(LocalDate.now()));
-        if (SecurityUtil.isCourt()) {
+        if (SecurityUtil.isCourt() || (SecurityUtil.isBureau() && request.getFilterOwnedDeferrals())) {
             query.where(QJurorPool.jurorPool.owner.eq(SecurityUtil.getActiveOwner()));
         }
         query.orderBy(QJurorPool.jurorPool.deferralDate.asc());
@@ -65,7 +65,9 @@ public class DeferredListByDateReport extends AbstractStandardReport {
         return DeferredListByDateReport.RequestValidator.class;
     }
 
-    public interface RequestValidator extends AbstractReport.Validators.AbstractRequestValidator {
+    public interface RequestValidator extends
+        AbstractReport.Validators.AbstractRequestValidator,
+        AbstractReport.Validators.RequireFilterOwnedDeferrals {
 
     }
 }

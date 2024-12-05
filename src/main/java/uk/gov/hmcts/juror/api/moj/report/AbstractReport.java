@@ -588,5 +588,8 @@ public abstract class AbstractReport<T> implements IReport {
 
         public interface RequireCourts {
         }
+
+        public interface RequireFilterOwnedDeferrals {
+        }
     }
 }

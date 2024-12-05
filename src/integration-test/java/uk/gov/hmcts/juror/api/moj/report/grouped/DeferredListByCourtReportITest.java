@@ -37,6 +37,7 @@ class DeferredListByCourtReportITest extends AbstractGroupedReportControllerITes
     @Override
     protected StandardReportRequest getValidPayload() {
         return addReportType(StandardReportRequest.builder()
+                                 .filterOwnedDeferrals(false)
             .build());
     }
 
@@ -64,6 +65,18 @@ class DeferredListByCourtReportITest extends AbstractGroupedReportControllerITes
             .triggerValid()
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(getTypicalResponseBureau());
+    }
+
+    @Test
+    void positiveTypicalBureauOwnedOnly() {
+        testBuilder()
+            .jwt(getBureauJwt())
+            .payload(addReportType(StandardReportRequest.builder()
+                                       .filterOwnedDeferrals(true)
+                                       .build()))
+            .triggerValid()
+            .responseConsumer(this::verifyAndRemoveReportCreated)
+            .assertEquals(getTypicalResponseBureauOwnedOnly());
     }
 
     private GroupedReportResponse getTypicalResponse() {
@@ -106,6 +119,19 @@ class DeferredListByCourtReportITest extends AbstractGroupedReportControllerITes
                     new ReportLinkedMap<String, Object>()
                         .add("deferred_to", "3023-01-09")
                         .add("number_deferred", 1))));
+    }
+
+    private GroupedReportResponse getTypicalResponseBureauOwnedOnly() {
+        return createResponse(3,
+                              new GroupedTableData()
+                                  .add("CHESTER (415)", List.of(
+                                      new ReportLinkedMap<String, Object>()
+                                          .add("deferred_to", "3023-01-05")
+                                          .add("number_deferred", 2),
+                                      new ReportLinkedMap<String, Object>()
+                                          .add("deferred_to", "3023-01-06")
+                                          .add("number_deferred", 1)
+                                  )));
     }
 
     private GroupedReportResponse createResponse(int count, GroupedTableData groupedTableData) {

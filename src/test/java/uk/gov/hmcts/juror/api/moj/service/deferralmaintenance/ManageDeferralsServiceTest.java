@@ -603,7 +603,8 @@ class ManageDeferralsServiceTest {
         assertThat(jurorPool.getDeferralDate()).isNull();
         assertThat(juror.getExcusalDate()).isNull();
         assertThat(jurorPool.getDeferralCode()).isNull();
-        assertThat(jurorPool.getNextDate()).isNotNull();
+      //  assertThat(jurorPool.getPool().getReturnDate()).isNotNull();
+        assertThat(jurorPool.getNextDate()).isEqualTo(jurorPool.getPool().getReturnDate());
         assertThat(juror.getNoDefPos()).isEqualTo(0L);
         assertThat(jurorPool.getStatus().getStatus()).isEqualTo(IJurorStatus.RESPONDED);
         assertThat(jurorPool.getUserEdtq()).isEqualTo(bureauPayload.getLogin());

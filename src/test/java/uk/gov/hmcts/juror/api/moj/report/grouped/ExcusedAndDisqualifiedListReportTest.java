@@ -84,6 +84,8 @@ class ExcusedAndDisqualifiedListReportTest extends AbstractGroupedReportTestSupp
         verify(query, times(1))
             .where(QJurorPool.jurorPool.juror.disqualifyCode.isNotNull()
                 .or(QJurorPool.jurorPool.juror.excusalCode.isNotNull()));
+        verify(query, times(1))
+            .orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
     }
 
     @Override
