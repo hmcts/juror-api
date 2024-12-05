@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
+@SuppressWarnings("PMD.UselessParentheses") // false positive
 public class DeferredListByCourtReport extends AbstractGroupedReport {
 
     @Autowired
@@ -50,10 +51,10 @@ public class DeferredListByCourtReport extends AbstractGroupedReport {
     public void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QJurorPool.jurorPool.deferralDate.isNotNull());
         query.where(QJurorPool.jurorPool.deferralDate.goe(LocalDate.now()));
-        if (SecurityUtil.isCourt()) {
+        if (SecurityUtil.isCourt() || (SecurityUtil.isBureau() && request.getFilterOwnedDeferrals())) {
             query.where(QJurorPool.jurorPool.owner.eq(SecurityUtil.getActiveOwner()));
         }
-        query.orderBy(QJurorPool.jurorPool.deferralDate.asc());
+        query.orderBy(QCourtLocation.courtLocation.name.asc());
         query.groupBy(
             QCourtLocation.courtLocation.name,
             QCourtLocation.courtLocation.locCode,

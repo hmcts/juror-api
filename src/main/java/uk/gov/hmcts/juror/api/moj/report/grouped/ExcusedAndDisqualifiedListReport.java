@@ -49,6 +49,7 @@ public class ExcusedAndDisqualifiedListReport extends AbstractGroupedReport {
         }
         query.where(QJurorPool.jurorPool.juror.disqualifyCode.isNotNull()
             .or(QJurorPool.jurorPool.juror.excusalCode.isNotNull()));
+        query.orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
     }
 
     @Override

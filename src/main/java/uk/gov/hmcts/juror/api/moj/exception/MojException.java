@@ -98,7 +98,8 @@ public class MojException extends RuntimeException {
             CANNOT_DEFER_TO_EXISTING_POOL,
             CANNOT_DEFER_JUROR_WITH_APPEARANCE,
             CANNOT_PROCESS_EMPANELLED_JUROR,
-            CANNOT_UPDATE_CONFIRMED_ATTENDANCE
+            CANNOT_RE_ADD_JUROR_TO_PANEL,
+            UNCONFIRMED_ATTENDANCE_EXISTS
         }
     }
 

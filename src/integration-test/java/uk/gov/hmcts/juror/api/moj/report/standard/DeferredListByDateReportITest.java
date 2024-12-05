@@ -34,6 +34,7 @@ class DeferredListByDateReportITest extends AbstractStandardReportControllerITes
     @Override
     protected StandardReportRequest getValidPayload() {
         return addReportType(StandardReportRequest.builder()
+                                 .filterOwnedDeferrals(false)
             .build());
     }
 
@@ -54,6 +55,19 @@ class DeferredListByDateReportITest extends AbstractStandardReportControllerITes
             .triggerValid()
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(getTypicalResponseBureau());
+    }
+
+    @Test
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
+    void positiveTypicalBureauOwnedOnly() {
+        testBuilder()
+            .jwt(getBureauJwt())
+            .payload(addReportType(StandardReportRequest.builder()
+                                       .filterOwnedDeferrals(true)
+                                       .build()))
+            .triggerValid()
+            .responseConsumer(this::verifyAndRemoveReportCreated)
+            .assertEquals(getTypicalResponseBureauOwnedOnly());
     }
 
     @Test
@@ -129,6 +143,42 @@ class DeferredListByDateReportITest extends AbstractStandardReportControllerITes
                     .build())
             .build();
     }
+
+
+    private StandardReportResponse getTypicalResponseBureauOwnedOnly() {
+        return StandardReportResponse.builder()
+            .headings(new ReportHashMap<String, StandardReportResponse.DataTypeValue>()
+                          .add("total_deferred", StandardReportResponse.DataTypeValue.builder()
+                              .displayName("Total deferred")
+                              .dataType("Long")
+                              .value(3)
+                              .build()))
+            .tableData(
+                StandardReportResponse.TableData.<StandardTableData>builder()
+                    .headings(List.of(
+                        StandardReportResponse.TableData.Heading.builder()
+                            .id("deferred_to")
+                            .name("Deferred to")
+                            .dataType("LocalDate")
+                            .headings(null)
+                            .build(),
+                        StandardReportResponse.TableData.Heading.builder()
+                            .id("number_deferred")
+                            .name("Number Deferred")
+                            .dataType("Long")
+                            .headings(null)
+                            .build()))
+                    .data(StandardTableData.of(
+                        new ReportLinkedMap<String, Object>()
+                            .add("deferred_to", "3023-01-05")
+                            .add("number_deferred", 2),
+                        new ReportLinkedMap<String, Object>()
+                            .add("deferred_to", "3023-01-06")
+                            .add("number_deferred", 1)))
+                    .build())
+            .build();
+    }
+
 
     private StandardReportResponse getTypicalResponseCourt() {
         return StandardReportResponse.builder()

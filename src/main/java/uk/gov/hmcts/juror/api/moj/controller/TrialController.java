@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.EndTrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorPanelReassignRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReturnJuryDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialSearch;
@@ -120,6 +121,15 @@ public class TrialController {
     @PreAuthorize(SecurityUtil.IS_COURT)
     public ResponseEntity<Void> endTrial(@RequestBody EndTrialDto endTrialDto) {
         trialService.endTrial(endTrialDto);
+        return ResponseEntity.ok(null);
+    }
+
+    @PostMapping("/reassign-panel-members")
+    @Operation(summary = "Reassign one or more panel members to another active trial")
+    @PreAuthorize(SecurityUtil.IS_COURT)
+    public ResponseEntity<Void> movePanelMembers(
+        @RequestBody @Valid JurorPanelReassignRequestDto jurorPanelMoveRequest) {
+        trialService.reassignPanelMembers(jurorPanelMoveRequest);
         return ResponseEntity.ok(null);
     }
 }
