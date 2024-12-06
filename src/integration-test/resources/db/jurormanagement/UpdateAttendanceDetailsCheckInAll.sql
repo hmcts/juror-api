@@ -28,8 +28,7 @@ insert into juror_mod.juror (juror_number,  last_name,  first_name,  dob,  addre
 ('666666666',  'SIX', 'TEST',  NULL,  '540 STREET NAME',  'ANYTOWN',  'CH1 2AN',  TRUE),
 ('777777777',  'SEVEN', 'TEST',  NULL,  '540 STREET NAME',  'ANYTOWN',  'CH1 2AN',  TRUE),
 ('888888888',  'EIGHT', 'TEST',  NULL,  '540 STREET NAME',  'ANYTOWN',  'CH1 2AN',  TRUE),
-('999999999',  'NINE', 'TEST',  NULL,  '540 STREET NAME',  'ANYTOWN',  'CH1 2AN',  TRUE),
-('101010101',  'TEN', 'TEST',  NULL,  '540 STREET NAME',  'ANYTOWN',  'CH1 2AN',  TRUE);
+('999999999',  'NINE', 'TEST',  NULL,  '540 STREET NAME',  'ANYTOWN',  'CH1 2AN',  TRUE);
 
 --JUROR_MOD.JUROR_POOL
 insert into juror_mod.juror_pool (owner, juror_number, pool_number, next_date, def_date, status, is_active, was_deferred) values
@@ -41,8 +40,7 @@ insert into juror_mod.juror_pool (owner, juror_number, pool_number, next_date, d
 ('415', '666666666', '415230101', current_date - interval '2 weeks', NULL, 2, TRUE, FALSE),
 ('415', '777777777', '415230101', current_date - interval '2 weeks', NULL, 2, TRUE, FALSE),
 ('415', '888888888', '415230101', current_date - interval '2 days', NULL, 2, TRUE, FALSE),
-('415', '999999999', '415230101', current_date - interval '2 days', NULL, 2, TRUE, FALSE),
-('415', '101010101', '415230101', current_date - interval '2 days', NULL, 2, TRUE, FALSE);
+('415', '999999999', '415230101', current_date - interval '2 days', NULL, 2, TRUE, FALSE);
 
 --JUROR_MOD.APPEARANCE
 insert into juror_mod.appearance (attendance_date,juror_number,loc_code,time_in,time_out,non_attendance,appearance_stage,attendance_type, trial_number) values
@@ -52,8 +50,7 @@ insert into juror_mod.appearance (attendance_date,juror_number,loc_code,time_in,
 (current_date - interval '2 days','333333333','415','09:30:00',null,false,'CHECKED_IN','FULL_DAY','T10000000'),
 (current_date - interval '2 days','555555555','415','06:30:00',null,false,'CHECKED_IN','FULL_DAY',null),
 (current_date - interval '2 days','666666666','415','09:30:00',null,false,'CHECKED_IN','FULL_DAY',null),
-(current_date - interval '2 days','777777777','415','12:30','15:50',false,'CHECKED_IN','FULL_DAY',null),
-(current_date - interval '2 days','101010101','415','09:31:00','16:00',false,'EXPENSE_ENTERED','FULL_DAY',null);
+(current_date - interval '2 days','777777777','415','12:30','15:50',false,'CHECKED_IN','FULL_DAY',null);
 
 INSERT INTO juror_mod.juror_trial (loc_code, juror_number, trial_number, rand_number, date_selected, "result",completed, empanelled_date) values
 ('415', '222222222', 'T10000000', 10,current_date - interval '2 days' + time '09:00:00', 'J', null, current_date - interval '2 days'),
