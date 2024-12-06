@@ -578,7 +578,7 @@ class JurorAppearanceServiceTest {
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findById(anyString());
         JurorAppearanceDto jurorAppearanceDto = buildJurorAppearanceDto();
 
-        assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
+        assertThatExceptionOfType(MojException.BusinessRuleViolation.class).isThrownBy(() ->
             jurorAppearanceService.processAppearance(buildPayload("415", Arrays.asList("415", "462", "767")),
                 jurorAppearanceDto));
 

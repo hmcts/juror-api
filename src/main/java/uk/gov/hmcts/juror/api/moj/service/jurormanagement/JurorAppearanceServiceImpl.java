@@ -70,6 +70,7 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.ATTENDANCE_RECORD_ALREADY_EXISTS;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_PROCESS_EMPANELLED_JUROR;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_UPDATE_CONFIRMED_ATTENDANCE;
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.INVALID_JUROR_STATUS;
 import static uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils.getNextWorkingDay;
 import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.isEmptyOrNull;
 import static uk.gov.hmcts.juror.api.moj.utils.JurorUtils.checkOwnershipForCurrentUser;
@@ -1204,8 +1205,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     private void validateJurorStatus(int status, boolean isCompleted) {
         if (status != IJurorStatus.RESPONDED && status != IJurorStatus.PANEL && status != IJurorStatus.JUROR
             && !(status == IJurorStatus.COMPLETED && isCompleted)) {
-            throw new MojException.BadRequest("Cannot check in or out a juror with an invalid status",
-                null);
+            throw new MojException.BusinessRuleViolation("Cannot process a juror with an invalid status: "
+                                                         + JurorStatusEnum.fromStatus(status), INVALID_JUROR_STATUS);
         }
     }
 
