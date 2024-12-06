@@ -23,9 +23,9 @@ BEGIN
                    OR
                    (bpd.form_type IN ('5225','5225C') AND jp.status <> 5) -- excusal letters
 			             OR
-			             (bpd.form_type IN ('5226','5226C') AND jp.status not in (1,2,6,7)) -- excusal denied letters
+			             (bpd.form_type IN ('5226','5226C') AND jp.status not in (1,2)) -- excusal denied letters
 			             OR
-			             (bpd.form_type IN ('5226A','5226AC') AND jp.status not in (1,2,5,6)) -- deferral denied letters
+			             (bpd.form_type IN ('5226A','5226AC') AND jp.status not in (1,2)) -- deferral denied letters
 			             OR
 			             (bpd.form_type IN ('5227','5227C') AND jp.status <> 1) -- request for info letters
 			             OR
