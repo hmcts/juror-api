@@ -6,8 +6,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -159,37 +157,61 @@ class JurorAppearanceServiceTest {
     @Nested
     @DisplayName("boolean isLongTrialDay(List<LocalDate> appearanceDates, LocalDate dateToCheck)")
     class IsLongTrialDay {
-        @ParameterizedTest
-        @ValueSource(ints = {
-            0, 1, 2, 3, 4, 5, 6, 7, 8, 9
-        })
-        void positiveFalse(int offset) {
-            assertTest(offset, false);
-        }
 
-        @ParameterizedTest
-        @ValueSource(ints = {
-            10, 11, 12, 13, 14, 15
-        })
-        void positiveTrue(int offset) {
-            assertTest(offset, true);
-        }
 
-        private void assertTest(int offset, boolean expectedValue) {
-            final LocalDate baseDay = LocalDate.of(2023, 1, 1);
-            LocalDate searchDate = baseDay.plusDays(offset);
-
+        @Test
+        void isLongTrialDayHappyPath() {
             List<LocalDate> appearanceDates = new ArrayList<>();
-            for (int i = 0; i < 16; i++) {
-                Appearance appearance = mock(Appearance.class);
-                LocalDate localDate = baseDay.plusDays(i);
-                doReturn(localDate).when(appearance).getAttendanceDate();
-                appearanceDates.add(localDate);
-            }
+            LocalDate firstDate = LocalDate.of(2024, 12, 6); // week 49, friday
+            LocalDate dateToCheck = LocalDate.of(2024, 12, 16); // week 51, monday
+            appearanceDates.add(firstDate);
+            appearanceDates.add(dateToCheck);
 
-            assertThat(jurorAppearanceService.isLongTrialDay(
-                appearanceDates, searchDate))
-                .isEqualTo(expectedValue);
+            assertTrue(jurorAppearanceService.isLongTrialDay(appearanceDates, dateToCheck));
+        }
+
+        @Test
+        void isLongTrialDayWeek2() {
+            List<LocalDate> appearanceDates = new ArrayList<>();
+            LocalDate firstDate = LocalDate.of(2024, 12, 6); // week 49, friday
+            LocalDate dateToCheck = LocalDate.of(2024, 12, 13); // week 50, friday
+            appearanceDates.add(firstDate);
+            appearanceDates.add(dateToCheck);
+
+            assertFalse(jurorAppearanceService.isLongTrialDay(appearanceDates, dateToCheck));
+        }
+
+        @Test
+        void isLongTrialDayWeek1() {
+            List<LocalDate> appearanceDates = new ArrayList<>();
+            LocalDate firstDate = LocalDate.of(2024, 12, 5); // week 49, thursday
+            LocalDate dateToCheck = LocalDate.of(2024, 12, 6); // week 49, friday
+            appearanceDates.add(firstDate);
+            appearanceDates.add(dateToCheck);
+
+            assertFalse(jurorAppearanceService.isLongTrialDay(appearanceDates, dateToCheck));
+        }
+
+        @Test
+        void isLongTrialDayWrapYear1() {
+            List<LocalDate> appearanceDates = new ArrayList<>();
+            LocalDate firstDate = LocalDate.of(2024, 12, 27); // week 52
+            LocalDate dateToCheck = LocalDate.of(2025, 1, 3); // week 1
+            appearanceDates.add(firstDate);
+            appearanceDates.add(dateToCheck);
+
+            assertFalse(jurorAppearanceService.isLongTrialDay(appearanceDates, dateToCheck));
+        }
+
+        @Test
+        void isLongTrialDayWrapYear2() {
+            List<LocalDate> appearanceDates = new ArrayList<>();
+            LocalDate firstDate = LocalDate.of(2024, 12, 30); // week 1
+            LocalDate dateToCheck = LocalDate.of(2025, 1, 13); // week 3
+            appearanceDates.add(firstDate);
+            appearanceDates.add(dateToCheck);
+
+            assertTrue(jurorAppearanceService.isLongTrialDay(appearanceDates, dateToCheck));
         }
     }
 
