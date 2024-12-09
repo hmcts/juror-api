@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -29,6 +30,7 @@ import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.config.security.IsBureauUser;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.config.security.IsSeniorCourtUser;
 import uk.gov.hmcts.juror.api.moj.controller.request.ConfirmIdentityDto;
@@ -36,11 +38,13 @@ import uk.gov.hmcts.juror.api.moj.controller.request.ContactLogRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.EditJurorRecordRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.FilterableJurorDetailsRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorCreateRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorManualCreationRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNameDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNotesRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberAndPoolNumberDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorOpticRefRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorRecordFilterRequestQuery;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorSimpleDetailsRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoliceCheckStatusDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessNameChangeRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessPendingJurorRequestDto;
@@ -55,6 +59,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorNotesDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorOverviewResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorRecordSearchDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorSimpleDetailsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorSummonsReplyResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PendingJurorsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorHistoryResponseDto;
@@ -62,6 +67,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorPaymentsRespons
 import uk.gov.hmcts.juror.api.moj.domain.FilterJurorRecord;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PendingJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.Permission;
 import uk.gov.hmcts.juror.api.moj.enumeration.PendingJurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.BulkService;
@@ -73,6 +79,7 @@ import java.util.List;
 
 @RestController
 @Validated
+@Slf4j
 @RequestMapping(value = "/api/v1/moj/juror-record", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Juror Management")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
@@ -115,6 +122,14 @@ public class JurorRecordController {
             bulkService.process(request, jurorRecordService::getJurorDetails));
     }
 
+    @PostMapping("/simple-details")
+    @Operation(summary = "Get simple juror details for jurors",
+        description = "Retrieve simple details of a number of jurors by his/her juror number")
+    public ResponseEntity<JurorSimpleDetailsResponseDto> getJurorSimpleDetails(
+        @Valid  @NotNull @RequestBody JurorSimpleDetailsRequestDto request) {
+        JurorSimpleDetailsResponseDto jurorDetails = jurorRecordService.getJurorSimpleDetails(request);
+        return ResponseEntity.ok().body(jurorDetails);
+    }
 
     @GetMapping("/overview/{jurorNumber}/{locCode}")
     @Operation(summary = "Get juror overview by juror number and location code",
@@ -182,6 +197,22 @@ public class JurorRecordController {
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Valid @RequestBody JurorCreateRequestDto jurorCreateRequestDto) {
         jurorRecordService.createJurorRecord(payload, jurorCreateRequestDto);
+    }
+
+    @PostMapping("/create-juror-manual")
+    @IsBureauUser
+    @Operation(summary = "Send a payload to manually create a Juror Record at the Bureau")
+    public ResponseEntity<Void> createJurorRecord(
+        @Valid @RequestBody JurorManualCreationRequestDto jurorCreationRequestDto) {
+        log.info("User {} request to manually create juror", SecurityUtil.getActiveLogin());
+        if (!SecurityUtil.isBureauManager() || !SecurityUtil.hasPermission(Permission.CREATE_JUROR)) {
+            log.error("User {} does not have permission to create juror", SecurityUtil.getActiveLogin());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        jurorRecordService.createJurorManual(jurorCreationRequestDto);
+
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @GetMapping("/pending-jurors/{loc_code}")
@@ -502,4 +533,5 @@ public class JurorRecordController {
         }
         return ResponseEntity.ok().body(jurorRecords);
     }
+
 }

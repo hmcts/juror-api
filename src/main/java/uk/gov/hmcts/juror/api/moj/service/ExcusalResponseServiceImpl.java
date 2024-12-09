@@ -49,6 +49,9 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
     private final JurorPoolService jurorPoolService;
     private final JurorResponseService jurorResponseService;
 
+
+
+
     @Override
     @Transactional
     public void respondToExcusalRequest(BureauJwtPayload payload, ExcusalDecisionDto excusalDecisionDto,
@@ -140,7 +143,19 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
         juror.setExcusalRejected("Y");
         jurorRepository.save(juror);
 
-        if (jurorPool.getStatus().getStatus() == IJurorStatus.SUMMONED) {
+        if (juror.getDateOfBirth() == null) {
+            // check if the juror has a response and set date of birth
+            jurorResponseService.getCommonJurorResponseOptional(juror.getJurorNumber())
+                .ifPresent(jurorResponse -> juror.setDateOfBirth(jurorResponse.getDateOfBirth()));
+        }
+
+        // Need to avoid setting to responded without a date of birth else PNC check will fail
+        if (jurorPool.getStatus().getStatus() == IJurorStatus.SUMMONED && juror.getDateOfBirth() != null) {
+            jurorPool.setStatus(getPoolStatus(IJurorStatus.RESPONDED));
+        }
+
+        if (jurorPool.getNextDate() == null) {
+            jurorPool.setNextDate(jurorPool.getPool().getReturnDate());
             jurorPool.setStatus(getPoolStatus(IJurorStatus.RESPONDED));
         }
 

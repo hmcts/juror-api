@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.text.WordUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.history.Revision;
@@ -26,9 +25,11 @@ import uk.gov.hmcts.juror.api.moj.controller.request.EditJurorRecordRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.FilterableJurorDetailsRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAddressDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorCreateRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorManualCreationRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNameDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorOpticRefRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorRecordFilterRequestQuery;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorSimpleDetailsRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoliceCheckStatusDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessNameChangeRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessPendingJurorRequestDto;
@@ -44,6 +45,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorNotesDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorOverviewResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorRecordSearchDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorSimpleDetailsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorSummonsReplyResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PendingJurorsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorHistoryResponseDto;
@@ -59,6 +61,7 @@ import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PendingJuror;
@@ -79,7 +82,9 @@ import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.PendingJurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
+import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.exception.PoolCreateException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactCodeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactLogRepository;
@@ -120,12 +125,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static org.springframework.transaction.annotation.Propagation.REQUIRED;
@@ -146,6 +151,7 @@ import static uk.gov.hmcts.juror.api.moj.utils.JurorUtils.checkReadAccessForCurr
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class JurorRecordServiceImpl implements JurorRecordService {
     private final ContactCodeRepository contactCodeRepository;
+    private final PoolMemberSequenceService poolMemberSequenceService;
     private static final Character NEW_REQUEST_STATE = 'N';
 
     private static final String REPLY_METHOD_ONLINE = "DIGITAL";
@@ -343,6 +349,40 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         return jurorDetailsResponseDto;
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public JurorSimpleDetailsResponseDto getJurorSimpleDetails(JurorSimpleDetailsRequestDto request) {
+
+        log.info("User {} Retrieving juror simple details for juror numbers {} ", SecurityUtil.getActiveLogin(),
+                 request.getJurorNumbers());
+
+        // get jurors location
+        CourtLocation courtLocation = courtLocationService.getCourtLocation(request.getLocationCode());
+
+        List<JurorSimpleDetailsResponseDto.SimpleDetails> jurorDetails = new ArrayList<>();
+
+        request.getJurorNumbers().forEach(jurorNumber -> {
+            Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
+
+            JurorPool jurorPool = JurorPoolUtils.getActiveJurorPool(jurorPoolRepository, jurorNumber, courtLocation);
+
+            // check if user owns the juror record
+            JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, SecurityUtil.getActiveOwner());
+
+            JurorStatusEnum status = JurorStatusEnum.fromStatus(jurorPool.getStatus().getStatus());
+            JurorSimpleDetailsResponseDto.SimpleDetails simpleDetails = JurorSimpleDetailsResponseDto
+                .SimpleDetails.builder()
+                .jurorNumber(jurorNumber)
+                .status(status)
+                .firstName(juror.getFirstName())
+                .lastName(juror.getLastName())
+                .build();
+            jurorDetails.add(simpleDetails);
+        });
+
+        return new JurorSimpleDetailsResponseDto(jurorDetails);
+    }
+
 
     @Override
     @Transactional(readOnly = true)
@@ -476,7 +516,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     @Override
     @IsCourtUser
     public void createJurorRecord(BureauJwtPayload payload, JurorCreateRequestDto jurorCreateRequestDto) {
-        log.info("User {} creating a pending Juror record in court location", payload.getLogin(),
+        log.info("User {} creating a pending Juror record in court location {}", payload.getLogin(),
             jurorCreateRequestDto.getLocationCode());
 
         String poolNumber = jurorCreateRequestDto.getPoolNumber();
@@ -578,31 +618,118 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     }
 
     @Override
+    @Transactional
     public void updateAttendance(UpdateAttendanceRequestDto dto) {
-        log.info("Placing juror on call for juror {} ", dto.getJurorNumber());
 
-        JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(dto.getJurorNumber());
         validateUpdateAttendance(dto);
 
-        if (dto.isOnCall()) {
-            validateOnCall(jurorPool);
-            jurorPool.setOnCall(true);
-            jurorPool.setNextDate(null);
-        } else if (dto.getNextDate() != null) {
-            jurorPool.setOnCall(false);
-            jurorPool.setNextDate(dto.getNextDate());
-        } else {
-            throw new MojException.BadRequest("Must select either on call or enter new date",
-                null);
+        dto.getJurorNumbers().forEach(juror -> {
+            JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(juror);
+
+            if (dto.isOnCall()) {
+                validateOnCall(jurorPool);
+                jurorPool.setOnCall(true);
+                jurorPool.setNextDate(null);
+                log.info("Juror {} has been placed on call", juror);
+            } else if (dto.getNextDate() != null) {
+                jurorPool.setOnCall(false);
+                jurorPool.setNextDate(dto.getNextDate());
+                log.info("Updating next attendance date for juror {} ", juror);
+            }
+
+            jurorPoolRepository.save(jurorPool);
+        });
+    }
+
+    @Override
+    @Transactional
+    public void createJurorManual(JurorManualCreationRequestDto jurorCreateRequestDto) {
+
+        String locCode = jurorCreateRequestDto.getLocationCode();
+        String poolNumber = jurorCreateRequestDto.getPoolNumber();
+        log.info("Creating a manual Juror record in pool {}", jurorCreateRequestDto.getPoolNumber());
+
+        PoolRequest poolRequest = RepositoryUtils.retrieveFromDatabase(poolNumber, poolRequestRepository);
+
+        // generating juror number as it does not exist in voters table
+        String jurorNumber = pendingJurorRepository.generatePendingJurorNumber(locCode);
+
+        if (jurorNumber == null || "null".equals(jurorNumber)) {
+            throw new MojException.InternalServerError("Error generating new Juror Number", null);
         }
 
-        jurorPoolRepository.save(jurorPool);
+        Juror juror = createManualJurorRecord(jurorCreateRequestDto, jurorNumber);
 
+        JurorPool jurorPool = createManualJurorPool(poolNumber, poolRequest, juror);
+
+        printSummonsLetter(juror, jurorPool);
+
+        log.info("Created manual juror {} in pool {}", juror.getJurorNumber(), jurorPool.getPoolNumber());
+
+    }
+
+    private void printSummonsLetter(Juror juror, JurorPool jurorPool) {
+        printDataService.printSummonsLetter(jurorPool);
+
+        JurorHistory jurorSummonsHistory = JurorHistory.builder()
+            .jurorNumber(juror.getJurorNumber())
+            .poolNumber(jurorPool.getPoolNumber())
+            .createdBy(SecurityUtil.getActiveLogin())
+            .historyCode(HistoryCodeMod.PRINT_SUMMONS).build();
+        jurorHistoryRepository.save(jurorSummonsHistory);
+    }
+
+    private JurorPool createManualJurorPool(String poolNumber, PoolRequest poolRequest, Juror juror) {
+        JurorPool jurorPool = new JurorPool();
+        jurorPool.setJuror(juror);
+        jurorPool.setPool(poolRequest);
+        jurorPool.setIsActive(true);
+        jurorPool.setNextDate(poolRequest.getReturnDate());
+
+        Optional<JurorStatus> jurorStatusOpt = jurorStatusRepository.findById(IJurorStatus.SUMMONED);
+        JurorStatus jurorStatus = jurorStatusOpt.orElseThrow(PoolCreateException.InvalidPoolStatus::new);
+        jurorPool.setStatus(jurorStatus);
+
+        jurorPool.setOwner(SecurityUtil.getActiveOwner());
+
+        int sequenceNumber = poolMemberSequenceService.getPoolMemberSequenceNumber(poolNumber);
+        jurorPool.setPoolSequence(poolMemberSequenceService.leftPadInteger(sequenceNumber));
+
+        jurorPool.setUserEdtq(SecurityUtil.getActiveLogin());
+        jurorPool.setLastUpdate(LocalDateTime.now());
+
+        jurorPoolRepository.save(jurorPool);
+        return jurorPool;
+    }
+
+    private Juror createManualJurorRecord(JurorManualCreationRequestDto jurorCreateRequestDto, String jurorNumber) {
+        Juror juror = Juror.builder()
+            .jurorNumber(jurorNumber)
+            .title(jurorCreateRequestDto.getTitle())
+            .firstName(jurorCreateRequestDto.getFirstName())
+            .lastName(jurorCreateRequestDto.getLastName())
+            .dateOfBirth(jurorCreateRequestDto.getDateOfBirth())
+            .addressLine1(jurorCreateRequestDto.getAddress().getLineOne())
+            .addressLine2(jurorCreateRequestDto.getAddress().getLineTwo())
+            .addressLine3(jurorCreateRequestDto.getAddress().getLineThree())
+            .addressLine4(jurorCreateRequestDto.getAddress().getTown())
+            .addressLine5(jurorCreateRequestDto.getAddress().getCounty())
+            .postcode(jurorCreateRequestDto.getAddress().getPostcode())
+            .phoneNumber(jurorCreateRequestDto.getPrimaryPhone())
+            .altPhoneNumber(jurorCreateRequestDto.getAlternativePhone())
+            .email(jurorCreateRequestDto.getEmailAddress())
+            .notes(jurorCreateRequestDto.getNotes())
+            .responded(false)
+            .contactPreference(null)
+            .build();
+
+        jurorRepository.save(juror);
+        return juror;
     }
 
 
     private void validateOnCall(JurorPool jurorPool) {
-        if (jurorPool.getOnCall() != null && jurorPool.getOnCall().equals(true)) {
+        if (jurorPool.isOnCall()) {
             throw new MojException.BadRequest("Juror status is already on call", null);
         }
     }
@@ -611,6 +738,11 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         if (dto.isOnCall() && dto.getNextDate() != null) {
             throw new MojException.BadRequest("Cannot place juror on call and have a next date",
                 null);
+        } else if (!dto.isOnCall() && dto.getNextDate() == null) {
+            throw new MojException.BadRequest(
+                "Must select either on call or enter new date",
+                null
+            );
         }
     }
 
@@ -1202,7 +1334,10 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         responseDto.setNonAttendances((int) jurorAttendanceDetails.stream()
             .filter(p -> AttendanceType.NON_ATTENDANCE.equals(p.getAttendanceType())).count());
 
-        responseDto.setOnCall(ObjectUtils.defaultIfNull(jurorPool.getOnCall(), false));
+        // the hasAttendances method does not care if appearance is confirmed or not
+        responseDto.setHasAppearances(jurorAppearanceService.hasAttendances(jurorNumber));
+
+        responseDto.setOnCall(jurorPool.isOnCall());
         responseDto.setNextDate(jurorPool.getNextDate());
 
         return responseDto;
@@ -1269,7 +1404,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
                 PaymentSummaryData::add
             );
 
-        Map<Long, Optional<FinancialAuditDetails>> auditDetailsMap = new HashMap<>();
+        Map<Long, Optional<FinancialAuditDetails>> auditDetailsMap = new ConcurrentHashMap<>();
         return JurorPaymentsResponseDto.builder()
             .attendances(appearances.size() - nonAttendanceCount)
             .nonAttendances(nonAttendanceCount)

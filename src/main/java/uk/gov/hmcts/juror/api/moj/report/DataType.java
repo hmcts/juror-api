@@ -275,7 +275,7 @@ public enum DataType implements IDataType {
             .otherwise(0L).sum()),
 
 
-    POLICE_CHECK_TIMED_OUT("Checks completed", Long.class,
+    POLICE_CHECK_TIMED_OUT("Checks timed out", Long.class,
         new CaseBuilder()
             .when(QJuror.juror.policeCheck.in(PoliceCheck.UNCHECKED_MAX_RETRIES_EXCEEDED))
             .then(1L)

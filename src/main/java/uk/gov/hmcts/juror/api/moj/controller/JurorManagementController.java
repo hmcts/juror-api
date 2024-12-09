@@ -29,6 +29,7 @@ import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.moj.controller.request.AddAttendanceDayDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAppearanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorsToDismissRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.ConfirmAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.JurorNonAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.ModifyConfirmedAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAttendanceDetailsDto;
@@ -38,6 +39,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorAppearanceResponseDto
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsOnTrialResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsToDismissResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.AttendanceDetailsResponse;
+import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.UnconfirmedJurorResponseDto;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
@@ -81,8 +83,9 @@ public class JurorManagementController {
         return ResponseEntity.ok(appearanceData);
     }
 
-    @GetMapping("/attendance")
-    @Operation(description = "Retrieve a list of juror attendance details based on attendance (appearance) status")
+    @PostMapping("/attendance")
+    @Operation(description = "GET With Body",
+        summary = "Retrieve a list of juror attendance details based on attendance (appearance) status")
     public ResponseEntity<AttendanceDetailsResponse> retrieveAttendanceDetails(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid RetrieveAttendanceDetailsDto request) {
@@ -142,16 +145,15 @@ public class JurorManagementController {
     @Operation(description = "Add a non-attendance day for a juror")
     public void addNonAttendance(
         @RequestBody @Valid JurorNonAttendanceDto jurorNonAttendanceDto) {
-
         jurorAppearanceService.addNonAttendance(jurorNonAttendanceDto);
     }
 
-    @GetMapping("/jurors-to-dismiss")
-    @Operation(description = "Retrieve a list of jurors to dismiss based on their attendance (appearance) status")
+    @PostMapping("/jurors-to-dismiss")
+    @Operation(description = "GET With Body",
+        summary = "Retrieve a list of jurors to dismiss based on their attendance (appearance) status")
     @IsCourtUser
     public ResponseEntity<JurorsToDismissResponseDto> retrieveJurorsToDismiss(
         @RequestBody @Valid JurorsToDismissRequestDto request) {
-
         return ResponseEntity.ok(jurorAppearanceService.retrieveJurorsToDismiss(request));
     }
 
@@ -161,7 +163,6 @@ public class JurorManagementController {
     public ResponseEntity<JurorsOnTrialResponseDto> retrieveJurorsToDismiss(
         @P("location-code") @PathVariable("location-code") @CourtLocationCode @Valid String locationCode,
         @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate attendanceDate) {
-
         return ResponseEntity.ok(jurorAppearanceService.retrieveJurorsOnTrials(locationCode, attendanceDate));
     }
 
@@ -174,10 +175,30 @@ public class JurorManagementController {
         jurorAppearanceService.confirmJuryAttendance(request);
     }
 
+    @PatchMapping("/confirm-attendance")
+    @Operation(description = "Confirm attendance for juror who needs confirmation of attendance for date")
+    @IsCourtUser
+    @ResponseStatus(HttpStatus.OK)
+    public void confirmAttendance(
+        @RequestBody @Valid ConfirmAttendanceDto request) {
+        jurorAppearanceService.confirmAttendance(request);
+    }
+
     private void validateOwner(BureauJwtPayload payload) {
         if (JUROR_OWNER.equalsIgnoreCase(payload.getOwner())) {
             throw new MojException.Forbidden("Bureau users are not allowed to use this service",
                 null);
         }
     }
+
+    @GetMapping("/unconfirmed-jurors/{location-code}")
+    @Operation(description = "Retrieve a list of jurors who have not confirmed their attendance")
+    @IsCourtUser
+    public ResponseEntity<UnconfirmedJurorResponseDto> retrieveUnconfirmedJurors(
+        @PathVariable(name = "location-code") @CourtLocationCode @Valid String locationCode,
+        @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate attendanceDate) {
+
+        return ResponseEntity.ok(jurorAppearanceService.retrieveUnconfirmedJurors(locationCode, attendanceDate));
+    }
+
 }

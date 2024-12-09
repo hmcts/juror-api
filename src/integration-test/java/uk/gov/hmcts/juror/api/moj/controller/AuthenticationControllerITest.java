@@ -227,7 +227,7 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
                 assertThat(claims.getIssuedAt()).isAfter(new Date(clock.millis() - 60_000));
 
                 assertThat(claims)
-                    .hasSize(13)
+                    .hasSize(14)
                     .containsEntry("owner", expectedJwtClaims.getOwner())
                     .containsEntry("email", expectedJwtClaims.getEmail())
                     .containsEntry("locCode", expectedJwtClaims.getLocCode())
@@ -241,7 +241,8 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
                         "courts", expectedJwtClaims.getStaff().getCourts()
                     ))
                     .containsEntry("roles", expectedJwtClaims.getRoles()
-                        .stream().map(Enum::name).toList());
+                        .stream().map(Enum::name).toList())
+                    .containsEntry("permissions", List.of());
             }
 
             @Test

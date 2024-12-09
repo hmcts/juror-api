@@ -137,6 +137,31 @@ public class LetterBase {
         return formatter.format(cal.getTime()).toUpperCase();
     }
 
+    public static String getWelshDateOfLetter() {
+        final int processDays = 2;
+        final int processDaysOverWeekend = 4;
+
+        Calendar cal = Calendar.getInstance();
+
+        switch (cal.get(Calendar.DAY_OF_WEEK)) {
+            case Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY:
+                cal.add(Calendar.DAY_OF_MONTH, processDays);
+                break;
+            case Calendar.THURSDAY, Calendar.FRIDAY, Calendar.SATURDAY, Calendar.SUNDAY:
+                cal.add(Calendar.DAY_OF_MONTH, processDaysOverWeekend);
+                break;
+            default:
+                throw new MojException.InternalServerError("Unknown day of week", null);
+        }
+
+        SimpleDateFormat formatter = new SimpleDateFormat("dd MMMM yyyy");
+
+        String dateString = formatter.format(cal.getTime()).toUpperCase();
+        String[] dateParts = dateString.split("\\s");
+        String welshMonth = XeroxConstants.WELSH_DATE_TRANSLATION_MAP.get(dateParts[1]);
+        return format("%s %s %s", dateParts[0], welshMonth, dateParts[2]);
+    }
+
     @RequiredArgsConstructor
     protected class LetterData implements ILetterData {
         private final int length;
@@ -209,13 +234,15 @@ public class LetterBase {
 
     public enum LetterDataType {
         DATE_OF_LETTER(context -> getDateOfLetter()),
+
+        WELSH_DATE_OF_LETTER(context -> getWelshDateOfLetter()),
         COURT_LOCATION_CODE(context -> context.getCourtLocation().getLocCode(), ContextType.COURT_LOCATION),
         COURT_NAME(context -> {
             String locCode = context.getCourtLocation().getLocCode();
-            if (locCode != null && !List.of("400", "626").contains(locCode)) {
-                return "THE CROWN COURT AT " + context.getCourtLocation().getName();
+            if (locCode != null && List.of("000","127","413","414","416","436","463","478").contains(locCode)) {
+                return "THE CROWN COURT AT" + context.getCourtLocation().getLocCourtName();
             }
-            return context.getCourtLocation().getName();
+            return context.getCourtLocation().getLocCourtName();
         }, ContextType.COURT_LOCATION),
         COURT_ADDRESS1(context -> context.getCourtLocation().getAddress1(), ContextType.COURT_LOCATION),
         COURT_ADDRESS2(context -> context.getCourtLocation().getAddress2(), ContextType.COURT_LOCATION),

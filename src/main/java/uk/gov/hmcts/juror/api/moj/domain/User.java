@@ -83,6 +83,12 @@ public class User implements Serializable {
     @Column(name = "role")
     private Set<Role> roles;
 
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(schema = "juror_mod", name = "user_permissions", joinColumns = @JoinColumn(name = "username",
+        referencedColumnName = "username"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "permission")
+    private Set<Permission> permissions;
 
     @JoinTable(
         schema = "juror_mod", name = "user_courts",
@@ -132,6 +138,13 @@ public class User implements Serializable {
             roles = new HashSet<>();
         }
         return roles;
+    }
+
+    public Set<Permission> getPermissions() {
+        if (permissions == null) {
+            permissions = new HashSet<>();
+        }
+        return permissions;
     }
 
     public void addRole(Role role) {

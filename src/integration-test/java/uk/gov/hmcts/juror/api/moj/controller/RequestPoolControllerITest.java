@@ -2307,6 +2307,75 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
 
     }
 
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/RequestPoolController_allPoolsAtCourtLocation.sql"})
+    public void testGetAllPoolsAtCourtLocationByCourtUserMultiple() throws Exception {
+
+        String locCode = "418";
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, getSatelliteCourtJwt("418", "418"));
+
+        String requestUrl = "/api/v1/moj/pool-request/active-pools-by-court?locCode=" + locCode;
+
+        ResponseEntity<PoolsAtCourtLocationListDto> response =
+            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+                HttpMethod.GET, URI.create(requestUrl)), PoolsAtCourtLocationListDto.class);
+
+        assertThat(response.getStatusCode())
+            .as("Expect the get request to be successful")
+            .isEqualTo(OK);
+
+        PoolsAtCourtLocationListDto poolsAtCourtLocationListDto = response.getBody();
+        assertThat(poolsAtCourtLocationListDto).isNotNull();
+        List<PoolsAtCourtLocationListDto.PoolsAtCourtLocationDataDto> poolsAtCourtLocationDataDtosUnsorted
+            = poolsAtCourtLocationListDto.getData();
+        assertThat(poolsAtCourtLocationDataDtosUnsorted.size())
+            .as("Expect the active pools list to have three entries")
+            .isEqualTo(4);
+
+        // sort the list of pools by pool number or else the order is not guaranteed
+        List<PoolsAtCourtLocationListDto.PoolsAtCourtLocationDataDto> poolsAtCourtLocationDataDtos =
+            poolsAtCourtLocationDataDtosUnsorted.stream().sorted(Comparator.comparing(PoolsAtCourtLocationListDto
+                .PoolsAtCourtLocationDataDto::getPoolNumber)).collect(Collectors.toList());
+
+        PoolsAtCourtLocationListDto.PoolsAtCourtLocationDataDto poolsAtCourtLocationDataDto
+            = poolsAtCourtLocationDataDtos.get(0);
+        LocalDate serviceStartDate = LocalDate.now().minusDays(10);
+
+        assertThat(poolsAtCourtLocationDataDto.getPoolNumber()).as("Expect the pool number to be 418230101")
+            .isEqualTo("418230101");
+        validatePoolData(poolsAtCourtLocationDataDto, serviceStartDate);
+        assertThat(poolsAtCourtLocationDataDto.getJurorsOnTrials()).as("Expect there to be 0 juror(s) in trials")
+            .isEqualTo(0);
+
+        poolsAtCourtLocationDataDto
+            = poolsAtCourtLocationDataDtos.get(1);
+        assertThat(poolsAtCourtLocationDataDto.getPoolNumber()).as("Expect the pool number to be 418230102")
+            .isEqualTo("418230102");
+        validatePoolData(poolsAtCourtLocationDataDto, serviceStartDate);
+        assertThat(poolsAtCourtLocationDataDto.getJurorsOnTrials()).as("Expect there to be 1 juror(s) in trials")
+            .isEqualTo(1);
+
+        poolsAtCourtLocationDataDto
+            = poolsAtCourtLocationDataDtos.get(2);
+        assertThat(poolsAtCourtLocationDataDto.getPoolNumber()).as("Expect the pool number to be 418230103")
+            .isEqualTo("418230103");
+        validatePoolData(poolsAtCourtLocationDataDto, serviceStartDate);
+        assertThat(poolsAtCourtLocationDataDto.getJurorsOnTrials()).as("Expect there to be 1 juror(s) in trials")
+            .isEqualTo(1);
+
+        poolsAtCourtLocationDataDto
+            = poolsAtCourtLocationDataDtos.get(3);
+        assertThat(poolsAtCourtLocationDataDto.getPoolNumber()).as("Expect the pool number to be 418230103")
+            .isEqualTo("418230104");
+        assertThat(poolsAtCourtLocationDataDto.getServiceStartDate()).as("Expect the pool start date to be "
+                + " 3 days in the future")
+            .isEqualTo(LocalDate.now().plusDays(3));
+        assertThat(poolsAtCourtLocationDataDto.getJurorsOnTrials()).as("Expect there to be no juror(s) in trials")
+            .isEqualTo(0);
+
+    }
+
     private static void validatePoolData(
         PoolsAtCourtLocationListDto.PoolsAtCourtLocationDataDto poolsAtCourtLocationDataDto,
         LocalDate serviceStartDate) {

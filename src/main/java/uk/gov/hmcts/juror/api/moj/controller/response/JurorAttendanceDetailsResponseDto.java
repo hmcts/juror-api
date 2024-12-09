@@ -44,6 +44,10 @@ public class JurorAttendanceDetailsResponseDto {
     @Schema(description = "Number of days juror was absent but expected in court")
     private int absences;
 
+    @JsonProperty("has_appearances")
+    @Schema(description = "Flag to indicate if juror was physically in court but not necessarily confirmed")
+    private boolean hasAppearances;
+
     @JsonProperty("juror_attendance_response_data")
     @Schema(description = "List of Juror appearance records")
     private List<JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData> data;

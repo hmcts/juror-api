@@ -50,7 +50,7 @@ VALUES ('415', '111111111', '415220502', true, CURRENT_DATE + interval '6 weeks'
 ('400', '121314151', '415220502', true, CURRENT_DATE + interval '6 weeks', 2);
 
 INSERT INTO juror_mod.juror_pool(juror_number, pool_number, "owner", user_edtq, is_active, status, times_sel, def_date, "location", no_attendances, no_attended, no_fta, no_awol, pool_seq, edit_tag, next_date, on_call, smart_card, was_deferred, deferral_code, id_checked, postpone, paid_cash, scan_code, last_update, reminder_sent, transfer_date, date_created) VALUES
-('641500001', '415240601', '415', 'court-southwark', true, 10, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '0002', NULL, '2024-06-11', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2024-04-09 15:07:32.570', NULL, NULL, '2024-04-09 15:06:58.069');
+('641500001', '415240601', '415', 'court-southwark', true, 10, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '0002', NULL, '2024-06-11', false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2024-04-09 15:07:32.570', NULL, NULL, '2024-04-09 15:06:58.069');
 
 INSERT INTO juror_mod.juror_pool(juror_number, pool_number, "owner", user_edtq, is_active, status, times_sel, def_date, "location", no_attendances, no_attended, no_fta, no_awol, pool_seq, edit_tag, next_date, on_call, smart_card, was_deferred, deferral_code, id_checked, postpone, paid_cash, scan_code, last_update, reminder_sent, transfer_date, date_created) VALUES
 ('641500001', '471240401', '471', 'court-southwark', true, 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '0001', NULL, '2024-04-29', false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2024-04-09 15:12:48.674', NULL, NULL, '2024-04-09 15:12:48.674');

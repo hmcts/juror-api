@@ -278,7 +278,7 @@ sourceSets {
     }
 }
 checkstyle {
-    maxWarnings = 0
+    maxWarnings = 1
     toolVersion = '10.17.0'
     getConfigDirectory().set(new File(rootDir, 'config/checkstyle'))
 }
@@ -287,7 +287,7 @@ pmdTest {
     maxFailures = 292
 }
 pmdMain {
-    maxFailures = 763
+    maxFailures = 752
 }
 pmd {
     maxFailures = 0

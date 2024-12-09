@@ -24,6 +24,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
+import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseService;
 
 import java.util.Collections;
@@ -60,7 +61,8 @@ public class DeferralResponseServiceImplTest {
     private JurorPoolService jurorPoolService;
     @Mock
     private JurorResponseService jurorResponseService;
-
+    @Mock
+    private JurorAppearanceService jurorAppearanceService;
 
     @InjectMocks
     private DeferralResponseServiceImpl deferralResponseService;

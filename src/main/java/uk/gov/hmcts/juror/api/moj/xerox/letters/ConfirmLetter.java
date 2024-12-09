@@ -33,7 +33,7 @@ public class ConfirmLetter extends LetterBase {
     @Override
     protected void setupWelsh() {
         setFormCode(FormCode.BI_CONFIRMATION);
-        addData(LetterDataType.DATE_OF_LETTER, 18);
+        addData(LetterDataType.WELSH_DATE_OF_LETTER, 18);
         addData(LetterDataType.COURT_LOCATION_CODE, 3);
         addData(LetterDataType.WELSH_CORRESPONDENCE_NAME, 40);
         addData(LetterDataType.BUREAU_NAME, 40);

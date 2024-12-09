@@ -14,15 +14,15 @@ INSERT INTO juror_mod.juror (juror_number,poll_number,title,last_name,first_name
 -- create juror_pool associative records
 INSERT INTO juror_mod.juror_pool (juror_number,pool_number,"owner",user_edtq,is_active,status,times_sel,def_date,"location",no_attendances,no_attended,no_fta,no_awol,pool_seq,edit_tag,next_date,on_call,smart_card,was_deferred,deferral_code,id_checked,postpone,paid_cash,scan_code,last_update,reminder_sent,transfer_date,date_created) VALUES
 	 ('641500021','415240601','415','MODTESTBUREAU',true,4,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'0001',NULL,
-	 current_date+1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2024-04-22 12:26:40.702989',NULL,NULL,'2024-04-22 12:26:40.702987'),
+	 current_date+1,false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2024-04-22 12:26:40.702989',NULL,NULL,'2024-04-22 12:26:40.702987'),
 	 ('641500011','415240601','415','MODTESTBUREAU',true,3,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'0002',NULL,
-	 current_date+1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2024-04-22 12:26:40.757378',NULL,NULL,'2024-04-22 12:26:40.757376'),
+	 current_date+1,false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2024-04-22 12:26:40.757378',NULL,NULL,'2024-04-22 12:26:40.757376'),
 	 ('641500003','415240601','415','MODTESTCOURT',true,2,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'0003',NULL,
-	 current_date+1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2024-04-22 12:29:18.125891',NULL,NULL,'2024-04-22 12:26:40.788798'),
+	 current_date+1,false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2024-04-22 12:29:18.125891',NULL,NULL,'2024-04-22 12:26:40.788798'),
 	 ('641500004','415240601','415','MODTESTCOURT',true,7,NULL,current_date+30,NULL,NULL,NULL,NULL,NULL,'0004',NULL,
-	 NULL,NULL,NULL,NULL,'DC',NULL,NULL,NULL,NULL,'2024-04-22 12:30:25.628652',NULL,NULL,'2024-04-22 12:26:40.819485'),
+	 NULL,false,NULL,NULL,'DC',NULL,NULL,NULL,NULL,'2024-04-22 12:30:25.628652',NULL,NULL,'2024-04-22 12:26:40.819485'),
 	 ('641500007','415240601','415','MODTESTCOURT',true,13,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'0005',NULL,
-	 current_date-1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2024-04-22 15:14:10.871528',NULL,NULL,'2024-04-22 12:26:40.848865');
+	 current_date-1,false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2024-04-22 15:14:10.871528',NULL,NULL,'2024-04-22 12:26:40.848865');
 
 insert into juror_mod.appearance (attendance_date,juror_number,pool_number,loc_code,time_in,time_out,non_attendance,appearance_stage,attendance_type) values
 (current_date - interval '1 day','641500021','415240601','415',null,null,false,null,'ABSENT'),

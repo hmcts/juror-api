@@ -13,7 +13,6 @@ import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
-import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.utils.PaginationUtil;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -80,9 +79,11 @@ public class ITrialRepositoryImpl implements ITrialRepository {
             .where(TRIAL.courtLocation.locCode.eq(locationCode))
             .where(TRIAL.trialStartDate.loe(attendanceDate))
             .where(TRIAL.trialEndDate.isNull().or(TRIAL.trialEndDate.goe(attendanceDate)))
-            //If they are a JUROR or have an appearance with a jury confirmation audit number
-            .where(PANEL.result.eq(PanelResult.JUROR)
-                .or(APPEARANCE.isNotNull()))
+            //If they are a JUROR or Panelled or have an appearance with a jury confirmation audit number
+            .where((PANEL.empanelledDate.isNotNull().and(PANEL.returnDate.isNull()
+                                                             .or(PANEL.returnDate.after(attendanceDate))))
+                .or(APPEARANCE.isNotNull())
+                       .or(PANEL.empanelledDate.isNull().and(PANEL.result.isNull())))
             .groupBy(TRIAL.trialNumber, TRIAL.description, TRIAL.trialType, TRIAL.courtroom.description,
                 TRIAL.judge.name)
             .fetch();

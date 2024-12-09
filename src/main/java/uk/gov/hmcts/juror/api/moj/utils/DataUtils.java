@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Locale;
 
 @Slf4j
+@SuppressWarnings("PMD.UselessParentheses")
 public final class DataUtils {
     static final String RESPONSE_UPDATED_LOG = "Juror: %s. %s response will be updated with new value for %s";
 

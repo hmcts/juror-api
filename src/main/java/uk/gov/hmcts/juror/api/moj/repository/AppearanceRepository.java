@@ -93,7 +93,14 @@ public interface AppearanceRepository extends IAppearanceRepository, JpaReposito
     Optional<Appearance> findByLocCodeAndJurorNumberAndAttendanceDate(String locCode, String jurorNumber,
                                                                       LocalDate attendanceDate);
 
+    List<Appearance> findByLocCodeAndAttendanceDateAndTrialNumber(String locCode, LocalDate attendanceDate,
+                                                                  String trialNumber);
+
     @Query(value = "select max(a.version) from juror_mod.appearance_audit a where "
         + "a.juror_number = ?1 and a.attendance_date = ?2 and a.loc_code = ?3", nativeQuery = true)
     Long getLastVersionNumber(String jurorNumber, LocalDate date, String locCode);
+
+    List<Appearance> findAllByJurorNumberAndAttendanceDateGreaterThanEqualAndLocCodeOrderByAttendanceDateDesc(String jurorNumber,
+                                                                                              LocalDate date,
+                                                                                              String locCodes);
 }

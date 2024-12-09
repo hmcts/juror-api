@@ -378,7 +378,7 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
             case APRIL -> formattedDate = formattedDate.replace("April", "Ebrill");
             case MAY -> formattedDate = formattedDate.replace("May", "Mai");
             case JUNE -> formattedDate = formattedDate.replace("June", "Mehefin");
-            case JULY -> formattedDate = formattedDate.replace("July", "Gorffenaf");
+            case JULY -> formattedDate = formattedDate.replace("July", "Gorffennaf");
             case AUGUST -> formattedDate = formattedDate.replace("August", "Awst");
             case SEPTEMBER -> formattedDate = formattedDate.replace("September", "Medi");
             case OCTOBER -> formattedDate = formattedDate.replace("October", "Hydref");

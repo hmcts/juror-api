@@ -7,7 +7,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
-import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
@@ -33,11 +32,11 @@ import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.utils.PaginationUtil;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -61,9 +60,8 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
     public List<JurorAppearanceResponseDto.JurorAppearanceResponseData> getAppearanceRecords(
         String locCode, LocalDate date, String jurorNumber, JurorStatusGroup group) {
 
-        List<Integer> jurorStatuses = group.getStatusList();
-        JPAQuery<Tuple> query = sqlFetchAppearanceRecords(locCode, date, jurorStatuses,
-            group == JurorStatusGroup.IN_WAITING);
+        //List<Integer> jurorStatuses = group.getStatusList();
+        JPAQuery<Tuple> query = sqlFetchAppearanceRecords(locCode, date, group);
 
 
         // check if we need to just return one juror's record
@@ -80,22 +78,30 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
     public List<Tuple> retrieveAttendanceDetails(RetrieveAttendanceDetailsDto request) {
         final RetrieveAttendanceDetailsDto.CommonData commonData = request.getCommonData();
 
-        // depending on what is to be updated, filter the query based on juror status
-        List<Integer> jurorStatuses = sqlFilterQueryJurorStatus(commonData.getTag(), request.isJurorInWaiting());
+        JurorStatusGroup statusGroup;
+
+        if (commonData.getTag().equals(RetrieveAttendanceDetailsTag.PANELLED)) {
+            statusGroup = JurorStatusGroup.PANELLED;
+        } else if (commonData.getTag().equals(RetrieveAttendanceDetailsTag.CONFIRM_ATTENDANCE)
+            || request.isJurorInWaiting()) {
+            statusGroup = JurorStatusGroup.IN_WAITING;
+        } else {
+            statusGroup = JurorStatusGroup.ALL;
+        }
 
         // start building the query
         JPAQuery<Tuple> query = sqlFetchAppearanceRecords(commonData.getLocationCode(), commonData.getAttendanceDate(),
-            jurorStatuses, request.isJurorInWaiting());
+            statusGroup);
 
         if (commonData.getTag().equals(RetrieveAttendanceDetailsTag.JUROR_NUMBER)) {
             query = query.where(APPEARANCE.jurorNumber.in(request.getJuror()));
-        } else if (commonData.getTag().equals(RetrieveAttendanceDetailsTag.NOT_CHECKED_OUT)
-            || commonData.getTag().equals(RetrieveAttendanceDetailsTag.PANELLED)) {
+        } else if (commonData.getTag().equals(RetrieveAttendanceDetailsTag.NOT_CHECKED_OUT)) {
             query = query.where(APPEARANCE.appearanceStage.eq(AppearanceStage.CHECKED_IN));
         } else if (commonData.getTag().equals(RetrieveAttendanceDetailsTag.CONFIRM_ATTENDANCE)) {
-            // a confirmed juror can have appStage of CheckedIn or CheckedOut therefore cannot rely on appStage. A
-            // confirmed juror will always have TimeIn.
-            query = query.where(APPEARANCE.timeIn.isNotNull());
+            query = query.where(APPEARANCE.timeIn.isNotNull())
+                .where(APPEARANCE.appearanceStage.in(AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT))
+                .where(APPEARANCE.attendanceAuditNumber.isNull())
+                .where(APPEARANCE.appearanceConfirmed.isFalse());
         }
 
         // execute the query and return the results
@@ -126,27 +132,12 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .orderBy(JUROR.jurorNumber.asc()).fetch();
     }
 
-    private List<Integer> sqlFilterQueryJurorStatus(@NotNull RetrieveAttendanceDetailsTag tag,
-                                                    boolean isJurorInWaiting) {
-        if (tag.equals(RetrieveAttendanceDetailsTag.CONFIRM_ATTENDANCE)) {
-            return IJurorStatus.getAllExcluding(IJurorStatus.JUROR);
-        } else if (tag.equals(RetrieveAttendanceDetailsTag.PANELLED)) {
-            return List.of(IJurorStatus.PANEL);
-        } else {
-            if (isJurorInWaiting) {
-                return IJurorStatus.getAllExcluding(IJurorStatus.JUROR);
-            } else {
-                return Arrays.asList(IJurorStatus.RESPONDED, IJurorStatus.PANEL, IJurorStatus.JUROR);
-            }
-        }
-    }
-
-    private JPAQuery<Tuple> sqlFetchAppearanceRecords(String locCode, LocalDate date, List<Integer> jurorStatuses,
-                                                      boolean excludeJuryAttendances) {
+    private JPAQuery<Tuple> sqlFetchAppearanceRecords(String locCode, LocalDate date,
+                                                      JurorStatusGroup statusGroup) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
 
-        JPAQuery<Tuple> query = queryFactory.select(
-                JUROR.jurorNumber.as("juror_number"),
+        JPAQuery<Tuple> query = queryFactory.selectDistinct(
+                APPEARANCE.jurorNumber.as("juror_number"),
                 JUROR.firstName.as("first_name"),
                 JUROR.lastName.as("last_name"),
                 JUROR_POOL.status.status.as("status"),
@@ -163,14 +154,37 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .join(APPEARANCE)
             .on(JUROR.jurorNumber.eq(APPEARANCE.jurorNumber)
                 .and(APPEARANCE.courtLocation.eq(JUROR_POOL.pool.courtLocation)))
+            .leftJoin(PANEL)
+            .on(APPEARANCE.jurorNumber.eq(PANEL.juror.jurorNumber)
+                    .and(APPEARANCE.trialNumber.eq(PANEL.trial.trialNumber)))
             .where(APPEARANCE.courtLocation.locCode.eq(locCode))
             .where(APPEARANCE.attendanceDate.eq(date))
-            .where(JUROR_POOL.status.status.in(jurorStatuses))
             .where(JUROR_POOL.isActive.isTrue());
-        if (excludeJuryAttendances) {
+
+        if (statusGroup == JurorStatusGroup.IN_WAITING) {
             query.where(APPEARANCE.attendanceAuditNumber.isNull()
                 .or(APPEARANCE.attendanceAuditNumber.startsWith("J").not()));
+            query.where(APPEARANCE.trialNumber.isNull().or(PANEL.empanelledDate.isNull()
+                                                                    .and(PANEL.result.isNotNull()))
+                                                                    .or(PANEL.returnDate.isNotNull()
+                                                                       .and(PANEL.empanelledDate.isNotNull())
+                                                                       .and(PANEL.returnDate.loe(date)
+                                                                       .or(PANEL.empanelledDate.after(date)))));
+
         }
+
+        if (statusGroup == JurorStatusGroup.PANELLED) {
+            query.where(PANEL.dateSelected.isNotNull()
+                            .and(PANEL.dateSelected.after(date.atStartOfDay())
+                                     .and(PANEL.dateSelected.before(date.atTime(23, 59)))));
+        }
+
+        if (statusGroup == JurorStatusGroup.ON_TRIAL) {
+            query.where(PANEL.empanelledDate.isNotNull()
+                            .and(PANEL.empanelledDate.loe(date))
+                            .and(PANEL.returnDate.isNull().or(PANEL.returnDate.after(date))));
+        }
+
         return query;
     }
 
@@ -294,13 +308,13 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
         try {
             return
                 Optional.ofNullable((Appearance) AuditReaderFactory.get(entityManager)
-                .createQuery()
-                .forRevisionsOfEntity(Appearance.class, true, false)
-                .add(AuditEntity.property("jurorNumber").eq(jurorNumber))
-                .add(AuditEntity.property("locCode").eq(locCode))
-                .add(AuditEntity.property("attendanceDate").eq(attendanceDate))
-                .add(AuditEntity.property("version").eq(appearanceVersion))
-                .getSingleResult());
+                    .createQuery()
+                    .forRevisionsOfEntity(Appearance.class, true, false)
+                    .add(AuditEntity.property("jurorNumber").eq(jurorNumber))
+                    .add(AuditEntity.property("locCode").eq(locCode))
+                    .add(AuditEntity.property("attendanceDate").eq(attendanceDate))
+                    .add(AuditEntity.property("version").eq(appearanceVersion))
+                    .getSingleResult());
         } catch (NoResultException e) {
             return Optional.empty();
         }
@@ -378,9 +392,32 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
                 .build(), null);
     }
 
+    @Override
+    public List<Tuple> getUnconfirmedJurors(String locationCode, LocalDate attendanceDate) {
+
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        return queryFactory.select(APPEARANCE.jurorNumber,
+                JUROR.firstName,
+                JUROR.lastName,
+                JUROR_POOL.status.status,
+                APPEARANCE.timeIn,
+                APPEARANCE.timeOut)
+            .from(APPEARANCE)
+            .join(JUROR)
+            .on(APPEARANCE.jurorNumber.eq(JUROR.jurorNumber))
+            .join(JUROR_POOL)
+            .on(APPEARANCE.jurorNumber.eq(JUROR_POOL.juror.jurorNumber))
+            .where(APPEARANCE.courtLocation.locCode.eq(locationCode))
+            .where(APPEARANCE.attendanceDate.eq(attendanceDate))
+            .where(APPEARANCE.appearanceStage.in(AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT))
+            .where(APPEARANCE.appearanceConfirmed.eq(false))
+            .where(JUROR_POOL.isActive.isTrue())
+            .where(JUROR_POOL.owner.eq(SecurityUtil.getActiveOwner()))
+            .orderBy(APPEARANCE.jurorNumber.asc())
+            .fetch();
+    }
+
     JPAQueryFactory getQueryFactory() {
         return new JPAQueryFactory(entityManager);
     }
-
-
 }
