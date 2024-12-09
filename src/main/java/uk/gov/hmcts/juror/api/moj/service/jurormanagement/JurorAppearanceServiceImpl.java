@@ -57,6 +57,7 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.temporal.WeekFields;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -1438,6 +1439,23 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     }
 
     boolean isLongTrialDay(List<LocalDate> appearanceDates, LocalDate dateToCheck) {
-        return appearanceDates.indexOf(dateToCheck) >= 10;
+
+        // logic is now to check if date is 2 calendar weeks after the first appearance date
+
+        if (appearanceDates.size() <= 1) {
+            return false;
+        }
+
+        final LocalDate firstAppearanceDate = appearanceDates.get(0);
+        final int firstAppearanceWeek = firstAppearanceDate.get(WeekFields.ISO.weekOfWeekBasedYear());
+        final int dateToCheckWeek = dateToCheck.get(WeekFields.ISO.weekOfWeekBasedYear());
+
+        // account for the first appearance week being in the last 2 weeks of the year
+        if (firstAppearanceWeek == 52 && dateToCheckWeek >= 2 || firstAppearanceWeek == 51 && dateToCheckWeek >= 1) {
+            return true;
+        }
+
+        // check if the date to check is 2 weeks after the first appearance
+        return dateToCheckWeek - firstAppearanceWeek >= 2;
     }
 }
