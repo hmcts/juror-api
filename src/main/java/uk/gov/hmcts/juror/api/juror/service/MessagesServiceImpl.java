@@ -221,6 +221,17 @@ public class MessagesServiceImpl implements BureauProcessService {
             }
         }
 
+        // log the results
+        log.info("[JobKey: COURT_COMMS]" + "\n"
+                     + "total messages to send=" + messageDetailList.size() + "\n"
+                     + "emails sent=" + emailSuccess + "\n"
+                     + "sms sent=" + smsSuccess + "\n"
+                     + "invalid phone count=" + invalidPhoneCount + "\n"
+                     + "invalid email count=" + invalidEmailCount + "\n"
+                     + "error count=" + errorCount + "\n"
+                     + "missing api key count=" + missingApiKeyCount + "\n"
+                     + "missing email and phone=" + missingEmailAndPhone);
+
         log.info("Court Comms Processing : Finished - {}", dateFormat.format(new Date()));
         return new SchedulerServiceClient.Result(
             errorCount == 0
@@ -233,7 +244,6 @@ public class MessagesServiceImpl implements BureauProcessService {
                 "MISSING_EMAIL_AND_PHONE", String.valueOf(missingEmailAndPhone),
                 "EMAIL_SUCCESS", String.valueOf(emailSuccess),
                 "SMS_SUCCESS", String.valueOf(smsSuccess),
-
                 "INVALID_PHONE_COUNT", String.valueOf(invalidPhoneCount),
                 "INVALID_EMAIL_COUNT", String.valueOf(invalidEmailCount)
             ));
