@@ -182,6 +182,13 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
 
         }
 
+        log.info(
+            "[JobKey: CRONBATCH_SMART_SURVEY_IMPORT]\nrecords inserted={}.\nrecords skipped={}\nerror count={}",
+            dbInsertCount,
+            dbSkipCount,
+            errorCount
+        );
+
         log.info("Smart Survey Processing : FINISHED- {}", dateFormatSurvey.format(new Date()));
 
         return new SchedulerServiceClient.Result(errorCount == 0

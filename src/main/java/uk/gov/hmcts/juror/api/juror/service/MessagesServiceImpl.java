@@ -66,6 +66,7 @@ public class MessagesServiceImpl implements BureauProcessService {
      */
     @Override
     @Transactional
+    @SuppressWarnings("checkstyle:LineLength") // false positive
     public SchedulerServiceClient.Result process() {
         // Process court comms
         SimpleDateFormat dateFormat = new SimpleDateFormat();
@@ -221,16 +222,18 @@ public class MessagesServiceImpl implements BureauProcessService {
             }
         }
 
-        // log the results
-        log.info("[JobKey: COURT_COMMS]" + "\n"
-                     + "total messages to send=" + messageDetailList.size() + "\n"
-                     + "emails sent=" + emailSuccess + "\n"
-                     + "sms sent=" + smsSuccess + "\n"
-                     + "invalid phone count=" + invalidPhoneCount + "\n"
-                     + "invalid email count=" + invalidEmailCount + "\n"
-                     + "error count=" + errorCount + "\n"
-                     + "missing api key count=" + missingApiKeyCount + "\n"
-                     + "missing email and phone=" + missingEmailAndPhone);
+        // log the results for Dynatrace
+        log.info(
+            "[JobKey: CRONBATCH_COURT_COMMS]\ntotal messages to send={}\nemails sent={}\nsms sent={}\ninvalid phone count={}\ninvalid email count={}\nerror count={}\nmissing api key count={}\nmissing email and phone={}",
+            messageDetailList.size(),
+            emailSuccess,
+            smsSuccess,
+            invalidPhoneCount,
+            invalidEmailCount,
+            errorCount,
+            missingApiKeyCount,
+            missingEmailAndPhone
+        );
 
         log.info("Court Comms Processing : Finished - {}", dateFormat.format(new Date()));
         return new SchedulerServiceClient.Result(
