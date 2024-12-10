@@ -37,6 +37,7 @@ public class UrgentStatusScheduler implements ScheduledService {
     private final JurorPoolRepository jurorRepository;
 
 
+    @SuppressWarnings("checkstyle:LineLength") // false positive
     @Override
     public SchedulerServiceClient.Result process() {
 
@@ -99,6 +100,14 @@ public class UrgentStatusScheduler implements ScheduledService {
         } else {
             log.trace("Scheduler: No pending Juror responses found.");
         }
+
+        log.info(
+            "[JobKey: CRONBATCH_URGENT_SUPER_URGENT_STATUS]\ntotal processed: {}.\ntotal marked urgent: {}.\ntotal failed to find: {}",
+            totalResponsesProcessed,
+            totalUrgentResponses,
+            failedToFindJurorCount
+        );
+
         log.info("Scheduler: Finished, time is now {}", dateFormat.format(new Date()));
         return new SchedulerServiceClient.Result(
             failedToFindJurorCount == 0

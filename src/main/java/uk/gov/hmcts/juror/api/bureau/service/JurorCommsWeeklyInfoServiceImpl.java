@@ -40,6 +40,7 @@ public class JurorCommsWeeklyInfoServiceImpl implements BureauProcessService {
      * Processes entries in the Juror table and sends the appropriate email notifications to
      * the juror for juror where they have been transferred to court.
      */
+    @SuppressWarnings("checkstyle:LineLength") // false positive
     @Override
     @Transactional
     public SchedulerServiceClient.Result process() {
@@ -94,6 +95,16 @@ public class JurorCommsWeeklyInfoServiceImpl implements BureauProcessService {
         log.info("Informational Comms Service : Summary, identified:{}, sent:{}, failed:{}, no email address: {}",
             jurordetailList.size(), infoCommsSent, infoCommsfailed, noEmailAddress
         );
+
+        // log the results for Dynatrace
+        log.info(
+            "[JobKey: CRONBATCH_WEEKLY_COMMS]\nmessages sent={}\nmessages failed={}\nno email count={}\ninvalid email count={}",
+            infoCommsSent,
+            infoCommsfailed,
+            noEmailAddress,
+            invalidEmailAddress
+        );
+
         log.info("Informational Comms Processing : Finished - {}", dateFormat.format(new Date()));
         return new SchedulerServiceClient.Result(
             infoCommsfailed == 0

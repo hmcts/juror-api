@@ -192,7 +192,7 @@ public class JurorServiceImpl implements JurorService {
             juror.setResponseEntered(true);
             jurorRepository.save(juror);
 
-            log.info("Juror response saved for juror {}", responseEntity.getJurorNumber());
+            log.info("[Digital Response] Juror response saved for juror {}", responseEntity.getJurorNumber());
             return savedJurorResponse;
         } catch (DuplicateKeyException dke) {
             log.error(

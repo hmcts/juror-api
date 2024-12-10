@@ -42,6 +42,7 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
      * Processes entries in the Juror.print_files table and sends the appropriate email notifications to
      * the juror.
      */
+    @SuppressWarnings("checkstyle:LineLength") // false positive
     @Override
     @Transactional
     public SchedulerServiceClient.Result process() {
@@ -96,6 +97,15 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
         } else {
             log.trace("Letter Comms Processing : No pending records found.");
         }
+
+        // log the results for Dynatrace
+        log.info(
+            "[JobKey: CRONBATCH_LETTER_COMMS]\nmessages sent={}\nmessages failed={}\ninvalid email count={}",
+            commsSent,
+            commsfailed,
+            invalidEmailAddress
+        );
+
         log.info("Letter Comms Processing : Finished - {}", dateFormat.format(new Date()));
 
         return new SchedulerServiceClient.Result(

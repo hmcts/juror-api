@@ -66,6 +66,7 @@ public class MessagesServiceImpl implements BureauProcessService {
      */
     @Override
     @Transactional
+    @SuppressWarnings("checkstyle:LineLength") // false positive
     public SchedulerServiceClient.Result process() {
         // Process court comms
         SimpleDateFormat dateFormat = new SimpleDateFormat();
@@ -221,6 +222,19 @@ public class MessagesServiceImpl implements BureauProcessService {
             }
         }
 
+        // log the results for Dynatrace
+        log.info(
+            "[JobKey: CRONBATCH_COURT_COMMS]\ntotal messages to send={}\nemails sent={}\nsms sent={}\ninvalid phone count={}\ninvalid email count={}\nerror count={}\nmissing api key count={}\nmissing email and phone={}",
+            messageDetailList.size(),
+            emailSuccess,
+            smsSuccess,
+            invalidPhoneCount,
+            invalidEmailCount,
+            errorCount,
+            missingApiKeyCount,
+            missingEmailAndPhone
+        );
+
         log.info("Court Comms Processing : Finished - {}", dateFormat.format(new Date()));
         return new SchedulerServiceClient.Result(
             errorCount == 0
@@ -233,7 +247,6 @@ public class MessagesServiceImpl implements BureauProcessService {
                 "MISSING_EMAIL_AND_PHONE", String.valueOf(missingEmailAndPhone),
                 "EMAIL_SUCCESS", String.valueOf(emailSuccess),
                 "SMS_SUCCESS", String.valueOf(smsSuccess),
-
                 "INVALID_PHONE_COUNT", String.valueOf(invalidPhoneCount),
                 "INVALID_EMAIL_COUNT", String.valueOf(invalidEmailCount)
             ));

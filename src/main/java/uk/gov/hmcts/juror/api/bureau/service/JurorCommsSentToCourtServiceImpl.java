@@ -45,6 +45,7 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
      * Processes entries in the Juror table and sends the appropriate email notifications to
      * the juror for juror where they have been transferred to court.
      */
+    @SuppressWarnings("checkstyle:LineLength") // false positive
     @Override
     @Transactional
     public SchedulerServiceClient.Result process() {
@@ -160,6 +161,21 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
                 }
             }
         }
+
+        // log the results for Dynatrace
+        log.info(
+            "[JobKey: CRONBATCH_SEND_TO_COURT_COMMS]\nemail sent={}\nsms sent={}\nemail failed={}\nsms failed={}\ninvalid email count={}\ninvalid phone count={}\nsuccess count={}\nerror count={}\ntotal jurors={}",
+            successCountEmail,
+            successCountSms,
+            errorCountEmail,
+            errorCountSms,
+            errorInvalidEmailCount,
+            errorInvalidPhoneCount,
+            successCount,
+            errorCount,
+            jurordetailList.size()
+        );
+
         log.info("Sent To Court Comms Processing : Finished - {}", dateFormat.format(new Date()));
         return new SchedulerServiceClient.Result(
             errorCount == 0
