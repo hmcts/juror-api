@@ -18,6 +18,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.utils.NotifyUtil;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,7 @@ public class JurorCommsWeeklyInfoServiceImpl implements BureauProcessService {
      * Processes entries in the Juror table and sends the appropriate email notifications to
      * the juror for juror where they have been transferred to court.
      */
+    @SuppressWarnings("checkstyle:LineLength") // false positive
     @Override
     @Transactional
     public SchedulerServiceClient.Result process() {
@@ -94,6 +96,17 @@ public class JurorCommsWeeklyInfoServiceImpl implements BureauProcessService {
         log.info("Informational Comms Service : Summary, identified:{}, sent:{}, failed:{}, no email address: {}",
             jurordetailList.size(), infoCommsSent, infoCommsfailed, noEmailAddress
         );
+
+        // log the results for Dynatrace
+        log.info(
+            "[JobKey: CRONBATCH_WEEKLY_COMMS]\n[{}]\nmessages_sent={},\nmessages_failed={},\nno_email_count={},\ninvalid_email_count={}",
+            LocalDateTime.now(),
+            infoCommsSent,
+            infoCommsfailed,
+            noEmailAddress,
+            invalidEmailAddress
+        );
+
         log.info("Informational Comms Processing : Finished - {}", dateFormat.format(new Date()));
         return new SchedulerServiceClient.Result(
             infoCommsfailed == 0

@@ -29,6 +29,7 @@ import uk.gov.service.notify.SendSmsResponse;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -70,7 +71,6 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
      * Implements a specific job execution.
      * process Excusal criteria and Service Complete criteria for comms sent by Notify.
      */
-
     @Override
     @Transactional
     public SchedulerServiceClient.Result process() {
@@ -212,6 +212,7 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
         return regionIds;
     }
 
+    @SuppressWarnings("checkstyle:LineLength") // false positive
     public Metrics processExcusalList(Proxy gotProxy, Map<String, String> myRegionMap) {
         final List<JurorPool> jurorCourtDetailListExcusal = Lists.newLinkedList(jurorRepository.findAll(
             JurorPoolQueries.recordsForExcusalComms()));
@@ -386,11 +387,26 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
                 errorCount++;
             }
         }
+
+        // log the results for Dynatrace
+        log.info(
+            "[JobKey: CRONBATCH_EXCUSAL_SERVICE_COURT_COMMS]\n[{}]\nnumber_of_jurors={},\nerror_count={},\nsuccess_count={},\nmissing_email_and_phone_count={},\nmissing_api_key_count={},\ninvalid_phone_count={},\ninvalid_email_count={}",
+            LocalDateTime.now(),
+            jurorCourtDetailListExcusal.size(),
+            errorCount,
+            successCount,
+            missingEmailAndPhone,
+            missingApiKeyCount,
+            invalidPhoneCount,
+            invalidEmailCount
+        );
+
         return new Metrics(jurorCourtDetailListExcusal.size(), errorCount, successCount,
             missingEmailAndPhone, missingApiKeyCount,
             invalidPhoneCount, invalidEmailCount);
     }
 
+    @SuppressWarnings("checkstyle:LineLength") // false positive
     private Metrics processCompleted(Proxy gotProxy, Map<String, String> myRegionMap) {
 
         final List<JurorPool> jurorCourtDetailListCompleted = Lists.newLinkedList(jurorRepository.findAll(
@@ -557,6 +573,19 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
                 errorCount++;
             }
         }
+
+        // log the results for Dynatrace
+        log.info(
+            "[JobKey: CRONBATCH_COMPLETED_SERVICE_COURT_COMMS]\nnumber of jurors: {}.\nerror count={}\nsuccess count={}\nmissing email and phone count={}\nmissing api key count={}\ninvalid phone count={}\ninvalid email count={}",
+            jurorCourtDetailListCompleted.size(),
+            errorCount,
+            successCount,
+            missingEmailAndPhone,
+            missingApiKeyCount,
+            invalidPhoneCount,
+            invalidEmailCount
+        );
+
         return new Metrics(jurorCourtDetailListCompleted.size(), errorCount, successCount,
             missingEmailAndPhone, missingApiKeyCount,
             invalidPhoneCount, invalidEmailCount);
