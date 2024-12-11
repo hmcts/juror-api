@@ -350,14 +350,6 @@ public class JurorPaperResponseDetailDto implements IJurorResponse {
     @Schema(description = "Response submitted by a third party")
     public static class ThirdParty {
 
-        @JsonProperty("relationship")
-        @Schema(description = "Third party relationship to the juror")
-        private String relationship;
-
-        @JsonProperty("thirdPartyReason")
-        @Schema(description = "Third party reason")
-        private String thirdPartyReason;
-
         @JsonProperty("thirdPartyFName")
         @Schema(description = "Third party firstname")
         private String thirdPartyFName;
@@ -379,6 +371,14 @@ public class JurorPaperResponseDetailDto implements IJurorResponse {
         @Schema(description = "Third party email address")
         @Pattern(regexp = EMAIL_ADDRESS_REGEX)
         private String emailAddress;
+
+        @JsonProperty("relationship")
+        @Schema(description = "Third party relationship to the juror")
+        private String relationship;
+
+        @JsonProperty("thirdPartyReason")
+        @Schema(description = "Third party reason")
+        private String thirdPartyReason;
 
         @JsonProperty("thirdPartyOtherReason")
         @Schema(description = "Third party other reason")

@@ -170,15 +170,19 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         // set the juror notes
         jurorPaperResponseDetailDto.setNotes(juror.getNotes());
 
-        // copy third party
-        jurorPaperResponseDetailDto.setThirdParty(new JurorPaperResponseDetailDto.ThirdParty(
-            jurorPaperResponse.getThirdPartyFName(),jurorPaperResponse.getThirdPartyLName(),
-            jurorPaperResponse.getMainPhone(),jurorPaperResponse.getEmail(),
-            jurorPaperResponse.getThirdPartyOtherReason(),jurorPaperResponse.getOtherPhone(),
-            jurorPaperResponse.getRelationship(), jurorPaperResponse.getThirdPartyReason(),
-            jurorPaperResponse.getJurorPhoneDetails(), jurorPaperResponse.getJurorEmailDetails()
-        ));
-
+    // copy third party
+    jurorPaperResponseDetailDto.setThirdParty(
+        new JurorPaperResponseDetailDto.ThirdParty(
+            jurorPaperResponse.getThirdPartyFName(),
+            jurorPaperResponse.getThirdPartyLName(),
+            jurorPaperResponse.getMainPhone(),
+            jurorPaperResponse.getOtherPhone(),
+            jurorPaperResponse.getEmailAddress(),
+            jurorPaperResponse.getRelationship(),
+            jurorPaperResponse.getThirdPartyReason(),
+            jurorPaperResponse.getThirdPartyOtherReason(),
+            jurorPaperResponse.getJurorPhoneDetails(),
+            jurorPaperResponse.getJurorEmailDetails()));
 
         // copy address details
         copyAddressToDto(jurorPaperResponse, jurorPaperResponseDetailDto);
@@ -385,11 +389,14 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         if (thirdParty != null) {
             jurorPaperResponse.setThirdPartyFName(thirdParty.getThirdPartyFName());
             jurorPaperResponse.setThirdPartyLName(thirdParty.getThirdPartyLName());
-            jurorPaperResponse.setMainPhone(thirdParty.getMainPhone());
-            jurorPaperResponse.setEmailAddress(thirdParty.getEmailAddress());
-            jurorPaperResponse.setThirdPartyOtherReason(thirdParty.getThirdPartyOtherReason());
             jurorPaperResponse.setRelationship(thirdParty.getRelationship());
+            jurorPaperResponse.setMainPhone(thirdParty.getMainPhone());
+            jurorPaperResponse.setOtherPhone(thirdParty.getOtherPhone());
+            jurorPaperResponse.setEmailAddress(thirdParty.getEmailAddress());
             jurorPaperResponse.setThirdPartyReason(thirdParty.getThirdPartyReason());
+            jurorPaperResponse.setThirdPartyOtherReason(thirdParty.getThirdPartyOtherReason());
+            jurorPaperResponse.setJurorPhoneDetails(thirdParty.getUseJurorPhoneDetails());
+            jurorPaperResponse.setJurorEmailDetails(thirdParty.getUseJurorEmailDetails());
         }
 
         // set up eligibility criteria

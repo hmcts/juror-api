@@ -37,6 +37,7 @@ public interface JurorResponseService {
 
     String THIRD_PARTY_RELATIONSHIP = "third party relationship";
     String THIRD_PARTY_REASON = "third party reason";
+    String THIRD_PARTY_OTHER_REASON = "third party other reason";
     String RESIDENCY = "residency";
     String BAIL = "bail";
     String EXCUSAL = "excusal";

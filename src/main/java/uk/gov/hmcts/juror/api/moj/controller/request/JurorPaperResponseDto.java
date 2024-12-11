@@ -266,11 +266,6 @@ public class JurorPaperResponseDto {
         @Pattern(regexp = EMAIL_ADDRESS_REGEX)
         private String emailAddress;
 
-        @JsonProperty("thirdPartyOtherReason")
-        @Schema(description = "Third party other reason")
-        private String thirdPartyOtherReason;
-
-
         @JsonProperty("relationship")
         @Schema(description = "Third party relationship to the juror")
         private String relationship;
@@ -278,6 +273,10 @@ public class JurorPaperResponseDto {
         @JsonProperty("thirdPartyReason")
         @Schema(description = "Third party reason")
         private String thirdPartyReason;
+
+        @JsonProperty("thirdPartyOtherReason")
+        @Schema(description = "Third party other reason")
+        private String thirdPartyOtherReason;
 
         @Schema(description = "Whether the juror's email details should be used (false = use third party details)")
         @Builder.Default
