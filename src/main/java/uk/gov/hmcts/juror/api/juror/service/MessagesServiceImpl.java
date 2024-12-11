@@ -313,6 +313,7 @@ public class MessagesServiceImpl implements BureauProcessService {
 
     }
 
+    @SuppressWarnings("PMD.LinguisticNaming")
     public Proxy setUpConnection() {
         final NotifyConfigurationProperties.Proxy setUpProxy = notifyConfigurationProperties.getProxy();
         if (setUpProxy != null && setUpProxy.isEnabled()) {
@@ -326,6 +327,7 @@ public class MessagesServiceImpl implements BureauProcessService {
         return proxy;
     }
 
+    @SuppressWarnings("PMD.LinguisticNaming")
     private void updateMessageFlag(Message messagesDetail) {
         messageRepository.save(messagesDetail);
     }
@@ -336,6 +338,7 @@ public class MessagesServiceImpl implements BureauProcessService {
         return notifyRegionKeys;
     }
 
+    @SuppressWarnings("PMD.LinguisticNaming")
     public List<String> setUpRegionIds() {
         List<CourtRegionMod> courtRegions = courtRegionModRepository.findAllByOrderByRegionIdAsc();
         List<String> regionIds = new ArrayList<>();
