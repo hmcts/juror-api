@@ -19,6 +19,7 @@ import uk.gov.hmcts.juror.api.moj.utils.NotifyUtil;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -100,7 +101,8 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
 
         // log the results for Dynatrace
         log.info(
-            "[JobKey: CRONBATCH_LETTER_COMMS]\nmessages sent={}\nmessages failed={}\ninvalid email count={}",
+            "[JobKey: CRONBATCH_LETTER_COMMS]\n[{}]\nmessages_sent={},\nmessages_failed={},\ninvalid_email_count={}",
+            LocalDateTime.now(),
             commsSent,
             commsfailed,
             invalidEmailAddress

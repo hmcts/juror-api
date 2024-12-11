@@ -31,6 +31,7 @@ import uk.gov.service.notify.SendSmsResponse;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -224,7 +225,8 @@ public class MessagesServiceImpl implements BureauProcessService {
 
         // log the results for Dynatrace
         log.info(
-            "[JobKey: CRONBATCH_COURT_COMMS]\ntotal messages to send={}\nemails sent={}\nsms sent={}\ninvalid phone count={}\ninvalid email count={}\nerror count={}\nmissing api key count={}\nmissing email and phone={}",
+            "[JobKey: CRONBATCH_COURT_COMMS]\n[{}]\ntotal_messages_to_send={},\nemails_sent={},\nsms_sent={},\ninvalid_phone_count={},\ninvalid_email_count={},\nerror_count={},\nmissing_api_key_count={},\nmissing_email_and_phone={}",
+            LocalDateTime.now(),
             messageDetailList.size(),
             emailSuccess,
             smsSuccess,

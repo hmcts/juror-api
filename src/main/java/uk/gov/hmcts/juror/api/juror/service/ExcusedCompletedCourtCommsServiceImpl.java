@@ -29,6 +29,7 @@ import uk.gov.service.notify.SendSmsResponse;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -389,7 +390,8 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
 
         // log the results for Dynatrace
         log.info(
-            "[JobKey: CRONBATCH_EXCUSAL_SERVICE_COURT_COMMS]\nnumber of jurors: {}.\nerror count={}\nsuccess count={}\nmissing email and phone count={}\nmissing api key count={}\ninvalid phone count={}\ninvalid email count={}",
+            "[JobKey: CRONBATCH_EXCUSAL_SERVICE_COURT_COMMS]\n[{}]\nnumber_of_jurors={},\nerror_count={},\nsuccess_count={},\nmissing_email_and_phone_count={},\nmissing_api_key_count={},\ninvalid_phone_count={},\ninvalid_email_count={}",
+            LocalDateTime.now(),
             jurorCourtDetailListExcusal.size(),
             errorCount,
             successCount,

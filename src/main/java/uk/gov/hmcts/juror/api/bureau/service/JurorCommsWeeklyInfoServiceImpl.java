@@ -18,6 +18,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.utils.NotifyUtil;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -98,7 +99,8 @@ public class JurorCommsWeeklyInfoServiceImpl implements BureauProcessService {
 
         // log the results for Dynatrace
         log.info(
-            "[JobKey: CRONBATCH_WEEKLY_COMMS]\nmessages sent={}\nmessages failed={}\nno email count={}\ninvalid email count={}",
+            "[JobKey: CRONBATCH_WEEKLY_COMMS]\n[{}]\nmessages_sent={},\nmessages_failed={},\nno_email_count={},\ninvalid_email_count={}",
+            LocalDateTime.now(),
             infoCommsSent,
             infoCommsfailed,
             noEmailAddress,

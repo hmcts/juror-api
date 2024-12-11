@@ -21,6 +21,8 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRep
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -102,7 +104,8 @@ public class UrgentStatusScheduler implements ScheduledService {
         }
 
         log.info(
-            "[JobKey: CRONBATCH_URGENT_SUPER_URGENT_STATUS]\ntotal processed: {}.\ntotal marked urgent: {}.\ntotal failed to find: {}",
+            "[JobKey: CRONBATCH_URGENT_SUPER_URGENT_STATUS]\n[{}]\ntotal_processed={},\ntotal_marked_urgent={},\ntotal_failed_to_find={}",
+            LocalDateTime.now(),
             totalResponsesProcessed,
             totalUrgentResponses,
             failedToFindJurorCount
