@@ -758,21 +758,6 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
     }
 
-    private static UpdateAttendanceDto.CommonData validateDeleteRequest(UpdateAttendanceDto request) {
-        final UpdateAttendanceDto.CommonData commonData = request.getCommonData();
-
-        if (request.getJuror().size() > 1 ^ commonData.getSingleJuror().equals(Boolean.FALSE)) {
-            throw new MojException.BadRequest("Cannot delete multiple juror attendance records",
-                null);
-        }
-
-        if (!commonData.getStatus().equals(UpdateAttendanceStatus.DELETE)) {
-            throw new MojException.BadRequest("Cannot delete attendance records for status "
-                + commonData.getStatus(), null);
-        }
-        return commonData;
-    }
-
     private List<JurorsToDismissResponseDto.JurorsToDismissData> buildJurorsToDismissResponse(
         List<Tuple> jurorsToDismissTuples) {
         List<JurorsToDismissResponseDto.JurorsToDismissData> jurorsToDismissResponseData = new ArrayList<>();
@@ -1452,7 +1437,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
         // account for the first appearance week being in the last 2 weeks of the year
         if (firstAppearanceWeek == 52 && dateToCheckWeek >= 2
-            || (firstAppearanceWeek <= 51 && firstAppearanceWeek > dateToCheckWeek)) {
+            || firstAppearanceWeek <= 51 && firstAppearanceWeek > dateToCheckWeek) {
             return true;
         }
 
