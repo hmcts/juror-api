@@ -19,6 +19,7 @@ import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 import uk.gov.hmcts.juror.api.moj.utils.NotifyUtil;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +46,7 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
      * Processes entries in the Juror table and sends the appropriate email notifications to
      * the juror for juror where they have been transferred to court.
      */
+    @SuppressWarnings("checkstyle:LineLength") // false positive
     @Override
     @Transactional
     public SchedulerServiceClient.Result process() {
@@ -160,6 +162,22 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
                 }
             }
         }
+
+        // log the results for Dynatrace
+        log.info(
+            "[JobKey: CRONBATCH_SEND_TO_COURT_COMMS]\n[{}]\nemail_sent={},\nsms_sent={},\nemail_failed={},\nsms_failed={},\ninvalid_email_count={},\ninvalid_phone_count={},\nsuccess_count={},\nerror_count={},\ntotal_jurors={}",
+            LocalDateTime.now(),
+            successCountEmail,
+            successCountSms,
+            errorCountEmail,
+            errorCountSms,
+            errorInvalidEmailCount,
+            errorInvalidPhoneCount,
+            successCount,
+            errorCount,
+            jurordetailList.size()
+        );
+
         log.info("Sent To Court Comms Processing : Finished - {}", dateFormat.format(new Date()));
         return new SchedulerServiceClient.Result(
             errorCount == 0
