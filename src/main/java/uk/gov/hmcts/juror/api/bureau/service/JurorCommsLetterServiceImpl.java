@@ -19,6 +19,7 @@ import uk.gov.hmcts.juror.api.moj.utils.NotifyUtil;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,7 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
      * Processes entries in the Juror.print_files table and sends the appropriate email notifications to
      * the juror.
      */
+    @SuppressWarnings("checkstyle:LineLength") // false positive
     @Override
     @Transactional
     public SchedulerServiceClient.Result process() {
@@ -96,6 +98,16 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
         } else {
             log.trace("Letter Comms Processing : No pending records found.");
         }
+
+        // log the results for Dynatrace
+        log.info(
+            "[JobKey: CRONBATCH_LETTER_COMMS]\n[{}]\nmessages_sent={},\nmessages_failed={},\ninvalid_email_count={}",
+            LocalDateTime.now(),
+            commsSent,
+            commsfailed,
+            invalidEmailAddress
+        );
+
         log.info("Letter Comms Processing : Finished - {}", dateFormat.format(new Date()));
 
         return new SchedulerServiceClient.Result(

@@ -26,6 +26,7 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -181,6 +182,14 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
             }
 
         }
+
+        log.info(
+            "[JobKey: CRONBATCH_SMART_SURVEY_IMPORT]\n[{}]\nrecords_inserted={},\nrecords_skipped={},\nerror_count={}",
+            LocalDateTime.now(),
+            dbInsertCount,
+            dbSkipCount,
+            errorCount
+        );
 
         log.info("Smart Survey Processing : FINISHED- {}", dateFormatSurvey.format(new Date()));
 
