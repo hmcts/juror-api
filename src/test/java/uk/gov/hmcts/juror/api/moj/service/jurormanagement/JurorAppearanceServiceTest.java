@@ -171,6 +171,18 @@ class JurorAppearanceServiceTest {
         }
 
         @Test
+        void isLongTrialDayHappyPath2() {
+            List<LocalDate> appearanceDates = new ArrayList<>();
+            LocalDate firstDate = LocalDate.of(2024, 1, 5); // week 1, Friday
+            LocalDate dateToCheck = LocalDate.of(2024, 12, 16); // week 51, monday
+            appearanceDates.add(firstDate);
+            appearanceDates.add(dateToCheck);
+
+            assertTrue(jurorAppearanceService.isLongTrialDay(appearanceDates, dateToCheck));
+        }
+
+
+        @Test
         void isLongTrialDayWeek2() {
             List<LocalDate> appearanceDates = new ArrayList<>();
             LocalDate firstDate = LocalDate.of(2024, 12, 6); // week 49, friday
@@ -193,6 +205,17 @@ class JurorAppearanceServiceTest {
         }
 
         @Test
+        void isLongTrialDayHappyWeek1DifferentYear() {
+            List<LocalDate> appearanceDates = new ArrayList<>();
+            LocalDate firstDate = LocalDate.of(2024, 1, 5); // week 1, friday
+            LocalDate dateToCheck = LocalDate.of(2024, 12, 30); // week 1, monday
+            appearanceDates.add(firstDate);
+            appearanceDates.add(dateToCheck);
+
+            assertTrue(jurorAppearanceService.isLongTrialDay(appearanceDates, dateToCheck));
+        }
+
+        @Test
         void isLongTrialDayWrapYear1() {
             List<LocalDate> appearanceDates = new ArrayList<>();
             LocalDate firstDate = LocalDate.of(2024, 12, 27); // week 52
@@ -208,6 +231,29 @@ class JurorAppearanceServiceTest {
             List<LocalDate> appearanceDates = new ArrayList<>();
             LocalDate firstDate = LocalDate.of(2024, 12, 30); // week 1
             LocalDate dateToCheck = LocalDate.of(2025, 1, 13); // week 3
+            appearanceDates.add(firstDate);
+            appearanceDates.add(dateToCheck);
+
+            assertTrue(jurorAppearanceService.isLongTrialDay(appearanceDates, dateToCheck));
+        }
+
+        @Test
+        void isLongTrialDayWrapYear3() {
+            List<LocalDate> appearanceDates = new ArrayList<>();
+            LocalDate firstDate = LocalDate.of(2024, 10, 30); // week 44
+            LocalDate dateToCheck = LocalDate.of(2025, 3, 13); // week 11
+            appearanceDates.add(firstDate);
+            appearanceDates.add(dateToCheck);
+
+            assertTrue(jurorAppearanceService.isLongTrialDay(appearanceDates, dateToCheck));
+        }
+
+        @Test
+        void isLongTrialDay53WeekYear() {
+            List<LocalDate> appearanceDates = new ArrayList<>();
+            // 2023 was a 53--week year
+            LocalDate firstDate = LocalDate.of(2023, 12, 30);
+            LocalDate dateToCheck = LocalDate.of(2024, 1,10);
             appearanceDates.add(firstDate);
             appearanceDates.add(dateToCheck);
 
