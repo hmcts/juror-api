@@ -58,6 +58,7 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -68,6 +69,8 @@ import java.util.Set;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.APPEARANCE_RECORD_BEFORE_SERVICE_START_DATE;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.ATTENDANCE_RECORD_ALREADY_EXISTS;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_PROCESS_EMPANELLED_JUROR;
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_UPDATE_CONFIRMED_ATTENDANCE;
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.INVALID_JUROR_STATUS;
 import static uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils.getNextWorkingDay;
 import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.isEmptyOrNull;
 import static uk.gov.hmcts.juror.api.moj.utils.JurorUtils.checkOwnershipForCurrentUser;
@@ -79,6 +82,9 @@ import static uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils.unboxOptionalReco
 @Service
 @RequiredArgsConstructor(onConstructor = @__({@Autowired}))
 public class JurorAppearanceServiceImpl implements JurorAppearanceService {
+
+    public static final String CANNOT_UPDATE_CONFIRMED_JUROR = "Cannot update confirmed juror ";
+
     private final TrialRepository trialRepository;
     private final JurorPoolRepository jurorPoolRepository;
     private final AppearanceRepository appearanceRepository;
@@ -611,6 +617,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             juryAttendanceNumber = appearances.stream()
                 .map(Appearance::getAttendanceAuditNumber)
                 .filter(ObjectUtils::isNotEmpty)
+                .filter(auditNumber -> auditNumber.startsWith(juryAttendancePrefix))
                 .findFirst().orElse(getAttendanceAuditNumber(juryAttendancePrefix));
         } else {
             juryAttendanceNumber = getAttendanceAuditNumber(juryAttendancePrefix);
@@ -974,6 +981,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             Appearance appearance = retrieveExistingAppearanceDetails(commonData.getLocationCode(), jurorNumber,
                 commonData.getAttendanceDate());
 
+            checkConfirmedAttendance(jurorNumber, appearance);
+
             // validate and update the relevant values in the Appearance entity based on the attendance status
             appearance.setTimeIn(commonData.getCheckInTime());
             appearance.setAppearanceStage(AppearanceStage.CHECKED_IN);
@@ -993,6 +1002,14 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         response.setSummary(summary);
 
         return response;
+    }
+
+    private void checkConfirmedAttendance(String jurorNumber, Appearance appearance) {
+        if (!Arrays.asList(AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT)
+            .contains(appearance.getAppearanceStage())) {
+            throw new MojException.BusinessRuleViolation(CANNOT_UPDATE_CONFIRMED_JUROR + jurorNumber,
+                                                         CANNOT_UPDATE_CONFIRMED_ATTENDANCE);
+        }
     }
 
     private AttendanceDetailsResponse updateCheckOut(UpdateAttendanceDto request, String owner) {
@@ -1025,6 +1042,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             } else {
                 // retrieve the existing Appearance record
                 Appearance appearance = retrieveExistingAppearanceDetails(locCode, jurorNumber, appearanceDate);
+
+                checkConfirmedAttendance(jurorNumber, appearance);
 
                 // validate and update the relevant values in the Appearance entity based on the attendance status
                 validateCheckInNotNull(appearance.getTimeIn());
@@ -1064,6 +1083,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             // retrieve the existing Appearance record
             Appearance appearance = retrieveExistingAppearanceDetails(commonData.getLocationCode(),
                 jurorNumber, commonData.getAttendanceDate());
+
+            checkConfirmedAttendance(jurorNumber, appearance);
 
             // validate and update the relevant values in the Appearance entity based on the attendance status
             validateBothCheckInAndOutTimeNotNull(commonData.getCheckInTime(), commonData.getCheckOutTime());
@@ -1184,8 +1205,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     private void validateJurorStatus(int status, boolean isCompleted) {
         if (status != IJurorStatus.RESPONDED && status != IJurorStatus.PANEL && status != IJurorStatus.JUROR
             && !(status == IJurorStatus.COMPLETED && isCompleted)) {
-            throw new MojException.BadRequest("Cannot check in or out a juror with an invalid status",
-                null);
+            throw new MojException.BusinessRuleViolation("Cannot process a juror with an invalid status: "
+                                                         + JurorStatusEnum.fromStatus(status), INVALID_JUROR_STATUS);
         }
     }
 

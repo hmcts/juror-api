@@ -339,7 +339,8 @@ public class PoolRequestServiceImpl implements PoolRequestService {
         return new PoolsAtCourtLocationListDto(data);
     }
 
-    private static void populatePoolsListing(List<String> poolsListing, List<PoolsAtCourtLocationListDto.PoolsAtCourtLocationDataDto> data) {
+    private static void populatePoolsListing(List<String> poolsListing,
+                                             List<PoolsAtCourtLocationListDto.PoolsAtCourtLocationDataDto> data) {
         poolsListing.forEach(pool -> {
             List<String> poolDetails = Arrays.asList(pool.split(","));
 
