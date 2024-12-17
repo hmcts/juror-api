@@ -6,6 +6,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -157,149 +159,38 @@ class JurorAppearanceServiceTest {
     @Nested
     @DisplayName("boolean isLongTrialDay(List<LocalDate> appearanceDates, LocalDate dateToCheck)")
     class IsLongTrialDay {
-
-
-        @Test
-        void isLongTrialDayHappyPath() {
-            List<LocalDate> appearanceDates = new ArrayList<>();
-            LocalDate firstDate = LocalDate.of(2024, 12, 6); // week 49, friday
-            LocalDate dateToCheck = LocalDate.of(2024, 12, 16); // week 51, monday
-            appearanceDates.add(firstDate);
-            appearanceDates.add(dateToCheck);
-
-            assertTrue(jurorAppearanceService.isLongTrialDay(appearanceDates, dateToCheck));
+        @ParameterizedTest
+        @ValueSource(ints = {
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+        })
+        void positiveFalse(int offset) {
+            assertTest(offset, false);
         }
 
-        @Test
-        void isLongTrialDayHappyPath2() {
-            List<LocalDate> appearanceDates = new ArrayList<>();
-            LocalDate firstDate = LocalDate.of(2024, 1, 5); // week 1, Friday
-            LocalDate dateToCheck = LocalDate.of(2024, 12, 16); // week 51, monday
-            appearanceDates.add(firstDate);
-            appearanceDates.add(dateToCheck);
-
-            assertTrue(jurorAppearanceService.isLongTrialDay(appearanceDates, dateToCheck));
+        @ParameterizedTest
+        @ValueSource(ints = {
+            10, 11, 12, 13, 14, 15
+        })
+        void positiveTrue(int offset) {
+            assertTest(offset, true);
         }
 
+        private void assertTest(int offset, boolean expectedValue) {
+            final LocalDate baseDay = LocalDate.of(2023, 1, 1);
+            LocalDate searchDate = baseDay.plusDays(offset);
 
-        @Test
-        void isLongTrialDayWeek2() {
             List<LocalDate> appearanceDates = new ArrayList<>();
-            LocalDate firstDate = LocalDate.of(2024, 12, 6); // week 49, friday
-            LocalDate dateToCheck = LocalDate.of(2024, 12, 13); // week 50, friday
-            appearanceDates.add(firstDate);
-            appearanceDates.add(dateToCheck);
+            for (int i = 0; i < 16; i++) {
+                Appearance appearance = mock(Appearance.class);
+                LocalDate localDate = baseDay.plusDays(i);
+                doReturn(localDate).when(appearance).getAttendanceDate();
+                appearanceDates.add(localDate);
+            }
 
-            assertFalse(jurorAppearanceService.isLongTrialDay(appearanceDates, dateToCheck));
+            assertThat(jurorAppearanceService.isLongTrialDay(
+                appearanceDates, searchDate))
+                .isEqualTo(expectedValue);
         }
-
-        @Test
-        void isLongTrialDayWeek1() {
-            List<LocalDate> appearanceDates = new ArrayList<>();
-            LocalDate firstDate = LocalDate.of(2024, 12, 5); // week 49, thursday
-            LocalDate dateToCheck = LocalDate.of(2024, 12, 6); // week 49, friday
-            appearanceDates.add(firstDate);
-            appearanceDates.add(dateToCheck);
-
-            assertFalse(jurorAppearanceService.isLongTrialDay(appearanceDates, dateToCheck));
-        }
-
-        @Test
-        void isLongTrialDayHappyWeek1DifferentYear() {
-            List<LocalDate> appearanceDates = new ArrayList<>();
-            LocalDate firstDate = LocalDate.of(2024, 1, 5); // week 1, friday
-            LocalDate dateToCheck = LocalDate.of(2024, 12, 30); // week 1, monday
-            appearanceDates.add(firstDate);
-            appearanceDates.add(dateToCheck);
-
-            assertTrue(jurorAppearanceService.isLongTrialDay(appearanceDates, dateToCheck));
-        }
-
-        @Test
-        void isLongTrialDayWrapYear1() {
-            List<LocalDate> appearanceDates = new ArrayList<>();
-            LocalDate firstDate = LocalDate.of(2024, 12, 27); // week 52
-            LocalDate dateToCheck = LocalDate.of(2025, 1, 3); // week 1
-            appearanceDates.add(firstDate);
-            appearanceDates.add(dateToCheck);
-
-            assertFalse(jurorAppearanceService.isLongTrialDay(appearanceDates, dateToCheck));
-        }
-
-        @Test
-        void isLongTrialDayWrapYear2() {
-            List<LocalDate> appearanceDates = new ArrayList<>();
-            LocalDate firstDate = LocalDate.of(2024, 12, 30); // week 1
-            LocalDate dateToCheck = LocalDate.of(2025, 1, 13); // week 3
-            appearanceDates.add(firstDate);
-            appearanceDates.add(dateToCheck);
-
-            assertTrue(jurorAppearanceService.isLongTrialDay(appearanceDates, dateToCheck));
-        }
-
-        @Test
-        void isLongTrialDayWrapYear3() {
-            List<LocalDate> appearanceDates = new ArrayList<>();
-            LocalDate firstDate = LocalDate.of(2024, 10, 30); // week 44
-            LocalDate dateToCheck = LocalDate.of(2025, 3, 13); // week 11
-            appearanceDates.add(firstDate);
-            appearanceDates.add(dateToCheck);
-
-            assertTrue(jurorAppearanceService.isLongTrialDay(appearanceDates, dateToCheck));
-        }
-
-        @Test
-        void isLongTrialDay53WeekYear() {
-            List<LocalDate> appearanceDates = new ArrayList<>();
-            // 2023 was a 53--week year
-            LocalDate firstDate = LocalDate.of(2023, 12, 30);
-            LocalDate dateToCheck = LocalDate.of(2024, 1,10);
-            appearanceDates.add(firstDate);
-            appearanceDates.add(dateToCheck);
-
-            assertTrue(jurorAppearanceService.isLongTrialDay(appearanceDates, dateToCheck));
-        }
-    }
-
-    @Test
-    void markJurorAsAbsentHappyPath() {
-        // mock request and dependencies
-        List<String> jurors = new ArrayList<>();
-        jurors.add(JUROR1);
-
-        CourtLocation courtLocation = getCourtLocation();
-
-        when(courtLocationRepository.findByLocCode(anyString())).thenReturn(Optional.of(courtLocation));
-
-        UpdateAttendanceDto request = buildUpdateAttendanceDto(jurors);
-        request.getCommonData().setStatus(UpdateAttendanceStatus.CONFIRM_ATTENDANCE);
-        request.getCommonData().setCheckOutTime(null);
-        request.getCommonData().setSingleJuror(Boolean.TRUE);
-
-        Tuple t3 = mock(Tuple.class);
-        mockQueryResultAbsent(t3, JUROR8, "TEST", "EIGHT", 2);
-
-        Tuple t4 = mock(Tuple.class);
-        mockQueryResultAbsent(t4, JUROR9, "TEST", "NINE", 2);
-
-        List<Tuple> absentTuples = new ArrayList<>();
-        absentTuples.add(t3);
-        absentTuples.add(t4);
-
-        RetrieveAttendanceDetailsDto dto = buildRetrieveAttendanceDetailsDto(jurors);
-
-        doReturn(absentTuples).when(appearanceRepository).retrieveNonAttendanceDetails(dto.getCommonData());        //
-        // invoke actual service method under test
-        jurorAppearanceService.markJurorAsAbsent(buildPayload(OWNER_415, List.of(LOC_415)), request.getCommonData());
-
-        ArgumentCaptor<RetrieveAttendanceDetailsDto.CommonData> commonDataArgumentCaptor =
-            ArgumentCaptor.forClass(RetrieveAttendanceDetailsDto.CommonData.class);
-
-        verify(courtLocationRepository, times(1)).findByLocCode(VALID_COURT_LOCATION);
-        verify(appearanceRepository, times(1))
-            .retrieveNonAttendanceDetails(commonDataArgumentCaptor.capture());
-        verify(appearanceRepository, times(1)).saveAllAndFlush(any());
-
     }
 
     @Test

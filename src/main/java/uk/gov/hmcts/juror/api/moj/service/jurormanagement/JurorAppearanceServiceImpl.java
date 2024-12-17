@@ -57,7 +57,6 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.temporal.WeekFields;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1445,36 +1444,6 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     }
 
     boolean isLongTrialDay(List<LocalDate> appearanceDates, LocalDate dateToCheck) {
-
-        // logic is now to check if date is 2 calendar weeks after the first appearance date
-
-        if (appearanceDates.size() <= 1) {
-            return false;
-        }
-
-        final LocalDate firstAppearanceDate = appearanceDates.get(0);
-        final int firstAppearanceWeek = firstAppearanceDate.get(WeekFields.ISO.weekOfWeekBasedYear());
-        final int dateToCheckWeek = dateToCheck.get(WeekFields.ISO.weekOfWeekBasedYear());
-
-        // account for the first appearance week being in the last 2 weeks of the year
-        if (firstAppearanceWeek == 52 && dateToCheckWeek >= 2
-            || firstAppearanceWeek <= 51 && firstAppearanceWeek > dateToCheckWeek) {
-            return true;
-        }
-
-        // account for 53 week years
-        if (firstAppearanceWeek == 53 && dateToCheckWeek >= 3) {
-            return true;
-        }
-
-        // scenario where the first appearance is in the first week of the year
-        // and the date to check is in the first week of the year but month is different
-        if (firstAppearanceWeek == 1 && dateToCheckWeek == 1
-            && firstAppearanceDate.getMonth().getValue() == 1 && dateToCheck.getMonth().getValue() == 12) {
-            return true;
-        }
-
-        // check if the date to check is 2 weeks after the first appearance
-        return dateToCheckWeek - firstAppearanceWeek >= 2;
+        return appearanceDates.indexOf(dateToCheck) >= 10;
     }
 }
