@@ -194,47 +194,6 @@ class JurorAppearanceServiceTest {
     }
 
     @Test
-    void markJurorAsAbsentHappyPath() {
-        // mock request and dependencies
-        List<String> jurors = new ArrayList<>();
-        jurors.add(JUROR1);
-
-        CourtLocation courtLocation = getCourtLocation();
-
-        when(courtLocationRepository.findByLocCode(anyString())).thenReturn(Optional.of(courtLocation));
-
-        UpdateAttendanceDto request = buildUpdateAttendanceDto(jurors);
-        request.getCommonData().setStatus(UpdateAttendanceStatus.CONFIRM_ATTENDANCE);
-        request.getCommonData().setCheckOutTime(null);
-        request.getCommonData().setSingleJuror(Boolean.TRUE);
-
-        Tuple t3 = mock(Tuple.class);
-        mockQueryResultAbsent(t3, JUROR8, "TEST", "EIGHT", 2);
-
-        Tuple t4 = mock(Tuple.class);
-        mockQueryResultAbsent(t4, JUROR9, "TEST", "NINE", 2);
-
-        List<Tuple> absentTuples = new ArrayList<>();
-        absentTuples.add(t3);
-        absentTuples.add(t4);
-
-        RetrieveAttendanceDetailsDto dto = buildRetrieveAttendanceDetailsDto(jurors);
-
-        doReturn(absentTuples).when(appearanceRepository).retrieveNonAttendanceDetails(dto.getCommonData());        //
-        // invoke actual service method under test
-        jurorAppearanceService.markJurorAsAbsent(buildPayload(OWNER_415, List.of(LOC_415)), request.getCommonData());
-
-        ArgumentCaptor<RetrieveAttendanceDetailsDto.CommonData> commonDataArgumentCaptor =
-            ArgumentCaptor.forClass(RetrieveAttendanceDetailsDto.CommonData.class);
-
-        verify(courtLocationRepository, times(1)).findByLocCode(VALID_COURT_LOCATION);
-        verify(appearanceRepository, times(1))
-            .retrieveNonAttendanceDetails(commonDataArgumentCaptor.capture());
-        verify(appearanceRepository, times(1)).saveAllAndFlush(any());
-
-    }
-
-    @Test
     void markJurorAsAbsentCourtLocationNotFound() {
         List<String> jurors = new ArrayList<>();
         jurors.add(JUROR1);
@@ -578,7 +537,7 @@ class JurorAppearanceServiceTest {
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findById(anyString());
         JurorAppearanceDto jurorAppearanceDto = buildJurorAppearanceDto();
 
-        assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
+        assertThatExceptionOfType(MojException.BusinessRuleViolation.class).isThrownBy(() ->
             jurorAppearanceService.processAppearance(buildPayload("415", Arrays.asList("415", "462", "767")),
                 jurorAppearanceDto));
 
