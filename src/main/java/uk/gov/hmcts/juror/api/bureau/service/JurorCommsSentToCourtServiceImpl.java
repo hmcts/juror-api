@@ -163,10 +163,15 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
             }
         }
 
+        SchedulerServiceClient.Result.Status status = errorCount == 0
+            ? SchedulerServiceClient.Result.Status.SUCCESS
+            : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS;
+
         // log the results for Dynatrace
         log.info(
-            "[JobKey: CRONBATCH_SEND_TO_COURT_COMMS]\n[{}]\nemail_sent={},\nsms_sent={},\nemail_failed={},\nsms_failed={},\ninvalid_email_count={},\ninvalid_phone_count={},\nsuccess_count={},\nerror_count={},\ntotal_jurors={}",
+            "[JobKey: CRONBATCH_SEND_TO_COURT_COMMS]\n[{}]\nresult={},\nemail_sent={},\nsms_sent={},\nemail_failed={},\nsms_failed={},\ninvalid_email_count={},\ninvalid_phone_count={},\nsuccess_count={},\nerror_count={},\ntotal_jurors={}",
             LocalDateTime.now(),
+            status,
             successCountEmail,
             successCountSms,
             errorCountEmail,
@@ -180,9 +185,7 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
 
         log.info("Sent To Court Comms Processing : Finished - {}", dateFormat.format(new Date()));
         return new SchedulerServiceClient.Result(
-            errorCount == 0
-                ? SchedulerServiceClient.Result.Status.SUCCESS
-                : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS, null,
+            status, null,
             Map.of(
                 "SUCCESS_COUNT_EMAIL", String.valueOf(successCountEmail),
                 "SUCCESS_COUNT_SMS", String.valueOf(successCountSms),

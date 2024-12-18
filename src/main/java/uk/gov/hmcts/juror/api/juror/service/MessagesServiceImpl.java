@@ -223,10 +223,15 @@ public class MessagesServiceImpl implements BureauProcessService {
             }
         }
 
+        SchedulerServiceClient.Result.Status status = errorCount == 0
+            ? SchedulerServiceClient.Result.Status.SUCCESS
+            : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS;
+
         // log the results for Dynatrace
         log.info(
-            "[JobKey: CRONBATCH_COURT_COMMS]\n[{}]\ntotal_messages_to_send={},\nemails_sent={},\nsms_sent={},\ninvalid_phone_count={},\ninvalid_email_count={},\nerror_count={},\nmissing_api_key_count={},\nmissing_email_and_phone={}",
+            "[JobKey: CRONBATCH_COURT_COMMS]\n[{}]\nresult={},\ntotal_messages_to_send={},\nemails_sent={},\nsms_sent={},\ninvalid_phone_count={},\ninvalid_email_count={},\nerror_count={},\nmissing_api_key_count={},\nmissing_email_and_phone={}",
             LocalDateTime.now(),
+            status,
             messageDetailList.size(),
             emailSuccess,
             smsSuccess,
@@ -239,9 +244,7 @@ public class MessagesServiceImpl implements BureauProcessService {
 
         log.info("Court Comms Processing : Finished - {}", dateFormat.format(new Date()));
         return new SchedulerServiceClient.Result(
-            errorCount == 0
-                ? SchedulerServiceClient.Result.Status.SUCCESS
-                : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS, null,
+            status, null,
             Map.of(
                 "TOTAL_MESSAGES_TO_SEND", String.valueOf(messageDetailList.size()),
                 "ERROR_COUNT", String.valueOf(errorCount),

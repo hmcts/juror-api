@@ -97,10 +97,15 @@ public class JurorCommsWeeklyInfoServiceImpl implements BureauProcessService {
             jurordetailList.size(), infoCommsSent, infoCommsfailed, noEmailAddress
         );
 
+        SchedulerServiceClient.Result.Status status = infoCommsfailed == 0
+            ? SchedulerServiceClient.Result.Status.SUCCESS
+            : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS;
+
         // log the results for Dynatrace
         log.info(
-            "[JobKey: CRONBATCH_WEEKLY_COMMS]\n[{}]\nmessages_sent={},\nmessages_failed={},\nno_email_count={},\ninvalid_email_count={}",
+            "[JobKey: CRONBATCH_WEEKLY_COMMS]\n[{}]\nresult={},\nmessages_sent={},\nmessages_failed={},\nno_email_count={},\ninvalid_email_count={}",
             LocalDateTime.now(),
+            status,
             infoCommsSent,
             infoCommsfailed,
             noEmailAddress,
@@ -109,9 +114,7 @@ public class JurorCommsWeeklyInfoServiceImpl implements BureauProcessService {
 
         log.info("Informational Comms Processing : Finished - {}", dateFormat.format(new Date()));
         return new SchedulerServiceClient.Result(
-            infoCommsfailed == 0
-                ? SchedulerServiceClient.Result.Status.SUCCESS
-                : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS, null,
+            status, null,
             Map.of(
                 "INFO_COMMS_SENT", String.valueOf(infoCommsSent),
                 "INFO_COMMS_FAILED", String.valueOf(infoCommsfailed),
