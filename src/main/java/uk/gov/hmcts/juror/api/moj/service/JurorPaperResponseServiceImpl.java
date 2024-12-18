@@ -71,7 +71,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
     private final StraightThroughProcessorService straightThroughProcessorService;
     private final JurorRepository jurorRepository;
     private final JurorPoolService jurorPoolService;
-    
+
     @Override
     @Transactional
     public JurorPaperResponseDetailDto getJurorPaperResponse(final String jurorNumber, BureauJwtPayload payload) {
@@ -333,7 +333,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         juror.setResponseEntered(true);
         jurorRepository.save(juror);
 
-        log.info(String.format("Saved paper response for Juror %s", jurorNumber));
+        log.info(String.format("[Paper Response] Saved paper response for Juror %s", jurorNumber));
 
         jurorResponseCjsEmploymentRepository.saveAll(jurorPaperResponse.getCjsEmployments());
         log.info(String.format("Saved CJS employment for Juror %s", jurorNumber));

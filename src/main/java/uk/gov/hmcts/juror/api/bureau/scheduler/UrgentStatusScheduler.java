@@ -21,6 +21,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRep
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,7 @@ public class UrgentStatusScheduler implements ScheduledService {
     private final JurorPoolRepository jurorRepository;
 
 
+    @SuppressWarnings("checkstyle:LineLength") // false positive
     @Override
     public SchedulerServiceClient.Result process() {
 
@@ -99,11 +101,23 @@ public class UrgentStatusScheduler implements ScheduledService {
         } else {
             log.trace("Scheduler: No pending Juror responses found.");
         }
+
+        SchedulerServiceClient.Result.Status status = failedToFindJurorCount == 0
+            ? SchedulerServiceClient.Result.Status.SUCCESS
+            : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS;
+
+        log.info(
+            "[JobKey: CRONBATCH_URGENT_SUPER_URGENT_STATUS]\n[{}]\nresult={},\ntotal_processed={},\ntotal_marked_urgent={},\ntotal_failed_to_find={}",
+            LocalDateTime.now(),
+            status,
+            totalResponsesProcessed,
+            totalUrgentResponses,
+            failedToFindJurorCount
+        );
+
         log.info("Scheduler: Finished, time is now {}", dateFormat.format(new Date()));
         return new SchedulerServiceClient.Result(
-            failedToFindJurorCount == 0
-                ? SchedulerServiceClient.Result.Status.SUCCESS
-                : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS, null,
+            status, null,
             Map.of(
                 "TOTAL_PROCESSED", String.valueOf(totalResponsesProcessed),
                 "TOTAL_MARKED_URGENT", String.valueOf(totalUrgentResponses),
