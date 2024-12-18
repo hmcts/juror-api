@@ -388,10 +388,15 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
             }
         }
 
+        SchedulerServiceClient.Result.Status status =  errorCount == 0
+            ? SchedulerServiceClient.Result.Status.SUCCESS
+            : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS;
+
         // log the results for Dynatrace
         log.info(
-            "[JobKey: CRONBATCH_EXCUSAL_SERVICE_COURT_COMMS]\n[{}]\nnumber_of_jurors={},\nerror_count={},\nsuccess_count={},\nmissing_email_and_phone_count={},\nmissing_api_key_count={},\ninvalid_phone_count={},\ninvalid_email_count={}",
+            "[JobKey: CRONBATCH_EXCUSAL_SERVICE_COURT_COMMS]\n[{}]\nresult={},\nnumber_of_jurors={},\nerror_count={},\nsuccess_count={},\nmissing_email_and_phone_count={},\nmissing_api_key_count={},\ninvalid_phone_count={},\ninvalid_email_count={}",
             LocalDateTime.now(),
+            status,
             jurorCourtDetailListExcusal.size(),
             errorCount,
             successCount,
@@ -574,10 +579,15 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
             }
         }
 
+        SchedulerServiceClient.Result.Status status =  errorCount == 0
+            ? SchedulerServiceClient.Result.Status.SUCCESS
+            : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS;
+
         // log the results for Dynatrace
         log.info(
-            "[JobKey: CRONBATCH_COMPLETED_SERVICE_COURT_COMMS]\nnumber of jurors: {}.\nerror count={}\nsuccess count={}\nmissing email and phone count={}\nmissing api key count={}\ninvalid phone count={}\ninvalid email count={}",
+            "[JobKey: CRONBATCH_COMPLETED_SERVICE_COURT_COMMS]\nresult={},\nnumber_of_jurors={},\nerror_count={},\nsuccess_count={},\nmissing_email_and_phone_count={},\nmissing_api_key_count={},\ninvalid_phone_count={},\ninvalid_email_count={}",
             jurorCourtDetailListCompleted.size(),
+            status,
             errorCount,
             successCount,
             missingEmailAndPhone,

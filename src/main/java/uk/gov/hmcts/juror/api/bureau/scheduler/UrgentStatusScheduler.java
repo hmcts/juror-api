@@ -102,9 +102,14 @@ public class UrgentStatusScheduler implements ScheduledService {
             log.trace("Scheduler: No pending Juror responses found.");
         }
 
+        SchedulerServiceClient.Result.Status status = failedToFindJurorCount == 0
+            ? SchedulerServiceClient.Result.Status.SUCCESS
+            : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS;
+
         log.info(
-            "[JobKey: CRONBATCH_URGENT_SUPER_URGENT_STATUS]\n[{}]\ntotal_processed={},\ntotal_marked_urgent={},\ntotal_failed_to_find={}",
+            "[JobKey: CRONBATCH_URGENT_SUPER_URGENT_STATUS]\n[{}]\nresult={},\ntotal_processed={},\ntotal_marked_urgent={},\ntotal_failed_to_find={}",
             LocalDateTime.now(),
+            status,
             totalResponsesProcessed,
             totalUrgentResponses,
             failedToFindJurorCount
@@ -112,9 +117,7 @@ public class UrgentStatusScheduler implements ScheduledService {
 
         log.info("Scheduler: Finished, time is now {}", dateFormat.format(new Date()));
         return new SchedulerServiceClient.Result(
-            failedToFindJurorCount == 0
-                ? SchedulerServiceClient.Result.Status.SUCCESS
-                : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS, null,
+            status, null,
             Map.of(
                 "TOTAL_PROCESSED", String.valueOf(totalResponsesProcessed),
                 "TOTAL_MARKED_URGENT", String.valueOf(totalUrgentResponses),

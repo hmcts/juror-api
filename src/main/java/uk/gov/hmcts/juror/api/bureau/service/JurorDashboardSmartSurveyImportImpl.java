@@ -183,9 +183,14 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
 
         }
 
+        SchedulerServiceClient.Result.Status status = errorCount == 0
+            ? SchedulerServiceClient.Result.Status.SUCCESS
+            : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS;
+
         log.info(
-            "[JobKey: CRONBATCH_SMART_SURVEY_IMPORT]\n[{}]\nrecords_inserted={},\nrecords_skipped={},\nerror_count={}",
+            "[JobKey: CRONBATCH_SMART_SURVEY_IMPORT]\n[{}]\nresult={},\nrecords_inserted={},\nrecords_skipped={},\nerror_count={}",
             LocalDateTime.now(),
+            status,
             dbInsertCount,
             dbSkipCount,
             errorCount
@@ -193,9 +198,7 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
 
         log.info("Smart Survey Processing : FINISHED- {}", dateFormatSurvey.format(new Date()));
 
-        return new SchedulerServiceClient.Result(errorCount == 0
-            ? SchedulerServiceClient.Result.Status.SUCCESS
-            : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS,
+        return new SchedulerServiceClient.Result(status,
             errorCount == 0
                 ? "Successfully loaded survey records"
                 : "Error loading some survey records",

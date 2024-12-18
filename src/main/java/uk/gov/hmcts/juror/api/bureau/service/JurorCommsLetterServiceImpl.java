@@ -99,10 +99,15 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
             log.trace("Letter Comms Processing : No pending records found.");
         }
 
+        SchedulerServiceClient.Result.Status status = commsfailed == 0
+            ? SchedulerServiceClient.Result.Status.SUCCESS
+            : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS;
+
         // log the results for Dynatrace
         log.info(
-            "[JobKey: CRONBATCH_LETTER_COMMS]\n[{}]\nmessages_sent={},\nmessages_failed={},\ninvalid_email_count={}",
+            "[JobKey: CRONBATCH_LETTER_COMMS]\n[{}]\nresult={},\nmessages_sent={},\nmessages_failed={},\ninvalid_email_count={}",
             LocalDateTime.now(),
+            status,
             commsSent,
             commsfailed,
             invalidEmailAddress
@@ -111,9 +116,7 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
         log.info("Letter Comms Processing : Finished - {}", dateFormat.format(new Date()));
 
         return new SchedulerServiceClient.Result(
-            commsfailed == 0
-                ? SchedulerServiceClient.Result.Status.SUCCESS
-                : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS, null,
+            status, null,
             Map.of(
                 "COMMS_FAILED", String.valueOf(commsfailed),
                 "COMMNS_SENT", String.valueOf(commsSent),
