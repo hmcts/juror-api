@@ -295,7 +295,7 @@ class MessageTemplateRepositoryImplTest {
             .where(JUROR_POOL.pool.courtLocation.locCode.eq(TestConstants.VALID_COURT_LOCATION));
         verify(jpaQuery, times(1)).where(JUROR_POOL.isActive.isTrue());
         verify(jpaQuery, times(1))
-            .where(JUROR_POOL.pool.owner.ne("400"));
+            .where(JUROR_POOL.owner.ne("400"));
 
         verify(jpaQuery, times(1)).limit(4L);
         verify(jpaQuery, times(1)).offset(0L);
@@ -370,7 +370,7 @@ class MessageTemplateRepositoryImplTest {
             .where(JUROR_POOL.pool.courtLocation.locCode.eq(TestConstants.VALID_COURT_LOCATION));
         verify(jpaQuery, times(1)).where(JUROR_POOL.isActive.isTrue());
         verify(jpaQuery, times(1))
-            .where(JUROR_POOL.pool.owner.ne("400"));
+            .where(JUROR_POOL.owner.ne("400"));
 
         verify(jpaQuery, times(1)).leftJoin(PANEL);
         verify(jpaQuery, times(1)).on(
@@ -466,7 +466,7 @@ class MessageTemplateRepositoryImplTest {
             .where(JUROR_POOL.pool.courtLocation.locCode.eq(TestConstants.VALID_COURT_LOCATION));
         verify(jpaQuery, times(1)).where(JUROR_POOL.isActive.isTrue());
         verify(jpaQuery, times(1))
-            .where(JUROR_POOL.pool.owner.ne("400"));
+            .where(JUROR_POOL.owner.ne("400"));
 
         verify(jpaQuery, times(1)).leftJoin(PANEL);
         verify(jpaQuery, times(1)).on(
