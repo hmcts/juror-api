@@ -91,12 +91,23 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
         }
 
         if (search.getTrialNumber() != null || !simpleResponse) {
-            query.leftJoin(PANEL).on(
-                JUROR.eq(PANEL.juror)
-                    .and(PANEL.result.notIn(PanelResult.RETURNED, PanelResult.NOT_USED, PanelResult.CHALLENGED))
-                    .and(PANEL.trial.courtLocation.locCode.eq(JUROR_POOL.pool.courtLocation.locCode))
-                    .and(JUROR_POOL.status.status.in(IJurorStatus.PANEL, IJurorStatus.JUROR))
-            );
+
+            if (search.isIncludeAllJurorsOnTrial()) {
+                // include jurors who were on the trial as well as current members of the trial panel
+                query.leftJoin(PANEL).on(
+                    JUROR.eq(PANEL.juror)
+                        .and(PANEL.result.notIn(PanelResult.NOT_USED, PanelResult.CHALLENGED))
+                        .and(PANEL.trial.courtLocation.locCode.eq(JUROR_POOL.pool.courtLocation.locCode))
+                        .and(PANEL.empanelledDate.isNotNull())
+                );
+            } else {
+                query.leftJoin(PANEL).on(
+                    JUROR.eq(PANEL.juror)
+                        .and(PANEL.result.notIn(PanelResult.RETURNED, PanelResult.NOT_USED, PanelResult.CHALLENGED))
+                        .and(PANEL.trial.courtLocation.locCode.eq(JUROR_POOL.pool.courtLocation.locCode))
+                        .and(JUROR_POOL.status.status.in(IJurorStatus.PANEL, IJurorStatus.JUROR))
+                );
+            }
         }
         search.apply(query);
 
