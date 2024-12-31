@@ -3438,7 +3438,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(index.getJurorNumber()).isEqualTo("555555" + jurorPostfix);
                 assertThat(index.getPoolNumber()).isEqualTo("415220" + poolNumberPostfix);
                 assertThat(index.getHistoryCode()).isEqualTo(HistoryCodeMod.NON_RESPONDED_LETTER);
-                assertThat(index.getCreatedBy()).isEqualTo("SYSTEM");
+                assertThat(index.getCreatedBy()).isEqualTo("BUREAU_USER");
                 assertThat(index.getDateCreated().isEqual(LocalDate.now().atStartOfDay()));
                 assertThat(index.getOtherInformation()).isEqualTo("Reminder letter printed");
                 assertThat(index.getOtherInformationDate()).isNull();
