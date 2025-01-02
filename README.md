@@ -12,7 +12,7 @@ managing jurors.
 
 ### Environment variables
 
-The following application settings are required to run the application. They can be set in the 
+The following application settings are required to run the application. They can be set in the
 `application-local.yaml` file or as environment variables. The application will look for the environment variables first.
 
 ```
@@ -40,7 +40,7 @@ SMART_SURVEY_SECRET=
 SMART_SURVEY_TOKEN=
 ```
 
-It is possible to configure IntelliJ to use these environment variables when running the application by setting up 
+It is possible to configure IntelliJ to use these environment variables when running the application by setting up
 default configurations. This can be done by going to `Run -> Edit Configurations` and setting the environment variables
 
 Alternatively, its possible export the environment variables in the terminal before running the application. For example:
@@ -54,7 +54,7 @@ export DB_USERNAME=juror
 
 ## Database setup
 
-The application requires a Postgres database. 
+The application requires a Postgres database.
 
 The latest official image of Postgres can be run from Docker Hub (https://hub.docker.com/_/postgres). To install, run the following command
 
@@ -106,7 +106,7 @@ The application can be run locally using the following command:
 ```
 
 This will start the API exposing the application's port
-(set to `8080` in this template app). 
+(set to `8080` in this template app).
 
 In order to test if the application is up, you can call its health endpoint:
 
@@ -120,7 +120,7 @@ You should get a response similar to this:
   {"status":"UP","components":{"db":{"status":"UP","details":{"database":"PostgreSQL","validationQuery":"isValid()"}}
   ,"diskSpace":{"status":"UP","details":{"total":250685575168,"free":108429410304,"threshold":10485760,
   "path":"/Users/<user_name>/github/juror-api/.","exists":true}},"livenessState":{"status":"UP"},"ping":{"status":"UP"},
-  "readinessState":{"status":"UP"}},"groups":["liveness","readiness"]}%     
+  "readinessState":{"status":"UP"}},"groups":["liveness","readiness"]}%
 ```
 
 It is possible to debug the application through Intellij selecting the appropriate run configuration or through gradle.
