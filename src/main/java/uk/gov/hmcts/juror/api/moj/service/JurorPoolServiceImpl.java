@@ -19,6 +19,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.INVALID_JUROR_ATTENDANCE_RECORD;
+
 @Service
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class JurorPoolServiceImpl implements JurorPoolService {
@@ -87,7 +89,8 @@ public class JurorPoolServiceImpl implements JurorPoolService {
         } else if (!jurorPools.isEmpty()) {
             return jurorPools.get(0);
         }
-        throw new MojException.NotFound("Juror not found: " + jurorNumber, null);
+
+        throw new MojException.BusinessRuleViolation("Invalid attendance record found for Juror: " + jurorNumber, INVALID_JUROR_ATTENDANCE_RECORD);
     }
 
     @Override
