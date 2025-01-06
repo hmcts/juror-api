@@ -106,7 +106,7 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
         // log the results for Dynatrace
         log.info(
             "[JobKey: CRONBATCH_LETTER_COMMS]\n[{}]\nresult={},\nmessages_sent={},\nmessages_failed={},\ninvalid_email_count={}",
-            LocalDateTime.now(),
+            DATE_TIME_FORMATTER.format(LocalDateTime.now()),
             status,
             commsSent,
             commsfailed,
