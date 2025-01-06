@@ -187,9 +187,10 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
             ? SchedulerServiceClient.Result.Status.SUCCESS
             : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS;
 
+        // log the results for Dynatrace
         log.info(
-            "[JobKey: CRONBATCH_SMART_SURVEY_IMPORT]\n[{}]\nresult={},\nrecords_inserted={},\nrecords_skipped={},\nerror_count={}",
-            LocalDateTime.now(),
+            "[JobKey: CRONBATCH_SMART_SURVEY_IMPORT]\n[{}]\nresult={},\nmetadata={records_inserted={},\nrecords_skipped={},\nerror_count={}}",
+            DATE_TIME_FORMATTER.format(LocalDateTime.now()),
             status,
             dbInsertCount,
             dbSkipCount,

@@ -26,6 +26,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import static uk.gov.hmcts.juror.api.bureau.service.BureauProcessService.DATE_TIME_FORMATTER;
+
 @Slf4j
 @Component
 @AllArgsConstructor(onConstructor = @__(@Autowired))
@@ -106,9 +108,10 @@ public class UrgentStatusScheduler implements ScheduledService {
             ? SchedulerServiceClient.Result.Status.SUCCESS
             : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS;
 
+        // log the results for Dynatrace
         log.info(
             "[JobKey: CRONBATCH_URGENT_SUPER_URGENT_STATUS]\n[{}]\nresult={},\nmetadata={total_processed={},total_marked_urgent={},total_failed_to_find={}}",
-            LocalDateTime.now(),
+            DATE_TIME_FORMATTER.format(LocalDateTime.now()),
             status,
             totalResponsesProcessed,
             totalUrgentResponses,
