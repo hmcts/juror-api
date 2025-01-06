@@ -109,13 +109,13 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
                         if (isWelshCourt) {
                             String formattedDateWelsh = WELSH_DATE_TIME_FORMATTER.format((LocalDate) fieldValue);
                             String str;
-                               Map<String, String> myWelshTranslationMap;
-                                myWelshTranslationMap = setUpTranslationMap();
+                            Map<String, String> myWelshTranslationMap;
+                            myWelshTranslationMap = setUpTranslationMap();
 
-                                for (Map.Entry<String, String> entry : myWelshTranslationMap.entrySet()) {
-                                    str = formattedDateWelsh.replace(entry.getKey(), entry.getValue());
-                                    formattedDateWelsh = str;
-                                }
+                            for (Map.Entry<String, String> entry : myWelshTranslationMap.entrySet()) {
+                                str = formattedDateWelsh.replace(entry.getKey(), entry.getValue());
+                                formattedDateWelsh = str;
+                            }
 
 
                             formattedDate = formattedDateWelsh;
