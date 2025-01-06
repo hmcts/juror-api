@@ -169,7 +169,7 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
 
         // log the results for Dynatrace
         log.info(
-            "[JobKey: CRONBATCH_SEND_TO_COURT_COMMS]\n[{}]\nresult={},\nemail_sent={},\nsms_sent={},\nemail_failed={},\nsms_failed={},\ninvalid_email_count={},\ninvalid_phone_count={},\nsuccess_count={},\nerror_count={},\ntotal_jurors={}",
+            "[JobKey: CRONBATCH_SEND_TO_COURT_COMMS]\n[{}]\nresult={},\nmetadata={email_sent={},sms_sent={},email_failed={},sms_failed={},invalid_email_count={},invalid_phone_count={},success_count={},error_count={},total_jurors={}}",
             DATE_TIME_FORMATTER.format(LocalDateTime.now()),
             status,
             successCountEmail,

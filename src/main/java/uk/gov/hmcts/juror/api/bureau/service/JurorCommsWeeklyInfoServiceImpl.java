@@ -103,7 +103,7 @@ public class JurorCommsWeeklyInfoServiceImpl implements BureauProcessService {
 
         // log the results for Dynatrace
         log.info(
-            "[JobKey: CRONBATCH_WEEKLY_COMMS]\n[{}]\nresult={},\nmessages_sent={},\nmessages_failed={},\nno_email_count={},\ninvalid_email_count={}",
+            "[JobKey: CRONBATCH_WEEKLY_COMMS]\n[{}]\nresult={},\nmetadata={messages_sent={},messages_failed={},no_email_count={},invalid_email_count={}}",
             DATE_TIME_FORMATTER.format(LocalDateTime.now()),
             status,
             infoCommsSent,

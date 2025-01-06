@@ -107,7 +107,7 @@ public class UrgentStatusScheduler implements ScheduledService {
             : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS;
 
         log.info(
-            "[JobKey: CRONBATCH_URGENT_SUPER_URGENT_STATUS]\n[{}]\nresult={},\ntotal_processed={},\ntotal_marked_urgent={},\ntotal_failed_to_find={}",
+            "[JobKey: CRONBATCH_URGENT_SUPER_URGENT_STATUS]\n[{}]\nresult={},\nmetadata={total_processed={},total_marked_urgent={},total_failed_to_find={}}",
             LocalDateTime.now(),
             status,
             totalResponsesProcessed,
