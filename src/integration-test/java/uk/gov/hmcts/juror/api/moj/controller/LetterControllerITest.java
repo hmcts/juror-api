@@ -45,8 +45,10 @@ import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialExemptionListDt
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.ExcusalCode;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
+import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
+import uk.gov.hmcts.juror.api.moj.domain.PoolHistory;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
@@ -59,6 +61,7 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
+import uk.gov.hmcts.juror.api.moj.repository.PoolHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 
@@ -104,7 +107,7 @@ import static uk.gov.hmcts.juror.api.utils.DataConversionUtil.getExceptionDetail
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.NcssCount"})
 class LetterControllerITest extends AbstractIntegrationTest {
     private static final String GET_LETTER_LIST_URI = "/api/v1/moj/letter/court-letter-list";
-
+    private static final String HISTORY_RECORD_ADDED_TEXT = "History record should have been added";
     @Autowired
     private TestRestTemplate template;
     @Autowired
@@ -117,6 +120,8 @@ class LetterControllerITest extends AbstractIntegrationTest {
     private ExcusalCodeRepository excusalCodeRepository;
     @Autowired
     private JurorHistoryRepository jurorHistoryRepository;
+    @Autowired
+    private PoolHistoryRepository poolHistoryRepository;
 
     private HttpHeaders httpHeaders;
 
@@ -3140,9 +3145,11 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     // verify history added
                     List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
                         .findByJurorNumberAndDateCreatedGreaterThanEqual("555555561", LocalDate.now());
-                    assertThat(updatedJurorHistoryList).as("History record should have been added").isNotNull();
+                    assertThat(updatedJurorHistoryList).as(HISTORY_RECORD_ADDED_TEXT).isNotNull();
                     assertThat(updatedJurorHistoryList.size()).as("Expect 1 history record").isEqualTo(1);
                     verifyHistoryResponse(updatedJurorHistoryList.get(0), "561", "504");
+
+                    verifyPoolHistoryCreated();
 
                 });
             }
@@ -3185,9 +3192,11 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     // verify history added
                     List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
                         .findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, LocalDate.now());
-                    assertThat(updatedJurorHistoryList).as("History record should have been added").isNotNull();
+                    assertThat(updatedJurorHistoryList).as(HISTORY_RECORD_ADDED_TEXT).isNotNull();
                     assertThat(updatedJurorHistoryList.size()).isEqualTo(1);
                     verifyHistoryResponse(updatedJurorHistoryList.get(0), "570", "405");
+
+                    verifyPoolHistoryCreated();
                 });
             }
 
@@ -3223,6 +3232,8 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     assertThat(updatedJurorHistoryList.size()).isEqualTo(1);
 
                     verifyHistoryResponse(updatedJurorHistoryList.get(0), "570", "405");
+
+                    verifyPoolHistoryCreated();
                 });
                 // invoke api again for same juror and letter
                 final URI uri = URI.create("/api/v1/moj/letter/reissue-letter");
@@ -3338,7 +3349,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     // verify history added
                     List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
                         .findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, LocalDate.now());
-                    assertThat(updatedJurorHistoryList).as("History record should have been added").isNotNull();
+                    assertThat(updatedJurorHistoryList).as(HISTORY_RECORD_ADDED_TEXT).isNotNull();
                     assertThat(updatedJurorHistoryList.size()).isEqualTo(1);
                     verifyHistoryResponse(updatedJurorHistoryList.get(0), "576", "405");
                 });
@@ -3402,7 +3413,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     // verify history added
                     List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
                         .findByJurorNumberAndDateCreatedGreaterThanEqual("555555561", LocalDate.now());
-                    assertThat(updatedJurorHistoryList).as("History record should have been added").isNotNull();
+                    assertThat(updatedJurorHistoryList).as(HISTORY_RECORD_ADDED_TEXT).isNotNull();
                     assertThat(updatedJurorHistoryList.size()).isEqualTo(1);
                     verifyHistoryResponse(updatedJurorHistoryList.get(0), "561", "504");
                 });
@@ -3443,6 +3454,14 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(index.getOtherInformation()).isEqualTo("Reminder letter printed");
                 assertThat(index.getOtherInformationDate()).isNull();
                 assertThat(index.getOtherInformationRef()).isNull();
+            }
+
+            private void verifyPoolHistoryCreated() {
+                List<PoolHistory> updatedPoolHistoryList = poolHistoryRepository
+                    .findAll();
+                assertThat(updatedPoolHistoryList).as(HISTORY_RECORD_ADDED_TEXT).isNotEmpty();
+                assertThat(updatedPoolHistoryList.size()).as("Expect 1 history record").isEqualTo(1);
+                assertThat(updatedPoolHistoryList.get(0).getHistoryCode()).isEqualTo(HistoryCode.PHRS);
             }
 
             private void verifyRecDate(BulkPrintData bulkPrintData, LocalDate reprintRecDate) {
