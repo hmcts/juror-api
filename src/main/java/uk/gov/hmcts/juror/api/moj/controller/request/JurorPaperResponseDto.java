@@ -244,6 +244,28 @@ public class JurorPaperResponseDto {
     @Schema(description = "Response submitted by a third party")
     public static class ThirdParty {
 
+        @JsonProperty("thirdPartyFName")
+        @Schema(description = "Third party firstname")
+        private String thirdPartyFName;
+
+        @JsonProperty("thirdPartyLName")
+        @Schema(description = "Third party lastname")
+        private String thirdPartyLName;
+
+        @JsonProperty("thirdPartyPhone")
+        @Schema(description = "Third party main phone number")
+        @Pattern(regexp = PHONE_NO_REGEX)
+        private String mainPhone;
+
+        @JsonProperty("otherPhone")
+        @Schema(description = "Third party alternative phone number")
+        private String otherPhone;
+
+        @JsonProperty("thirdPartyEmail")
+        @Schema(description = "Third party email address")
+        @Pattern(regexp = EMAIL_ADDRESS_REGEX)
+        private String emailAddress;
+
         @JsonProperty("relationship")
         @Schema(description = "Third party relationship to the juror")
         private String relationship;
@@ -251,6 +273,19 @@ public class JurorPaperResponseDto {
         @JsonProperty("thirdPartyReason")
         @Schema(description = "Third party reason")
         private String thirdPartyReason;
+
+        @JsonProperty("thirdPartyOtherReason")
+        @Schema(description = "Third party other reason")
+        private String thirdPartyOtherReason;
+
+        @Schema(description = "Whether the juror's email details should be used (false = use third party details)")
+        @Builder.Default
+        private Boolean useJurorEmailDetails = Boolean.TRUE;
+
+        @Schema(description = "Whether the juror's phone details should be used (false = use third party details)")
+        @Builder.Default
+        private Boolean useJurorPhoneDetails = Boolean.TRUE;
+
 
     }
 
