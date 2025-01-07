@@ -170,9 +170,9 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         // set the juror notes
         jurorPaperResponseDetailDto.setNotes(juror.getNotes());
 
-    // copy third party
-    jurorPaperResponseDetailDto.setThirdParty(
-        new JurorPaperResponseDetailDto.ThirdParty(
+        // copy third party
+        jurorPaperResponseDetailDto.setThirdParty(
+            new JurorPaperResponseDetailDto.ThirdParty(
             jurorPaperResponse.getThirdPartyFName(),
             jurorPaperResponse.getThirdPartyLName(),
             jurorPaperResponse.getMainPhone(),

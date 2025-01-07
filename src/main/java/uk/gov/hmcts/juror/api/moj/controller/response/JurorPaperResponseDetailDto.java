@@ -386,7 +386,7 @@ public class JurorPaperResponseDetailDto implements IJurorResponse {
 
         @Schema(description = "Whether the juror's email details should be used (false = use third party details)")
         @Builder.Default
-        private Boolean useJurorEmailDetails = Boolean.FALSE;
+        private Boolean useJurorEmailDetails = Boolean.TRUE;
 
         @Schema(description = "Whether the juror's phone details should be used (false = use third party details)")
         @Builder.Default

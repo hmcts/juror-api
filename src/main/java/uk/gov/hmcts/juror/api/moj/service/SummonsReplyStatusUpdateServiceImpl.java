@@ -439,7 +439,9 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
                         }
 
                         @Override
-                        public String getThirdPartyMainPhone() { return abstractJurorResponse.getMainPhone(); }
+                        public String getThirdPartyMainPhone() {
+                            return abstractJurorResponse.getMainPhone();
+                        }
 
                         @Override
                         public String getThirdPartyRelationship() {
@@ -447,11 +449,13 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
                         }
 
                         @Override
-                        public String getThirdPartyLastName() {return abstractJurorResponse.getLastName();}
+                        public String getThirdPartyLastName() {
+                            return abstractJurorResponse.getThirdPartyLName();
+                        }
 
                         @Override
                         public String getThirdPartyFirstName() {
-                            return abstractJurorResponse.getFirstName();
+                            return abstractJurorResponse.getThirdPartyFName();
                         }
 
                         @Override
