@@ -460,12 +460,12 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
 
                         @Override
                         public boolean isContactJurorByEmail() {
-                            return abstractJurorResponse.getJurorEmailDetails();
+                            return Boolean.TRUE.equals(abstractJurorResponse.getJurorEmailDetails());
                         }
 
                         @Override
                         public boolean isContactJurorByPhone() {
-                            return abstractJurorResponse.getJurorPhoneDetails();
+                            return Boolean.TRUE.equals(abstractJurorResponse.getJurorPhoneDetails());
                         }
                     });
             }

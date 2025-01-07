@@ -49,6 +49,7 @@ import java.util.stream.Stream;
 @Service
 @Slf4j
 @AllArgsConstructor(onConstructor = @__(@Autowired))
+@SuppressWarnings("PMD")
 public class BureauServiceImpl implements BureauService {
     private static final String TODO = "todo";
     private static final String PENDING = "pending";

@@ -26,7 +26,7 @@ DELETE FROM juror_mod.juror_response_aud;
 DELETE FROM juror_mod.juror_response_cjs_employment;
 DELETE FROM juror_mod.juror_reasonable_adjustment;
 DELETE FROM juror_mod.juror_response;
---
+DELETE FROM juror_third_party_audit;
 DELETE FROM juror_mod.juror;
 
 --DELETE FROM juror_mod.notify_template_field;
