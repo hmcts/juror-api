@@ -118,10 +118,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         }
 
         // check if the location of the jurorPool is the same as the locationCode
-        if (!jurorPool.getPool().getCourtLocation().getLocCode().equals(dto.getLocationCode())) {
-            throw new MojException.BusinessRuleViolation("Juror pool location does not match the location code",
-                                                         MojException.BusinessRuleViolation.ErrorCode.INVALID_JUROR_POOL_LOCATION);
-        }
+        verifyJurorPoolLocation(dto.getLocationCode(), jurorPool);
 
         final boolean isCompleted = jurorPool.getStatus().getStatus() == IJurorStatus.COMPLETED;
 
@@ -151,6 +148,13 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         jurorHistoryService.createPoolAttendanceHistory(jurorPool, appearance);
         jurorExpenseService.applyDefaultExpenses(List.of(appearance));
         appearanceRepository.saveAndFlush(appearance);
+    }
+
+    private static void verifyJurorPoolLocation(String locationCode, JurorPool jurorPool) {
+        if (!jurorPool.getPool().getCourtLocation().getLocCode().equals(locationCode)) {
+            throw new MojException.BusinessRuleViolation("Juror pool location does not match the location code",
+                                                         MojException.BusinessRuleViolation.ErrorCode.INVALID_JUROR_POOL_LOCATION);
+        }
     }
 
     private boolean hasAttendance(String locCode, String jurorNumber, LocalDate attendanceDate) {
@@ -538,11 +542,9 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             () -> new MojException.NotFound("Court location " + locationCode + " not found", null)
         );
         JurorPool jurorPool = validateJurorPoolAndStartDate(request, nonAttendanceDate);
+
         // check if the location of the jurorPool is the same as the locationCode
-        if (!jurorPool.getPool().getCourtLocation().getLocCode().equals(locationCode)) {
-            throw new MojException.BusinessRuleViolation("Juror pool location does not match the location code",
-                MojException.BusinessRuleViolation.ErrorCode.INVALID_JUROR_POOL_LOCATION);
-        }
+        verifyJurorPoolLocation(locationCode, jurorPool);
 
         checkExistingAttendance(request, nonAttendanceDate);
 
