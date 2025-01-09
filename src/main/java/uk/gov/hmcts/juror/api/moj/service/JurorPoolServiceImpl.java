@@ -90,7 +90,8 @@ public class JurorPoolServiceImpl implements JurorPoolService {
             return jurorPools.get(0);
         }
 
-        throw new MojException.BusinessRuleViolation("Invalid attendance record found for Juror: " + jurorNumber, INVALID_JUROR_ATTENDANCE_RECORD);
+        throw new MojException.BusinessRuleViolation("Invalid attendance record found for Juror: "
+                                                         + jurorNumber, INVALID_JUROR_ATTENDANCE_RECORD);
     }
 
     @Override
