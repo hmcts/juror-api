@@ -17,6 +17,7 @@ public enum HistoryCodeMod {
     AWAITING_FURTHER_INFORMATION("AWFI", "Awaiting Further Information"),
     CHECK_ID("CHID", "Check ID"),
     CHANGE_DEFERRAL_RECORD("DCHG", "Change Deferral Record"),
+    ATTENDANCE_DELETED("DELA", "Attendance Deleted"),
     POOL_DELETED("DELP", "Pool Deleted"),
     RETURN_TO_VOTERS("DRET", "Return to Voters"),
     APPEARANCE_PAYMENTS("FADD", "Appearance Payments"),

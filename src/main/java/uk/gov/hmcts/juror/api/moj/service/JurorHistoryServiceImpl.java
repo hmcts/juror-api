@@ -209,6 +209,13 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
 
     @Override
     @IsCourtUser
+    public void createDeleteAttendanceHistory(JurorPool jurorPool, LocalDate attendanceDate) {
+        registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.ATTENDANCE_DELETED,
+                                 "Deleted attendance record", attendanceDate, null);
+    }
+
+    @Override
+    @IsCourtUser
     public void createFailedToAttendHistory(JurorPool jurorPool) {
         if (jurorPool.getStatus().getStatus() != IJurorStatus.FAILED_TO_ATTEND) {
             throw new MojException.InternalServerError("To create a failed to attend history entry. "
