@@ -771,7 +771,23 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     public PaginatedList<UnpaidExpenseSummaryResponseDto> getUnpaidExpensesForCourtLocation(
         String locCode,
         UnpaidExpenseSummaryRequestDto search) {
-        return appearanceRepository.findUnpaidExpenses(locCode, search);
+        PaginatedList<UnpaidExpenseSummaryResponseDto> unpaidExpenses =
+            appearanceRepository.findUnpaidExpenses(locCode, search);
+
+        List<UnpaidExpenseSummaryResponseDto> unpaidExpensesList = unpaidExpenses.getData();
+
+        // need to check the pool number in the unpaid expenses list
+        unpaidExpensesList.forEach(unpaidExpense -> {
+            if (unpaidExpense.getPoolNumber() == null) {
+                List<JurorPool> jurorPools = jurorPoolRepository
+                    .findByPoolCourtLocationLocCodeAndJurorJurorNumber(locCode, unpaidExpense.getJurorNumber());
+                if(jurorPools.size() == 1) {
+                    unpaidExpense.setPoolNumber(jurorPools.get(0).getPoolNumber());
+                }
+            }
+        });
+
+        return unpaidExpenses;
     }
 
     @Override
