@@ -153,7 +153,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     private static void verifyJurorPoolLocation(String locationCode, JurorPool jurorPool) {
         if (!jurorPool.getPool().getCourtLocation().getLocCode().equals(locationCode)) {
             throw new MojException.BusinessRuleViolation("Juror pool location does not match the location code",
-                                                         MojException.BusinessRuleViolation.ErrorCode.INVALID_JUROR_POOL_LOCATION);
+                                             MojException.BusinessRuleViolation.ErrorCode.INVALID_JUROR_POOL_LOCATION);
         }
     }
 
