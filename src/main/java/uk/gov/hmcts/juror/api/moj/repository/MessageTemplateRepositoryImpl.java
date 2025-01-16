@@ -83,7 +83,7 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
             .join(JUROR_POOL)
             .on(JUROR.eq(JUROR_POOL.juror))
             .where(JUROR_POOL.isActive.isTrue());
-        if (isCourt || !locCode.equals("400")) {
+        if (isCourt || !"400".equals(locCode)) {
             query.where(JUROR_POOL.pool.courtLocation.locCode.eq(locCode));
             if (isCourt) {
                 query.where(JUROR_POOL.owner.ne("400"));
@@ -91,12 +91,25 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
         }
 
         if (search.getTrialNumber() != null || !simpleResponse) {
-            query.leftJoin(PANEL).on(
-                JUROR.eq(PANEL.juror)
-                    .and(PANEL.result.notIn(PanelResult.RETURNED, PanelResult.NOT_USED, PanelResult.CHALLENGED))
-                    .and(PANEL.trial.courtLocation.locCode.eq(JUROR_POOL.pool.courtLocation.locCode))
-                    .and(JUROR_POOL.status.status.in(IJurorStatus.PANEL, IJurorStatus.JUROR))
-            );
+
+            if (search.isIncludeAllJurorsOnTrial() && search.getTrialNumber() != null) {
+                // include jurors who were on the trial as well as current members of the trial panel
+                query.join(PANEL).on(
+                    JUROR.eq(PANEL.juror)
+                        .and(PANEL.trial.trialNumber.eq(search.getTrialNumber()))
+                        .and(PANEL.result.notIn(PanelResult.NOT_USED, PanelResult.CHALLENGED))
+                        .and(PANEL.trial.courtLocation.locCode.eq(JUROR_POOL.pool.courtLocation.locCode))
+                        .and(PANEL.empanelledDate.isNotNull())
+                );
+
+            } else {
+                query.leftJoin(PANEL).on(
+                    JUROR.eq(PANEL.juror)
+                        .and(PANEL.result.notIn(PanelResult.RETURNED, PanelResult.NOT_USED, PanelResult.CHALLENGED))
+                        .and(PANEL.trial.courtLocation.locCode.eq(JUROR_POOL.pool.courtLocation.locCode))
+                        .and(JUROR_POOL.status.status.in(IJurorStatus.PANEL, IJurorStatus.JUROR))
+                );
+            }
         }
         search.apply(query);
 
