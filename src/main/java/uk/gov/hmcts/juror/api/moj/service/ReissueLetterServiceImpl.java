@@ -13,6 +13,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterListResponseD
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterReponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
+import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
@@ -27,7 +28,9 @@ import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -44,6 +47,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
     private final JurorHistoryService jurorHistoryService;
     private final JurorPoolService jurorPoolService;
     private final JurorRepository jurorRepository;
+    private final PoolHistoryService poolHistoryService;
 
 
     @Transactional
@@ -109,12 +113,34 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
 
         validateReissueRequest(request, response);
 
+        Map<String, Integer> poolLetterCount = new HashMap<>();
+
         // if no jurors with a modified status are found, print the requested letters
         if (response.getJurors().isEmpty()) {
-            request.getLetters().forEach(letter -> printLetterFromFormCode(letter, true));
+            request.getLetters().forEach(letter -> {
+                printLetterFromFormCode(letter, true);
+                // get the pool number for the juror
+                JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(letter.getJurorNumber());
+                poolLetterCount.merge(jurorPool.getPoolNumber(), 1, Integer::sum);
+            }
+            );
         }
 
+        createPoolHistory(request, poolLetterCount);
+
         return response;
+    }
+
+    private void createPoolHistory(ReissueLetterRequestDto request, Map<String, Integer> poolLetterCount) {
+        if (Set.of("5228", "5228C").contains(request.getLetters().get(0).getFormCode())) {
+
+            poolLetterCount.keySet().forEach(poolNumber -> {
+                // create pool history
+                poolHistoryService.createPoolHistory(poolNumber, HistoryCode.PHRS,
+                                                poolLetterCount.get(poolNumber) + " (Number of Reminder letters sent)");
+            });
+
+        }
     }
 
     private void printLetterFromFormCode(ReissueLetterRequestDto.@NotNull ReissueLetterRequestData letter,
@@ -298,7 +324,6 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
     }
 
     private void createLetterHistory(ReissueLetterRequestDto.ReissueLetterRequestData letter) {
-        // TODO: implemement for other letter types and remove outer if statement
         if (FormCode.ENG_SUMMONS_REMINDER.getCode().equals(letter.getFormCode())
             || FormCode.BI_SUMMONS_REMINDER.getCode().equals(letter.getFormCode())) {
 
