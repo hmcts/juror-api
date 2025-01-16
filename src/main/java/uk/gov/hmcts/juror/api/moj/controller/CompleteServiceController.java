@@ -62,7 +62,7 @@ public class CompleteServiceController {
     public void uncompleteService(
         @Valid
         @NotNull
-        @Size(min = 1, max = 20)
+        @Size(min = 1, max = 100)
         @RequestBody List<@Valid @NotNull JurorAndPoolRequest> requestList) {
         bulkService.processVoid(requestList,
             jurorAndPoolRequest -> completeServiceService.uncompleteJurorsService(
