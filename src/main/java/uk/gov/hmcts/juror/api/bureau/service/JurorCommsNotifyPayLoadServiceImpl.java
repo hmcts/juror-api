@@ -101,24 +101,23 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
                 if (field.getTemplateField().equals(SERVICE_START_DATE)) {
                     fieldValue = invokeGetter(context, mapperObject);
                     String formattedDate;
-                    String formattedDateWelsh = WELSH_DATE_TIME_FORMATTER.format((LocalDate) fieldValue);
-                    String str;
-
-                    if (isWelshCourt) {
-                        Map<String, String> myWelshTranslationMap;
-                        myWelshTranslationMap = setUpTranslationMap();
-
-                        for (Map.Entry<String, String> entry : myWelshTranslationMap.entrySet()) {
-                            str = formattedDateWelsh.replace(entry.getKey(), entry.getValue());
-                            formattedDateWelsh = str;
-                        }
-                    }
 
                     if (mapperObject == NotifyTemplateMapperMod.BULK_PRINT_DATA) {
                         formattedDate = fieldValue.toString();
                     } else {
                         formattedDate = ENGLISH_DATE_TIME_FORMATTER.format((LocalDate) fieldValue);
                         if (isWelshCourt) {
+                            String formattedDateWelsh = WELSH_DATE_TIME_FORMATTER.format((LocalDate) fieldValue);
+                            String str;
+                            Map<String, String> myWelshTranslationMap;
+                            myWelshTranslationMap = setUpTranslationMap();
+
+                            for (Map.Entry<String, String> entry : myWelshTranslationMap.entrySet()) {
+                                str = formattedDateWelsh.replace(entry.getKey(), entry.getValue());
+                                formattedDateWelsh = str;
+                            }
+
+
                             formattedDate = formattedDateWelsh;
                         }
                     }

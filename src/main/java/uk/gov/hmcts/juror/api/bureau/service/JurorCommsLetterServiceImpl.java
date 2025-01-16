@@ -19,6 +19,7 @@ import uk.gov.hmcts.juror.api.moj.utils.NotifyUtil;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,7 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
      * Processes entries in the Juror.print_files table and sends the appropriate email notifications to
      * the juror.
      */
+    @SuppressWarnings("checkstyle:LineLength") // false positive
     @Override
     @Transactional
     public SchedulerServiceClient.Result process() {
@@ -96,12 +98,25 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
         } else {
             log.trace("Letter Comms Processing : No pending records found.");
         }
+
+        SchedulerServiceClient.Result.Status status = commsfailed == 0
+            ? SchedulerServiceClient.Result.Status.SUCCESS
+            : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS;
+
+        // log the results for Dynatrace
+        log.info(
+            "[JobKey: CRONBATCH_LETTER_COMMS]\n[{}]\nresult={},\nmetadata={messages_sent={},messages_failed={},invalid_email_count={}}",
+            DATE_TIME_FORMATTER.format(LocalDateTime.now()),
+            status,
+            commsSent,
+            commsfailed,
+            invalidEmailAddress
+        );
+
         log.info("Letter Comms Processing : Finished - {}", dateFormat.format(new Date()));
 
         return new SchedulerServiceClient.Result(
-            commsfailed == 0
-                ? SchedulerServiceClient.Result.Status.SUCCESS
-                : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS, null,
+            status, null,
             Map.of(
                 "COMMS_FAILED", String.valueOf(commsfailed),
                 "COMMNS_SENT", String.valueOf(commsSent),

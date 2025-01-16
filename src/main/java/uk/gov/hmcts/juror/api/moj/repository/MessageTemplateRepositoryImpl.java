@@ -86,7 +86,7 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
         if (isCourt || !locCode.equals("400")) {
             query.where(JUROR_POOL.pool.courtLocation.locCode.eq(locCode));
             if (isCourt) {
-                query.where(JUROR_POOL.pool.owner.ne("400"));
+                query.where(JUROR_POOL.owner.ne("400"));
             }
         }
 

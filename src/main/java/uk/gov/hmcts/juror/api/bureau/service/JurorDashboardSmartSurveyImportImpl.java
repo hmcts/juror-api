@@ -26,6 +26,7 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -182,11 +183,23 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
 
         }
 
+        SchedulerServiceClient.Result.Status status = errorCount == 0
+            ? SchedulerServiceClient.Result.Status.SUCCESS
+            : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS;
+
+        // log the results for Dynatrace
+        log.info(
+            "[JobKey: CRONBATCH_SMART_SURVEY_IMPORT]\n[{}]\nresult={},\nmetadata={records_inserted={},\nrecords_skipped={},\nerror_count={}}",
+            DATE_TIME_FORMATTER.format(LocalDateTime.now()),
+            status,
+            dbInsertCount,
+            dbSkipCount,
+            errorCount
+        );
+
         log.info("Smart Survey Processing : FINISHED- {}", dateFormatSurvey.format(new Date()));
 
-        return new SchedulerServiceClient.Result(errorCount == 0
-            ? SchedulerServiceClient.Result.Status.SUCCESS
-            : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS,
+        return new SchedulerServiceClient.Result(status,
             errorCount == 0
                 ? "Successfully loaded survey records"
                 : "Error loading some survey records",

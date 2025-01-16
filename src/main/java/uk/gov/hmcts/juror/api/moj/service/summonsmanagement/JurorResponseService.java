@@ -20,8 +20,24 @@ public interface JurorResponseService {
     String ADDRESS_LINE5 = "address line 5";
     String POSTCODE = "postcode";
     String DATE_OF_BIRTH = "date of birth";
+
+    String THIRD_PARTY_FIRSTNAME = "third party first name";
+
+    String THIRD_PARTY_LASTNAME = "third party last name";
+
+    String THIRD_PARTY_MAIN_PHONE = "third party main phone";
+
+    String THIRD_PARTY_OTHER_PHONE = "third party other phone";
+
+    String THIRD_PARTY_EMAIL_ADDRESS = "third party email address";
+
+    Boolean THIRD_PARTY_CONTACT_JUROR_BY_PHONE = true;
+
+    Boolean THIRD_PARTY_CONTACT_JUROR_BY_EMAIL = true;
+
     String THIRD_PARTY_RELATIONSHIP = "third party relationship";
     String THIRD_PARTY_REASON = "third party reason";
+    String THIRD_PARTY_OTHER_REASON = "third party other reason";
     String RESIDENCY = "residency";
     String BAIL = "bail";
     String EXCUSAL = "excusal";

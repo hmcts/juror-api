@@ -227,18 +227,54 @@ public class JurorResponseServiceImpl implements JurorResponseService {
             JurorPaperResponseDto.ThirdParty thirdParty = jurorPersonalDetailsDto.getThirdParty();
             if (thirdParty != null) {
 
+                if (hasValueChanged(jurorResponse.getThirdPartyFName(), thirdParty.getThirdPartyFName(),
+                                    THIRD_PARTY_FIRSTNAME, jurorNumber, replyMethod)) {
+                    jurorResponse.setThirdPartyFName(thirdParty.getThirdPartyFName());
+                }
+                if (hasValueChanged(jurorResponse.getThirdPartyLName(), thirdParty.getThirdPartyLName(),
+                                    THIRD_PARTY_LASTNAME, jurorNumber, replyMethod)) {
+                    jurorResponse.setThirdPartyLName(thirdParty.getThirdPartyLName());
+                }
+                if (hasValueChanged(jurorResponse.getMainPhone(),thirdParty.getMainPhone(),
+                                    THIRD_PARTY_MAIN_PHONE, jurorNumber, replyMethod)) {
+                    jurorResponse.setMainPhone(thirdParty.getMainPhone());
+                }
+                if (hasValueChanged(jurorResponse.getOtherPhone(),thirdParty.getOtherPhone(),
+                                    THIRD_PARTY_OTHER_PHONE, jurorNumber, replyMethod)) {
+                    jurorResponse.setOtherPhone(thirdParty.getOtherPhone());
+                }
+                if (hasValueChanged(jurorResponse.getEmailAddress(),thirdParty.getEmailAddress(),
+                                    THIRD_PARTY_EMAIL_ADDRESS, jurorNumber, replyMethod)) {
+                    jurorResponse.setEmailAddress(thirdParty.getEmailAddress());
+                }
+
                 if (hasValueChanged(jurorResponse.getRelationship(), thirdParty.getRelationship(),
-                    THIRD_PARTY_RELATIONSHIP, jurorNumber, replyMethod)) {
+                                    THIRD_PARTY_RELATIONSHIP, jurorNumber, replyMethod)) {
                     jurorResponse.setRelationship(thirdParty.getRelationship());
                 }
 
-                if (hasValueChanged(jurorResponse.getThirdPartyReason(),
-                    thirdParty.getThirdPartyReason(), THIRD_PARTY_REASON, jurorNumber, replyMethod)) {
+                if (hasValueChanged(jurorResponse.getThirdPartyReason(),thirdParty.getThirdPartyReason(),
+                                    THIRD_PARTY_REASON, jurorNumber, replyMethod)) {
                     jurorResponse.setThirdPartyReason(thirdParty.getThirdPartyReason());
+                }
+                if (hasValueChanged(jurorResponse.getThirdPartyOtherReason(),thirdParty.getThirdPartyOtherReason(),
+                                    THIRD_PARTY_OTHER_REASON, jurorNumber, replyMethod)) {
+                    jurorResponse.setThirdPartyOtherReason(thirdParty.getThirdPartyOtherReason());
+                }
+                if (hasValueChanged(jurorResponse.getJurorPhoneDetails(),thirdParty.getUseJurorPhoneDetails(),
+                                    String.valueOf(THIRD_PARTY_CONTACT_JUROR_BY_PHONE), jurorNumber, replyMethod)) {
+                    jurorResponse.setJurorPhoneDetails(thirdParty.getUseJurorPhoneDetails());
+                }
+                if (hasValueChanged(jurorResponse.getJurorEmailDetails(),thirdParty.getUseJurorEmailDetails(),
+                                    String.valueOf(THIRD_PARTY_CONTACT_JUROR_BY_EMAIL), jurorNumber, replyMethod)) {
+                    jurorResponse.setJurorEmailDetails(thirdParty.getUseJurorEmailDetails());
+
                 }
             }
         }
     }
+
+
 
     private void processStraightThroughResponse(AbstractJurorResponse jurorResponse,
                                                 JurorPool jurorPool, BureauJwtPayload payload) {

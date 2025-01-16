@@ -19,6 +19,7 @@ import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 import uk.gov.hmcts.juror.api.moj.utils.NotifyUtil;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +46,7 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
      * Processes entries in the Juror table and sends the appropriate email notifications to
      * the juror for juror where they have been transferred to court.
      */
+    @SuppressWarnings("checkstyle:LineLength") // false positive
     @Override
     @Transactional
     public SchedulerServiceClient.Result process() {
@@ -160,11 +162,30 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
                 }
             }
         }
+
+        SchedulerServiceClient.Result.Status status = errorCount == 0
+            ? SchedulerServiceClient.Result.Status.SUCCESS
+            : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS;
+
+        // log the results for Dynatrace
+        log.info(
+            "[JobKey: CRONBATCH_SEND_TO_COURT_COMMS]\n[{}]\nresult={},\nmetadata={email_sent={},sms_sent={},email_failed={},sms_failed={},invalid_email_count={},invalid_phone_count={},success_count={},error_count={},total_jurors={}}",
+            DATE_TIME_FORMATTER.format(LocalDateTime.now()),
+            status,
+            successCountEmail,
+            successCountSms,
+            errorCountEmail,
+            errorCountSms,
+            errorInvalidEmailCount,
+            errorInvalidPhoneCount,
+            successCount,
+            errorCount,
+            jurordetailList.size()
+        );
+
         log.info("Sent To Court Comms Processing : Finished - {}", dateFormat.format(new Date()));
         return new SchedulerServiceClient.Result(
-            errorCount == 0
-                ? SchedulerServiceClient.Result.Status.SUCCESS
-                : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS, null,
+            status, null,
             Map.of(
                 "SUCCESS_COUNT_EMAIL", String.valueOf(successCountEmail),
                 "SUCCESS_COUNT_SMS", String.valueOf(successCountSms),

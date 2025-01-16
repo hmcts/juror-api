@@ -21,9 +21,12 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRep
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+
+import static uk.gov.hmcts.juror.api.bureau.service.BureauProcessService.DATE_TIME_FORMATTER;
 
 @Slf4j
 @Component
@@ -37,6 +40,7 @@ public class UrgentStatusScheduler implements ScheduledService {
     private final JurorPoolRepository jurorRepository;
 
 
+    @SuppressWarnings("checkstyle:LineLength") // false positive
     @Override
     public SchedulerServiceClient.Result process() {
 
@@ -99,11 +103,24 @@ public class UrgentStatusScheduler implements ScheduledService {
         } else {
             log.trace("Scheduler: No pending Juror responses found.");
         }
+
+        SchedulerServiceClient.Result.Status status = failedToFindJurorCount == 0
+            ? SchedulerServiceClient.Result.Status.SUCCESS
+            : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS;
+
+        // log the results for Dynatrace
+        log.info(
+            "[JobKey: CRONBATCH_URGENT_SUPER_URGENT_STATUS]\n[{}]\nresult={},\nmetadata={total_processed={},total_marked_urgent={},total_failed_to_find={}}",
+            DATE_TIME_FORMATTER.format(LocalDateTime.now()),
+            status,
+            totalResponsesProcessed,
+            totalUrgentResponses,
+            failedToFindJurorCount
+        );
+
         log.info("Scheduler: Finished, time is now {}", dateFormat.format(new Date()));
         return new SchedulerServiceClient.Result(
-            failedToFindJurorCount == 0
-                ? SchedulerServiceClient.Result.Status.SUCCESS
-                : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS, null,
+            status, null,
             Map.of(
                 "TOTAL_PROCESSED", String.valueOf(totalResponsesProcessed),
                 "TOTAL_MARKED_URGENT", String.valueOf(totalUrgentResponses),
