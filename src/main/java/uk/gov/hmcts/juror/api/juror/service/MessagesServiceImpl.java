@@ -229,7 +229,7 @@ public class MessagesServiceImpl implements BureauProcessService {
 
         // log the results for Dynatrace
         log.info(
-            "[JobKey: CRONBATCH_COURT_COMMS]\n[{}]\nresult={},\ntotal_messages_to_send={},\nemails_sent={},\nsms_sent={},\ninvalid_phone_count={},\ninvalid_email_count={},\nerror_count={},\nmissing_api_key_count={},\nmissing_email_and_phone={}",
+            "[JobKey: CRONBATCH_COURT_COMMS]\n[{}]\nresult={},\nmetadata={total_messages_to_send={},emails_sent={},sms_sent={},invalid_phone_count={},invalid_email_count={},error_count={},missing_api_key_count={},missing_email_and_phone={}}",
             DATE_TIME_FORMATTER.format(LocalDateTime.now()),
             status,
             messageDetailList.size(),
