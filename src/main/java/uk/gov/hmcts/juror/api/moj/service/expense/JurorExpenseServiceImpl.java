@@ -783,6 +783,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                     .findByPoolCourtLocationLocCodeAndJurorJurorNumber(locCode, unpaidExpense.getJurorNumber());
                 if(jurorPools.size() == 1) {
                     unpaidExpense.setPoolNumber(jurorPools.get(0).getPoolNumber());
+                } else {
+                    log.info("Could not determine pool number for juror: {}", unpaidExpense.getJurorNumber());
                 }
             }
         });
