@@ -144,7 +144,7 @@ dependencies {
     testImplementation('org.projectlombok:lombok')
     testAnnotationProcessor('org.projectlombok:lombok')
 
-    testImplementation('net.bytebuddy:byte-buddy:1.14.19')
+    testImplementation('net.bytebuddy:byte-buddy:1.16.1')
     testImplementation('junit:junit:4.13.2')
     testImplementation "org.testcontainers:testcontainers:1.19.8"
     testImplementation "org.testcontainers:junit-jupiter:1.19.8"
