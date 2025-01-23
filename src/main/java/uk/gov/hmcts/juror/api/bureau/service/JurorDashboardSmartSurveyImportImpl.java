@@ -54,6 +54,7 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
      * Process retrieval of satisfaction survey responses via the smart survey rest api.
      */
     @Override
+    @SuppressWarnings("checkstyle:LineLength") // false
     @Transactional
     public SchedulerServiceClient.Result process() {
 

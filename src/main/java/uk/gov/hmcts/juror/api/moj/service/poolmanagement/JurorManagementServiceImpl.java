@@ -145,9 +145,15 @@ public class JurorManagementServiceImpl implements JurorManagementService {
                 deleteExistingJurorPool(owner, jurorNumber, targetPoolNumber);
 
                 // copy the pool members data over to a new record in the new court location
-                JurorPool targetJurorPool = createReassignedJurorPool(sourceJurorPool, receivingCourtLocation,
+                final JurorPool targetJurorPool = createReassignedJurorPool(sourceJurorPool, receivingCourtLocation,
                     targetPoolRequest,
                     currentUser);
+
+                if (SecurityUtil.isCourt()
+                    && !sendingCourtLocation.getLocCode().equals(receivingCourtLocation.getLocCode())) {
+                    // set the reassign date on target juror pool only when reassigning to different court location
+                    sourceJurorPool.setReassignDate(LocalDate.now());
+                }
 
                 updateSourceJurorPool(sourceJurorPool, currentUser);
 

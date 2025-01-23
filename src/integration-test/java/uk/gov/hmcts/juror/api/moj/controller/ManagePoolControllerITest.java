@@ -1710,7 +1710,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initAvailablePools.sql"})
-    public void test_reassignJurorSameCourtPreviouslyReassigned_BureauUser() throws Exception {
+    public void testReassignJurorSameCourtPreviouslyReassignedBureauUser() throws Exception {
 
         final String jurorNumber = "555555561"; // this juror was already reassigned from target pool
         List<String> jurorNumbers = List.of(jurorNumber);
@@ -1730,7 +1730,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initAvailablePools.sql"})
-    public void test_reassignJurorSameCourtPreviouslyReassignedAndReassignBackAgain_BureauUser() throws Exception {
+    public void testReassignJurorSameCourtPreviouslyReassignedAndReassignBackAgainBureauUser() throws Exception {
 
         final String jurorNumber = "555555561"; // this juror was already reassigned from target pool
         List<String> jurorNumbers = List.of(jurorNumber);
@@ -1759,6 +1759,64 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
         validateReassignedJuror(jurorNumber, POOL_NUMBER_416220502, "416220503");
     }
+
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/reassignJurors.sql"})
+    public void test_reassignJuror_CourtUser_happy() throws Exception {
+
+        final String jurorNumber = "555555551";
+        final String targetPoolNumber = "767220504";
+        final String sourcePool = "415220504";
+        final String owner = "415";
+        List<String> jurorNumbers = List.of(jurorNumber);
+
+        //create a reassign jurors request DTO
+        JurorManagementRequestDto requestDto = createJurorManagementRequestDto("415", sourcePool,
+            "767", "767220504", jurorNumbers, LocalDate.now());
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", List.of("415", "767")));
+
+        RequestEntity<?> requestEntity = new RequestEntity<>(requestDto, httpHeaders,
+            HttpMethod.PUT, URI.create("/api/v1/moj/manage-pool/reassign-jurors"));
+        ResponseEntity<?> response = restTemplate.exchange(requestEntity, String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        CourtLocation targetCourt = courtLocationRepository.findById("767").orElse(null);
+        assertThat(targetCourt).isNotNull();
+
+        executeInTransaction(() -> {
+                                 // check the old record is now inactive
+                                 JurorPool oldJurorPool =
+                                     jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(owner, jurorNumber,
+                                                                                                         sourcePool
+                                     ).get();
+                                 assertThat(oldJurorPool).isNotNull();
+                                 assertThat(oldJurorPool.getStatus().getStatus()).isEqualTo(8L);
+                                 assertThat(oldJurorPool.getNextDate()).isNull();
+                                 assertThat(oldJurorPool.getReassignDate()).isEqualTo(LocalDate.now());
+
+                                 // check there is a new record created for reassigned juror
+                                 JurorPool newJurorPool =
+                                     jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(owner, jurorNumber,
+                                                                                                         targetPoolNumber
+                                     ).get();
+                                 assertThat(newJurorPool).isNotNull();
+                                 assertThat(newJurorPool.getStatus().getStatus()).isEqualTo(2L);
+                                 assertThat(newJurorPool.getIsActive()).isTrue();
+
+            List<JurorHistory> historyEvents = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
+            JurorHistory jurorHistory = historyEvents.stream().filter(hist ->
+                                                                          hist.getHistoryCode().equals(HistoryCodeMod.REASSIGN_POOL_MEMBER)).findFirst().orElse(null);
+            assertThat(jurorHistory).isNotNull();
+
+            assertThat(jurorHistory.getOtherInformation()).isEqualTo(targetCourt.getNameWithLocCode());
+            assertThat(jurorHistory.getOtherInformationRef()).isEqualTo(targetPoolNumber);
+        });
+
+    }
+
 
     private JSONObject getExceptionDetails(ResponseEntity<String> responseEntity) {
         return new JSONObject(responseEntity.getBody());

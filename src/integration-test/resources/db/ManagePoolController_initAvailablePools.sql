@@ -1,19 +1,3 @@
--- Clear previous Pool History
-delete from juror_mod.pool_history;
-
--- Clear previous Participant History
-DELETE FROM juror_mod.juror_history;
-DELETE FROM juror_mod.juror_audit;
-
--- Create juror records associated with juror records
-delete from juror_mod.contact_log;
-delete from juror_mod.pool_comments;
-
-delete from juror_mod.juror_pool;
-delete from juror_mod.juror;
-delete from juror_mod.pool;
-
--- Clear Confirm Letter
 
 -- Pool 415220401 requested 2 jurors for 2023-05-30, 4 already supplied (2 surplus) - active with the bureau
 INSERT INTO JUROR_MOD.POOL (OWNER, POOL_NO, RETURN_DATE, TOTAL_NO_REQUIRED, NO_REQUESTED, POOL_TYPE, LOC_CODE, NEW_REQUEST, LAST_UPDATE)
@@ -61,7 +45,7 @@ VALUES ('400', '416220505' , CURRENT_DATE+12, 4 ,4, 'CRO', '416', 'N', CURRENT_D
 
 INSERT INTO juror_mod.juror (juror_number, last_name, first_name, dob, address_line_1, address_line_4, postcode, responded,
                              notes,optic_reference, police_check)
-VALUES 
+VALUES
 ('555555551', 'LNAMEFIVEFOURZERO', 'FNAMEFIVEFOURZERO', '1990-07-25', '540 STREET NAME', 'ANYTOWN', 'CH1 2AN', true,'These are some notes for 555555551', null, 'ELIGIBLE'),
 ('555555552', 'LNAMEFIVEFOURZERO', 'FNAMEFIVEFOURZERO', '1990-07-25', '540 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, '',null, 'ELIGIBLE'),
 ('555555553', 'LNAMEFIVEFOURZERO', 'FNAMEFIVEFOURZERO', '1990-07-25', '540 STREET NAME', 'ANYTOWN', 'CH1 2AN', true,null, '12345678','ELIGIBLE'),
