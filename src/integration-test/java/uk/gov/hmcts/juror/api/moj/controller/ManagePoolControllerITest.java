@@ -1763,7 +1763,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/reassignJurors.sql"})
-    public void test_reassignJuror_CourtUser_happy() throws Exception {
+    public void testReassignJurorCourtUserDifferentLocation() throws Exception {
 
         final String jurorNumber = "555555551";
         final String targetPoolNumber = "767220504";
@@ -1787,28 +1787,87 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         assertThat(targetCourt).isNotNull();
 
         executeInTransaction(() -> {
-                                 // check the old record is now inactive
-                                 JurorPool oldJurorPool =
-                                     jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(owner, jurorNumber,
-                                                                                                         sourcePool
-                                     ).get();
-                                 assertThat(oldJurorPool).isNotNull();
-                                 assertThat(oldJurorPool.getStatus().getStatus()).isEqualTo(8L);
-                                 assertThat(oldJurorPool.getNextDate()).isNull();
-                                 assertThat(oldJurorPool.getReassignDate()).isEqualTo(LocalDate.now());
+            // check the old record is now inactive
+            Optional<JurorPool> oldJurorPoolOpt = jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(
+                                        owner, jurorNumber, sourcePool);
+            assertThat(oldJurorPoolOpt).isPresent();
+            JurorPool oldJurorPool = oldJurorPoolOpt.get();
+            assertThat(oldJurorPool).isNotNull();
+            assertThat(oldJurorPool.getStatus().getStatus()).isEqualTo(8L);
+            assertThat(oldJurorPool.getNextDate()).isNull();
+            // check reassign date is set
+            assertThat(oldJurorPool.getReassignDate()).isEqualTo(LocalDate.now());
 
-                                 // check there is a new record created for reassigned juror
-                                 JurorPool newJurorPool =
-                                     jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(owner, jurorNumber,
-                                                                                                         targetPoolNumber
-                                     ).get();
-                                 assertThat(newJurorPool).isNotNull();
-                                 assertThat(newJurorPool.getStatus().getStatus()).isEqualTo(2L);
-                                 assertThat(newJurorPool.getIsActive()).isTrue();
+            // check there is a new record created for reassigned juror
+            Optional<JurorPool> newJurorPoolOpt = jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(
+                                        owner, jurorNumber, targetPoolNumber);
+            assertThat(newJurorPoolOpt).isPresent();
+            JurorPool newJurorPool = newJurorPoolOpt.get();
+            assertThat(newJurorPool).isNotNull();
+            assertThat(newJurorPool.getStatus().getStatus()).isEqualTo(2L);
+            assertThat(newJurorPool.getIsActive()).isTrue();
 
             List<JurorHistory> historyEvents = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
             JurorHistory jurorHistory = historyEvents.stream().filter(hist ->
-                                                                          hist.getHistoryCode().equals(HistoryCodeMod.REASSIGN_POOL_MEMBER)).findFirst().orElse(null);
+                hist.getHistoryCode().equals(HistoryCodeMod.REASSIGN_POOL_MEMBER)).findFirst().orElse(null);
+            assertThat(jurorHistory).isNotNull();
+
+            assertThat(jurorHistory.getOtherInformation()).isEqualTo(targetCourt.getNameWithLocCode());
+            assertThat(jurorHistory.getOtherInformationRef()).isEqualTo(targetPoolNumber);
+        });
+
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/reassignJurors.sql"})
+    public void testReassignJurorCourtUserSameCourtLocation() throws Exception {
+
+        final String jurorNumber = "555555551";
+        final String targetPoolNumber = "415220505";
+        final String sourcePool = "415220504";
+        final String owner = "415";
+        final String locCode = "415";
+        List<String> jurorNumbers = List.of(jurorNumber);
+
+        //create a reassign jurors request DTO
+        JurorManagementRequestDto requestDto = createJurorManagementRequestDto(locCode, sourcePool,
+            locCode, targetPoolNumber, jurorNumbers, LocalDate.now());
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt(owner, List.of("415", "767")));
+
+        RequestEntity<?> requestEntity = new RequestEntity<>(requestDto, httpHeaders,
+            HttpMethod.PUT, URI.create("/api/v1/moj/manage-pool/reassign-jurors"));
+        ResponseEntity<?> response = restTemplate.exchange(requestEntity, String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        CourtLocation targetCourt = courtLocationRepository.findById(locCode).orElse(null);
+        assertThat(targetCourt).isNotNull();
+
+        executeInTransaction(() -> {
+            // check the old record is now inactive
+            Optional<JurorPool> oldJurorPoolOpt = jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(
+                owner, jurorNumber, sourcePool);
+            assertThat(oldJurorPoolOpt).isPresent();
+            JurorPool oldJurorPool = oldJurorPoolOpt.get();
+            assertThat(oldJurorPool).isNotNull();
+            assertThat(oldJurorPool.getStatus().getStatus()).isEqualTo(8L);
+            assertThat(oldJurorPool.getNextDate()).isNull();
+            // check reassign date is not set as its same court location
+            assertThat(oldJurorPool.getReassignDate()).isNull();
+
+            // check there is a new record created for reassigned juror
+            Optional<JurorPool> newJurorPoolOpt = jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(
+                owner, jurorNumber, targetPoolNumber);
+            assertThat(newJurorPoolOpt).isPresent();
+            JurorPool newJurorPool = newJurorPoolOpt.get();
+            assertThat(newJurorPool).isNotNull();
+            assertThat(newJurorPool.getStatus().getStatus()).isEqualTo(2L);
+            assertThat(newJurorPool.getIsActive()).isTrue();
+
+            List<JurorHistory> historyEvents = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
+            JurorHistory jurorHistory = historyEvents.stream().filter(hist ->
+                hist.getHistoryCode().equals(HistoryCodeMod.REASSIGN_POOL_MEMBER)).findFirst().orElse(null);
             assertThat(jurorHistory).isNotNull();
 
             assertThat(jurorHistory.getOtherInformation()).isEqualTo(targetCourt.getNameWithLocCode());

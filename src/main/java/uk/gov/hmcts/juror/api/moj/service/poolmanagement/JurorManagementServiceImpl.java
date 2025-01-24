@@ -37,11 +37,11 @@ import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Slf4j
@@ -390,7 +390,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
                                                           JurorManagementRequestDto requestDto) {
         log.trace("Enter validatePoolMembers");
         int requestedJurorCount = (int) requestDto.getJurorNumbers().stream().distinct().count();
-        final Map<String, Triple<String, String, String>> failedTransfers = new HashMap<>();
+        final Map<String, Triple<String, String, String>> failedTransfers = new ConcurrentHashMap<>();
 
         CourtLocation sendingCourtLocation = getSendingCourtLocation(requestDto.getSendingCourtLocCode());
 
