@@ -1,4 +1,6 @@
--- DROP FUNCTION juror_mod.util_report_pool_members_list(text, date, date);
+-- Updated the util_report_pool_members_list function to take into account a new reassign_date field in the juror_pool table.
+-- The reassign_date field is used to determine the service_end_date for jurors who have been reassigned to a new pool at a
+-- a different location code. The service_end_date is the earliest of the reassign_date, transfer_date, or completion_date.
 
 CREATE OR REPLACE FUNCTION juror_mod.util_report_pool_members_list(p_loc_code text, p_start_date date, p_end_date date)
  RETURNS TABLE(juror_number character varying, attendance_date date, return_date date, service_start_date date, service_end_date date, min_status integer)
