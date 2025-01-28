@@ -1405,7 +1405,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
         realignAttendanceType(appearance);
         appearance.setAppearanceConfirmed(Boolean.TRUE);
-
+        jurorHistoryService.createPoolAttendanceHistory(jurorPool, appearance);
         appearanceRepository.saveAndFlush(appearance);
         jurorExpenseService.applyDefaultExpenses(appearance, jurorPool.getJuror());
 
