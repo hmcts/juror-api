@@ -151,7 +151,7 @@ dependencies {
     testImplementation 'org.testcontainers:postgresql:1.19.8'
 
     // Validation
-    testImplementation 'org.wiremock:wiremock-standalone:3.8.0'
+    testImplementation 'org.wiremock:wiremock-standalone:3.10.0'
 }
 
 sonarqube {
