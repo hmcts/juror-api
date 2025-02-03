@@ -14,6 +14,7 @@ import java.util.List;
 
 @Slf4j
 @Service
+@SuppressWarnings("PMD")
 public class DashboardDeferralExcusalServiceImpl implements DashboardDeferralExcusalService {
 
 
