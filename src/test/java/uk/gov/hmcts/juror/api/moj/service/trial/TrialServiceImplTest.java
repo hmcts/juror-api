@@ -4,8 +4,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -71,6 +69,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.juror.api.TestUtils.staffBuilder;
 
@@ -315,9 +314,8 @@ class TrialServiceImplTest {
         verify(jurorHistoryService, times(panelMembers.size())).createReturnFromPanelHistory(any(), any());
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"09:00", "null"})
-    void testReturnJuryConfirmAttendance(String checkInTime) {
+    @Test
+    void testReturnJuryConfirmAttendance() {
         final String trialNumber = "T100000000";
         List<Panel> panelMembers = createPanelMembers(10, PanelResult.JUROR, trialNumber, IJurorStatus.JUROR);
         when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415"))
@@ -343,7 +341,8 @@ class TrialServiceImplTest {
         Appearance appearance = appearanceArgumentCaptor.getValue();
         assertThat(appearance.getSatOnJury()).as("Sat on Jury").isTrue();
         assertThat(appearance.getAttendanceType()).as("Attendance type").isEqualTo(AttendanceType.HALF_DAY);
-
+        verify(jurorExpenseService, times(panelMembers.size()))
+            .applyDefaultExpenses(any(), any());
     }
 
     @Test
@@ -373,6 +372,8 @@ class TrialServiceImplTest {
         Appearance appearance = appearanceArgumentCaptor.getValue();
         assertThat(appearance.getSatOnJury()).as("Sat on Jury").isTrue();
         assertThat(appearance.getAttendanceType()).as("Attendance type").isEqualTo(AttendanceType.FULL_DAY);
+        verify(jurorExpenseService, times(panelMembers.size()))
+            .applyDefaultExpenses(any(), any());
 
     }
 
@@ -403,7 +404,8 @@ class TrialServiceImplTest {
         Appearance appearance = appearanceArgumentCaptor.getValue();
         assertThat(appearance.getSatOnJury()).as("Sat on Jury").isTrue();
         assertThat(appearance.getAttendanceType()).as("Attendance type").isEqualTo(AttendanceType.FULL_DAY_LONG_TRIAL);
-
+        verify(jurorExpenseService, times(panelMembers.size()))
+            .applyDefaultExpenses(any(), any());
     }
 
     @Test
@@ -433,7 +435,8 @@ class TrialServiceImplTest {
         Appearance appearance = appearanceArgumentCaptor.getValue();
         assertThat(appearance.getSatOnJury()).as("Sat on Jury").isTrue();
         assertThat(appearance.getAttendanceType()).as("Attendance type").isEqualTo(AttendanceType.HALF_DAY_LONG_TRIAL);
-
+        verify(jurorExpenseService, times(panelMembers.size()))
+            .applyDefaultExpenses(any(), any());
     }
 
 
@@ -451,8 +454,9 @@ class TrialServiceImplTest {
         verify(panelRepository, times(1))
             .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
         verify(panelRepository, times(panelMembers.size())).saveAndFlush(any());
+        verify(jurorAppearanceService, never()).realignAttendanceType(anyString());
         verify(jurorHistoryService, never()).createJuryAttendanceHistory(any(), any(), any());
-        verify(jurorAppearanceService, times(panelMembers.size())).realignAttendanceType(any(Appearance.class));
+        verifyNoInteractions(jurorExpenseService);
     }
 
     @Test
