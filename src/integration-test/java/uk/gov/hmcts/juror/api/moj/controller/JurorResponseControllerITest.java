@@ -784,13 +784,13 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             assertThat(body).isNotNull();
             assertThat(body.getRecordCount()).as("Record count should be 5").isEqualTo(5);
 
-            // validate data - results should be in correct
+            // validate data - results should be in correct (desc order by received date)
             List<JurorResponseRetrieveResponseDto.JurorResponseDetails> records = body.getRecords();
-            validateData(records.get(0), JUROR_NUMBER_111222333, "TestOne",
+            validateData(records.get(4), JUROR_NUMBER_111222333, "TestOne",
                 "PersonOne", OFFICER_ASSIGNED_BUREAU_OFFICER,
                 ProcessingStatus.TODO, LocalDateTime.of(2023, 3, 8, 0, 0, 0));
 
-            validateData(records.get(1), "333222111", "TestTwo",
+            validateData(records.get(3), "333222111", "TestTwo",
                 "PersonTwo", OFFICER_ASSIGNED_BUREAU_OFFICER,
                 ProcessingStatus.TODO, LocalDateTime.of(2023, 3, 8, 10, 0, 0));
 
@@ -798,11 +798,11 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
                 "Person4Paper", OFFICER_ASSIGNED_BUREAU_OFFICER,
                 ProcessingStatus.CLOSED, LocalDateTime.of(2023, 3, 9, 0, 0, 0));
 
-            validateData(records.get(3), JUROR_NUMBER_555555555, "Test5Paper",
+            validateData(records.get(1), JUROR_NUMBER_555555555, "Test5Paper",
                 "Person5Paper", "JDoe",
                 ProcessingStatus.AWAITING_COURT_REPLY, LocalDateTime.of(2023, 3, 9, 10, 0, 0));
 
-            validateData(records.get(4), "352004504", "Test3",
+            validateData(records.get(0), "352004504", "Test3",
                 "Person3", OFFICER_ASSIGNED_BUREAU_OFFICER,
                 ProcessingStatus.TODO, LocalDateTime.of(2024, 3, 15, 0, 0, 0));
         }

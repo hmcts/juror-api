@@ -73,7 +73,7 @@ public class JurorResponseCommonRepositoryModImpl implements JurorResponseCommon
 
     private QueryResults<Tuple> fetchQueryResults(JPAQuery<Tuple> query, int resultsLimit) {
         return query
-            .orderBy(JUROR_RESPONSE_COMMON.dateReceived.asc())
+            .orderBy(JUROR_RESPONSE_COMMON.dateReceived.desc())
             .limit(resultsLimit)
             .fetchResults();
     }
