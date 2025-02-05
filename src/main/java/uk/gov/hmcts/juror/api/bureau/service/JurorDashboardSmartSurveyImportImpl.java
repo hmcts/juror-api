@@ -53,6 +53,7 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
      * Implements a specific job execution.
      * Process retrieval of satisfaction survey responses via the smart survey rest api.
      */
+    @SuppressWarnings("checkstyle:LineLength") // false positive
     @Override
     @Transactional
     public SchedulerServiceClient.Result process() {
@@ -189,7 +190,7 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
 
         // log the results for Dynatrace
         log.info(
-            "[JobKey: CRONBATCH_SMART_SURVEY_IMPORT]\n[{}]\nresult={},\nmetadata={records_inserted={},\nrecords_skipped={},\nerror_count={}}",
+            "[JobKey: CRONBATCH_SMART_SURVEY_IMPORT]\n[{}]\nresult={},\nmetadata={records_inserted={},records_skipped={},error_count={}}",
             DATE_TIME_FORMATTER.format(LocalDateTime.now()),
             status,
             dbInsertCount,

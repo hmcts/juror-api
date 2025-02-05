@@ -245,6 +245,7 @@ class JurorAppearanceServiceTest {
                 JUROR_123456789, JUROR_POOL_1);
 
         CourtLocation courtLocation = getCourtLocation();
+        poolRequest.setCourtLocation(courtLocation);
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findByLocCode(LOC_415);
         AddAttendanceDayDto dto = buildAddAttendanceDayDto();
 
@@ -2307,12 +2308,14 @@ class JurorAppearanceServiceTest {
 
             CourtLocation courtLocation = new CourtLocation();
             courtLocation.setOwner(COURT_OWNER);
+            courtLocation.setLocCode(COURT_LOCATION_CODE);
             when(courtLocationRepository.findByLocCode(COURT_LOCATION_CODE)).thenReturn(Optional.of(courtLocation));
             when(courtLocationRepository.findById(any())).thenReturn(Optional.of(courtLocation));
 
             PoolRequest poolRequest = PoolRequest.builder()
                 .poolNumber(POOL_NUMBER)
                 .returnDate(now().minusDays(20))
+                .courtLocation(courtLocation)
                 .build();
 
             JurorPool jurorPool = new JurorPool();
@@ -2357,12 +2360,14 @@ class JurorAppearanceServiceTest {
 
             CourtLocation courtLocation = new CourtLocation();
             courtLocation.setOwner(COURT_OWNER);
+            courtLocation.setLocCode(COURT_LOCATION_CODE);
             when(courtLocationRepository.findByLocCode(COURT_LOCATION_CODE)).thenReturn(Optional.of(courtLocation));
             when(courtLocationRepository.findById(any())).thenReturn(Optional.of(courtLocation));
 
             PoolRequest poolRequest = PoolRequest.builder()
                 .poolNumber(POOL_NUMBER)
                 .returnDate(now().minusDays(5))
+                .courtLocation(courtLocation)
                 .build();
 
             JurorPool jurorPool = new JurorPool();
@@ -2407,12 +2412,14 @@ class JurorAppearanceServiceTest {
 
             CourtLocation courtLocation = new CourtLocation();
             courtLocation.setOwner(COURT_OWNER);
+            courtLocation.setLocCode(COURT_LOCATION_CODE);
             when(courtLocationRepository.findByLocCode(COURT_LOCATION_CODE)).thenReturn(Optional.of(courtLocation));
             when(courtLocationRepository.findById(any())).thenReturn(Optional.of(courtLocation));
 
             PoolRequest poolRequest = PoolRequest.builder()
                 .poolNumber(POOL_NUMBER)
                 .returnDate(now().minusDays(20))
+                .courtLocation(courtLocation)
                 .build();
 
             JurorPool jurorPool = new JurorPool();
@@ -2573,12 +2580,14 @@ class JurorAppearanceServiceTest {
 
             CourtLocation courtLocation = new CourtLocation();
             courtLocation.setOwner(COURT_OWNER);
+            courtLocation.setLocCode(COURT_LOCATION_CODE);
             when(courtLocationRepository.findByLocCode(COURT_LOCATION_CODE)).thenReturn(Optional.of(courtLocation));
             when(courtLocationRepository.findById(any())).thenReturn(Optional.of(courtLocation));
 
             PoolRequest poolRequest = PoolRequest.builder()
                 .poolNumber(POOL_NUMBER)
                 .returnDate(now().minusDays(20))
+                .courtLocation(courtLocation)
                 .build();
 
             JurorPool jurorPool = new JurorPool();

@@ -176,32 +176,73 @@ public class JurorDetailsResponseDto {
         this.thirdParty.setUseJurorPhoneDetails(jurorThirdParty.isContactJurorByPhone());
     }
 
+
+
     /**
-     * The logic for setting the primary and secondary phone numbers is as follows:
-     * <p/>
-     * if we have all three numbers, mobile, home and work, use mobile as primary and home as secondary
-     * if we have two numbers, mobile and either home/work, use mobile as primary and the other as secondary
-     * if we have two numbers, home and work, use home as primary and work as secondary
-     * otherwise we have just one number and use that as primary.
+     * Sets the primary and secondary phone numbers based on the mobile validity of the provided phone numbers.
+     * The logic for setting the phone numbers is as follows:
+     * - If the mobile phone number is valid mobile, it is set as the primary phone.
+     * - If the home phone number is valid mobile and the mobile phone number is not valid,
+     * - the home phone is set as the primary phone.
+     * - If the home phone number is not valid mobile but provided, it is set as the secondary phone.
+     * - If the work phone number is valid mobile and neither the mobile nor home phone numbers are valid
+     * - the work phone is set as the primary phone
+     * - If the work phone number is not valid but provided, it is set as the secondary phone.
+     * - If none of the above conditions are met,
+     * - the mobile phone is set as the primary phone and the home phone as the secondary phone.
+     *
+     * @param homePhone   the home phone number
+     * @param mobilePhone the mobile phone number
+     * @param workPhone   the work phone number
      */
+
+
+
+
+
+
     private void setPhoneNumbers(String homePhone, String mobilePhone, String workPhone) {
-
-        if (mobilePhone != null) {
+        if (isValidMobilePhone(mobilePhone) & (mobilePhone != null)) {
             this.primaryPhone = mobilePhone;
-            if (homePhone != null) {
+            if (!isValidMobilePhone(homePhone) & (homePhone != null)) {
                 this.secondaryPhone = homePhone;
-            } else if (workPhone != null) {
-                this.secondaryPhone = workPhone;
             }
-        } else if (homePhone != null) {
+        } else if (isValidMobilePhone(homePhone) & (homePhone != null)) {
             this.primaryPhone = homePhone;
-            if (workPhone != null) {
-                this.secondaryPhone = workPhone;
+            if (!isValidMobilePhone(mobilePhone) & (mobilePhone != null)) {
+                this.secondaryPhone = mobilePhone;
             }
-        } else if (workPhone != null) {
+        } else if (!isValidMobilePhone(homePhone) & (homePhone != null)) {
+            this.primaryPhone = homePhone;
+            if (!isValidMobilePhone(mobilePhone) & (mobilePhone != null)) {
+                this.secondaryPhone = mobilePhone;
+            }
+        } else if (isValidMobilePhone(workPhone) & (workPhone != null)) {
             this.primaryPhone = workPhone;
-        }
+            if (!isValidMobilePhone(homePhone) & (homePhone != null)) {
+                this.secondaryPhone = homePhone;
+            }
+        } else if (!isValidMobilePhone(workPhone) & (workPhone != null)) {
+            this.secondaryPhone = workPhone;
+            if (!isValidMobilePhone(homePhone) & (homePhone != null)) {
+                this.primaryPhone = homePhone;
+            }
 
+        } else {
+            this.primaryPhone = mobilePhone;
+            this.secondaryPhone = homePhone;
+        }
+    }
+
+    private boolean isValidMobilePhone(String phone) {
+
+        if (phone == null) {
+            return false;
+        }
+        // Regular expression for validating mobile phone numbers
+        String mobilePhonePattern = "^07\\d{8,9}$";
+        return phone.matches(mobilePhonePattern);
     }
 
 }
+
