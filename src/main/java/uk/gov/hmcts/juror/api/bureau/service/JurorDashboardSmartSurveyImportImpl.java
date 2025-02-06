@@ -55,7 +55,6 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
      */
     @SuppressWarnings("checkstyle:LineLength") // false positive
     @Override
-    @SuppressWarnings("checkstyle:LineLength") // false
     @Transactional
     public SchedulerServiceClient.Result process() {
 
