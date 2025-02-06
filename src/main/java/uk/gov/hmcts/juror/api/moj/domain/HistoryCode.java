@@ -4,6 +4,7 @@ public enum HistoryCode {
 
     PHSI("Number of Summons Issued"),
     PHDI("Number of Deferrals in"),
+    PHRS("Number of Reminders Sent"),
     PDEF("Deferred Pool Member"),
     RSUM("Print Summons"),
     PREQ("Change Pool Request Details"),

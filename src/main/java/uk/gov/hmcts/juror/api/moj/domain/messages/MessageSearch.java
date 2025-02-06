@@ -56,6 +56,9 @@ public class MessageSearch implements IsPageable {
     @CourtLocationCode
     private String onlyDeferralsInCourt;
 
+    @JsonProperty("include_all_jurors_on_trial")
+    private boolean includeAllJurorsOnTrial;
+
     @Min(1)
     @JsonProperty("page_number")
     private long pageNumber;
