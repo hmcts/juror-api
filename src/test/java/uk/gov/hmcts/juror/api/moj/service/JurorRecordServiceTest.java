@@ -450,14 +450,14 @@ class JurorRecordServiceTest {
     }
 
     @Test
-    void testCheckJurorRecordDetailPhoneMobileAndHome() {
+    void testCheckJurorRecordDetailPhoneMobileAndHomeLandline() {
         String jurorNumber = "641500094";
 
         JurorPool jurorPool = createValidJurorPool(jurorNumber, COURT_OWNER);
         Juror juror = jurorPool.getJuror();
         juror.setPhoneNumber("0123456789");
         juror.setAltPhoneNumber("0987654321");
-        juror.setWorkPhone("0543219876");
+
 
         doReturn(jurorPool).when(jurorPoolRepository)
             .findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(), any());
@@ -466,20 +466,20 @@ class JurorRecordServiceTest {
             .getJurorDetails(buildPayload(COURT_OWNER), jurorNumber, LOC_CODE);
 
         assertThat(jurorDetailsResponseDto.getPrimaryPhone())
-            .as("Expect the primary phone number to be the mobile number")
-            .isEqualTo("0987654321");
-        assertThat(jurorDetailsResponseDto.getSecondaryPhone())
-            .as("Expect the secondary phone number to be the home number")
+            .as("Expect the primary phone number to be the phone number")
             .isEqualTo("0123456789");
+        assertThat(jurorDetailsResponseDto.getSecondaryPhone())
+            .as("Expect the secondary phone number to be the alternative number")
+            .isEqualTo("0987654321");
     }
 
     @Test
-    void testCheckJurorRecordDetailPhoneMobileAndWork() {
+    void testCheckJurorRecordDetailPhoneMobileAndHome() {
         String jurorNumber = "641500094";
         JurorPool jurorPool = createValidJurorPool(jurorNumber, COURT_OWNER);
         Juror juror = jurorPool.getJuror();
-        juror.setAltPhoneNumber("0987654321");
-        juror.setWorkPhone("0543219876");
+        juror.setAltPhoneNumber("0787654321");
+        juror.setPhoneNumber("0543219876");
 
         doReturn(jurorPool).when(jurorPoolRepository)
             .findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(), any());
@@ -489,9 +489,9 @@ class JurorRecordServiceTest {
 
         assertThat(jurorDetailsResponseDto.getPrimaryPhone())
             .as("Expect the primary phone number to be the mobile number")
-            .isEqualTo("0987654321");
+            .isEqualTo("0787654321");
         assertThat(jurorDetailsResponseDto.getSecondaryPhone())
-            .as("Expect the secondary phone number to be the work number")
+            .as("Expect the secondary phone number to be the home number")
             .isEqualTo("0543219876");
     }
 
@@ -512,9 +512,6 @@ class JurorRecordServiceTest {
         assertThat(jurorDetailsResponseDto.getPrimaryPhone())
             .as("Expect the primary phone number to be the home number")
             .isEqualTo("0123456789");
-        assertThat(jurorDetailsResponseDto.getSecondaryPhone())
-            .as("Expect the secondary phone number to be the work number")
-            .isEqualTo("0543219876");
     }
 
     @Test
@@ -564,6 +561,7 @@ class JurorRecordServiceTest {
         String jurorNumber = "641500094";
         JurorPool jurorPool = createValidJurorPool(jurorNumber, COURT_OWNER);
         Juror juror = jurorPool.getJuror();
+
         juror.setWorkPhone("0543219876");
 
         doReturn(jurorPool).when(jurorPoolRepository)
@@ -572,12 +570,9 @@ class JurorRecordServiceTest {
         JurorDetailsResponseDto jurorDetailsResponseDto = jurorRecordService.getJurorDetails(buildPayload(COURT_OWNER),
             jurorNumber, LOC_CODE);
 
-        assertThat(jurorDetailsResponseDto.getPrimaryPhone())
-            .as("Expect the primary phone number to be the work number")
-            .isEqualTo("0543219876");
         assertThat(jurorDetailsResponseDto.getSecondaryPhone())
             .as("Expect the secondary phone number to be null")
-            .isNull();
+            .isEqualTo("0543219876");
     }
 
     @Test

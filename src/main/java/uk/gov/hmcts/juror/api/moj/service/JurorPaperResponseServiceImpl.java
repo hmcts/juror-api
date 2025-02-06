@@ -71,7 +71,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
     private final StraightThroughProcessorService straightThroughProcessorService;
     private final JurorRepository jurorRepository;
     private final JurorPoolService jurorPoolService;
-    
+
     @Override
     @Transactional
     public JurorPaperResponseDetailDto getJurorPaperResponse(final String jurorNumber, BureauJwtPayload payload) {
@@ -171,9 +171,18 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         jurorPaperResponseDetailDto.setNotes(juror.getNotes());
 
         // copy third party
-        jurorPaperResponseDetailDto.setThirdParty(new JurorPaperResponseDetailDto.ThirdParty(
-            jurorPaperResponse.getRelationship(), jurorPaperResponse.getThirdPartyReason()
-        ));
+        jurorPaperResponseDetailDto.setThirdParty(
+            new JurorPaperResponseDetailDto.ThirdParty(
+            jurorPaperResponse.getThirdPartyFName(),
+            jurorPaperResponse.getThirdPartyLName(),
+            jurorPaperResponse.getMainPhone(),
+            jurorPaperResponse.getOtherPhone(),
+            jurorPaperResponse.getEmailAddress(),
+            jurorPaperResponse.getRelationship(),
+            jurorPaperResponse.getThirdPartyReason(),
+            jurorPaperResponse.getThirdPartyOtherReason(),
+            jurorPaperResponse.getJurorPhoneDetails(),
+            jurorPaperResponse.getJurorEmailDetails()));
 
         // copy address details
         copyAddressToDto(jurorPaperResponse, jurorPaperResponseDetailDto);
@@ -333,7 +342,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         juror.setResponseEntered(true);
         jurorRepository.save(juror);
 
-        log.info(String.format("Saved paper response for Juror %s", jurorNumber));
+        log.info(String.format("[Paper Response] Saved paper response for Juror %s", jurorNumber));
 
         jurorResponseCjsEmploymentRepository.saveAll(jurorPaperResponse.getCjsEmployments());
         log.info(String.format("Saved CJS employment for Juror %s", jurorNumber));
@@ -378,8 +387,16 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         // set up third party details
         JurorPaperResponseDto.ThirdParty thirdParty = paperResponseDto.getThirdParty();
         if (thirdParty != null) {
+            jurorPaperResponse.setThirdPartyFName(thirdParty.getThirdPartyFName());
+            jurorPaperResponse.setThirdPartyLName(thirdParty.getThirdPartyLName());
             jurorPaperResponse.setRelationship(thirdParty.getRelationship());
+            jurorPaperResponse.setMainPhone(thirdParty.getMainPhone());
+            jurorPaperResponse.setOtherPhone(thirdParty.getOtherPhone());
+            jurorPaperResponse.setEmailAddress(thirdParty.getEmailAddress());
             jurorPaperResponse.setThirdPartyReason(thirdParty.getThirdPartyReason());
+            jurorPaperResponse.setThirdPartyOtherReason(thirdParty.getThirdPartyOtherReason());
+            jurorPaperResponse.setJurorPhoneDetails(thirdParty.getUseJurorPhoneDetails());
+            jurorPaperResponse.setJurorEmailDetails(thirdParty.getUseJurorEmailDetails());
         }
 
         // set up eligibility criteria

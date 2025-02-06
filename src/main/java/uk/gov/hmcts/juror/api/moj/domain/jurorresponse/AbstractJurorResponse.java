@@ -15,6 +15,7 @@ import jakarta.persistence.Version;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -126,10 +127,43 @@ public class AbstractJurorResponse extends Address implements Serializable {
     @Column(name = "convictions")
     private Boolean convictions;
 
+    @Column(name = "thirdparty_fname")
+    private String thirdPartyFName;
+
+    @Column(name = "thirdparty_lname")
+    private String thirdPartyLName;
+
+    @Column(name = "relationship")
+    @Length(max = 50)
+    @Pattern(regexp = NO_PIPES_REGEX)
+    private String relationship;
+
+    @Column(name = "main_phone")
+    private String mainPhone;
+
+    @Column(name = "other_phone")
+    private String otherPhone;
+
+    @Column(name = "email_address")
+    private String emailAddress;
+
     @Column(name = "thirdparty_reason")
     @Pattern(regexp = NO_PIPES_REGEX)
     @Length(max = 1000)
     private String thirdPartyReason;
+
+    @Column(name = "thirdparty_other_reason")
+    @Pattern(regexp = NO_PIPES_REGEX)
+    private String thirdPartyOtherReason;
+
+    @Column(name = "juror_phone_details")
+    @Builder.Default
+    private Boolean jurorPhoneDetails = Boolean.TRUE;
+
+    @Column(name = "juror_email_details")
+    @Builder.Default
+    private Boolean jurorEmailDetails = Boolean.TRUE;
+
 
 
     @Column(name = "reasonable_adjustments_arrangements")
@@ -143,10 +177,7 @@ public class AbstractJurorResponse extends Address implements Serializable {
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
 
-    @Column(name = "relationship")
-    @Length(max = 50)
-    @Pattern(regexp = NO_PIPES_REGEX)
-    private String relationship;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "staff_login")

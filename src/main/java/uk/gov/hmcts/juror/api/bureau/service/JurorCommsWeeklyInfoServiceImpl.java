@@ -18,6 +18,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.utils.NotifyUtil;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,7 @@ public class JurorCommsWeeklyInfoServiceImpl implements BureauProcessService {
      * Processes entries in the Juror table and sends the appropriate email notifications to
      * the juror for juror where they have been transferred to court.
      */
+    @SuppressWarnings("checkstyle:LineLength") // false positive
     @Override
     @Transactional
     public SchedulerServiceClient.Result process() {
@@ -94,11 +96,25 @@ public class JurorCommsWeeklyInfoServiceImpl implements BureauProcessService {
         log.info("Informational Comms Service : Summary, identified:{}, sent:{}, failed:{}, no email address: {}",
             jurordetailList.size(), infoCommsSent, infoCommsfailed, noEmailAddress
         );
+
+        SchedulerServiceClient.Result.Status status = infoCommsfailed == 0
+            ? SchedulerServiceClient.Result.Status.SUCCESS
+            : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS;
+
+        // log the results for Dynatrace
+        log.info(
+            "[JobKey: CRONBATCH_WEEKLY_COMMS]\n[{}]\nresult={},\nmetadata={messages_sent={},messages_failed={},no_email_count={},invalid_email_count={}}",
+            DATE_TIME_FORMATTER.format(LocalDateTime.now()),
+            status,
+            infoCommsSent,
+            infoCommsfailed,
+            noEmailAddress,
+            invalidEmailAddress
+        );
+
         log.info("Informational Comms Processing : Finished - {}", dateFormat.format(new Date()));
         return new SchedulerServiceClient.Result(
-            infoCommsfailed == 0
-                ? SchedulerServiceClient.Result.Status.SUCCESS
-                : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS, null,
+            status, null,
             Map.of(
                 "INFO_COMMS_SENT", String.valueOf(infoCommsSent),
                 "INFO_COMMS_FAILED", String.valueOf(infoCommsfailed),

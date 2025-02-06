@@ -117,6 +117,9 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             throw new MojException.Forbidden("Invalid access to juror pool", null);
         }
 
+        // check if the location of the jurorPool is the same as the locationCode
+        verifyJurorPoolLocation(dto.getLocationCode(), jurorPool);
+
         final boolean isCompleted = jurorPool.getStatus().getStatus() == IJurorStatus.COMPLETED;
 
         CourtLocation courtLocation = courtLocationRepository.findByLocCode(dto.getLocationCode()).orElseThrow(
@@ -145,6 +148,13 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         jurorHistoryService.createPoolAttendanceHistory(jurorPool, appearance);
         jurorExpenseService.applyDefaultExpenses(List.of(appearance));
         appearanceRepository.saveAndFlush(appearance);
+    }
+
+    private static void verifyJurorPoolLocation(String locationCode, JurorPool jurorPool) {
+        if (!jurorPool.getPool().getCourtLocation().getLocCode().equals(locationCode)) {
+            throw new MojException.BusinessRuleViolation("Juror pool location does not match the location code",
+                                             MojException.BusinessRuleViolation.ErrorCode.INVALID_JUROR_POOL_LOCATION);
+        }
     }
 
     private boolean hasAttendance(String locCode, String jurorNumber, LocalDate attendanceDate) {
@@ -532,6 +542,10 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             () -> new MojException.NotFound("Court location " + locationCode + " not found", null)
         );
         JurorPool jurorPool = validateJurorPoolAndStartDate(request, nonAttendanceDate);
+
+        // check if the location of the jurorPool is the same as the locationCode
+        verifyJurorPoolLocation(locationCode, jurorPool);
+
         checkExistingAttendance(request, nonAttendanceDate);
 
         // create a new Appearance record for juror
@@ -762,21 +776,6 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             validateBothCheckInAndOutTimeNotSet(checkInTime, checkOutTime);
         }
 
-    }
-
-    private static UpdateAttendanceDto.CommonData validateDeleteRequest(UpdateAttendanceDto request) {
-        final UpdateAttendanceDto.CommonData commonData = request.getCommonData();
-
-        if (request.getJuror().size() > 1 ^ commonData.getSingleJuror().equals(Boolean.FALSE)) {
-            throw new MojException.BadRequest("Cannot delete multiple juror attendance records",
-                null);
-        }
-
-        if (!commonData.getStatus().equals(UpdateAttendanceStatus.DELETE)) {
-            throw new MojException.BadRequest("Cannot delete attendance records for status "
-                + commonData.getStatus(), null);
-        }
-        return commonData;
     }
 
     private List<JurorsToDismissResponseDto.JurorsToDismissData> buildJurorsToDismissResponse(
@@ -1406,7 +1405,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
         realignAttendanceType(appearance);
         appearance.setAppearanceConfirmed(Boolean.TRUE);
-
+        jurorHistoryService.createPoolAttendanceHistory(jurorPool, appearance);
         appearanceRepository.saveAndFlush(appearance);
         jurorExpenseService.applyDefaultExpenses(appearance, jurorPool.getJuror());
 
