@@ -74,7 +74,9 @@ public class ExcusalRefusalLetterListRepositoryImpl implements IExcusalRefusalLe
         // run query to get the most recent excusal refused date for each juror
         List<Tuple> printedDates = getDatePrinted(owner, poolNumbers);
 
-        updateDatePrinted(searchCriteria, excusalRefusedLetterListMap, printedDates);
+        if (!printedDates.isEmpty()) {
+            updateDatePrinted(searchCriteria, excusalRefusedLetterListMap, printedDates);
+        }
 
         // sort by date printed (need unprinted letters to be at the top)
         return excusalRefusedLetterListMap.values().stream().sorted(DATE_PRINT_COMPARATOR).toList();
@@ -109,13 +111,19 @@ public class ExcusalRefusalLetterListRepositoryImpl implements IExcusalRefusalLe
             if (excusalRefusedLetterListMap.containsKey(jurorNumber)) {
                 ExcusalRefusedLetterList excusalRefusedLetterList = excusalRefusedLetterListMap.get(jurorNumber);
                 LocalDateTime datePrinted = tuple.get(QJurorHistory.jurorHistory.dateCreated);
-                LocalDate datePrintedDateOnly = datePrinted.toLocalDate();
-                if (datePrintedDateOnly.equals(excusalRefusedLetterList.getDateExcused())
-                    || datePrintedDateOnly.isAfter(excusalRefusedLetterList.getDateExcused())) {
-                    if (!searchCriteria.includePrinted()) {
-                        excusalRefusedLetterListMap.remove(jurorNumber);
-                    } else {
-                        excusalRefusedLetterList.setDatePrinted(datePrinted);
+
+                if (datePrinted == null) {
+                    // do nothing
+                    return;
+                } else {
+                    LocalDate datePrintedDateOnly = datePrinted.toLocalDate();
+                    if (datePrintedDateOnly.equals(excusalRefusedLetterList.getDateExcused())
+                        || datePrintedDateOnly.isAfter(excusalRefusedLetterList.getDateExcused())) {
+                        if (!searchCriteria.includePrinted()) {
+                            excusalRefusedLetterListMap.remove(jurorNumber);
+                        } else {
+                            excusalRefusedLetterList.setDatePrinted(datePrinted);
+                        }
                     }
                 }
             }
