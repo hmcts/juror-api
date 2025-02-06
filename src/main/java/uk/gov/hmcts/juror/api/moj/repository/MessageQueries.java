@@ -9,8 +9,6 @@ import uk.gov.hmcts.juror.api.moj.domain.messages.QMessage;
 public class MessageQueries {
 
     private static final String MESSAGE_NOT_READ = "NR";
-    private static final String MESSAGE_READ = "MR";
-
 
     private MessageQueries() {
 

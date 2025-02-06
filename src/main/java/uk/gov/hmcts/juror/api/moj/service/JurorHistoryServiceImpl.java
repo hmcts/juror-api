@@ -246,7 +246,7 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
 
     @Override
     public void createSummonsReminderLetterHistory(JurorPool jurorPool) {
-        registerHistorySystem(jurorPool, HistoryCodeMod.NON_RESPONDED_LETTER, "Reminder letter printed");
+        registerHistoryLoginUser(jurorPool, HistoryCodeMod.NON_RESPONDED_LETTER, "Reminder letter printed");
     }
 
     @Override

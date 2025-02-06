@@ -31,6 +31,7 @@ import uk.gov.service.notify.SendSmsResponse;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -66,6 +67,7 @@ public class MessagesServiceImpl implements BureauProcessService {
      */
     @Override
     @Transactional
+    @SuppressWarnings("checkstyle:LineLength") // false positive
     public SchedulerServiceClient.Result process() {
         // Process court comms
         SimpleDateFormat dateFormat = new SimpleDateFormat();
@@ -221,11 +223,28 @@ public class MessagesServiceImpl implements BureauProcessService {
             }
         }
 
+        SchedulerServiceClient.Result.Status status = errorCount == 0
+            ? SchedulerServiceClient.Result.Status.SUCCESS
+            : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS;
+
+        // log the results for Dynatrace
+        log.info(
+            "[JobKey: CRONBATCH_COURT_COMMS]\n[{}]\nresult={},\nmetadata={total_messages_to_send={},emails_sent={},sms_sent={},invalid_phone_count={},invalid_email_count={},error_count={},missing_api_key_count={},missing_email_and_phone={}}",
+            DATE_TIME_FORMATTER.format(LocalDateTime.now()),
+            status,
+            messageDetailList.size(),
+            emailSuccess,
+            smsSuccess,
+            invalidPhoneCount,
+            invalidEmailCount,
+            errorCount,
+            missingApiKeyCount,
+            missingEmailAndPhone
+        );
+
         log.info("Court Comms Processing : Finished - {}", dateFormat.format(new Date()));
         return new SchedulerServiceClient.Result(
-            errorCount == 0
-                ? SchedulerServiceClient.Result.Status.SUCCESS
-                : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS, null,
+            status, null,
             Map.of(
                 "TOTAL_MESSAGES_TO_SEND", String.valueOf(messageDetailList.size()),
                 "ERROR_COUNT", String.valueOf(errorCount),
@@ -233,7 +252,6 @@ public class MessagesServiceImpl implements BureauProcessService {
                 "MISSING_EMAIL_AND_PHONE", String.valueOf(missingEmailAndPhone),
                 "EMAIL_SUCCESS", String.valueOf(emailSuccess),
                 "SMS_SUCCESS", String.valueOf(smsSuccess),
-
                 "INVALID_PHONE_COUNT", String.valueOf(invalidPhoneCount),
                 "INVALID_EMAIL_COUNT", String.valueOf(invalidEmailCount)
             ));
@@ -298,6 +316,7 @@ public class MessagesServiceImpl implements BureauProcessService {
 
     }
 
+    @SuppressWarnings("PMD.LinguisticNaming")
     public Proxy setUpConnection() {
         final NotifyConfigurationProperties.Proxy setUpProxy = notifyConfigurationProperties.getProxy();
         if (setUpProxy != null && setUpProxy.isEnabled()) {
@@ -311,6 +330,7 @@ public class MessagesServiceImpl implements BureauProcessService {
         return proxy;
     }
 
+    @SuppressWarnings("PMD.LinguisticNaming")
     private void updateMessageFlag(Message messagesDetail) {
         messageRepository.save(messagesDetail);
     }
@@ -321,6 +341,7 @@ public class MessagesServiceImpl implements BureauProcessService {
         return notifyRegionKeys;
     }
 
+    @SuppressWarnings("PMD.LinguisticNaming")
     public List<String> setUpRegionIds() {
         List<CourtRegionMod> courtRegions = courtRegionModRepository.findAllByOrderByRegionIdAsc();
         List<String> regionIds = new ArrayList<>();

@@ -405,6 +405,12 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
 
     private void mergeThirdPartyDetails(AbstractJurorResponse abstractJurorResponse, Juror juror) {
         if (StringUtils.isNotBlank(abstractJurorResponse.getThirdPartyReason())
+            || StringUtils.isNotBlank(abstractJurorResponse.getThirdPartyOtherReason())
+            || StringUtils.isNotBlank(abstractJurorResponse.getEmailAddress())
+            || StringUtils.isNotBlank(abstractJurorResponse.getMainPhone())
+            || StringUtils.isNotBlank(abstractJurorResponse.getOtherPhone())
+            || StringUtils.isNotBlank(abstractJurorResponse.getFirstName())
+            || StringUtils.isNotBlank(abstractJurorResponse.getLastName())
             || StringUtils.isNotBlank(abstractJurorResponse.getRelationship())) {
             if (abstractJurorResponse instanceof DigitalResponse digitalResponse) {
                 jurorThirdPartyService.createOrUpdateThirdParty(juror, digitalResponse);
@@ -414,7 +420,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
 
                         @Override
                         public String getThirdPartyOtherReason() {
-                            return null;
+                            return abstractJurorResponse.getThirdPartyOtherReason();
                         }
 
                         @Override
@@ -424,17 +430,17 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
 
                         @Override
                         public String getThirdPartyEmailAddress() {
-                            return null;
+                            return abstractJurorResponse.getEmailAddress();
                         }
 
                         @Override
                         public String getThirdPartyOtherPhone() {
-                            return null;
+                            return abstractJurorResponse.getOtherPhone();
                         }
 
                         @Override
                         public String getThirdPartyMainPhone() {
-                            return null;
+                            return abstractJurorResponse.getMainPhone();
                         }
 
                         @Override
@@ -444,22 +450,22 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
 
                         @Override
                         public String getThirdPartyLastName() {
-                            return null;
+                            return abstractJurorResponse.getThirdPartyLName();
                         }
 
                         @Override
                         public String getThirdPartyFirstName() {
-                            return null;
+                            return abstractJurorResponse.getThirdPartyFName();
                         }
 
                         @Override
                         public boolean isContactJurorByEmail() {
-                            return true;
+                            return Boolean.TRUE.equals(abstractJurorResponse.getJurorEmailDetails());
                         }
 
                         @Override
                         public boolean isContactJurorByPhone() {
-                            return true;
+                            return Boolean.TRUE.equals(abstractJurorResponse.getJurorPhoneDetails());
                         }
                     });
             }
