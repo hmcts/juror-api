@@ -8,13 +8,16 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolHistoryListDto;
+import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.PoolHistory;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.PoolHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,6 +58,18 @@ public class PoolHistoryServiceImpl implements PoolHistoryService {
         }
 
         return new PoolHistoryListDto(poolHistoryDataDtoList);
+    }
+
+    @Override
+    public void createPoolHistory(String poolNumber, HistoryCode historyCode, String otherInfo) {
+        PoolHistory poolHistory = new PoolHistory();
+        poolHistory.setPoolNumber(poolNumber);
+        poolHistory.setHistoryCode(historyCode);
+        poolHistory.setUserId(SecurityUtil.getActiveLogin());
+        poolHistory.setOtherInformation(otherInfo);
+        poolHistory.setHistoryDate(LocalDateTime.now());
+        poolHistoryRepository.save(poolHistory);
+
     }
 
     private void checkAccessForCurrentUser(String owner, PoolRequest poolRequest) {

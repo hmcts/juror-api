@@ -14,6 +14,7 @@ import java.util.List;
 
 @Slf4j
 @Service
+@SuppressWarnings("PMD")
 public class DashboardDeferralExcusalServiceImpl implements DashboardDeferralExcusalService {
 
 
@@ -52,25 +53,25 @@ public class DashboardDeferralExcusalServiceImpl implements DashboardDeferralExc
             new DashboardDeferralExcusalResponseDto.DeferralExcusalValues();
 
 
-        if (deferralSelection.equals("Y")) {
+        if ("Y".equals(deferralSelection)) {
             //Gets all records from juror.digital.STATS_DEFERRALS
             final List<StatsDeferrals> statsDeferrals = new ArrayList<>();
 
-            if ("Y".equals(bureauSelection) & courtSelection.equals("Y")) {
+            if ("Y".equals(bureauSelection) && "Y".equals(courtSelection)) {
                 statsDeferrals.addAll(dashboardDeferralExcusalDataService.getStatsDeferrals(
                     startYearWeek,
                     endYearWeek
                 ));
                 deferralExcusalValues.setDeferralStats(statsDeferrals);
                 //Gets all COURT records from juror.digital.STATS_DEFERRALS
-            } else if (courtSelection.equals("Y")) {
+            } else if ("Y".equals(courtSelection)) {
                 statsDeferrals.addAll(dashboardDeferralExcusalDataService.getStatsCourtDeferrals(
                     startYearWeek,
                     endYearWeek
                 ));
                 deferralExcusalValues.setDeferralStats(statsDeferrals);
                 //Gets all BUREAU records from juror.digital.STATS_DEFERRALS
-            } else if (bureauSelection.equals("Y")) {
+            } else if ("Y".equals(bureauSelection)) {
                 statsDeferrals.addAll(dashboardDeferralExcusalDataService.getStatsBureauDeferrals(
                     startYearWeek,
                     endYearWeek
