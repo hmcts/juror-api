@@ -43,6 +43,7 @@ import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.service.AppearanceCreationService;
 import uk.gov.hmcts.juror.api.moj.service.CompleteServiceService;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
+import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.utils.PanelUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
@@ -86,6 +87,7 @@ public class TrialServiceImpl implements TrialService {
     private final JurorHistoryService jurorHistoryService;
     private final AppearanceCreationService appearanceCreationService;
     private final JurorService juror;
+    private final JurorExpenseService jurorExpenseService;
 
     private static final String CANNOT_FIND_TRIAL_ERROR_MESSAGE = "Cannot find trial with number: %s for "
         + "court location %s";
@@ -431,6 +433,7 @@ public class TrialServiceImpl implements TrialService {
             juryAttendanceNumber = appearances.stream()
                 .map(Appearance::getAttendanceAuditNumber)
                 .filter(ObjectUtils::isNotEmpty)
+                .filter(auditNumber -> auditNumber.startsWith(juryAttendancePrefix))
                 .findFirst().orElse(juryAttendanceNumber);
         }
 
@@ -445,28 +448,36 @@ public class TrialServiceImpl implements TrialService {
                 Appearance appearance =
                     getJurorAppearanceForDate(jurorPool, returnJuryDto.getAttendanceDate(), locationCode);
 
+                appearance.setTrialNumber(trialNumber);
+                appearance.setSatOnJury(true);
+
                 // only apply check in time for those that have not been checked in yet
-                if (appearance.getTimeIn() == null) {
+                if (appearance.getTimeIn() == null && StringUtils.isNotEmpty(returnJuryDto.getCheckIn())) {
                     appearance.setAppearanceStage(AppearanceStage.CHECKED_IN);
                     appearance.setTimeIn(LocalTime.parse(returnJuryDto.getCheckIn()));
                     log.debug("setting time in for juror %s".formatted(jurorNumber));
+                    jurorAppearanceService.saveAppearance(appearance);
                 }
 
+                // only confirm attendance if check out time is provided
                 if (StringUtils.isNotEmpty(returnJuryDto.getCheckOut())) {
-                    if (appearance.getTimeOut() == null) {
-                        appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
-                        appearance.setTimeOut(LocalTime.parse(returnJuryDto.getCheckOut()));
-                        log.debug("setting time out for juror %s".formatted(jurorNumber));
-                    }
+
+                    appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
+                    appearance.setTimeOut(LocalTime.parse(returnJuryDto.getCheckOut()));
+                    log.debug("setting time out for juror %s".formatted(jurorNumber));
+
                     if (appearance.getAttendanceAuditNumber() == null) {
                         //Only give them an attendance number if they were checked out via this process
                         appearance.setAttendanceAuditNumber(juryAttendanceNumber);
                         jurorHistoryService.createJuryAttendanceHistory(jurorPool, appearance, panel);
                     }
+
+                    appearance.setAppearanceConfirmed(true);
+                    jurorAppearanceService.realignAttendanceType(appearance);
+                    Appearance appearanceSaved = getJurorAppearanceForDate(jurorPool, returnJuryDto.getAttendanceDate(),
+                                                                           locationCode);
+                    jurorExpenseService.applyDefaultExpenses(appearanceSaved, jurorPool.getJuror());
                 }
-                appearance.setTrialNumber(trialNumber);
-                appearance.setSatOnJury(true);
-                jurorAppearanceService.realignAttendanceType(appearance);
             }
 
             panel.setResult(PanelResult.RETURNED);
