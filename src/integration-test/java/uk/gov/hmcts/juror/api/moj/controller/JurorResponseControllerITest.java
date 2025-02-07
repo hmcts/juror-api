@@ -666,15 +666,20 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
 
             JurorResponseRetrieveResponseDto body = response.getBody();
             assertThat(body).isNotNull();
-            assertThat(body.getRecordCount()).as("Record count should be 1").isEqualTo(1);
+            assertThat(body.getRecordCount()).as("Record count should be 2").isEqualTo(2);
 
             // validate data
             List<JurorResponseRetrieveResponseDto.JurorResponseDetails> records = body.getRecords();
 
-            validateData(records.get(0), JUROR_NUMBER_222222222, "Test4Paper",
+            validateData(records.get(0), "666666666", "Test6Paper",
+                         "Person6Paper", OFFICER_ASSIGNED_BUREAU_OFFICER,
+                         ProcessingStatus.CLOSED, LocalDateTime.of(2023, 3, 10, 0, 0, 0));
+
+            validateData(records.get(1), JUROR_NUMBER_222222222, "Test4Paper",
                 "Person4Paper", OFFICER_ASSIGNED_BUREAU_OFFICER,
-                ProcessingStatus.CLOSED, LocalDateTime.of(2023, 3, 9, 0, 0, 0));
-        }
+                         ProcessingStatus.CLOSED, LocalDateTime.of(2023, 3, 9, 0, 0, 0));
+
+       }
 
         @Test
         @DisplayName("Retrieve juror response, team leader - advanced search for filter Processing Status Awaiting "
@@ -782,7 +787,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
 
             JurorResponseRetrieveResponseDto body = response.getBody();
             assertThat(body).isNotNull();
-            assertThat(body.getRecordCount()).as("Record count should be 5").isEqualTo(5);
+            assertThat(body.getRecordCount()).as("Record count should be 6").isEqualTo(6);
 
             // validate data - results should be in correct
             List<JurorResponseRetrieveResponseDto.JurorResponseDetails> records = body.getRecords();
@@ -802,9 +807,40 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
                 "Person5Paper", "JDoe",
                 ProcessingStatus.AWAITING_COURT_REPLY, LocalDateTime.of(2023, 3, 9, 10, 0, 0));
 
-            validateData(records.get(4), "352004504", "Test3",
-                "Person3", OFFICER_ASSIGNED_BUREAU_OFFICER,
-                ProcessingStatus.TODO, LocalDateTime.of(2024, 3, 15, 0, 0, 0));
+            validateData(records.get(4), "666666666", "Test6Paper",
+                "Person6Paper", OFFICER_ASSIGNED_BUREAU_OFFICER,
+                         ProcessingStatus.CLOSED, LocalDateTime.of(2023, 3, 10, 0, 0, 0));
+
+            validateData(records.get(5), "352004504", "Test3",
+                         "Person3", OFFICER_ASSIGNED_BUREAU_OFFICER,
+                         ProcessingStatus.TODO, LocalDateTime.of(2024, 3, 15, 0, 0, 0));
+        }
+
+        @Test
+        @DisplayName("Retrieve juror response, bureau team leader user - filter by pool number is ok")
+        void bureauTeamLeaderFilterByPoolNumberCloseResponses() {
+            JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
+            request.setPoolNumber("415220502");
+            request.setProcessingStatus(Collections.singletonList(ProcessingStatus.CLOSED));
+
+            setHeaders(OWNER_400, TEAM_LEADER, UserType.BUREAU, Role.MANAGER);
+            ResponseEntity<JurorResponseRetrieveResponseDto> response = templateExchangeRetrieve(request, OK);
+
+            JurorResponseRetrieveResponseDto body = response.getBody();
+            assertThat(body).isNotNull();
+            assertThat(body.getRecordCount()).as("Record count should be 2").isEqualTo(2);
+
+            // validate data - results should be in correct (desc order by received date)
+            List<JurorResponseRetrieveResponseDto.JurorResponseDetails> records = body.getRecords();
+
+            validateData(records.get(0), "666666666", "Test6Paper",
+                         "Person6Paper", OFFICER_ASSIGNED_BUREAU_OFFICER,
+                         ProcessingStatus.CLOSED, LocalDateTime.of(2023, 3, 10, 0, 0, 0));
+
+            validateData(records.get(1), "222222222", "Test4Paper",
+                         "Person4Paper", OFFICER_ASSIGNED_BUREAU_OFFICER,
+                         ProcessingStatus.CLOSED, LocalDateTime.of(2023, 3, 9, 0, 0, 0));
+
         }
 
         @Test
