@@ -679,7 +679,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
                 "Person4Paper", OFFICER_ASSIGNED_BUREAU_OFFICER,
                          ProcessingStatus.CLOSED, LocalDateTime.of(2023, 3, 9, 0, 0, 0));
 
-       }
+        }
 
         @Test
         @DisplayName("Retrieve juror response, team leader - advanced search for filter Processing Status Awaiting "
