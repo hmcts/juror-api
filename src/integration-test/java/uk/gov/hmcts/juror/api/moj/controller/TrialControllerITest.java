@@ -707,7 +707,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/trial/ReturnJuryPanel.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/trial/ReturnJuryPanel.sql", "/db/JurorExpenseControllerITest_expenseRates.sql"})
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     void testReturnJuryConfirmAttendance() {
         final String url = "/api/v1/moj/trial/return-jury?"
@@ -826,7 +826,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/trial/ReturnJuryPanel.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/trial/ReturnJuryPanel.sql", "/db/JurorExpenseControllerITest_expenseRates.sql"})
     @SuppressWarnings({
         "PMD.AvoidInstantiatingObjectsInLoops",
         "PMD.JUnitTestsShouldIncludeAssert"//False positive

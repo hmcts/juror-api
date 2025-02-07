@@ -59,20 +59,20 @@ insert into juror_mod.juror_pool(owner, juror_number, pool_number, status, is_ac
 ('415', '415000016', '415231104', 4, true,'415'),
 ('415', '415000017', '415231104', 4, true,'415');
 
-insert into juror_mod.appearance (attendance_date, juror_number,loc_code, time_in, time_out, non_attendance) values
-(current_date, '415000001', '415', current_time,null,false),
-(current_date, '415000002', '415', current_time,null,false),
-(current_date, '415000003', '415', current_time,null,false),
-(current_date, '415000004', '415', current_time,null,false),
-(current_date, '415000005', '415', current_time,null,false),
-(current_date, '415000006', '415', current_time,current_time,false),
-(current_date, '415000007', '415', current_time,current_time,false),
-(current_date, '415000008', '415', current_time,current_time,false),
-(current_date, '415000009', '415', current_time,current_time,false),
-(current_date, '415000010', '415', current_time,current_time,false),
-(current_date, '415000011', '415', current_time,current_time,false),
-(current_date, '415000012', '415', current_time,current_time,false),
-(current_date, '415000013', '415', current_time,current_time,false);
+insert into juror_mod.appearance (attendance_date, juror_number,loc_code, time_in, time_out, non_attendance, attendance_type) values
+(current_date, '415000001', '415', current_time,null,false, 'FULL_DAY'),
+(current_date, '415000002', '415', current_time,null,false, 'FULL_DAY'),
+(current_date, '415000003', '415', current_time,null,false, 'FULL_DAY'),
+(current_date, '415000004', '415', current_time,null,false, 'FULL_DAY'),
+(current_date, '415000005', '415', current_time,null,false, 'FULL_DAY'),
+(current_date, '415000006', '415', current_time,current_time + interval '7 hours',false, 'FULL_DAY'),
+(current_date, '415000007', '415', current_time,current_time + interval '7 hours',false, 'FULL_DAY'),
+(current_date, '415000008', '415', current_time,current_time + interval '7 hours',false, 'FULL_DAY'),
+(current_date, '415000009', '415', current_time,current_time + interval '7 hours',false, 'FULL_DAY'),
+(current_date, '415000010', '415', current_time,current_time + interval '7 hours',false, 'FULL_DAY'),
+(current_date, '415000011', '415', current_time,current_time + interval '7 hours',false, 'FULL_DAY'),
+(current_date, '415000012', '415', current_time,current_time + interval '7 hours',false, 'FULL_DAY'),
+(current_date, '415000013', '415', current_time,current_time + interval '7 hours',false, 'FULL_DAY');
 
 insert into juror_mod.judge (owner, code, description) values
 ('415', '0001', 'judge dredd'),
