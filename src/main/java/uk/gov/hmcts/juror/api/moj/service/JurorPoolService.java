@@ -19,5 +19,7 @@ public interface JurorPoolService {
 
     JurorPool getLastJurorPoolForJuror(String locCode, String jurorNumber);
 
+    JurorPool getJurorPoolForJuror(String jurorNumber, String poolNumber);
+
     JurorPool save(JurorPool jurorPool);
 }
