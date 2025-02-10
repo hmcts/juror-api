@@ -772,13 +772,13 @@ class JurorExpenseServiceTest {
             verify(dailyExpense, times(1)).getFinancialLoss();
             verify(dailyExpense, times(1)).getTime();
             verify(dailyExpense, times(1)).getTravel();
-            verify(dailyExpense, times(1)).getFoodAndDrink();
+            verify(dailyExpense, times(3)).getFoodAndDrink();
 
 
             verify(time, times(1)).getTravelTime();
             verify(time, times(1)).getPayAttendance();
 
-            verifyNoMoreInteractions(jurorExpenseService, appearance, financialLoss, time, travel, food, dailyExpense);
+            verifyNoMoreInteractions(jurorExpenseService, appearance, financialLoss, time, travel, dailyExpense);
         }
 
         @Test
