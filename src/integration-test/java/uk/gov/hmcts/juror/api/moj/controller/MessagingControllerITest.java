@@ -1167,7 +1167,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
         }
 
-         class Positive {
+        class Positive {
 
             private final boolean isSimple;
 

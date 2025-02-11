@@ -5,7 +5,6 @@ import lombok.Getter;
 @Getter
 public enum HistoryCodeMod {
 
-    MANUAL_JUROR_AUTHORISATION("AUTH", "Manual Juror Authorisation"),
     POLICE_CHECK_UNDO("POLX", "Police Check - Undo"),
     NOTIFY_MESSAGE_REQUESTED("RNOT", "Notify Message Requested"),
     INCLUDED_IN_MESSAGE_EXPORT_FILE("RMES", "Included in Message Export File"),
@@ -17,6 +16,7 @@ public enum HistoryCodeMod {
     AWAITING_FURTHER_INFORMATION("AWFI", "Awaiting Further Information"),
     CHECK_ID("CHID", "Check ID"),
     CHANGE_DEFERRAL_RECORD("DCHG", "Change Deferral Record"),
+    ATTENDANCE_DELETED("DELA", "Attendance Deleted"),
     POOL_DELETED("DELP", "Pool Deleted"),
     RETURN_TO_VOTERS("DRET", "Return to Voters"),
     APPEARANCE_PAYMENTS("FADD", "Appearance Payments"),
