@@ -430,14 +430,27 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     public FinancialLossWarning validateAndUpdateFinancialLossExpenseLimit(Appearance appearance) {
         ExpenseRates expenseRates = getCurrentExpenseRates(false);
         PayAttendanceType attendanceType = appearance.getPayAttendanceType();
-        boolean isLongTrial = Boolean.TRUE.equals(appearance.isLongTrialDay());
+
+        boolean isLongTrial = appearance.getAttendanceType() == AttendanceType.FULL_DAY_LONG_TRIAL;
+        boolean isExtraLongTrial = appearance.getAttendanceType() == AttendanceType.FULL_DAY_EXTRA_LONG_TRIAL;
+
         BigDecimal financialLossLimit = switch (attendanceType) {
-            case FULL_DAY -> isLongTrial
-                ? expenseRates.getLimitFinancialLossFullDayLongTrial()
-                : expenseRates.getLimitFinancialLossFullDay();
-            case HALF_DAY -> isLongTrial
-                ? expenseRates.getLimitFinancialLossHalfDayLongTrial()
-                : expenseRates.getLimitFinancialLossHalfDay();
+            case FULL_DAY -> {
+                if (isExtraLongTrial) {
+                    yield expenseRates.getLimitFinancialLossFullDayExtraLongTrial();
+                } else if(isLongTrial) {
+                    yield expenseRates.getLimitFinancialLossFullDayExtraLongTrial();
+                } else {
+                    yield expenseRates.getLimitFinancialLossFullDay();
+                }}
+            case HALF_DAY -> {
+                if (isExtraLongTrial) {
+                    yield expenseRates.getLimitFinancialLossHalfDayExtraLongTrial();
+                } else if(isLongTrial) {
+                    yield expenseRates.getLimitFinancialLossHalfDayLongTrial();
+                } else {
+                    yield expenseRates.getLimitFinancialLossHalfDay();
+                }}
         };
         BigDecimal effectiveLossOfEarnings = getOrZero(appearance.getLossOfEarningsDue());
         BigDecimal effectiveExtraCareCost = getOrZero(appearance.getChildcareDue());

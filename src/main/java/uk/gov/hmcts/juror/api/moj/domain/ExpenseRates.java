@@ -54,6 +54,10 @@ public class ExpenseRates {
     private BigDecimal limitFinancialLossHalfDayLongTrial;
     @Column(name = "limit_financial_loss_full_day_long_trial")
     private BigDecimal limitFinancialLossFullDayLongTrial;
+    @Column(name = "limit_financial_loss_half_day_extra_long_trial")
+    private BigDecimal limitFinancialLossHalfDayExtraLongTrial;
+    @Column(name = "limit_financial_loss_full_day_extra_long_trial")
+    private BigDecimal limitFinancialLossFullDayExtraLongTrial;
 
     @Column(name = "rate_subsistence_standard")
     private BigDecimal subsistenceRateStandard;

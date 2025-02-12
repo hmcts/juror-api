@@ -1296,7 +1296,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
         appearances
             .forEach(appearance1 -> realignAttendanceTypeInternal(appearance1,
-                isLongTrialDay(localDates, appearance1.getAttendanceDate())));
+                isLongTrialDay(localDates, appearance1.getAttendanceDate()),
+                isExtraLongTrialDay(localDates, appearance1.getAttendanceDate())));
 
         appearanceRepository.saveAll(appearances);
     }
@@ -1429,7 +1430,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     }
 
 
-    private void realignAttendanceTypeInternal(Appearance appearance, boolean isLongTrialDay) {
+    private void realignAttendanceTypeInternal(Appearance appearance, boolean isLongTrialDay,
+                                               boolean isExtraLongTrialDay) {
         if ((!Boolean.TRUE.equals(appearance.getNonAttendanceDay())
             && (appearance.getTimeIn() == null || appearance.getTimeOut() == null))
             || Boolean.TRUE.equals(appearance.getNoShow())
@@ -1440,16 +1442,34 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         if (appearance.getAttendanceType() != null
             && Set.of(AttendanceType.NON_ATTENDANCE, AttendanceType.NON_ATTENDANCE_LONG_TRIAL)
             .contains(appearance.getAttendanceType())) {
-            appearance.setAttendanceType(isLongTrialDay
-                ? AttendanceType.NON_ATTENDANCE_LONG_TRIAL : AttendanceType.NON_ATTENDANCE
-            );
+
+            if (isExtraLongTrialDay) {
+                appearance.setAttendanceType(AttendanceType.NON_ATTENDANCE_EXTRA_LONG_TRIAL);
+            } else if (isLongTrialDay) {
+                appearance.setAttendanceType(AttendanceType.NON_ATTENDANCE_LONG_TRIAL);
+            } else {
+                appearance.setAttendanceType(AttendanceType.NON_ATTENDANCE);
+            }
         } else if (appearance.isFullDay()) {
-            appearance.setAttendanceType(isLongTrialDay
-                ? AttendanceType.FULL_DAY_LONG_TRIAL : AttendanceType.FULL_DAY
-            );
+
+            if (isExtraLongTrialDay) {
+                appearance.setAttendanceType(AttendanceType.FULL_DAY_EXTRA_LONG_TRIAL);
+            } else if (isLongTrialDay) {
+                appearance.setAttendanceType(AttendanceType.FULL_DAY_LONG_TRIAL);
+            } else {
+                appearance.setAttendanceType(AttendanceType.FULL_DAY);
+            }
+
         } else {
-            appearance.setAttendanceType(isLongTrialDay
-                ? AttendanceType.HALF_DAY_LONG_TRIAL : AttendanceType.HALF_DAY);
+
+            if (isExtraLongTrialDay) {
+                appearance.setAttendanceType(AttendanceType.HALF_DAY_EXTRA_LONG_TRIAL);
+            } else if (isLongTrialDay) {
+                appearance.setAttendanceType(AttendanceType.HALF_DAY_LONG_TRIAL);
+            } else {
+                appearance.setAttendanceType(AttendanceType.HALF_DAY);
+            }
+
         }
     }
 
@@ -1459,5 +1479,9 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
     boolean isLongTrialDay(List<LocalDate> appearanceDates, LocalDate dateToCheck) {
         return appearanceDates.indexOf(dateToCheck) >= 10;
+    }
+
+    boolean isExtraLongTrialDay(List<LocalDate> appearanceDates, LocalDate dateToCheck) {
+        return appearanceDates.indexOf(dateToCheck) >= 201;
     }
 }

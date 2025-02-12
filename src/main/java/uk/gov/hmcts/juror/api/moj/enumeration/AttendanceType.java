@@ -11,6 +11,9 @@ public enum AttendanceType {
     HALF_DAY("Half day", false, false),
     FULL_DAY_LONG_TRIAL("Full day (>10 days)", true, true),
     HALF_DAY_LONG_TRIAL("Half day (>10 days)", true, false),
+    FULL_DAY_EXTRA_LONG_TRIAL("Full day (>201 days)", true, true),
+    HALF_DAY_EXTRA_LONG_TRIAL("Half day (>201 days)", true, false),
+    NON_ATTENDANCE_EXTRA_LONG_TRIAL("Non-attendance day (>10 days)", true, true),
     NON_ATTENDANCE_LONG_TRIAL("Non-attendance day (>10 days)", true, true),
     NON_ATTENDANCE("Non-attendance day", false, true),
     ABSENT("Absent (no show)", null, null);
@@ -31,6 +34,6 @@ public enum AttendanceType {
     }
 
     public static Collection<AttendanceType> getNonAttendanceTypes() {
-        return List.of(NON_ATTENDANCE, NON_ATTENDANCE_LONG_TRIAL);
+        return List.of(NON_ATTENDANCE, NON_ATTENDANCE_LONG_TRIAL, NON_ATTENDANCE_EXTRA_LONG_TRIAL);
     }
 }
