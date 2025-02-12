@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        springBootVersion = '3.3.1'
+        springBootVersion = '3.4.2'
         notifyVersion = '5.1.0-RELEASE'
         springDocVersion = '2.6.0'
         queryDslVersion = '5.1.0'
@@ -94,7 +94,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation:${springBootVersion}")
     runtimeOnly("org.springframework.boot:spring-boot-devtools:${springBootVersion}")
 
-
     implementation group: 'org.postgresql', name: 'postgresql', version: "${postgresVersion}"
     implementation "org.flywaydb:flyway-database-postgresql:${flywayVersion}"
     implementation "org.flywaydb:flyway-core:${flywayVersion}"
@@ -103,8 +102,7 @@ dependencies {
     implementation 'javax.mail:mail:1.4.7'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
-    implementation 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
-
+    implementation 'org.apache.httpcomponents.client5:httpclient5:5.4.2'
     implementation('com.google.guava:guava:33.2.1-jre')
 
     implementation('org.hibernate.orm:hibernate-core:6.3.0.CR1')
@@ -114,8 +112,8 @@ dependencies {
     implementation("com.querydsl:querydsl-jpa:${queryDslVersion}:jakarta")
 
     testImplementation 'junit:junit:4.13.2'
-    testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.10.3")
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.3'
+    testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.11.4")
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
 
     annotationProcessor("com.querydsl:querydsl-apt:${queryDslVersion}:jakarta")
     annotationProcessor('jakarta.persistence:jakarta.persistence-api:3.2.0')

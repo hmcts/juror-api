@@ -5,9 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.boot.web.client.RootUriTemplateHandler;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.web.util.DefaultUriBuilderFactory;
 import uk.gov.hmcts.juror.api.moj.client.interceptor.JwtAuthenticationInterceptor;
 import uk.gov.hmcts.juror.api.moj.service.JwtService;
 
@@ -41,10 +41,14 @@ public class RemoteConfig {
                                                     final JwtService jwtService) {
         final List<ClientHttpRequestInterceptor> clientHttpRequestInterceptorList =
             List.of(new JwtAuthenticationInterceptor(jwtService, webConfig.getSecurity()));
+
+        DefaultUriBuilderFactory uriBuilderFactory = new DefaultUriBuilderFactory(
+            webConfig.getScheme() + "://" + webConfig.getHost() + ":" + webConfig.getPort());
+        uriBuilderFactory.setEncodingMode(DefaultUriBuilderFactory.EncodingMode.URI_COMPONENT);
+
         return new RestTemplateBuilder()
             .requestFactory(webConfig::getRequestFactory)
-            .uriTemplateHandler(new RootUriTemplateHandler(
-                webConfig.getScheme() + "://" + webConfig.getHost() + ":" + webConfig.getPort()))
+            .uriTemplateHandler(uriBuilderFactory)
             .additionalInterceptors(clientHttpRequestInterceptorList);
     }
 }

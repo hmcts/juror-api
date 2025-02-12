@@ -6,12 +6,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.boot.web.client.RootUriTemplateHandler;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.DefaultUriBuilderFactory;
+
+import java.net.URI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -46,22 +47,20 @@ class AbstractRemoteRestClientTest {
 
     @Test
     void positiveWithBaseUrlRestTemplateConstructorAndBaseUrl() {
-        final String baseUrl = "www.baseurl.com";
+        final String baseUrl = "www.baseurl.com/";
         AbstractRemoteRestClient client
             = new AbstractRemoteRestClientTestClass(restTemplateBuilder, baseUrl);
 
         assertEquals(restTemplate, client.restTemplate, "Rest templates do not match");
         verify(restTemplateBuilder, times(1)).build();
         verifyNoMoreInteractions(restTemplateBuilder);
-        ArgumentCaptor<RootUriTemplateHandler> rootUriTemplateHandlerArgumentCaptor =
-            ArgumentCaptor.forClass(RootUriTemplateHandler.class);
-        verify(restTemplate, times(1)).setUriTemplateHandler(rootUriTemplateHandlerArgumentCaptor.capture());
+        ArgumentCaptor<DefaultUriBuilderFactory> uriBuilderFactoryArgumentCaptor =
+            ArgumentCaptor.forClass(DefaultUriBuilderFactory.class);
+        verify(restTemplate, times(1)).setUriTemplateHandler(uriBuilderFactoryArgumentCaptor.capture());
 
-
-        RootUriTemplateHandler rootUriTemplateHandler = rootUriTemplateHandlerArgumentCaptor.getValue();
-        assertNotNull(rootUriTemplateHandler, "Root uri template handler should not be null");
-        assertEquals(baseUrl, rootUriTemplateHandler.getRootUri(), "Root uri template handler and provided base url do "
-            + "not align");
+        DefaultUriBuilderFactory uriBuilderFactory = uriBuilderFactoryArgumentCaptor.getValue();
+        URI uri = uriBuilderFactory.expand("/");
+        assertEquals(baseUrl, uri.toString(), "URI builder factory and provided base URL do not align");
     }
 
     @Test

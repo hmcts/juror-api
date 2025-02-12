@@ -1,8 +1,8 @@
 package uk.gov.hmcts.juror.api.moj.client;
 
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.boot.web.client.RootUriTemplateHandler;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.DefaultUriBuilderFactory;
 
 @SuppressWarnings("PMD.AbstractClassWithoutAbstractMethod")
 public abstract class AbstractRemoteRestClient {
@@ -16,7 +16,7 @@ public abstract class AbstractRemoteRestClient {
     protected AbstractRemoteRestClient(RestTemplateBuilder restTemplateBuilder, String baseUrl) {
         this.restTemplate = restTemplateBuilder.build();
         if (baseUrl != null) {
-            this.restTemplate.setUriTemplateHandler(new RootUriTemplateHandler(baseUrl));
+            this.restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(baseUrl));
         }
     }
 }

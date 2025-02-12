@@ -6,6 +6,7 @@ import com.querydsl.core.Tuple;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.apache.commons.text.WordUtils;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
@@ -19,6 +20,7 @@ import java.util.Objects;
  * Response DTO for listing pool request search results.
  */
 @AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Schema(description = "Pool request search list response")
 public class PoolRequestSearchListDto {
@@ -35,6 +37,7 @@ public class PoolRequestSearchListDto {
     private long resultsCount;
 
     @AllArgsConstructor
+    @NoArgsConstructor
     @Getter
     @Schema(description = "Pool Request data")
     @ToString
