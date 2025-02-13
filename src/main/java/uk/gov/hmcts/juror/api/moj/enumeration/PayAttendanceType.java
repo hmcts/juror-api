@@ -22,7 +22,12 @@ public enum PayAttendanceType {
         this.extraLongTrialAttendanceType = extraLongTrialAttendanceType;
     }
 
-    public AttendanceType getAttendanceType(boolean isLongTrail) {
-        return isLongTrail ? longTrialAttendanceType : attendanceType;
+    public AttendanceType getAttendanceType(boolean isLongTrail, boolean isExtraLongTrial) {
+        if (isLongTrail) {
+            return longTrialAttendanceType;
+        } else if (isExtraLongTrial) {
+            return extraLongTrialAttendanceType;
+        }
+        return attendanceType;
     }
 }

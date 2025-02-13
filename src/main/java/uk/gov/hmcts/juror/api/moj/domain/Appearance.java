@@ -469,7 +469,7 @@ public class Appearance implements Serializable {
             return;
         }
         setAttendanceType(
-            payAttendanceType.getAttendanceType(this.isLongTrialDay())
+            payAttendanceType.getAttendanceType(this.isLongTrialDay(), this.isExtraLongTrialDay())
         );
     }
 
