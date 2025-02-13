@@ -52,6 +52,11 @@ public class ExpenseRatesDto {
     @Min(0)
     private BigDecimal limitFinancialLossFullDayLongTrial;
 
+    //TODO setting default value for the following field until another ticket is created to update the value
+    private BigDecimal limitFinancialLossHalfDayExtraLongTrial = BigDecimal.valueOf(114.3);
+    //TODO setting default value for the following field until another ticket is created to update the value
+    private BigDecimal limitFinancialLossFullDayExtraLongTrial = BigDecimal.valueOf(228.6);
+
     private BigDecimal subsistenceRateStandard;
     private BigDecimal subsistenceRateLongDay;
 
@@ -66,6 +71,8 @@ public class ExpenseRatesDto {
         this.limitFinancialLossFullDay = expenseRates.getLimitFinancialLossFullDay();
         this.limitFinancialLossHalfDayLongTrial = expenseRates.getLimitFinancialLossHalfDayLongTrial();
         this.limitFinancialLossFullDayLongTrial = expenseRates.getLimitFinancialLossFullDayLongTrial();
+        this.limitFinancialLossHalfDayExtraLongTrial = expenseRates.getLimitFinancialLossHalfDayExtraLongTrial();
+        this.limitFinancialLossFullDayExtraLongTrial = expenseRates.getLimitFinancialLossFullDayExtraLongTrial();
         this.subsistenceRateStandard = expenseRates.getSubsistenceRateStandard();
         this.subsistenceRateLongDay = expenseRates.getSubsistenceRateLongDay();
     }
@@ -83,6 +90,8 @@ public class ExpenseRatesDto {
             .limitFinancialLossFullDay(limitFinancialLossFullDay)
             .limitFinancialLossHalfDayLongTrial(limitFinancialLossHalfDayLongTrial)
             .limitFinancialLossFullDayLongTrial(limitFinancialLossFullDayLongTrial)
+            .limitFinancialLossHalfDayExtraLongTrial(limitFinancialLossHalfDayExtraLongTrial)
+            .limitFinancialLossFullDayExtraLongTrial(limitFinancialLossFullDayExtraLongTrial)
             .subsistenceRateStandard(subsistenceRateStandard)
             .subsistenceRateLongDay(subsistenceRateLongDay)
             .build();
