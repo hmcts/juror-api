@@ -431,26 +431,28 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         ExpenseRates expenseRates = getCurrentExpenseRates(false);
         PayAttendanceType attendanceType = appearance.getPayAttendanceType();
 
-        boolean isLongTrial = appearance.getAttendanceType() == AttendanceType.FULL_DAY_LONG_TRIAL;
-        boolean isExtraLongTrial = appearance.getAttendanceType() == AttendanceType.FULL_DAY_EXTRA_LONG_TRIAL;
+        final boolean isLongTrial = appearance.isLongTrialDay();
+        final boolean isExtraLongTrial = appearance.isExtraLongTrialDay();
 
         BigDecimal financialLossLimit = switch (attendanceType) {
             case FULL_DAY -> {
                 if (isExtraLongTrial) {
                     yield expenseRates.getLimitFinancialLossFullDayExtraLongTrial();
-                } else if(isLongTrial) {
-                    yield expenseRates.getLimitFinancialLossFullDayExtraLongTrial();
+                } else if (isLongTrial) {
+                    yield expenseRates.getLimitFinancialLossFullDayLongTrial();
                 } else {
                     yield expenseRates.getLimitFinancialLossFullDay();
-                }}
+                }
+            }
             case HALF_DAY -> {
                 if (isExtraLongTrial) {
                     yield expenseRates.getLimitFinancialLossHalfDayExtraLongTrial();
-                } else if(isLongTrial) {
+                } else if (isLongTrial) {
                     yield expenseRates.getLimitFinancialLossHalfDayLongTrial();
                 } else {
                     yield expenseRates.getLimitFinancialLossHalfDay();
-                }}
+                }
+            }
         };
         BigDecimal effectiveLossOfEarnings = getOrZero(appearance.getLossOfEarningsDue());
         BigDecimal effectiveExtraCareCost = getOrZero(appearance.getChildcareDue());
@@ -489,6 +491,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 financialLossLimit,
                 attendanceType,
                 appearance.isLongTrialDay(),
+                appearance.isExtraLongTrialDay(),
                 "The amount you entered will automatically be recalculated to limit the juror's loss to "
                     + BigDecimalUtils.currencyFormat(financialLossLimit)
             );

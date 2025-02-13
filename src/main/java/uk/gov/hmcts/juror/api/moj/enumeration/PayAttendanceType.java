@@ -14,8 +14,8 @@ public enum PayAttendanceType {
     private final AttendanceType longTrialAttendanceType;
     private final AttendanceType extraLongTrialAttendanceType;
 
-    PayAttendanceType(String displayName, AttendanceType attendanceType, AttendanceType longTrialAttendanceType
-            ,AttendanceType extraLongTrialAttendanceType) {
+    PayAttendanceType(String displayName, AttendanceType attendanceType, AttendanceType longTrialAttendanceType,
+                      AttendanceType extraLongTrialAttendanceType) {
         this.displayName = displayName;
         this.attendanceType = attendanceType;
         this.longTrialAttendanceType = longTrialAttendanceType;
