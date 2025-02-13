@@ -1444,7 +1444,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             .contains(appearance.getAttendanceType())) {
 
             if (isExtraLongTrialDay) {
-                appearance.setAttendanceType(AttendanceType.NON_ATTENDANCE_EXTRA_LONG_TRIAL);
+                appearance.setAttendanceType(AttendanceType.NON_ATT_EXTRA_LONG_TRIAL);
             } else if (isLongTrialDay) {
                 appearance.setAttendanceType(AttendanceType.NON_ATTENDANCE_LONG_TRIAL);
             } else {
