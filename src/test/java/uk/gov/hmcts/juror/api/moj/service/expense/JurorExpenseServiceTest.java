@@ -1730,7 +1730,7 @@ class JurorExpenseServiceTest {
             assertThat(financialLossWarning.getAttendanceType()).isEqualTo(payAttendanceType);
             assertThat(financialLossWarning.getIsExtraLongTrialDay()).isEqualTo(isExtraLongTrial);
             assertThat(financialLossWarning.getMessage()).isEqualTo("The amount you entered will automatically be "
-                                                                        + "recalculated to limit the juror's loss to £50.00");
+                                                                + "recalculated to limit the juror's loss to £50.00");
 
             verify(appearance, times(1)).setLossOfEarningsDue(new BigDecimal("50.00"));
             verify(appearance, times(1)).setChildcareDue(BigDecimal.ZERO);
