@@ -638,12 +638,12 @@ class JurorExpenseServiceTest {
     class IsAttendanceDay {
         @ParameterizedTest(name = "Is Attendance Day: {0}")
         @EnumSource(value = AttendanceType.class, mode = EnumSource.Mode.EXCLUDE,
-            names = {"NON_ATTENDANCE", "NON_ATTENDANCE_LONG_TRIAL"})
+            names = {"NON_ATTENDANCE", "NON_ATTENDANCE_LONG_TRIAL", "NON_ATT_EXTRA_LONG_TRIAL"})
         void positiveIsAttendanceDay(AttendanceType attendanceType) {
             Appearance appearance = mock(Appearance.class);
             when(appearance.getAttendanceType()).thenReturn(attendanceType);
             assertThat(jurorExpenseService.isAttendanceDay(appearance)).isTrue();
-            verify(appearance, times(2))
+            verify(appearance, times(3))
                 .getAttendanceType();
         }
 
@@ -1084,7 +1084,7 @@ class JurorExpenseServiceTest {
             verify(dailyExpense, times(1)).getDateOfExpense();
             verify(dailyExpense, times(2)).getApplyToAllDays();
 
-            verify(appearance, times(2)).getAttendanceType();
+            verify(appearance, times(3)).getAttendanceType();
             verify(jurorExpenseService, times(1)).getDraftAppearance(TestConstants.VALID_COURT_LOCATION,
                 jurorNumber, dateOfExpense);
             verify(jurorExpenseService, times(1)).updateExpenseInternal(appearance, dailyExpense);

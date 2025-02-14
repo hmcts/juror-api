@@ -317,7 +317,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
     boolean isAttendanceDay(Appearance appearance) {
         return !AttendanceType.NON_ATTENDANCE.equals(appearance.getAttendanceType())
-            && !AttendanceType.NON_ATTENDANCE_LONG_TRIAL.equals(appearance.getAttendanceType());
+            && !AttendanceType.NON_ATTENDANCE_LONG_TRIAL.equals(appearance.getAttendanceType())
+            && !AttendanceType.NON_ATT_EXTRA_LONG_TRIAL.equals(appearance.getAttendanceType());
     }
 
     @Transactional
