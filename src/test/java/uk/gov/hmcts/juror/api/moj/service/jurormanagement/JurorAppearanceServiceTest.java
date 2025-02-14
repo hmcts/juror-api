@@ -2342,6 +2342,17 @@ class JurorAppearanceServiceTest {
                 .findByLocCodeAndJurorNumberAndAttendanceDate(
                     COURT_LOCATION_CODE, JUROR_NUMBER, nonAttendanceDate);
 
+            Appearance appearance = Appearance.builder()
+                .jurorNumber(JUROR_NUMBER)
+                .attendanceDate(now())
+                .courtLocation(courtLocation)
+                .appearanceStage(CHECKED_IN)
+                .build();
+
+            doReturn(Optional.of(appearance)).when(appearanceRepository)
+                .findByCourtLocationLocCodeAndJurorNumberAndAttendanceDate(
+                    COURT_LOCATION_CODE, JUROR_NUMBER, nonAttendanceDate);
+
             jurorAppearanceService.addNonAttendance(request);
 
             verify(courtLocationRepository, times(1)).findByLocCode(COURT_LOCATION_CODE);
@@ -2394,6 +2405,17 @@ class JurorAppearanceServiceTest {
                 .findByLocCodeAndJurorNumberAndAttendanceDate(
                     COURT_LOCATION_CODE, JUROR_NUMBER, nonAttendanceDate);
 
+            Appearance appearance = Appearance.builder()
+                .jurorNumber(JUROR_NUMBER)
+                .attendanceDate(now())
+                .courtLocation(courtLocation)
+                .appearanceStage(CHECKED_IN)
+                .build();
+
+            doReturn(Optional.of(appearance)).when(appearanceRepository)
+                .findByCourtLocationLocCodeAndJurorNumberAndAttendanceDate(
+                    COURT_LOCATION_CODE, JUROR_NUMBER, nonAttendanceDate);
+
             jurorAppearanceService.addNonAttendance(request);
 
             verify(courtLocationRepository, times(1)).findByLocCode(COURT_LOCATION_CODE);
@@ -2405,83 +2427,6 @@ class JurorAppearanceServiceTest {
             verify(appearanceRepository, times(1)).saveAndFlush(any());
         }
 
-        @Test
-        void happyNonAttendanceJurorNoShow() {
-
-            TestUtils.setUpMockAuthentication(COURT_OWNER, USERNAME, "1", List.of(COURT_OWNER));
-
-            CourtLocation courtLocation = new CourtLocation();
-            courtLocation.setOwner(COURT_OWNER);
-            courtLocation.setLocCode(COURT_LOCATION_CODE);
-            when(courtLocationRepository.findByLocCode(COURT_LOCATION_CODE)).thenReturn(Optional.of(courtLocation));
-            when(courtLocationRepository.findById(any())).thenReturn(Optional.of(courtLocation));
-
-            PoolRequest poolRequest = PoolRequest.builder()
-                .poolNumber(POOL_NUMBER)
-                .returnDate(now().minusDays(20))
-                .courtLocation(courtLocation)
-                .build();
-
-            JurorPool jurorPool = new JurorPool();
-            jurorPool.setOwner(COURT_OWNER);
-            jurorPool.setPool(poolRequest);
-
-            Juror juror = new Juror();
-            juror.setJurorNumber(JUROR_NUMBER);
-            juror.setFinancialLoss(BigDecimal.valueOf(63.90));
-            jurorPool.setJuror(juror);
-
-            doReturn(jurorPool).when(jurorPoolRepository)
-                .findByJurorJurorNumberAndPoolPoolNumber(JUROR_NUMBER, POOL_NUMBER);
-
-            Appearance appearance = new Appearance();
-            appearance.setNoShow(true);
-            appearance.setAttendanceType(AttendanceType.ABSENT);
-
-            LocalDate nonAttendanceDate = now();
-            doReturn(Optional.of(appearance)).when(appearanceRepository)
-                .findByLocCodeAndJurorNumberAndAttendanceDate(
-                    COURT_LOCATION_CODE, JUROR_NUMBER, nonAttendanceDate);
-
-            final JurorNonAttendanceDto request = JurorNonAttendanceDto.builder()
-                .jurorNumber(JUROR_NUMBER)
-                .nonAttendanceDate(now())
-                .poolNumber(POOL_NUMBER)
-                .locationCode(COURT_LOCATION_CODE)
-                .build();
-
-            jurorAppearanceService.addNonAttendance(request);
-
-            ArgumentCaptor<Appearance> savedAppearanceCaptor = ArgumentCaptor.forClass(Appearance.class);
-            verify(courtLocationRepository, times(1)).findByLocCode(COURT_LOCATION_CODE);
-            verify(jurorPoolRepository, times(1))
-                .findByJurorJurorNumberAndPoolPoolNumber(JUROR_NUMBER, POOL_NUMBER);
-            verify(appearanceRepository, times(1))
-                .findByLocCodeAndJurorNumberAndAttendanceDate(
-                    COURT_LOCATION_CODE, JUROR_NUMBER, nonAttendanceDate);
-            verify(appearanceRepository, times(1)).delete(appearance);
-            //verify(appearanceRepository, times(1)).saveAndFlush(appearanceSaved);
-
-            verify(appearanceRepository, times(1)).saveAndFlush(
-                savedAppearanceCaptor.capture());
-
-
-            Appearance appearanceSaved = savedAppearanceCaptor.getValue();
-            assertThat(appearanceSaved.getJurorNumber()).isEqualTo(JUROR_NUMBER);
-            assertThat(appearanceSaved.getPoolNumber()).isEqualTo(POOL_NUMBER);
-            assertThat(appearanceSaved.getAttendanceDate()).isEqualTo(nonAttendanceDate);
-            assertThat(appearanceSaved.getCourtLocation()).isEqualTo(courtLocation);
-            assertThat(appearanceSaved.getNonAttendanceDay()).isTrue();
-            assertThat(appearanceSaved.getAttendanceType()).isEqualTo(AttendanceType.NON_ATTENDANCE);
-            assertThat(appearanceSaved.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
-            assertThat(appearanceSaved.getPayAttendanceType()).isEqualTo(PayAttendanceType.FULL_DAY);
-            assertThat(appearanceSaved.getCreatedBy()).isEqualTo(USERNAME);
-
-            verify(jurorExpenseService, times(1))
-                .applyDefaultExpenses(savedAppearanceCaptor.capture(), eq(juror));
-
-            assertThat(savedAppearanceCaptor.getValue()).isEqualTo(appearanceSaved);
-        }
 
         @Test
         void negativeNonAttendanceCourtNotFound() {

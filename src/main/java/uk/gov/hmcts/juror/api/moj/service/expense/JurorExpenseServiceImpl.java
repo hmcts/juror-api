@@ -190,7 +190,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         }
 
         appearance.setTravelTime(juror.getTravelTime());
-        appearance.setPayAttendanceType(calculatePayAttendanceType(appearance));
+        PayAttendanceType payAttendanceType = calculatePayAttendanceType(appearance);
 
         boolean isLongDay = appearance.getEffectiveTime().isAfter(LocalTime.of(10, 0, 0));
         updateMilesTraveledAndTravelDue(appearance, juror.getMileage());
@@ -202,7 +202,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         }
         if (juror.getFinancialLoss() == null) {
             appearance.setLossOfEarningsDue(null);
-        } else if (PayAttendanceType.FULL_DAY.equals(appearance.getPayAttendanceType())) {
+        } else if (PayAttendanceType.FULL_DAY.equals(payAttendanceType)) {
             appearance.setLossOfEarningsDue(juror.getFinancialLoss());
         } else {
             appearance.setLossOfEarningsDue(juror.getFinancialLoss()
@@ -212,6 +212,9 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     }
 
     PayAttendanceType calculatePayAttendanceType(Appearance appearance) {
+        if (Boolean.TRUE.equals(appearance.getNonAttendanceDay())) {
+            return PayAttendanceType.FULL_DAY;
+        }
         return appearance.isFullDay() ? PayAttendanceType.FULL_DAY : PayAttendanceType.HALF_DAY;
     }
 
@@ -1303,6 +1306,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 .limitFinancialLossHalfDay(expenseRates.getLimitFinancialLossHalfDay())
                 .limitFinancialLossFullDayLongTrial(expenseRates.getLimitFinancialLossFullDayLongTrial())
                 .limitFinancialLossHalfDayLongTrial(expenseRates.getLimitFinancialLossHalfDayLongTrial())
+                .limitFinancialLossFullDayExtraLongTrial(expenseRates.getLimitFinancialLossFullDayExtraLongTrial())
+                .limitFinancialLossHalfDayExtraLongTrial(expenseRates.getLimitFinancialLossHalfDayExtraLongTrial())
                 .build();
         }
         return expenseRates;

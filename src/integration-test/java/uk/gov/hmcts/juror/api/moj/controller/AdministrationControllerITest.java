@@ -831,6 +831,8 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
                         .limitFinancialLossHalfDay(expected.getLimitFinancialLossHalfDay())
                         .limitFinancialLossFullDayLongTrial(expected.getLimitFinancialLossFullDayLongTrial())
                         .limitFinancialLossHalfDayLongTrial(expected.getLimitFinancialLossHalfDayLongTrial())
+                        .limitFinancialLossFullDayExtraLongTrial(expected.getLimitFinancialLossFullDayExtraLongTrial())
+                        .limitFinancialLossHalfDayExtraLongTrial(expected.getLimitFinancialLossHalfDayExtraLongTrial())
                         .build());
             }
         }

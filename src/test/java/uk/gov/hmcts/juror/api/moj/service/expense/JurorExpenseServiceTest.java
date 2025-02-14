@@ -5016,7 +5016,6 @@ class JurorExpenseServiceTest {
             verify(appearance, times(1)).getEffectiveTime();
             verify(appearance, times(1)).setTravelTime(travelTime);
             verify(appearance, times(1)).setLossOfEarningsDue(null);
-            verify(appearance, times(1)).setPayAttendanceType(payAttendanceType);
             verify(juror, times(1)).getMileage();
             verify(juror, times(1)).getTravelTime();
             verify(juror, times(1)).isClaimingSubsistenceAllowance();
@@ -5071,7 +5070,6 @@ class JurorExpenseServiceTest {
             verify(appearance, times(1)).getEffectiveTime();
             verify(appearance, times(1)).setTravelTime(travelTime);
             verify(appearance, times(1)).setLossOfEarningsDue(null);
-            verify(appearance, times(1)).setPayAttendanceType(payAttendanceType);
             verify(juror, times(1)).getMileage();
             verify(juror, times(1)).getTravelTime();
             verify(juror, times(1)).isClaimingSubsistenceAllowance();
@@ -5128,7 +5126,6 @@ class JurorExpenseServiceTest {
             verify(appearance, times(1)).getEffectiveTime();
             verify(appearance, times(1)).setTravelTime(travelTime);
             verify(appearance, times(1)).setLossOfEarningsDue(null);
-            verify(appearance, times(1)).setPayAttendanceType(payAttendanceType);
             verify(juror, times(1)).getMileage();
             verify(juror, times(1)).getTravelTime();
             verify(juror, never()).isClaimingSubsistenceAllowance();
@@ -5184,7 +5181,6 @@ class JurorExpenseServiceTest {
             verify(appearance, times(1)).getEffectiveTime();
             verify(appearance, times(1)).setTravelTime(travelTime);
             verify(appearance, times(1)).setLossOfEarningsDue(null);
-            verify(appearance, times(1)).setPayAttendanceType(payAttendanceType);
             verify(juror, times(1)).getMileage();
             verify(juror, times(1)).getTravelTime();
             verify(juror, times(1)).isClaimingSubsistenceAllowance();
@@ -5241,8 +5237,6 @@ class JurorExpenseServiceTest {
             verify(appearance, times(1)).getEffectiveTime();
             verify(appearance, times(1)).setTravelTime(travelTime);
             verify(appearance, times(1)).setLossOfEarningsDue(new BigDecimal("50.00"));
-            verify(appearance, times(1)).setPayAttendanceType(payAttendanceType);
-            verify(appearance, times(1)).getPayAttendanceType();
             verify(juror, times(1)).getMileage();
             verify(juror, times(1)).getTravelTime();
             verify(juror, times(1)).isClaimingSubsistenceAllowance();
@@ -5299,8 +5293,6 @@ class JurorExpenseServiceTest {
             verify(appearance, times(1)).getEffectiveTime();
             verify(appearance, times(1)).setTravelTime(travelTime);
             verify(appearance, times(1)).setLossOfEarningsDue(new BigDecimal("25.00"));
-            verify(appearance, times(1)).setPayAttendanceType(payAttendanceType);
-            verify(appearance, times(1)).getPayAttendanceType();
             verify(juror, times(1)).getMileage();
             verify(juror, times(1)).getTravelTime();
             verify(juror, times(1)).isClaimingSubsistenceAllowance();

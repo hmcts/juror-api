@@ -554,8 +554,13 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                 request.getJurorNumber(), nonAttendanceDate, courtLocation,
                 jurorPool.getPool().getPoolNumber(), false);
         realignAttendanceType(appearance);
-        jurorExpenseService.applyDefaultExpenses(appearance, jurorPool.getJuror());
-        appearanceRepository.saveAndFlush(appearance);
+        Appearance realignedAppearance = appearanceRepository
+            .findByCourtLocationLocCodeAndJurorNumberAndAttendanceDate(locationCode, request.getJurorNumber(),
+                nonAttendanceDate).orElseThrow(() -> new MojException.NotFound("No valid appearance record found",
+                                                                               null));
+
+        jurorExpenseService.applyDefaultExpenses(realignedAppearance, jurorPool.getJuror());
+        appearanceRepository.saveAndFlush(realignedAppearance);
         log.debug("Completed adding a non attendance day for juror {}", request.getJurorNumber());
     }
 
@@ -1440,7 +1445,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         }
 
         if (appearance.getAttendanceType() != null
-            && Set.of(AttendanceType.NON_ATTENDANCE, AttendanceType.NON_ATTENDANCE_LONG_TRIAL)
+            && Set.of(AttendanceType.NON_ATTENDANCE, AttendanceType.NON_ATTENDANCE_LONG_TRIAL,
+                      AttendanceType.NON_ATT_EXTRA_LONG_TRIAL)
             .contains(appearance.getAttendanceType())) {
 
             if (isExtraLongTrialDay) {
@@ -1478,10 +1484,10 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     }
 
     boolean isLongTrialDay(List<LocalDate> appearanceDates, LocalDate dateToCheck) {
-        return appearanceDates.indexOf(dateToCheck) >= 10;
+        return appearanceDates.indexOf(dateToCheck) >= 10 && appearanceDates.indexOf(dateToCheck) < 202;
     }
 
     boolean isExtraLongTrialDay(List<LocalDate> appearanceDates, LocalDate dateToCheck) {
-        return appearanceDates.indexOf(dateToCheck) >= 201;
+        return appearanceDates.indexOf(dateToCheck) > 201;
     }
 }
