@@ -24,6 +24,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.JurorAppearanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorsToDismissRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.ConfirmAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.JurorNonAttendanceDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.ModifyConfirmedAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAttendanceDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDateDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDto;
@@ -35,6 +36,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.Unconfirme
 import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.UnconfirmedJurorResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
@@ -1557,6 +1559,76 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                 .poolNumber(POOL_NUMBER_415230101)
                 .build();
         }
+    }
+
+    @Nested
+    @DisplayName("PATCH Modify attendance")
+    @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDate.sql",
+        "/db/JurorExpenseControllerITest_expenseRates.sql"})
+    class ModifyAttendance {
+
+        private static final String URL = "/api/v1/moj/juror-management/attendance/modify-attendance";
+
+        @Test
+        @DisplayName("Modify attendance - happy path")
+        void modifyAttendanceHappy() {
+            ModifyConfirmedAttendanceDto request = buildModifyAttendanceDto(JUROR1, now().minusDays(2),
+                                                        ModifyConfirmedAttendanceDto.ModifyAttendanceType.ATTENDANCE,
+                                                        LocalTime.of(9, 30),
+                                                        LocalTime.of(17, 30));
+            ResponseEntity<String> responseEntity =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH, URI.create(URL)),
+                    String.class);
+
+            assertThat(responseEntity.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
+
+            // verify the attendance record was updated successfully
+            Optional<Appearance> appearanceOpt = appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(
+                "415", JUROR1, now().minusDays(2));
+            assertThat(appearanceOpt).isPresent();
+            Appearance appearance = appearanceOpt.get();
+            assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));
+            assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 30));
+        }
+
+        @Test
+        @DisplayName("Delete attendance - happy path")
+        void deleteAttendanceHappy() {
+            ModifyConfirmedAttendanceDto request = buildModifyAttendanceDto(JUROR1, now().minusDays(2),
+                                                            ModifyConfirmedAttendanceDto.ModifyAttendanceType.DELETE,
+                                                            null,
+                                                            null);
+            ResponseEntity<String> responseEntity =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH, URI.create(URL)),
+                                      String.class);
+
+            assertThat(responseEntity.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
+
+            // verify the attendance record was updated successfully
+            Optional<Appearance> appearanceOpt = appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(
+                "415", JUROR1, now().minusDays(2));
+            assertThat(appearanceOpt).isEmpty();
+            // verify juror history
+            List<JurorHistory> jurorHistoryList = jurorHistoryRepository.findByJurorNumberOrderById(JUROR1);
+            assertThat(jurorHistoryList).hasSize(1);
+            assertThat(jurorHistoryList.get(0).getHistoryCode()).isEqualTo(HistoryCodeMod.ATTENDANCE_DELETED);
+
+        }
+
+        private ModifyConfirmedAttendanceDto buildModifyAttendanceDto(String jurorNumber, LocalDate attendanceDate,
+            ModifyConfirmedAttendanceDto.ModifyAttendanceType modifyAttendanceType,
+            LocalTime checkInTime, LocalTime checkOutTime) {
+
+            return ModifyConfirmedAttendanceDto.builder()
+                .jurorNumber(jurorNumber)
+                .attendanceDate(attendanceDate)
+                .modifyAttendanceType(modifyAttendanceType)
+                .checkInTime(checkInTime)
+                .checkOutTime(checkOutTime)
+                .build();
+        }
+
+
     }
 
     @Nested

@@ -95,6 +95,11 @@ public class JurorPoolServiceImpl implements JurorPoolService {
     }
 
     @Override
+    public JurorPool getJurorPoolForJuror(String jurorNumber, String poolNumber) {
+        return jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, poolNumber);
+    }
+
+    @Override
     public JurorPool save(JurorPool jurorPool) {
         return jurorPoolRepository.save(jurorPool);
     }

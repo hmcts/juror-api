@@ -415,59 +415,62 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
             if (abstractJurorResponse instanceof DigitalResponse digitalResponse) {
                 jurorThirdPartyService.createOrUpdateThirdParty(juror, digitalResponse);
             } else {
-                jurorThirdPartyService.createOrUpdateThirdParty(juror,
-                    new JurorThirdPartyService.ThirdPartyUpdateDto() {
+                if (abstractJurorResponse.getThirdPartyReason() != null) {
 
-                        @Override
-                        public String getThirdPartyOtherReason() {
-                            return abstractJurorResponse.getThirdPartyOtherReason();
-                        }
+                    jurorThirdPartyService.createOrUpdateThirdParty(juror,
+                        new JurorThirdPartyService.ThirdPartyUpdateDto() {
 
-                        @Override
-                        public String getThirdPartyReason() {
-                            return abstractJurorResponse.getThirdPartyReason();
-                        }
+                            @Override
+                            public String getThirdPartyOtherReason() {
+                                return abstractJurorResponse.getThirdPartyOtherReason();
+                            }
 
-                        @Override
-                        public String getThirdPartyEmailAddress() {
-                            return abstractJurorResponse.getEmailAddress();
-                        }
+                            @Override
+                            public String getThirdPartyReason() {
+                                return abstractJurorResponse.getThirdPartyReason();
+                            }
 
-                        @Override
-                        public String getThirdPartyOtherPhone() {
-                            return abstractJurorResponse.getOtherPhone();
-                        }
+                            @Override
+                            public String getThirdPartyEmailAddress() {
+                                return abstractJurorResponse.getEmailAddress();
+                            }
 
-                        @Override
-                        public String getThirdPartyMainPhone() {
-                            return abstractJurorResponse.getMainPhone();
-                        }
+                            @Override
+                            public String getThirdPartyOtherPhone() {
+                                return abstractJurorResponse.getOtherPhone();
+                            }
 
-                        @Override
-                        public String getThirdPartyRelationship() {
-                            return abstractJurorResponse.getRelationship();
-                        }
+                            @Override
+                            public String getThirdPartyMainPhone() {
+                                return abstractJurorResponse.getMainPhone();
+                            }
 
-                        @Override
-                        public String getThirdPartyLastName() {
-                            return abstractJurorResponse.getThirdPartyLName();
-                        }
+                            @Override
+                            public String getThirdPartyRelationship() {
+                                return abstractJurorResponse.getRelationship();
+                            }
 
-                        @Override
-                        public String getThirdPartyFirstName() {
-                            return abstractJurorResponse.getThirdPartyFName();
-                        }
+                            @Override
+                            public String getThirdPartyLastName() {
+                                return abstractJurorResponse.getThirdPartyLName();
+                            }
 
-                        @Override
-                        public boolean isContactJurorByEmail() {
-                            return Boolean.TRUE.equals(abstractJurorResponse.getJurorEmailDetails());
-                        }
+                            @Override
+                            public String getThirdPartyFirstName() {
+                                return abstractJurorResponse.getThirdPartyFName();
+                            }
 
-                        @Override
-                        public boolean isContactJurorByPhone() {
-                            return Boolean.TRUE.equals(abstractJurorResponse.getJurorPhoneDetails());
-                        }
-                    });
+                            @Override
+                            public boolean isContactJurorByEmail() {
+                                return Boolean.TRUE.equals(abstractJurorResponse.getJurorEmailDetails());
+                            }
+
+                            @Override
+                            public boolean isContactJurorByPhone() {
+                                return Boolean.TRUE.equals(abstractJurorResponse.getJurorPhoneDetails());
+                            }
+                        });
+                }
             }
         }
     }

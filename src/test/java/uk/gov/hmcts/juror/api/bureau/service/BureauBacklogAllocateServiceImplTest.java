@@ -1,11 +1,14 @@
 package uk.gov.hmcts.juror.api.bureau.service;
 
 import com.google.common.collect.Lists;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import com.querydsl.core.types.Predicate;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -26,38 +29,37 @@ import java.util.Comparator;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 /**
  * Unit tests for {@link BureauBacklogAllocateServiceImpl}.
  */
-@RunWith(MockitoJUnitRunner.class)
-public class BureauBacklogAllocateServiceImplTest {
+class BureauBacklogAllocateServiceImplTest {
 
-    private static final Comparator<DigitalResponse> ascendingDateOrder =
+    private static final Comparator<DigitalResponse> ASCENDING_DATE_ORDER =
         Comparator.comparing(DigitalResponse::getDateReceived);
     private static final Integer NON_URGENT_TO_ALLOCATE_TO_STAFF = 1;
     private static final Integer URGENT_TO_ALLOCATE_TO_STAFF = 2;
 
-    @Mock
     private JurorDigitalResponseRepositoryMod responseRepo;
-
-    @Mock
-    private UserRepository userRepo;
-
-    @Mock
-    private UserJurorResponseAuditRepository auditRepo;
 
     private BureauBacklogAllocateServiceImpl bureauBacklogAllocateService;
 
-    private List<DigitalResponse> toBeAllocated;
-
-    @Before
+    @BeforeEach
     public void setUp() {
-        bureauBacklogAllocateService = new BureauBacklogAllocateServiceImpl(responseRepo, userRepo, auditRepo);
+
+        responseRepo = Mockito.mock(JurorDigitalResponseRepositoryMod.class);
+        UserRepository userRepo = Mockito.mock(UserRepository.class);
+        UserJurorResponseAuditRepository auditRepo = Mockito.mock(UserJurorResponseAuditRepository.class);
+
+        this.bureauBacklogAllocateService = spy(new BureauBacklogAllocateServiceImpl(
+            responseRepo, userRepo, auditRepo));
+
         User user1 = User.builder().name("Post Staff 1").username("staff1").active(true).build();
         User user2 = User.builder().name("Post Staff 2").username("staff2").active(true).build();
         User user3 = User.builder().name("Post Staff 3").username("staff3").active(true).build();
@@ -65,7 +67,7 @@ public class BureauBacklogAllocateServiceImplTest {
         doReturn(Arrays.asList(user1, user2, user3)).when(userRepo).findAllByUsernameIn(anyList());
 
         final LocalDateTime now = LocalDateTime.now();
-        toBeAllocated = Lists.newLinkedList();
+        List<DigitalResponse> toBeAllocated = Lists.newLinkedList();
 
         //nonurgent backlog
         List<DigitalResponse> backlog = generateResponses(NON_URGENT_TO_ALLOCATE_TO_STAFF, false, now);
@@ -96,19 +98,26 @@ public class BureauBacklogAllocateServiceImplTest {
     /**
      * Allocates responses to staff members - happy Path.
      */
-    @Test
-    public void allocateReplies_happyPath() {
-        //List<JurorResponse> toBeAllocated = backlog;
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void allocateRepliesHappyPath(boolean urgentFlag) {
+        List<DigitalResponse> toBeAllocated = generateResponses(1, urgentFlag, LocalDateTime.now());
+
+        // convert the list to a page
+        Page<DigitalResponse> page = new PageImpl<>(toBeAllocated);
+
+        doReturn(page).when(responseRepo).findAll(any(Predicate.class), any(PageRequest.class));
+
         bureauBacklogAllocateService.allocateBacklogReplies(BureauBacklogAllocateRequestDto.builder()
             .officerAllocations(Arrays.asList(
                 BureauBacklogAllocateRequestDto.StaffAllocation.builder()
-                    .nonUrgentCount(NON_URGENT_TO_ALLOCATE_TO_STAFF).urgentCount(URGENT_TO_ALLOCATE_TO_STAFF)
+                    .nonUrgentCount(1).urgentCount(1)
                     .userId("staff1").build(),
                 BureauBacklogAllocateRequestDto.StaffAllocation.builder()
-                    .nonUrgentCount(NON_URGENT_TO_ALLOCATE_TO_STAFF).urgentCount(URGENT_TO_ALLOCATE_TO_STAFF)
+                    .nonUrgentCount(1).urgentCount(1)
                     .userId("staff2").build(),
                 BureauBacklogAllocateRequestDto.StaffAllocation.builder()
-                    .nonUrgentCount(NON_URGENT_TO_ALLOCATE_TO_STAFF).urgentCount(URGENT_TO_ALLOCATE_TO_STAFF)
+                    .nonUrgentCount(1).urgentCount(1)
                     .userId("staff3").build()
             )).build(), "loggedInUser");
         final LocalDateTime currentTime = LocalDateTime.now();
@@ -120,19 +129,19 @@ public class BureauBacklogAllocateServiceImplTest {
         final LocalDate plusFiveSeconds =
             LocalDate.from(currentTime.plusSeconds(5));
 
-        for (DigitalResponse testResponse : toBeAllocated) {
-            if (testResponse.getStaffAssignmentDate() != null) {
-                assertThat(testResponse.getStaff())
-                    .describedAs("Backlog item should be assigned to a bureau officer")
-                    .isNotNull();
-                assertThat(testResponse.getStaffAssignmentDate())
-                    .describedAs("Assignment date should be set to the time the auto-assign ran at")
-                    .isNotNull()
-                    .isBetween(minusFiveSeconds, plusFiveSeconds);
-            }
+        final ArgumentCaptor<List<DigitalResponse>> listCaptor
+            = ArgumentCaptor.forClass((Class) List.class);
 
-        }
-        verify(responseRepo, times(3)).saveAll(toBeAllocated);
+        verify(responseRepo, times(3)).saveAll(listCaptor.capture());
+        listCaptor.getValue().forEach(response -> {
+            assertThat(response.getStaffAssignmentDate())
+                .describedAs("Assignment date should be set to the time the auto-assign ran at")
+                .isNotNull()
+                .isBetween(minusFiveSeconds, plusFiveSeconds);
+            assertThat(response.getStaff().getName())
+                .describedAs("Backlog item should be assigned to a bureau officer")
+                .containsAnyOf("Post Staff 1", "Post Staff 2", "Post Staff 3");
+        });
     }
 
 
@@ -141,8 +150,11 @@ public class BureauBacklogAllocateServiceImplTest {
      *
      * @throws Exception if the test falls over
      */
-    @Test(expected = BureauBacklogAllocateException.RequestingUserIsRequired.class)
-    public void allocateReplies_errorPath_requestingUserIsRequired() throws Exception {
+    @Test
+    void allocateRepliesErrorPathRequestingUserIsRequired() throws Exception {
+
+        Assertions.assertThatExceptionOfType(BureauBacklogAllocateException.RequestingUserIsRequired.class)
+            .isThrownBy(() ->
         bureauBacklogAllocateService.allocateBacklogReplies(BureauBacklogAllocateRequestDto.builder()
             .officerAllocations(Arrays.asList(
                 BureauBacklogAllocateRequestDto.StaffAllocation.builder()
@@ -154,14 +166,17 @@ public class BureauBacklogAllocateServiceImplTest {
                 BureauBacklogAllocateRequestDto.StaffAllocation.builder()
                     .nonUrgentCount(NON_URGENT_TO_ALLOCATE_TO_STAFF).urgentCount(URGENT_TO_ALLOCATE_TO_STAFF)
                     .userId("staff3").build()
-            )).build(), null);
+            )).build(), null));
+
+
+
     }
 
     /**
      * Called by setup to generate the Juror Response Test/Retrieved data for each urgency category.
      *
      * @param responseCount No of responses to be allocated - requested.
-     * @param urgent        urgent repsonse boolean.
+     * @param urgent        urgent response boolean.
      * @param now           datetime stamp.
      *
      * @return List JurorResponses
@@ -180,7 +195,7 @@ public class BureauBacklogAllocateServiceImplTest {
             responses.add(response);
         }
         // This is the order the repository will return entries in
-        responses.sort(ascendingDateOrder);
+        responses.sort(ASCENDING_DATE_ORDER);
         return responses;
     }
 }

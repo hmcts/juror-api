@@ -3529,6 +3529,73 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                             .dateOfExpense(LocalDate.of(2023, 1, 5))
                             .paymentMethod(PaymentMethod.BACS)
                             .time(DailyExpenseTime.builder()
+                                      .travelTime(LocalTime.of(1, 2))
+                                      .payAttendance(PayAttendanceType.FULL_DAY)
+                                      .build())
+                            .financialLoss(
+                                createDailyExpenseFinancialLoss(50.12, 16.30, 5.10, "Desc")
+                            )
+                            .travel(
+                                createDailyExpenseTravel(TravelMethod.CAR, null, 5, 2.25, null, null)
+                            )
+                            .foodAndDrink(
+                                createDailyExpenseFoodAndDrink(FoodDrinkClaimType.LESS_THAN_OR_EQUAL_TO_10_HOURS, 4.2)
+                            )
+                            .build()
+                    ))
+                    .build();
+
+                CombinedExpenseDetailsDto<ExpenseDetailsForTotals> response = triggerValid(JUROR_NUMBER, request);
+                assertThat(response).isNotNull();
+                assertThat(response.getExpenseDetails()).hasSize(1);
+                assertThat(response.getExpenseDetails().get(0)).isEqualTo(
+                    ExpenseDetailsForTotals.builder()
+                        .financialLossApportionedApplied(true)
+                        .payAttendance(PayAttendanceType.FULL_DAY)
+                        .totalDue(new BigDecimal("70.28"))
+                        .totalPaid(new BigDecimal("0.00"))
+                        .attendanceDate(LocalDate.of(2023, 1, 5))
+                        .attendanceType(AttendanceType.FULL_DAY)
+                        .paymentMethod(PaymentMethod.BACS)
+                        .lossOfEarnings(new BigDecimal("50.12"))
+                        .extraCare(new BigDecimal("14.83"))
+                        .other(new BigDecimal("0.00"))
+                        .publicTransport(BigDecimal.ZERO)
+                        .taxi(BigDecimal.ZERO)
+                        .motorcycle(BigDecimal.ZERO)
+                        .car(new BigDecimal("1.57"))
+                        .bicycle(BigDecimal.ZERO)
+                        .parking(new BigDecimal("2.25"))
+                        .foodAndDrink(new BigDecimal("5.71"))
+                        .smartCard(new BigDecimal("4.20"))
+                        .build());
+                assertThat(response.getTotal()).isEqualTo(
+                    ExpenseTotal.builder()
+                        .totalDays(1)
+                        .lossOfEarnings(new BigDecimal("50.12"))
+                        .extraCare(new BigDecimal("14.83"))
+                        .other(new BigDecimal("0.00"))
+                        .publicTransport(BigDecimal.ZERO)
+                        .taxi(BigDecimal.ZERO)
+                        .motorcycle(BigDecimal.ZERO)
+                        .car(new BigDecimal("1.57"))
+                        .bicycle(BigDecimal.ZERO)
+                        .parking(new BigDecimal("2.25"))
+                        .foodAndDrink(new BigDecimal("5.71"))
+                        .smartCard(new BigDecimal("4.20"))
+                        .totalPaid(new BigDecimal("0.00"))
+                        .totalDue(new BigDecimal("70.28"))
+                        .build());
+            }
+
+            @Test
+            void typicalFinancialLossApportionedFoodAndDrinkAutoCalc() throws Exception {
+                CalculateTotalExpenseRequestDto request = CalculateTotalExpenseRequestDto.builder()
+                    .expenseList(List.of(
+                        DailyExpense.builder()
+                            .dateOfExpense(LocalDate.of(2023, 1, 5))
+                            .paymentMethod(PaymentMethod.BACS)
+                            .time(DailyExpenseTime.builder()
                                 .travelTime(LocalTime.of(1, 2))
                                 .payAttendance(PayAttendanceType.FULL_DAY)
                                 .build())
@@ -3539,7 +3606,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                 createDailyExpenseTravel(TravelMethod.CAR, null, 5, 2.25, null, null)
                             )
                             .foodAndDrink(
-                                createDailyExpenseFoodAndDrink(FoodDrinkClaimType.LESS_THAN_OR_EQUAL_TO_10_HOURS, 4.2)
+                                createDailyExpenseFoodAndDrink(FoodDrinkClaimType.YES, 4.2)
                             )
                             .build()
                     ))
@@ -3679,6 +3746,100 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .totalPaid(new BigDecimal("8.00"))
                         .build());
             }
+
+
+            @Test
+            void typicalWithDbDataFoodAndDrinkLongDayAutoCalc() throws Exception {
+                CalculateTotalExpenseRequestDto request = CalculateTotalExpenseRequestDto.builder()
+                    .expenseList(List.of(
+                        DailyExpense.builder()
+                            .dateOfExpense(LocalDate.of(2023, 1, 5))
+                            .build(),
+                        DailyExpense.builder()
+                            .dateOfExpense(LocalDate.of(2023, 1, 11))
+                            .paymentMethod(PaymentMethod.BACS)
+                            .time(DailyExpenseTime.builder()
+                                      .travelTime(LocalTime.of(4, 2))
+                                      .payAttendance(PayAttendanceType.FULL_DAY)
+                                      .build())
+                            .financialLoss(
+                                createDailyExpenseFinancialLoss(15.01, 6.00, 6.20, "Desc")
+                            )
+                            .travel(
+                                createDailyExpenseTravel(TravelMethod.CAR, 3, 15, 13.25, 12.1, 9.4)
+                            )
+                            .foodAndDrink(
+                                createDailyExpenseFoodAndDrink(FoodDrinkClaimType.YES, 4.1)
+                            )
+                            .build()
+                    ))
+                    .build();
+
+                CombinedExpenseDetailsDto<ExpenseDetailsForTotals> response = triggerValid(JUROR_NUMBER, request);
+                assertThat(response).isNotNull();
+                assertThat(response.getExpenseDetails()).hasSize(2);
+                assertThat(response.getExpenseDetails().get(0)).isEqualTo(
+                    ExpenseDetailsForTotals.builder()
+                        .financialLossApportionedApplied(false)
+                        .payAttendance(PayAttendanceType.FULL_DAY)
+                        .totalDue(new BigDecimal("525.00"))
+                        .totalPaid(new BigDecimal("0.00"))
+                        .attendanceDate(LocalDate.of(2023, 1, 5))
+                        .attendanceType(AttendanceType.FULL_DAY)
+                        .paymentMethod(PaymentMethod.BACS)
+                        .lossOfEarnings(new BigDecimal("90.00"))
+                        .extraCare(new BigDecimal("70.00"))
+                        .other(new BigDecimal("80.00"))
+                        .publicTransport(new BigDecimal("10.00"))
+                        .taxi(new BigDecimal("20.00"))
+                        .motorcycle(new BigDecimal("30.00"))
+                        .car(new BigDecimal("40.00"))
+                        .bicycle(new BigDecimal("50.00"))
+                        .parking(new BigDecimal("60.00"))
+                        .foodAndDrink(new BigDecimal("100.00"))
+                        .smartCard(new BigDecimal("25.00"))
+                        .build());
+                assertThat(response.getExpenseDetails().get(1)).isEqualTo(
+                    ExpenseDetailsForTotals.builder()
+                        .financialLossApportionedApplied(false)
+                        .payAttendance(PayAttendanceType.FULL_DAY)
+                        .totalDue(new BigDecimal("76.00"))
+                        .totalPaid(new BigDecimal("8.00"))
+                        .attendanceDate(LocalDate.of(2023, 1, 11))
+                        .attendanceType(AttendanceType.FULL_DAY)
+                        .paymentMethod(PaymentMethod.BACS)
+                        .lossOfEarnings(new BigDecimal("15.01"))
+                        .extraCare(new BigDecimal("6.00"))
+                        .other(new BigDecimal("6.20"))
+                        .publicTransport(new BigDecimal("12.10"))
+                        .taxi(new BigDecimal("9.40"))
+                        .motorcycle(BigDecimal.ZERO)
+                        .car(new BigDecimal("5.97"))
+                        .bicycle(BigDecimal.ZERO)
+                        .parking(new BigDecimal("13.25"))
+                        .foodAndDrink(new BigDecimal("12.17"))
+                        .smartCard(new BigDecimal("4.10"))
+                        .build());
+                ExpenseTotal total = response.getTotal();
+                assertThat(total).isEqualTo(
+                    ExpenseTotal.builder()
+                        .totalDays(2)
+                        .lossOfEarnings(new BigDecimal("105.01"))
+                        .extraCare(new BigDecimal("76.00"))
+                        .other(new BigDecimal("86.20"))
+                        .publicTransport(new BigDecimal("22.10"))
+                        .taxi(new BigDecimal("29.40"))
+                        .motorcycle(new BigDecimal("30.00"))
+                        .car(new BigDecimal("45.97"))
+                        .bicycle(new BigDecimal("50.00"))
+                        .parking(new BigDecimal("73.25"))
+                        .foodAndDrink(new BigDecimal("112.17"))
+                        .smartCard(new BigDecimal("29.10"))
+                        .totalDue(new BigDecimal("601.00"))
+                        .totalPaid(new BigDecimal("8.00"))
+                        .build());
+            }
+
         }
 
         @Nested

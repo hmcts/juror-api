@@ -10,6 +10,6 @@ public enum ReplyMethod {
     DIGITAL("Digital"),
     NONE("None");
 
-    private String description;
+    final String description;
 
 }
