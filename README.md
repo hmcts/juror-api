@@ -64,7 +64,9 @@ docker pull postgres
 
 create a local data folder, e.g. in the home directory
 ```bash
-mkdir ~/postgres/data
+mkdir ~/postgres
+cd ~/postgres
+mkdir data
 ```
 Then to spin up a container run the following command:
 ```bash
