@@ -4,7 +4,7 @@ CREATE VIEW juror_mod.require_pnc_check_view
 AS SELECT j.police_check,
     j.juror_number,
     regexp_replace(REPLACE(REPLACE(j.first_name::text,' -'::text,'-'::text),'- '::text,'-'::text),'\s.*'::text, ''::text) AS first_name,
-	  NULLIF(regexp_replace(regexp_replace(j.first_name ::text,'(.*)-[^-]*'::text, ''::text),'.*?\s'::text,''::text),j.first_name::text) AS middle_name,
+	  NULLIF(regexp_replace(regexp_replace(j.first_name::text,'(.*)-[^-]*'::text, ''::text),'.*?\s'::text,''::text),j.first_name::text) AS middle_name,
     regexp_replace(j.last_name::text, '\s'::text, ''::text, 'g'::text) AS last_name,
     j.dob AS date_of_birth,
     upper(regexp_replace(j.postcode::text, '\s+'::text, ''::text)) AS post_code
