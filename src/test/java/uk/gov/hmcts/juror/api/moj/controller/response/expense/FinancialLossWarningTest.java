@@ -16,6 +16,7 @@ public class FinancialLossWarningTest extends AbstractValidatorTest<FinancialLos
             .limit(BigDecimal.ONE)
             .attendanceType(PayAttendanceType.FULL_DAY)
             .isLongTrialDay(true)
+            .isExtraLongTrialDay(false)
             .message("message")
             .build();
     }

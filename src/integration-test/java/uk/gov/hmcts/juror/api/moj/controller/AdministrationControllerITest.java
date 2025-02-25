@@ -666,6 +666,8 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
             .limitFinancialLossFullDay(new BigDecimal("64.95000"))
             .limitFinancialLossHalfDayLongTrial(new BigDecimal("64.95000"))
             .limitFinancialLossFullDayLongTrial(new BigDecimal("129.91000"))
+            .limitFinancialLossHalfDayExtraLongTrial(new BigDecimal("114.30000"))
+            .limitFinancialLossFullDayExtraLongTrial(new BigDecimal("228.60000"))
             .subsistenceRateStandard(new BigDecimal("5.71000"))
             .subsistenceRateLongDay(new BigDecimal("12.17000"))
             .build();
@@ -829,6 +831,8 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
                         .limitFinancialLossHalfDay(expected.getLimitFinancialLossHalfDay())
                         .limitFinancialLossFullDayLongTrial(expected.getLimitFinancialLossFullDayLongTrial())
                         .limitFinancialLossHalfDayLongTrial(expected.getLimitFinancialLossHalfDayLongTrial())
+                        .limitFinancialLossFullDayExtraLongTrial(expected.getLimitFinancialLossFullDayExtraLongTrial())
+                        .limitFinancialLossHalfDayExtraLongTrial(expected.getLimitFinancialLossHalfDayExtraLongTrial())
                         .build());
             }
         }
@@ -896,6 +900,8 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
                         .limitFinancialLossFullDay(new BigDecimal("0.10000"))
                         .limitFinancialLossHalfDayLongTrial(new BigDecimal("0.10000"))
                         .limitFinancialLossFullDayLongTrial(new BigDecimal("0.10000"))
+                        .limitFinancialLossHalfDayExtraLongTrial(new BigDecimal("0.10000"))
+                        .limitFinancialLossFullDayExtraLongTrial(new BigDecimal("0.10000"))
                         .subsistenceRateStandard(new BigDecimal("0.10000"))
                         .subsistenceRateLongDay(new BigDecimal("0.10000"))
                         .build());
@@ -912,6 +918,8 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
                         .limitFinancialLossFullDay(new BigDecimal("64.95000"))
                         .limitFinancialLossHalfDayLongTrial(new BigDecimal("64.95000"))
                         .limitFinancialLossFullDayLongTrial(new BigDecimal("129.91000"))
+                        .limitFinancialLossHalfDayExtraLongTrial(new BigDecimal("114.30000"))
+                        .limitFinancialLossFullDayExtraLongTrial(new BigDecimal("228.60000"))
                         .subsistenceRateStandard(new BigDecimal("5.71000"))
                         .subsistenceRateLongDay(new BigDecimal("12.17000"))
                         .build());

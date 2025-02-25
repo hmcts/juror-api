@@ -638,12 +638,12 @@ class JurorExpenseServiceTest {
     class IsAttendanceDay {
         @ParameterizedTest(name = "Is Attendance Day: {0}")
         @EnumSource(value = AttendanceType.class, mode = EnumSource.Mode.EXCLUDE,
-            names = {"NON_ATTENDANCE", "NON_ATTENDANCE_LONG_TRIAL"})
+            names = {"NON_ATTENDANCE", "NON_ATTENDANCE_LONG_TRIAL", "NON_ATT_EXTRA_LONG_TRIAL"})
         void positiveIsAttendanceDay(AttendanceType attendanceType) {
             Appearance appearance = mock(Appearance.class);
             when(appearance.getAttendanceType()).thenReturn(attendanceType);
             assertThat(jurorExpenseService.isAttendanceDay(appearance)).isTrue();
-            verify(appearance, times(2))
+            verify(appearance, times(3))
                 .getAttendanceType();
         }
 
@@ -1084,7 +1084,7 @@ class JurorExpenseServiceTest {
             verify(dailyExpense, times(1)).getDateOfExpense();
             verify(dailyExpense, times(2)).getApplyToAllDays();
 
-            verify(appearance, times(2)).getAttendanceType();
+            verify(appearance, times(3)).getAttendanceType();
             verify(jurorExpenseService, times(1)).getDraftAppearance(TestConstants.VALID_COURT_LOCATION,
                 jurorNumber, dateOfExpense);
             verify(jurorExpenseService, times(1)).updateExpenseInternal(appearance, dailyExpense);
@@ -1578,6 +1578,7 @@ class JurorExpenseServiceTest {
         private final BigDecimal halfDayLongLimit = new BigDecimal("15.00");
         private final BigDecimal fullDayStandardLimit = new BigDecimal("20.00");
         private final BigDecimal fullDayLongLimit = new BigDecimal("25.00");
+        private final BigDecimal fullDayExtraLongLimit = new BigDecimal("50.00");
         private ExpenseRates expenseRates;
 
         @BeforeEach
@@ -1587,18 +1588,20 @@ class JurorExpenseServiceTest {
             doReturn(halfDayLongLimit).when(expenseRates).getLimitFinancialLossHalfDayLongTrial();
             doReturn(fullDayStandardLimit).when(expenseRates).getLimitFinancialLossFullDay();
             doReturn(fullDayLongLimit).when(expenseRates).getLimitFinancialLossFullDayLongTrial();
+            doReturn(fullDayExtraLongLimit).when(expenseRates).getLimitFinancialLossFullDayExtraLongTrial();
             doReturn(expenseRates).when(jurorExpenseService).getCurrentExpenseRates(false);
         }
 
         private Appearance createAppearanceMock(Double lossOfEarnings, Double extraCareCost,
-                                                Double effectiveOtherCost,
-                                                PayAttendanceType payAttendanceType, boolean longTrial) {
+                                                Double effectiveOtherCost, PayAttendanceType payAttendanceType,
+                                                boolean longTrial, boolean extraLongTrial) {
             Appearance appearance = mock(Appearance.class);
             doReturn(doubleToBigDecimal(lossOfEarnings)).when(appearance).getLossOfEarningsDue();
             doReturn(doubleToBigDecimal(extraCareCost)).when(appearance).getChildcareDue();
             doReturn(doubleToBigDecimal(effectiveOtherCost)).when(appearance).getMiscAmountDue();
             doReturn(payAttendanceType).when(appearance).getPayAttendanceType();
             doReturn(longTrial).when(appearance).isLongTrialDay();
+            doReturn(extraLongTrial).when(appearance).isExtraLongTrialDay();
             doReturn(date).when(appearance).getAttendanceDate();
             return appearance;
         }
@@ -1619,7 +1622,7 @@ class JurorExpenseServiceTest {
             PayAttendanceType payAttendanceType = PayAttendanceType.HALF_DAY;
             boolean isLongTrial = false;
             Appearance appearance = createAppearanceMock(60.00, null, null,
-                payAttendanceType, isLongTrial);
+                payAttendanceType, isLongTrial, false);
 
             FinancialLossWarning financialLossWarning =
                 jurorExpenseService.validateAndUpdateFinancialLossExpenseLimit(appearance);
@@ -1644,7 +1647,7 @@ class JurorExpenseServiceTest {
             PayAttendanceType payAttendanceType = PayAttendanceType.HALF_DAY;
             boolean isLongTrial = true;
             Appearance appearance = createAppearanceMock(60.00, null, null,
-                payAttendanceType, isLongTrial);
+                payAttendanceType, isLongTrial, false);
 
             FinancialLossWarning financialLossWarning =
                 jurorExpenseService.validateAndUpdateFinancialLossExpenseLimit(appearance);
@@ -1668,7 +1671,7 @@ class JurorExpenseServiceTest {
             PayAttendanceType payAttendanceType = PayAttendanceType.FULL_DAY;
             boolean isLongTrial = false;
             Appearance appearance = createAppearanceMock(60.00, null, null,
-                payAttendanceType, isLongTrial);
+                payAttendanceType, isLongTrial, false);
 
             FinancialLossWarning financialLossWarning =
                 jurorExpenseService.validateAndUpdateFinancialLossExpenseLimit(appearance);
@@ -1692,7 +1695,7 @@ class JurorExpenseServiceTest {
             PayAttendanceType payAttendanceType = PayAttendanceType.FULL_DAY;
             boolean isLongTrial = true;
             Appearance appearance = createAppearanceMock(60.00, null, null,
-                payAttendanceType, isLongTrial);
+                payAttendanceType, isLongTrial, false);
 
             FinancialLossWarning financialLossWarning =
                 jurorExpenseService.validateAndUpdateFinancialLossExpenseLimit(appearance);
@@ -1712,11 +1715,35 @@ class JurorExpenseServiceTest {
         }
 
         @Test
+        void positiveFullExtraDayLongTrialTypical() {
+            PayAttendanceType payAttendanceType = PayAttendanceType.FULL_DAY;
+            final boolean isExtraLongTrial = true;
+            Appearance appearance = createAppearanceMock(80.00, null, null,
+                                                         payAttendanceType, false, isExtraLongTrial);
+
+            FinancialLossWarning financialLossWarning =
+                jurorExpenseService.validateAndUpdateFinancialLossExpenseLimit(appearance);
+            assertThat(financialLossWarning).isNotNull();
+            assertThat(financialLossWarning.getDate()).isEqualTo(this.date);
+            assertThat(financialLossWarning.getJurorsLoss()).isEqualTo(new BigDecimal("80.00"));
+            assertThat(financialLossWarning.getLimit()).isEqualTo(this.fullDayExtraLongLimit);
+            assertThat(financialLossWarning.getAttendanceType()).isEqualTo(payAttendanceType);
+            assertThat(financialLossWarning.getIsExtraLongTrialDay()).isEqualTo(isExtraLongTrial);
+            assertThat(financialLossWarning.getMessage()).isEqualTo("The amount you entered will automatically be "
+                                                                + "recalculated to limit the juror's loss to £50.00");
+
+            verify(appearance, times(1)).setLossOfEarningsDue(new BigDecimal("50.00"));
+            verify(appearance, times(1)).setChildcareDue(BigDecimal.ZERO);
+            verify(appearance, times(1)).setMiscAmountDue(BigDecimal.ZERO);
+            verify(jurorExpenseService, times(1)).getCurrentExpenseRates(false);
+        }
+
+        @Test
         void positiveEqualToLimit() {
             PayAttendanceType payAttendanceType = PayAttendanceType.FULL_DAY;
             boolean isLongTrial = true;
             Appearance appearance = createAppearanceMock(12.00, 5.00, 8.00,
-                payAttendanceType, isLongTrial);
+                payAttendanceType, isLongTrial, false);
 
             FinancialLossWarning financialLossWarning =
                 jurorExpenseService.validateAndUpdateFinancialLossExpenseLimit(appearance);
@@ -1727,6 +1754,8 @@ class JurorExpenseServiceTest {
             verify(appearance, times(1)).getLossOfEarningsDue();
             verify(appearance, times(1)).getChildcareDue();
             verify(appearance, times(1)).getMiscAmountDue();
+            verify(appearance, times(1)).isLongTrialDay();
+            verify(appearance, times(1)).isExtraLongTrialDay();
             verifyNoMoreInteractions(appearance);
             verify(jurorExpenseService, times(1)).getCurrentExpenseRates(false);
         }
@@ -1736,7 +1765,7 @@ class JurorExpenseServiceTest {
             PayAttendanceType payAttendanceType = PayAttendanceType.FULL_DAY;
             boolean isLongTrial = true;
             Appearance appearance = createAppearanceMock(14.00, 5.00, 8.00,
-                payAttendanceType, isLongTrial);
+                payAttendanceType, isLongTrial, false);
 
             FinancialLossWarning financialLossWarning =
                 jurorExpenseService.validateAndUpdateFinancialLossExpenseLimit(appearance);
@@ -1760,7 +1789,7 @@ class JurorExpenseServiceTest {
             PayAttendanceType payAttendanceType = PayAttendanceType.FULL_DAY;
             boolean isLongTrial = true;
             Appearance appearance = createAppearanceMock(22.00, 5.00, 8.00,
-                payAttendanceType, isLongTrial);
+                payAttendanceType, isLongTrial, false);
 
             FinancialLossWarning financialLossWarning =
                 jurorExpenseService.validateAndUpdateFinancialLossExpenseLimit(appearance);
@@ -1784,7 +1813,7 @@ class JurorExpenseServiceTest {
             PayAttendanceType payAttendanceType = PayAttendanceType.FULL_DAY;
             boolean isLongTrial = true;
             Appearance appearance = createAppearanceMock(32.00, 5.00, 8.00,
-                payAttendanceType, isLongTrial);
+                payAttendanceType, isLongTrial, false);
 
             FinancialLossWarning financialLossWarning =
                 jurorExpenseService.validateAndUpdateFinancialLossExpenseLimit(appearance);
@@ -4987,7 +5016,6 @@ class JurorExpenseServiceTest {
             verify(appearance, times(1)).getEffectiveTime();
             verify(appearance, times(1)).setTravelTime(travelTime);
             verify(appearance, times(1)).setLossOfEarningsDue(null);
-            verify(appearance, times(1)).setPayAttendanceType(payAttendanceType);
             verify(juror, times(1)).getMileage();
             verify(juror, times(1)).getTravelTime();
             verify(juror, times(1)).isClaimingSubsistenceAllowance();
@@ -5042,7 +5070,6 @@ class JurorExpenseServiceTest {
             verify(appearance, times(1)).getEffectiveTime();
             verify(appearance, times(1)).setTravelTime(travelTime);
             verify(appearance, times(1)).setLossOfEarningsDue(null);
-            verify(appearance, times(1)).setPayAttendanceType(payAttendanceType);
             verify(juror, times(1)).getMileage();
             verify(juror, times(1)).getTravelTime();
             verify(juror, times(1)).isClaimingSubsistenceAllowance();
@@ -5099,7 +5126,6 @@ class JurorExpenseServiceTest {
             verify(appearance, times(1)).getEffectiveTime();
             verify(appearance, times(1)).setTravelTime(travelTime);
             verify(appearance, times(1)).setLossOfEarningsDue(null);
-            verify(appearance, times(1)).setPayAttendanceType(payAttendanceType);
             verify(juror, times(1)).getMileage();
             verify(juror, times(1)).getTravelTime();
             verify(juror, never()).isClaimingSubsistenceAllowance();
@@ -5155,7 +5181,6 @@ class JurorExpenseServiceTest {
             verify(appearance, times(1)).getEffectiveTime();
             verify(appearance, times(1)).setTravelTime(travelTime);
             verify(appearance, times(1)).setLossOfEarningsDue(null);
-            verify(appearance, times(1)).setPayAttendanceType(payAttendanceType);
             verify(juror, times(1)).getMileage();
             verify(juror, times(1)).getTravelTime();
             verify(juror, times(1)).isClaimingSubsistenceAllowance();
@@ -5212,8 +5237,6 @@ class JurorExpenseServiceTest {
             verify(appearance, times(1)).getEffectiveTime();
             verify(appearance, times(1)).setTravelTime(travelTime);
             verify(appearance, times(1)).setLossOfEarningsDue(new BigDecimal("50.00"));
-            verify(appearance, times(1)).setPayAttendanceType(payAttendanceType);
-            verify(appearance, times(1)).getPayAttendanceType();
             verify(juror, times(1)).getMileage();
             verify(juror, times(1)).getTravelTime();
             verify(juror, times(1)).isClaimingSubsistenceAllowance();
@@ -5270,8 +5293,6 @@ class JurorExpenseServiceTest {
             verify(appearance, times(1)).getEffectiveTime();
             verify(appearance, times(1)).setTravelTime(travelTime);
             verify(appearance, times(1)).setLossOfEarningsDue(new BigDecimal("25.00"));
-            verify(appearance, times(1)).setPayAttendanceType(payAttendanceType);
-            verify(appearance, times(1)).getPayAttendanceType();
             verify(juror, times(1)).getMileage();
             verify(juror, times(1)).getTravelTime();
             verify(juror, times(1)).isClaimingSubsistenceAllowance();

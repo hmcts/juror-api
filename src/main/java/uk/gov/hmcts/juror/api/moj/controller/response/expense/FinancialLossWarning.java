@@ -36,6 +36,10 @@ public class FinancialLossWarning {
     @NotNull
     private Boolean isLongTrialDay;
 
+    @JsonProperty("is_extra_long_trial_day")
+    @NotNull
+    private Boolean isExtraLongTrialDay;
+
     @JsonProperty("message")
     @NotNull
     private String message;
