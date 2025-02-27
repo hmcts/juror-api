@@ -155,8 +155,8 @@ class BureauBacklogAllocateServiceImplTest {
 
         Assertions.assertThatExceptionOfType(BureauBacklogAllocateException.RequestingUserIsRequired.class)
             .isThrownBy(() ->
-        bureauBacklogAllocateService.allocateBacklogReplies(BureauBacklogAllocateRequestDto.builder()
-            .officerAllocations(Arrays.asList(
+            bureauBacklogAllocateService.allocateBacklogReplies(BureauBacklogAllocateRequestDto.builder()
+                                                                    .officerAllocations(Arrays.asList(
                 BureauBacklogAllocateRequestDto.StaffAllocation.builder()
                     .nonUrgentCount(NON_URGENT_TO_ALLOCATE_TO_STAFF).urgentCount(URGENT_TO_ALLOCATE_TO_STAFF)
                     .userId("staff1").build(),
