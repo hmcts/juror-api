@@ -1484,10 +1484,10 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     }
 
     boolean isLongTrialDay(List<LocalDate> appearanceDates, LocalDate dateToCheck) {
-        return appearanceDates.indexOf(dateToCheck) >= 10 && appearanceDates.indexOf(dateToCheck) < 202;
+        return appearanceDates.indexOf(dateToCheck) >= 10 && appearanceDates.indexOf(dateToCheck) <= 200;
     }
 
     boolean isExtraLongTrialDay(List<LocalDate> appearanceDates, LocalDate dateToCheck) {
-        return appearanceDates.indexOf(dateToCheck) > 201;
+        return appearanceDates.indexOf(dateToCheck) >= 201;
     }
 }
