@@ -334,6 +334,18 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         if (isAttendanceDay(appearance)) {
             appearance.setTravelTime(time.getTravelTime());
             updateDraftTravelExpense(appearance, request.getTravel());
+
+            if (request.getFoodAndDrink() != null
+                && request.getFoodAndDrink().getFoodAndDrinkClaimType() == FoodDrinkClaimType.YES) {
+                // get the effective total time for the day
+                boolean isLongDay = appearance.getEffectiveTime().isAfter(LocalTime.of(10, 0, 0));
+                if (isLongDay) {
+                    request.getFoodAndDrink().setFoodAndDrinkClaimType(FoodDrinkClaimType.MORE_THAN_10_HOURS);
+                } else {
+                    request.getFoodAndDrink().setFoodAndDrinkClaimType(FoodDrinkClaimType.LESS_THAN_OR_EQUAL_TO_10_HOURS);
+                }
+            }
+
             updateDraftFoodAndDrinkExpense(appearance, request.getFoodAndDrink());
         }
         //If time pay attendance changes validate financial loss limit if not already validated
@@ -771,7 +783,25 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     public PaginatedList<UnpaidExpenseSummaryResponseDto> getUnpaidExpensesForCourtLocation(
         String locCode,
         UnpaidExpenseSummaryRequestDto search) {
-        return appearanceRepository.findUnpaidExpenses(locCode, search);
+        PaginatedList<UnpaidExpenseSummaryResponseDto> unpaidExpenses =
+            appearanceRepository.findUnpaidExpenses(locCode, search);
+
+        List<UnpaidExpenseSummaryResponseDto> unpaidExpensesList = unpaidExpenses.getData();
+
+        // need to check the pool number in the unpaid expenses list
+        unpaidExpensesList.forEach(unpaidExpense -> {
+            if (unpaidExpense.getPoolNumber() == null) {
+                List<JurorPool> jurorPools = jurorPoolRepository
+                    .findByPoolCourtLocationLocCodeAndJurorJurorNumber(locCode, unpaidExpense.getJurorNumber());
+                if (jurorPools.size() == 1) {
+                    unpaidExpense.setPoolNumber(jurorPools.get(0).getPoolNumber());
+                } else {
+                    log.info("Could not determine pool number for juror: {}", unpaidExpense.getJurorNumber());
+                }
+            }
+        });
+
+        return unpaidExpenses;
     }
 
     @Override
@@ -797,6 +827,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             if (dailyExpense.shouldPullFromDatabase()) {
                 return new ExpenseDetailsForTotals(appearance);
             }
+
             DailyExpenseResponse dailyExpenseResponse = updateExpenseInternal(appearance, dailyExpense);
             ExpenseDetailsForTotals result = new ExpenseDetailsForTotals(appearance);
             result.setFinancialLossApportionedApplied(dailyExpenseResponse.getFinancialLossWarning() != null);

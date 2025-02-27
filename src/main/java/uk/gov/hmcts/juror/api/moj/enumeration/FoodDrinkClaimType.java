@@ -7,6 +7,7 @@ import java.util.function.Function;
 
 public enum FoodDrinkClaimType {
     NONE(courtLocation -> BigDecimal.ZERO),
+    YES(courtLocation -> BigDecimal.ZERO),
     LESS_THAN_OR_EQUAL_TO_10_HOURS(ExpenseRates::getSubsistenceRateStandard),
     MORE_THAN_10_HOURS(ExpenseRates::getSubsistenceRateLongDay);
 

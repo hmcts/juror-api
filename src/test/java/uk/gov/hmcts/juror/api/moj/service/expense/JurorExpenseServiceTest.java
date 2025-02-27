@@ -53,6 +53,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PaymentData;
+import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
@@ -80,6 +81,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -179,6 +181,46 @@ class JurorExpenseServiceTest {
                 .findUnpaidExpenses(TestConstants.VALID_COURT_LOCATION, request);
 
         }
+
+        @Test
+        @DisplayName("Missing Pool number")
+        @SuppressWarnings("unchecked")
+        void missingPoolNumber() {
+
+            // do not set pool number, but should not cause an error
+            UnpaidExpenseSummaryResponseDto responseDto = UnpaidExpenseSummaryResponseDto.builder()
+                .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
+                .firstName("John")
+                .lastName("Doe")
+                .totalUnapproved(BigDecimal.valueOf(100.0))
+                .build();
+
+            PaginatedList<UnpaidExpenseSummaryResponseDto> paginatedList = new PaginatedList<>();
+            paginatedList.setData(List.of(responseDto));
+            when(appearanceRepository.findUnpaidExpenses(any(), any())).thenReturn(paginatedList);
+
+            PoolRequest poolRequest = new PoolRequest();
+            poolRequest.setPoolNumber("123456789");
+            JurorPool jurorPool = new JurorPool();
+            jurorPool.setJuror(mock(Juror.class));
+            jurorPool.setPool(poolRequest);
+            when(jurorPoolRepository.findByPoolCourtLocationLocCodeAndJurorJurorNumber(any(), any()))
+                .thenReturn(Collections.singletonList(jurorPool));
+
+            UnpaidExpenseSummaryRequestDto request = mock(UnpaidExpenseSummaryRequestDto.class);
+            assertThat(jurorExpenseService.getUnpaidExpensesForCourtLocation(
+                TestConstants.VALID_COURT_LOCATION,
+                request
+            )).isEqualTo(paginatedList);
+
+            verify(appearanceRepository, times(1))
+                .findUnpaidExpenses(TestConstants.VALID_COURT_LOCATION, request);
+
+            verify(jurorPoolRepository, times(1))
+                .findByPoolCourtLocationLocCodeAndJurorJurorNumber(any(), any());
+
+        }
+
     }
 
     @Nested
@@ -730,13 +772,13 @@ class JurorExpenseServiceTest {
             verify(dailyExpense, times(1)).getFinancialLoss();
             verify(dailyExpense, times(1)).getTime();
             verify(dailyExpense, times(1)).getTravel();
-            verify(dailyExpense, times(1)).getFoodAndDrink();
+            verify(dailyExpense, times(3)).getFoodAndDrink();
 
 
             verify(time, times(1)).getTravelTime();
             verify(time, times(1)).getPayAttendance();
 
-            verifyNoMoreInteractions(jurorExpenseService, appearance, financialLoss, time, travel, food, dailyExpense);
+            verifyNoMoreInteractions(jurorExpenseService, appearance, financialLoss, time, travel, dailyExpense);
         }
 
         @Test

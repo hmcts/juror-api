@@ -7,6 +7,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
+import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.summonsmanagement.JurorResponseRetrieveRequestDto;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
@@ -45,6 +46,14 @@ public class JurorResponseCommonRepositoryModImpl implements JurorResponseCommon
         // build sql query
         JPAQuery<Tuple> query = sqlRetrieveJurorResponseDetails(request, isTeamLeader);
 
+        if (request.getProcessingStatus() != null
+            && request.getProcessingStatus().size() == 1
+            && request.getProcessingStatus().contains(ProcessingStatus.CLOSED)) {
+            query.orderBy(JUROR_RESPONSE_COMMON.dateReceived.desc());
+        } else {
+            query.orderBy(JUROR_RESPONSE_COMMON.dateReceived.asc());
+        }
+
         // fetch the data
         return fetchQueryResults(query, resultsLimit);
     }
@@ -73,7 +82,6 @@ public class JurorResponseCommonRepositoryModImpl implements JurorResponseCommon
 
     private QueryResults<Tuple> fetchQueryResults(JPAQuery<Tuple> query, int resultsLimit) {
         return query
-            .orderBy(JUROR_RESPONSE_COMMON.dateReceived.asc())
             .limit(resultsLimit)
             .fetchResults();
     }

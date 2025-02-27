@@ -16,7 +16,15 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReplyType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCommonRepositoryMod;
 
 import java.util.List;
 import java.util.Set;
@@ -30,6 +38,14 @@ class UndeliverableResponseServiceTest {
     private JurorHistoryService jurorHistoryService;
     @Mock
     private JurorPoolService jurorPoolService;
+    @Mock
+    private  JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
+    @Mock
+    private  JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository;
+    @Mock
+    private  JurorResponseCommonRepositoryMod jurorResponseCommonRepositoryMod;
+    @Mock
+    private JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
 
     @InjectMocks
     private UndeliverableResponseServiceImpl undeliverableResponseService;
@@ -131,6 +147,57 @@ class UndeliverableResponseServiceTest {
             .createUndeliveredSummonsHistory(jurorPool2);
     }
 
+
+    @Test
+    void markAsUndeliverableUpdatesResponseToClosed() {
+        String jurorNumber = "333333333";
+        JurorPool jurorPool = createValidJurorPool(jurorNumber, OWNER);
+        AbstractJurorResponse jurorResponse = new DigitalResponse();
+        jurorResponse.setReplyType(new ReplyType("Digital", null));
+
+        Mockito.doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        Mockito.doReturn(jurorResponse).when(jurorResponseCommonRepositoryMod).findByJurorNumber(jurorNumber);
+
+        undeliverableResponseService.markAsUndeliverable(List.of(jurorNumber));
+
+        Mockito.verify(jurorResponseCommonRepositoryMod, Mockito.times(1)).findByJurorNumber(jurorNumber);
+        Mockito.verify(jurorDigitalResponseRepository, Mockito.times(1)).save((DigitalResponse) jurorResponse);
+        Mockito.verify(jurorPaperResponseRepository, Mockito.never()).save(Mockito.any());
+    }
+
+    @Test
+    void markAsUndeliverableWithNoResponse() {
+        String jurorNumber = "444444444";
+        JurorPool jurorPool = createValidJurorPool(jurorNumber, OWNER);
+
+        Mockito.doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        Mockito.doReturn(null).when(jurorResponseCommonRepositoryMod).findByJurorNumber(jurorNumber);
+
+        undeliverableResponseService.markAsUndeliverable(List.of(jurorNumber));
+
+        Mockito.verify(jurorResponseCommonRepositoryMod, Mockito.times(1)).findByJurorNumber(jurorNumber);
+        Mockito.verify(jurorDigitalResponseRepository, Mockito.never()).save(Mockito.any());
+        Mockito.verify(jurorPaperResponseRepository, Mockito.never()).save(Mockito.any());
+    }
+
+    @Test
+    void markAsUndeliverableUpdatesPaperResponseToClosed() {
+        String jurorNumber = "555555555";
+        JurorPool jurorPool = createValidJurorPool(jurorNumber, OWNER);
+        AbstractJurorResponse jurorResponse = new PaperResponse();
+        jurorResponse.setReplyType(new ReplyType("Paper", null));
+
+        Mockito.doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        Mockito.doReturn(jurorResponse).when(jurorResponseCommonRepositoryMod).findByJurorNumber(jurorNumber);
+
+        undeliverableResponseService.markAsUndeliverable(List.of(jurorNumber));
+
+        Mockito.verify(jurorResponseCommonRepositoryMod, Mockito.times(1)).findByJurorNumber(jurorNumber);
+        Mockito.verify(jurorPaperResponseRepository, Mockito.times(1)).save((PaperResponse) jurorResponse);
+        Mockito.verify(jurorDigitalResponseRepository, Mockito.never()).save(Mockito.any());
+    }
+
+
     private JurorPool createValidJurorPool(String jurorNumber, String owner) {
         CourtLocation courtLocation = new CourtLocation();
         courtLocation.setLocCourtName("CHESTER");
@@ -170,4 +237,6 @@ class UndeliverableResponseServiceTest {
 
         return jurorPool;
     }
+
+
 }
