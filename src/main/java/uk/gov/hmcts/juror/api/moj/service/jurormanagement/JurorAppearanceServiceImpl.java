@@ -446,8 +446,19 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         }
 
         if (ModifyConfirmedAttendanceDto.ModifyAttendanceType.DELETE.equals(modifyAttendanceType)) {
+            log.info("Deleting appearance record for juror {} on appearance date {}", appearance.getJurorNumber(),
+                     appearance.getAttendanceDate());
             appearanceRepository.delete(appearance);
             realignAttendanceType(appearance.getJurorNumber());
+
+            JurorPool jurorPool = jurorPoolService.getJurorPoolForJuror(appearance.getJurorNumber(),
+                                                                        appearance.getPoolNumber());
+            if (jurorPool != null) {
+                jurorHistoryService.createDeleteAttendanceHistory(jurorPool, appearance.getAttendanceDate());
+            } else {
+                log.error("No juror pool found for juror {} on appearance date {}", appearance.getJurorNumber(),
+                         appearance.getAttendanceDate());
+            }
         } else {
             appearanceRepository.saveAndFlush(appearance);
             jurorExpenseService.realignExpenseDetails(appearance);

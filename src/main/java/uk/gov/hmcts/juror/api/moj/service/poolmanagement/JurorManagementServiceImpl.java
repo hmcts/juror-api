@@ -37,11 +37,11 @@ import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Slf4j
@@ -145,9 +145,15 @@ public class JurorManagementServiceImpl implements JurorManagementService {
                 deleteExistingJurorPool(owner, jurorNumber, targetPoolNumber);
 
                 // copy the pool members data over to a new record in the new court location
-                JurorPool targetJurorPool = createReassignedJurorPool(sourceJurorPool, receivingCourtLocation,
+                final JurorPool targetJurorPool = createReassignedJurorPool(sourceJurorPool, receivingCourtLocation,
                     targetPoolRequest,
                     currentUser);
+
+                if (SecurityUtil.isCourt()
+                    && !sendingCourtLocation.getLocCode().equals(receivingCourtLocation.getLocCode())) {
+                    // set the reassign date on target juror pool only when reassigning to different court location
+                    sourceJurorPool.setReassignDate(LocalDate.now());
+                }
 
                 updateSourceJurorPool(sourceJurorPool, currentUser);
 
@@ -384,7 +390,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
                                                           JurorManagementRequestDto requestDto) {
         log.trace("Enter validatePoolMembers");
         int requestedJurorCount = (int) requestDto.getJurorNumbers().stream().distinct().count();
-        final Map<String, Triple<String, String, String>> failedTransfers = new HashMap<>();
+        final Map<String, Triple<String, String, String>> failedTransfers = new ConcurrentHashMap<>();
 
         CourtLocation sendingCourtLocation = getSendingCourtLocation(requestDto.getSendingCourtLocCode());
 

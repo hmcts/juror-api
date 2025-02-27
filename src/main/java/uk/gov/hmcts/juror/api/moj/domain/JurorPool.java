@@ -130,6 +130,9 @@ public class JurorPool implements Serializable {
     @Column(name = "transfer_date")
     private LocalDate transferDate;
 
+    @Column(name = "reassign_date")
+    private LocalDate reassignDate;
+
     @Column(name = "last_update")
     private LocalDateTime lastUpdate;
 

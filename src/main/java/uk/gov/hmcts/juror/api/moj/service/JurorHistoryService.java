@@ -33,6 +33,8 @@ public interface JurorHistoryService {
                                   LocalDate latestAppearanceDate,
                                   BigDecimal totalAmount);
 
+    void createDeleteAttendanceHistory(JurorPool jurorPool, LocalDate attendanceDate);
+
     void createFailedToAttendHistory(JurorPool jurorPool);
 
     void createUndoFailedToAttendHistory(JurorPool jurorPool);

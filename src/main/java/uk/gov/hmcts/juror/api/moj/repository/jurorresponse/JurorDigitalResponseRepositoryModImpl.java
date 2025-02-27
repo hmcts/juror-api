@@ -12,6 +12,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QUser;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QDigitalResponse;
+import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 
 import java.util.List;
 
@@ -34,7 +35,8 @@ public class JurorDigitalResponseRepositoryModImpl implements IJurorDigitalRespo
             .from(digitalResponse)
             .where(digitalResponse.processingStatus.eq(ProcessingStatus.TODO))
             .where(digitalResponse.juror.bureauTransferDate.isNull())
-            .where(digitalResponse.staff.isNull());
+            .where(digitalResponse.staff.isNull())
+            .where(digitalResponse.replyType.type.eq(ReplyMethod.DIGITAL.getDescription()));
         return query.fetchOne();
     }
 
