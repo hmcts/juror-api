@@ -48,7 +48,7 @@ Alternatively, its possible export the environment variables in the terminal bef
 ```bash
 export DB_PASSWORD=secret
 export DB_URL=jdbc:postgresql://localhost:5432/juror
-export DB_USERNAME=juror
+export DB_USERNAME=juror 
 ......
 ```
 
