@@ -180,6 +180,10 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
         validateJurorPool(deferralReasonDto, jurorPool);
 
+        if (deferralReasonDto.getReplyMethod() != null) {
+            updateJurorResponse(jurorNumber, deferralReasonDto, auditorUsername);
+        }
+
         // if not empty then we need to move the juror to the active pool
         if (!StringUtils.isEmpty(deferralReasonDto.getPoolNumber())) {
 
@@ -223,9 +227,6 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             printDeferralLetter(payload.getOwner(), jurorPool);
         }
 
-        if (deferralReasonDto.getReplyMethod() != null) {
-            updateJurorResponse(jurorNumber, deferralReasonDto, auditorUsername);
-        }
     }
 
     @Override
