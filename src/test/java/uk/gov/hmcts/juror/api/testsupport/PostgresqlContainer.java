@@ -7,7 +7,7 @@ import org.testcontainers.utility.DockerImageName;
 import java.util.List;
 
 public class PostgresqlContainer extends PostgreSQLContainer<PostgresqlContainer> {
-
+    
     private static final DockerImageName dockerImageName = DockerImageName
         .parse("hmctspublic.azurecr.io/imported/postgres:16-alpine")
         .asCompatibleSubstituteFor("postgres");
@@ -48,7 +48,7 @@ public class PostgresqlContainer extends PostgreSQLContainer<PostgresqlContainer
             .defaultSchema("juror_mod")
             .table("schema_history")
             .dataSource(jdbcUrl, username, password)
-            .schemas("juror_dashboard", "juror_mod", "juror_eric")
+            .schemas("juror", "juror_digital", "juror_digital_user", "juror_dashboard", "hk", "juror_mod")
             .load();
         flyway.migrate();
     }
