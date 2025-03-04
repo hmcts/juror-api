@@ -215,6 +215,11 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         if (Boolean.TRUE.equals(appearance.getNonAttendanceDay())) {
             return PayAttendanceType.FULL_DAY;
         }
+
+        if (Boolean.TRUE.equals(appearance.getAttendanceType().getIsFullDay())) {
+            return PayAttendanceType.FULL_DAY;
+        }
+
         return appearance.isFullDay() ? PayAttendanceType.FULL_DAY : PayAttendanceType.HALF_DAY;
     }
 
@@ -346,7 +351,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 if (isLongDay) {
                     request.getFoodAndDrink().setFoodAndDrinkClaimType(FoodDrinkClaimType.MORE_THAN_10_HOURS);
                 } else {
-                    request.getFoodAndDrink().setFoodAndDrinkClaimType(FoodDrinkClaimType.LESS_THAN_OR_EQUAL_TO_10_HOURS);
+                    request.getFoodAndDrink().setFoodAndDrinkClaimType(
+                        FoodDrinkClaimType.LESS_THAN_OR_EQUAL_TO_10_HOURS);
                 }
             }
 
@@ -477,6 +483,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             .add(effectiveLossOfEarnings)
             .add(effectiveExtraCareCost)
             .add(effectiveOtherCost);
+
 
         if (BigDecimalUtils.isGreaterThan(total, financialLossLimit)) {
             BigDecimal difference = total.subtract(financialLossLimit);

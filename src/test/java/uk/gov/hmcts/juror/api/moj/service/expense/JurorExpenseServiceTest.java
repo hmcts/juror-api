@@ -4991,22 +4991,84 @@ class JurorExpenseServiceTest {
     @Nested
     @DisplayName("PayAttendanceType calculatePayAttendanceType(LocalTime totalTimeForDay)")
     class CalculatePayAttendanceType {
-        private Appearance mockAppearance(boolean isFullDay) {
-            Appearance appearance = mock(Appearance.class);
-            doReturn(isFullDay).when(appearance).isFullDay();
-            return appearance;
-        }
 
         @Test
         void positiveHalfDay() {
-            assertThat(jurorExpenseService.calculatePayAttendanceType(mockAppearance(false)))
+            Appearance appearance = new Appearance();
+            appearance.setAttendanceType(AttendanceType.HALF_DAY);
+            appearance.setTimeIn(LocalTime.of(10, 0, 0));
+            appearance.setTimeOut(LocalTime.of(13, 0, 0));
+
+            assertThat(jurorExpenseService.calculatePayAttendanceType(appearance))
+                .isEqualTo(PayAttendanceType.HALF_DAY);
+        }
+
+        @Test
+        void positiveHalfDayLongTrial() {
+            Appearance appearance = new Appearance();
+            appearance.setAttendanceType(AttendanceType.HALF_DAY_LONG_TRIAL);
+            appearance.setTimeIn(LocalTime.of(10, 0, 0));
+            appearance.setTimeOut(LocalTime.of(13, 0, 0));
+            assertThat(jurorExpenseService.calculatePayAttendanceType(appearance))
+                .isEqualTo(PayAttendanceType.HALF_DAY);
+        }
+
+        @Test
+        void positiveHalfDayExtraLongTrial() {
+            Appearance appearance = new Appearance();
+            appearance.setAttendanceType(AttendanceType.HALF_DAY_EXTRA_LONG_TRIAL);
+            appearance.setTimeIn(LocalTime.of(10, 0, 0));
+            appearance.setTimeOut(LocalTime.of(13, 0, 0));
+            assertThat(jurorExpenseService.calculatePayAttendanceType(appearance))
                 .isEqualTo(PayAttendanceType.HALF_DAY);
         }
 
 
         @Test
         void positiveFullDay() {
-            assertThat(jurorExpenseService.calculatePayAttendanceType(mockAppearance(true)))
+            Appearance appearance = new Appearance();
+            appearance.setAttendanceType(AttendanceType.FULL_DAY);
+            assertThat(jurorExpenseService.calculatePayAttendanceType(appearance))
+                .isEqualTo(PayAttendanceType.FULL_DAY);
+        }
+
+        @Test
+        void positiveFullDayLongTrial() {
+            Appearance appearance = new Appearance();
+            appearance.setAttendanceType(AttendanceType.FULL_DAY_LONG_TRIAL);
+            assertThat(jurorExpenseService.calculatePayAttendanceType(appearance))
+                .isEqualTo(PayAttendanceType.FULL_DAY);
+        }
+
+        @Test
+        void positiveFullDayExtraLongTrial() {
+            Appearance appearance = new Appearance();
+            appearance.setAttendanceType(AttendanceType.FULL_DAY_EXTRA_LONG_TRIAL);
+            assertThat(jurorExpenseService.calculatePayAttendanceType(appearance))
+                .isEqualTo(PayAttendanceType.FULL_DAY);
+        }
+
+        @Test
+        void positiveNonAttendanceDay() {
+            Appearance appearance = new Appearance();
+            appearance.setAttendanceType(AttendanceType.NON_ATTENDANCE);
+            assertThat(jurorExpenseService.calculatePayAttendanceType(appearance))
+                .isEqualTo(PayAttendanceType.FULL_DAY);
+        }
+
+        @Test
+        void positiveNonAttendanceLongTrial() {
+            Appearance appearance = new Appearance();
+            appearance.setAttendanceType(AttendanceType.NON_ATTENDANCE_LONG_TRIAL);
+            assertThat(jurorExpenseService.calculatePayAttendanceType(appearance))
+                .isEqualTo(PayAttendanceType.FULL_DAY);
+        }
+
+        @Test
+        void positiveNonAttendanceExtraLongTrial() {
+            Appearance appearance = new Appearance();
+            appearance.setAttendanceType(AttendanceType.NON_ATT_EXTRA_LONG_TRIAL);
+            assertThat(jurorExpenseService.calculatePayAttendanceType(appearance))
                 .isEqualTo(PayAttendanceType.FULL_DAY);
         }
     }
