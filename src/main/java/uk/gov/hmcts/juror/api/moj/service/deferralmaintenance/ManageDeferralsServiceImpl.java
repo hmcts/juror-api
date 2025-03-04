@@ -180,6 +180,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
         validateJurorPool(deferralReasonDto, jurorPool);
 
+        // process the response first so any updated juror details are saved
         if (deferralReasonDto.getReplyMethod() != null) {
             updateJurorResponse(jurorNumber, deferralReasonDto, auditorUsername);
         }
