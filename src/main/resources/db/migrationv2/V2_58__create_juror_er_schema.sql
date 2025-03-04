@@ -1,7 +1,23 @@
+
+do
+$$begin if not exists (select * from pg_catalog.pg_roles where rolname = 'juror_eric') then
+    CREATE ROLE juror_eric WITH
+        NOSUPERUSER
+        NOCREATEDB
+        NOCREATEROLE
+        INHERIT
+        LOGIN
+        NOREPLICATION
+        NOBYPASSRLS
+        CONNECTION LIMIT -1;
+end if;end
+$$
+;
+
 --
 -- Create the schema juror_eric
 --
-CREATE SCHEMA IF NOT EXISTS juror_eric AUTHORIZATION juror;
+CREATE SCHEMA IF NOT EXISTS juror_eric;
 
 -- Create the voters_temp table
 CREATE TABLE juror_eric.voters_temp (
@@ -31,7 +47,6 @@ CREATE TABLE juror_eric.voters_temp (
     postcode_start character varying(10) GENERATED ALWAYS AS (split_part((zip)::text, ' '::text, 1)) STORED
 );
 
-ALTER TABLE juror_eric.voters_temp OWNER TO juror;
 
 ALTER TABLE ONLY juror_eric.voters_temp
     ADD CONSTRAINT voters_temp_pk PRIMARY KEY (loc_code, part_no);
@@ -41,3 +56,4 @@ CREATE INDEX voters_temp_loc_code_idx ON juror_eric.voters_temp USING btree (loc
 CREATE INDEX voters_temp_part_no_idx ON juror_eric.voters_temp USING btree (part_no);
 
 CREATE INDEX voters_temp_postcode_start_idx ON juror_eric.voters_temp USING btree (postcode_start, loc_code, perm_disqual, flags, dob);
+
