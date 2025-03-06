@@ -35,6 +35,7 @@ public enum DataType implements IDataType {
     JUROR_POOL_COUNT("Count", Long.class, QJurorPool.jurorPool.count(), QJurorPool.jurorPool),
     SUMMONED_RESPONDED("Responded", Boolean.class, QJurorPool.jurorPool.status.status
         .eq(IJurorStatus.RESPONDED)),
+    OPTIC_REFERENCE("Optic Reference", String.class, QJuror.juror.opticRef, QJuror.juror),
     DEFERRALS("Deferrals", String.class, QJuror.juror.noDefPos, QJuror.juror),
     ABSENCES("Absences", Long.class,
         QAppearance.appearance.attendanceType.eq(AttendanceType.ABSENT).count()),
