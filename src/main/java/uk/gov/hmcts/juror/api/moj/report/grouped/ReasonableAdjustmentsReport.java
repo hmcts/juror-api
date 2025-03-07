@@ -38,6 +38,7 @@ public class ReasonableAdjustmentsReport extends AbstractGroupedReport {
               DataType.POOL_NUMBER_BY_JP,
               DataType.CONTACT_DETAILS,
               DataType.NEXT_ATTENDANCE_DATE,
+              DataType.OPTIC_REFERENCE,
               DataType.JUROR_REASONABLE_ADJUSTMENT_WITH_MESSAGE);
 
         this.courtLocationService = courtLocationService;

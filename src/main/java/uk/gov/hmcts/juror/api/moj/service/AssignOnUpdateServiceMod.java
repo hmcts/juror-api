@@ -1,7 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
 
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 
 public interface AssignOnUpdateServiceMod {
     /**
@@ -11,5 +11,5 @@ public interface AssignOnUpdateServiceMod {
      * @param jurorResponse   The response entity
      * @param auditorUsername The user performing the merge
      */
-    void assignToCurrentLogin(DigitalResponse jurorResponse, String auditorUsername);
+    void assignToCurrentLogin(AbstractJurorResponse jurorResponse, String auditorUsername);
 }

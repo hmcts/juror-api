@@ -35,6 +35,7 @@ public enum DataType implements IDataType {
     JUROR_POOL_COUNT("Count", Long.class, QJurorPool.jurorPool.count(), QJurorPool.jurorPool),
     SUMMONED_RESPONDED("Responded", Boolean.class, QJurorPool.jurorPool.status.status
         .eq(IJurorStatus.RESPONDED)),
+
     DEFERRALS("Deferrals", String.class, QJuror.juror.noDefPos, QJuror.juror),
     ABSENCES("Absences", Long.class,
         QAppearance.appearance.attendanceType.eq(AttendanceType.ABSENT).count()),
@@ -130,6 +131,8 @@ public enum DataType implements IDataType {
     IS_ACTIVE("Active", Boolean.class,
         QJurorPool.jurorPool.isActive, QJurorPool.jurorPool),
     NEXT_ATTENDANCE_DATE("Next attendance date", LocalDate.class, QJurorPool.jurorPool.nextDate, QJurorPool.jurorPool),
+
+    OPTIC_REFERENCE("Optic Reference", String.class, QJuror.juror.opticRef, QJuror.juror),
     LAST_ATTENDANCE_DATE("Last attended on", LocalDate.class, QAppearance.appearance.attendanceDate.max(),
         QAppearance.appearance),
     DOCUMENT_CODE("Document code", String.class, QBulkPrintData.bulkPrintData.formAttribute.formType,

@@ -115,6 +115,11 @@ class DataTypeTest {
     }
 
     @Test
+    void opticReference() {
+        assertMatchesStandard(DataType.OPTIC_REFERENCE, "optic_reference", "Optic Reference", String.class,
+            QJuror.juror.opticRef, QJuror.juror);
+    }
+
     void postponedTo() {
         assertMatchesStandard(DataType.POSTPONED_TO, "postponed_to", "Postponed to", LocalDate.class,
             QJurorPool.jurorPool.deferralDate, QJuror.juror);

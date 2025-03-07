@@ -6,25 +6,25 @@ VALUES ('400', '415240101', '2024-01-01', 5, 5, 'CRO', '415', 'N', '2024-01-01 0
 
 -- create juror records
 INSERT INTO juror_mod.juror (juror_number, first_name, last_name, dob, h_phone, m_phone, w_phone, h_email,
-                             address_line_1, responded, postcode, reasonable_adj_code, reasonable_adj_msg)
+                             address_line_1, responded, postcode, reasonable_adj_code, reasonable_adj_msg,optic_reference)
 VALUES ('041500001', 'CName1', 'CSurname1', '1980-01-01', '000000001', '000000002', '000000003',
-        '041500001@email.gov.uk', 'addressLine1', true, 'CH1 2AN', 'D', 'has got allergies'),
+        '041500001@email.gov.uk', 'addressLine1', true, 'CH1 2AN', 'D', 'has got allergies','4152401'),
        ('041500002', 'CName2', 'CSurname2', '1980-01-01', '100000001', '100000002', '100000003',
-        '041500002@email.gov.uk', 'addressLine1', true, 'CH1 2AN', 'M', 'multiple requests'),
+        '041500002@email.gov.uk', 'addressLine1', true, 'CH1 2AN', 'M', 'multiple requests','4152402'),
        ('041500003', 'CName3', 'CSurname3', '1980-01-01', '200000001', '200000002', '200000003',
-        '041500003@email.gov.uk', 'addressLine1', true, 'CH1 2AN', 'M', 'multiple requests'),
+        '041500003@email.gov.uk', 'addressLine1', true, 'CH1 2AN', 'M', 'multiple requests','4152403'),
        ('041500004', 'CName4', 'CSurname4', '1980-01-01', '300000001', '300000002', '300000003',
-        '041500004@email.gov.uk', 'addressLine1', true, 'CH1 2AN', 'T', 'no transport available'),
+        '041500004@email.gov.uk', 'addressLine1', true, 'CH1 2AN', 'T', 'no transport available','4152404'),
        ('041500005', 'CName5', 'CSurname5', '1980-01-01', '400000001', '400000002', '400000003',
-        '041500005@email.gov.uk', 'addressLine1', true, 'CH1 2AN', 'O', 'other reasons'),
+        '041500005@email.gov.uk', 'addressLine1', true, 'CH1 2AN', 'O', 'other reasons','4152405'),
        ('041500006', 'CName6', 'CSurname6', '1980-01-01', '700000001', '700000002', '700000003',
-        '041500006@email.gov.uk', 'addressLine1', true, 'CH1 2AN', NULL, NULL),
+        '041500006@email.gov.uk', 'addressLine1', true, 'CH1 2AN', NULL, NULL,'4152406'),
        ('040800001', 'BName1', 'BSurname1', '1980-01-01', '500000001', '500000002', '500000003',
-        '040800001@email.gov.uk', 'addressLine1', true, 'BR1 2AN', 'U', 'needs medication'),
+        '040800001@email.gov.uk', 'addressLine1', true, 'BR1 2AN', 'U', 'needs medication','4152407'),
        ('040800002', 'BName2', 'BSurname2', '1980-01-01', '600000001', '600000002', '600000003',
-        '040800002@email.gov.uk', 'addressLine1', true, 'BR1 2AN', 'M', 'multiple requests'),
+        '040800002@email.gov.uk', 'addressLine1', true, 'BR1 2AN', 'M', 'multiple requests','4152408'),
        ('040800003', 'BName3', 'BSurname3', '1980-01-01', '800000001', '800000002', '800000003',
-        '040800002@email.gov.uk', 'addressLine1', true, 'BR1 2AN', NULL, NULL);
+        '040800002@email.gov.uk', 'addressLine1', true, 'BR1 2AN', NULL, NULL,'4152409');
 
 -- create juror_pool associative records
 INSERT INTO juror_mod.juror_pool (owner, juror_number, pool_number, status, is_active, next_date)

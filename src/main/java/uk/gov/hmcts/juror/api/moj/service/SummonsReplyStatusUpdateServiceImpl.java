@@ -124,6 +124,11 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
 
         paperResponse.setProcessingStatus(jurorResponseAuditRepositoryMod, status);
 
+        // if no staff assigned, assign current login
+        if (null == paperResponse.getStaff()) {
+            assignOnUpdateService.assignToCurrentLogin(paperResponse, payload.getLogin());
+        }
+
         // merge the changes if required/allowed
         if (Boolean.TRUE.equals(paperResponse.getProcessingComplete())) {
             log.debug("Unable to update the response status for juror {} as response processing is already complete.",

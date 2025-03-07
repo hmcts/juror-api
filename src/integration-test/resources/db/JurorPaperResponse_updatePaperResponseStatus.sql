@@ -112,3 +112,7 @@ insert into juror_mod.juror_reasonable_adjustment (juror_number, reasonable_adju
 ('111111111', 'W', 'Wheel chair access'),
 ('111111111', 'V', 'Visual impairment');
 
+INSERT INTO juror_mod.users (user_type, username, email, name, active, created_by, updated_by)VALUES
+('BUREAU', 'BUREAU_USER', 'BUREAU_USER@email.gov.uk', 'SYSTEM', true, 'SYSTEM','SYSTEM'),
+('COURT', 'test_court_standard', 'test_court_standard@email.gov.uk', 'SYSTEM', true, 'SYSTEM','SYSTEM'),
+('COURT', 'COURT_USER', 'COURT_USER@email.gov.uk', 'SYSTEM', true, 'SYSTEM','SYSTEM');
