@@ -1328,11 +1328,15 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             .filter(p -> AttendanceType.FULL_DAY.equals(p.getAttendanceType())
                 || AttendanceType.HALF_DAY.equals(p.getAttendanceType())
                 || AttendanceType.FULL_DAY_LONG_TRIAL.equals(p.getAttendanceType())
-                || AttendanceType.HALF_DAY_LONG_TRIAL.equals(p.getAttendanceType()))
+                || AttendanceType.HALF_DAY_LONG_TRIAL.equals(p.getAttendanceType())
+                || AttendanceType.FULL_DAY_EXTRA_LONG_TRIAL.equals(p.getAttendanceType())
+                || AttendanceType.HALF_DAY_EXTRA_LONG_TRIAL.equals(p.getAttendanceType()))
             .count());
 
         responseDto.setNonAttendances((int) jurorAttendanceDetails.stream()
-            .filter(p -> AttendanceType.NON_ATTENDANCE.equals(p.getAttendanceType())).count());
+            .filter(p -> AttendanceType.NON_ATTENDANCE.equals(p.getAttendanceType())
+                || AttendanceType.NON_ATTENDANCE_LONG_TRIAL.equals(p.getAttendanceType())
+                || AttendanceType.NON_ATT_EXTRA_LONG_TRIAL.equals(p.getAttendanceType())).count());
 
         // the hasAttendances method does not care if appearance is confirmed or not
         responseDto.setHasAppearances(jurorAppearanceService.hasAttendances(jurorNumber));

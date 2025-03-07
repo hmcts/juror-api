@@ -190,7 +190,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         }
 
         appearance.setTravelTime(juror.getTravelTime());
-        appearance.setPayAttendanceType(calculatePayAttendanceType(appearance));
+        PayAttendanceType payAttendanceType = calculatePayAttendanceType(appearance);
 
         boolean isLongDay = appearance.getEffectiveTime().isAfter(LocalTime.of(10, 0, 0));
         updateMilesTraveledAndTravelDue(appearance, juror.getMileage());
@@ -202,7 +202,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         }
         if (juror.getFinancialLoss() == null) {
             appearance.setLossOfEarningsDue(null);
-        } else if (PayAttendanceType.FULL_DAY.equals(appearance.getPayAttendanceType())) {
+        } else if (PayAttendanceType.FULL_DAY.equals(payAttendanceType)) {
             appearance.setLossOfEarningsDue(juror.getFinancialLoss());
         } else {
             appearance.setLossOfEarningsDue(juror.getFinancialLoss()
@@ -212,6 +212,14 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     }
 
     PayAttendanceType calculatePayAttendanceType(Appearance appearance) {
+        if (Boolean.TRUE.equals(appearance.getNonAttendanceDay())) {
+            return PayAttendanceType.FULL_DAY;
+        }
+
+        if (Boolean.TRUE.equals(appearance.getAttendanceType().getIsFullDay())) {
+            return PayAttendanceType.FULL_DAY;
+        }
+
         return appearance.isFullDay() ? PayAttendanceType.FULL_DAY : PayAttendanceType.HALF_DAY;
     }
 
@@ -317,7 +325,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
     boolean isAttendanceDay(Appearance appearance) {
         return !AttendanceType.NON_ATTENDANCE.equals(appearance.getAttendanceType())
-            && !AttendanceType.NON_ATTENDANCE_LONG_TRIAL.equals(appearance.getAttendanceType());
+            && !AttendanceType.NON_ATTENDANCE_LONG_TRIAL.equals(appearance.getAttendanceType())
+            && !AttendanceType.NON_ATT_EXTRA_LONG_TRIAL.equals(appearance.getAttendanceType());
     }
 
     @Transactional
@@ -342,7 +351,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 if (isLongDay) {
                     request.getFoodAndDrink().setFoodAndDrinkClaimType(FoodDrinkClaimType.MORE_THAN_10_HOURS);
                 } else {
-                    request.getFoodAndDrink().setFoodAndDrinkClaimType(FoodDrinkClaimType.LESS_THAN_OR_EQUAL_TO_10_HOURS);
+                    request.getFoodAndDrink().setFoodAndDrinkClaimType(
+                        FoodDrinkClaimType.LESS_THAN_OR_EQUAL_TO_10_HOURS);
                 }
             }
 
@@ -442,14 +452,29 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     public FinancialLossWarning validateAndUpdateFinancialLossExpenseLimit(Appearance appearance) {
         ExpenseRates expenseRates = getCurrentExpenseRates(false);
         PayAttendanceType attendanceType = appearance.getPayAttendanceType();
-        boolean isLongTrial = Boolean.TRUE.equals(appearance.isLongTrialDay());
+
+        final boolean isLongTrial = appearance.isLongTrialDay();
+        final boolean isExtraLongTrial = appearance.isExtraLongTrialDay();
+
         BigDecimal financialLossLimit = switch (attendanceType) {
-            case FULL_DAY -> isLongTrial
-                ? expenseRates.getLimitFinancialLossFullDayLongTrial()
-                : expenseRates.getLimitFinancialLossFullDay();
-            case HALF_DAY -> isLongTrial
-                ? expenseRates.getLimitFinancialLossHalfDayLongTrial()
-                : expenseRates.getLimitFinancialLossHalfDay();
+            case FULL_DAY -> {
+                if (isExtraLongTrial) {
+                    yield expenseRates.getLimitFinancialLossFullDayExtraLongTrial();
+                } else if (isLongTrial) {
+                    yield expenseRates.getLimitFinancialLossFullDayLongTrial();
+                } else {
+                    yield expenseRates.getLimitFinancialLossFullDay();
+                }
+            }
+            case HALF_DAY -> {
+                if (isExtraLongTrial) {
+                    yield expenseRates.getLimitFinancialLossHalfDayExtraLongTrial();
+                } else if (isLongTrial) {
+                    yield expenseRates.getLimitFinancialLossHalfDayLongTrial();
+                } else {
+                    yield expenseRates.getLimitFinancialLossHalfDay();
+                }
+            }
         };
         BigDecimal effectiveLossOfEarnings = getOrZero(appearance.getLossOfEarningsDue());
         BigDecimal effectiveExtraCareCost = getOrZero(appearance.getChildcareDue());
@@ -458,6 +483,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             .add(effectiveLossOfEarnings)
             .add(effectiveExtraCareCost)
             .add(effectiveOtherCost);
+
 
         if (BigDecimalUtils.isGreaterThan(total, financialLossLimit)) {
             BigDecimal difference = total.subtract(financialLossLimit);
@@ -488,6 +514,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 financialLossLimit,
                 attendanceType,
                 appearance.isLongTrialDay(),
+                appearance.isExtraLongTrialDay(),
                 "The amount you entered will automatically be recalculated to limit the juror's loss to "
                     + BigDecimalUtils.currencyFormat(financialLossLimit)
             );
@@ -1317,6 +1344,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 .limitFinancialLossHalfDay(expenseRates.getLimitFinancialLossHalfDay())
                 .limitFinancialLossFullDayLongTrial(expenseRates.getLimitFinancialLossFullDayLongTrial())
                 .limitFinancialLossHalfDayLongTrial(expenseRates.getLimitFinancialLossHalfDayLongTrial())
+                .limitFinancialLossFullDayExtraLongTrial(expenseRates.getLimitFinancialLossFullDayExtraLongTrial())
+                .limitFinancialLossHalfDayExtraLongTrial(expenseRates.getLimitFinancialLossHalfDayExtraLongTrial())
                 .build();
         }
         return expenseRates;
