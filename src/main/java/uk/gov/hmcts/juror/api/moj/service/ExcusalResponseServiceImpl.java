@@ -50,8 +50,6 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
     private final JurorResponseService jurorResponseService;
 
 
-
-
     @Override
     @Transactional
     public void respondToExcusalRequest(BureauJwtPayload payload, ExcusalDecisionDto excusalDecisionDto,
@@ -67,6 +65,9 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
 
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, owner);
 
+        // process the response first so any updated juror details are saved
+        jurorResponseService.setResponseProcessingStatusToClosed(jurorNumber);
+
         if (excusalDecisionDto.getExcusalDecision().equals(ExcusalDecision.GRANT)) {
             grantExcusalForJuror(payload, excusalDecisionDto, jurorPool);
             if (!ExcusalCodeEnum.D.getCode().equals(excusalDecisionDto.getExcusalReasonCode())
@@ -77,7 +78,6 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
         } else {
             refuseExcusalForJuror(payload, excusalDecisionDto, jurorPool);
         }
-        jurorResponseService.setResponseProcessingStatusToClosed(jurorNumber);
     }
 
     public void checkExcusalCodeIsValid(String excusalCode) {

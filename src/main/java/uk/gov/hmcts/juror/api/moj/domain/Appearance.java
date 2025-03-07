@@ -339,6 +339,10 @@ public class Appearance implements Serializable {
         return this.attendanceType.getIsLongTrial();
     }
 
+    public Boolean isExtraLongTrialDay() {
+        return this.attendanceType.getIsExtraLongTrial();
+    }
+
     public LocalTime getEffectiveTime() {
         return this.getTimeSpentAtCourt().plusNanos(this.getTravelTime().toNanoOfDay());
     }
@@ -460,12 +464,13 @@ public class Appearance implements Serializable {
 
     public void setPayAttendanceType(PayAttendanceType payAttendanceType) {
         if (this.getAttendanceType() == null
-            || Set.of(AttendanceType.ABSENT, AttendanceType.NON_ATTENDANCE, AttendanceType.NON_ATTENDANCE_LONG_TRIAL)
+            || Set.of(AttendanceType.ABSENT, AttendanceType.NON_ATTENDANCE, AttendanceType.NON_ATTENDANCE_LONG_TRIAL,
+                      AttendanceType.NON_ATT_EXTRA_LONG_TRIAL)
             .contains(this.getAttendanceType())) {
             return;
         }
         setAttendanceType(
-            payAttendanceType.getAttendanceType(this.isLongTrialDay())
+            payAttendanceType.getAttendanceType(this.isLongTrialDay(), this.isExtraLongTrialDay())
         );
     }
 
