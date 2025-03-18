@@ -136,7 +136,6 @@ public class JurorDetailsResponseDto {
         setPhoneNumbers(juror.getPhoneNumber(), juror.getAltPhoneNumber(), juror.getWorkPhone());
 
         this.emailAddress = juror.getEmail();
-
         this.addressLineOne = juror.getAddressLine1();
         this.addressLineTwo = juror.getAddressLine2();
         this.addressLineThree = juror.getAddressLine3();
