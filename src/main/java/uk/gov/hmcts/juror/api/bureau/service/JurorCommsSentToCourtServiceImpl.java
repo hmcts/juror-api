@@ -88,7 +88,7 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
                 }
 
                 //Send SMS only if there has not been an email sent
-                if (jurorDetail.getJuror().getAltPhoneNumber() != null
+                if (jurorDetail.getJuror().getPhoneNumberCombined() != null
                     && !notificationsSent.equals(EMAIL_NOTIFICATION_SENT)
                     && Objects.equals(appSetting.getSendEmailOrSms(), SEND_EMAIL_OR_SMS)) {
                     isSms = true;
@@ -103,7 +103,7 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
                 }
 
                 // Send SMS
-                if (jurorDetail.getJuror().getAltPhoneNumber() != null
+                if (jurorDetail.getJuror().getPhoneNumberCombined() != null
                     && !Objects.equals(appSetting.getSendEmailOrSms(), SEND_EMAIL_OR_SMS)) {
                     isSms = true;
                     jurorCommsNotificationService.sendJurorCommsSms(

@@ -15,6 +15,7 @@ public enum NotifyTemplateMapperMod {
     JUROR_FIRST_NAME(Type.JUROR, (context -> context.getJuror().getFirstName())),
     JUROR_NUMBER(Type.JUROR, (context -> context.getJuror().getJurorNumber())),
     JUROR_ALT_PHONE_NUMBER(Type.JUROR, (context -> context.getJuror().getAltPhoneNumber())),
+    JUROR_PHONE_NUMBER_COMBINED(Type.JUROR, (context -> context.getJuror().getPhoneNumberCombined())),
     JUROR_LAST_NAME(Type.JUROR, (context -> context.getJuror().getLastName())),
 
     RESPONSE_FIRST_NAME(Type.RESPONSE, (context -> context.getAbstractResponse().getFirstName())),
