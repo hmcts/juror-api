@@ -529,10 +529,10 @@ class JurorRecordServiceTest {
 
         assertThat(jurorDetailsResponseDto.getPrimaryPhone())
             .as("Expect the primary phone number to be the mobile number")
-            .isEqualTo("0987654321");
+            .isNull();
         assertThat(jurorDetailsResponseDto.getSecondaryPhone())
             .as("Expect the secondary phone number to be null")
-            .isNull();
+            .isEqualTo("0987654321");
     }
 
     @Test
@@ -572,7 +572,7 @@ class JurorRecordServiceTest {
 
         assertThat(jurorDetailsResponseDto.getSecondaryPhone())
             .as("Expect the secondary phone number to be null")
-            .isEqualTo("0543219876");
+            .isNull();
     }
 
     @Test

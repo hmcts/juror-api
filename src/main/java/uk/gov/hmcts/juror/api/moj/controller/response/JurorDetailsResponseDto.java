@@ -136,7 +136,6 @@ public class JurorDetailsResponseDto {
         setPhoneNumbers(juror.getPhoneNumber(), juror.getAltPhoneNumber(), juror.getWorkPhone());
 
         this.emailAddress = juror.getEmail();
-
         this.addressLineOne = juror.getAddressLine1();
         this.addressLineTwo = juror.getAddressLine2();
         this.addressLineThree = juror.getAddressLine3();
@@ -179,58 +178,44 @@ public class JurorDetailsResponseDto {
 
 
     /**
-     * Sets the primary and secondary phone numbers based on the mobile validity of the provided phone numbers.
+     * Sets the primary and secondary phone numbers based on the validity of the provided phone numbers.
      * The logic for setting the phone numbers is as follows:
-     * - If the mobile phone number is valid mobile, it is set as the primary phone.
-     * - If the home phone number is valid mobile and the mobile phone number is not valid,
-     * - the home phone is set as the primary phone.
-     * - If the home phone number is not valid mobile but provided, it is set as the secondary phone.
-     * - If the work phone number is valid mobile and neither the mobile nor home phone numbers are valid
-     * - the work phone is set as the primary phone
-     * - If the work phone number is not valid but provided, it is set as the secondary phone.
-     * - If none of the above conditions are met,
-     * - the mobile phone is set as the primary phone and the home phone as the secondary phone.
+     * - If the home phone number is a valid mobile and the mobile phone number is not valid,
+     *   the home phone is set as the primary phone and the mobile phone as the secondary phone.
+     * - If the mobile phone number is a valid mobile and the home phone number is not valid,
+     *   the mobile phone is set as the primary phone and the home phone as the secondary phone.
+     * - If neither the home phone nor the mobile phone numbers are valid,
+     *   the home phone is set as the primary phone and the mobile phone as the secondary phone.
+     * - If both the home phone and the mobile phone numbers are valid,
+     *   the home phone is set as the primary phone and the mobile phone as the secondary phone.
+     * - If the work phone number is a valid mobile and provided,
+     *   the work phone is set as the primary phone.
+     * - If the work phone number is valid and the home phone number is not valid but provided,
+     *   the home phone is set as the secondary phone.
      *
      * @param homePhone   the home phone number
      * @param mobilePhone the mobile phone number
      * @param workPhone   the work phone number
      */
-
-
-
-
-
-
     private void setPhoneNumbers(String homePhone, String mobilePhone, String workPhone) {
-        if (isValidMobilePhone(mobilePhone) & (mobilePhone != null)) {
+        if (isValidMobilePhone(homePhone) && (!isValidMobilePhone(mobilePhone))) {
+            this.primaryPhone = homePhone;
+            this.secondaryPhone = mobilePhone;
+        } else if (isValidMobilePhone(mobilePhone) & (!isValidMobilePhone(homePhone))) {
             this.primaryPhone = mobilePhone;
-            if (!isValidMobilePhone(homePhone) & (homePhone != null)) {
-                this.secondaryPhone = homePhone;
-            }
-        } else if (isValidMobilePhone(homePhone) & (homePhone != null)) {
+            this.secondaryPhone = homePhone;
+        } else if (!isValidMobilePhone(homePhone) & (!isValidMobilePhone(mobilePhone))) {
             this.primaryPhone = homePhone;
-            if (!isValidMobilePhone(mobilePhone) & (mobilePhone != null)) {
-                this.secondaryPhone = mobilePhone;
-            }
-        } else if (!isValidMobilePhone(homePhone) & (homePhone != null)) {
+            this.secondaryPhone = mobilePhone;
+        } else if (isValidMobilePhone(homePhone) & (isValidMobilePhone(mobilePhone))) {
             this.primaryPhone = homePhone;
-            if (!isValidMobilePhone(mobilePhone) & (mobilePhone != null)) {
-                this.secondaryPhone = mobilePhone;
-            }
+            this.secondaryPhone = mobilePhone;
         } else if (isValidMobilePhone(workPhone) & (workPhone != null)) {
             this.primaryPhone = workPhone;
             if (!isValidMobilePhone(homePhone) & (homePhone != null)) {
                 this.secondaryPhone = homePhone;
-            }
-        } else if (!isValidMobilePhone(workPhone) & (workPhone != null)) {
-            this.secondaryPhone = workPhone;
-            if (!isValidMobilePhone(homePhone) & (homePhone != null)) {
-                this.primaryPhone = homePhone;
-            }
 
-        } else {
-            this.primaryPhone = mobilePhone;
-            this.secondaryPhone = homePhone;
+            }
         }
     }
 

@@ -124,6 +124,11 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
 
         paperResponse.setProcessingStatus(jurorResponseAuditRepositoryMod, status);
 
+        // if no staff assigned, assign current login
+        if (null == paperResponse.getStaff()) {
+            assignOnUpdateService.assignToCurrentLogin(paperResponse, payload.getLogin());
+        }
+
         // merge the changes if required/allowed
         if (Boolean.TRUE.equals(paperResponse.getProcessingComplete())) {
             log.debug("Unable to update the response status for juror {} as response processing is already complete.",
@@ -504,16 +509,16 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
 
         // If the main phone number starts with an 07 then it should be allocated to the mobile phone number
         if (isMobileNumber(primaryPhone)) {
-            juror.setAltPhoneNumber(primaryPhone);
-            juror.setWorkPhone(secondaryPhone);
-            juror.setPhoneNumber(null);
+            juror.setPhoneNumber(primaryPhone);
+            juror.setAltPhoneNumber(secondaryPhone);
+            juror.setWorkPhone(null);
         } else if (isMobileNumber(secondaryPhone)) {
             /*
              * If the main phone number does not start with an 07 but the alternative one does,
              * then the alternative phone will be  allocated to the mobile phone number
              */
-            juror.setPhoneNumber(primaryPhone);
-            juror.setAltPhoneNumber(secondaryPhone);
+            juror.setPhoneNumber(secondaryPhone);
+            juror.setAltPhoneNumber(primaryPhone);
             juror.setWorkPhone(null);
         } else {
             /*
@@ -522,8 +527,8 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
              * the Work number.
              */
             juror.setPhoneNumber(primaryPhone);
-            juror.setWorkPhone(secondaryPhone);
-            juror.setAltPhoneNumber(null);
+            juror.setAltPhoneNumber(secondaryPhone);
+            juror.setWorkPhone(null);
         }
     }
 

@@ -222,6 +222,19 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         juror.setAltPhoneNumber(requestDto.getSecondaryPhone());
         juror.setEmail(requestDto.getEmailAddress());
 
+
+        /**
+         * Ensures that the mobile phone number is saved as the primary phone number if it is valid,
+         * and the primary phone number is not a valid mobile phone number.
+         *
+         * @param requestDto The DTO containing the juror's phone numbers.
+         */
+        if (isValidMobilePhone(requestDto.getSecondaryPhone()) && (!isValidMobilePhone(requestDto.getPrimaryPhone()))) {
+            juror.setPhoneNumber(requestDto.getSecondaryPhone());
+            juror.setAltPhoneNumber(requestDto.getPrimaryPhone());
+        }
+
+
         //save reasonable adjustments to reasonable adjustment repository
 
         if (requestDto.getSpecialNeed() != null) {
@@ -1557,5 +1570,13 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             throw new MojException.NotFound("Juror number " + jurorNumber + " not found in pool " + poolNumber, null);
         }
         return jurorPool;
+    }
+    private boolean isValidMobilePhone(String phone) {
+        if (phone == null) {
+            return false;
+        }
+        // Regular expression for validating mobile phone numbers
+        String mobilePhonePattern = "^07\\d{8,9}$";
+        return phone.matches(mobilePhonePattern);
     }
 }

@@ -262,14 +262,33 @@ public class MessagingServiceImpl implements MessagingService {
             }
             message.setEmail(juror.getEmail());
         }
+
+
+
         if (both || MessageType.SendType.SMS.equals(jurorAndSendType.getType())) {
             if (juror.getPhoneNumberCombined() == null) {
                 throw new MojException.BusinessRuleViolation(
                     "Phone number is required for juror: " + juror.getJurorNumber(),
                     JUROR_MUST_HAVE_PHONE_NUMBER);
             }
+            if (!isValidMobilePhone(juror.getPhoneNumberCombined())) {
+
+                if (isValidMobilePhone(juror.getAltPhoneNumber())) {
+                    message.setPhone(juror.getAltPhoneNumber());
+                } else {
+                    message.setPhone(juror.getPhoneNumberCombined());
+                }
+            }
+
             message.setPhone(juror.getPhoneNumberCombined());
         }
+
+
+
+
+
+
+
 
         String otherInfo;
         if (welshTemplate != null && juror.isWelsh()) {
@@ -359,8 +378,20 @@ public class MessagingServiceImpl implements MessagingService {
 
     }
 
+    private boolean isValidMobilePhone(String phone) {
+        if (phone == null) {
+            return false;
+        }
+        // Regular expression for validating mobile phone numbers
+        String mobilePhonePattern = "^07\\d{8,9}$";
+        return phone.matches(mobilePhonePattern);
+    }
+
+
     boolean isWelshLocation(String locCode) {
         return CourtLocationUtils.isWelshCourtLocation(
             welshCourtLocationRepository, locCode);
     }
+
+
 }

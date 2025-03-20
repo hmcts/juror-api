@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.moj.domain.QUser;
 import uk.gov.hmcts.juror.api.moj.domain.User;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.UserJurorResponseAudit;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
@@ -24,7 +24,7 @@ public class AssignOnUpdateServiceModImpl implements AssignOnUpdateServiceMod {
 
 
     @Override
-    public void assignToCurrentLogin(DigitalResponse jurorResponse, String auditorUsername) {
+    public void assignToCurrentLogin(AbstractJurorResponse jurorResponse, String auditorUsername) {
         final User staffToAssign =
             userRepository.findOne(
                 QUser.user.username.eq(auditorUsername)).orElseThrow(() -> {

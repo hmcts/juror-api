@@ -1229,9 +1229,10 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         verify(jurorPoolRepository, times(1)).save(jurorPoolCaptor.capture());
 
         Juror juror = jurorCaptor.getValue();
-        assertThat(juror.getAltPhoneNumber()).isEqualTo("07918 010101");
-        assertThat(juror.getWorkPhone()).isEqualTo("07917 020202");
-        assertThat(juror.getPhoneNumber()).isNull();
+        assertThat(juror.getPhoneNumber()).isEqualTo("07918 010101");
+        assertThat(juror.getAltPhoneNumber()).isEqualTo("07917 020202");
+        assertThat(juror.getWorkPhone()).isNull();
+
 
         verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
@@ -1278,9 +1279,10 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         verify(jurorPoolRepository, times(1)).save(jurorPoolCaptor.capture());
 
         Juror juror = jurorCaptor.getValue();
-        assertThat(juror.getAltPhoneNumber()).isEqualTo("07918 010101");
-        assertThat(juror.getWorkPhone()).isEqualTo("07917 020202");
-        assertThat(juror.getPhoneNumber()).isNull();
+        assertThat(juror.getPhoneNumber()).isEqualTo("07918 010101");
+        assertThat(juror.getAltPhoneNumber()).isEqualTo("07917 020202");
+        assertThat(juror.getWorkPhone()).isNull();
+
 
         verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
@@ -1321,9 +1323,10 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         verify(jurorPoolRepository, times(1)).save(jurorPoolCaptor.capture());
 
         Juror juror = jurorCaptor.getValue();
-        assertThat(juror.getPhoneNumber()).isEqualTo("01908 010101");
-        assertThat(juror.getAltPhoneNumber()).isEqualTo("07917 020202");
+        assertThat(juror.getAltPhoneNumber()).isEqualTo("01908 010101");
+        assertThat(juror.getPhoneNumber()).isEqualTo("07917 020202");
         assertThat(juror.getWorkPhone()).isNull();
+
 
         verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
@@ -1369,8 +1372,8 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         verify(jurorPoolRepository, times(1)).save(jurorPoolCaptor.capture());
 
         Juror juror = jurorCaptor.getValue();
-        assertThat(juror.getPhoneNumber()).isEqualTo("01908 010101");
-        assertThat(juror.getAltPhoneNumber()).isEqualTo("07917 020202");
+        assertThat(juror.getAltPhoneNumber()).isEqualTo("01908 010101");
+        assertThat(juror.getPhoneNumber()).isEqualTo("07917 020202");
         assertThat(juror.getWorkPhone()).isNull();
 
         verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
@@ -1419,8 +1422,9 @@ public class SummonsReplyStatusUpdateServiceImplTest {
 
         Juror juror = jurorCaptor.getValue();
         assertThat(juror.getPhoneNumber()).isEqualTo("01908 010101");
-        assertThat(juror.getWorkPhone()).isEqualTo("01274 020202");
-        assertThat(juror.getAltPhoneNumber()).isNull();
+        assertThat(juror.getAltPhoneNumber()).isEqualTo("01274 020202");
+        assertThat(juror.getWorkPhone()).isNull();
+
 
         verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));
@@ -1468,8 +1472,8 @@ public class SummonsReplyStatusUpdateServiceImplTest {
 
         Juror juror = jurorCaptor.getValue();
         assertThat(juror.getPhoneNumber()).isEqualTo("01908 010101");
-        assertThat(juror.getWorkPhone()).isEqualTo("01274 020202");
-        assertThat(juror.getAltPhoneNumber()).isNull();
+        assertThat(juror.getAltPhoneNumber()).isEqualTo("01274 020202");
+        assertThat(juror.getWorkPhone()).isNull();
 
         verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
         verify(jurorRepository, times(1)).save(any(Juror.class));

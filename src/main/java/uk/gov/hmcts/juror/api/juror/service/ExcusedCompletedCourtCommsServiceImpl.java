@@ -237,7 +237,17 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
             final String regionIdExcusalSms = jurorCourtDetailExcusalList.getCourt().getCourtRegion().getRegionId();
             final String regionIdExcusalEmail = jurorCourtDetailExcusalList.getCourt().getCourtRegion().getRegionId();
 
-            final String phone = jurorCourtDetailExcusalList.getJuror().getAltPhoneNumber();
+
+            String mobileValid = null;
+
+            if (isValidMobilePhone(jurorCourtDetailExcusalList.getJuror().getPhoneNumberCombined())) {
+                mobileValid = jurorCourtDetailExcusalList.getJuror().getPhoneNumberCombined();
+            } else if (isValidMobilePhone(jurorCourtDetailExcusalList.getJuror().getAltPhoneNumber())) {
+                mobileValid = jurorCourtDetailExcusalList.getJuror().getAltPhoneNumber();
+            }
+
+            final String phone = mobileValid;
+
 
             final String email = jurorCourtDetailExcusalList.getJuror().getEmail();
 
@@ -310,7 +320,17 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
 
 
             boolean hasEmail = jurorCourtDetailExcusalList.getJuror().getEmail() != null;
-            boolean hasPhone = jurorCourtDetailExcusalList.getJuror().getAltPhoneNumber() != null;
+            String hasValidPhone;
+            if (isValidMobilePhone(jurorCourtDetailExcusalList.getJuror().getPhoneNumberCombined())) {
+                hasValidPhone = jurorCourtDetailExcusalList.getJuror().getPhoneNumberCombined();
+            } else if (isValidMobilePhone(jurorCourtDetailExcusalList.getJuror().getAltPhoneNumber())) {
+                hasValidPhone = jurorCourtDetailExcusalList.getJuror().getAltPhoneNumber();
+            } else {
+                hasValidPhone = null;
+            }
+
+            boolean hasPhone = hasValidPhone != null;
+
 
             try {
                 List<RegionNotifyTemplateMod> regionNotifyTriggeredExcusalTemplateList;
@@ -435,7 +455,17 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
                 .getRegionId();
             final String regionIdCompleteSms = jurorCourtDetailCompletedList.getCourt().getCourtRegion().getRegionId();
 
-            final String phone = jurorCourtDetailCompletedList.getJuror().getAltPhoneNumber();
+            String mobileValid = null;
+
+            if (isValidMobilePhone(jurorCourtDetailCompletedList.getJuror().getPhoneNumberCombined())) {
+                mobileValid = jurorCourtDetailCompletedList.getJuror().getPhoneNumberCombined();
+            } else if (isValidMobilePhone(jurorCourtDetailCompletedList.getJuror().getAltPhoneNumber())) {
+                mobileValid = jurorCourtDetailCompletedList.getJuror().getAltPhoneNumber();
+            }
+
+            final String phone = mobileValid;
+
+
 
             final String email = jurorCourtDetailCompletedList.getJuror().getEmail();
 
@@ -494,7 +524,17 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
             try {
                 NotificationClient notificationClient = new NotificationClient(regionApikey, gotProxy);
                 boolean hasEmail = jurorCourtDetailCompletedList.getJuror().getEmail() != null;
-                boolean hasPhone = jurorCourtDetailCompletedList.getJuror().getAltPhoneNumber() != null;
+
+                String hasValidPhone;
+                if (isValidMobilePhone(jurorCourtDetailCompletedList.getJuror().getPhoneNumberCombined())) {
+                    hasValidPhone = jurorCourtDetailCompletedList.getJuror().getPhoneNumberCombined();
+                } else if (isValidMobilePhone(jurorCourtDetailCompletedList.getJuror().getAltPhoneNumber())) {
+                    hasValidPhone = jurorCourtDetailCompletedList.getJuror().getAltPhoneNumber();
+                } else {
+                    hasValidPhone = null;
+                }
+
+                boolean hasPhone = hasValidPhone != null;
 
                 List<RegionNotifyTemplateMod> regionNotifyTriggeredCompletedTemplateList;
                 if (hasEmail) {
@@ -579,6 +619,8 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
             }
         }
 
+
+
         SchedulerServiceClient.Result.Status status =  errorCount == 0
             ? SchedulerServiceClient.Result.Status.SUCCESS
             : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS;
@@ -607,4 +649,17 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
                           int invalidPhoneCount, int invalidEmailAddressCount) {
 
     }
+
+    private boolean isValidMobilePhone(String phone) {
+
+        if (phone == null) {
+            return false;
+        }
+        // Regular expression for validating mobile phone numbers
+        String mobilePhonePattern = "^07\\d{8,9}$";
+        return phone.matches(mobilePhonePattern);
+    }
+
+
+
 }
