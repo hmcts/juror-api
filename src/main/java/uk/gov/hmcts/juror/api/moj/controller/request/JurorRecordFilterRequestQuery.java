@@ -61,9 +61,10 @@ public class JurorRecordFilterRequestQuery implements IsPageable {
     public enum SortField implements SortMethod.HasComparableExpression {
         JUROR_NUMBER(QJuror.juror.jurorNumber),
         JUROR_NAME(JurorRepository.JUROR_FULL_NAME),
+        EMAIL(QJuror.juror.email),
         POSTCODE(QJuror.juror.postcode),
         POOL_NUMBER(QJurorPool.jurorPool.pool.poolNumber),
-        COURT_NAME(QJurorPool.jurorPool.pool.poolRequest.courtLocation.name),
+        COURT_NAME(QJurorPool.jurorPool.pool.courtLocation.name),
         STATUS(QJurorPool.jurorPool.status.statusDesc);
 
         private final Expression<? extends Comparable<?>> comparableExpression;

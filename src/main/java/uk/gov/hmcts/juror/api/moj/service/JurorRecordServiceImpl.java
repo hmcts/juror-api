@@ -1557,7 +1557,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
                     .poolNumber(tuple.get(QJurorPool.jurorPool.pool.poolNumber))
                     .courtName(tuple.get(QJurorPool.jurorPool.pool.courtLocation.name))
                     .status(tuple.get(QJurorPool.jurorPool.status.statusDesc))
-                    .locCode(tuple.get(QJurorPool.jurorPool.pool.courtLocation.locCode));
+                    .locCode(tuple.get(QJurorPool.jurorPool.pool.courtLocation.locCode))
+                    .email(tuple.get(QJuror.juror.email));
                 return builder.build();
             },
             ValidationConstants.MAX_ITEMS
