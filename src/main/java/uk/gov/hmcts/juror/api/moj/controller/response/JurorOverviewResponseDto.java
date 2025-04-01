@@ -87,6 +87,9 @@ public class JurorOverviewResponseDto {
     @JsonFormat(pattern = ValidationConstants.TIME_FORMAT)
     private LocalTime checkedInTodayTime;
 
+    @Schema(description = "Overseas flag")
+    private Boolean livingOverseas;
+
     private String location;
 
     /**
@@ -147,6 +150,7 @@ public class JurorOverviewResponseDto {
         this.opticReference = juror.getOpticRef();
         this.welshLanguageRequired = juror.getWelsh();
         this.idCheckCode = IdCheckCodeEnum.getIdCheckCodeEnum(jurorPool.getIdChecked());
+        this.livingOverseas = juror.getLivingOverseas();
 
         if (juror.getReasonableAdjustmentCode() != null) {
             this.specialNeed = juror.getReasonableAdjustmentCode();

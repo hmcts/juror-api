@@ -436,6 +436,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             jurorOverviewResponseDto.setReplyMethod(REPLY_METHOD_ONLINE);
             jurorOverviewResponseDto.setReplyDate(jurorResponse.getDateReceived().toLocalDate());
             jurorOverviewResponseDto.setReplyStatus(jurorResponse.getProcessingStatus().getDescription());
+            jurorOverviewResponseDto.setLivingOverseas(juror.getLivingOverseas());
             return jurorOverviewResponseDto;
         }
 
