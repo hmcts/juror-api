@@ -54,7 +54,7 @@ public class SummonsLetter extends LetterBase {
         sharedCourtSetup();
         addData(LetterDataType.WELSH_COURT_NAME, 40);
         addDataShuffle(
-            new DataShuffle(LetterDataType.WELSH_COURT_ADDRESS1, 35),
+            new DataShuffle(LetterDataType.WELSH_COURT_ADDRESS1, 30),
             new DataShuffle(LetterDataType.WELSH_COURT_ADDRESS2, 35),
             new DataShuffle(LetterDataType.WELSH_COURT_ADDRESS3, 35),
             new DataShuffle(LetterDataType.WELSH_COURT_ADDRESS4, 35),
@@ -85,7 +85,7 @@ public class SummonsLetter extends LetterBase {
         addData(LetterDataType.POOL_NUMBER, 9);
         addData(LetterDataType.JUROR_TITLE, 10);
         addData(LetterDataType.JUROR_FIRST_NAME, 20);
-        addData(LetterDataType.JUROR_LAST_NAME, 20);
+        addData(LetterDataType.JUROR_LAST_NAME, 25);
         addJurorAddress();
         addData(LetterDataType.JUROR_NUMBER, 9);
     }
