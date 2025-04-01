@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.juror.api.moj.domain.Voters;
 
 @Repository
-public interface VotersRepository extends JpaRepository<Voters, Voters.VotersId>,
+public interface VotersRepository extends JpaRepository<Voters, String>,
     QuerydslPredicateExecutor<Voters> {
 
 }
