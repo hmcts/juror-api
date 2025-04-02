@@ -256,6 +256,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         juror.setPendingLastName(requestDto.getPendingLastName());
         juror.setOpticRef(requestDto.getOpticReference());
         juror.setWelsh(requestDto.getWelshLanguageRequired());
+        juror.setLivingOverseas(requestDto.getLivingOverseas());
 
         jurorRepository.save(juror);
     }
