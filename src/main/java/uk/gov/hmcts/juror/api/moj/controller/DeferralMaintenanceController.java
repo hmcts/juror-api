@@ -20,9 +20,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.config.security.IsBureauUser;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralAllocateRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralDatesRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralReasonRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.DeferredJurorMoveRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.deferralmaintenance.ProcessJurorPostponementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralOptionsDto;
@@ -169,4 +171,14 @@ public class DeferralMaintenanceController {
         @RequestBody @Valid ProcessJurorPostponementRequestDto request) {
         return ResponseEntity.ok().body(manageDeferralsService.processJurorPostponement(payload, request));
     }
+
+    @PostMapping("/juror/move-deferred")
+    @Operation(summary = "Move one or more deferred jurors to another court")
+    @IsBureauUser
+    public ResponseEntity<Void> moveDeferredJurors(
+        @RequestBody @Valid DeferredJurorMoveRequestDto request) {
+        manageDeferralsService.moveDeferredJuror(request);
+        return ResponseEntity.noContent().build();
+    }
+
 }

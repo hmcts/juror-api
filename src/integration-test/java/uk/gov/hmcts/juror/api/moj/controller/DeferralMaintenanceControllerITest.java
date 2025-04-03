@@ -22,6 +22,7 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralAllocateRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralDatesRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralReasonRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.DeferredJurorMoveRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.deferralmaintenance.ProcessJurorPostponementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralOptionsDto;
@@ -1676,6 +1677,50 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             request.setJurorNumbers(jurorNumbers);
 
             return request;
+        }
+    }
+
+
+    @Nested
+    @DisplayName("MOVE deferred juror to another court")
+    class MoveDeferredJuror {
+        static final String URL = "/api/v1/moj/deferral-maintenance/juror/move-deferred";
+
+        @Test
+        @Sql({"/db/mod/truncate.sql", "/db/DeferralMaintenance_MoveDeferredJurorTest.sql"})
+        void moveSingleDeferredJurorHappyPath() {
+            final String bureauJwt = createJwt(BUREAU_USER, OWNER_400);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            List<String> jurorNumbers = Collections.singletonList(JUROR_123456789);
+
+            DeferredJurorMoveRequestDto request = new DeferredJurorMoveRequestDto();
+            request.setJurorNumbers(jurorNumbers);
+            request.setPoolNumber("416220502");
+
+            ResponseEntity<Void> response = template.exchange(new RequestEntity<>(
+                request, httpHeaders, POST, URI.create(URL)), Void.class);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+            executeInTransaction(() -> {
+                // check to make sure the juror is still in deferral maintenance at the new court
+                Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_123456789);
+                assertThat(deferral.isPresent()).isTrue();
+
+                JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(
+                    JUROR_123456789, "416220502", true).get();
+                assertThat(jurorPool).isNotNull();
+                Juror juror = jurorPool.getJuror();
+                assertThat(jurorPool.getStatus().getStatus()).isEqualTo(IJurorStatus.DEFERRED);
+                assertThat(juror.getNoDefPos()).isEqualTo(1);
+
+                // check to make sure the juror is no longer in deferral maintenance at the old court
+                jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(
+                    JUROR_123456789, "415220502", false).get();
+                assertThat(jurorPool).isNotNull();
+                assertThat(jurorPool.getStatus().getStatus()).isEqualTo(IJurorStatus.REASSIGNED);
+            });
         }
     }
 
