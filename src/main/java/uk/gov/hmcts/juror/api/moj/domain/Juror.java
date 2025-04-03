@@ -308,6 +308,10 @@ public class Juror extends Address implements Serializable {
     @Generated
     private String phoneNumberCombined;
 
+    @NotAudited
+    @Column(name = "living_overseas")
+    private Boolean livingOverseas;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "juror_number")
     @NotAudited

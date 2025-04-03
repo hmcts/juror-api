@@ -256,6 +256,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         juror.setPendingLastName(requestDto.getPendingLastName());
         juror.setOpticRef(requestDto.getOpticReference());
         juror.setWelsh(requestDto.getWelshLanguageRequired());
+        juror.setLivingOverseas(requestDto.getLivingOverseas());
 
         jurorRepository.save(juror);
     }
@@ -436,6 +437,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             jurorOverviewResponseDto.setReplyMethod(REPLY_METHOD_ONLINE);
             jurorOverviewResponseDto.setReplyDate(jurorResponse.getDateReceived().toLocalDate());
             jurorOverviewResponseDto.setReplyStatus(jurorResponse.getProcessingStatus().getDescription());
+            jurorOverviewResponseDto.setLivingOverseas(juror.getLivingOverseas());
             return jurorOverviewResponseDto;
         }
 
