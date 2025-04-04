@@ -439,24 +439,26 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         JurorPool currentJurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
         JurorPoolUtils.checkOwnershipForCurrentUser(currentJurorPool, SecurityUtil.getActiveOwner());
 
+        // check if juror is in deferred status
+        if (currentJurorPool.getStatus().getStatus() != IJurorStatus.DEFERRED) {
+            throw new MojException.BadRequest("Juror is not in deferred status", null);
+        }
+
         // check the juror is moving to a different pool
         validateJurorPool(newPool.getPoolNumber(), currentJurorPool);
 
-        // if not empty then we need to move the juror to the active pool
-        if (!StringUtils.isEmpty(newPool.getPoolNumber())) {
+        createMovedDeferredJurorPool(jurorNumber, newPool, currentJurorPool);
 
-            createMovedDeferredJurorPool(jurorNumber, newPool, currentJurorPool);
+        // de-activate the current juror pool record
+        currentJurorPool.setIsActive(false);
+        currentJurorPool.setUserEdtq(SecurityUtil.getActiveLogin());
+        currentJurorPool.setStatus(jurorStatus);
+        jurorPoolRepository.save(currentJurorPool);
 
-            // de-activate the current juror pool record
-            currentJurorPool.setIsActive(false);
-            currentJurorPool.setUserEdtq(SecurityUtil.getActiveLogin());
-            currentJurorPool.setStatus(jurorStatus);
-            jurorPoolRepository.save(currentJurorPool);
+        // add juror history event to old pool member
+        jurorHistoryService.createReassignPoolMemberHistory(currentJurorPool, newPool.getPoolNumber(),
+                                                            newPool.getCourtLocation());
 
-            // add juror history event to old pool member
-            jurorHistoryService.createReassignPoolMemberHistory(currentJurorPool, newPool.getPoolNumber(),
-                                                                newPool.getCourtLocation());
-        }
     }
 
     private void createMovedDeferredJurorPool(String jurorNumber, PoolRequest newPool, JurorPool currentJurorPool) {

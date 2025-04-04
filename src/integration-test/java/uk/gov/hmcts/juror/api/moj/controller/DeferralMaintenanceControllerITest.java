@@ -1704,24 +1704,92 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
             executeInTransaction(() -> {
-                // check to make sure the juror is still in deferral maintenance at the new court
-                Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_123456789);
-                assertThat(deferral.isPresent()).isTrue();
-
-                JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(
-                    JUROR_123456789, "416220502", true).get();
-                assertThat(jurorPool).isNotNull();
-                Juror juror = jurorPool.getJuror();
-                assertThat(jurorPool.getStatus().getStatus()).isEqualTo(IJurorStatus.DEFERRED);
-                assertThat(juror.getNoDefPos()).isEqualTo(1);
-
-                // check to make sure the juror is no longer in deferral maintenance at the old court
-                jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(
-                    JUROR_123456789, "415220502", false).get();
-                assertThat(jurorPool).isNotNull();
-                assertThat(jurorPool.getStatus().getStatus()).isEqualTo(IJurorStatus.REASSIGNED);
+                checkMovedDeferredJurors(JUROR_123456789, "415220502", "416220502");
             });
         }
+
+        @Test
+        @Sql({"/db/mod/truncate.sql", "/db/DeferralMaintenance_MoveDeferredJurorTest.sql"})
+        void moveMultipleDeferredJurorHappyPath() {
+            final String bureauJwt = createJwt(BUREAU_USER, OWNER_400);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            List<String> jurorNumbers = Arrays.asList(JUROR_123456789, "123456790", "123456791", "123456792");
+
+            DeferredJurorMoveRequestDto request = new DeferredJurorMoveRequestDto();
+            request.setJurorNumbers(jurorNumbers);
+            request.setPoolNumber("416220502");
+
+            ResponseEntity<Void> response = template.exchange(new RequestEntity<>(
+                request, httpHeaders, POST, URI.create(URL)), Void.class);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+            executeInTransaction(() -> {
+                for (String jurorNumber : jurorNumbers) {
+                    checkMovedDeferredJurors(jurorNumber, "415220502", "416220502");
+                }
+            });
+        }
+
+        @Test
+        void courtUserForbidden() {
+            final String bureauJwt = createJwt(COURT_USER, OWNER_415);
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+            List<String> jurorNumbers = Arrays.asList(JUROR_123456789, "123456790", "123456791", "123456792");
+            DeferredJurorMoveRequestDto request = new DeferredJurorMoveRequestDto();
+            request.setJurorNumbers(jurorNumbers);
+            request.setPoolNumber("416220502");
+            ResponseEntity<Void> response = template.exchange(new RequestEntity<>(
+                request, httpHeaders, POST, URI.create(URL)), Void.class);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+
+        }
+
+        @Test
+        void badRequestNoJurors() {
+            final String bureauJwt = createJwt(COURT_USER, OWNER_415);
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+            List<String> jurorNumbers = new ArrayList<>();
+            DeferredJurorMoveRequestDto request = new DeferredJurorMoveRequestDto();
+            request.setJurorNumbers(jurorNumbers);
+            request.setPoolNumber("416220502");
+            ResponseEntity<Void> response = template.exchange(new RequestEntity<>(
+                request, httpHeaders, POST, URI.create(URL)), Void.class);
+            assertThat(response.getStatusCode()).isEqualTo(BAD_REQUEST);
+        }
+
+        @Test
+        void badRequestNoPoolNumber() {
+            final String bureauJwt = createJwt(COURT_USER, OWNER_415);
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+            List<String> jurorNumbers = Collections.singletonList(JUROR_123456789);
+            DeferredJurorMoveRequestDto request = new DeferredJurorMoveRequestDto();
+            request.setJurorNumbers(jurorNumbers);
+            ResponseEntity<Void> response = template.exchange(new RequestEntity<>(
+                request, httpHeaders, POST, URI.create(URL)), Void.class);
+            assertThat(response.getStatusCode()).isEqualTo(BAD_REQUEST);
+        }
+
+        private void checkMovedDeferredJurors(String jurorNumber, String oldPoolNumber, String newPoolNumber) {
+            // check to make sure the juror is still in deferral maintenance at the new court
+            Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(jurorNumber);
+            assertThat(deferral.isPresent()).isTrue();
+
+            JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(
+                jurorNumber, newPoolNumber, true).get();
+            assertThat(jurorPool).isNotNull();
+            Juror juror = jurorPool.getJuror();
+            assertThat(jurorPool.getStatus().getStatus()).isEqualTo(IJurorStatus.DEFERRED);
+            assertThat(juror.getNoDefPos()).isEqualTo(1);
+
+            // check to make sure the juror is no longer in deferral maintenance at the old court
+            jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(
+                jurorNumber, oldPoolNumber, false).get();
+            assertThat(jurorPool).isNotNull();
+            assertThat(jurorPool.getStatus().getStatus()).isEqualTo(IJurorStatus.REASSIGNED);
+        }
+
     }
 
     private DeferralReasonRequestDto createDeferralReasonRequestDtoToActivePool(ReplyMethod replyMethod) {
