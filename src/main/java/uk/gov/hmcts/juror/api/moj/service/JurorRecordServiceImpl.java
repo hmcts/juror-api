@@ -1571,6 +1571,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         }
         return jurorPool;
     }
+
     private boolean isValidMobilePhone(String phone) {
         if (phone == null) {
             return false;
