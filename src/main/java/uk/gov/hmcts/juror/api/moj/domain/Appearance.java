@@ -484,7 +484,8 @@ public class Appearance implements Serializable {
 
     public boolean payAttendanceOverridden() {
         return !isFullDay() && getAttendanceType() != null
-            && PayAttendanceType.FULL_DAY.equals(getPayAttendanceType());
+            && Set.of(AttendanceType.FULL_DAY, AttendanceType.FULL_DAY_LONG_TRIAL,
+                      AttendanceType.FULL_DAY_EXTRA_LONG_TRIAL).contains(getAttendanceType());
     }
 
     public void clearExpenses(boolean validate) {
