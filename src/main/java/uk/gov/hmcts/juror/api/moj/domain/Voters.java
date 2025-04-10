@@ -125,7 +125,7 @@ public class Voters implements Serializable {
     @Column(name = "PERM_DISQUAL")
     private String permDisqual;
 
-    @Size(max = 1)
+    @Size(max = 2)
     @Column(name = "FLAGS")
     private String flags;
 

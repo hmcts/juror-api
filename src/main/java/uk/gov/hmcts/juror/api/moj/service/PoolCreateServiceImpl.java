@@ -896,6 +896,8 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                     createCoronerJurorPool(poolNumber, voter);
                 }
                 votersService.markVotersAsSelected(selectedVoters, Date.valueOf(LocalDate.now()));
+            } catch (MojException.BusinessRuleViolation businessRuleViolation) {
+                throw businessRuleViolation;
             } catch (Exception e) {
                 log.error("Exception occurred when adding members to coroner pool - {}", e.getMessage());
                 throw new PoolCreateException.UnableToCreatePool();

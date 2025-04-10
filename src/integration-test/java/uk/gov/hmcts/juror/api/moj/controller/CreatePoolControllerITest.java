@@ -34,6 +34,10 @@ import uk.gov.hmcts.juror.api.moj.controller.response.SummonsFormResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.CoronerPool;
 import uk.gov.hmcts.juror.api.moj.domain.CoronerPoolDetail;
 import uk.gov.hmcts.juror.api.moj.domain.FilterPoolMember;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
@@ -43,6 +47,7 @@ import uk.gov.hmcts.juror.api.moj.repository.ConfirmationLetterRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CoronerPoolDetailRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CoronerPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -87,6 +92,9 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     private HttpHeaders httpHeaders;
     @Autowired
     private JurorPoolRepository jurorPoolRepository;
+
+    @Autowired
+    private JurorRepository jurorRepository;
 
     @Before
     public void setUp() throws Exception {
@@ -242,6 +250,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql",
         "/db/CreatePoolController_createPool.sql",
         "/db/CreatePoolController_loadVotersWithFlags.sql"})
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     public void createPool_withDisqualifiedOnSelection() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userType(UserType.BUREAU)
@@ -261,8 +270,8 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
-        // now check the pool members contain disqualified jurors, when summoning 8 jurors, we will have 10 jurors
-        // returned two of the jurors will be disqualified on selection
+        // now check the pool members contain disqualified jurors, when summoning 8 jurors, we can have up to 11 jurors
+        // returned, up to two of the jurors will be disqualified on selection (with X flag)
 
         final URI uri2 = URI.create("/api/v1/moj/pool-create/members");
         final PoolMemberFilterRequestQuery body = PoolMemberFilterRequestQuery.builder()
@@ -277,15 +286,78 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
         assertThat(response2.getBody()).isNotNull();
         List<FilterPoolMember> jurorPoolDataDto = response2.getBody().getData();
-        assertThat(jurorPoolDataDto.size())
-            .as("Expect there to be 8 or more jurors returned")
-            .isGreaterThanOrEqualTo(8);
+        assertThat(jurorPoolDataDto.size()).as("Expect there to be between 8 to 11 jurors returned")
+            .isBetween(8, 11);
 
         // we cannot guarantee the order of the jurors, so we will count the disqualified jurors if any are returned
         int disqCount = jurorPoolDataDto.stream().mapToInt(juror ->
             "Disqualified".equals(juror.getStatus()) ? 1 : 0).sum();
 
-        assertThat(disqCount).as("Expect there to be up to to disqualified jurors").isLessThanOrEqualTo(2);
+        assertThat(disqCount).as("Expect there to be up to two disqualified jurors").isLessThanOrEqualTo(2);
+
+    }
+
+
+    @Test
+    @Sql({"/db/mod/truncate.sql",
+        "/db/CreatePoolController_createPool.sql",
+        "/db/CreatePoolController_loadVotersWithOverseasFlags.sql"})
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
+    public void createPool_withVotersOverseasFlags() throws Exception {
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
+            .userType(UserType.BUREAU)
+            .login("BUREAU_USER")
+            .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).build())
+            .owner("400")
+            .build());
+
+        PoolCreateRequestDto poolCreateRequest = setUpPoolCreateRequestDto();
+
+        final URI uri = URI.create("/api/v1/moj/pool-create/create-pool");
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        RequestEntity<PoolCreateRequestDto> requestEntity = new RequestEntity<>(poolCreateRequest, httpHeaders,
+                                                                                HttpMethod.POST, uri);
+        ResponseEntity<String> response = template.exchange(requestEntity, String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+
+        // now check the pool members contain disqualified jurors, when summoning 8 jurors, we will have
+        // up to 11 jurors returned, up to three of the jurors will be disqualified on selection
+
+        final URI uri2 = URI.create("/api/v1/moj/pool-create/members");
+        final PoolMemberFilterRequestQuery body = PoolMemberFilterRequestQuery.builder()
+            .poolNumber("415221201").pageLimit(25).pageNumber(1).build();
+
+        RequestEntity<PoolMemberFilterRequestQuery> requestEntity2 = new RequestEntity<>(
+            body, httpHeaders, HttpMethod.POST, uri2);
+        ResponseEntity<PaginatedList<FilterPoolMember>> response2 = template.exchange(requestEntity2,
+                    new ParameterizedTypeReference<>() {});
+        assertThat(response2.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        assertThat(response2.getBody()).isNotNull();
+        List<FilterPoolMember> jurorPoolDataDto = response2.getBody().getData();
+        assertThat(jurorPoolDataDto.size())
+            .as("Expect there to be between 8 to 11 jurors returned")
+            .isBetween(8, 11);
+
+        // we cannot guarantee the order of the jurors, so we will count the disqualified jurors if any are returned
+        int disqCount = jurorPoolDataDto.stream().mapToInt(juror ->
+                                                               "Disqualified".equals(juror.getStatus()) ? 1 : 0).sum();
+
+        assertThat(disqCount).as("Expect there to be up to three disqualified jurors").isLessThanOrEqualTo(3);
+
+        executeInTransaction(() -> {
+            // check that the jurors with overseas flags are included in the pool
+            Juror juror = jurorRepository.findByJurorNumber("641500004");
+            assertThat(juror).isNotNull();
+            assertThat(juror.getLivingOverseas()).isEqualTo(true);
+
+            List<JurorPool> jurorPool = jurorPoolRepository.findByJurorJurorNumberAndIsActive("641500004", true);
+            assertThat(jurorPool).isNotEmpty();
+            assertThat(jurorPool.size()).isEqualTo(1);
+            JurorStatus expectedJurorStatus = jurorPool.get(0).getStatus();
+            assertThat(expectedJurorStatus.getStatus()).isEqualTo(IJurorStatus.SUMMONED);
+        });
 
     }
 
@@ -1499,6 +1571,30 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode())
             .as("Expect the HTTP Response to be BAD_REQUEST")
             .isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_addCitizensForCoronerPoolFlags.sql"})
+    public void addCitizensToCoronerPoolFlags() throws Exception {
+
+        // requested 100 citizens, adding 30
+        final CoronerPoolAddCitizenRequestDto addCitizenRequestDto = setupCoronerPoolAddCitizensDto("923040001",
+                                                                                                    12, 18);
+
+        final URI uri = URI.create("/api/v1/moj/pool-create/add-citizens");
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwt("BUREAU_USER", "400"));
+        RequestEntity<CoronerPoolAddCitizenRequestDto> requestEntity = new RequestEntity<>(addCitizenRequestDto,
+                                                                                           httpHeaders,
+                                                                                           HttpMethod.POST, uri);
+
+        ResponseEntity<String> response = template.exchange(requestEntity, String.class);
+        // Not enough citizens without flags to summon from
+        assertThat(response.getStatusCode())
+            .as("Expect the HTTP status 422 to be returned")
+            .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+
     }
 
     @Test
