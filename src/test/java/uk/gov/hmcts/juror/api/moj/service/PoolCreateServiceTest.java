@@ -727,7 +727,6 @@ public class PoolCreateServiceTest {
         voter.setPostcode("SY2 6LU");
         voter.setJurorNumber("641500541");
         voter.setDateOfBirth(LocalDate.of(1990, 6, 1));
-        voter.setLocCode("415");
         voter.setRecNumber(91);
         voter.setRegisterLett("91");
         voter.setPollNumber("91");

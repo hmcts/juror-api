@@ -152,6 +152,10 @@ public class EditJurorRecordRequestDto {
     @Schema(description = "Determines if Juror requires Welsh language")
     private Boolean welshLanguageRequired;
 
+    @JsonProperty("living_overseas")
+    @Schema(description = "Determines if Juror is living overseas")
+    private Boolean livingOverseas;
+
     @JsonProperty("third_party")
     private JurorThirdPartyDto thirdParty;
 

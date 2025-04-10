@@ -115,6 +115,9 @@ public class JurorDetailsResponseDto {
     @Schema(name = "Optic Reference", description = "Eight digit Optic Reference Number for Juror")
     private String opticReference;
 
+    @Schema(description = "Is this juror living overseas")
+    private Boolean livingOverseas = Boolean.FALSE;
+
     /**
      * Initialise an instance of this DTO class using a JurorPool object to populate its properties.
      *
@@ -145,6 +148,7 @@ public class JurorDetailsResponseDto {
 
         this.phoenixChecked = PoliceCheck.isChecked(juror.getPoliceCheck());
         this.welsh = juror.getWelsh();
+        this.livingOverseas = juror.getLivingOverseas();
 
         if (juror.getReasonableAdjustmentCode() != null) {
             this.specialNeed = juror.getReasonableAdjustmentCode();

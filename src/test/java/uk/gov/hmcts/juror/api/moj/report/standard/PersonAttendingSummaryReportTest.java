@@ -11,13 +11,14 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
-import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
-import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportTestSupport;
+import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
+import uk.gov.hmcts.juror.api.moj.report.ReportGroupBy;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 
@@ -34,16 +35,20 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
-class PersonAttendingSummaryReportTest extends AbstractStandardReportTestSupport<PersonAttendingSummaryReport> {
+class PersonAttendingSummaryReportTest extends AbstractGroupedReportTestSupport<PersonAttendingSummaryReport> {
 
     private CourtLocationRepository courtLocationRepository;
 
     public PersonAttendingSummaryReportTest() {
         super(QJurorPool.jurorPool,
-            PersonAttendingSummaryReport.RequestValidator.class,
-            DataType.JUROR_NUMBER,
-            DataType.FIRST_NAME,
-            DataType.LAST_NAME);
+              PersonAttendingSummaryReport.RequestValidator.class,
+              ReportGroupBy.builder()
+                  .dataType(DataType.POOL_NUMBER)
+                  .removeGroupByFromResponse(true)
+                  .build(),
+              DataType.JUROR_NUMBER,
+              DataType.FIRST_NAME,
+              DataType.LAST_NAME);
     }
 
     @BeforeEach
@@ -90,6 +95,7 @@ class PersonAttendingSummaryReportTest extends AbstractStandardReportTestSupport
             .where(QJurorPool.jurorPool.status.status.in(IJurorStatus.RESPONDED));
         verify(query, times(1)).orderBy(QJurorPool.jurorPool.juror.lastName.asc());
     }
+
 
     @Test
     void positivePreProcessQueryWithSummoned() {
@@ -145,10 +151,11 @@ class PersonAttendingSummaryReportTest extends AbstractStandardReportTestSupport
     }
 
     @Override
-    public Map<String, StandardReportResponse.DataTypeValue> positiveGetHeadingsTypical(
-        StandardReportRequest request,
-        AbstractReportResponse.TableData<StandardTableData> tableData,
-        StandardTableData data) {
+    public Map<String, AbstractReportResponse.DataTypeValue>
+        positiveGetHeadingsTypical(StandardReportRequest request,
+                                   AbstractReportResponse.TableData<GroupedTableData> tableData,
+                                   GroupedTableData data) {
+
         String locCode = "415";
         TestUtils.mockSecurityUtil(BureauJwtPayload.builder().locCode(locCode).userType(UserType.COURT).build());
 
@@ -170,7 +177,7 @@ class PersonAttendingSummaryReportTest extends AbstractStandardReportTestSupport
             "total_due", StandardReportResponse.DataTypeValue.builder()
                 .displayName("Total due to attend")
                 .dataType("Integer")
-                .value(0)
+                .value(0L)
                 .build(),
             "court_name", StandardReportResponse.DataTypeValue.builder()
                 .displayName("Court Name")
