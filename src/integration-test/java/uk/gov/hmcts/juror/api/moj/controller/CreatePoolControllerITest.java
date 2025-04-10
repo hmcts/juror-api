@@ -97,7 +97,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     private JurorRepository jurorRepository;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
@@ -105,7 +105,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     /* Test to return pool request details where two court deferrals have been used */
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_requestPoolDetails.sql"})
-    public void testGPoolRequestItem_happyPath() throws Exception {
+    public void testGPoolRequestItem_happyPath() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("rprice")
@@ -132,7 +132,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql("/db/mod/truncate.sql")
-    public void testGPoolRequestItem_poolRequestNotFound() throws Exception {
+    public void testGPoolRequestItem_poolRequestNotFound() {
         final String bureauJwt = createJwtBureau("BUREAU_USER");
         final URI uri = URI.create("/api/v1/moj/pool-create/pool?poolNumber=415220110&owner=400");
 
@@ -145,7 +145,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_createPoolWithDeferral.sql"})
-    public void testGBureauDeferrals_deferralFound() throws Exception {
+    public void testGBureauDeferrals_deferralFound() {
 
         String locationCode = "415";
         String attendanceDate = "2022-12-04";
@@ -168,7 +168,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_createPoolWithDeferral.sql"})
-    public void testGBureauDeferrals_noDeferralFound() throws Exception {
+    public void testGBureauDeferrals_noDeferralFound() {
 
         String locationCode = "419";
         String attendanceDate = "2022-12-09";
@@ -192,7 +192,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_loadVoters.sql",
         "/db/CreatePoolController_requestPoolDetails.sql"})
-    public void testGSummaryFormData_happyPath() throws Exception {
+    public void testGSummaryFormData_happyPath() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("rprice")
@@ -226,7 +226,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_loadVoters.sql",
         "/db/CreatePoolController_createPool.sql"})
-    public void createPool_noBureauDeferrals() throws Exception {
+    public void createPool_noBureauDeferrals() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userType(UserType.BUREAU)
             .roles(Set.of(Role.MANAGER))
@@ -251,7 +251,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         "/db/CreatePoolController_createPool.sql",
         "/db/CreatePoolController_loadVotersWithFlags.sql"})
     @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
-    public void createPool_withDisqualifiedOnSelection() throws Exception {
+    public void createPool_withDisqualifiedOnSelection() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userType(UserType.BUREAU)
             .login("BUREAU_USER")
@@ -303,7 +303,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         "/db/CreatePoolController_createPool.sql",
         "/db/CreatePoolController_loadVotersWithOverseasFlags.sql"})
     @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
-    public void createPool_withVotersOverseasFlags() throws Exception {
+    public void createPool_withVotersOverseasFlags() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userType(UserType.BUREAU)
             .login("BUREAU_USER")
@@ -365,7 +365,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql(statements = "delete from juror_mod.bulk_print_data")
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_loadVoters.sql",
         "/db/CreatePoolController_createPoolWithDeferral.sql"})
-    public void createPool_withBureauDeferral() throws Exception {
+    public void createPool_withBureauDeferral() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userType(UserType.BUREAU)
             .login("BUREAU_USER")
@@ -395,7 +395,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql(statements = "DELETE FROM JUROR_MOD.BULK_PRINT_DATA")
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_loadVoters.sql",
         "/db/CreatePoolController_createPoolWithDeferral.sql"})
-    public void summonAdditionalCitizens() throws Exception {
+    public void summonAdditionalCitizens() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userType(UserType.BUREAU)
             .login("BUREAU_USER")
@@ -431,7 +431,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void summonAdditionalCitizens_courtUser() throws Exception {
+    public void summonAdditionalCitizens_courtUser() {
         final String courtJwt = createJwt("COURT_USER", "415");
 
         PoolAdditionalSummonsDto poolAdditionalSummons = setUpPoolAdditionalSummonsDto();
@@ -448,7 +448,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql(statements = "DELETE FROM JUROR_MOD.BULK_PRINT_DATA")
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_loadActivePool_and_loadSingleVoter.sql"})
-    public void test_summonAdditionalCitizens_singleRecord() throws Exception {
+    public void test_summonAdditionalCitizens_singleRecord() {
         final String bureauJwt = createJwtBureau("BUREAU_USER");
 
         PoolAdditionalSummonsDto poolAdditionalSummons = setUpPoolAdditionalSummonsDto();
@@ -474,7 +474,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql",
         "/db/CreatePoolController_loadVoters.sql",
         "/db/CreatePoolController_createPoolWithDeferral.sql"})
-    public void summonAdditionalCitizens_tooManyCitizens() throws Exception {
+    public void summonAdditionalCitizens_tooManyCitizens() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userType(UserType.BUREAU)
             .roles(Set.of(Role.MANAGER))
@@ -529,7 +529,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql",
         "/db/CreatePoolController_loadVoters.sql",
         "/db/CreatePoolController_createPoolWithDeferral.sql"})
-    public void summonAdditionalCitizens_data_outdatedData() throws Exception {
+    public void summonAdditionalCitizens_data_outdatedData() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userType(UserType.BUREAU)
             .roles(Set.of(Role.MANAGER))
@@ -579,7 +579,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_loadVoters.sql",
         "/db/CreatePoolController_requestPoolDetails.sql"})
-    public void createPool_tooManyCitizens() throws Exception {
+    public void createPool_tooManyCitizens() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("BUREAU_USER")
@@ -624,7 +624,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_loadVoters.sql",
         "/db/CreatePoolController_requestPoolDetails.sql"})
-    public void createPool_invalidUserType() throws Exception {
+    public void createPool_invalidUserType() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userType(UserType.COURT)
             .login("COURT_USER")
@@ -647,7 +647,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
-    public void testGThinPoolMembersHappyPath() throws Exception {
+    public void testGThinPoolMembersHappyPath() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("COURT_USER")
@@ -670,7 +670,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
-    public void testGThinPoolMembersNoInaccessibleJurors() throws Exception {
+    public void testGThinPoolMembersNoInaccessibleJurors() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("COURT_USER")
@@ -696,7 +696,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
-    public void testGThinPoolMembersMissingPool() throws Exception {
+    public void testGThinPoolMembersMissingPool() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("COURT_USER")
@@ -717,7 +717,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
-    public void testGThinPoolMembersInvalidPool() throws Exception {
+    public void testGThinPoolMembersInvalidPool() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("COURT_USER")
@@ -737,7 +737,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
-    public void testGThinPoolMembersEmptyPool() throws Exception {
+    public void testGThinPoolMembersEmptyPool() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("COURT_USER")
@@ -759,7 +759,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
-    public void testGThinPoolMembersUnauthorised() throws Exception {
+    public void testGThinPoolMembersUnauthorised() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("COURT_USER")
@@ -780,7 +780,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
-    public void testGPoolMembers_bureauUser_bureauOwnedPool() throws Exception {
+    public void testGPoolMembers_bureauUser_bureauOwnedPool() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("BUREAU_USER")
@@ -819,7 +819,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
-    public void testGPoolMembers_bureauUser_courtOwnedPool() throws Exception {
+    public void testGPoolMembers_bureauUser_courtOwnedPool() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("BUREAU_USER")
@@ -858,7 +858,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
-    public void testGPoolMembers_courtUser_bureauOwnedPool() throws Exception {
+    public void testGPoolMembers_courtUser_bureauOwnedPool() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("COURT_USER")
@@ -895,7 +895,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
-    public void testGPoolMembers_noPoolMembers() throws Exception {
+    public void testGPoolMembers_noPoolMembers() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("COURT_USER")
@@ -922,7 +922,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
-    public void testGPoolMembers_noFilters() throws Exception {
+    public void testGPoolMembers_noFilters() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("COURT_USER")
@@ -951,7 +951,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
-    public void testGPoolMembers_filterByAttendance() throws Exception {
+    public void testGPoolMembers_filterByAttendance() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("COURT_USER")
@@ -983,7 +983,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
-    public void testGPoolMembers_filterByCheckedIn() throws Exception {
+    public void testGPoolMembers_filterByCheckedIn() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("COURT_USER")
@@ -1014,7 +1014,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
-    public void testGPoolMembers_filterByNextDueTrue() throws Exception {
+    public void testGPoolMembers_filterByNextDueTrue() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("COURT_USER")
@@ -1046,7 +1046,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
-    public void testGPoolMembers_filterByNextDueFalse() throws Exception {
+    public void testGPoolMembers_filterByNextDueFalse() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("COURT_USER")
@@ -1077,7 +1077,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
-    public void testGPoolMembers_filterByBothNextDueValues() throws Exception {
+    public void testGPoolMembers_filterByBothNextDueValues() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("COURT_USER")
@@ -1109,7 +1109,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_loadVoters.sql"})
-    public void testGCourtCatchmentItems_happyPath() throws Exception {
+    public void testGCourtCatchmentItems_happyPath() {
         final String bureauJwt = createJwtBureau("BUREAU_USER");
         final URI uri = URI.create("/api/v1/moj/pool-create/postcodes?areaCode=415");
 
@@ -1142,7 +1142,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_loadVotersForCoroners.sql"})
-    public void testGCourtCatchmentItems_Coroners_NormalPool() throws Exception {
+    public void testGCourtCatchmentItems_Coroners_NormalPool() {
         final String bureauJwt = createJwtBureau("BUREAU_USER");
         final URI uri = URI.create("/api/v1/moj/pool-create/postcodes?areaCode=415");
 
@@ -1172,7 +1172,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_loadVotersForCoroners.sql"})
-    public void testGCourtCatchmentItems_Coroners_happyPath() throws Exception {
+    public void testGCourtCatchmentItems_Coroners_happyPath() {
         final String bureauJwt = createJwtBureau("BUREAU_USER");
         final URI uri = URI.create("/api/v1/moj/pool-create/postcodes?areaCode=415&isCoronersPool=true");
 
@@ -1201,7 +1201,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql(statements = "DELETE FROM JUROR_MOD.VOTERS")
-    public void testGCourtCatchmentItems_noCatchmentAreaItems() throws Exception {
+    public void testGCourtCatchmentItems_noCatchmentAreaItems() {
         final String bureauJwt = createJwtBureau("BUREAU_USER");
         final URI uri = URI.create("/api/v1/moj/pool-create/postcodes?areaCode=415");
 
@@ -1213,7 +1213,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testGCourtCatchmentItems_invalidLocationCode() throws Exception {
+    public void testGCourtCatchmentItems_invalidLocationCode() {
         final String bureauJwt = createJwtBureau("BUREAU_USER");
         final URI uri = URI.create("/api/v1/moj/pool-create/postcodes?areaCode=100");
 
@@ -1226,7 +1226,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/RequestPoolController_initDeferrals.sql"})
-    public void test_checkDeferralsForNilPool_courtUser() throws Exception {
+    public void test_checkDeferralsForNilPool_courtUser() {
 
         final NilPoolRequestDto nilPoolCheckRequest = setUpNilPoolCheckRequestDto();
 
@@ -1249,7 +1249,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/RequestPoolController_initDeferrals.sql"})
-    public void test_checkNoDeferralsForNilPool_courtUser() throws Exception {
+    public void test_checkNoDeferralsForNilPool_courtUser() {
 
         final NilPoolRequestDto nilPoolCheckRequest = setUpNilPoolCheckRequestDto();
         //update the attendance date to not have any deferrals
@@ -1273,7 +1273,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/RequestPoolController_initDeferrals.sql"})
-    public void test_checkDeferralsForNilPool_BadRequest_courtUser() throws Exception {
+    public void test_checkDeferralsForNilPool_BadRequest_courtUser() {
 
         final NilPoolRequestDto nilPoolCheckRequest = setUpNilPoolCheckRequestDto();
         //both location code and name should not be null
@@ -1296,7 +1296,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/RequestPoolController_initDeferrals.sql"})
-    public void test_checkDeferralsForNilPool_BureauUser() throws Exception {
+    public void test_checkDeferralsForNilPool_BureauUser() {
 
         final NilPoolRequestDto nilPoolCheckRequest = setUpNilPoolCheckRequestDto();
 
@@ -1334,7 +1334,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql(statements = "delete from juror_mod.appearance")
     @Sql(statements = "delete from juror_mod.juror_pool")
     @Sql(statements = "delete from juror_mod.pool")
-    public void test_createNilPool_CourtUser() throws Exception {
+    public void test_createNilPool_CourtUser() {
 
         final NilPoolRequestDto nilPoolCheckRequest = setUpNilPoolCreateRequestDto();
 
@@ -1354,7 +1354,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_convertNilPool.sql"})
-    public void test_convertNilPool_BureauUser() throws Exception {
+    public void test_convertNilPool_BureauUser() {
 
         final NilPoolRequestDto nilPoolCheckRequest = setUpNilPoolCreateRequestDto();
 
@@ -1387,7 +1387,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void test_convertNilPool_CourtUser() throws Exception {
+    public void test_convertNilPool_CourtUser() {
 
         final PoolRequestDto poolRequestDto = createPoolRequestDto();
 
@@ -1419,7 +1419,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void test_createNilPool_BureauUser() throws Exception {
+    public void test_createNilPool_BureauUser() {
 
         final NilPoolRequestDto nilPoolCheckRequest = setUpNilPoolCreateRequestDto();
 
@@ -1452,7 +1452,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql(statements = "DELETE FROM JUROR_MOD.CORONER_POOL_DETAIL")
     @Sql(statements = "DELETE FROM JUROR_MOD.CORONER_POOL")
     @Test
-    public void test_createCoronerPool_BureauUser() throws Exception {
+    public void test_createCoronerPool_BureauUser() {
 
         final CoronerPoolRequestDto coronerPoolRequestDto = setUpCoronerPoolCreateRequestDto();
 
@@ -1479,7 +1479,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_addCitizensForCoronerPool.sql"})
-    public void addCitizensToCoronerPool_happy() throws Exception {
+    public void addCitizensToCoronerPool_happy() {
 
         // requested 100 citizens, adding 30
         final CoronerPoolAddCitizenRequestDto addCitizenRequestDto = setupCoronerPoolAddCitizensDto("923040001",
@@ -1509,7 +1509,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_addCitizensForCoronerPool.sql"})
-    public void addCitizensToCoronerPool_tooManyCitizens() throws Exception {
+    public void addCitizensToCoronerPool_tooManyCitizens() {
 
         // total goes over 250
         final CoronerPoolAddCitizenRequestDto addCitizenRequestDto = setupCoronerPoolAddCitizensDto("923040002",
@@ -1531,7 +1531,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_addMoreCitizensThanRequestedForCoronerPool.sql"})
-    public void addCitizensToCoronerPool_addMoreCitizensThanRequested() throws Exception {
+    public void addCitizensToCoronerPool_addMoreCitizensThanRequested() {
 
         // 30 requested, 12 already added and asking for 20 more
         final CoronerPoolAddCitizenRequestDto addCitizenRequestDto = setupCoronerPoolAddCitizensDto("923040002",
@@ -1553,7 +1553,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_addMoreCitizensThanRequestedForCoronerPool.sql"})
-    public void addCitizensToCoronerPool_addMoreCitizensThanAllowed() throws Exception {
+    public void addCitizensToCoronerPool_addMoreCitizensThanAllowed() {
 
         // 30 requested, 12 already added and asking for 240 more (> 250 limit)
         final CoronerPoolAddCitizenRequestDto addCitizenRequestDto = setupCoronerPoolAddCitizensDto("923040002",
@@ -1576,7 +1576,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_addCitizensForCoronerPoolFlags.sql"})
-    public void addCitizensToCoronerPoolFlags() throws Exception {
+    public void addCitizensToCoronerPoolFlags() {
 
         // requested 100 citizens, adding 30
         final CoronerPoolAddCitizenRequestDto addCitizenRequestDto = setupCoronerPoolAddCitizensDto("923040001",
@@ -1599,7 +1599,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_createCoronerPool.sql"})
-    public void testGCoronerPoolDetails_happy() throws Exception {
+    public void testGCoronerPoolDetails_happy() {
         final String bureauJwt = createJwtBureau("BUREAU_USER");
         final URI uri = URI.create("/api/v1/moj/pool-create/coroner-pool?poolNumber=923040001");
 
@@ -1614,7 +1614,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void test_createCoronerPool_courtUser() throws Exception {
+    public void test_createCoronerPool_courtUser() {
 
         final CoronerPoolRequestDto coronerPoolRequestDto = setUpCoronerPoolCreateRequestDto();
 
@@ -1632,7 +1632,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testGCoronerPoolDetails_courtUser() throws Exception {
+    public void testGCoronerPoolDetails_courtUser() {
 
         final URI uri = URI.create("/api/v1/moj/pool-create/coroner-pool?poolNumber=923040001");
 
@@ -1644,7 +1644,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void addCitizensToCoronerPool_courtUser() throws Exception {
+    public void addCitizensToCoronerPool_courtUser() {
 
         final CoronerPoolAddCitizenRequestDto addCitizenRequestDto = setupCoronerPoolAddCitizensDto("923040001",
             10, 10);
@@ -1667,7 +1667,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/pool-management/create_voters_disqualified_only.sql",
         "/db/CreatePoolController_createPool.sql"})
-    public void createPool_NotEnoughVoters_OnlyDisqualified() throws Exception {
+    public void createPool_NotEnoughVoters_OnlyDisqualified() {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userType(UserType.BUREAU)
@@ -1790,7 +1790,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         return coronerPoolRequestDto;
     }
 
-    private String initCourtsJwt(String owner, List<String> courts) throws Exception {
+    private String initCourtsJwt(String owner, List<String> courts) {
 
         return mintBureauJwt(BureauJwtPayload.builder()
             .userType(UserType.COURT)
