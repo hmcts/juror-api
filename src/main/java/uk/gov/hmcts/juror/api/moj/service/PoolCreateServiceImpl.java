@@ -394,7 +394,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
             int jurorsFound = 0;
             List<Voters> selectedVoters = new ArrayList<>(voters.size());
             for (Voters voter : voters) {
-                if (voter.getFlags() == null) {
+                if (voter.getFlags() == null || !voter.getFlags().toUpperCase().contains("X")) {
                     jurorsFound++;
                 }
                 selectedVoters.add(voter);
@@ -463,19 +463,23 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         Juror juror = new Juror();
         JurorPool jurorPool = new JurorPool();
 
-        LocalDate attendDate = poolCreateRequestDto.getStartDate();
+        jurorPool.setNextDate(poolCreateRequestDto.getStartDate());
+        Optional<JurorStatus> jurorStatusOpt = jurorStatusRepository.findById(IJurorStatus.SUMMONED);
 
-        Optional<JurorStatus> jurorStatusOpt;
-        if (voter.getFlags() == null) {
-            jurorStatusOpt = jurorStatusRepository.findById(IJurorStatus.SUMMONED);
-            jurorPool.setNextDate(attendDate);
-        } else {
-            // we need to disqualify the juror on selection
-            jurorStatusOpt = jurorStatusRepository.findById(IJurorStatus.DISQUALIFIED);
-            juror.setSummonsFile(DISQUALIFIED_ON_SELECTION);
-            juror.setDisqualifyCode(AGE_DISQ_CODE);
-            juror.setDisqualifyDate(LocalDate.now());
-            // leave next date as null
+        if (voter.getFlags() != null) {
+            if (voter.getFlags().toUpperCase().contains("X")) {
+                // we need to disqualify the juror on selection
+                jurorStatusOpt = jurorStatusRepository.findById(IJurorStatus.DISQUALIFIED);
+                juror.setSummonsFile(DISQUALIFIED_ON_SELECTION);
+                juror.setDisqualifyCode(AGE_DISQ_CODE);
+                juror.setDisqualifyDate(LocalDate.now());
+                // leave next date as null
+                jurorPool.setNextDate(null);
+            }
+
+            if (voter.getFlags().toUpperCase().contains("F")) {
+                juror.setLivingOverseas(true);
+            }
         }
 
         JurorStatus jurorStatus = jurorStatusOpt.orElseThrow(PoolCreateException.InvalidPoolStatus::new);
@@ -892,6 +896,8 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                     createCoronerJurorPool(poolNumber, voter);
                 }
                 votersService.markVotersAsSelected(selectedVoters, Date.valueOf(LocalDate.now()));
+            } catch (MojException.BusinessRuleViolation businessRuleViolation) {
+                throw businessRuleViolation;
             } catch (Exception e) {
                 log.error("Exception occurred when adding members to coroner pool - {}", e.getMessage());
                 throw new PoolCreateException.UnableToCreatePool();
