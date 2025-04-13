@@ -25,9 +25,11 @@ import uk.gov.hmcts.juror.api.moj.controller.response.trial.CourtroomsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.JudgeDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialSummaryDto;
+import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.TrialType;
+import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.service.trial.PanelService;
 import uk.gov.hmcts.juror.api.moj.service.trial.TrialService;
 import uk.gov.hmcts.juror.api.utils.CustomArgumentResolver;
@@ -71,6 +73,9 @@ class TrialControllerTest {
 
     @MockBean
     private PanelService panelService;
+
+    @MockBean
+    private JurorAppearanceService jurorAppearanceService;
 
     @MockBean
     private RestfulAuthenticationEntryPoint restfulAuthenticationEntryPoint;

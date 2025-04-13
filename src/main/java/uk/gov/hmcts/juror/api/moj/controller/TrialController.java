@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,8 +18,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
+import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.JurorNonAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.EndTrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorPanelReassignRequestDto;
@@ -29,6 +33,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialSummaryDto;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.service.trial.TrialService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -42,11 +47,17 @@ import java.util.List;
 public class TrialController {
     private final TrialService trialService;
 
-    @Autowired
-    public TrialController(TrialService trialService) {
-        this.trialService = trialService;
-    }
+    private final JurorAppearanceService jurorAppearanceService;
 
+    @Autowired
+  //  public TrialController(TrialService trialService) {
+  //      this.trialService = trialService;
+  //  }
+    public TrialController(TrialService trialService,
+        JurorAppearanceService jurorAppearanceService) {
+        this.trialService = trialService;
+        this.jurorAppearanceService = jurorAppearanceService;
+    }
     /**
      * Enable the officer to create a trial.
      *
@@ -114,6 +125,15 @@ public class TrialController {
 
         trialService.returnJury(payload, trialNumber, locationCode, returnJuryDto);
         return ResponseEntity.ok(null);
+    }
+
+    @PostMapping("/non-attendance")
+    @IsCourtUser
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(description = "Add a non-attendance day for a juror")
+    public void addNonAttendance(
+        @RequestBody @Valid List<JurorNonAttendanceDto> jurorNonAttendanceDto) {
+        jurorAppearanceService.addNonAttendanceBulk(jurorNonAttendanceDto);
     }
 
     @PatchMapping("/end-trial")
