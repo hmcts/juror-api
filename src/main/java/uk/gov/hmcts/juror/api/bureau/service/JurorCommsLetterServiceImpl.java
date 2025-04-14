@@ -36,7 +36,7 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
     private final JurorCommsNotificationService jurorCommsNotificationService;
     private final BulkPrintDataNotifyCommsRepository bulkPrintDataNotifyCommsRepository;
     private final BulkPrintDataRepository bulkPrintDataRepository;
-    private final JurorPoolRepository jurorRepository;
+    private final JurorPoolRepository jurorPoolRepository;
 
     /**
      * Implements a specific job execution.
@@ -63,8 +63,8 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
                 try {
                     log.trace("LetterService :  jurorNumber {}", printFile.getJurorNo());
                     final JurorPool juror =
-                        jurorRepository.findByJurorJurorNumberAndIsActiveAndOwner(printFile.getJurorNo(), true,
-                            SecurityUtil.BUREAU_OWNER);
+                        jurorPoolRepository.findByJurorJurorNumberAndIsActiveAndOwner(printFile.getJurorNo(), true,
+                                                                                      SecurityUtil.BUREAU_OWNER);
 
 
                     jurorCommsNotificationService.sendJurorComms(
