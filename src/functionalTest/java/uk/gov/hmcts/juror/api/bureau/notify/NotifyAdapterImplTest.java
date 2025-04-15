@@ -280,7 +280,9 @@ class NotifyAdapterImplTest extends ContainerTest {
 
     }
 
-    private static void validateEmailNotification(EmailNotificationReceipt emailNotificationReceipt, AppSetting testTemplateSetting, String jurorNumber) {
+    private static void validateEmailNotification(EmailNotificationReceipt emailNotificationReceipt,
+                                                  AppSetting testTemplateSetting,
+                                                  String jurorNumber) {
         assertThat(emailNotificationReceipt.getTemplateId())
             .as("Template ID is the one passed from the mock.")
             .isEqualTo(UUID.fromString(testTemplateSetting.getValue()));

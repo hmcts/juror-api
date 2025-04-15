@@ -32,9 +32,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 class NotifyAdapterModTest extends ContainerTest {
 
     public static final String RECIPIENT_EMAIL_IS_CORRECT = "Recipient email is correct";
-    public static final String TEMPLATE_ID_IS_THE_ONE_PASSED_FROM_THE_MOCK = "Template ID is the one passed from the mock.";
-    public static final String JUROR_NUMBER_IS_THE_NOTIFY_REFERENCE = "Juror number is the Notify reference";
-    public static final String BODY_IS_NOT_EMPTY_AND_CONTAINS_PAYLOAD_INFORMATION = "Body is not empty and contains payload information";
+    public static final String TEMPLATE_ID_IS_THE_ONE_PASSED_FROM_THE_MOCK =
+        "Template ID is the one passed from the mock.";
+    public static final String JUROR_NUMBER_IS_THE_NOTIFY_REFERENCE =
+        "Juror number is the Notify reference";
+    public static final String BODY_IS_NOT_EMPTY_AND_CONTAINS_PAYLOAD_INFORMATION =
+        "Body is not empty and contains payload information";
 
     private final JurorCommsNotificationService jurorCommsNotificationService;
     private final NotifyAdapter notifyAdapterMod;
@@ -141,7 +144,8 @@ class NotifyAdapterModTest extends ContainerTest {
         final String templateId = "2f052d6f-011d-4d5b-bc41-75358b388936";
         final String detailRec = "    McTest     Testy       YYY   " + jurorNumber + "XX     ";
 
-        Map<String, String> payLoad = jurorCommsNotifyPayLoadService.generatePayLoadData(templateId, detailRec, jurorDetails);
+        Map<String, String> payLoad = jurorCommsNotifyPayLoadService
+            .generatePayLoadData(templateId, detailRec, jurorDetails);
 
         final EmailNotification emailNotification = jurorCommsNotificationService
             .createEmailNotification(jurorDetails, JurorCommsNotifyTemplateType.COMMS, templateId, payLoad);
@@ -155,7 +159,8 @@ class NotifyAdapterModTest extends ContainerTest {
 
     }
 
-    private void validateEmailReceipt(EmailNotificationReceipt emailNotificationReceipt, String templateId, String jurorNumber) {
+    private void validateEmailReceipt(EmailNotificationReceipt emailNotificationReceipt, String templateId,
+                                      String jurorNumber) {
         assertThat(emailNotificationReceipt.getTemplateId())
             .as(TEMPLATE_ID_IS_THE_ONE_PASSED_FROM_THE_MOCK)
             .isEqualTo(UUID.fromString(templateId));
