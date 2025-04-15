@@ -608,8 +608,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             realignAttendanceType(appearance);
 
             Appearance realignedAppearance = appearanceRepository
-                .findByCourtLocationLocCodeAndJurorNumberAndAttendanceDate(locationCode, request.getJurorNumber(),
-                                                                           nonAttendanceDate).orElseThrow(() -> new MojException.InternalServerError(
+                .findByCourtLocationLocCodeAndJurorNumberAndAttendanceDate(locationCode, request.getJurorNumber(), nonAttendanceDate).orElseThrow(() -> new MojException.InternalServerError(
                     "Error creating non-attendance record for juror " + request.getJurorNumber(), null));
 
             jurorExpenseService.applyDefaultExpenses(realignedAppearance, jurorPool.getJuror());

@@ -50,9 +50,7 @@ public class TrialController {
     private final JurorAppearanceService jurorAppearanceService;
 
     @Autowired
-  //  public TrialController(TrialService trialService) {
-  //      this.trialService = trialService;
-  //  }
+
     public TrialController(TrialService trialService,
         JurorAppearanceService jurorAppearanceService) {
         this.trialService = trialService;
@@ -64,9 +62,11 @@ public class TrialController {
      * @param payload - login information
      * @throws MojException.BadRequest - thrown if there is a validation issue?
      */
+
     @PostMapping("/create")
     @Operation(summary = "Enable the officer to create a trial")
     @PreAuthorize(SecurityUtil.IS_COURT)
+
     public ResponseEntity<TrialSummaryDto> createTrial(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid TrialDto trialDto) {

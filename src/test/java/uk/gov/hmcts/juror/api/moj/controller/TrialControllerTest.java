@@ -84,7 +84,7 @@ class TrialControllerTest {
     public void setupMocks() {
         jwtPayload = null;
         mockMvc = MockMvcBuilders
-            .standaloneSetup(new TrialController(trialService))
+            .standaloneSetup(new TrialController(trialService,jurorAppearanceService))
             .setCustomArgumentResolvers(new CustomArgumentResolver())
             .build();
     }
