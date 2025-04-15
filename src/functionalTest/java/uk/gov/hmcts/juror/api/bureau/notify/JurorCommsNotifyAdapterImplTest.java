@@ -254,7 +254,7 @@ class JurorCommsNotifyAdapterImplTest extends ContainerTest {
             payLoad
         );
 
-        assertThat(smsNotification.getReceipientPhoneNumber()).as("Recipient phone number is correct")
+        assertThat(smsNotification.getRecipientPhoneNumber()).as("Recipient phone number is correct")
             .isEqualTo(phoneNumber);
 
         // send the sms using the real Notify.gov

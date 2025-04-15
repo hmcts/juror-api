@@ -234,7 +234,7 @@ public class JurorCommsNotificationServiceImplTest {
         assertThat(notification.getTemplateId())
             .describedAs("Template ID is correct")
             .isEqualTo(notifyCommsTemplateMapping.getTemplateId());
-        assertThat(notification.getReceipientPhoneNumber())
+        assertThat(notification.getRecipientPhoneNumber())
             .describedAs("Correct recipient phone number")
             .isEqualTo(JUROR_PHONENO);
         assertThat(notification.getReferenceNumber())
