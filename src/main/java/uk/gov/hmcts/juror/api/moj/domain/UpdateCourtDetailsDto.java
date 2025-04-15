@@ -29,7 +29,7 @@ public class UpdateCourtDetailsDto {
     @NotNull
     private Long assemblyRoomId;
 
-    @Length(min = 1, max = 9)
+    @Length(min = 1, max = 5)
     @NotBlank
     private String costCentre;
 

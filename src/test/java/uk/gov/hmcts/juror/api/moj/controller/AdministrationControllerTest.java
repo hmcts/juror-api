@@ -231,7 +231,7 @@ public class AdministrationControllerTest {
                 .mainPhoneNumber("0123456789")
                 .defaultAttendanceTime(LocalTime.of(9, 0))
                 .assemblyRoomId(3L)
-                .costCentre("CSTCNR1")
+                .costCentre("CSTC1")
                 .signature("COURT1 SIGNATURE")
                 .build();
         }
