@@ -269,7 +269,7 @@ class JurorAppearanceServiceTest {
         verify(jurorAppearanceService, times(1)).processAppearance(payloadArgumentCaptor.capture(),
             appearanceDtoCaptor.capture(), eq(true), eq(false));
         verify(courtLocationRepository, times(1)).findByLocCode(LOC_415);
-        verify(appearanceRepository, times(1)).findById(appearanceId);
+        verify(appearanceRepository, times(2)).findById(appearanceId);
         verify(jurorHistoryService, times(1)).createPoolAttendanceHistory(any(), any());
         verify(jurorExpenseService, times(1)).applyDefaultExpenses(anyList());
         verify(appearanceRepository, times(1)).saveAndFlush(any(Appearance.class));
