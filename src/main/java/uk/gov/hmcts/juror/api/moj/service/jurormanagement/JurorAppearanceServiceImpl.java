@@ -443,6 +443,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             appearance.setNonAttendanceDay(Boolean.FALSE);
             appearance.setAttendanceType(AttendanceType.ABSENT);
             appearance.setNoShow(Boolean.TRUE);
+            realignAttendanceType(appearance.getJurorNumber());
         }
 
         if (ModifyConfirmedAttendanceDto.ModifyAttendanceType.DELETE.equals(modifyAttendanceType)) {
