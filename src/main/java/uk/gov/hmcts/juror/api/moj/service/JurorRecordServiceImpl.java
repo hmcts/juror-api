@@ -207,16 +207,58 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         Juror juror = JurorUtils.getActiveJurorRecord(jurorRepository, jurorNumber);
         JurorUtils.checkOwnershipForCurrentUser(juror, owner);
+        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber);
+
+
+        //Track changes to address fields
+        boolean addressChanged = false;
+
+        if (!Objects.equals(juror.getAddressLine1(), requestDto.getAddressLineOne())) {
+            juror.setAddressLine1(requestDto.getAddressLineOne());
+            addressChanged = true;
+        }
+        if (!Objects.equals(juror.getAddressLine2(), requestDto.getAddressLineTwo())) {
+            juror.setAddressLine2(requestDto.getAddressLineTwo());
+            addressChanged = true;
+        }
+        if (!Objects.equals(juror.getAddressLine3(), requestDto.getAddressLineThree())) {
+            juror.setAddressLine3(requestDto.getAddressLineThree());
+            addressChanged = true;
+        }
+        if (!Objects.equals(juror.getAddressLine4(), requestDto.getAddressTown())) {
+            juror.setAddressLine4(requestDto.getAddressTown());
+            addressChanged = true;
+        }
+        if (!Objects.equals(juror.getAddressLine5(), requestDto.getAddressCounty())) {
+            juror.setAddressLine5(requestDto.getAddressCounty());
+            addressChanged = true;
+        }
+        if (!Objects.equals(juror.getPostcode(), requestDto.getAddressPostcode())) {
+            juror.setPostcode(requestDto.getAddressPostcode());
+            addressChanged = true;
+        }
 
         juror.setTitle(requestDto.getTitle());
         juror.setFirstName(requestDto.getFirstName());
         juror.setLastName(requestDto.getLastName());
-        juror.setAddressLine1(requestDto.getAddressLineOne());
-        juror.setAddressLine2(requestDto.getAddressLineTwo());
-        juror.setAddressLine3(requestDto.getAddressLineThree());
-        juror.setAddressLine4(requestDto.getAddressTown());
-        juror.setAddressLine5(requestDto.getAddressCounty());
-        juror.setPostcode(requestDto.getAddressPostcode());
+       // juror.setAddressLine1(requestDto.getAddressLineOne());
+       // juror.setAddressLine2(requestDto.getAddressLineTwo());
+       // juror.setAddressLine3(requestDto.getAddressLineThree());
+       // juror.setAddressLine4(requestDto.getAddressTown());
+       // juror.setAddressLine5(requestDto.getAddressCounty());
+       // juror.setPostcode(requestDto.getAddressPostcode());
+       // jurorHistoryService.createEditChangeOfPersonalDetailsHistory(null, jurorNumber,
+       //                                                              jurorPool.getPool().getPoolNumber(), "Address Changed");
+
+
+        // Log address change in history if updated
+        if (addressChanged) {
+            jurorHistoryService.createEditChangeOfPersonalDetailsHistory(null, jurorNumber,
+                                                                         jurorPool.getPool().getPoolNumber(), "Address Changed");
+        }
+
+
+
         juror.setDateOfBirth(requestDto.getDateOfBirth());
         juror.setPhoneNumber(requestDto.getPrimaryPhone());
         juror.setAltPhoneNumber(requestDto.getSecondaryPhone());
@@ -257,6 +299,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         juror.setOpticRef(requestDto.getOpticReference());
         juror.setWelsh(requestDto.getWelshLanguageRequired());
         juror.setLivingOverseas(requestDto.getLivingOverseas());
+
+
 
         jurorRepository.save(juror);
     }
