@@ -1303,6 +1303,13 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     @Override
     public void realignAttendanceType(String jurorNumber) {
         List<Appearance> appearances = getAllAppearances(jurorNumber);
+
+        // need to filter out appearances that are no shows
+        appearances = appearances
+            .stream()
+            .filter(appearance -> appearance.getNoShow() == null || !appearance.getNoShow())
+            .toList();
+
         List<LocalDate> localDates = appearances
             .stream()
             .map(Appearance::getAttendanceDate)
