@@ -207,7 +207,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         Juror juror = JurorUtils.getActiveJurorRecord(jurorRepository, jurorNumber);
         JurorUtils.checkOwnershipForCurrentUser(juror, owner);
-        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber);
+
+        JurorPool myJurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber,payload.getOwner());
 
 
         //Track changes to address fields
@@ -238,9 +239,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             addressChanged = true;
         }
 
-        juror.setTitle(requestDto.getTitle());
-        juror.setFirstName(requestDto.getFirstName());
-        juror.setLastName(requestDto.getLastName());
+
        // juror.setAddressLine1(requestDto.getAddressLineOne());
        // juror.setAddressLine2(requestDto.getAddressLineTwo());
        // juror.setAddressLine3(requestDto.getAddressLineThree());
@@ -253,12 +252,13 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         // Log address change in history if updated
         if (addressChanged) {
-            jurorHistoryService.createEditChangeOfPersonalDetailsHistory(null, jurorNumber,
-                                                                         jurorPool.getPool().getPoolNumber(), "Address Changed");
+            jurorHistoryService.createEditChangeOfPersonalDetailsHistory(myJurorPool, jurorNumber,
+                                                                         myJurorPool.getPool().getPoolNumber(), "Address Changed");
         }
 
-
-
+        juror.setTitle(requestDto.getTitle());
+        juror.setFirstName(requestDto.getFirstName());
+        juror.setLastName(requestDto.getLastName());
         juror.setDateOfBirth(requestDto.getDateOfBirth());
         juror.setPhoneNumber(requestDto.getPrimaryPhone());
         juror.setAltPhoneNumber(requestDto.getSecondaryPhone());
