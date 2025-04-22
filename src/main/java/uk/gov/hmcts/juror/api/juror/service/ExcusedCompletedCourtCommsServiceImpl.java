@@ -40,6 +40,7 @@ import java.util.UUID;
 
 @Slf4j
 @Service
+@SuppressWarnings("PMD")
 public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessService {
 
     private final JurorPoolRepository jurorRepository;

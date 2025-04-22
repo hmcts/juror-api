@@ -29,6 +29,7 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
  */
 @Slf4j
 @RestController
+@SuppressWarnings("PMD")
 @RequestMapping(value = "/api/v1/bureau", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Bureau API", description = "Bureau Interface API")
 public class BureauEndpointController {

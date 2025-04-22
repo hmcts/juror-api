@@ -60,8 +60,7 @@ public class VotersServiceImpl implements VotersService {
 
         JPAQueryFactory queryFactory = getQueryFactory();
         JPAQuery<Voters> query = queryFactory.selectFrom(QVoters.voters)
-            .where(QVoters.voters.locCode.eq(locCode)
-                .and(QVoters.voters.dateSelected1.isNull())
+            .where(QVoters.voters.dateSelected1.isNull()
                 .and(QVoters.voters.dateOfBirth.isNull()
                     .or(QVoters.voters.dateOfBirth.between(minDateOfBirth, maxDateOfBirth)))
                 .and(QVoters.voters.permDisqual.isNull())

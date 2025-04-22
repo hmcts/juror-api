@@ -256,6 +256,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         juror.setPendingLastName(requestDto.getPendingLastName());
         juror.setOpticRef(requestDto.getOpticReference());
         juror.setWelsh(requestDto.getWelshLanguageRequired());
+        juror.setLivingOverseas(requestDto.getLivingOverseas());
 
         jurorRepository.save(juror);
     }
@@ -436,6 +437,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             jurorOverviewResponseDto.setReplyMethod(REPLY_METHOD_ONLINE);
             jurorOverviewResponseDto.setReplyDate(jurorResponse.getDateReceived().toLocalDate());
             jurorOverviewResponseDto.setReplyStatus(jurorResponse.getProcessingStatus().getDescription());
+            jurorOverviewResponseDto.setLivingOverseas(juror.getLivingOverseas());
             return jurorOverviewResponseDto;
         }
 
@@ -1557,7 +1559,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
                     .poolNumber(tuple.get(QJurorPool.jurorPool.pool.poolNumber))
                     .courtName(tuple.get(QJurorPool.jurorPool.pool.courtLocation.name))
                     .status(tuple.get(QJurorPool.jurorPool.status.statusDesc))
-                    .locCode(tuple.get(QJurorPool.jurorPool.pool.courtLocation.locCode));
+                    .locCode(tuple.get(QJurorPool.jurorPool.pool.courtLocation.locCode))
+                    .email(tuple.get(QJuror.juror.email));
                 return builder.build();
             },
             ValidationConstants.MAX_ITEMS
