@@ -5,4 +5,3 @@
 ALTER TABLE juror_mod.pool_comments
 ALTER COLUMN user_id TYPE VARCHAR(30),
 ALTER COLUMN user_id SET NOT NULL;
-

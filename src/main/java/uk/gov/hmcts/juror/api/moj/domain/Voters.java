@@ -3,13 +3,11 @@ package uk.gov.hmcts.juror.api.moj.domain;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -25,17 +23,11 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REG
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.POSTCODE_REGEX;
 
 @Entity
-@IdClass(Voters.VotersId.class)
 @Table(name = "voters", schema = "juror_mod")
 @NoArgsConstructor
 @Getter
 @Setter
 public class Voters implements Serializable {
-
-    @Id
-    @Column(name = "LOC_CODE")
-    @Length(max = 3)
-    private String locCode;
 
     @Id
     @Column(name = "PART_NO")
@@ -125,22 +117,12 @@ public class Voters implements Serializable {
     @Column(name = "PERM_DISQUAL")
     private String permDisqual;
 
-    @Size(max = 1)
+    @Size(max = 2)
     @Column(name = "FLAGS")
     private String flags;
 
     @Column(name = "SOURCE_ID")
     @Length(max = 1)
     private String sourceId;
-
-    @EqualsAndHashCode
-    @Setter
-    @Getter
-    public static class VotersId implements Serializable {
-
-        private String locCode;
-        private String jurorNumber;
-
-    }
 
 }

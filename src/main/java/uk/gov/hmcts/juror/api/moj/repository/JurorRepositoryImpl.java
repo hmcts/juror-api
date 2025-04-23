@@ -120,6 +120,7 @@ public class JurorRepositoryImpl implements IJurorRepository {
         return partialQuery.distinct().select(
             JUROR.jurorNumber,
             JUROR.firstName.concat(" ").concat(JUROR.lastName).as(JUROR_FULL_NAME),
+            JUROR.email,
             JUROR.postcode,
             JUROR_POOL.pool.poolNumber,
             JUROR_POOL.pool.courtLocation.name,
