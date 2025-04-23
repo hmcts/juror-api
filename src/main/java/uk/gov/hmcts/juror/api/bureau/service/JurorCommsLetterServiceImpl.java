@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Implementation of {@link BureauProcessService}.
@@ -66,6 +67,11 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
                         jurorRepository.findByJurorJurorNumberAndIsActiveAndOwner(printFile.getJurorNo(), true,
                             SecurityUtil.BUREAU_OWNER);
 
+                    updateTemplateIdForChangedCourt(printFile, juror, Map.of(
+                        "459", "ea38af04-0631-4c7c-bfc8-0c491b7e98a2",
+                        "468", "bdcb84c2-49c1-435f-9821-262446c98a1c"
+
+                    ));
 
                     jurorCommsNotificationService.sendJurorComms(
                         juror,
@@ -144,5 +150,22 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
         bulkPrintDataRepository.saveAll(bulkPrintDataDetail);
         log.trace("Saving updated printFile.digital_comms - updatePrintFiles .....");
     }
+
+
+    private void updateTemplateIdForChangedCourt(BulkPrintDataNotifyComms printFile, JurorPool juror, Map<String, String> locCodeTemplateMap) {
+        String locCode = printFile.getLocCode();
+        if (locCodeTemplateMap.containsKey(locCode)) {
+            String changedCourtTemplate = locCodeTemplateMap.get(locCode);
+            printFile.setTemplateId(changedCourtTemplate);
+            jurorCommsNotificationService.sendJurorComms(
+                juror,
+                JurorCommsNotifyTemplateType.LETTER_COMMS,
+                printFile.getTemplateId(),
+                printFile.getDetailRec(),
+                false
+            );
+        }
+    }
+
 
 }
