@@ -40,6 +40,8 @@ public class PostponeLetter extends LetterBase {
         sharedSetup();
         addData(LetterDataType.WELSH_DEFERRAL_DATE, 32);
         addData(LetterDataType.DEFERRAL_TIME, 8);
+        addData(LetterDataType.JUROR_LAST_NAME, 25); // revised length and position
+
     }
 
     @Override
@@ -52,14 +54,15 @@ public class PostponeLetter extends LetterBase {
         sharedSetup();
         addData(LetterDataType.DEFERRAL_DATE, 32);
         addData(LetterDataType.DEFERRAL_TIME, 8);
+        addData(LetterDataType.JUROR_LAST_NAME, 25); // revised length and position
     }
 
     private void sharedSetup() {
         addData(LetterDataType.BUREAU_PHONE, 12);
         addData(LetterDataType.BUREAU_FAX, 12);
         addData(LetterDataType.JUROR_TITLE, 10);
-        addData(LetterDataType.JUROR_FIRST_NAME, 20);
-        addData(LetterDataType.JUROR_LAST_NAME, 25);
+        addData(LetterDataType.JUROR_FIRST_NAME, 20); // keeping old length and position
+        addData(LetterDataType.JUROR_LAST_NAME, 20);
         addJurorAddress();
         addData(LetterDataType.JUROR_NUMBER, 9);
         addData(LetterDataType.BUREAU_SIGNATORY, 30);
