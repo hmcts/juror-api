@@ -2083,7 +2083,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             List<List<Object>> data = reissueLetterListResponseDto.getData();
             assertThat(data).isNotNull();
-            assertThat(data.size()).isEqualTo(3);
+            assertThat(data.size()).isEqualTo(2);
         }
 
         @Test
@@ -2246,7 +2246,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             List<List<Object>> data = reissueLetterListResponseDto.getData();
             assertThat(data).isNotNull();
-            assertThat(data.size()).as("Expect there to be 5 letters listed in pool").isEqualTo(5);
+            assertThat(data.size()).as("Expect there to be 4 letters listed in pool").isEqualTo(4);
         }
 
         @Test
@@ -2454,7 +2454,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initInformationRequestLetter.sql"})
         void reissueInformationRequestListByJurorNumberWelsh() throws Exception {
-            final String jurorNumber = "641500211";
+            final String jurorNumber = "641500212";
             final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/reissue-letter-list");
 
@@ -2484,9 +2484,9 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(data).isNotNull();
             assertThat(data.size()).isEqualTo(1);
             assertThat(data.get(0).size()).isEqualTo(7);
-            assertThat(data.get(0).get(0)).isEqualTo("641500211");
-            assertThat(data.get(0).get(1)).isEqualTo("FNAMEONEONE");
-            assertThat(data.get(0).get(2)).isEqualTo("LNAMEONEONET");
+            assertThat(data.get(0).get(0)).isEqualTo("641500212");
+            assertThat(data.get(0).get(1)).isEqualTo("FNAMEONETWO");
+            assertThat(data.get(0).get(2)).isEqualTo("LNAMEONETWOT");
             assertThat(data.get(0).get(3)).isEqualTo("CH2 2AB");
             assertThat(data.get(0).get(4)).isEqualTo(LocalDate.now().minusDays(2).toString());
             assertThat(data.get(0).get(5)).isEqualTo(false);
@@ -2525,7 +2525,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             List<List<Object>> data = reissueLetterListResponseDto.getData();
             assertThat(data).isNotNull();
-            assertThat(data.size()).isEqualTo(4);
+            assertThat(data.size()).isEqualTo(6);
 
         }
 
@@ -2559,11 +2559,11 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             List<List<Object>> data = reissueLetterListResponseDto.getData();
             assertThat(data).isNotNull();
-            assertThat(data.size()).isEqualTo(2);
+            assertThat(data.size()).isEqualTo(3);
 
             int pendingCount = data.stream().map(row -> row.get(5)).filter(flag -> flag.equals(false))
                 .toArray().length;
-            assertThat(pendingCount).as("Expect there to be 2 pending rows").isEqualTo(2);
+            assertThat(pendingCount).as("Expect there to be 3 pending rows").isEqualTo(3);
         }
 
         private void verifyHeadingsAndTypesInformationRequest(
@@ -2898,6 +2898,33 @@ class LetterControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
+        @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initPoolReissueDeferralLetter.sql"})
+        void reissueDeferralGrantedLetterWelshHappy() {
+            final URI uri = URI.create("/api/v1/moj/letter/reissue-letter");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
+// finish this one off
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData =
+                ReissueLetterRequestDto.ReissueLetterRequestData.builder()
+                    .jurorNumber("555555567")
+                    .formCode(FormCode.BI_DEFERRAL.getCode())
+                    .datePrinted(LocalDate.now().minusDays(1))
+                    .build();
+
+            ReissueLetterRequestDto reissueLetterRequestDto = ReissueLetterRequestDto.builder()
+                .letters(List.of(reissueLetterRequestData))
+                .build();
+
+            RequestEntity<ReissueLetterRequestDto> request = new RequestEntity<>(reissueLetterRequestDto,
+                                                                                 httpHeaders, POST, uri);
+            ResponseEntity<String> response = template.exchange(request, String.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode()).as("Expect HTTP Response to be OK").isEqualTo(OK);
+        }
+
+        @Test
         @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initReissueConfirmationLetter.sql"})
         void reissueConfirmationLetterHappy() {
             final URI uri = URI.create("/api/v1/moj/letter/reissue-letter");
@@ -2918,6 +2945,34 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             RequestEntity<ReissueLetterRequestDto> request = new RequestEntity<>(reissueLetterRequestDto,
                 httpHeaders, POST, uri);
+            ResponseEntity<String> response = template.exchange(request, String.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode()).as("Expect HTTP Response to be OK").isEqualTo(OK);
+        }
+
+
+        @Test
+        @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initReissueConfirmationLetter.sql"})
+        void reissueConfirmationLetterWelshHappy() {
+            final URI uri = URI.create("/api/v1/moj/letter/reissue-letter");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData =
+                ReissueLetterRequestDto.ReissueLetterRequestData.builder()
+                    .jurorNumber("555555562")
+                    .formCode(FormCode.BI_CONFIRMATION.getCode())
+                    .datePrinted(LocalDate.now().minusDays(1))
+                    .build();
+
+            ReissueLetterRequestDto reissueLetterRequestDto = ReissueLetterRequestDto.builder()
+                .letters(List.of(reissueLetterRequestData))
+                .build();
+
+            RequestEntity<ReissueLetterRequestDto> request = new RequestEntity<>(reissueLetterRequestDto,
+                                                                                 httpHeaders, POST, uri);
             ResponseEntity<String> response = template.exchange(request, String.class);
 
             assertThat(response).isNotNull();
@@ -2945,6 +3000,33 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             RequestEntity<ReissueLetterRequestDto> request = new RequestEntity<>(reissueLetterRequestDto,
                 httpHeaders, POST, uri);
+            ResponseEntity<String> response = template.exchange(request, String.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode()).as("Expect HTTP Response to be OK").isEqualTo(OK);
+        }
+
+        @Test
+        @Sql({"/db/mod/truncate.sql", "/db/LetterController_initReissueExcusalLetter.sql"})
+        @DisplayName("Reissue excusal letter - expect okay response")
+        void reissueExcusalLetterWelshHappy() {
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData =
+                ReissueLetterRequestDto.ReissueLetterRequestData.builder()
+                    .jurorNumber("555555564")
+                    .formCode(FormCode.BI_EXCUSAL.getCode())
+                    .datePrinted(LocalDate.now().minusDays(1))
+                    .build();
+
+            ReissueLetterRequestDto reissueLetterRequestDto = ReissueLetterRequestDto.builder()
+                .letters(List.of(reissueLetterRequestData))
+                .build();
+
+            RequestEntity<ReissueLetterRequestDto> request = new RequestEntity<>(reissueLetterRequestDto,
+                                                                                 httpHeaders, POST, uri);
             ResponseEntity<String> response = template.exchange(request, String.class);
 
             assertThat(response).isNotNull();
@@ -2980,6 +3062,36 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
         }
 
+
+        @Test
+        @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initPoolReissueDeferralDeniedLetter.sql"})
+        void reissueDeferralDeniedWelshLetterHappy() {
+            final URI uri = URI.create("/api/v1/moj/letter/reissue-letter");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData =
+                ReissueLetterRequestDto.ReissueLetterRequestData.builder()
+                    .jurorNumber("555555564")
+                    .formCode(FormCode.BI_DEFERRALDENIED.getCode())
+                    .datePrinted(LocalDate.now().minusDays(10))
+                    .build();
+
+            ReissueLetterRequestDto reissueLetterRequestDto = ReissueLetterRequestDto.builder()
+                .letters(List.of(reissueLetterRequestData))
+                .build();
+
+            RequestEntity<ReissueLetterRequestDto> request = new RequestEntity<>(reissueLetterRequestDto,
+                                                                                 httpHeaders, POST, uri);
+            ResponseEntity<String> response = template.exchange(request, String.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK")
+                .isEqualTo(OK);
+        }
+
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initReissueWithdrawalLetter.sql"})
         void reissueWithdrawalLetterHappy() {
@@ -3001,6 +3113,36 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             RequestEntity<ReissueLetterRequestDto> request = new RequestEntity<>(reissueLetterRequestDto,
                 httpHeaders, POST, uri);
+            ResponseEntity<String> response = template.exchange(request, String.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK")
+                .isEqualTo(OK);
+        }
+
+
+        @Test
+        @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initReissueWithdrawalLetter.sql"})
+        void reissueWithdrawalLetterWelshHappy() {
+            final URI uri = URI.create("/api/v1/moj/letter/reissue-letter");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData =
+                ReissueLetterRequestDto.ReissueLetterRequestData.builder()
+                    .jurorNumber("555555562")
+                    .formCode(FormCode.BI_WITHDRAWAL.getCode())
+                    .datePrinted(LocalDate.now().minusDays(1))
+                    .build();
+
+            ReissueLetterRequestDto reissueLetterRequestDto = ReissueLetterRequestDto.builder()
+                .letters(List.of(reissueLetterRequestData))
+                .build();
+
+            RequestEntity<ReissueLetterRequestDto> request = new RequestEntity<>(reissueLetterRequestDto,
+                                                                                 httpHeaders, POST, uri);
             ResponseEntity<String> response = template.exchange(request, String.class);
 
             assertThat(response).isNotNull();
@@ -3091,6 +3233,45 @@ class LetterControllerITest extends AbstractIntegrationTest {
             }
         }
 
+
+        @Test
+        @SneakyThrows
+        @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initReissuePostponeLetter.sql"})
+        void reissuePostponeLetterWelshHappy() {
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData =
+                ReissueLetterRequestDto.ReissueLetterRequestData.builder()
+                    .jurorNumber("555555552")
+                    .formCode(FormCode.BI_POSTPONE.getCode())
+                    .datePrinted(LocalDate.now().minusDays(1))
+                    .build();
+
+            ReissueLetterRequestDto reissueLetterRequestDto = ReissueLetterRequestDto.builder()
+                .letters(List.of(reissueLetterRequestData))
+                .build();
+
+            RequestEntity<ReissueLetterRequestDto> request = new RequestEntity<>(reissueLetterRequestDto,
+                                                                                 httpHeaders, POST, uri);
+            ResponseEntity<String> response = template.exchange(request, String.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK")
+                .isEqualTo(OK);
+
+            Optional<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findByJurorNumberFormCodeAndPending(
+                "555555552",
+                FormCode.BI_POSTPONE.getCode());
+            assertThat(bulkPrintData).isPresent();
+            assertThat(bulkPrintData.get().isExtractedFlag())
+                .as("Expect extracted flag to be false")
+                .isFalse();
+
+        }
+
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initInformationRequestLetter.sql"})
         void reissueInformationRequestLetterHappy() {
@@ -3112,6 +3293,33 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             RequestEntity<ReissueLetterRequestDto> request = new RequestEntity<>(reissueLetterRequestDto,
                 httpHeaders, POST, uri);
+            ResponseEntity<String> response = template.exchange(request, String.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode()).as("Expect HTTP Response to be OK").isEqualTo(OK);
+        }
+
+        @Test
+        @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initInformationRequestLetter.sql"})
+        void reissueInformationRequestLetterWelshHappy() {
+            final URI uri = URI.create("/api/v1/moj/letter/reissue-letter");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData =
+                ReissueLetterRequestDto.ReissueLetterRequestData.builder()
+                    .jurorNumber("641500211")
+                    .formCode(FormCode.BI_REQUESTINFO.getCode())
+                    .datePrinted(LocalDate.now().minusDays(2))
+                    .build();
+
+            ReissueLetterRequestDto reissueLetterRequestDto = ReissueLetterRequestDto.builder()
+                .letters(List.of(reissueLetterRequestData))
+                .build();
+
+            RequestEntity<ReissueLetterRequestDto> request = new RequestEntity<>(reissueLetterRequestDto,
+                                                                                 httpHeaders, POST, uri);
             ResponseEntity<String> response = template.exchange(request, String.class);
 
             assertThat(response).isNotNull();
@@ -3342,7 +3550,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                         bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(jurorNumber,
                             FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now())
                         .orElseThrow(
-                            () -> Failures.instance().failure("Expect record to exit in bulk print data table"));
+                            () -> Failures.instance().failure("Expect record to exist in bulk print data table"));
 
                     verifyDataResponse(bulkPrintData, "576", Boolean.FALSE, LocalDate.now(), null, false);
 
