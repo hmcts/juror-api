@@ -170,15 +170,22 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
     private void updateTemplateIdForChangedCourt(BulkPrintDataNotifyComms printFile, JurorPool juror, Map<String, Map<String, String>> locCodeTemplateMap) {
         String locCode = printFile.getLocCode();
         String templateName = printFile.getTemplateName();
+        String templateId = printFile.getTemplateId();
         if (locCodeTemplateMap.containsKey(locCode) && locCodeTemplateMap.get(locCode).containsKey(templateName)) {
-            String changedCourtTemplate = locCodeTemplateMap.get(locCode).get(templateName);
+            String changedCourtTemplate = locCodeTemplateMap.get(locCode).get(templateId);
             printFile.setTemplateId(changedCourtTemplate);
+              log.info("Updating templateId for changed court: {} to {}", locCode, changedCourtTemplate);
             jurorCommsNotificationService.sendJurorComms(
                 juror,
                 JurorCommsNotifyTemplateType.LETTER_COMMS,
                 printFile.getTemplateId(),
                 printFile.getDetailRec(),
                 false
+            );
+        } else {
+            log.warn("No unique template found for locCode: {} and templateName: {}", locCode, templateName);
+            throw new JurorCommsNotificationServiceException(
+                String.format("No unique template found for locCode: %s and templateName: %s", locCode, templateName)
             );
         }
     }
