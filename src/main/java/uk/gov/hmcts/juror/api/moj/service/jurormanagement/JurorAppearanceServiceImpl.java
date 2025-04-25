@@ -593,6 +593,16 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             );
             JurorPool jurorPool = validateJurorPoolAndStartDate(request, nonAttendanceDate);
 
+            // Validation: Check if the juror has the SUMMONED status
+            if (jurorPool.getStatus().getStatus() == IJurorStatus.SUMMONED) {
+                throw new MojException.BusinessRuleViolation(
+                    String.format(
+                        "Juror %s cannot have a non-attendance status while in the SUMMONED status",
+                         request.getJurorNumber()),
+                    MojException.BusinessRuleViolation.ErrorCode.INVALID_JUROR_STATUS
+                );
+            }
+
             // Check if the location of the jurorPool matches the locationCode
             verifyJurorPoolLocation(locationCode, jurorPool);
             checkExistingAttendance(request, nonAttendanceDate);
@@ -608,7 +618,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             realignAttendanceType(appearance);
 
             Appearance realignedAppearance = appearanceRepository
-                .findByCourtLocationLocCodeAndJurorNumberAndAttendanceDate(locationCode, request.getJurorNumber(), nonAttendanceDate).orElseThrow(() -> new MojException.InternalServerError(
+                .findByCourtLocationLocCodeAndJurorNumberAndAttendanceDate(locationCode, request.getJurorNumber(),
+                                       nonAttendanceDate).orElseThrow(() -> new MojException.InternalServerError(
                     "Error creating non-attendance record for juror " + request.getJurorNumber(), null));
 
             jurorExpenseService.applyDefaultExpenses(realignedAppearance, jurorPool.getJuror());
