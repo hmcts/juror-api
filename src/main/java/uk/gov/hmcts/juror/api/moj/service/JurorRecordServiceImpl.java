@@ -208,7 +208,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         Juror juror = JurorUtils.getActiveJurorRecord(jurorRepository, jurorNumber);
         JurorUtils.checkOwnershipForCurrentUser(juror, owner);
 
-        JurorPool myJurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber,payload.getOwner());
+        JurorPool myJurorPool = JurorPoolUtils.getActiveJurorPoolForUser(
+            jurorPoolRepository, jurorNumber,payload.getOwner());
 
 
         //Track changes to address fields
@@ -243,7 +244,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         // Log address change in history if updated
         if (addressChanged) {
             jurorHistoryService.createEditChangeOfPersonalDetailsHistory(myJurorPool, jurorNumber,
-                                                                         myJurorPool.getPool().getPoolNumber(), "Address Changed");
+                                 myJurorPool.getPool().getPoolNumber(), "Address Changed");
         }
 
         juror.setTitle(requestDto.getTitle());
