@@ -927,10 +927,25 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         final String poolAttendancePrefix = "P";
         final String poolAttendanceNumber = getAttendanceAuditNumber(poolAttendancePrefix);
 
+        List<Juror> jurorsList;
+
+        if(jurors.isEmpty()) {
+            List<String> jurorNumbers = appearanceIds.stream()
+                .map(AppearanceId::getJurorNumber).toList();
+            jurorsList = jurorRepository.findAllById(jurorNumbers);
+        } else {
+            jurorsList = jurorRepository.findAllById(jurors);
+        }
+
         List<Appearance> checkedInAttendances = appearanceRepository.findAllById(appearanceIds);
         checkedInAttendances.forEach(appearance -> {
             appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
             appearance.setAppearanceConfirmed(Boolean.TRUE);
+            LocalTime travelTime = jurorsList.stream().filter(juror -> juror.getJurorNumber().equals(appearance.getJurorNumber()))
+                .findFirst().map(Juror::getTravelTime).orElse(null);
+            if (travelTime != null) {
+                appearance.setTravelTime(travelTime);
+            }
             realignAttendanceType(appearance);
             appearance.setAttendanceAuditNumber(poolAttendanceNumber);
 
@@ -938,6 +953,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                 appearance.getCourtLocation());
             jurorHistoryService.createPoolAttendanceHistory(jurorPool, appearance);
         });
+        // re-read the appearances they may have been realigned and saved to the database
+        checkedInAttendances = appearanceRepository.findAllById(appearanceIds);
 
         jurorExpenseService.applyDefaultExpenses(checkedInAttendances);
 
