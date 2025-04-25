@@ -67,11 +67,26 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
                         jurorRepository.findByJurorJurorNumberAndIsActiveAndOwner(printFile.getJurorNo(), true,
                             SecurityUtil.BUREAU_OWNER);
 
-                    updateTemplateIdForChangedCourt(printFile, juror, Map.of(
-                        "459", "ea38af04-0631-4c7c-bfc8-0c491b7e98a2",
-                        "468", "bdcb84c2-49c1-435f-9821-262446c98a1c"
 
-                    ));
+                   Map<String, Map<String,String>> locCodeTemplateMap = Map.of(
+                       "459", Map.of(
+                           "CONFIRMATION OF SERVICE TAUNTON", "ea38af04-0631-4c7c-bfc8-0c491b7e98a2",
+                           "TEMP_DEF_DENIED_ENG", "63d636d3-4ca2-452d-baa2-a940e4dcc48a",
+                           "TEMP_DEF_GRANTED_ENG", "f5072da7-b250-4f02-b206-f176b1a0b80b",
+                           "TEMP_EXC_DENIED_ENG","f5669ddd-4bb3-4092-b60b-45f410de74a7",
+                           "TEMP_POSTPONE_JUROR_ENG","6504a964-0081-4b42-95da-9cccd26c1202"
+                       ),
+                       "468", Map.of(
+                           "CONFIRMATION OF SERVICE HARROW", "bdcb84c2-49c1-435f-9821-262446c98a1c",
+                           "TEMP_DEF_DENIED_ENG", "63d636d3-4ca2-452d-baa2-a940e4dcc48a",
+                           "TEMP_DEF_GRANTED_ENG", "f5072da7-b250-4f02-b206-f176b1a0b80b",
+                           "TEMP_EXC_DENIED_ENG","f5669ddd-4bb3-4092-b60b-45f410de74a7",
+                           "TEMP_POSTPONE_JUROR_ENG","6504a964-0081-4b42-95da-9cccd26c1202"
+                       )
+                   );
+                    updateTemplateIdForChangedCourt(printFile, juror, locCodeTemplateMap);
+
+
 
                     jurorCommsNotificationService.sendJurorComms(
                         juror,
@@ -152,10 +167,11 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
     }
 
 
-    private void updateTemplateIdForChangedCourt(BulkPrintDataNotifyComms printFile, JurorPool juror, Map<String, String> locCodeTemplateMap) {
+    private void updateTemplateIdForChangedCourt(BulkPrintDataNotifyComms printFile, JurorPool juror, Map<String, Map<String, String>> locCodeTemplateMap) {
         String locCode = printFile.getLocCode();
-        if (locCodeTemplateMap.containsKey(locCode)) {
-            String changedCourtTemplate = locCodeTemplateMap.get(locCode);
+        String templateName = printFile.getTemplateName();
+        if (locCodeTemplateMap.containsKey(locCode) && locCodeTemplateMap.get(locCode).containsKey(templateName)) {
+            String changedCourtTemplate = locCodeTemplateMap.get(locCode).get(templateName);
             printFile.setTemplateId(changedCourtTemplate);
             jurorCommsNotificationService.sendJurorComms(
                 juror,
