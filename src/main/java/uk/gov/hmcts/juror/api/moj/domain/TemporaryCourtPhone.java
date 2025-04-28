@@ -2,7 +2,7 @@ package uk.gov.hmcts.juror.api.moj.domain;
 
 public enum TemporaryCourtPhone {
     TAUNTON("01823 334 100"),
-    HARROW("Hendon 020 8358 1000 or Willesden 020 8358 1000");
+    HARROW("Hendon 02085111421 or Willesden 02085111421");
 
     private final String temporaryCourtPhone;
 
