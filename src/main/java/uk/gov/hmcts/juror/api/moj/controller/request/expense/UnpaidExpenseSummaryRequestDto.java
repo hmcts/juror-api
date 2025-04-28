@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.controller.request.expense;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.dsl.DatePath;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberPath;
 import jakarta.validation.constraints.Min;
@@ -43,6 +44,9 @@ public class UnpaidExpenseSummaryRequestDto implements IsPageable {
 
     public static final NumberPath<BigDecimal> TOTAL_OUTSTANDING_EXPRESSION =
         Expressions.numberPath(BigDecimal.class, "total_outstanding");
+
+    public static final DatePath<LocalDate> LAST_ATTENDANCE_DATE_EXPRESSION =
+        Expressions.datePath(LocalDate.class, "last_attendance_date");
 
     @Getter
     public enum SortField implements SortMethod.HasComparableExpression {
