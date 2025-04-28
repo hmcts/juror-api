@@ -241,7 +241,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         }
 
 
-        // Log address change in history if updated
+        // Log address change in history if updated PDET CODE ADDRESS OTHER
         if (addressChanged) {
             jurorHistoryService.createEditChangeOfPersonalDetailsHistory(myJurorPool, jurorNumber,
                                  myJurorPool.getPool().getPoolNumber(), "Address Changed");
