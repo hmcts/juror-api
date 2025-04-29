@@ -219,6 +219,14 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             assertThat(responseBody.getTotalPages()).isEqualTo(2);
             assertThat(responseBody.getTotalItems()).isEqualTo(26);
             assertThat(responseBody.getData().size()).isEqualTo(25);
+
+            UnpaidExpenseSummaryResponseDto firstItem = responseBody.getData().get(0);
+            assertThat(firstItem.getJurorNumber()).isEqualTo("641500020");
+            assertThat(firstItem.getPoolNumber()).isEqualTo("415230101");
+            assertThat(firstItem.getFirstName()).isEqualTo("Fnametwozero");
+            assertThat(firstItem.getLastName()).isEqualTo("Lnametwozero");
+            assertThat(firstItem.getLastAttendanceDate()).isEqualTo(LocalDate.of(2023, 1, 8));
+            assertThat(firstItem.getTotalUnapproved()).isEqualTo(new BigDecimal("366.40"));
         }
 
         @Test
