@@ -21,6 +21,8 @@ import static uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType.
 import static uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType.SENT_TO_COURT;
 import static uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType.SMS;
 import static uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType.SU_SENT_TO_COURT;
+import static uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType.TEMPORARY_COURT_COMMS;
+import static uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType.TEMPORARY_SENT_TO_COURT_COMMS;
 import static uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType.WELSH_TOKEN;
 
 @RunWith(SpringRunner.class)
@@ -42,8 +44,8 @@ public class JurorCommsNotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Test
     public void enumValues() {
         assertThat(JurorCommsNotifyTemplateType.values())
-            .hasSize(4)
-            .containsOnly(LETTER_COMMS, SENT_TO_COURT, SU_SENT_TO_COURT, COMMS);
+            .hasSize(6)
+            .containsOnly(LETTER_COMMS, SENT_TO_COURT, SU_SENT_TO_COURT, COMMS,TEMPORARY_COURT_COMMS,TEMPORARY_SENT_TO_COURT_COMMS);
     }
 
     @Test

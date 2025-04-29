@@ -21,8 +21,10 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Implementation of {@link BureauProcessService}.
@@ -37,6 +39,9 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
     private final BulkPrintDataNotifyCommsRepository bulkPrintDataNotifyCommsRepository;
     private final BulkPrintDataRepository bulkPrintDataRepository;
     private final JurorPoolRepository jurorRepository;
+
+    private static final String LOC_CODE_HARROW = "468";
+    private static final String LOC_CODE_TAUNTON = "459";
 
     /**
      * Implements a specific job execution.
@@ -59,12 +64,41 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
         int commsfailed = 0;
         int invalidEmailAddress = 0;
         if (!bulkPrintDataNotifyCommsList.isEmpty()) {
+            Map<String, String> locCodeTemplateMap = getLocCodeTemplateMap();
+            Map<String, String> changeTemplateMap = getChangeTemplateMap();
+
             for (BulkPrintDataNotifyComms printFile : bulkPrintDataNotifyCommsList) {
                 try {
                     log.trace("LetterService :  jurorNumber {}", printFile.getJurorNo());
                     final JurorPool juror =
                         jurorRepository.findByJurorJurorNumberAndIsActiveAndOwner(printFile.getJurorNo(), true,
                             SecurityUtil.BUREAU_OWNER);
+                    String locCode = printFile.getLocCode();
+
+                    if (Objects.equals(locCode, LOC_CODE_TAUNTON) || Objects.equals(locCode, LOC_CODE_HARROW)) {
+
+
+                        String templateName = printFile.getTemplateName();
+
+
+                        if (templateName.equals("CONFRIM_JUROR_ENG")
+                            ||
+                            templateName.equals("DEF_DENIED_ENG")
+                            ||
+                            templateName.equals("DEF_GRANTED_ENG")
+                            ||
+                            templateName.equals("EXC_DENIED_ENG")
+                            ||
+                            templateName.equals("POSTPONE_JUROR_ENG")) {
+
+
+                            String currentTemplate = printFile.getTemplateName();
+                            String newTemplate = changeTemplateMap.get(currentTemplate);
+                            String changedCourtTemplate = locCodeTemplateMap.get(newTemplate);
+                            printFile.setTemplateId(changedCourtTemplate);
+                        }
+
+                    }
 
 
                     jurorCommsNotificationService.sendJurorComms(
@@ -74,6 +108,7 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
                         printFile.getDetailRec(),
                         false
                     );
+
 
                     updatePrintFiles(printFile);
                     commsSent++;
@@ -143,6 +178,35 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
         bulkPrintDataDetail.get(0).setDigitalComms(true);
         bulkPrintDataRepository.saveAll(bulkPrintDataDetail);
         log.trace("Saving updated printFile.digital_comms - updatePrintFiles .....");
+
     }
+
+    private Map<String, String> getLocCodeTemplateMap() {
+        Map<String, String> locCodeTemplateMap = new HashMap<>();
+        locCodeTemplateMap.put("CONFIRMATION OF SERVICE TAUNTON", "ea38af04-0631-4c7c-bfc8-0c491b7e98a2");
+        locCodeTemplateMap.put("TEMP_DEF_DENIED_ENG", "63d636d3-4ca2-452d-baa2-a940e4dcc48a");
+        locCodeTemplateMap.put("TEMP_DEF_GRANTED_ENG", "f5072da7-b250-4f02-b206-f176b1a0b80b");
+        locCodeTemplateMap.put("TEMP_EXC_DENIED_ENG", "f5669ddd-4bb3-4092-b60b-45f410de74a7");
+        locCodeTemplateMap.put("TEMP_POSTPONE_JUROR_ENG", "6504a964-0081-4b42-95da-9cccd26c1202");
+        locCodeTemplateMap.put("CONFIRMATION OF SERVICE HARROW", "bdcb84c2-49c1-435f-9821-262446c98a1c");
+        locCodeTemplateMap.put("CONFRIM_JUROR_ENG", "00afe3f3-28cb-4ae0-9776-9b78556ae8e7");
+        locCodeTemplateMap.put("DEF_DENIED_ENG", "7e6f2099-6fb7-4179-b968-e9c867e73c64");
+        locCodeTemplateMap.put("DEF_GRANTED_ENG", "399c27ff-9651-4a49-9398-99c990db1a34");
+        locCodeTemplateMap.put("EXC_DENIED_ENG", "26d3232e-09cd-47a8-afaa-8d0d0d0dd2a2");
+        locCodeTemplateMap.put("POSTPONE_JUROR_ENG", "7857b20c-3582-4de2-9f1a-c906096d3c73");
+        return locCodeTemplateMap;
+    }
+
+    private Map<String, String> getChangeTemplateMap() {
+        Map<String, String> changeTemplateMap = new HashMap<>();
+        changeTemplateMap.put("CONFRIM_JUROR_ENG", "CONFIRMATION OF SERVICE TAUNTON");
+        changeTemplateMap.put("CONFRIM_JUROR_ENG", "CONFIRMATION OF SERVICE HARROW");
+        changeTemplateMap.put("DEF_DENIED_ENG", "TEMP_DEF_DENIED_ENG");
+        changeTemplateMap.put("DEF_GRANTED_ENG", "TEMP_DEF_GRANTED_ENG");
+        changeTemplateMap.put("EXC_DENIED_ENG", "TEMP_EXC_DENIED_ENG");
+        changeTemplateMap.put("POSTPONE_JUROR_ENG", "TEMP_POSTPONE_JUROR_ENG");
+        return changeTemplateMap;
+    }
+
 
 }

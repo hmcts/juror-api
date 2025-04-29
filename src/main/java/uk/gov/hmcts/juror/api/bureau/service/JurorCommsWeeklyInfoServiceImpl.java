@@ -53,6 +53,7 @@ public class JurorCommsWeeklyInfoServiceImpl implements BureauProcessService {
 
         final List<JurorPool> jurordetailList = Lists.newLinkedList(jurorRepository.findAll(infomationalCommsFilter));
 
+
         log.debug("jurordetailList {}", jurordetailList.size());
 
         int infoCommsSent = 0;
@@ -66,6 +67,41 @@ public class JurorCommsWeeklyInfoServiceImpl implements BureauProcessService {
                 //Email
                 if (jurorDetail.getJuror().getEmail() != null) {
                     jurorCommsNotificationService.sendJurorComms(jurorDetail, JurorCommsNotifyTemplateType.COMMS,
+                        null, null, false
+                    );
+                    infoCommsSent++;
+                } else {
+                    log.debug(
+                        "Informational Comms Service :  Email Address not found for {}",
+                        jurorDetail.getJurorNumber()
+                    );
+                    noEmailAddress++;
+                }
+                update(jurorDetail);
+
+            } catch (JurorCommsNotificationServiceException e) {
+                if (NotifyUtil.isInvalidEmailAddressError(e.getCause())) {
+                    invalidEmailAddress++;
+                } else {
+                    log.error(
+                        "Unable to send Informational comms for {}",
+                        jurorDetail.getJurorNumber(), e
+                    );
+                    infoCommsfailed++;
+                }
+            } catch (Exception e) {
+                log.error("Informational Comms Processing : Juror Comms failed", e);
+                infoCommsfailed++;
+            }
+        }
+        BooleanExpression infomationalCommsFilterTemporaryCourt = JurorPoolQueries.awaitingInfoCommsTemporaryCourt();
+        final List<JurorPool> jurordetailListTemporaryCourt =
+            Lists.newLinkedList(jurorRepository.findAll(infomationalCommsFilterTemporaryCourt));
+        for (JurorPool jurorDetail : jurordetailListTemporaryCourt) {
+            try {
+                //Email
+                if (jurorDetail.getJuror().getEmail() != null) {
+                    jurorCommsNotificationService.sendJurorComms(jurorDetail, JurorCommsNotifyTemplateType.TEMPORARY_COURT_COMMS,
                         null, null, false
                     );
                     infoCommsSent++;

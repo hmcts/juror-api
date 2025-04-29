@@ -12,6 +12,9 @@ import uk.gov.hmcts.juror.api.moj.domain.ICourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.NotifyTemplateFieldMod;
 import uk.gov.hmcts.juror.api.moj.domain.NotifyTemplateMapperMod;
+import uk.gov.hmcts.juror.api.moj.domain.TemporaryCourtAddress;
+import uk.gov.hmcts.juror.api.moj.domain.TemporaryCourtName;
+import uk.gov.hmcts.juror.api.moj.domain.TemporaryCourtPhone;
 import uk.gov.hmcts.juror.api.moj.repository.NotifyTemplateFieldRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorCommonResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.PoolRequestService;
@@ -48,6 +51,8 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
         DateTimeFormatter.ofPattern(DATE_FORMAT);
     private static final DateTimeFormatter WELSH_DATE_TIME_FORMATTER =
         DateTimeFormatter.ofPattern(DATE_FORMAT, new Locale("en", "GB"));
+    private static final String TAUNTON_LOC_CODE = "459";
+    private static final String HARROW_LOC_CODE = "468";
 
     private final NotifyTemplateFieldRepositoryMod notifyTemplateFieldRepositoryMod;
     private final JurorCommonResponseRepositoryMod commonResponseRepositoryMod;
@@ -77,9 +82,22 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
             dateFormat.format(new Date()));
 
         List<NotifyTemplateFieldMod> fields = getPayLoadFieldsForTemplate(templateId);
-        NotifyTemplateMapperMod.Context context = NotifyTemplateMapperMod.Context.from(juror);
+        NotifyTemplateMapperMod.Context context = NotifyTemplateMapperMod.Context.from(juror,"Temporary Court Name",
+            "Temporary Court Address","Temporary Court Phone");
 
         context.setDetailData(detailData);
+
+        if (juror.getCourt() != null && TAUNTON_LOC_CODE.equals(juror.getCourt().getLocCode())) {
+            context.setTemporaryCourtName(TemporaryCourtName.TAUNTON.getTemporaryCourtName());
+            context.setTemporaryCourtAddress(TemporaryCourtAddress.TAUNTON.getTemporaryCourtAddress());
+            context.setTemporaryCourtPhone(TemporaryCourtPhone.TAUNTON.getTemporaryCourtPhone());
+        } else if (juror.getCourt() != null && HARROW_LOC_CODE.equals(juror.getCourt().getLocCode())) {
+            context.setTemporaryCourtName(TemporaryCourtName.HARROW.getTemporaryCourtName());
+            context.setTemporaryCourtAddress(TemporaryCourtAddress.HARROW.getTemporaryCourtAddress());
+            context.setTemporaryCourtPhone(TemporaryCourtPhone.HARROW.getTemporaryCourtPhone());
+        } else {
+            log.warn("Court location code is null or unrecognized for juror: {}", juror.getJurorNumber());
+        }
 
         context.setAbstractResponse(commonResponseRepositoryMod.findByJurorNumber(juror.getJurorNumber()));
         context.setActualCourtLocation(context.getCourtLocation());
@@ -168,7 +186,23 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
         List<NotifyTemplateFieldMod> fields = getPayLoadFields(templateId);
         log.trace("payloadService-reflection generating payloadMap. fields {}", fields.size());
 
-        NotifyTemplateMapperMod.Context context = NotifyTemplateMapperMod.Context.from(jurorPool);
+        NotifyTemplateMapperMod.Context context = NotifyTemplateMapperMod.Context.from(jurorPool,"Temporary Court Name",
+            "Temporary Court Address","Temporary Court Phone");
+
+
+        if (jurorPool.getCourt() != null && TAUNTON_LOC_CODE.equals(jurorPool.getCourt().getLocCode())) {
+            context.setTemporaryCourtName(TemporaryCourtName.TAUNTON.getTemporaryCourtName());
+            context.setTemporaryCourtAddress(TemporaryCourtAddress.TAUNTON.getTemporaryCourtAddress());
+            context.setTemporaryCourtPhone(TemporaryCourtPhone.TAUNTON.getTemporaryCourtPhone());
+        } else if (jurorPool.getCourt() != null && HARROW_LOC_CODE.equals(jurorPool.getCourt().getLocCode())) {
+            context.setTemporaryCourtName(TemporaryCourtName.HARROW.getTemporaryCourtName());
+            context.setTemporaryCourtAddress(TemporaryCourtAddress.HARROW.getTemporaryCourtAddress());
+            context.setTemporaryCourtPhone(TemporaryCourtPhone.HARROW.getTemporaryCourtPhone());
+        } else {
+            log.warn("Court location code is null or unrecognized for juror: {}", jurorPool.getJurorNumber());
+        }
+
+
         context.setAbstractResponse(commonResponseRepositoryMod.findByJurorNumber(jurorPool.getJurorNumber()));
         context.setActualCourtLocation(context.getCourtLocation());
         final WelshCourtLocation welshCourtLocation = getWelshCourtLocation(context.getCourtLocation().getLocCode());
