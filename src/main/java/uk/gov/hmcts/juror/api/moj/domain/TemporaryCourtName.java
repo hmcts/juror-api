@@ -6,7 +6,7 @@ import lombok.Getter;
 public enum TemporaryCourtName {
     TAUNTON("Taunton Crown Court Sitting at Worle"),
     HARROW("Hendon Magistrates Court or Willesden Magistrates Court");
- private final String temporaryCourtName;
+    private final String temporaryCourtName;
 
     TemporaryCourtName(String temporaryCourtName) {
         this.temporaryCourtName = temporaryCourtName;

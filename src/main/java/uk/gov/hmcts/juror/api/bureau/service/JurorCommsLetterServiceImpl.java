@@ -75,16 +75,20 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
                             SecurityUtil.BUREAU_OWNER);
                     String locCode = printFile.getLocCode();
 
-                    if(Objects.equals(locCode, LOC_CODE_TAUNTON) || Objects.equals(locCode, LOC_CODE_HARROW)) {
+                    if (Objects.equals(locCode, LOC_CODE_TAUNTON) || Objects.equals(locCode, LOC_CODE_HARROW)) {
 
 
                         String templateName = printFile.getTemplateName();
 
 
-                        if (templateName.equals("CONFRIM_JUROR_ENG") ||
-                            templateName.equals("DEF_DENIED_ENG") ||
-                            templateName.equals("DEF_GRANTED_ENG") ||
-                            templateName.equals("EXC_DENIED_ENG") ||
+                        if (templateName.equals("CONFRIM_JUROR_ENG")
+                            ||
+                            templateName.equals("DEF_DENIED_ENG")
+                            ||
+                            templateName.equals("DEF_GRANTED_ENG")
+                            ||
+                            templateName.equals("EXC_DENIED_ENG")
+                            ||
                             templateName.equals("POSTPONE_JUROR_ENG")) {
 
 
@@ -92,9 +96,9 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
                             String newTemplate = changeTemplateMap.get(currentTemplate);
                             String changedCourtTemplate = locCodeTemplateMap.get(newTemplate);
                             printFile.setTemplateId(changedCourtTemplate);
-                    }
+                        }
 
-                }
+                    }
 
 
                     jurorCommsNotificationService.sendJurorComms(

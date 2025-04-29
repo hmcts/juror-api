@@ -167,7 +167,7 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
 
         final List<JurorPool> jurordetailListTemporaryCourt = Lists.newLinkedList(jurorRepository.findAll(sentToCourtFilterTemporaryCourt));
 
-        for(JurorPool jurorDetail : jurordetailListTemporaryCourt) {
+        for (JurorPool jurorDetail : jurordetailListTemporaryCourt) {
             notificationsSent = jurorDetail.getJuror().getNotifications();
             log.trace("Sent To Court Comms Service :  jurorNumber {}", jurorDetail.getJurorNumber());
             boolean isEmail = false;
