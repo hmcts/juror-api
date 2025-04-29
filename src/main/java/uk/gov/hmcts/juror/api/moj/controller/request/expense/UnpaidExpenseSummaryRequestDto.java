@@ -55,6 +55,7 @@ public class UnpaidExpenseSummaryRequestDto implements IsPageable {
         POOL_NUMBER(QAppearance.appearance.poolNumber),
         FIRST_NAME(QJuror.juror.firstName),
         LAST_NAME(QJuror.juror.lastName),
+        LAST_ATTENDANCE_DATE(LAST_ATTENDANCE_DATE_EXPRESSION),
         TOTAL_IN_DRAFT(TOTAL_OUTSTANDING_EXPRESSION);
 
         private final Expression<? extends Comparable<?>> comparableExpression;
