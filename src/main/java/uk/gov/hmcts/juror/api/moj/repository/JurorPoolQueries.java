@@ -110,7 +110,9 @@ public class JurorPoolQueries {
         .and(respondedStatus())
         .and(jurorRecordNotWithBureau())
         .and(sentToCourtCommsNotSent())
-        .and(bureauToCourtTransferDate());
+        .and(bureauToCourtTransferDate())
+        .and(locCodeNotIn(locCodes));
+
     }
 
     /**
@@ -137,7 +139,8 @@ public class JurorPoolQueries {
         .and(jurorRecordWithBureau())
         .and(infoCommsNotSent())
         .and(emailIsPresent())
-        .and(isPoliceChecked());
+        .and(isPoliceChecked())
+        .and(locCodeNotIn(locCodes));
     }
 
     /**
@@ -219,14 +222,20 @@ public class JurorPoolQueries {
 
 
     /**
-    * Query to match instance where juror locCode is equal to '459'.
+    * Query to match instance where juror locCode is equal to '459','468'.
     */
     public static BooleanExpression locCodeIn(List<String> locCodes) {
         return jurorDetail.pool.courtLocation.locCode.in(locCodes);
     }
+    /**
+     * Query to match instance where juror locCode is not equal to '459','468'.
+     */
+    public static BooleanExpression locCodeNotIn(List<String> locCodes) {
+        return jurorDetail.pool.courtLocation.locCode.notIn(locCodes);
 
+
+    }
 
 }
-
 
 
