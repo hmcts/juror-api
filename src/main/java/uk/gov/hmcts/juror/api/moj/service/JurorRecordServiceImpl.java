@@ -208,9 +208,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         Juror juror = JurorUtils.getActiveJurorRecord(jurorRepository, jurorNumber);
         JurorUtils.checkOwnershipForCurrentUser(juror, owner);
 
-        JurorPool myJurorPool = JurorPoolUtils.getActiveJurorPoolForUser(
+        final JurorPool myJurorPool = JurorPoolUtils.getActiveJurorPoolForUser(
             jurorPoolRepository, jurorNumber,payload.getOwner());
-
 
         //Track changes to address fields
         boolean addressChanged = false;

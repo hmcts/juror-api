@@ -25,7 +25,6 @@ import uk.gov.hmcts.juror.api.moj.controller.response.trial.CourtroomsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.JudgeDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialSummaryDto;
-import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.TrialType;

@@ -588,7 +588,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             log.debug(String.format("User %s is adding a non-attendance day for juror %s", payload.getLogin(),
                                     request.getJurorNumber()));
 
-            CourtLocation courtLocation = courtLocationRepository.findByLocCode(locationCode).orElseThrow(
+            final CourtLocation courtLocation = courtLocationRepository.findByLocCode(locationCode).orElseThrow(
                 () -> new MojException.NotFound("Court location " + locationCode + " not found", null)
             );
             JurorPool jurorPool = validateJurorPoolAndStartDate(request, nonAttendanceDate);

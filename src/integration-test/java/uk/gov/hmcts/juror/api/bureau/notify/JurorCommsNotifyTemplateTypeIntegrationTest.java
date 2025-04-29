@@ -45,7 +45,8 @@ public class JurorCommsNotifyTemplateTypeIntegrationTest extends ContainerTest {
     public void enumValues() {
         assertThat(JurorCommsNotifyTemplateType.values())
             .hasSize(6)
-            .containsOnly(LETTER_COMMS, SENT_TO_COURT, SU_SENT_TO_COURT, COMMS,TEMPORARY_COURT_COMMS,TEMPORARY_SENT_TO_COURT_COMMS);
+            .containsOnly(LETTER_COMMS, SENT_TO_COURT, SU_SENT_TO_COURT, COMMS,
+                          TEMPORARY_COURT_COMMS,TEMPORARY_SENT_TO_COURT_COMMS);
     }
 
     @Test
