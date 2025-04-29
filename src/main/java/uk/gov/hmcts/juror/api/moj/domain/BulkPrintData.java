@@ -66,7 +66,4 @@ public class BulkPrintData {
     @Column(name = "digital_comms")
     private boolean digitalComms;
 
-    @Column(name = "changed_court_comms")
-    private boolean changedCourtComms;
-
 }
