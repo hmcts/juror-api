@@ -7,30 +7,32 @@ import lombok.Getter;
 public enum TemporaryCourtAddress {
     TAUNTON("Taunton Crown Court Sitting at Worle,\n"
                 +
-            "North Somerset Court House,\n"
+                "North Somerset Court House,\n"
                 +
-            "The Hedges Weston Super Mare,\n"
+                "The Hedges,\n"
                 +
-            "BS22 7BB."),
+                "Weston Super Mare,\n"
+                +
+                "BS22 7BB."),
     HARROW("Hendon Magistrates Court,\n"
                +
-           "The Court House,\n"
+               "The Court House,\n"
                +
-           "The Hyde,\n"
+               "The Hyde,\n"
                +
-           "Hendon,\n"
+               "Hendon,\n"
                +
-           "NW9 7BY.\n"
+               "NW9 7BY.\n"
                +
-           "or\n"
+               "or\n"
                +
-           "Willesden Magistrates Court,\n"
+               "Willesden Magistrates Court,\n"
                +
-           "448 High Road,\n"
+               "448 High Road,\n"
                +
-           "London,\n"
+               "London,\n"
                +
-           "NW10 2DZ.");
+               "NW10 2DZ.");
     private final String temporaryCourtAddress;
 
     TemporaryCourtAddress(String temporaryCourtAddress) {
