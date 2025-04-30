@@ -176,7 +176,7 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
                 if (jurorDetail.getJuror().getEmail() != null && !notificationsSent.equals(EMAIL_NOTIFICATION_SENT)) {
                     isEmail = true;
                     jurorCommsNotificationService.sendJurorComms(jurorDetail,
-                        JurorCommsNotifyTemplateType.TEMPORARY_SENT_TO_COURT_COMMS,
+                        JurorCommsNotifyTemplateType.SENT_TO_COURT_TEMP,
                         null, null, false
                     );
                     notificationsSent = EMAIL_NOTIFICATION_SENT;

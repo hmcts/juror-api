@@ -101,7 +101,7 @@ public class JurorCommsWeeklyInfoServiceImpl implements BureauProcessService {
             try {
                 //Email
                 if (jurorDetail.getJuror().getEmail() != null) {
-                    jurorCommsNotificationService.sendJurorComms(jurorDetail, JurorCommsNotifyTemplateType.TEMPORARY_COURT_COMMS,
+                    jurorCommsNotificationService.sendJurorComms(jurorDetail, JurorCommsNotifyTemplateType.TEMP_COMMS,
                         null, null, false
                     );
                     infoCommsSent++;
