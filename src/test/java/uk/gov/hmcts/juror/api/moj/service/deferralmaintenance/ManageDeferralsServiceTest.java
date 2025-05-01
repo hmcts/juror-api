@@ -26,6 +26,7 @@ import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralAllocateRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralDatesRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralReasonRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.DeferredJurorMoveRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.deferralmaintenance.ProcessJurorPostponementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralOptionsDto;
@@ -545,6 +546,104 @@ class ManageDeferralsServiceTest {
             request.setDeferralDate(LocalDate.of(2023, 8, 12));
             return request;
         }
+    }
+
+
+    @DisplayName("Move deferred juror to another court")
+    @Nested
+    class MoveDeferredJurorToAnotherCourt {
+
+        @Test
+        @SuppressWarnings({"PMD.TooManyFields"})
+        void moveDeferredJuror() {
+            TestUtils.mockBureauUser();
+            LocalDate newAttendanceDate = LocalDate.now();
+
+            final PoolRequest newPoolRequest = createPoolRequest(
+                BUREAU_OWNER, POOL_111111112, LOC_CODE_415,
+                newAttendanceDate
+            );
+
+            JurorStatus jurorDeferredStatus = new JurorStatus();
+            jurorDeferredStatus.setStatus(IJurorStatus.DEFERRED);
+            JurorStatus jurorReassignedStatus = new JurorStatus();
+            jurorReassignedStatus.setStatus(IJurorStatus.REASSIGNED);
+
+
+            doReturn(Optional.of(newPoolRequest)).when(poolRequestRepository).findByPoolNumber(POOL_111111112);
+            doReturn(Optional.of(jurorReassignedStatus)).when(jurorStatusRepository).findById(IJurorStatus.REASSIGNED);
+
+            JurorPool jurorPool = createJurorPool(JUROR_123456789);
+            jurorPool.setStatus(jurorDeferredStatus);
+            doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_123456789);
+            doReturn(1).when(poolMemberSequenceService).getPoolMemberSequenceNumber(any());
+            doReturn(Optional.of(newPoolRequest)).when(poolRequestRepository).findByPoolNumber(anyString());
+
+            List<String> jurorNumbers = Collections.singletonList(JUROR_123456789);
+
+            DeferredJurorMoveRequestDto request = new DeferredJurorMoveRequestDto();
+            request.setJurorNumbers(jurorNumbers);
+            request.setPoolNumber(newPoolRequest.getPoolNumber());
+
+            manageDeferralsService.moveDeferredJuror(request);
+
+            verify(poolRequestRepository, times(1)).findByPoolNumber(POOL_111111112);
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(JUROR_123456789);
+            verify(poolMemberSequenceService, times(1))
+                .getPoolMemberSequenceNumber(any(String.class));
+            verify(poolMemberSequenceService, times(1)).leftPadInteger(any(int.class));
+            verify(jurorPoolRepository, times(2)).save(any());
+            verify(jurorHistoryService).createReassignPoolMemberHistory(jurorPool, newPoolRequest.getPoolNumber(),
+                                                                        newPoolRequest.getCourtLocation());
+
+        }
+
+        @Test
+        @SuppressWarnings({"PMD.TooManyFields"})
+        void moveDeferredJurorInvalidStatus() {
+            TestUtils.mockBureauUser();
+            LocalDate newAttendanceDate = LocalDate.now();
+
+            final PoolRequest newPoolRequest = createPoolRequest(
+                BUREAU_OWNER, POOL_111111112, LOC_CODE_415,
+                newAttendanceDate
+            );
+
+            JurorStatus jurorDeferredStatus = new JurorStatus();
+            jurorDeferredStatus.setStatus(IJurorStatus.RESPONDED);
+            JurorStatus jurorReassignedStatus = new JurorStatus();
+            jurorReassignedStatus.setStatus(IJurorStatus.REASSIGNED);
+
+
+            doReturn(Optional.of(newPoolRequest)).when(poolRequestRepository).findByPoolNumber(POOL_111111112);
+            doReturn(Optional.of(jurorReassignedStatus)).when(jurorStatusRepository).findById(IJurorStatus.REASSIGNED);
+
+            JurorPool jurorPool = createJurorPool(JUROR_123456789);
+            jurorPool.setStatus(jurorDeferredStatus);
+            doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_123456789);
+            doReturn(1).when(poolMemberSequenceService).getPoolMemberSequenceNumber(any());
+            doReturn(Optional.of(newPoolRequest)).when(poolRequestRepository).findByPoolNumber(anyString());
+
+            List<String> jurorNumbers = Collections.singletonList(JUROR_123456789);
+
+            DeferredJurorMoveRequestDto request = new DeferredJurorMoveRequestDto();
+            request.setJurorNumbers(jurorNumbers);
+            request.setPoolNumber(newPoolRequest.getPoolNumber());
+
+            MojException.BadRequest exception =
+                assertThrows(MojException.BadRequest.class, () ->
+                                 manageDeferralsService.moveDeferredJuror(request),
+                             "Should throw an exception");
+            assertEquals("Juror is not in deferred status", exception.getMessage(),
+                         "Message should match");
+
+            verify(poolRequestRepository, times(1)).findByPoolNumber(POOL_111111112);
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(JUROR_123456789);
+
+        }
+
     }
 
     private PoolRequest createPoolRequest(String poolNumber, String locationCode, LocalDate returnDate) {

@@ -40,8 +40,13 @@ public enum NotifyTemplateMapperMod {
     COURT_LOC_ADDRESS(Type.COURT, (context -> context.getActualCourtLocation().getLocationAddress())),
     COURT_JURY_OFFICER_PHONE(Type.COURT, (context -> context.getCourtLocation().getJuryOfficerPhone())),
 
+    TEMPORARY_COURT_JURY_OFFICER_PHONE(Type.COURT, (Context::getTemporaryCourtPhone)),
+    TEMPORARY_COURT_NAME(Type.COURT, Context::getTemporaryCourtName),
+    TEMPORARY_COURT_ADDRESS(Type.COURT, Context::getTemporaryCourtAddress),
+
     BULK_PRINT_DATA(Type.BULK_PRINT,context -> context.getDetailData()
                 .substring(context.getPositionFrom() - 1, context.getPositionTo()).trim());
+
 
     private final Function<Context, Object> mapper;
     private Type type;
@@ -67,14 +72,21 @@ public enum NotifyTemplateMapperMod {
         String detailData;
         Integer positionFrom;
         Integer positionTo;
+        String temporaryCourtName;
+        String temporaryCourtAddress;
+        String temporaryCourtPhone;
 
-        public static Context from(JurorPool jurorPool) {
+        public static Context from(JurorPool jurorPool,String temporaryCourtName, String temporaryCourtAddress,
+                                    String temporaryCourtPhone) {
             return Context.builder()
                 .jurorPool(jurorPool)
                 .juror(jurorPool.getJuror())
                 .poolRequest(jurorPool.getPool())
                 .courtLocation(jurorPool.getPool().getCourtLocation())
                 .actualCourtLocation(jurorPool.getPool().getCourtLocation())
+                .temporaryCourtName(temporaryCourtName)
+                .temporaryCourtAddress(temporaryCourtAddress)
+                .temporaryCourtPhone(temporaryCourtPhone)
                 .build();
         }
     }

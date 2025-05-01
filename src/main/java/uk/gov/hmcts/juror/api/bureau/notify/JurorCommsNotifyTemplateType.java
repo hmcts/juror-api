@@ -19,7 +19,16 @@ public enum JurorCommsNotifyTemplateType {
     /**
      * weekly informational comms notification.
      */
-    COMMS;
+    COMMS,
+    /**
+     *  Information Comms notification. where juror original court has been changed.
+     */
+    TEMP_COMMS,
+
+    /**
+     *  Information Comms notification. where juror original court has been changed.
+     */
+    SENT_TO_COURT_TEMP;
 
     /**
      * language token in key.

@@ -18,6 +18,7 @@ import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralAllocateRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralDatesRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralReasonRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.DeferredJurorMoveRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.deferralmaintenance.ProcessJurorPostponementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralOptionsDto;
@@ -64,6 +65,7 @@ import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.NumberUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -178,7 +180,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
 
-        validateJurorPool(deferralReasonDto, jurorPool);
+        validateJurorPool(deferralReasonDto.getPoolNumber(), jurorPool);
 
         // process the response first so any updated juror details are saved
         if (deferralReasonDto.getReplyMethod() != null) {
@@ -240,7 +242,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
         JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
 
-        validateJurorPool(deferralReasonDto, jurorPool);
+        validateJurorPool(deferralReasonDto.getPoolNumber(), jurorPool);
 
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
 
@@ -409,6 +411,70 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         }
 
         return DeferralResponseDto.builder().countJurorsPostponed(countJurorsPostponed).build();
+    }
+
+    @Override
+    @Transactional
+    public void moveDeferredJuror(DeferredJurorMoveRequestDto requestDto) {
+        log.info("Processing deferred juror move request for juror(s): {} to pool {}", requestDto.getJurorNumbers(),
+                 requestDto.getPoolNumber());
+
+        // validate the target pool
+        PoolRequest newPool = poolRequestRepository.findByPoolNumber(requestDto.getPoolNumber()).orElseThrow(
+            () -> new MojException.NotFound("Could not find supplied pool number",
+                null));
+
+        JurorStatus jurorStatus = jurorStatusRepository.findById(IJurorStatus.REASSIGNED)
+            .orElseThrow(() -> new MojException.NotFound("Juror status not found", null));
+
+        for (String jurorNumber : requestDto.getJurorNumbers()) {
+            moveDeferredJuror(jurorNumber, newPool, jurorStatus);
+        }
+
+        log.info("Deferred juror(s) moved successfully to pool {}", requestDto.getPoolNumber());
+    }
+
+    private void moveDeferredJuror(String jurorNumber, PoolRequest newPool, JurorStatus jurorStatus) {
+
+        JurorPool currentJurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
+        JurorPoolUtils.checkOwnershipForCurrentUser(currentJurorPool, SecurityUtil.getActiveOwner());
+
+        // check if juror is in deferred status
+        if (currentJurorPool.getStatus().getStatus() != IJurorStatus.DEFERRED) {
+            throw new MojException.BadRequest("Juror is not in deferred status", null);
+        }
+
+        // check the juror is moving to a different pool
+        validateJurorPool(newPool.getPoolNumber(), currentJurorPool);
+
+        createMovedDeferredJurorPool(jurorNumber, newPool, currentJurorPool);
+
+        // de-activate the current juror pool record
+        currentJurorPool.setIsActive(false);
+        currentJurorPool.setUserEdtq(SecurityUtil.getActiveLogin());
+        currentJurorPool.setStatus(jurorStatus);
+        jurorPoolRepository.save(currentJurorPool);
+
+        // add juror history event to old pool member
+        jurorHistoryService.createReassignPoolMemberHistory(currentJurorPool, newPool.getPoolNumber(),
+                                                            newPool.getCourtLocation());
+
+    }
+
+    private void createMovedDeferredJurorPool(String jurorNumber, PoolRequest newPool, JurorPool currentJurorPool) {
+        log.trace(String.format("Create new Pool Member from deferred juror: %s", jurorNumber));
+        JurorPool newJurorPool = new JurorPool();
+        BeanUtils.copyProperties(currentJurorPool, newJurorPool, "pool");
+
+        // set the new pool number
+        newJurorPool.setPool(newPool);
+        newJurorPool.setUserEdtq(SecurityUtil.getActiveLogin());
+
+        // set the new pool member sequence number
+        int sequenceNumber = poolMemberSequenceService.getPoolMemberSequenceNumber(newPool.getPoolNumber());
+        newJurorPool.setPoolSequence(poolMemberSequenceService.leftPadInteger(sequenceNumber));
+
+        jurorPoolRepository.save(newJurorPool);
     }
 
     @Override
@@ -664,6 +730,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         jurorPoolRepository.save(jurorPool);
     }
 
+
     public void setDeletedDeferralJurorPool(JurorPool jurorPool, String auditorUsername) {
 
         JurorStatus jurorStatus = new JurorStatus();
@@ -685,8 +752,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         jurorRepository.save(juror);
     }
 
-    private void validateJurorPool(DeferralReasonRequestDto deferralReasonDto, JurorPool jurorPool) {
-        if (jurorPool.getPoolNumber().equalsIgnoreCase(deferralReasonDto.getPoolNumber())) {
+    private void validateJurorPool(String poolNumber, JurorPool jurorPool) {
+        if (jurorPool.getPoolNumber().equalsIgnoreCase(poolNumber)) {
             throw new MojException.BusinessRuleViolation("Cannot change deferral to the existing pool",
                 MojException.BusinessRuleViolation.ErrorCode.CANNOT_DEFER_TO_EXISTING_POOL);
         }
