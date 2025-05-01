@@ -79,10 +79,10 @@ public class JurorCommsWeeklyInfoServiceImplTest {
     public void process_HappyPath() {
         given(poolRepository.findAll(any(BooleanExpression.class))).willReturn(poolList);
         service.process();
-        verify(jurorCommsNotificationService, times(2)).sendJurorComms(any(JurorPool.class),
+        verify(jurorCommsNotificationService, times(4)).sendJurorComms(any(JurorPool.class),
             any(JurorCommsNotifyTemplateType.class),
             eq(null), eq(null), anyBoolean());
-        verify(poolRepository, times(2)).save(any(JurorPool.class));
+        verify(poolRepository, times(4)).save(any(JurorPool.class));
     }
 
     @Test
