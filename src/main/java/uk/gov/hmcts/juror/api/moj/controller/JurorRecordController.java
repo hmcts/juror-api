@@ -521,6 +521,14 @@ public class JurorRecordController {
         jurorRecordService.markResponded(jurorNumber);
     }
 
+    @PatchMapping("/mark-summoned/{juror_number}")
+    @Operation(summary = "Mark a juror whose has undeliverable to summoned")
+    @ResponseStatus(HttpStatus.OK)
+    public void markSummoned(@Valid @JurorNumber @P("juror_number") @PathVariable("juror_number")
+                              @Parameter(description = "jurorNumber", required = true) String jurorNumber) {
+        jurorRecordService.markSummoned(jurorNumber);
+    }
+
     @PostMapping("/search")
     @Operation(summary = "GET With Body", description = "Retrieve a list of all jurors, filtered by the "
         + "provided search criteria")

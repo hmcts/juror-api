@@ -27,32 +27,57 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class UndeliverableResponseServiceImpl implements UndeliverableResponseService {
-  private final JurorHistoryService jurorHistoryService;
-  private final JurorPoolService jurorPoolService;
+    private final JurorHistoryService jurorHistoryService;
+    private final JurorPoolService jurorPoolService;
 
-  @Override
-  @Transactional
-  public void markAsUndeliverable(List<String> jurorNumbers) {
+    private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
+    private final JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository;
 
-    final String username = SecurityUtil.getUsername();
-    final String owner = SecurityUtil.getActiveOwner();
+    private final JurorResponseCommonRepositoryMod jurorResponseCommonRepositoryMod;
 
-    for (String jurorNumber : jurorNumbers) {
-      log.debug(
-          "Begin processing mark as undeliverable for juror {} by user {}", jurorNumber, username);
+    private final JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
 
-      JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
-      JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, owner);
+    @Override
+    @Transactional
+    public void markAsUndeliverable(List<String> jurorNumbers) {
 
-      JurorStatus jurorStatus = new JurorStatus();
-      jurorStatus.setStatus(IJurorStatus.UNDELIVERABLE);
+        final String username = SecurityUtil.getUsername();
+        final String owner = SecurityUtil.getActiveOwner();
 
-      jurorPool.setStatus(jurorStatus);
-      jurorPool.setUserEdtq(username);
-      jurorPool.setNextDate(null);
-      jurorHistoryService.createUndeliveredSummonsHistory(jurorPool);
-      jurorPoolService.save(jurorPool);
+        for (String jurorNumber : jurorNumbers) {
+            log.debug("Begin processing mark as undeliverable for juror {} by user {}", jurorNumber, username);
 
+            JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
+            JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, owner);
+
+            JurorStatus jurorStatus = new JurorStatus();
+            jurorStatus.setStatus(IJurorStatus.UNDELIVERABLE);
+
+            jurorPool.setStatus(jurorStatus);
+            jurorPool.setUserEdtq(username);
+            jurorPool.setNextDate(null);
+            jurorHistoryService.createUndeliveredSummonsHistory(jurorPool);
+            jurorPoolService.save(jurorPool);
+
+            // Update any response record to closed to prevent further processing
+            AbstractJurorResponse jurorResponse = jurorResponseCommonRepositoryMod.findByJurorNumber(jurorNumber);
+
+            if (jurorResponse != null) {
+
+                setResponseToClosed(jurorResponse);
+
+                if (jurorResponse.getReplyType().getType().equals(ReplyMethod.DIGITAL.getDescription())) {
+                    jurorDigitalResponseRepository.save((DigitalResponse) jurorResponse);
+                } else {
+                    jurorPaperResponseRepository.save((PaperResponse) jurorResponse);
+                }
+            }
+        }
     }
-  }
+
+    private void setResponseToClosed(AbstractJurorResponse jurorResponse) {
+        jurorResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.CLOSED);
+        jurorResponse.setProcessingComplete(true);
+        jurorResponse.setCompletedAt(LocalDateTime.now());
+    }
 }

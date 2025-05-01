@@ -1577,6 +1577,33 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         jurorHistoryRepository.save(history);
     }
 
+  @Override
+  @Transactional
+  public void markSummoned(String jurorNumber) {
+    log.info("Marking juror status undelivered  {} as summoned", jurorNumber);
+      final JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber,
+                                                                           SecurityUtil.getActiveOwner());
+      final Juror juror = jurorPool.getJuror();
+
+      final String auditorUsername = SecurityUtil.getActiveLogin();
+
+      jurorPool.setUserEdtq(auditorUsername);
+
+      jurorPoolRepository.save(jurorPool);
+
+      jurorPool.setStatus(RepositoryUtils.retrieveFromDatabase(IJurorStatus.SUMMONED, jurorStatusRepository));
+      final JurorHistory history = JurorHistory.builder()
+          .jurorNumber(jurorNumber)
+          .historyCode(HistoryCodeMod.SUMMONS_REPRINTED)
+          .createdBy(auditorUsername)
+          .otherInformation(JurorHistory.RESPONDED)
+          .poolNumber(jurorPool.getPoolNumber())
+          .dateCreated(LocalDateTime.now())
+          .build();
+      jurorHistoryRepository.save(history);
+
+
+}
     @Override
     public PaginatedList<FilterJurorRecord> searchForJurorRecords(JurorRecordFilterRequestQuery query) {
 
