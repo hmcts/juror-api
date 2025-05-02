@@ -1405,10 +1405,12 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         if (juror.getTravelTime() != null
             && !juror.getTravelTime().equals(LocalTime.of(0,0))) {
             for (Appearance appearance : appearances) {
-                // looking for an actual attendance record, not a no show or non-attendance
+                // looking for an actual attendance record, not a no show or non-attendance and don't update
+                // a submitted or authorised expense or one with a travel time already present
                 if (appearance.getTimeIn() != null
                     && (appearance.getTravelTime() == null || appearance.getTravelTime().equals(LocalTime.of(0,0)))
-                    && appearance.getAppearanceStage() != AppearanceStage.EXPENSE_AUTHORISED) {
+                    && appearance.getAppearanceStage() != AppearanceStage.EXPENSE_AUTHORISED
+                    && (appearance.getFinancialAudit() == null || appearance.getFinancialAudit() == 0L)) {
                     JurorPool jurorPool = jurorPoolRepository
                         .findByJurorJurorNumberAndPoolPoolNumber(juror.getJurorNumber(),
                             appearance.getPoolNumber());
