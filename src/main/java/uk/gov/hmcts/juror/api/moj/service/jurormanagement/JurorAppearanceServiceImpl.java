@@ -143,6 +143,10 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
         appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
         realignAttendanceType(appearance);
+        // need to read the record again as it might have changed due to realignment
+        appearance = appearanceRepository.findById(appearanceId).orElseThrow(
+            () -> new MojException.InternalServerError("Error reading attendance record for juror " + jurorNumber,
+                                                       null));
         appearance.setAttendanceAuditNumber(poolAttendanceNumber);
 
         jurorHistoryService.createPoolAttendanceHistory(jurorPool, appearance);
@@ -409,13 +413,15 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                 "Can only modify confirmed attendances that have no approved expenses",
                 MojException.BusinessRuleViolation.ErrorCode.APPEARANCE_MUST_HAVE_NO_APPROVED_EXPENSES);
         }
+
         final String jurorNumber = appearance.getJurorNumber();
+
         appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
         appearance.setNoShow(false);
         appearance.setAttendanceType(null);
         if (ModifyConfirmedAttendanceDto.ModifyAttendanceType.ATTENDANCE.equals(modifyAttendanceType)) {
             appearance.setNonAttendanceDay(Boolean.FALSE);
-            //default value will get realigned apart of realignAttendanceType(...)
+            //default value will get realigned as part of realignAttendanceType(...)
             appearance.setAttendanceType(AttendanceType.FULL_DAY);
 
             // update the check-in time
@@ -443,25 +449,33 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             appearance.setNonAttendanceDay(Boolean.FALSE);
             appearance.setAttendanceType(AttendanceType.ABSENT);
             appearance.setNoShow(Boolean.TRUE);
+            realignAttendanceType(appearance.getJurorNumber());
         }
 
         if (ModifyConfirmedAttendanceDto.ModifyAttendanceType.DELETE.equals(modifyAttendanceType)) {
-            log.info("Deleting appearance record for juror {} on appearance date {}", appearance.getJurorNumber(),
+            log.info("Deleting appearance record for juror {} on appearance date {}", jurorNumber,
                      appearance.getAttendanceDate());
             appearanceRepository.delete(appearance);
-            realignAttendanceType(appearance.getJurorNumber());
+            realignAttendanceType(jurorNumber);
 
-            JurorPool jurorPool = jurorPoolService.getJurorPoolForJuror(appearance.getJurorNumber(),
+            JurorPool jurorPool = jurorPoolService.getJurorPoolForJuror(jurorNumber,
                                                                         appearance.getPoolNumber());
             if (jurorPool != null) {
                 jurorHistoryService.createDeleteAttendanceHistory(jurorPool, appearance.getAttendanceDate());
             } else {
-                log.error("No juror pool found for juror {} on appearance date {}", appearance.getJurorNumber(),
+                log.error("No juror pool found for juror {} on appearance date {}", jurorNumber,
                          appearance.getAttendanceDate());
             }
         } else {
             appearance = getAppearance(appearance, jurorNumber);
             appearanceRepository.saveAndFlush(appearance);
+
+            AppearanceId appearanceId = new AppearanceId(jurorNumber, appearance.getAttendanceDate(),
+                                                         appearance.getCourtLocation());
+            // need to read the record again as it might have changed due to realignment of attendance type
+            appearance = appearanceRepository.findById(appearanceId).orElseThrow(
+                () -> new MojException.InternalServerError("Error reading attendance record for juror " + jurorNumber,
+                                                           null));
             jurorExpenseService.realignExpenseDetails(appearance);
         }
     }
@@ -1372,12 +1386,38 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     @Override
     public void realignAttendanceType(String jurorNumber) {
         List<Appearance> appearances = getAllAppearances(jurorNumber);
+        Juror juror = jurorRepository.findById(jurorNumber)
+            .orElseThrow(() -> new MojException.NotFound("Juror not found " + jurorNumber, null));
+
+        // need to filter out appearances that are no shows
+        appearances = appearances
+            .stream()
+            .filter(appearance -> appearance.getNoShow() == null || !appearance.getNoShow())
+            .toList();
+
         List<LocalDate> localDates = appearances
             .stream()
             .map(Appearance::getAttendanceDate)
             .distinct()
             .sorted(Comparator.naturalOrder())
             .toList();
+
+        if (juror.getTravelTime() != null
+            && !juror.getTravelTime().equals(LocalTime.of(0,0))) {
+            for (Appearance appearance : appearances) {
+                // looking for an actual attendance record, not a no show or non-attendance
+                if (appearance.getTimeIn() != null
+                    && (appearance.getTravelTime() == null || appearance.getTravelTime().equals(LocalTime.of(0,0)))
+                    && appearance.getAppearanceStage() != AppearanceStage.EXPENSE_AUTHORISED) {
+                    JurorPool jurorPool = jurorPoolRepository
+                        .findByJurorJurorNumberAndPoolPoolNumber(juror.getJurorNumber(),
+                            appearance.getPoolNumber());
+                    if (SecurityUtil.getActiveOwner().equals(jurorPool.getPool().getOwner())) {
+                        appearance.setTravelTime(juror.getTravelTime());
+                    }
+                }
+            }
+        }
 
         appearances
             .forEach(appearance1 -> realignAttendanceTypeInternal(appearance1,
@@ -1539,7 +1579,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             } else {
                 appearance.setAttendanceType(AttendanceType.NON_ATTENDANCE);
             }
-        } else if (appearance.isFullDay()) {
+        } else if (appearance.isFullDay() || appearance.payAttendanceOverridden()) {
 
             if (isExtraLongTrialDay) {
                 appearance.setAttendanceType(AttendanceType.FULL_DAY_EXTRA_LONG_TRIAL);
