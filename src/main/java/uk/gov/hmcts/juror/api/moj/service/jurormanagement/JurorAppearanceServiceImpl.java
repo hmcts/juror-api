@@ -1370,6 +1370,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     @Override
     public void realignAttendanceType(String jurorNumber) {
         List<Appearance> appearances = getAllAppearances(jurorNumber);
+        Juror juror = jurorRepository.findById(jurorNumber)
+            .orElseThrow(() -> new MojException.NotFound("Juror not found " + jurorNumber, null));
 
         // need to filter out appearances that are no shows
         appearances = appearances
@@ -1383,6 +1385,23 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             .distinct()
             .sorted(Comparator.naturalOrder())
             .toList();
+
+        if (juror.getTravelTime() != null
+            && !juror.getTravelTime().equals(LocalTime.of(0,0))) {
+            for (Appearance appearance : appearances) {
+                // looking for an actual attendance record, not a no show or non-attendance
+                if (appearance.getTimeIn() != null
+                    && (appearance.getTravelTime() == null || appearance.getTravelTime().equals(LocalTime.of(0,0)))
+                    && appearance.getAppearanceStage() != AppearanceStage.EXPENSE_AUTHORISED) {
+                    JurorPool jurorPool = jurorPoolRepository
+                        .findByJurorJurorNumberAndPoolPoolNumber(juror.getJurorNumber(),
+                            appearance.getPoolNumber());
+                    if (SecurityUtil.getActiveOwner().equals(jurorPool.getPool().getOwner())) {
+                        appearance.setTravelTime(juror.getTravelTime());
+                    }
+                }
+            }
+        }
 
         appearances
             .forEach(appearance1 -> realignAttendanceTypeInternal(appearance1,
