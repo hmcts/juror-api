@@ -102,8 +102,13 @@ public class MojException extends RuntimeException {
             CANNOT_RE_ADD_JUROR_TO_PANEL,
             UNCONFIRMED_ATTENDANCE_EXISTS,
             INVALID_JUROR_STATUS,
+
+
             INVALID_JUROR_ATTENDANCE_RECORD,
-            INVALID_JUROR_POOL_LOCATION
+            INVALID_JUROR_POOL_LOCATION,
+
+            JUROR_MUST_UNDELIVERABLE
+
         }
     }
 

@@ -1583,20 +1583,26 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     log.info("Marking juror status undelivered  {} as summoned", jurorNumber);
       final JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber,
                                                                            SecurityUtil.getActiveOwner());
-      final Juror juror = jurorPool.getJuror();
+
+
+      if (jurorPool.getStatus().getCode() != IJurorStatus.UNDELIVERABLE) {
+          throw new MojException.BusinessRuleViolation(
+              "Juror must have a pool status of UNDELIVERED before being marked as SUMMONED",
+              MojException.BusinessRuleViolation.ErrorCode.JUROR_MUST_UNDELIVERABLE
+          );
+      }
 
       final String auditorUsername = SecurityUtil.getActiveLogin();
-
       jurorPool.setUserEdtq(auditorUsername);
-
+      jurorPool.setStatus(RepositoryUtils.retrieveFromDatabase(IJurorStatus.SUMMONED, jurorStatusRepository));
       jurorPoolRepository.save(jurorPool);
 
-      jurorPool.setStatus(RepositoryUtils.retrieveFromDatabase(IJurorStatus.SUMMONED, jurorStatusRepository));
+
       final JurorHistory history = JurorHistory.builder()
           .jurorNumber(jurorNumber)
-          .historyCode(HistoryCodeMod.SUMMONS_REPRINTED)
+          .historyCode(HistoryCodeMod.PRINT_SUMMONS)
           .createdBy(auditorUsername)
-          .otherInformation(JurorHistory.RESPONDED)
+          .otherInformation("Juror marked as summoned by " + auditorUsername + " on " + LocalDate.now())
           .poolNumber(jurorPool.getPoolNumber())
           .dateCreated(LocalDateTime.now())
           .build();
