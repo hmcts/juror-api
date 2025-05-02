@@ -1196,7 +1196,7 @@ class JurorAppearanceServiceTest {
         verify(appearanceRepository, times(1)).retrieveNonAttendanceDetails(any());
         verify(appearanceRepository, times(1))
             .retrieveNonAttendanceDetails(any(RetrieveAttendanceDetailsDto.CommonData.class));
-        verify(appearanceRepository, times(1)).findAllById(any());
+        verify(appearanceRepository, times(2)).findAllById(any());
         verify(appearanceRepository, never()).saveAndFlush(any());
         verify(appearanceRepository, times(2)).saveAllAndFlush(any());
     }
@@ -3001,9 +3001,9 @@ class JurorAppearanceServiceTest {
                 .findByJurorNumberAndIsActiveAndCourt(JUROR2, true, courtLocation);
 
             verify(appearanceRepository, times(1)).getNextAttendanceAuditNumber();
-            verify(appearanceRepository, times(1)).findByLocCodeAndJurorNumberAndAttendanceDate(
+            verify(appearanceRepository, times(2)).findByLocCodeAndJurorNumberAndAttendanceDate(
                 LOC_415, JUROR1, now().minusDays(1));
-            verify(appearanceRepository, times(1)).findByLocCodeAndJurorNumberAndAttendanceDate(
+            verify(appearanceRepository, times(2)).findByLocCodeAndJurorNumberAndAttendanceDate(
                 LOC_415, JUROR2, now().minusDays(1));
 
             ArgumentCaptor<Appearance> appearanceCaptor = ArgumentCaptor.forClass(Appearance.class);
@@ -3302,7 +3302,7 @@ class JurorAppearanceServiceTest {
             verify(jurorPoolRepository, times(1))
                 .findByJurorNumberAndIsActiveAndCourt(JUROR1, true, courtLocation);
             verify(appearanceRepository, times(1)).getNextAttendanceAuditNumber();
-            verify(appearanceRepository, times(1))
+            verify(appearanceRepository, times(2))
                 .findByLocCodeAndJurorNumberAndAttendanceDate(locationCode, JUROR1, now().minusDays(1));
 
             verify(jurorPoolRepository, times(1)).saveAndFlush(jurorPool);
@@ -3367,7 +3367,7 @@ class JurorAppearanceServiceTest {
             verify(jurorRepository, times(2)).findById(JUROR1);
             verify(jurorPoolRepository, times(1)).findByJurorNumberAndIsActiveAndCourt(JUROR1, true, courtLocation);
             verify(appearanceRepository, times(1)).getNextAttendanceAuditNumber();
-            verify(appearanceRepository, times(1)).findByLocCodeAndJurorNumberAndAttendanceDate(locationCode, JUROR1,
+            verify(appearanceRepository, times(2)).findByLocCodeAndJurorNumberAndAttendanceDate(locationCode, JUROR1,
                 now().minusDays(1));
 
             verify(jurorPoolRepository, times(1)).saveAndFlush(jurorPool);

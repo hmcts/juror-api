@@ -467,6 +467,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                          appearance.getAttendanceDate());
             }
         } else {
+            appearance = getAppearance(appearance, jurorNumber);
             appearanceRepository.saveAndFlush(appearance);
 
             AppearanceId appearanceId = new AppearanceId(jurorNumber, appearance.getAttendanceDate(),
@@ -761,6 +762,9 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
             appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
             realignAttendanceType(appearance);
+
+            appearance = getAppearance(appearance, jurorNumber);
+
             appearance.setAppearanceConfirmed(Boolean.TRUE);
 
             appearance.setAttendanceAuditNumber(juryAttendanceNumber);
@@ -1005,6 +1009,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                 appearance.getCourtLocation());
             jurorHistoryService.createPoolAttendanceHistory(jurorPool, appearance);
         });
+        // re-read the appearances they may have been realigned and saved to the database
+        checkedInAttendances = appearanceRepository.findAllById(appearanceIds);
 
         jurorExpenseService.applyDefaultExpenses(checkedInAttendances);
 
@@ -1353,6 +1359,16 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         };
     }
 
+    private Appearance getAppearance(Appearance appearance, String jurorNumber) {
+        // need to read the record again as it might have changed due to realignment of attendance type
+        return appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(
+                appearance.getCourtLocation().getLocCode(),
+                jurorNumber,
+                appearance.getAttendanceDate())
+            .orElseThrow(() -> new MojException.InternalServerError("Error reading attendance record for juror "
+                                                                        + jurorNumber, null));
+    }
+
     @Override
     public Optional<Appearance> getAppearance(String jurorNumber,
                                               LocalDate appearanceDate,
@@ -1514,6 +1530,9 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
         appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
         realignAttendanceType(appearance);
+
+        appearance = getAppearance(appearance, jurorNumber);
+
         appearance.setAppearanceConfirmed(Boolean.TRUE);
         jurorHistoryService.createPoolAttendanceHistory(jurorPool, appearance);
         appearanceRepository.saveAndFlush(appearance);
