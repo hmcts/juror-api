@@ -1187,7 +1187,7 @@ class JurorAppearanceServiceTest {
         verify(appearanceRepository, times(1)).retrieveNonAttendanceDetails(any());
         verify(appearanceRepository, times(1))
             .retrieveNonAttendanceDetails(any(RetrieveAttendanceDetailsDto.CommonData.class));
-        verify(appearanceRepository, times(1)).findAllById(any());
+        verify(appearanceRepository, times(2)).findAllById(any());
         verify(appearanceRepository, never()).saveAndFlush(any());
         verify(appearanceRepository, times(2)).saveAllAndFlush(any());
     }
