@@ -2977,9 +2977,9 @@ class JurorAppearanceServiceTest {
                 .findByJurorNumberAndIsActiveAndCourt(JUROR2, true, courtLocation);
 
             verify(appearanceRepository, times(1)).getNextAttendanceAuditNumber();
-            verify(appearanceRepository, times(1)).findByLocCodeAndJurorNumberAndAttendanceDate(
+            verify(appearanceRepository, times(2)).findByLocCodeAndJurorNumberAndAttendanceDate(
                 LOC_415, JUROR1, now().minusDays(1));
-            verify(appearanceRepository, times(1)).findByLocCodeAndJurorNumberAndAttendanceDate(
+            verify(appearanceRepository, times(2)).findByLocCodeAndJurorNumberAndAttendanceDate(
                 LOC_415, JUROR2, now().minusDays(1));
 
             ArgumentCaptor<Appearance> appearanceCaptor = ArgumentCaptor.forClass(Appearance.class);
@@ -3278,7 +3278,7 @@ class JurorAppearanceServiceTest {
             verify(jurorPoolRepository, times(1))
                 .findByJurorNumberAndIsActiveAndCourt(JUROR1, true, courtLocation);
             verify(appearanceRepository, times(1)).getNextAttendanceAuditNumber();
-            verify(appearanceRepository, times(1))
+            verify(appearanceRepository, times(2))
                 .findByLocCodeAndJurorNumberAndAttendanceDate(locationCode, JUROR1, now().minusDays(1));
 
             verify(jurorPoolRepository, times(1)).saveAndFlush(jurorPool);
@@ -3343,7 +3343,7 @@ class JurorAppearanceServiceTest {
             verify(jurorRepository, times(1)).findById(JUROR1);
             verify(jurorPoolRepository, times(1)).findByJurorNumberAndIsActiveAndCourt(JUROR1, true, courtLocation);
             verify(appearanceRepository, times(1)).getNextAttendanceAuditNumber();
-            verify(appearanceRepository, times(1)).findByLocCodeAndJurorNumberAndAttendanceDate(locationCode, JUROR1,
+            verify(appearanceRepository, times(2)).findByLocCodeAndJurorNumberAndAttendanceDate(locationCode, JUROR1,
                 now().minusDays(1));
 
             verify(jurorPoolRepository, times(1)).saveAndFlush(jurorPool);
