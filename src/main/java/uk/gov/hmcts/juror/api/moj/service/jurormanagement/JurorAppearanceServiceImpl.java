@@ -1386,11 +1386,19 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             .sorted(Comparator.naturalOrder())
             .toList();
 
-        if (juror.getTravelTime() != null) {
+        if (juror.getTravelTime() != null
+            && !juror.getTravelTime().equals(LocalTime.of(0,0))) {
             for (Appearance appearance : appearances) {
                 // looking for an actual attendance record, not a no show or non-attendance
-                if (appearance.getTimeIn() != null) {
-                    appearance.setTravelTime(juror.getTravelTime());
+                if (appearance.getTimeIn() != null
+                    && (appearance.getTravelTime() == null || appearance.getTravelTime().equals(LocalTime.of(0,0)))
+                    && appearance.getAppearanceStage() != AppearanceStage.EXPENSE_AUTHORISED) {
+                    JurorPool jurorPool = jurorPoolRepository
+                        .findByJurorJurorNumberAndPoolPoolNumber(juror.getJurorNumber(),
+                            appearance.getPoolNumber());
+                    if (SecurityUtil.getActiveOwner().equals(jurorPool.getPool().getOwner())) {
+                        appearance.setTravelTime(juror.getTravelTime());
+                    }
                 }
             }
         }
