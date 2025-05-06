@@ -134,9 +134,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
         // Read the newly created appearance record
         AppearanceId appearanceId = new AppearanceId(jurorNumber, dto.getAttendanceDate(), courtLocation);
-        Appearance appearance = appearanceRepository.findById(appearanceId).orElseThrow(
-            () -> new MojException.InternalServerError("Error adding attendance record for juror " + jurorNumber,
-                null));
+        Appearance appearance = getAppearance(appearanceId, jurorNumber);
 
         final String poolAttendancePrefix = "P";
         final String poolAttendanceNumber = getAttendanceAuditNumber(poolAttendancePrefix);
@@ -144,9 +142,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
         realignAttendanceType(appearance);
         // need to read the record again as it might have changed due to realignment
-        appearance = appearanceRepository.findById(appearanceId).orElseThrow(
-            () -> new MojException.InternalServerError("Error reading attendance record for juror " + jurorNumber,
-                                                       null));
+        appearance = getAppearance(appearanceId, jurorNumber);
         appearance.setAttendanceAuditNumber(poolAttendanceNumber);
 
         jurorHistoryService.createPoolAttendanceHistory(jurorPool, appearance);
@@ -1350,6 +1346,14 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             case CHECK_IN -> RetrieveAttendanceDetailsTag.NOT_CHECKED_IN;
             default -> null;
         };
+    }
+
+    private Appearance getAppearance(AppearanceId appearanceId, String jurorNumber) {
+        Appearance appearance;
+        appearance = appearanceRepository.findById(appearanceId).orElseThrow(
+            () -> new MojException.InternalServerError("Error reading attendance record for juror " + jurorNumber,
+                                                       null));
+        return appearance;
     }
 
     private Appearance getAppearance(Appearance appearance, String jurorNumber) {
