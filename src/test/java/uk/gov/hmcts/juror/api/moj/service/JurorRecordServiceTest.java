@@ -295,6 +295,9 @@ class JurorRecordServiceTest {
     void testEditJurorRecord() {
         JurorPool jurorPool = createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER);
 
+        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+        .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
+
         doReturn(Optional.of(jurorPool.getJuror())).when(jurorRepository).findById(VALID_JUROR_NUMBER);
         final ReasonableAdjustments reasonableAdjustments = new ReasonableAdjustments();
         reasonableAdjustments.setDescription("Vision impairment");
@@ -342,6 +345,9 @@ class JurorRecordServiceTest {
         Juror juror = jurorPool.getJuror();
         juror.setWelsh(false);
 
+        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+        .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
+
         ReasonableAdjustments reasonableAdjustments = new ReasonableAdjustments();
         reasonableAdjustments.setDescription("Vision impairment");
         reasonableAdjustments.setCode("V");
@@ -370,6 +376,9 @@ class JurorRecordServiceTest {
         Juror juror = jurorPool.getJuror();
         juror.setWelsh(true);
 
+        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+        .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
+
         doReturn(Optional.of(jurorPool.getJuror())).when(jurorRepository).findById(VALID_JUROR_NUMBER);
         ReasonableAdjustments reasonableAdjustments = new ReasonableAdjustments();
         reasonableAdjustments.setDescription("Vision impairment");
@@ -397,6 +406,9 @@ class JurorRecordServiceTest {
         JurorPool jurorPool = createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER);
         Juror juror = jurorPool.getJuror();
         juror.setWelsh(null);
+
+        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+        .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
 
         ReasonableAdjustments reasonableAdjustments = new ReasonableAdjustments();
         reasonableAdjustments.setDescription("Vision impairment");
@@ -429,6 +441,9 @@ class JurorRecordServiceTest {
         juror.setPendingTitle("Mx");
         juror.setPendingFirstName("Pending First Name");
         juror.setPendingLastName("Pending Last Name");
+
+        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+        .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
 
         ReasonableAdjustments reasonableAdjustments = new ReasonableAdjustments();
         reasonableAdjustments.setDescription("Vision impairment");

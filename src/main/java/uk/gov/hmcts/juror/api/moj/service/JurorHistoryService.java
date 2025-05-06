@@ -106,4 +106,9 @@ public interface JurorHistoryService {
     void createDeleteAdditionalInfoLetterHistory(JurorPool jurorPool);
 
     void createReassignedToPanelHistory(JurorPool jurorPool, Panel panelMember);
+
+    void createEditChangeOfPersonalDetailsHistory(JurorPool jurorPool,
+                                                  String jurorNumber,
+                                                  String poolNumber,
+                                                  String otherInfo);
 }

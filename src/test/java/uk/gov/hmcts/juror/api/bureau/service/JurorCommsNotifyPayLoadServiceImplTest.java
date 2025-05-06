@@ -54,6 +54,7 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
     private static final String Description_3 = "Email address is present in the payLoad Map";
 
 
+
     private NotifyTemplateFieldMod templateField1;
     private NotifyTemplateFieldMod templateField2;
     private NotifyTemplateFieldMod templateField3;

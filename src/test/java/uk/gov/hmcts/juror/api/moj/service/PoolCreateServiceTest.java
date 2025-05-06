@@ -610,7 +610,8 @@ public class PoolCreateServiceTest {
         assertThat(data.getAttendance()).isEqualTo("");
         assertThat(data.getCheckedInToday()).isEqualTo(false);
         assertThat(data.getCheckedIn().truncatedTo(ChronoUnit.SECONDS))
-            .isEqualTo(LocalTime.now().truncatedTo(ChronoUnit.SECONDS));
+            .isBetween(LocalTime.now().minusSeconds(2).truncatedTo(ChronoUnit.SECONDS),
+                       LocalTime.now().plusSeconds(2).truncatedTo(ChronoUnit.SECONDS));
         assertThat(data.getNextDate()).isEqualTo(LocalDate.now());
     }
 
