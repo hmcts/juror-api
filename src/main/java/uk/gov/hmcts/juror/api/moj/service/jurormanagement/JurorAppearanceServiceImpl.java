@@ -469,13 +469,6 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         } else {
             appearance = getAppearance(appearance, jurorNumber);
             appearanceRepository.saveAndFlush(appearance);
-
-            AppearanceId appearanceId = new AppearanceId(jurorNumber, appearance.getAttendanceDate(),
-                                                         appearance.getCourtLocation());
-            // need to read the record again as it might have changed due to realignment of attendance type
-            appearance = appearanceRepository.findById(appearanceId).orElseThrow(
-                () -> new MojException.InternalServerError("Error reading attendance record for juror " + jurorNumber,
-                                                           null));
             jurorExpenseService.realignExpenseDetails(appearance);
         }
     }
