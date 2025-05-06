@@ -183,16 +183,25 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
             }
 
             // covers TYPE 4 : informational weekly comms
-            if (jurorCommsNotifyTemplateType == JurorCommsNotifyTemplateType.COMMS) {
+            if (jurorCommsNotifyTemplateType == JurorCommsNotifyTemplateType.COMMS
+                ||
+                jurorCommsNotifyTemplateType == JurorCommsNotifyTemplateType.TEMP_COMMS) {
                 return jurorCommsNotifyTemplateType.getNotifyTemplateKey(
                     isWelsh,
                     jurorDetails.getJuror().getNotifications() + 1
                 );
-            } else { // covers TYPE 2, 3 : send to court comms
+            } else if (jurorCommsNotifyTemplateType == JurorCommsNotifyTemplateType.SENT_TO_COURT
+                ||
+                jurorCommsNotifyTemplateType == JurorCommsNotifyTemplateType.SENT_TO_COURT_TEMP) {
+
+
+                // covers TYPE 2, 3 : send to court comms
                 return jurorCommsNotifyTemplateType.getNotifyTemplateKey(
                     isWelsh,
                     smsComms
                 );
+            } else {
+                throw new JurorCommsNotificationServiceException("template type: " + jurorCommsNotifyTemplateType);
             }
         } catch (Exception e) {
             log.info(" Here throwing exception ........");

@@ -576,6 +576,59 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     }
 
     @Override
+    @Transactional
+    public void addNonAttendanceBulk(List<JurorNonAttendanceDto> requests) {
+        BureauJwtPayload payload = SecurityUtil.getActiveUsersBureauPayload();
+
+        for (JurorNonAttendanceDto request : requests) {
+            final String locationCode = request.getLocationCode();
+            final LocalDate nonAttendanceDate = request.getNonAttendanceDate();
+            SecurityUtil.validateIsLocCode(locationCode);
+
+            log.debug(String.format("User %s is adding a non-attendance day for juror %s", payload.getLogin(),
+                                    request.getJurorNumber()));
+
+            final CourtLocation courtLocation = courtLocationRepository.findByLocCode(locationCode).orElseThrow(
+                () -> new MojException.NotFound("Court location " + locationCode + " not found", null)
+            );
+            JurorPool jurorPool = validateJurorPoolAndStartDate(request, nonAttendanceDate);
+
+            // Validation: Check if the juror has the SUMMONED status
+            if (jurorPool.getStatus().getStatus() == IJurorStatus.SUMMONED) {
+                throw new MojException.BusinessRuleViolation(
+                    String.format(
+                        "Juror %s cannot have a non-attendance status while in the SUMMONED status",
+                         request.getJurorNumber()),
+                    MojException.BusinessRuleViolation.ErrorCode.INVALID_JUROR_STATUS
+                );
+            }
+
+            // Check if the location of the jurorPool matches the locationCode
+            verifyJurorPoolLocation(locationCode, jurorPool);
+            checkExistingAttendance(request, nonAttendanceDate);
+
+            // Create a new Appearance record for the juror
+            Appearance appearance = appearanceCreationService.createNoneAttendanceAppearance(
+                request.getJurorNumber(),
+                nonAttendanceDate,
+                courtLocation,
+                jurorPool.getPool().getPoolNumber(),
+                false
+            );
+            realignAttendanceType(appearance);
+
+            Appearance realignedAppearance = appearanceRepository
+                .findByCourtLocationLocCodeAndJurorNumberAndAttendanceDate(locationCode, request.getJurorNumber(),
+                                       nonAttendanceDate).orElseThrow(() -> new MojException.InternalServerError(
+                    "Error creating non-attendance record for juror " + request.getJurorNumber(), null));
+
+            jurorExpenseService.applyDefaultExpenses(realignedAppearance, jurorPool.getJuror());
+            appearanceRepository.saveAndFlush(realignedAppearance);
+            log.debug("Completed adding a non-attendance day for juror {}", request.getJurorNumber());
+        }
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public JurorsOnTrialResponseDto retrieveJurorsOnTrials(String locationCode, LocalDate attendanceDate) {
 

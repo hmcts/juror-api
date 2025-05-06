@@ -474,4 +474,13 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
             .otherInformationSupport(otherInfoSupport)
             .build());
     }
+
+    @Override
+    public void createEditChangeOfPersonalDetailsHistory(JurorPool jurorPool,String jurorNumber,
+                                                         String poolNumber,String otherInfo) {
+        registerHistory(jurorNumber, poolNumber, HistoryCodeMod.CHANGE_PERSONAL_DETAILS,
+                        otherInfo,
+                        SecurityUtil.getActiveLogin());
+    }
+
 }
