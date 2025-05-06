@@ -19,4 +19,4 @@ update juror_mod.t_form_attr set max_rec_len = 905 where form_type = '5227' and 
 update juror_mod.t_form_attr set max_rec_len = 695 where form_type = '5224' and dir_name = 'ENG_WITHDRAW';
 update juror_mod.t_form_attr set max_rec_len = 676 where form_type = '5224C' and dir_name = 'WEL_WITHDRAW';
 update juror_mod.t_form_attr set max_rec_len = 719 where form_type = '5224AC' and dir_name = 'WEL_CONFIRM';
-update juror_mod.t_form_attr set max_rec_len = 713 where form_type = '5224A' and dir_name = 'ENG_CONFIRM';
+update juror_mod.t_form_attr set max_rec_len = 738 where form_type = '5224A' and dir_name = 'ENG_CONFIRM';
