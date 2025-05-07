@@ -3643,11 +3643,11 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     verifyRecDate(bulkPrintData, reprintRecDate);
                     if (isWelsh) {
                         assertThat(bulkPrintData.getFormAttribute().getDirectoryName()).isEqualTo("WEL_NON_RESP");
-                        assertThat(bulkPrintData.getFormAttribute().getMaxRecLen()).isEqualTo(691);
+                        assertThat(bulkPrintData.getFormAttribute().getMaxRecLen()).isEqualTo(748);
                         assertThat(bulkPrintData.getFormAttribute().getFormType()).isEqualTo("5228C");
                     } else {
                         assertThat(bulkPrintData.getFormAttribute().getDirectoryName()).isEqualTo("ENG_NON_RESP");
-                        assertThat(bulkPrintData.getFormAttribute().getMaxRecLen()).isEqualTo(670);
+                        assertThat(bulkPrintData.getFormAttribute().getMaxRecLen()).isEqualTo(727);
                         assertThat(bulkPrintData.getFormAttribute().getFormType()).isEqualTo("5228");
                     }
                 });
