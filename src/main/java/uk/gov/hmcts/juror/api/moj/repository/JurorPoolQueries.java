@@ -238,5 +238,3 @@ public class JurorPoolQueries {
     }
 
 }
-
-
