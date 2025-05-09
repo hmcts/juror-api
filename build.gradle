@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        springBootVersion = '3.3.7'
+        springBootVersion = '3.4.5'
         notifyVersion = '5.2.1-RELEASE'
         springDocVersion = '2.6.0'
         queryDslVersion = '5.1.0'
