@@ -227,6 +227,7 @@ public class JurorPoolQueries {
     public static BooleanExpression locCodeIn(List<String> locCodes) {
         return jurorDetail.pool.courtLocation.locCode.in(locCodes);
     }
+
     /**
      * Query to match instance where juror locCode is not equal to '459','468'.
      */
@@ -237,5 +238,3 @@ public class JurorPoolQueries {
     }
 
 }
-
-
