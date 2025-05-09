@@ -582,7 +582,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         class Positive {
 
             protected ResponseEntity<DailyExpenseResponse[]> triggerValid(String jurorNumber,
-                                                                          DailyExpense request ) {
+                                                                          DailyExpense request) {
                 final String jwt = createJwt(COURT_USER, COURT_LOCATION);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<DailyExpenseResponse[]> response = template.exchange(
@@ -2103,7 +2103,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         @DisplayName("Positive")
         class Positive {
             protected ResponseEntity<CombinedExpenseDetailsDto<ExpenseDetailsDto>> triggerValid(
-                String locCode, String jurorNumber ) {
+                String locCode, String jurorNumber) {
                 final String jwt = createJwt(COURT_USER, locCode);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<CombinedExpenseDetailsDto<ExpenseDetailsDto>> response = template.exchange(
@@ -2278,7 +2278,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         @DisplayName("Positive")
         class Positive {
             protected ResponseEntity<CombinedExpenseDetailsDto<ExpenseDetailsDto>> triggerValid(
-                String jurorNumber, List<LocalDate> payload ) {
+                String jurorNumber, List<LocalDate> payload) {
                 final String jwt = createJwt(COURT_USER, COURT_LOCATION);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<CombinedExpenseDetailsDto<ExpenseDetailsDto>> response = template.exchange(
@@ -2387,7 +2387,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             protected ResponseEntity<String> triggerInvalid(String locCode,
                                                             String jurorNumber,
                                                             String owner,
-                                                            List<LocalDate> payload ) {
+                                                            List<LocalDate> payload) {
                 final String jwt = createJwt(COURT_USER, owner);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
@@ -2447,7 +2447,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         class Positive {
             protected ResponseEntity<List<String>> triggerValid(
                 PaymentMethod paymentMethod,
-                ApproveExpenseDto... expenseDto ) {
+                ApproveExpenseDto... expenseDto) {
                 final String jwt = createJwt(COURT_USER, Set.of(Role.MANAGER), COURT_LOCATION, COURT_LOCATION);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<List<String>> response = template.exchange(
@@ -4000,7 +4000,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         @DisplayName("Positive")
         class Positive {
             protected ExpenseCount triggerValid(String locCode,
-                                                String jurorNumber ) {
+                                                String jurorNumber) {
                 final String jwt = createJwt(COURT_USER, COURT_LOCATION);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<ExpenseCount> response = template.exchange(
