@@ -552,7 +552,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
                 .mainPhoneNumber("0123456789")
                 .defaultAttendanceTime(LocalTime.of(9, 0))
                 .assemblyRoomId(999_992L)
-                .costCentre("NWCSTCNR1")
+                .costCentre("CSTC1")
                 .signature("New COURT1 SIGNATURE")
                 .build();
         }
@@ -582,7 +582,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
                 assertThat(courtLocation.getLocPhone()).isEqualTo("0123456789");
                 assertThat(courtLocation.getCourtAttendTime()).isEqualTo(LocalTime.of(9, 0));
                 assertThat(courtLocation.getAssemblyRoom().getId()).isEqualTo(999_992L);
-                assertThat(courtLocation.getCostCentre()).isEqualTo("NWCSTCNR1");
+                assertThat(courtLocation.getCostCentre()).isEqualTo("CSTC1");
                 assertThat(courtLocation.getSignatory()).isEqualTo("New COURT1 SIGNATURE");
             }
 
@@ -594,7 +594,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
                 assertThat(courtLocation.getLocPhone()).isEqualTo("0123456789");
                 assertThat(courtLocation.getCourtAttendTime()).isEqualTo(LocalTime.of(9, 0));
                 assertThat(courtLocation.getAssemblyRoom().getId()).isEqualTo(999_992L);
-                assertThat(courtLocation.getCostCentre()).isEqualTo("NWCSTCNR1");
+                assertThat(courtLocation.getCostCentre()).isEqualTo("CSTC1");
                 assertThat(courtLocation.getSignatory()).isEqualTo("New COURT1 SIGNATURE");
             }
         }
