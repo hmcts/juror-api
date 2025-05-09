@@ -196,6 +196,7 @@ class JurorExpenseControllerTest {
                 .poolNumber("415230101")
                 .firstName("Test")
                 .lastName("Person")
+                .lastAttendanceDate(LocalDate.now().minusDays(10))
                 .totalUnapproved(totalUnapproved)
                 .build();
         }

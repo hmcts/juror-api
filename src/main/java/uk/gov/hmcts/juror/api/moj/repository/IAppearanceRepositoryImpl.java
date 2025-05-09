@@ -40,6 +40,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static uk.gov.hmcts.juror.api.moj.controller.request.expense.UnpaidExpenseSummaryRequestDto.LAST_ATTENDANCE_DATE_EXPRESSION;
+
 /**
  * Custom Repository implementation for the Appearance entity.
  */
@@ -350,8 +352,9 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
         JPAQuery<Tuple> query = getQueryFactory()
             .select(QAppearance.appearance.jurorNumber,
                 QAppearance.appearance.poolNumber,
+                QAppearance.appearance.attendanceDate.max(),
                 QJuror.juror.firstName,
-                QJuror.juror.lastName,
+                QJuror.juror.lastName, QAppearance.appearance.attendanceDate.max().as(LAST_ATTENDANCE_DATE_EXPRESSION),
                 QAppearance.appearance.totalDue.sum().subtract(QAppearance.appearance.totalPaid.sum())
                     .as(UnpaidExpenseSummaryRequestDto.TOTAL_OUTSTANDING_EXPRESSION)
             )
@@ -388,6 +391,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
                 .poolNumber(tuple.get(QAppearance.appearance.poolNumber))
                 .firstName(tuple.get(QJuror.juror.firstName))
                 .lastName(tuple.get(QJuror.juror.lastName))
+                .lastAttendanceDate(tuple.get(LAST_ATTENDANCE_DATE_EXPRESSION))
                 .totalUnapproved(tuple.get(UnpaidExpenseSummaryRequestDto.TOTAL_OUTSTANDING_EXPRESSION))
                 .build(), null);
     }

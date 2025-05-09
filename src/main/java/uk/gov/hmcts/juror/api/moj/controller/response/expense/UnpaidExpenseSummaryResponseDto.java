@@ -11,6 +11,7 @@ import uk.gov.hmcts.juror.api.validation.JurorNumber;
 import uk.gov.hmcts.juror.api.validation.PoolNumber;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -37,6 +38,10 @@ public class UnpaidExpenseSummaryResponseDto {
     @JsonProperty("last_name")
     @Schema(description = "Juror's last name")
     String lastName;
+
+    @JsonProperty("last_attendance_date")
+    @Schema(description = "Juror's last attendance date")
+    LocalDate lastAttendanceDate;
 
     @JsonProperty("total_unapproved")
     @Schema(description = "Sum of all unapproved expense items for a given juror in a given pool")
