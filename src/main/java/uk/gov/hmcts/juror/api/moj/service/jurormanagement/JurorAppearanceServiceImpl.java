@@ -275,6 +275,11 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     }
 
     @Override
+    public boolean hasAttendancesInPool(String jurorNumber, String poolNumber) {
+        return appearanceRepository.countAttendancesInPool(jurorNumber, poolNumber) > 0;
+    }
+
+    @Override
     public Optional<Appearance> getFirstAppearanceWithAuditNumber(String auditNumber, Collection<String> locCodes) {
         return appearanceRepository.findFirstByAttendanceAuditNumberEqualsAndLocCodeIn(auditNumber, locCodes);
     }
