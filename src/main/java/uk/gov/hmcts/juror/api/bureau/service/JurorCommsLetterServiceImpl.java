@@ -71,7 +71,7 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
                 try {
                     log.trace("LetterService :  jurorNumber {}", printFile.getJurorNo());
                     final JurorPool juror =
-                        jurorRepository.findByJurorJurorNumberAndIsActiveAndOwner(printFile.getJurorNo(), true,
+                        jurorPoolRepository.findByJurorJurorNumberAndIsActiveAndOwner(printFile.getJurorNo(), true,
                             SecurityUtil.BUREAU_OWNER);
                     String locCode = printFile.getLocCode();
 
