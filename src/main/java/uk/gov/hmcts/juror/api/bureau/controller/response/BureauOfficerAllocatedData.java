@@ -29,17 +29,22 @@ public class BureauOfficerAllocatedData implements Serializable {
     @Schema(description = "Number of urgent responses assigned", example = "15")
     private Long urgent;
 
+    @JsonProperty("awaitingInfo")
+    @Schema(description = "Number of responses awaiting information", example = "15")
+    private Long awaitingInfo;
+
     @JsonProperty("allReplies")
     @Schema(description = "Number of all responses assigned", example = "15")
     private Long allReplies;
 
 
     @Builder(builderMethodName = "staffAllocationResponseBuilder")
-    public BureauOfficerAllocatedData(String login, String name, Long nonUrgent, Long urgent, Long all) {
+    public BureauOfficerAllocatedData(String login, String name, Long nonUrgent, Long urgent, Long awaitingInfo ,Long all) {
         this.login = login;
         this.name = name;
         this.urgent = urgent;
         this.nonUrgent = nonUrgent;
+        this.awaitingInfo = awaitingInfo;
         this.allReplies = all;
     }
 }
