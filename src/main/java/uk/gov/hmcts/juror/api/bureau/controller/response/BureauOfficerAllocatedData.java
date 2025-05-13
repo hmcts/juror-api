@@ -39,7 +39,8 @@ public class BureauOfficerAllocatedData implements Serializable {
 
 
     @Builder(builderMethodName = "staffAllocationResponseBuilder")
-    public BureauOfficerAllocatedData(String login, String name, Long nonUrgent, Long urgent, Long awaitingInfo ,Long all) {
+    public BureauOfficerAllocatedData(String login, String name, Long nonUrgent,
+                                      Long urgent, Long awaitingInfo,Long all) {
         this.login = login;
         this.name = name;
         this.urgent = urgent;

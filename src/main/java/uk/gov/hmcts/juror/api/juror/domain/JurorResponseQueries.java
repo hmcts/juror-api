@@ -85,6 +85,7 @@ public class JurorResponseQueries {
     public static BooleanExpression byStatusAwaitingCourtReply() {
         return jurorResponse.processingStatus.eq(ProcessingStatus.AWAITING_COURT_REPLY);
     }
+
     public static BooleanExpression byStatusAwaitingTranslation() {
         return jurorResponse.processingStatus.eq(ProcessingStatus.AWAITING_TRANSLATION);
     }
