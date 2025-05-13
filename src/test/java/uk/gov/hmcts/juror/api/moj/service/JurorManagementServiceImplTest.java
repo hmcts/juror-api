@@ -476,7 +476,7 @@ public class JurorManagementServiceImplTest {
         reassignedStatus.setStatus(8);
         reassignedStatus.setStatusDesc("Reassigned");
 
-        List<JurorPool> poolMemberList = createJurorPoolList(courtOwner);
+        final List<JurorPool> poolMemberList = createJurorPoolList(courtOwner);
 
         JurorPool targetJurorPool = createJurorPoolList(courtOwner).get(0);
         targetJurorPool.setPool(targetpoolRequest);
@@ -505,7 +505,7 @@ public class JurorManagementServiceImplTest {
 
         BureauJwtPayload payload = buildPayload(courtOwner);
         JurorManagementRequestDto jurorManagementRequestDto = new JurorManagementRequestDto(sourcePoolNumber,
-                                                                                            courtOwner, List.of(jurorNumber), targetPoolNumber, primaryCourtLocation.getLocCode(), LocalDate.now());
+            courtOwner, List.of(jurorNumber), targetPoolNumber, primaryCourtLocation.getLocCode(), LocalDate.now());
 
         ReassignPoolMembersResultDto jurorsMoved =
             jurorManagementService.reassignJurors(payload, jurorManagementRequestDto);
@@ -536,7 +536,7 @@ public class JurorManagementServiceImplTest {
 
         JurorPool newJurorPool =
             jurorPoolArgumentCaptor.getAllValues().stream().filter(jurorPool ->
-                                                                       jurorPool.getPoolNumber().equalsIgnoreCase(targetPoolNumber)).findFirst().orElse(null);
+                jurorPool.getPoolNumber().equalsIgnoreCase(targetPoolNumber)).findFirst().orElse(null);
         Assertions.assertThat(newJurorPool).isNotNull();
         Assertions.assertThat(newJurorPool.getOwner()).isEqualTo("415");
     }
