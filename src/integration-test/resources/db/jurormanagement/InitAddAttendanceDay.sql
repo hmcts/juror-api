@@ -17,16 +17,10 @@ VALUES ('415', '111111111', '415230101', current_date - interval '2 weeks', NULL
 INSERT INTO JUROR_MOD.JUROR_POOL (OWNER, JUROR_NUMBER, POOL_NUMBER, NEXT_DATE, DEF_DATE, STATUS, IS_ACTIVE, WAS_DEFERRED)
 VALUES ('415', '222222222', '415230101', current_date - interval '2 weeks', NULL, 13, TRUE, FALSE);
 
-INSERT INTO juror_mod.appearance (attendance_date,juror_number,loc_code,time_in,non_attendance,appearance_stage,pool_number) VALUES
-    (current_date - interval '1 day','111111111','415','09:30:00',false,'CHECKED_OUT','415230101');
-
-INSERT INTO juror_mod.appearance (attendance_date,juror_number,loc_code,time_in,non_attendance,appearance_stage,pool_number) VALUES
-    (current_date - interval '2 days','111111111','415','09:30:00',false,'CHECKED_OUT','415230101');
-
-INSERT INTO juror_mod.appearance (attendance_date,juror_number,loc_code,time_in,non_attendance,appearance_stage,pool_number) VALUES
-    (current_date - interval '1 day','222222222','415','09:30:00',false,'CHECKED_OUT','415230101');
-
-INSERT INTO juror_mod.appearance (attendance_date,juror_number,loc_code,time_in,non_attendance,appearance_stage,pool_number) VALUES
-    (current_date - interval '2 days','222222222','415','09:30:00',false,'CHECKED_OUT','415230101');
+INSERT INTO juror_mod.appearance (attendance_date,juror_number,loc_code,time_in,time_out,non_attendance,appearance_stage,pool_number,attendance_type) VALUES
+    (current_date - interval '1 day','111111111','415','09:30:00','12:30:00',false,'CHECKED_OUT','415230101','FULL_DAY'),
+    (current_date - interval '2 days','111111111','415','09:30:00','16:30:00',false,'CHECKED_OUT','415230101','FULL_DAY'),
+    (current_date - interval '1 day','222222222','415','09:30:00','16:30:00',false,'CHECKED_OUT','415230101','FULL_DAY'),
+    (current_date - interval '2 days','222222222','415','09:30:00','16:30:00',false,'CHECKED_OUT','415230101','FULL_DAY');
 
 
