@@ -163,6 +163,63 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
             }
         }
 
+        BooleanExpression sentToCourtFilterTemporaryCourt = JurorPoolQueries.awaitingSentToCourtCommsTemporaryCourt();
+
+        final List<JurorPool> jurordetailListTemporaryCourt = Lists.newLinkedList(jurorRepository.findAll(sentToCourtFilterTemporaryCourt));
+
+        for (JurorPool jurorDetail : jurordetailListTemporaryCourt) {
+            notificationsSent = jurorDetail.getJuror().getNotifications();
+            log.trace("Sent To Court Comms Service :  jurorNumber {}", jurorDetail.getJurorNumber());
+            boolean isEmail = false;
+            try {
+                //Email
+                if (jurorDetail.getJuror().getEmail() != null && !notificationsSent.equals(EMAIL_NOTIFICATION_SENT)) {
+                    isEmail = true;
+                    jurorCommsNotificationService.sendJurorComms(jurorDetail,
+                        JurorCommsNotifyTemplateType.SENT_TO_COURT_TEMP,
+                        null, null, false
+                    );
+                    notificationsSent = EMAIL_NOTIFICATION_SENT;
+                    successCountEmail++;
+                }
+
+                //update regardless - stop processing next time.
+                jurorDetail.getJuror().setNotifications(ALL_NOTIFICATION_SENT);
+                notificationsSent = ALL_NOTIFICATION_SENT;
+                update(jurorDetail);
+                successCount++;
+
+            } catch (JurorCommsNotificationServiceException e) {
+                boolean isError = false;
+                if (isEmail) {
+                    if (NotifyUtil.isInvalidEmailAddressError(e.getCause())) {
+                        errorInvalidEmailCount++;
+                    } else {
+                        isError = true;
+                        errorCountEmail++;
+                    }
+                }
+                if (isError) {
+                    errorCount++;
+                    log.error(
+                        "Unable to send sent to court comms for {}",
+                        jurorDetail.getJurorNumber(), e
+                    );
+                }
+                if (notificationsSent.equals(EMAIL_NOTIFICATION_SENT)) {
+                    jurorDetail.getJuror().setNotifications(notificationsSent);
+                    update(jurorDetail);
+                }
+            } catch (Exception e) {
+                log.error("Sent To Court Comms Processing : Juror Comms failed : {}", e.getMessage(), e);
+                errorCount++;
+                if (isEmail) {
+                    errorCountEmail++;
+                }
+            }
+        }
+
+
         SchedulerServiceClient.Result.Status status = errorCount == 0
             ? SchedulerServiceClient.Result.Status.SUCCESS
             : SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS;

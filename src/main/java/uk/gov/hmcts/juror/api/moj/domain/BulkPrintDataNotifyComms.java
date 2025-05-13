@@ -74,4 +74,9 @@ public class BulkPrintDataNotifyComms {
     @Column(name = "NOTIFY_NAME")
     private String notifyName;
 
+    @NotNull
+    @Length(max = 3)
+    @Column(name = "LOC_CODE")
+    private String locCode;
+
 }

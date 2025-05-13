@@ -193,6 +193,13 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         assertThat(appearance.getCourtLocation().getLocCode()).isEqualTo(requestDto.getLocationCode());
         assertThat(appearance.getTimeIn()).isEqualTo(requestDto.getCheckInTime());
         assertThat(appearance.getTimeOut()).isEqualTo(requestDto.getCheckOutTime());
+
+        // validate that the overridden attendance type is set to FULL_DAY
+        appearanceOpt =
+            appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(
+                "415", requestDto.getJurorNumber(), now().minusDays(2));
+        assertThat(appearanceOpt).isNotEmpty();
+        assertThat(appearance.getAttendanceType()).isEqualTo(AttendanceType.FULL_DAY);
     }
 
 

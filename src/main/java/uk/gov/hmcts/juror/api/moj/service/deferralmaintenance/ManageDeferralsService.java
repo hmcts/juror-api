@@ -4,6 +4,7 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralAllocateRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralDatesRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralReasonRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.DeferredJurorMoveRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.deferralmaintenance.ProcessJurorPostponementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralOptionsDto;
@@ -61,4 +62,6 @@ public interface ManageDeferralsService {
                                                          CANNOT_DEFER_JUROR_WITH_APPEARANCE);
         }
     }
+
+    void moveDeferredJuror(DeferredJurorMoveRequestDto requestDto);
 }

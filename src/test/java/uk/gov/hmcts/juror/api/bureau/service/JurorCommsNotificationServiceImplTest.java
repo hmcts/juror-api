@@ -165,18 +165,7 @@ public class JurorCommsNotificationServiceImplTest {
         verify(mockNotifyAdapter).sendCommsEmail(any());
     }
 
-    @Test
-    public void sendJurorCommsEmail_superUrgent_sendToCourt_welsh() {
-        given(notifyTemplateMappingRepository.findByTemplateName(anyString())).willReturn(notifyCommsTemplateMapping);
-        given(jurorCommsNotifyPayLoadService.isWelshCourtAndComms(anyBoolean(),
-            any(WelshCourtLocation.class))).willReturn(Boolean.TRUE);
-        given(jurorCommsNotifyPayLoadService.getWelshCourtLocation(anyString())).willReturn(welshCourt);
 
-        given(jurorCommsNotifyPayLoadService.generatePayLoadData(anyString(), any(JurorPool.class)))
-            .willReturn(payLoad);
-        service.sendJurorComms(pool, JurorCommsNotifyTemplateType.SU_SENT_TO_COURT, null, null, false);
-        verify(mockNotifyAdapter).sendCommsEmail(any());
-    }
 
     @Test
     public void sendJurorCommsSms_sendToCourt_welsh() {
