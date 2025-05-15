@@ -13,7 +13,7 @@ update juror_mod.t_form_attr set max_rec_len = 748 where form_type = '5228C' and
 update juror_mod.t_form_attr set max_rec_len = 716 where form_type = '5229C' and dir_name = 'WEL_POSTPONE';
 update juror_mod.t_form_attr set max_rec_len = 735 where form_type = '5229' and dir_name = 'ENG_POSTPONE';
 update juror_mod.t_form_attr set max_rec_len = 1020 where form_type = '5221' and dir_name = 'ENG_SUMMONS';
-update juror_mod.t_form_attr set max_rec_len = 1284 where form_type = '5221C' and dir_name = 'BI_SUMMONS';
+update juror_mod.t_form_attr set max_rec_len = 1283 where form_type = '5221C' and dir_name = 'BI_SUMMONS';
 update juror_mod.t_form_attr set max_rec_len = 886 where form_type = '5227C' and dir_name = 'WEL_REQUEST';
 update juror_mod.t_form_attr set max_rec_len = 905 where form_type = '5227' and dir_name = 'ENG_REQUEST';
 update juror_mod.t_form_attr set max_rec_len = 695 where form_type = '5224' and dir_name = 'ENG_WITHDRAW';
