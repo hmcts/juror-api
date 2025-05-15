@@ -482,6 +482,12 @@ public class Appearance implements Serializable {
         return getEffectiveTime().isAfter(LocalTime.of(4, 0));
     }
 
+    public boolean payAttendanceOverridden() {
+        return !isFullDay() && getAttendanceType() != null
+            && Set.of(AttendanceType.FULL_DAY, AttendanceType.FULL_DAY_LONG_TRIAL,
+                      AttendanceType.FULL_DAY_EXTRA_LONG_TRIAL).contains(getAttendanceType());
+    }
+
     public void clearExpenses(boolean validate) {
         if (validate) {
             validateCanClearExpenses();
