@@ -192,7 +192,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         appearance.setTravelTime(juror.getTravelTime());
         PayAttendanceType payAttendanceType = calculatePayAttendanceType(appearance);
 
-        if(appearance.getPayAttendanceType() == null
+        if (appearance.getPayAttendanceType() == null
             || (appearance.getPayAttendanceType() == PayAttendanceType.HALF_DAY
                 && payAttendanceType == PayAttendanceType.FULL_DAY)) {
             appearance.setPayAttendanceType(payAttendanceType);
