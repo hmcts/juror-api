@@ -114,6 +114,11 @@ public class JurorManagementServiceImpl implements JurorManagementService {
             throw new MojException.NotFound("Could not find Source or Target Pool request", null);
         }
 
+        // Need to check the ownership of the jurors being reassigned
+
+
+        // update this to be a loc code check rather than a pool owner check
+        // see that the court locations list of juror include the loc code of pool
         if (!sourcePoolRequest.getOwner().equals(owner) || !targetPoolRequest.getOwner().equals(owner)) {
             throw new MojException.BadRequest("Users can only reassign between owned pools", null);
         }
