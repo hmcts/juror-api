@@ -116,14 +116,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
             throw new MojException.NotFound("Could not find Source or Target Pool request", null);
         }
 
-        // Need to check the ownership of the jurors being reassigned
-
-
-        // update this to be a loc code check rather than a pool owner check
-        // see that the court locations list of juror include the loc code of pool
-        if (!sourcePoolRequest.getOwner().equals(owner) || !targetPoolRequest.getOwner().equals(owner)) {
-            throw new MojException.BadRequest("Users can only reassign between owned pools", null);
-        }
+        validatePoolLocationOwnership(sourcePoolRequest, targetPoolRequest);
 
         List<String> jurorNumbersList = jurorManagementRequestDto.getJurorNumbers();
 
@@ -136,8 +129,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
                 sendingCourtLocation, jurorPoolRepository);
 
         log.debug("{} Pool Members found for the {} juror numbers provided", sourceJurorPools.size(),
-            jurorManagementRequestDto.getJurorNumbers().stream().distinct().count()
-        );
+            jurorManagementRequestDto.getJurorNumbers().stream().distinct().count());
 
         final String currentUser = payload.getLogin();
         int reassignedJurorsCount = 0;
@@ -146,8 +138,15 @@ public class JurorManagementServiceImpl implements JurorManagementService {
             log.info("Juror: {} - reassigning from Pool: {} to Pool: {}", jurorNumber, sourcePoolNumber,
                 targetPoolNumber);
 
-
             try {
+
+                // check if user has ownership over the jurorPool record
+                if (!sourcePoolRequest.getOwner().equals(owner)) {
+                    final String errorString = "Users can only reassign owned juror pools";
+                    log.error(errorString);
+                    throw new MojException.BadRequest(errorString, null);
+                }
+
                 JurorPool targetJurorPool;
 
                 // check if juror has appearances in target pool
@@ -214,9 +213,30 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         return new ReassignPoolMembersResultDto(reassignedJurorsCount, targetPoolNumber);
     }
 
-    private JurorPool updateTargetPool(JurorPool sourceJurorPool, String owner, String jurorNumber, String targetPoolNumber, String currentUser) {
+    private void validatePoolLocationOwnership(PoolRequest sourcePoolRequest, PoolRequest targetPoolRequest) {
+
+        CourtLocation sourcePoolLocation = courtLocationRepository.findByLocCode(
+            sourcePoolRequest.getCourtLocation().getLocCode()).orElseThrow(
+            () -> new MojException.NotFound("Could not find Source Pool location", null)
+        );
+
+        CourtLocation targetPoolLocation = courtLocationRepository.findByLocCode(
+            targetPoolRequest.getCourtLocation().getLocCode()).orElseThrow(
+            () -> new MojException.NotFound("Could not find Target Pool location", null)
+        );
+
+        if (!sourcePoolLocation.getOwner().equals(targetPoolLocation.getOwner())) {
+            throw new MojException.NotFound("Cannot reassign to pool without same owner location", null);
+        }
+    }
+
+    private JurorPool updateTargetPool(JurorPool sourceJurorPool, String locCode, String jurorNumber, String targetPoolNumber, String currentUser) {
+
+        // need to be sure we are going to get the right jurorpool record here, might need owner as well
+
         JurorPool targetJurorPool = jurorPoolRepository
-            .findByOwnerAndJurorJurorNumberAndPoolPoolNumber(owner, jurorNumber, targetPoolNumber)
+            .findByPoolCourLocationLocCodeAndJurorJurorNumberAndPoolPoolNumberAndIsActive(
+                locCode, jurorNumber, targetPoolNumber, false)
             .orElseThrow(() -> new MojException.InternalServerError(
                 "Cannot find jurorPool record for juror " + jurorNumber, null));
 

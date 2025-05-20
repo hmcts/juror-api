@@ -52,6 +52,9 @@ public interface JurorPoolRepository extends IJurorPoolRepository, JpaRepository
     JurorPool findByOwnerAndJurorJurorNumberAndPoolPoolNumberAndIsActive(String owner, String jurorNumber,
                                                                          String poolNumber, boolean isActive);
 
+    Optional<JurorPool> findByPoolCourLocationLocCodeAndJurorJurorNumberAndPoolPoolNumberAndIsActive(
+                                            String locCode, String jurorNumber, String poolNumber, boolean isActive);
+
     @Deprecated
     JurorPool findByJurorJurorNumber(String jurorNumber);
 
