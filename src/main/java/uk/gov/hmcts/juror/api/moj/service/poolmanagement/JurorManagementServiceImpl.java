@@ -29,6 +29,7 @@ import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.PoolMemberSequenceService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.service.ReissueLetterService;
+import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
@@ -61,6 +62,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
     private final PrintDataService printDataService;
     private final JurorHistoryService jurorHistoryService;
     private final ReissueLetterService reissueLetterService;
+    private final JurorAppearanceService appearanceService;
 
 
     @Override
@@ -144,15 +146,32 @@ public class JurorManagementServiceImpl implements JurorManagementService {
             log.info("Juror: {} - reassigning from Pool: {} to Pool: {}", jurorNumber, sourcePoolNumber,
                 targetPoolNumber);
 
+
             try {
+                JurorPool targetJurorPool;
 
-                // remove the existing record for juror if it is present in target pool number
-                deleteExistingJurorPool(owner, jurorNumber, targetPoolNumber);
+                // check if juror has appearances in target pool
+                if (appearanceService.hasAttendancesInPool(jurorNumber, targetPoolNumber)) {
+                    // if the juror has attendances in the target pool, we need to update the existing record
+                    // deleting the record will cause issues with the attendances
+                    log.info("Juror {} has attendances in target pool {} for reassignment", jurorNumber,
+                             targetPoolNumber);
 
-                // copy the pool members data over to a new record in the new court location
-                final JurorPool targetJurorPool = createReassignedJurorPool(sourceJurorPool, receivingCourtLocation,
-                    targetPoolRequest,
-                    currentUser);
+                    targetJurorPool = updateTargetPool(sourceJurorPool, owner, jurorNumber, targetPoolNumber,
+                                                       currentUser);
+
+                } else {
+
+                    // remove the existing record for juror if it is present in target pool number
+                    deleteExistingJurorPool(owner, jurorNumber, targetPoolNumber);
+
+                    // copy the pool members data over to a new record in the new court location
+                    targetJurorPool = createReassignedJurorPool(
+                        sourceJurorPool, receivingCourtLocation,
+                        targetPoolRequest,
+                        currentUser
+                    );
+                }
 
                 if (SecurityUtil.isCourt()
                     && !sendingCourtLocation.getLocCode().equals(receivingCourtLocation.getLocCode())) {
@@ -193,6 +212,21 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         log.trace("Finished reassignJurors method");
 
         return new ReassignPoolMembersResultDto(reassignedJurorsCount, targetPoolNumber);
+    }
+
+    private JurorPool updateTargetPool(JurorPool sourceJurorPool, String owner, String jurorNumber, String targetPoolNumber, String currentUser) {
+        JurorPool targetJurorPool = jurorPoolRepository
+            .findByOwnerAndJurorJurorNumberAndPoolPoolNumber(owner, jurorNumber, targetPoolNumber)
+            .orElseThrow(() -> new MojException.InternalServerError(
+                "Cannot find jurorPool record for juror " + jurorNumber, null));
+
+        // keep the status of the juror the same
+        targetJurorPool.setStatus(sourceJurorPool.getStatus());
+        targetJurorPool.setIsActive(true);
+        targetJurorPool.setUserEdtq(currentUser);
+        jurorPoolRepository.save(targetJurorPool);
+
+        return targetJurorPool;
     }
 
     private void validateRequest(JurorManagementRequestDto jurorManagementRequestDto) {
