@@ -144,7 +144,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
             try {
 
                 // check if user has ownership over the jurorPool record
-                if (!sourcePoolRequest.getOwner().equals(owner)) {
+                if (!sourceJurorPool.getOwner().equals(owner)) {
                     final String errorString = "Users can only reassign owned juror pools";
                     log.error(errorString);
                     throw new MojException.BadRequest(errorString, null);
