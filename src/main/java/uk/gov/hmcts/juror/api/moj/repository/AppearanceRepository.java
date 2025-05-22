@@ -81,6 +81,9 @@ public interface AppearanceRepository extends IAppearanceRepository, JpaReposito
         + "and( a.attendanceType is null or a.attendanceType not in (AttendanceType.ABSENT))")
     long countNoneAbsentAttendances(String jurorNumber);
 
+    @Query("select count(*) from Appearance a where a.jurorNumber= ?1 and a.poolNumber = ?2")
+    long countAttendancesInPool(String jurorNumber, String poolNumber);
+
     Optional<Appearance> findByLocCodeAndJurorNumberAndAttendanceDateAndAppearanceStage(String locCode,
                                                                                         String jurorNumber,
                                                                                         LocalDate attendanceDate,
