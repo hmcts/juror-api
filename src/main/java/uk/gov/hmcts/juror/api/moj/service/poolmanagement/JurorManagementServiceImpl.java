@@ -116,7 +116,10 @@ public class JurorManagementServiceImpl implements JurorManagementService {
             throw new MojException.NotFound("Could not find Source or Target Pool request", null);
         }
 
-        validatePoolLocationOwnership(sourcePoolRequest, targetPoolRequest);
+        // validate source and target pool for court users only, they can only reassign to pools in their own court(s)
+        if (!JurorDigitalApplication.JUROR_OWNER.equals(owner)) {
+            validatePoolLocationOwnership(sourcePoolRequest, targetPoolRequest);
+        }
 
         List<String> jurorNumbersList = jurorManagementRequestDto.getJurorNumbers();
 
@@ -217,12 +220,12 @@ public class JurorManagementServiceImpl implements JurorManagementService {
 
         CourtLocation sourcePoolLocation = courtLocationRepository.findByLocCode(
             sourcePoolRequest.getCourtLocation().getLocCode()).orElseThrow(
-            () -> new MojException.NotFound("Could not find Source Pool location", null)
+                () -> new MojException.NotFound("Could not find Source Pool location", null)
         );
 
         CourtLocation targetPoolLocation = courtLocationRepository.findByLocCode(
             targetPoolRequest.getCourtLocation().getLocCode()).orElseThrow(
-            () -> new MojException.NotFound("Could not find Target Pool location", null)
+                () -> new MojException.NotFound("Could not find Target Pool location", null)
         );
 
         if (!sourcePoolLocation.getOwner().equals(targetPoolLocation.getOwner())) {
@@ -230,13 +233,10 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         }
     }
 
-    private JurorPool updateTargetPool(JurorPool sourceJurorPool, String locCode, String jurorNumber, String targetPoolNumber, String currentUser) {
-
-        // need to be sure we are going to get the right jurorpool record here, might need owner as well
-
+    private JurorPool updateTargetPool(JurorPool sourceJurorPool, String owner, String jurorNumber,
+                                       String targetPoolNumber, String currentUser) {
         JurorPool targetJurorPool = jurorPoolRepository
-            .findByPoolCourLocationLocCodeAndJurorJurorNumberAndPoolPoolNumberAndIsActive(
-                locCode, jurorNumber, targetPoolNumber, false)
+            .findByOwnerAndJurorJurorNumberAndPoolPoolNumber(owner, jurorNumber, targetPoolNumber)
             .orElseThrow(() -> new MojException.InternalServerError(
                 "Cannot find jurorPool record for juror " + jurorNumber, null));
 
@@ -248,6 +248,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
 
         return targetJurorPool;
     }
+
 
     private void validateRequest(JurorManagementRequestDto jurorManagementRequestDto) {
         if (jurorManagementRequestDto.getSourcePoolNumber().equals(jurorManagementRequestDto.getReceivingPoolNumber())
