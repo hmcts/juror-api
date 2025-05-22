@@ -142,7 +142,7 @@ public class NotifyAdapterImpl implements NotifyAdapter {
                 }
                 final SendSmsResponse sendSmsResponse = notifyClient.sendSms(
                     notification.getTemplateId(),
-                    notification.getReceipientPhoneNumber(),
+                    notification.getRecipientPhoneNumber(),
                     notification.getPayload(),
                     notification.getReferenceNumber()
                 );

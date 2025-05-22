@@ -112,19 +112,11 @@ class NotifyAdapterImplTest extends ContainerTest {
 
         // send the email using the real Notify.gov
         final EmailNotificationReceipt emailNotificationReceipt = notifyAdapter.sendEmail(emailNotification);
-        assertThat(emailNotificationReceipt.getTemplateId())
-            .as("Template ID is the one passed from the mock.")
-            .isEqualTo(UUID.fromString(testTemplateSetting.getValue()));
-        assertThat(emailNotificationReceipt.getReference())
-            .as("Juror number is the Notify reference")
-            .isEqualTo(jurorNumber);
-        assertThat(emailNotificationReceipt.getBody())
-            .as("Body is not empty and contains payload information")
-            .isNotEmpty()
-            .contains(jurorNumber);
+        validateEmailNotification(emailNotificationReceipt, testTemplateSetting, jurorNumber);
 
         verify(appSettingRepository).findById(anyString());
     }
+
 
     @Test
     @Timeout(9)
@@ -158,19 +150,7 @@ class NotifyAdapterImplTest extends ContainerTest {
 
         // send the email using the real Notify.gov
         final EmailNotificationReceipt emailNotificationReceipt = notifyAdapter.sendEmail(emailNotification);
-        assertThat(emailNotificationReceipt.getTemplateId())
-            .as("Template ID is the one passed from the mock.")
-            .isEqualTo(UUID.fromString(testTemplateSetting.getValue()));
-        assertThat(emailNotificationReceipt.getReference())
-            .as("Juror number is the Notify reference")
-            .isEqualTo(jurorNumber);
-        assertThat(emailNotificationReceipt.getBody())
-            //.as("Body contains the temporary template body pending welsh translation")
-            .as("Body is not empty and contains payload information")
-            .isNotEmpty()
-            //.contains("Awaiting translation")
-            .contains(jurorNumber)
-        ;
+        validateEmailNotification(emailNotificationReceipt, testTemplateSetting, jurorNumber);
 
         verify(appSettingRepository).findById(anyString());
 
@@ -211,16 +191,7 @@ class NotifyAdapterImplTest extends ContainerTest {
         // send the email
         final EmailNotificationReceipt emailNotificationReceipt = notifyAdapter.sendEmail(emailNotification);
 
-        assertThat(emailNotificationReceipt.getTemplateId())
-            .as("Template ID is the one passed from the mock.")
-            .isEqualTo(UUID.fromString(testTemplateSetting.getValue()));
-        assertThat(emailNotificationReceipt.getReference())
-            .as("Juror number is the Notify reference")
-            .isEqualTo(jurorNumber);
-        assertThat(emailNotificationReceipt.getBody())
-            .as("Body is not empty and contains payload information")
-            .isNotEmpty()
-            .contains(jurorNumber);
+        validateEmailNotification(emailNotificationReceipt, testTemplateSetting, jurorNumber);
 
         verify(appSettingRepository).findById(anyString());
     }
@@ -261,19 +232,7 @@ class NotifyAdapterImplTest extends ContainerTest {
         // send the email
         final EmailNotificationReceipt emailNotificationReceipt = notifyAdapter.sendEmail(emailNotification);
 
-        assertThat(emailNotificationReceipt.getTemplateId())
-            .as("Template ID is the one passed from the mock.")
-            .isEqualTo(UUID.fromString(testTemplateSetting.getValue()));
-        assertThat(emailNotificationReceipt.getReference())
-            .as("Juror number is the Notify reference")
-            .isEqualTo(jurorNumber);
-        assertThat(emailNotificationReceipt.getBody())
-            //.as("Body contains the temporary template body pending welsh translation")
-            .as("Body is not empty and contains payload information")
-            .isNotEmpty()
-            //.contains("Awaiting translation")
-            .contains(jurorNumber)
-        ;
+        validateEmailNotification(emailNotificationReceipt, testTemplateSetting, jurorNumber);
 
         verify(appSettingRepository).findById(anyString());
 
@@ -315,6 +274,15 @@ class NotifyAdapterImplTest extends ContainerTest {
         // send the email
         final EmailNotificationReceipt emailNotificationReceipt = notifyAdapter.sendEmail(emailNotification);
 
+        validateEmailNotification(emailNotificationReceipt, testTemplateSetting, jurorNumber);
+
+        verify(appSettingRepository).findById(anyString());
+
+    }
+
+    private static void validateEmailNotification(EmailNotificationReceipt emailNotificationReceipt,
+                                                  AppSetting testTemplateSetting,
+                                                  String jurorNumber) {
         assertThat(emailNotificationReceipt.getTemplateId())
             .as("Template ID is the one passed from the mock.")
             .isEqualTo(UUID.fromString(testTemplateSetting.getValue()));
@@ -325,8 +293,5 @@ class NotifyAdapterImplTest extends ContainerTest {
             .as("Body is not empty and contains payload information")
             .isNotEmpty()
             .contains(jurorNumber);
-
-        verify(appSettingRepository).findById(anyString());
-
     }
 }
