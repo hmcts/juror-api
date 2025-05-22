@@ -1578,6 +1578,40 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     }
 
     @Override
+    @Transactional
+    public void markSummoned(String jurorNumber) {
+        log.info("Marking juror status undelivered  {} as summoned", jurorNumber);
+        final JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber,
+                                                                             SecurityUtil.getActiveOwner());
+
+
+        if (jurorPool.getStatus().getCode() != IJurorStatus.UNDELIVERABLE) {
+            throw new MojException.BusinessRuleViolation(
+                "Juror must have a pool status of UNDELIVERED before being marked as SUMMONED",
+                MojException.BusinessRuleViolation.ErrorCode.JUROR_MUST_UNDELIVERABLE
+            );
+        }
+
+        final String auditorUsername = SecurityUtil.getActiveLogin();
+        jurorPool.setUserEdtq(auditorUsername);
+        jurorPool.setStatus(RepositoryUtils.retrieveFromDatabase(IJurorStatus.SUMMONED, jurorStatusRepository));
+        jurorPoolRepository.save(jurorPool);
+
+
+        final JurorHistory history = JurorHistory.builder()
+            .jurorNumber(jurorNumber)
+            .historyCode(HistoryCodeMod.PRINT_SUMMONS)
+            .createdBy(auditorUsername)
+            .otherInformation("Juror marked as summoned by " + auditorUsername + " on " + LocalDate.now())
+            .poolNumber(jurorPool.getPoolNumber())
+            .dateCreated(LocalDateTime.now())
+            .build();
+        jurorHistoryRepository.save(history);
+
+
+    }
+    
+    @Override
     public PaginatedList<FilterJurorRecord> searchForJurorRecords(JurorRecordFilterRequestQuery query) {
 
         return PaginationUtil.toPaginatedList(
