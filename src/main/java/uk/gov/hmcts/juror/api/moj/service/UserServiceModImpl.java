@@ -27,6 +27,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
@@ -201,6 +202,12 @@ public class UserServiceModImpl implements UserService {
         return userRepository.findById(username).orElseThrow(
             () -> new MojException.NotFound("User not found", null)
         );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<User> findUserByUsernameOpt(String username) {
+        return userRepository.findById(username);
     }
 
     @Override
