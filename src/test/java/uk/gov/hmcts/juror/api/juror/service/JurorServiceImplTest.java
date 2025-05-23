@@ -151,11 +151,6 @@ public class JurorServiceImplTest {
         assertThat(jurorDto.getCourtAttendTime()).isEqualTo("09:00");
     }
 
-    /**
-     * Tests that attend time in the JUROR.UNIQUE_POOL table (if present) overrides the court attend time
-     *
-     * @since JDB-2042
-     */
     @Test
     public void getJurorByJurorNumber_alternatePath_uniquePoolAttendTime() {
         doReturn(LocalDateTime.of(2024,1,1,8,0,0))
