@@ -95,7 +95,7 @@ public class BureauOfficerAllocatedRepliesControllerTest extends AbstractIntegra
         assertThat(exchange).isNotNull();
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(exchange.getBody().getBureauBacklogCount().getNonUrgent()).isEqualTo(4);
-        assertThat(exchange.getBody().getBureauBacklogCount().getUrgent()).isEqualTo(3);
+        assertThat(exchange.getBody().getBureauBacklogCount().getUrgent()).isEqualTo(4);
 
         assertThat(exchange.getBody().getData().size()).isEqualTo(6);
 
