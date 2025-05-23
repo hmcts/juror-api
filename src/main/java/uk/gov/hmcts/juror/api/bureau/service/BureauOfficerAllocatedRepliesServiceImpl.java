@@ -32,6 +32,8 @@ public class BureauOfficerAllocatedRepliesServiceImpl implements BureauOfficerAl
                 .orElse(0L))
             .urgent(Optional.ofNullable(backlogStats.get(Expressions.numberPath(Long.class, "urgent")))
                 .orElse(0L))
+            .awaitingInfo(Optional.ofNullable(backlogStats.get(Expressions.numberPath(Long.class, "awaitingInfo")))
+                .orElse(0L))
             .allReplies(Optional.ofNullable(backlogStats.get(Expressions.numberPath(Long.class, "allReplies")))
                 .orElse(0L))
             .build();
@@ -49,6 +51,8 @@ public class BureauOfficerAllocatedRepliesServiceImpl implements BureauOfficerAl
                             .nonUrgent(Optional.ofNullable(data.get(Expressions.numberPath(Long.class,"nonUrgent")))
                                 .orElse(0L))
                             .urgent(Optional.ofNullable(data.get(Expressions.numberPath(Long.class,"urgent")))
+                                .orElse(0L))
+                            .awaitingInfo(Optional.ofNullable(data.get(Expressions.numberPath(Long.class,"awaitingInfo")))
                                 .orElse(0L))
                             .all(Optional.ofNullable(data.get(Expressions.numberPath(Long.class,"allReplies")))
                                 .orElse(0L))

@@ -31,9 +31,14 @@ public class JurorDigitalResponseRepositoryModImpl implements IJurorDigitalRespo
                 new CaseBuilder()
                     .when(digitalResponse.urgent.isTrue())
                     .then(1L).otherwise(0L).sum().as("urgent"),
+                new CaseBuilder()
+                    .when(digitalResponse.processingStatus.eq(ProcessingStatus.AWAITING_CONTACT)
+                              .or(digitalResponse.processingStatus.eq(ProcessingStatus.AWAITING_COURT_REPLY))
+                              .or(digitalResponse.processingStatus.eq(ProcessingStatus.AWAITING_TRANSLATION)))
+                    .then(1L).otherwise(0L).sum().as("awaitingInfo"),
                 digitalResponse.count().as("allReplies"))
             .from(digitalResponse)
-            .where(digitalResponse.processingStatus.eq(ProcessingStatus.TODO))
+            .where(digitalResponse.processingStatus.ne(ProcessingStatus.CLOSED))
             .where(digitalResponse.juror.bureauTransferDate.isNull())
             .where(digitalResponse.staff.isNull())
             .where(digitalResponse.replyType.type.eq(ReplyMethod.DIGITAL.getDescription()));
@@ -52,13 +57,18 @@ public class JurorDigitalResponseRepositoryModImpl implements IJurorDigitalRespo
                 new CaseBuilder()
                     .when(digitalResponse.urgent.isTrue().and(QJuror.juror.isNotNull()))
                     .then(1L).otherwise(0L).sum().as("urgent"),
+                new CaseBuilder()
+                    .when(digitalResponse.processingStatus.eq(ProcessingStatus.AWAITING_CONTACT)
+                              .or(digitalResponse.processingStatus.eq(ProcessingStatus.AWAITING_COURT_REPLY))
+                              .or(digitalResponse.processingStatus.eq(ProcessingStatus.AWAITING_TRANSLATION)))
+                    .then(1L).otherwise(0L).sum().as("awaitingInfo"),
                 QJuror.juror.count().as("allReplies")
             ).from(user)
             .where(user.userType.eq(UserType.BUREAU))
             .where(user.active.isTrue())
             .leftJoin(digitalResponse)
             .on(user.eq(digitalResponse.staff)
-                .and(digitalResponse.processingStatus.eq(ProcessingStatus.TODO)))
+                .and(digitalResponse.processingStatus.ne(ProcessingStatus.CLOSED)))
             .leftJoin(QJuror.juror).on(QJuror.juror.jurorNumber.eq(digitalResponse.jurorNumber)
                 .and(QJuror.juror.bureauTransferDate.isNull()))
             .groupBy(user.username, user.name);
