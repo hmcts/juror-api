@@ -130,7 +130,7 @@ public class JurorDetailsCommonResponseDto {
     @Schema(description = "Pending First Name", required = true)
     private String pendingFirstName;
 
-    @Length(max = 20)
+    @Length(max = 25)
     @Schema(description = "Pending Last Name", required = true)
     private String pendingLastName;
 
