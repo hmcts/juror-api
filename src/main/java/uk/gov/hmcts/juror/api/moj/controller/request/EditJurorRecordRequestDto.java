@@ -143,7 +143,7 @@ public class EditJurorRecordRequestDto {
     private String pendingFirstName;
 
     @JsonProperty("pending_last_name")
-    @Length(max = 20)
+    @Length(max = 25)
     @Pattern(regexp = NO_PIPES_REGEX)
     @Schema(description = "New juror last name to submit for approval")
     private String pendingLastName;
