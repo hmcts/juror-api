@@ -397,9 +397,8 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
         juror.setPostcode(updatedDetails.getPostcode());
         juror.setDateOfBirth(updatedDetails.getDateOfBirth());
         if (includePhone) {
-            juror.setPhoneNumber(updatedDetails.getPhoneNumber());
-            juror.setAltPhoneNumber(updatedDetails.getAltPhoneNumber());
-            juror.setWorkPhone(updatedDetails.getWorkPhone());
+            juror.setPhoneNumber(updatedDetails.getAltPhoneNumber());
+            juror.setAltPhoneNumber(updatedDetails.getPhoneNumber());
         }
         if (includeEmail) {
             juror.setEmail(updatedDetails.getEmail());
@@ -444,21 +443,19 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
         //If the main phone number starts with an 07 then it should be allocated to the mobile phone number
         if (isMobileNumber(primaryPhone)) {
             jurorResponse.setAltPhoneNumber(primaryPhone);
-            jurorResponse.setWorkPhone(secondaryPhone);
-            jurorResponse.setPhoneNumber(null);
+            jurorResponse.setPhoneNumber(secondaryPhone);
         } else if (isMobileNumber(secondaryPhone)) {
             //If the main phone number does not start with an 07 but the Another one does then the Another phone will be
             //allocated to the mobile phone number
             jurorResponse.setPhoneNumber(primaryPhone);
             jurorResponse.setAltPhoneNumber(secondaryPhone);
-            jurorResponse.setWorkPhone(null);
         } else {
             //If the main phone number has not been allocated to the mobile number
             // it should be allocated to the home number
             //If the Another phone has not been allocated to the mobile number it should be allocated to the Work number
             jurorResponse.setPhoneNumber(primaryPhone);
-            jurorResponse.setWorkPhone(secondaryPhone);
-            jurorResponse.setAltPhoneNumber(null);
+            jurorResponse.setAltPhoneNumber(secondaryPhone);
+
         }
 
     }

@@ -466,7 +466,7 @@ class LetterBaseTest {
         LetterBase testLetter = new LetterBase(testContextBuilder().build());
 
         testLetter.addData(LetterBase.LetterDataType.JUROR_LAST_NAME, 40);
-        assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("LNAMEEIGHTTHREEONE", 40));
+        assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("LNAMEEIGHTTHREEONEFIVE", 40));
     }
 
     @Test

@@ -75,4 +75,6 @@ public interface JurorAppearanceService {
     List<Appearance> getAppearancesSince(String jurorNumber, LocalDate appearanceDate, String locCode);
 
     Appearance saveAppearance(Appearance appearance);
+
+    boolean hasAttendancesInPool(String jurorNumber, String poolNumber);
 }

@@ -90,17 +90,17 @@ public class ResponseStatusUpdatePhoneNumberRulesTest {
 
 
         statusUpdateService.mergeResponse(jurorResponse, AUDITOR_USERNAME);
-        assertThat(poolDetails.getJuror().getPhoneNumber()).isNull();
+        assertThat(poolDetails.getJuror().getPhoneNumber()).isEqualTo(MOBILE_NUMBER);
 
         /*
         if the Main phone number starts with an 07 then it should be allocated to the mobile phone number
          */
-        assertThat(poolDetails.getJuror().getAltPhoneNumber()).isEqualTo(MOBILE_NUMBER);
+        assertThat(poolDetails.getJuror().getAltPhoneNumber()).isEqualTo(WORK_NUMBER);
 
         /*
         if the Another phone has not been allocated to the mobile number it should be allocated to the Work number
          */
-        assertThat(poolDetails.getJuror().getWorkPhone()).isEqualTo(WORK_NUMBER);
+        assertThat(poolDetails.getJuror().getWorkPhone()).isNull();
     }
 
     @Test
@@ -113,13 +113,13 @@ public class ResponseStatusUpdatePhoneNumberRulesTest {
         /*
         if the Main phone number has not been allocated to the mobile number it should be allocated to the Home number
          */
-        assertThat(poolDetails.getJuror().getPhoneNumber()).isEqualTo(HOME_NUMBER);
+        assertThat(poolDetails.getJuror().getPhoneNumber()).isEqualTo(MOBILE_NUMBER);
 
         /*
         if the Main phone number does not start with an 07 but the Another one does then the Another phone will be
         allocated to the mobile phone number
          */
-        assertThat(poolDetails.getJuror().getAltPhoneNumber()).isEqualTo(MOBILE_NUMBER);
+        assertThat(poolDetails.getJuror().getAltPhoneNumber()).isEqualTo(HOME_NUMBER);
 
         assertThat(poolDetails.getJuror().getWorkPhone()).isNull();
     }
@@ -134,14 +134,14 @@ public class ResponseStatusUpdatePhoneNumberRulesTest {
         /*
         if the Main phone number has not been allocated to the mobile number it should be allocated to the Home number
          */
-        assertThat(poolDetails.getJuror().getPhoneNumber()).isEqualTo(HOME_NUMBER);
+        assertThat(poolDetails.getJuror().getPhoneNumber()).isEqualTo(WORK_NUMBER);
 
         /*
         if the Another phone has not been allocated to the mobile number it should be allocated to the Work number
          */
-        assertThat(poolDetails.getJuror().getWorkPhone()).isEqualTo(WORK_NUMBER);
+        assertThat(poolDetails.getJuror().getWorkPhone()).isNull();
 
-        assertThat(poolDetails.getJuror().getAltPhoneNumber()).isNull();
+        assertThat(poolDetails.getJuror().getAltPhoneNumber()).isEqualTo(HOME_NUMBER);
     }
 
     @Test

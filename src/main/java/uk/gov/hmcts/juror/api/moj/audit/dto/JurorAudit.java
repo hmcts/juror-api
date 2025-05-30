@@ -59,7 +59,7 @@ public class JurorAudit extends Address {
     private String firstName;
 
     @Column(name = "last_name")
-    @Length(max = 20)
+    @Length(max = 25)
     @Pattern(regexp = NO_PIPES_REGEX)
     @NotBlank
     private String lastName;

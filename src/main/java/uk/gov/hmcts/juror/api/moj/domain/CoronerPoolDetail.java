@@ -54,7 +54,7 @@ public class CoronerPoolDetail extends Address implements Serializable {
     private String firstName;
 
     @Column(name = "LAST_NAME")
-    @Length(max = 20)
+    @Length(max = 25)
     @Pattern(regexp = NO_PIPES_REGEX)
     @NotBlank
     private String lastName;
