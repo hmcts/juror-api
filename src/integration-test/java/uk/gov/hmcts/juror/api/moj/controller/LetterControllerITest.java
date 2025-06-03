@@ -2902,7 +2902,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         void reissueDeferralGrantedLetterWelshHappy() {
             final URI uri = URI.create("/api/v1/moj/letter/reissue-letter");
             final String bureauJwt = createJwtBureau("BUREAU_USER");
-// finish this one off
+
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
             ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData =
