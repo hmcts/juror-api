@@ -36,6 +36,8 @@ public class SummonsReminderLetter extends LetterBase {
         addData(LetterDataType.WELSH_CORRESPONDENCE_NAME, 40);
         addData(LetterDataType.COURT_NAME, 40);
         sharedSetup();
+        addData(LetterDataType.WELSH_DATE_OF_ATTENDANCE, 32);
+        addData(LetterDataType.JUROR_LAST_NAME, 25); // revised length and position
     }
 
     @Override
@@ -44,6 +46,8 @@ public class SummonsReminderLetter extends LetterBase {
         addData(LetterDataType.DATE_OF_LETTER, 18);
         addData(LetterDataType.COURT_NAME, 59);
         sharedSetup();
+        addData(LetterDataType.DATE_OF_ATTENDANCE, 32);
+        addData(LetterDataType.JUROR_LAST_NAME, 25); // revised length and position
     }
 
     private void sharedSetup() {
@@ -57,7 +61,5 @@ public class SummonsReminderLetter extends LetterBase {
         addJurorAddress();
         addData(LetterDataType.JUROR_NUMBER, 9);
         addData(LetterDataType.BUREAU_SIGNATORY, 30);
-        addData(LetterDataType.DATE_OF_ATTENDANCE, 32);
-        addData(LetterDataType.JUROR_LAST_NAME, 25); // revised length and position
     }
 }
