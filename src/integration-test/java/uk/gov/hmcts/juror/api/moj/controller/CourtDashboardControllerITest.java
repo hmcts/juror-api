@@ -111,6 +111,9 @@ public class CourtDashboardControllerITest extends AbstractIntegrationTest {
         assertThat(responseBody.getOldestUnpaidJurorNumber())
             .as("Expect the oldest Unpaid Juror Number to be 586856851")
             .isEqualTo("586856851");
+        assertThat(responseBody.getUtilisationReportDate())
+            .as("Expect the utilisation report date to be 2025-06-03T08:14:28")
+            .isEqualTo("2025-06-03T08:14:28"); // This is a fixed date in the SQL script
 
     }
 

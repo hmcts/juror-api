@@ -10,8 +10,10 @@ import uk.gov.hmcts.juror.api.moj.controller.response.PendingJurorsResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.PendingJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
+import uk.gov.hmcts.juror.api.moj.domain.UtilisationStats;
 import uk.gov.hmcts.juror.api.moj.enumeration.PendingJurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.repository.PendingJurorRepository;
+import uk.gov.hmcts.juror.api.moj.repository.UtilisationStatsRepository;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
@@ -29,6 +31,8 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
     private final JurorResponseService jurorResponseService;
 
     private final JurorAppearanceService appearanceService;
+
+    private final UtilisationStatsRepository utilisationStatsRepository;
 
     @Override
     public CourtNotificationInfoDto getCourtNotifications(String locCode) {
@@ -89,6 +93,18 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
                         });
                 });
 
+        }
+
+        // get the last run utilisation report for the court
+        List<UtilisationStats> utilisationStats = utilisationStatsRepository
+            .findTop12ByLocCodeOrderByMonthStartDesc(locCode);
+
+        if (!utilisationStats.isEmpty()) {
+            UtilisationStats lastUtilisationStats = utilisationStats.get(0);
+            log.info("Last utilisation stats found for month: {}", lastUtilisationStats.getMonthStart());
+            courtAdminInfoDto.setUtilisationReportDate(lastUtilisationStats.getLastUpdate());
+        } else {
+            log.info("No utilisation stats found for location code: {}", locCode);
         }
 
         return courtAdminInfoDto;

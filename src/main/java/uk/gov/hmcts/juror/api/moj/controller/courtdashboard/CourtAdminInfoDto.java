@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * DTO for returning Court Admin information.
@@ -32,5 +33,9 @@ public class CourtAdminInfoDto {
     @JsonProperty("oldest_unpaid_juror")
     @Schema(description = "Juror number of the oldest unpaid attendance for jurors at the court")
     private String oldestUnpaidJurorNumber;
+
+    @JsonProperty("utilisation_report_date")
+    @Schema(description = "Date when the utilisation report was last generated")
+    private LocalDateTime utilisationReportDate;
 
 }
