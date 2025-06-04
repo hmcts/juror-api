@@ -33,7 +33,7 @@ public class JurorValidationResponseDto {
     private String firstName;
 
     @NotBlank
-    @Length(max = 20)
+    @Length(max = 25)
     @Pattern(regexp = NO_PIPES_REGEX)
     @JsonProperty("last_name")
     private String lastName;

@@ -56,7 +56,7 @@ public class BulkPrintData {
     private FormAttribute formAttribute;
 
     @NotNull
-    @Length(max = 1260)
+    @Length(max = 1285)
     @Column(name = "detail_rec")
     private String detailRec;
 

@@ -77,6 +77,25 @@ public class JurorResponseQueries {
         return paperJurorResponse.processingStatus.notIn(statuses);
     }
 
+    public static BooleanExpression byStatusAwaitingContact() {
+        return jurorResponse.processingStatus.eq(ProcessingStatus.AWAITING_CONTACT);
+
+    }
+
+    public static BooleanExpression byStatusAwaitingCourtReply() {
+        return jurorResponse.processingStatus.eq(ProcessingStatus.AWAITING_COURT_REPLY);
+    }
+
+    public static BooleanExpression byStatusAwaitingTranslation() {
+        return jurorResponse.processingStatus.eq(ProcessingStatus.AWAITING_TRANSLATION);
+    }
+
+    public static BooleanExpression byAllAwaitingInfo() {
+        return byStatusAwaitingCourtReply()
+            .or(byStatusAwaitingContact())
+            .or(byStatusAwaitingTranslation());
+    }
+
 
     public static BooleanExpression byAssignmentAndProcessingStatusAndUrgency(String staffLogin,
                                                                               List<ProcessingStatus> statuses,

@@ -88,7 +88,7 @@ public class Juror extends Address implements Serializable {
     private String firstName;
 
     @Column(name = "last_name")
-    @Length(max = 20)
+    @Length(max = 25)
     @Pattern(regexp = NO_PIPES_REGEX)
     @NotBlank
     private String lastName;
@@ -249,7 +249,7 @@ public class Juror extends Address implements Serializable {
     private String pendingFirstName;
 
     @Column(name = "pending_last_name")
-    @Length(max = 20)
+    @Length(max = 25)
     @Pattern(regexp = NO_PIPES_REGEX)
     private String pendingLastName;
 

@@ -190,7 +190,7 @@ public class JurorPaperResponseDtoTest {
     @Test
     public void test_setLastName_tooLong() {
         JurorPaperResponseDto response = createBasicResponse();
-        response.setLastName(buildStringToLength(21));
+        response.setLastName(buildStringToLength(26));
 
         Set<ConstraintViolation<JurorPaperResponseDto>> violations = validator.validate(response);
         assertThat(violations).as("Validation violation expected (invalid last name)").isNotEmpty();

@@ -42,6 +42,7 @@ public class RequestInfoLetter extends LetterBase {
         addData(LetterDataType.BUREAU_NAME, 40);
         addBureauAddress();
         sharedSetup();
+        addData(LetterDataType.JUROR_LAST_NAME, 25); // revised length and position
     }
 
     @Override
@@ -52,6 +53,7 @@ public class RequestInfoLetter extends LetterBase {
         addData(LetterDataType.BUREAU_NAME, 40);
         addBureauAddress();
         sharedSetup();
+        addData(LetterDataType.JUROR_LAST_NAME, 25); // revised length and position
     }
 
 
@@ -61,7 +63,7 @@ public class RequestInfoLetter extends LetterBase {
         addData(LetterDataType.ADDITIONAL_INFORMATION, 210);
         addData(LetterDataType.JUROR_TITLE, 10);
         addData(LetterDataType.JUROR_FIRST_NAME, 20);
-        addData(LetterDataType.JUROR_LAST_NAME, 20);
+        addData(LetterDataType.JUROR_LAST_NAME, 20); // keeping old length and position
         addJurorAddress();
         addData(LetterDataType.JUROR_NUMBER, 9);
         addData(LetterDataType.BUREAU_SIGNATORY, 30);

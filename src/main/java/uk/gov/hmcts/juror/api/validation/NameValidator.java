@@ -16,6 +16,6 @@ public class NameValidator implements ConstraintValidator<Name, String> {
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         Pattern noPipesPattern = Pattern.compile(ValidationConstants.NO_PIPES_REGEX);
-        return !value.isBlank() && value.length() <= 20 && !noPipesPattern.matcher(value).find();
+        return !value.isBlank() && value.length() <= 25 && !noPipesPattern.matcher(value).find();
     }
 }
