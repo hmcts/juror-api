@@ -15,6 +15,9 @@ drop view if exists juror_mod.require_pnc_check_view;
 alter table juror_mod.juror
 ALTER COLUMN last_name TYPE VARCHAR(25);
 
+alter table juror_mod.juror
+ALTER COLUMN pending_last_name TYPE VARCHAR(25);
+
 -- update the voters table
 alter table juror_mod.voters
 ALTER COLUMN lname TYPE VARCHAR(25);
