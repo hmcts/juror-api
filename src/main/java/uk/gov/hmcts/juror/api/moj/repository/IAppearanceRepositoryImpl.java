@@ -421,6 +421,21 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .fetch();
     }
 
+    @Override
+    public List<Tuple> getUnpaidAttendancesAtCourt(String locCode) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        return queryFactory
+            .select(APPEARANCE.jurorNumber,
+                    APPEARANCE.attendanceDate,
+                    APPEARANCE.locCode,
+                    APPEARANCE.totalDue)
+            .from(APPEARANCE)
+            .where(APPEARANCE.courtLocation.locCode.eq(locCode))
+            .where(APPEARANCE.appearanceStage.in(AppearanceStage.EXPENSE_ENTERED, AppearanceStage.EXPENSE_EDITED))
+            .where(APPEARANCE.totalDue.gt(0))
+            .fetch();
+    }
+
     JPAQueryFactory getQueryFactory() {
         return new JPAQueryFactory(entityManager);
     }

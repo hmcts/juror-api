@@ -12,8 +12,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-@Schema(description = "Pool request DTO for create and update operations")
-public class CourtNotificationListDto {
+@Schema(description = "Court notification information DTO")
+public class CourtNotificationInfoDto {
 
     @JsonProperty("open_summons_replies")
     @Schema(description = "Number of open summons replies for jurors owned by the court")

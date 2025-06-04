@@ -1552,6 +1552,33 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             jurorNumber, appearanceDate, locCode);
     }
 
+    @Override
+    public List<Appearance> getUnpaidAttendancesAtCourt(String locCode) {
+        log.info("Retrieving unpaid attendances at court for location {}", locCode);
+
+        List<Tuple> unpaidAttendancesTuple = appearanceRepository
+            .getUnpaidAttendancesAtCourt(locCode);
+
+        if (unpaidAttendancesTuple.isEmpty()) {
+            log.info("No unpaid attendances found for location {}", locCode);
+        } else {
+            log.info("Found {} unpaid attendances for location {}", unpaidAttendancesTuple.size(), locCode);
+        }
+
+        CourtLocation courtLocation = courtLocationRepository.findByLocCode(locCode)
+            .orElseThrow(() -> new MojException.NotFound("Court location not found", null));
+
+        return unpaidAttendancesTuple.stream()
+            .map(tuple -> {
+                Appearance appearance = new Appearance();
+                appearance.setJurorNumber(tuple.get(0, String.class));
+                appearance.setAttendanceDate(tuple.get(1, LocalDate.class));
+                appearance.setCourtLocation(courtLocation);
+                return appearance;
+            })
+            .toList();
+    }
+
     public Appearance saveAppearance(Appearance appearance) {
         return appearanceRepository.save(appearance);
     }

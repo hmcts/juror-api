@@ -14,7 +14,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
-import uk.gov.hmcts.juror.api.moj.controller.courtdashboard.CourtNotificationListDto;
+import uk.gov.hmcts.juror.api.moj.controller.courtdashboard.CourtAdminInfoDto;
+import uk.gov.hmcts.juror.api.moj.controller.courtdashboard.CourtNotificationInfoDto;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -33,7 +34,7 @@ import static org.springframework.http.HttpMethod.GET;
 @SuppressWarnings("java:S5960")
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Sql({"/db/mod/truncate.sql","/db/CourtDashboardController.sql"})
+@Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_expenseRates.sql", "/db/CourtDashboardController.sql"})
 public class CourtDashboardControllerITest extends AbstractIntegrationTest {
 
     @Autowired
@@ -45,14 +46,14 @@ public class CourtDashboardControllerITest extends AbstractIntegrationTest {
     @Test
     public void courtNotificationsNonSjoHappy() {
         initHeadersCourt();
-        ResponseEntity<CourtNotificationListDto> response = restTemplate.exchange(
+        ResponseEntity<CourtNotificationInfoDto> response = restTemplate.exchange(
             new RequestEntity<>(httpHeaders, GET,
                                 URI.create("/api/v1/moj/court-dashboard/notifications/415")),
-                                CourtNotificationListDto.class);
+                                CourtNotificationInfoDto.class);
 
         assertThat(response.getStatusCode()).as("Expect the status to be OK").isEqualTo(HttpStatus.OK);
 
-        CourtNotificationListDto responseBody = response.getBody();
+        CourtNotificationInfoDto responseBody = response.getBody();
         assertThat(responseBody).isNotNull();
 
         assertThat(responseBody.getOpenSummonsReplies())
@@ -66,14 +67,14 @@ public class CourtDashboardControllerITest extends AbstractIntegrationTest {
     @Test
     public void courtNotificationsSjoHappy() {
         initHeadersCourtSjo();
-        ResponseEntity<CourtNotificationListDto> response = restTemplate.exchange(
+        ResponseEntity<CourtNotificationInfoDto> response = restTemplate.exchange(
             new RequestEntity<>(httpHeaders, GET,
                                 URI.create("/api/v1/moj/court-dashboard/notifications/415")),
-                                CourtNotificationListDto.class);
+                                CourtNotificationInfoDto.class);
 
         assertThat(response.getStatusCode()).as("Expect the status to be OK").isEqualTo(HttpStatus.OK);
 
-        CourtNotificationListDto responseBody = response.getBody();
+        CourtNotificationInfoDto responseBody = response.getBody();
         assertThat(responseBody).isNotNull();
 
         assertThat(responseBody.getOpenSummonsReplies())
@@ -82,6 +83,32 @@ public class CourtDashboardControllerITest extends AbstractIntegrationTest {
         assertThat(responseBody.getPendingJurors())
             .as("Expect the pendingJurors to be 2")
             .isEqualTo(2);
+    }
+
+    @Test
+    public void courtAdminInfoHappy() {
+        initHeadersCourtSjo();
+        ResponseEntity<CourtAdminInfoDto> response = restTemplate.exchange(
+            new RequestEntity<>(httpHeaders, GET,
+                                URI.create("/api/v1/moj/court-dashboard/admin/415")),
+            CourtAdminInfoDto.class);
+
+        assertThat(response.getStatusCode()).as("Expect the status to be OK").isEqualTo(HttpStatus.OK);
+
+        CourtAdminInfoDto responseBody = response.getBody();
+        assertThat(responseBody).isNotNull();
+
+        assertThat(responseBody.getUnpaidAttendances())
+            .as("Expect the unpaidAttendances to be 14")
+            .isEqualTo(14);
+
+        assertThat(responseBody.getOldestUnpaidAttendanceDate())
+            .as("Expect the oldestUnpaidAttendanceDate to be 2024-09-09")
+            .isEqualTo("2024-09-09");
+        assertThat(responseBody.getOldestUnpaidAttendanceDays())
+            .as("Expect the oldestUnpaidAttendanceDays to be 268")
+            .isEqualTo(268);
+
     }
 
     @Test

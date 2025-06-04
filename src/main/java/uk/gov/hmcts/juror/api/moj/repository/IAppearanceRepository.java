@@ -50,4 +50,6 @@ public interface IAppearanceRepository {
                                                                       UnpaidExpenseSummaryRequestDto search);
 
     List<Tuple> getUnconfirmedJurors(String locationCode, LocalDate attendanceDate);
+
+    List<Tuple> getUnpaidAttendancesAtCourt(String locCode);
 }

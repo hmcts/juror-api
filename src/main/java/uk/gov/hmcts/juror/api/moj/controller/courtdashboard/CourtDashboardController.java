@@ -28,11 +28,21 @@ public class CourtDashboardController {
 
     @IsCourtUser
     @GetMapping("/notifications/{locCode}")
-    @Operation(summary = "Retrieves a list of notifications for court location")
-    public ResponseEntity<CourtNotificationListDto> getCourtNotifications(
+    @Operation(summary = "Retrieves notification information for court location")
+    public ResponseEntity<CourtNotificationInfoDto> getCourtNotifications(
         @Parameter(description = "3-digit numeric string to identify the court") @PathVariable(name = "locCode")
         @Size(min = 3, max = 3) @Valid String locCode) {
-        CourtNotificationListDto dto = courtDashboardService.getCourtNotifications(locCode);
+        CourtNotificationInfoDto dto = courtDashboardService.getCourtNotifications(locCode);
+        return ResponseEntity.ok().body(dto);
+    }
+
+    @IsCourtUser
+    @GetMapping("/admin/{locCode}")
+    @Operation(summary = "Retrieves administration information for court location")
+    public ResponseEntity<CourtAdminInfoDto> getCourtAdminInfo(
+        @Parameter(description = "3-digit numeric string to identify the court") @PathVariable(name = "locCode")
+        @Size(min = 3, max = 3) @Valid String locCode) {
+        CourtAdminInfoDto dto = courtDashboardService.getCourtAdminInfo(locCode);
         return ResponseEntity.ok().body(dto);
     }
 
