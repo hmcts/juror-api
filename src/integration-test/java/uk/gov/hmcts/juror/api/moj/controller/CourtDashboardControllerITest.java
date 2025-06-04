@@ -103,11 +103,14 @@ public class CourtDashboardControllerITest extends AbstractIntegrationTest {
             .isEqualTo(14);
 
         assertThat(responseBody.getOldestUnpaidAttendanceDate())
-            .as("Expect the oldestUnpaidAttendanceDate to be 2024-09-09")
+            .as("Expect the oldest Unpaid Attendance Date to be 2024-09-09")
             .isEqualTo("2024-09-09");
         assertThat(responseBody.getOldestUnpaidAttendanceDays())
-            .as("Expect the oldestUnpaidAttendanceDays to be 268")
+            .as("Expect the oldest Unpaid Attendance Days to be 268")
             .isEqualTo(268);
+        assertThat(responseBody.getOldestUnpaidJurorNumber())
+            .as("Expect the oldest Unpaid Juror Number to be 586856851")
+            .isEqualTo("586856851");
 
     }
 

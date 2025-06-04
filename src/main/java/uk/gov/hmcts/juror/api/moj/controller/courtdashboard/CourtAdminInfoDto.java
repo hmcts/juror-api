@@ -29,4 +29,8 @@ public class CourtAdminInfoDto {
     @Schema(description = "How many days old the Oldest unpaid attendance for jurors at the court")
     private long oldestUnpaidAttendanceDays;
 
+    @JsonProperty("oldest_unpaid_juror")
+    @Schema(description = "Juror number of the oldest unpaid attendance for jurors at the court")
+    private String oldestUnpaidJurorNumber;
+
 }

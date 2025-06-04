@@ -78,6 +78,15 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
                     long daysSinceOldest = LocalDate.now().toEpochDay() - date.toEpochDay();
                     log.info("Days since oldest unpaid attendance: {}", daysSinceOldest);
                     courtAdminInfoDto.setOldestUnpaidAttendanceDays(daysSinceOldest);
+
+                    // find the juror number associated with the oldest unpaid attendance
+                    unpaidAttendances.stream()
+                        .filter(a -> a.getAttendanceDate().equals(date))
+                        .findFirst()
+                        .ifPresent(appearance -> {
+                            log.info("Oldest unpaid juror number: {}", appearance.getJurorNumber());
+                            courtAdminInfoDto.setOldestUnpaidJurorNumber(appearance.getJurorNumber());
+                        });
                 });
 
         }
