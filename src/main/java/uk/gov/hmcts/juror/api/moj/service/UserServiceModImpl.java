@@ -247,7 +247,7 @@ public class UserServiceModImpl implements UserService {
 
     String createUsername(String email) {
         String username = email.split("@")[0];
-        username = username.substring(0, Math.min(username.length(), 28));
+        username = username.substring(0, Math.min(username.length(), 30));
         // limit to 28 characters (DB constraint + 2 digits for numerics)
         int i = 1;
         String usernameTemp = username;
