@@ -436,6 +436,21 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .fetch();
     }
 
+    @Override
+    public int getUnconfirmedAttendanceCountAtCourt(String locCode) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        Long count = queryFactory
+            .select(APPEARANCE.count())
+            .from(APPEARANCE)
+            .where(APPEARANCE.courtLocation.locCode.eq(locCode))
+            .where(APPEARANCE.appearanceStage.in(AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT))
+            .where(APPEARANCE.noShow.isNull().or(APPEARANCE.noShow.isFalse()))
+            .where(APPEARANCE.nonAttendanceDay.isNull().or(APPEARANCE.nonAttendanceDay.isFalse()))
+            .fetchOne();
+
+        return count != null ? count.intValue() : 0;
+    }
+
     JPAQueryFactory getQueryFactory() {
         return new JPAQueryFactory(entityManager);
     }

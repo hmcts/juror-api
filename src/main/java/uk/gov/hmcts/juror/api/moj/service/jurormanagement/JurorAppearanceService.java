@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.service.jurormanagement;
 
-import com.querydsl.core.Tuple;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.AddAttendanceDayDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAppearanceDto;
@@ -78,4 +77,6 @@ public interface JurorAppearanceService {
     Appearance saveAppearance(Appearance appearance);
 
     List<Appearance> getUnpaidAttendancesAtCourt(String locCode);
+
+    int getUnconfirmedAttendanceCountAtCourt(String locCode);
 }

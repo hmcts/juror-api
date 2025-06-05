@@ -46,5 +46,15 @@ public class CourtDashboardController {
         return ResponseEntity.ok().body(dto);
     }
 
+    @IsCourtUser
+    @GetMapping("/attendance/{locCode}")
+    @Operation(summary = "Retrieves attendance information for court location")
+    public ResponseEntity<CourtAttendanceInfoDto> getCourtAttendanceInfo(
+        @Parameter(description = "3-digit numeric string to identify the court") @PathVariable(name = "locCode")
+        @Size(min = 3, max = 3) @Valid String locCode) {
+        CourtAttendanceInfoDto dto = courtDashboardService.getCourtAttendanceInfo(locCode);
+        return ResponseEntity.ok().body(dto);
+    }
+
 
 }

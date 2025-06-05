@@ -52,4 +52,6 @@ public interface IAppearanceRepository {
     List<Tuple> getUnconfirmedJurors(String locationCode, LocalDate attendanceDate);
 
     List<Tuple> getUnpaidAttendancesAtCourt(String locCode);
+
+    int getUnconfirmedAttendanceCountAtCourt(String locCode);
 }
