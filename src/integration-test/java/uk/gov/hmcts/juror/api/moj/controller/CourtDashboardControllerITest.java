@@ -21,11 +21,13 @@ import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.http.HttpMethod.GET;
 
 /**
@@ -105,16 +107,19 @@ public class CourtDashboardControllerITest extends AbstractIntegrationTest {
         assertThat(responseBody.getOldestUnpaidAttendanceDate())
             .as("Expect the oldest Unpaid Attendance Date to be 2024-09-09")
             .isEqualTo("2024-09-09");
+
+        long daysSinceOldest = LocalDate.now().toEpochDay() - LocalDate.of(2024,9,9).toEpochDay();
         assertThat(responseBody.getOldestUnpaidAttendanceDays())
-            .as("Expect the oldest Unpaid Attendance Days to be 268")
-            .isEqualTo(268);
+            .as("Expect the oldest Unpaid Attendance Days to be " + daysSinceOldest)
+            .isEqualTo(daysSinceOldest);
+
         assertThat(responseBody.getOldestUnpaidJurorNumber())
             .as("Expect the oldest Unpaid Juror Number to be 586856851")
             .isEqualTo("586856851");
         assertThat(responseBody.getUtilisationReportDate())
             .as("Expect the utilisation report date to be 2025-06-03T08:14:28")
             .isEqualTo("2025-06-03T08:14:28"); // This is a fixed date in the SQL script
-
+        assertEquals(62.14, responseBody.getUtilisationPercentage(), 0.1, "Expect the utilisation value to be 62.14");
     }
 
     @Test

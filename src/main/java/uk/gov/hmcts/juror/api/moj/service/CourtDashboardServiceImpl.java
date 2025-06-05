@@ -64,6 +64,15 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
     public CourtAdminInfoDto getCourtAdminInfo(String locCode) {
 
         log.info("Retrieving court admin info for location code: {}", locCode);
+
+        CourtAdminInfoDto courtAdminInfoDto = getUnpaidAttendancesInfo(locCode);
+
+        getUtilisationInfo(locCode, courtAdminInfoDto);
+
+        return courtAdminInfoDto;
+    }
+
+    private CourtAdminInfoDto getUnpaidAttendancesInfo(String locCode) {
         List<Appearance> unpaidAttendances = appearanceService.getUnpaidAttendancesAtCourt(locCode);
 
         CourtAdminInfoDto courtAdminInfoDto = CourtAdminInfoDto.builder()
@@ -94,7 +103,10 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
                 });
 
         }
+        return courtAdminInfoDto;
+    }
 
+    private void getUtilisationInfo(String locCode, CourtAdminInfoDto courtAdminInfoDto) {
         // get the last run utilisation report for the court
         List<UtilisationStats> utilisationStats = utilisationStatsRepository
             .findTop12ByLocCodeOrderByMonthStartDesc(locCode);
@@ -103,11 +115,18 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
             UtilisationStats lastUtilisationStats = utilisationStats.get(0);
             log.info("Last utilisation stats found for month: {}", lastUtilisationStats.getMonthStart());
             courtAdminInfoDto.setUtilisationReportDate(lastUtilisationStats.getLastUpdate());
+
+            // calculate the overall utilisation
+            double overallUtilisation = lastUtilisationStats.getAvailableDays() == 0
+                ? 0.0
+                : (double)  lastUtilisationStats.getSittingDays() / lastUtilisationStats.getAvailableDays() * 100;
+
+            log.info("Overall utilisation percentage: {}", overallUtilisation);
+            courtAdminInfoDto.setUtilisationPercentage(overallUtilisation);
+
         } else {
             log.info("No utilisation stats found for location code: {}", locCode);
         }
-
-        return courtAdminInfoDto;
     }
 
 }

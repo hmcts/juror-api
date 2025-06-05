@@ -38,4 +38,8 @@ public class CourtAdminInfoDto {
     @Schema(description = "Date when the utilisation report was last generated")
     private LocalDateTime utilisationReportDate;
 
+    @JsonProperty("utilisation_percentage")
+    @Schema(description = "Utilisation percentage for the court when the utilisation report was last generated")
+    private double utilisationPercentage;
+
 }
