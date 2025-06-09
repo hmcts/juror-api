@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.moj.controller.courtdashboard.CourtAdminInfoDto;
 import uk.gov.hmcts.juror.api.moj.controller.courtdashboard.CourtAttendanceInfoDto;
 import uk.gov.hmcts.juror.api.moj.controller.courtdashboard.CourtNotificationInfoDto;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.PendingJurorsResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.PendingJurorStatus;
@@ -121,16 +122,91 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
             .totalDueToAttend(jurorPoolService.getCountJurorsDueToAttendCourtNextWeek(locCode, false))
             .build();
 
-        courtAttendanceInfoDto.setReasonableAdjustments(jurorPoolService.getCountJurorsDueToAttendCourtNextWeek(locCode,
-                                                                                                                true));
+        // get the expected attendance for the court in next week with reasonable adjustments
+        courtAttendanceInfoDto.setReasonableAdjustments(jurorPoolService.getCountJurorsDueToAttendCourtNextWeek(
+            locCode,
+            true));
 
         courtAttendanceInfoDto.setUnconfirmedAttendances(appearanceService
                                                              .getUnconfirmedAttendanceCountAtCourt(locCode));
 
         // use the utilisation report for 7 days stats
-        //    DailyUtilisationReportResponse dailyUtilisation =
-        //    utilisationReportService.viewDailyUtilisationReport(locCode,LocalDate.now().minusDays(7),
-        //    LocalDate.now());
+        DailyUtilisationReportResponse dailyUtilisation =
+            utilisationReportService.viewDailyUtilisationReport(locCode,LocalDate.now().minusDays(7),
+                LocalDate.now());
+
+        if (dailyUtilisation == null) {
+            log.warn("No daily utilisation report found for location code: {}", locCode);
+            return courtAttendanceInfoDto;
+        }
+
+        List<DailyUtilisationReportResponse.TableData.Week> dailyUtilisations =
+                                                                dailyUtilisation.getTableData().getWeeks();
+
+        int expected = 0;
+        int attended = 0;
+        int onTrials = 0;
+        int expectedToday = 0;
+        int onTrialsToday = 0;
+
+        boolean skip = true;
+
+        for (DailyUtilisationReportResponse.TableData.Week week : dailyUtilisations) {
+
+            for (DailyUtilisationReportResponse.TableData.Week.Day day : week.getDays()) {
+
+                // skip the first day as it is today's stats
+                if (skip) {
+                    expectedToday = day.getJurorWorkingDays();
+                    onTrialsToday = day.getSittingDays();
+                    skip = false;
+                    continue;
+                }
+
+                expected += day.getJurorWorkingDays();
+                attended += day.getAttendanceDays();
+                onTrials += day.getSittingDays();
+            }
+        }
+
+        // set the last 7 days stats
+        CourtAttendanceInfoDto.AttendanceStatsLastSevenDays attendanceStatsLastSevenDays =
+            CourtAttendanceInfoDto.AttendanceStatsLastSevenDays.builder()
+                .expected(expected)
+                .attended(attended)
+                .onTrials(onTrials)
+                .build();
+
+        // get the jurors absent in the last 7 days, those with no shows
+        attendanceStatsLastSevenDays.setAbsent(
+            appearanceService.getAbsentCountAtCourt(locCode, LocalDate.now().minusDays(7),
+                LocalDate.now().minusDays(1)));
+
+        courtAttendanceInfoDto.setAttendanceStatsLastSevenDays(attendanceStatsLastSevenDays);
+
+        CourtAttendanceInfoDto.AttendanceStatsToday attendanceStatsToday =
+            CourtAttendanceInfoDto.AttendanceStatsToday.builder()
+                .expected(expectedToday)
+                .onTrials(onTrialsToday)
+                .build();
+
+        // get jurors checked in today
+        attendanceStatsToday.setCheckedIn(appearanceService.getCountCheckedInJurors(locCode, LocalDate.now()));
+
+        // get jurors checked out today
+        attendanceStatsToday.setCheckedOut(appearanceService.getCountCheckedOutJurors(locCode, LocalDate.now()));
+
+        // get jurors with confirmed attendance today, this does not include jurors on trials
+        // but does include non-attendance
+        int confirmedAttendances = appearanceService.getConfirmedAttendanceCountAtCourt(locCode, LocalDate.now(),
+                                                                                        true, false);
+
+        attendanceStatsToday.setNotCheckedIn(expectedToday - (confirmedAttendances
+                                                            + attendanceStatsToday.getCheckedIn()
+                                                            + attendanceStatsToday.getCheckedOut()
+                                                            + attendanceStatsToday.getOnTrials()));
+
+        courtAttendanceInfoDto.setAttendanceStatsToday(attendanceStatsToday);
 
         return courtAttendanceInfoDto;
     }

@@ -1587,6 +1587,33 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
     }
 
+    @Override
+    public int getCountCheckedInJurors(String locationCode, LocalDate attendanceDate) {
+        return appearanceRepository
+            .getCountJurorsCheckedInOutToday(locationCode, attendanceDate, true, false);
+    }
+
+    @Override
+    public int getCountCheckedOutJurors(String locationCode, LocalDate attendanceDate) {
+        return appearanceRepository
+            .getCountJurorsCheckedInOutToday(locationCode, attendanceDate, false, true);
+    }
+
+    @Override
+    public int getConfirmedAttendanceCountAtCourt(String locationCode, LocalDate attendanceDate,
+                                                  boolean includeNonAttendance, boolean includeOnTrial) {
+        return appearanceRepository
+            .getConfirmedAttendanceCountAtCourt(locationCode, attendanceDate, includeNonAttendance, includeOnTrial);
+    }
+
+    @Override
+    public int getAbsentCountAtCourt(String locationCode, LocalDate attendanceDateFrom,
+                              LocalDate attendanceDateTo) {
+        return appearanceRepository
+            .getAbsentCountAtCourt(locationCode, attendanceDateFrom, attendanceDateTo);
+
+    }
+
     public Appearance saveAppearance(Appearance appearance) {
         return appearanceRepository.save(appearance);
     }

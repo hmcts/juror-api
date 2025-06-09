@@ -286,6 +286,38 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .where(JUROR_POOL.isActive.isTrue());
     }
 
+
+    @Override
+    public int getCountJurorsCheckedInOutToday(String locCode, LocalDate attendanceDate,
+                                                               boolean includeCheckedIn, boolean includeCheckedOut) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        JPAQuery<Long> partialQuery = queryFactory.select(JUROR_POOL.count())
+            .from(APPEARANCE)
+            .join(JUROR_POOL)
+            .on(JUROR_POOL.juror.jurorNumber.eq(APPEARANCE.jurorNumber))
+            .where(APPEARANCE.courtLocation.locCode.eq(locCode))
+            .where(APPEARANCE.attendanceDate.eq(attendanceDate))
+            .where(JUROR_POOL.pool.courtLocation.locCode.eq(locCode))
+            .where(JUROR_POOL.status.status.eq(IJurorStatus.RESPONDED))
+            .where(JUROR_POOL.isActive.isTrue());
+
+        if (includeCheckedIn && includeCheckedOut) {
+            partialQuery = partialQuery.where(APPEARANCE.appearanceStage.in(AppearanceStage.CHECKED_IN,
+                                                                            AppearanceStage.CHECKED_OUT));
+        } else if (includeCheckedIn) {
+            partialQuery = partialQuery.where(APPEARANCE.appearanceStage.eq(AppearanceStage.CHECKED_IN));
+        } else if (includeCheckedOut) {
+            partialQuery = partialQuery.where(APPEARANCE.appearanceStage.eq(AppearanceStage.CHECKED_OUT));
+        } else {
+            // If neither checked in nor checked out is included, return 0
+            return 0;
+        }
+
+        Long count = partialQuery.fetchOne();
+        return count != null ? count.intValue() : 0;
+
+    }
+
     @Override
     public long countPendingApproval(String locCode, boolean isCash) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
@@ -446,6 +478,54 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .where(APPEARANCE.appearanceStage.in(AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT))
             .where(APPEARANCE.noShow.isNull().or(APPEARANCE.noShow.isFalse()))
             .where(APPEARANCE.nonAttendanceDay.isNull().or(APPEARANCE.nonAttendanceDay.isFalse()))
+            .fetchOne();
+
+        return count != null ? count.intValue() : 0;
+    }
+
+    @Override
+    public int getConfirmedAttendanceCountAtCourt(String locCode, LocalDate attendanceDate,
+                                                  boolean includeNonAttendance, boolean includeOnTrial) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        JPAQuery<Long> partialQuery = queryFactory
+            .select(APPEARANCE.count())
+            .from(APPEARANCE)
+            .where(APPEARANCE.courtLocation.locCode.eq(locCode))
+
+            .where(APPEARANCE.attendanceDate.eq(attendanceDate))
+            .where(APPEARANCE.noShow.isNull().or(APPEARANCE.noShow.isFalse()))
+            .where(APPEARANCE.nonAttendanceDay.isNull().or(APPEARANCE.nonAttendanceDay.isFalse()));
+
+        if (includeNonAttendance) {
+            partialQuery.where((APPEARANCE.appearanceStage.in(AppearanceStage.EXPENSE_ENTERED,
+                                                             AppearanceStage.EXPENSE_AUTHORISED,
+                                                             AppearanceStage.EXPENSE_EDITED))
+                                   .or(APPEARANCE.nonAttendanceDay.isTrue()));
+        } else {
+            partialQuery.where(APPEARANCE.appearanceStage.in(AppearanceStage.EXPENSE_ENTERED,
+                                                 AppearanceStage.EXPENSE_AUTHORISED,
+                                                 AppearanceStage.EXPENSE_EDITED));
+        }
+
+        if (!includeOnTrial) {
+            partialQuery.where(APPEARANCE.trialNumber.isNull().or(APPEARANCE.trialNumber.isEmpty()));
+        }
+
+        Long count = partialQuery.fetchOne();
+
+        return count != null ? count.intValue() : 0;
+    }
+
+    @Override
+    public int getAbsentCountAtCourt(String locCode, LocalDate attendanceDateFrom, LocalDate attendanceDateTo) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        Long count = queryFactory
+            .select(APPEARANCE.count())
+            .from(APPEARANCE)
+            .where(APPEARANCE.courtLocation.locCode.eq(locCode))
+            .where(APPEARANCE.attendanceDate.goe(attendanceDateFrom))
+            .where(APPEARANCE.attendanceDate.loe(attendanceDateTo))
+            .where(APPEARANCE.noShow.isTrue())
             .fetchOne();
 
         return count != null ? count.intValue() : 0;

@@ -17,11 +17,11 @@ public class CourtAttendanceInfoDto {
 
     @JsonProperty("attendance_stats_today")
     @Schema(description = "Attendance statistics for jurors at the court today")
-    private AttendanceStats attendanceStatsToday;
+    private AttendanceStatsToday attendanceStatsToday;
 
     @JsonProperty("attendance_stats_last_seven_days")
     @Schema(description = "Attendance statistics for jurors at the court for the last seven days")
-    private AttendanceStats attendanceStatsLastSevenDays;
+    private AttendanceStatsLastSevenDays attendanceStatsLastSevenDays;
 
     @JsonProperty("total_due_to_attend")
     @Schema(description = "Total number of jurors due to attend at the court")
@@ -36,23 +36,52 @@ public class CourtAttendanceInfoDto {
     private int unconfirmedAttendances;
 
     @Builder
-    public static class AttendanceStats {
+    @Setter
+    @Getter
+    public static class AttendanceStatsToday {
 
         @JsonProperty("expected")
         @Schema(description = "Number of jurors expected to attend at the court")
         private int expected;
 
         @JsonProperty("checked_in")
-        @Schema(description = "Number of jurors who have checked in at the court")
+        @Schema(description = "Number of jurors who have checked in at the court today")
         private int checkedIn;
 
+        @JsonProperty("checked_out")
+        @Schema(description = "Number of jurors who have checked out at the court today")
+        private int checkedOut;
+
         @JsonProperty("on_trials")
-        @Schema(description = "Number of jurors currently on trials at the court")
+        @Schema(description = "Number of jurors on trials at the court")
         private int onTrials;
 
         @JsonProperty("not_checked_in")
         @Schema(description = "Number of jurors who have not checked in at the court")
         private int notCheckedIn;
+
+    }
+
+    @Builder
+    @Setter
+    @Getter
+    public static class AttendanceStatsLastSevenDays {
+
+        @JsonProperty("expected")
+        @Schema(description = "Number of jurors expected to attend at the court")
+        private int expected;
+
+        @JsonProperty("attended")
+        @Schema(description = "Number of jurors who have attended the court")
+        private int attended;
+
+        @JsonProperty("on_trials")
+        @Schema(description = "Number of jurors on trials at the court")
+        private int onTrials;
+
+        @JsonProperty("absent")
+        @Schema(description = "Number of jurors who were absent from the court")
+        private int absent;
 
     }
 }
