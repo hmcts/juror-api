@@ -15,6 +15,7 @@ import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.courtdashboard.CourtAdminInfoDto;
+import uk.gov.hmcts.juror.api.moj.controller.courtdashboard.CourtAttendanceInfoDto;
 import uk.gov.hmcts.juror.api.moj.controller.courtdashboard.CourtNotificationInfoDto;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
@@ -120,6 +121,22 @@ public class CourtDashboardControllerITest extends AbstractIntegrationTest {
             .as("Expect the utilisation report date to be 2025-06-03T08:14:28")
             .isEqualTo("2025-06-03T08:14:28"); // This is a fixed date in the SQL script
         assertEquals(62.14, responseBody.getUtilisationPercentage(), 0.1, "Expect the utilisation value to be 62.14");
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/CourtDashboardAttendanceITest.sql"})
+    public void courtAttendanceNonSjoHappy() {
+        initHeadersCourt();
+        ResponseEntity<CourtAttendanceInfoDto> response = restTemplate.exchange(
+            new RequestEntity<>(httpHeaders, GET,
+                                URI.create("/api/v1/moj/court-dashboard/attendance/415")),
+            CourtAttendanceInfoDto.class);
+
+        assertThat(response.getStatusCode()).as("Expect the status to be OK").isEqualTo(HttpStatus.OK);
+
+        CourtAttendanceInfoDto responseBody = response.getBody();
+        assertThat(responseBody).isNotNull();
+
     }
 
     @Test

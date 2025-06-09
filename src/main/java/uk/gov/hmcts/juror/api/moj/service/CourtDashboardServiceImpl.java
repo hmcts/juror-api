@@ -22,6 +22,7 @@ import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseService
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -140,8 +141,13 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
             return courtAttendanceInfoDto;
         }
 
-        List<DailyUtilisationReportResponse.TableData.Week> dailyUtilisations =
-                                                                dailyUtilisation.getTableData().getWeeks();
+        List<DailyUtilisationReportResponse.TableData.Week.Day> dailyUtilisationDays = new ArrayList<>(
+            dailyUtilisation.getTableData().getWeeks().stream()
+                .flatMap(week -> week.getDays().stream())
+                .toList());
+
+        // sort the days in reverse date order
+        dailyUtilisationDays.sort((d1, d2) -> d2.getDate().compareTo(d1.getDate()));
 
         int expected = 0;
         int attended = 0;
@@ -151,23 +157,21 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
 
         boolean skip = true;
 
-        for (DailyUtilisationReportResponse.TableData.Week week : dailyUtilisations) {
+        for (DailyUtilisationReportResponse.TableData.Week.Day day : dailyUtilisationDays) {
 
-            for (DailyUtilisationReportResponse.TableData.Week.Day day : week.getDays()) {
-
-                // skip the first day as it is today's stats
-                if (skip) {
-                    expectedToday = day.getJurorWorkingDays();
-                    onTrialsToday = day.getSittingDays();
-                    skip = false;
-                    continue;
-                }
-
-                expected += day.getJurorWorkingDays();
-                attended += day.getAttendanceDays();
-                onTrials += day.getSittingDays();
+            // skip the first day as it is today's stats
+            if (skip) {
+                expectedToday = day.getJurorWorkingDays();
+                onTrialsToday = day.getSittingDays();
+                skip = false;
+                continue;
             }
+
+            expected += day.getJurorWorkingDays();
+            attended += day.getAttendanceDays();
+            onTrials += day.getSittingDays();
         }
+
 
         // set the last 7 days stats
         CourtAttendanceInfoDto.AttendanceStatsLastSevenDays attendanceStatsLastSevenDays =
