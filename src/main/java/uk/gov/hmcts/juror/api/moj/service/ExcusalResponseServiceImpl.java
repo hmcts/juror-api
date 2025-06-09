@@ -14,6 +14,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.exception.ExcusalResponseException;
@@ -134,6 +135,12 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
         Juror juror = jurorPool.getJuror();
         log.info(String.format("Processing officer decision to refuse excusal for Juror %s", juror.getJurorNumber()));
 
+        //Store the current status of the juror JS-367
+        JurorStatus currentStatus = jurorPool.getStatus();
+        AbstractJurorResponse jurorResponseStatus =
+            jurorResponseService.getCommonJurorResponse(juror.getJurorNumber());
+        String responseProcessStatus = jurorResponseStatus.getProcessingStatus().getDescription();
+
         juror.setResponded(true);
         if (jurorPool.getStatus().getStatus() != IJurorStatus.EXCUSED) {
             juror.setExcusalCode(excusalDecisionDto.getExcusalReasonCode());
@@ -159,6 +166,11 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
             jurorPool.setStatus(getPoolStatus(IJurorStatus.RESPONDED));
         }
 
+      //  jurorPool.setUserEdtq(payload.getLogin());
+       // jurorPoolRepository.save(jurorPool);
+
+        // Restore the original status of the juror
+        jurorPool.setStatus(currentStatus);
         jurorPool.setUserEdtq(payload.getLogin());
         jurorPoolRepository.save(jurorPool);
 
