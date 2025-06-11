@@ -6,27 +6,29 @@ values ('415', '200000000', current_date - 7, 5, 5, 'CRO', '415', 'N', '2023-01-
 
 -- create juror records
 insert into juror_mod.juror (juror_number,
-                             first_name, last_name, responded, address_line_1)
-values ('100000000', 'FName', 'LName', true, 'addressLine1'),
-       ('100000001', 'FName', 'LName', true, 'addressLine1'),
-       ('100000002', 'FName', 'LName', true, 'addressLine1'),
-       ('100000003', 'FName', 'LName', true, 'addressLine1'),
-       ('100000004', 'FName', 'LName', true, 'addressLine1'),
-       ('100000005', 'FName', 'LName', true, 'addressLine1');
+                             first_name, last_name, responded, address_line_1, reasonable_adj_code)
+values ('100000000', 'FName', 'LName', true, 'addressLine1', 'D'),
+       ('100000001', 'FName', 'LName', true, 'addressLine1', 'R'),
+       ('100000002', 'FName', 'LName', true, 'addressLine1', NULL),
+       ('100000003', 'FName', 'LName', true, 'addressLine1', NULL),
+       ('100000004', 'FName', 'LName', true, 'addressLine1', NULL),
+       ('100000005', 'FName', 'LName', true, 'addressLine1', NULL);
 ;
 
 -- create juror_pool associative records
-insert into juror_mod.juror_pool (owner, juror_number, pool_number, next_date, is_active, status)
-values ('415', '100000000', '200000000', current_date, true, 2),
-       ('415', '100000001', '200000000', current_date, true, 2),
-       ('415', '100000002', '200000000', current_date, true, 2),
-       ('415', '100000003', '200000000', current_date, true, 2),
-       ('415', '100000004', '200000000', current_date, true, 2),
-       ('415', '100000005', '200000000', current_date, true, 4);
+insert into juror_mod.juror_pool (owner, juror_number, pool_number, is_active, status, next_date)
+values ('415', '100000000', '200000000', true, 2, current_date + 1),
+       ('415', '100000001', '200000000', true, 2, current_date + 2),
+       ('415', '100000002', '200000000', true, 2, current_date + 3),
+       ('415', '100000003', '200000000', true, 2, current_date + 4),
+       ('415', '100000004', '200000000', true, 2, current_date + 5),
+       ('415', '100000005', '200000000', true, 4, current_date + 6);
+
+INSERT INTO juror_mod.appearance (attendance_date, juror_number, pool_number, loc_code, attendance_type, appearance_stage, no_show)
+values (current_date - 3, '100000000', '200000000', '415', 'ABSENT', NULL, true);
 
 INSERT INTO juror_mod.appearance (attendance_date, juror_number, pool_number, loc_code, attendance_type, appearance_stage)
-values (current_date - 3, '100000000', '200000000', '415', 'ABSENT', NULL),
-       (current_date - 3, '100000001', '200000000', '415', 'NON_ATTENDANCE', NULL),
+values (current_date - 3, '100000001', '200000000', '415', 'NON_ATTENDANCE', NULL),
        (current_date - 3, '100000002', '200000000', '415', 'FULL_DAY', 'EXPENSE_ENTERED'),
        (current_date - 3, '100000003', '200000000', '415', 'HALF_DAY', 'EXPENSE_ENTERED'),
        (current_date - 3, '100000004', '200000000', '415', 'FULL_DAY_LONG_TRIAL', 'EXPENSE_ENTERED'),

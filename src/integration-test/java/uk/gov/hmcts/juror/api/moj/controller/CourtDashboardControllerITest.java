@@ -106,17 +106,17 @@ public class CourtDashboardControllerITest extends AbstractIntegrationTest {
             .isEqualTo(14);
 
         assertThat(responseBody.getOldestUnpaidAttendanceDate())
-            .as("Expect the oldest Unpaid Attendance Date to be 2024-09-09")
-            .isEqualTo("2024-09-09");
+            .as("Expect the oldest Unpaid Attendance Date to be 2024-09-08")
+            .isEqualTo("2024-09-08");
 
-        long daysSinceOldest = LocalDate.now().toEpochDay() - LocalDate.of(2024,9,9).toEpochDay();
+        long daysSinceOldest = LocalDate.now().toEpochDay() - LocalDate.of(2024,9,8).toEpochDay();
         assertThat(responseBody.getOldestUnpaidAttendanceDays())
             .as("Expect the oldest Unpaid Attendance Days to be " + daysSinceOldest)
             .isEqualTo(daysSinceOldest);
 
         assertThat(responseBody.getOldestUnpaidJurorNumber())
-            .as("Expect the oldest Unpaid Juror Number to be 586856851")
-            .isEqualTo("586856851");
+            .as("Expect the oldest Unpaid Juror Number to be 472008411")
+            .isEqualTo("472008411");
         assertThat(responseBody.getUtilisationReportDate())
             .as("Expect the utilisation report date to be 2025-06-03T08:14:28")
             .isEqualTo("2025-06-03T08:14:28"); // This is a fixed date in the SQL script
@@ -137,6 +137,48 @@ public class CourtDashboardControllerITest extends AbstractIntegrationTest {
         CourtAttendanceInfoDto responseBody = response.getBody();
         assertThat(responseBody).isNotNull();
 
+        CourtAttendanceInfoDto.AttendanceStatsToday statsToday = responseBody.getAttendanceStatsToday();
+
+        assertThat(statsToday.getExpected())
+            .as("Expect the total attendances today to be 5")
+            .isEqualTo(5);
+        assertThat(statsToday.getCheckedIn())
+            .as("Expect the total checked in today to be 2")
+            .isEqualTo(2);
+        assertThat(statsToday.getCheckedOut())
+            .as("Expect the total checked out today to be 1")
+            .isEqualTo(1);
+        assertThat(statsToday.getOnTrials())
+            .as("Expect the total on trials today to be 1")
+            .isEqualTo(1);
+        assertThat(statsToday.getNotCheckedIn())
+            .as("Expect the total not checked in today to be 0")
+            .isEqualTo(0);
+        // one juror is also absent
+
+        CourtAttendanceInfoDto.AttendanceStatsLastSevenDays statsLastSevenDays = responseBody.getAttendanceStatsLastSevenDays();
+        assertThat(statsLastSevenDays.getExpected())
+            .as("Expect the total attendances in the last 7 days to be 30")
+            .isEqualTo(30);
+        assertThat(statsLastSevenDays.getAttended())
+            .as("Expect the total attended in the last 7 days to be 15")
+            .isEqualTo(15);
+        assertThat(statsLastSevenDays.getOnTrials())
+            .as("Expect the total on trials in the last 7 days to be 2")
+            .isEqualTo(2);
+        assertThat(statsLastSevenDays.getAbsent())
+            .as("Expect the total absent in the last 7 days to be 1")
+            .isEqualTo(1);
+
+        assertThat(responseBody.getTotalDueToAttend())
+            .as("Expect the total due to attend to be 6")
+            .isEqualTo(6);
+        assertThat(responseBody.getReasonableAdjustments())
+            .as("Expect the total reasonable adjustments to be 2")
+            .isEqualTo(2);
+        assertThat(responseBody.getUnconfirmedAttendances())
+            .as("Expect the total unconfirmed attendances to be 7")
+            .isEqualTo(7);
     }
 
     @Test
