@@ -27,7 +27,7 @@ public class EmpanelDetailsDto {
 
     @JsonProperty("last_name")
     @NotEmpty
-    @Length(max = 20)
+    @Length(max = 25)
     @Schema(description = "Juror last name")
     private String lastName;
 
