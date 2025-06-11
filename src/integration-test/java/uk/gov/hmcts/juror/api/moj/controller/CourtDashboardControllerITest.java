@@ -182,15 +182,15 @@ public class CourtDashboardControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void judgesForCourtLocationsExceptionForBureauUser() {
+    public void courtDashboardExceptionForBureauUser() {
         initHeadersBureau();
 
         ResponseEntity<MojException.Forbidden> response = restTemplate.exchange(new RequestEntity<>(httpHeaders, GET,
-            URI.create("/api/v1/moj/trial/courtrooms/list")), MojException.Forbidden.class);
+                URI.create("/api/v1/moj/court-dashboard/attendance/415")), MojException.Forbidden.class);
 
         assertThat(response.getStatusCode())
-            .as("Expect the status to be forbidden.")
-            .isEqualTo(HttpStatus.FORBIDDEN);
+                .as("Expect the status to be forbidden.")
+                .isEqualTo(HttpStatus.FORBIDDEN);
     }
 
     private void initHeadersCourt() {
