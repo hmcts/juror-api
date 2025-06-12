@@ -141,10 +141,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
             log.info("Juror: {} - reassigning from Pool: {} to Pool: {}", jurorNumber, sourcePoolNumber,
                 targetPoolNumber);
 
-
             try {
-                JurorPool targetJurorPool;
-
                 // check if user has ownership over the jurorPool record
                 if (!sourceJurorPool.getOwner().equals(owner)) {
                     final String errorString = "Users can only reassign owned juror pools";
@@ -153,7 +150,6 @@ public class JurorManagementServiceImpl implements JurorManagementService {
                 }
 
                 JurorPool targetJurorPool;
-
                 // check if juror has appearances in target pool
                 if (appearanceService.hasAttendancesInPool(jurorNumber, targetPoolNumber)) {
                     // if the juror has attendances in the target pool, we need to update the existing record
