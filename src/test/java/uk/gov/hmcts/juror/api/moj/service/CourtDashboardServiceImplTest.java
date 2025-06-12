@@ -18,6 +18,7 @@ import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService
 import uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService;
 import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseService;
 
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -29,6 +30,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @ExtendWith(SpringExtension.class)
 class CourtDashboardServiceImplTest {
@@ -54,7 +56,7 @@ class CourtDashboardServiceImplTest {
     private CourtDashboardServiceImpl courtDashboardService;
 
     @Test
-    void positiveGetCourtNotificationsSJO() {
+    void positiveGetCourtNotificationsSjo() {
 
         TestUtils.mockCourtUser("415", "415", Set.of(Role.SENIOR_JUROR_OFFICER));
 
@@ -87,6 +89,23 @@ class CourtDashboardServiceImplTest {
     }
 
     @Test
+    void getCourtNotificationsSjoNoData() {
+
+        TestUtils.mockCourtUser("415", "415", Set.of(Role.SENIOR_JUROR_OFFICER));
+
+        CourtNotificationInfoDto dto = courtDashboardService.getCourtNotifications(LOC_CODE);
+
+        // Verify that the dto is not null
+        assertThat(dto).isNotNull();
+
+        // verify the method calls
+        verify(jurorResponseService, times(1)).getOpenSummonsRepliesCount(LOC_CODE);
+        verify(pendingJurorRepository, times(1)).findPendingJurorsForCourt(anyString(), any(PendingJurorStatus.class));
+
+    }
+
+
+    @Test
     void positiveGetCourtNotifications() {
 
         TestUtils.mockCourtUser("415", "415", Collections.emptySet());
@@ -103,17 +122,29 @@ class CourtDashboardServiceImplTest {
     }
 
     @Test
-    void positiveGetCourtAdminInfo() {
+    void getCourtAdminInfoNoData() {
         TestUtils.mockCourtUser("415", "415", Collections.emptySet());
         CourtAdminInfoDto dto = courtDashboardService.getCourtAdminInfo(LOC_CODE);
         assertThat(dto).isNotNull();
+        assertThat(dto.getUnpaidAttendances()).isZero();
+
+        verify(appearanceService, times(1)).getUnpaidAttendancesAtCourt(LOC_CODE);
+        verify(utilisationStatsRepository, times(1)).findTop12ByLocCodeOrderByMonthStartDesc(LOC_CODE);
     }
 
     @Test
-    void positiveGetCourtAttendanceInfo() {
+    void getCourtAttendanceInfoNoUtilStats() {
         TestUtils.mockCourtUser("415", "415", Collections.emptySet());
         CourtAttendanceInfoDto dto = courtDashboardService.getCourtAttendanceInfo(LOC_CODE);
         assertThat(dto).isNotNull();
+
+        verify(jurorPoolService, times(1)).getCountJurorsDueToAttendCourtNextWeek(LOC_CODE, false);
+        verify(jurorPoolService, times(1)).getCountJurorsDueToAttendCourtNextWeek(LOC_CODE, true);
+        verify(utilisationReportService, times(1)).viewDailyUtilisationReport(LOC_CODE,  LocalDate.now().minusDays(7),
+                                                                              LocalDate.now());
+        verify(appearanceService, times(1)).getUnconfirmedAttendanceCountAtCourt(LOC_CODE);
+        verifyNoMoreInteractions(appearanceService);
+
     }
 
 }
