@@ -75,6 +75,24 @@ class JurorAmendmentByJurorReportITest extends AbstractJurorAmendmentReportITest
                             .data(List.of(
                                 AbstractJurorAmendmentReport.JurorAmendmentReportRow.builder()
                                     .changed(AbstractJurorAmendmentReport.Changed.BANK_ACCOUNT_HOLDER_NAME)
+                                    .from("Test Name 2")
+                                    .changedOn(LocalDateTime.parse("2024-05-24T17:21:50.787"))
+                                    .changedBy("COURT.999")
+                                    .build(),
+                                AbstractJurorAmendmentReport.JurorAmendmentReportRow.builder()
+                                    .changed(AbstractJurorAmendmentReport.Changed.SORT_CODE)
+                                    .from("123456")
+                                    .changedOn(LocalDateTime.parse("2024-05-24T17:21:50.787"))
+                                    .changedBy("COURT.999")
+                                    .build(),
+                                AbstractJurorAmendmentReport.JurorAmendmentReportRow.builder()
+                                    .changed(AbstractJurorAmendmentReport.Changed.BANK_ACCOUNT_NUMBER)
+                                    .from("12345678")
+                                    .changedOn(LocalDateTime.parse("2024-05-24T17:21:50.787"))
+                                    .changedBy("COURT.999")
+                                    .build(),
+                                AbstractJurorAmendmentReport.JurorAmendmentReportRow.builder()
+                                    .changed(AbstractJurorAmendmentReport.Changed.BANK_ACCOUNT_HOLDER_NAME)
                                     .from("Test Name")
                                     .changedOn(LocalDateTime.parse("2024-05-22T16:20:02.677"))
                                     .changedBy("COURT 469")
