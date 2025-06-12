@@ -141,7 +141,9 @@ public class JurorManagementServiceImpl implements JurorManagementService {
             log.info("Juror: {} - reassigning from Pool: {} to Pool: {}", jurorNumber, sourcePoolNumber,
                 targetPoolNumber);
 
+
             try {
+                JurorPool targetJurorPool;
 
                 // check if user has ownership over the jurorPool record
                 if (!sourceJurorPool.getOwner().equals(owner)) {
@@ -248,7 +250,6 @@ public class JurorManagementServiceImpl implements JurorManagementService {
 
         return targetJurorPool;
     }
-
 
     private void validateRequest(JurorManagementRequestDto jurorManagementRequestDto) {
         if (jurorManagementRequestDto.getSourcePoolNumber().equals(jurorManagementRequestDto.getReceivingPoolNumber())
