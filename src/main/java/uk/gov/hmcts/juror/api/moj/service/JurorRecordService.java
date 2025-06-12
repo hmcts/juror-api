@@ -105,6 +105,8 @@ public interface JurorRecordService {
 
     void markResponded(String jurorNumber);
 
+    void markSummoned(String jurorNumber);
+
     PaginatedList<FilterJurorRecord> searchForJurorRecords(JurorRecordFilterRequestQuery query);
 
     void createJurorManual(JurorManualCreationRequestDto jurorCreateRequestDto);

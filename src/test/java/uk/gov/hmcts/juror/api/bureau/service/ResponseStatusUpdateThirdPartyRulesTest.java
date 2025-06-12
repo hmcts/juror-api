@@ -156,8 +156,8 @@ public class ResponseStatusUpdateThirdPartyRulesTest {
         verify(poolDetailsRepository, times(2)).save(poolDetails);
         verify(jurorResponseRepository, times(1)).save(jurorResponse);
 
-        assertThat(poolDetails.getJuror().getPhoneNumber()).isEqualTo(JUROR_PRIMARY_PHONE);
-        assertThat(poolDetails.getJuror().getAltPhoneNumber()).isEqualTo(JUROR_MOBILE_PHONE);
+        assertThat(poolDetails.getJuror().getPhoneNumber()).isEqualTo(JUROR_MOBILE_PHONE);
+        assertThat(poolDetails.getJuror().getAltPhoneNumber()).isEqualTo(JUROR_PRIMARY_PHONE);
 
         // This is the ONLY field that should change on the juror response object
         assertThat(jurorResponse.getProcessingComplete()).isTrue();
