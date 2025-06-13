@@ -40,7 +40,7 @@ public class VotersLocPostcodeTotalsServiceImpl implements VotersLocPostcodeTota
 
         for (VotersLocPostcodeTotals locPostcodeTotals : votersLocPostcodeTotalsList) {
 
-            String[] postcodeParts = locPostcodeTotals.getPostcode().split(" "); //get first part of postcode
+            String postcode = locPostcodeTotals.getPostcode(); //get first part of postcode
 
             if (!isCoronersPool) {
                 totalList.set(0, locPostcodeTotals.getTotal());
@@ -48,8 +48,8 @@ public class VotersLocPostcodeTotalsServiceImpl implements VotersLocPostcodeTota
             } else {
                 totalList.set(0, locPostcodeTotals.getTotalCor());
             }
-            postcodeTotals.computeIfPresent(postcodeParts[0], (key, val) -> val + totalList.get(0));
-            postcodeTotals.putIfAbsent(postcodeParts[0], totalList.get(0));
+            postcodeTotals.computeIfPresent(postcode, (key, val) -> val + totalList.get(0));
+            postcodeTotals.putIfAbsent(postcode, totalList.get(0));
         }
 
         postcodeTotals.forEach((key, val) -> courtCatchmentItemsList.add(
