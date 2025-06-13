@@ -83,7 +83,7 @@ public class JurorCreateRequestDtoTest extends AbstractValidatorTest<JurorCreate
         protected LastName() {
             super("lastName", JurorCreateRequestDto::setLastName);
             addNotBlankTest(null);
-            addMaxLengthTest(20, null);
+            addMaxLengthTest(25, null);
             addContainsPipesTest(null);
         }
     }

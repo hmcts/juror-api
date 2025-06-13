@@ -93,7 +93,7 @@ public class CoronerPoolItemDto implements Serializable {
         private String firstName;
 
         @JsonProperty("lastName")
-        @Length(max = 20)
+        @Length(max = 25)
         @NotEmpty
         @Schema(description = "last name of pool member")
         private String lastName;

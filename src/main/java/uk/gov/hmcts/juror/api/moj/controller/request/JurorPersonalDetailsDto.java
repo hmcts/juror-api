@@ -52,7 +52,7 @@ public class JurorPersonalDetailsDto {
 
     @JsonProperty("lastName")
     @NotEmpty
-    @Length(max = 20)
+    @Length(max = 25)
     @Pattern(regexp = NO_PIPES_REGEX)
     @Schema(description = "Juror last name")
     private String lastName;
