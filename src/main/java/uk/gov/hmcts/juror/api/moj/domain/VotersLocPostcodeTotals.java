@@ -5,7 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -17,9 +16,6 @@ import org.hibernate.annotations.Immutable;
 import org.hibernate.validator.constraints.Length;
 
 import java.io.Serializable;
-
-import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REGEX;
-import static uk.gov.hmcts.juror.api.validation.ValidationConstants.POSTCODE_REGEX;
 
 @Entity
 @Immutable
@@ -39,11 +35,7 @@ public class VotersLocPostcodeTotals implements Serializable {
     private String locCode;
 
     @Id
-    @Column(name = "ZIP")
-    @Pattern.List({
-        @Pattern(regexp = NO_PIPES_REGEX),
-        @Pattern(regexp = POSTCODE_REGEX)
-    })
+    @Column(name = "POSTCODE_START")
     @Length(max = 10)
     private String postcode;
 

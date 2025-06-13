@@ -209,7 +209,8 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         return new ReassignPoolMembersResultDto(reassignedJurorsCount, targetPoolNumber);
     }
 
-    private JurorPool updateTargetPool(JurorPool sourceJurorPool, String owner, String jurorNumber, String targetPoolNumber, String currentUser) {
+    private JurorPool updateTargetPool(JurorPool sourceJurorPool, String owner, String jurorNumber,
+                                       String targetPoolNumber, String currentUser) {
         JurorPool targetJurorPool = jurorPoolRepository
             .findByOwnerAndJurorJurorNumberAndPoolPoolNumber(owner, jurorNumber, targetPoolNumber)
             .orElseThrow(() -> new MojException.InternalServerError(
