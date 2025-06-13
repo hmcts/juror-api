@@ -12,6 +12,7 @@ import uk.gov.hmcts.juror.api.moj.domain.authentication.UserSearchDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.UsernameDto;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserService {
     UsernameDto createUser(CreateUserDto createUserDto);
@@ -31,6 +32,8 @@ public interface UserService {
     UserDetailsDto getUser(String username);
 
     User findUserByUsername(String username);
+
+    Optional<User> findUserByUsernameOpt(String username);
 
     void changeUserType(String username, UserType userType);
 }

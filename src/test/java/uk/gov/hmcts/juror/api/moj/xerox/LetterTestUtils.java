@@ -34,7 +34,7 @@ public final class LetterTestUtils {
         Juror juror = new Juror();
         juror.setTitle("MR");
         juror.setFirstName("FNAMEEIGHTTHREEONE");
-        juror.setLastName("LNAMEEIGHTTHREEONE");
+        juror.setLastName("LNAMEEIGHTTHREEONEFIVE");
         juror.setAddressLine1("831 STREET NAME");
         juror.setAddressLine2("ANYTOWN");
         juror.setAddressLine3("JUROR_ADDRESS_3");
@@ -50,7 +50,7 @@ public final class LetterTestUtils {
         Juror juror = new Juror();
         juror.setTitle("MR");
         juror.setFirstName("FNAMEEIGHTTHREEONE");
-        juror.setLastName("LNAMEEIGHTTHREEONE");
+        juror.setLastName("LNAMEEIGHTTHREEONEFIVE");
         juror.setAddressLine1("831 STREET NAME");
         juror.setAddressLine2("ANYTOWN");
         juror.setAddressLine3("JUROR_ADDRESS_3");

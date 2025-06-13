@@ -43,6 +43,7 @@ public class ConfirmLetter extends LetterBase {
         addData(LetterDataType.WELSH_DATE_OF_ATTENDANCE, 32);
         sharedSetup();
         addData(LetterDataType.BUREAU_SIGNATORY, 30);
+        addData(LetterDataType.JUROR_LAST_NAME, 25); // revised length and position
     }
 
     @Override
@@ -58,13 +59,14 @@ public class ConfirmLetter extends LetterBase {
         addData(LetterDataType.DATE_OF_ATTENDANCE, 32);
         sharedSetup();
         addData(LetterDataType.BUREAU_SIGNATORY, 30);
+        addData(LetterDataType.JUROR_LAST_NAME, 25); // revised length and position
     }
 
     private void sharedSetup() {
         addData(LetterDataType.TIME_OF_ATTENDANCE, 8);
         addData(LetterDataType.JUROR_TITLE, 10);
         addData(LetterDataType.JUROR_FIRST_NAME, 20);
-        addData(LetterDataType.JUROR_LAST_NAME, 20);
+        addData(LetterDataType.JUROR_LAST_NAME, 20); // keeping old length and position
         addJurorAddress();
         addData(LetterDataType.JUROR_NUMBER, 9);
     }

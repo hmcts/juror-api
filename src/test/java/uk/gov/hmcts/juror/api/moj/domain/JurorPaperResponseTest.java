@@ -252,7 +252,7 @@ public class JurorPaperResponseTest {
         response.setAddressLine1("Test");
         response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
-        response.setLastName(buildStringToLength(21));
+        response.setLastName(buildStringToLength(26));
 
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
         assertThat(violations).as("Validation violation expected (invalid last name)").isNotEmpty();

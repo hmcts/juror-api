@@ -43,7 +43,7 @@ public class PoolMemberFilterRequestQuery implements IsPageable {
 
     @JsonProperty("last_name")
     @Schema(name = "Last name", description = "Partial last name to search for")
-    @Length(max = 20)
+    @Length(max = 25)
     private String lastName;
 
     @JsonProperty("attendance")

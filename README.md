@@ -19,7 +19,7 @@ The following application settings are required to run the application. They can
 DB_PASSWORD=postgres
 DB_URL=jdbc:postgresql://localhost:5432/juror
 DB_USERNAME=juror
-JWT_SECRET_BUREAU=
+JWT_SECRET_BUREAU= 
 JWT_SECRET_HMAC=
 JWT_SECRET_PUBLIC=
 NOTIFY_KEY=
@@ -48,7 +48,7 @@ Alternatively, its possible export the environment variables in the terminal bef
 ```bash
 export DB_PASSWORD=secret
 export DB_URL=jdbc:postgresql://localhost:5432/juror
-export DB_USERNAME=juror 
+export DB_USERNAME=juror
 ......
 ```
 

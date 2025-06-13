@@ -630,8 +630,8 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
         log.info(
             "[JobKey: CRONBATCH_COMPLETED_SERVICE_COURT_COMMS]\n[{}]\nresult={},\nmetadata={number_of_jurors={},error_count={},success_count={},missing_email_and_phone_count={},missing_api_key_count={},invalid_phone_count={},invalid_email_count={}}",
             DATE_TIME_FORMATTER.format(LocalDateTime.now()),
-            jurorCourtDetailListCompleted.size(),
             status,
+            jurorCourtDetailListCompleted.size(),
             errorCount,
             successCount,
             missingEmailAndPhone,

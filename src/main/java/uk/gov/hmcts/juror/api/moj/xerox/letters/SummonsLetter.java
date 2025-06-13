@@ -64,6 +64,7 @@ public class SummonsLetter extends LetterBase {
 
         // repeated field
         addData(LetterDataType.JUROR_NUMBER, 9);
+        addData(LetterDataType.JUROR_LAST_NAME, 25); // revised length and position
     }
 
     @Override
@@ -79,13 +80,14 @@ public class SummonsLetter extends LetterBase {
         addData(LetterDataType.INSERT_INDICATORS, 20);
         addData(LetterDataType.COURT_NAME, 59);
         sharedCourtSetup();
+        addData(LetterDataType.JUROR_LAST_NAME, 25); // revised length and position
     }
 
     private void sharedJurorSetup() {
         addData(LetterDataType.POOL_NUMBER, 9);
         addData(LetterDataType.JUROR_TITLE, 10);
         addData(LetterDataType.JUROR_FIRST_NAME, 20);
-        addData(LetterDataType.JUROR_LAST_NAME, 20);
+        addData(LetterDataType.JUROR_LAST_NAME, 20); // keeping old length and position
         addJurorAddress();
         addData(LetterDataType.JUROR_NUMBER, 9);
     }

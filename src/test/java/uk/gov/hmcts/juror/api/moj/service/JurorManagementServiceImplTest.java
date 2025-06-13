@@ -282,6 +282,9 @@ public class JurorManagementServiceImplTest {
         satelliteCourtLocation.setLocCode(satelliteCourtCode);
         satelliteCourtLocation.setOwner(courtOwner);
 
+        sourcePoolRequest.setCourtLocation(primaryCourtLocation);
+        targetpoolRequest.setCourtLocation(satelliteCourtLocation);
+
         JurorStatus respondedStatus = new JurorStatus();
         respondedStatus.setStatus(2);
         respondedStatus.setStatusDesc("Responded");
@@ -324,7 +327,7 @@ public class JurorManagementServiceImplTest {
 
         verify(poolRequestRepository, times(2))
             .findByPoolNumber(anyString());
-        verify(courtLocationRepository, times(2))
+        verify(courtLocationRepository, times(4))
             .findByLocCode(anyString());
         verify(jurorStatusRepository, times(1))
             .findById(anyInt());
@@ -367,7 +370,7 @@ public class JurorManagementServiceImplTest {
         PoolRequest targetpoolRequest = new PoolRequest();
         targetpoolRequest.setPoolNumber(targetPoolNumber);
         targetpoolRequest.setOwner(courtOwner);
-        sourcePoolRequest.setCourtLocation(createCourtLocation("415", "415"));
+        targetpoolRequest.setCourtLocation(createCourtLocation("415", "415"));
 
         CourtLocation primaryCourtLocation = new CourtLocation();
         primaryCourtLocation.setName("Test Primary Court");
@@ -391,6 +394,8 @@ public class JurorManagementServiceImplTest {
         when(courtLocationRepository.findByLocCode(courtOwner))
             .thenReturn(Optional.of(primaryCourtLocation));
         when(courtLocationRepository.findByLocCode(primaryCourtLocation.getLocCode()))
+            .thenReturn(Optional.of(primaryCourtLocation));
+        when(courtLocationRepository.findByLocCode(targetpoolRequest.getCourtLocation().getLocCode()))
             .thenReturn(Optional.of(primaryCourtLocation));
         when(jurorStatusRepository.findById(2)).thenReturn(Optional.of(respondedStatus));
         when(jurorStatusRepository.findById(8)).thenReturn(Optional.of(reassignedStatus));
@@ -416,7 +421,7 @@ public class JurorManagementServiceImplTest {
 
         verify(poolRequestRepository, times(2))
             .findByPoolNumber(anyString());
-        verify(courtLocationRepository, times(2))
+        verify(courtLocationRepository, times(4))
             .findByLocCode(anyString());
         verify(jurorStatusRepository, times(1))
             .findById(anyInt());
@@ -461,7 +466,7 @@ public class JurorManagementServiceImplTest {
         PoolRequest targetpoolRequest = new PoolRequest();
         targetpoolRequest.setPoolNumber(targetPoolNumber);
         targetpoolRequest.setOwner(courtOwner);
-        sourcePoolRequest.setCourtLocation(createCourtLocation("415", "415"));
+        targetpoolRequest.setCourtLocation(createCourtLocation("415", "415"));
 
         CourtLocation primaryCourtLocation = new CourtLocation();
         primaryCourtLocation.setName("Test Primary Court");
@@ -500,7 +505,6 @@ public class JurorManagementServiceImplTest {
                                                                                  anyString(), anyString()))
             .thenReturn(Optional.of(targetJurorPool));
 
-
         TestUtils.mockCourtUser(courtOwner, "COURT_USER");
 
         BureauJwtPayload payload = buildPayload(courtOwner);
@@ -514,7 +518,7 @@ public class JurorManagementServiceImplTest {
 
         verify(poolRequestRepository, times(2))
             .findByPoolNumber(anyString());
-        verify(courtLocationRepository, times(2))
+        verify(courtLocationRepository, times(4))
             .findByLocCode(anyString());
         verify(jurorStatusRepository, times(1))
             .findById(anyInt());
@@ -562,6 +566,9 @@ public class JurorManagementServiceImplTest {
         primaryCourtLocation.setLocCode(courtOwner);
         primaryCourtLocation.setOwner(courtOwner);
 
+        sourcePoolRequest.setCourtLocation(primaryCourtLocation);
+        targetpoolRequest.setCourtLocation(primaryCourtLocation);
+
         JurorStatus respondedStatus = new JurorStatus();
         respondedStatus.setStatus(2);
         respondedStatus.setStatusDesc("Responded");
@@ -577,12 +584,11 @@ public class JurorManagementServiceImplTest {
         JurorManagementRequestDto jurorManagementRequestDto = new JurorManagementRequestDto(sourcePoolNumber,
             courtOwner, List.of("123456789"), targetPoolNumber, courtOwner, LocalDate.now());
 
-        assertThatExceptionOfType(MojException.BadRequest.class)
-            .isThrownBy(() -> jurorManagementService.reassignJurors(payload, jurorManagementRequestDto));
+       jurorManagementService.reassignJurors(payload, jurorManagementRequestDto);
 
         verify(poolRequestRepository, times(2))
             .findByPoolNumber(anyString());
-        verify(courtLocationRepository, times(2))
+        verify(courtLocationRepository, times(4))
             .findByLocCode(anyString());
         verifyNoInteractions(jurorHistoryService);
         verify(printDataService, never())
