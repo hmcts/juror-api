@@ -137,9 +137,11 @@ public class BureauServiceImpl implements BureauService {
 
     private Map<ProcessingStatus, Long> getJurorResponseCountsCourt(String locCode) {
         return jurorCommonResponseRepositoryMod.getJurorResponseCounts(
-            JurorResponseQueries.byOwnerAndJurorTransferredCourt(locCode),
+           // JurorResponseQueries.byOwnerAndJurorTransferredCourt(locCode),
+            QPoolRequest.poolRequest.owner.eq(locCode),
             QCombinedJurorResponse.combinedJurorResponse.processingStatus.ne(ProcessingStatus.CLOSED),
             QCombinedJurorResponse.combinedJurorResponse.juror.bureauTransferDate.isNotNull()
+
         );
     }
 
