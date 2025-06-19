@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseSummaryDto;
+import uk.gov.hmcts.juror.api.bureau.controller.response.CourtResponseSummaryDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffDto;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
@@ -88,6 +89,43 @@ public class BureauTransformsServiceImpl implements BureauTransformsService {
             .firstName(juror.getFirstName())
             .lastName(juror.getLastName())
             .courtCode(courtLocation.getLocCode())
+            .courtName(courtLocation.getName())
+            .postcode(juror.getPostcode())
+            .processingStatus(jurorResponse.getProcessingStatus().name())
+            .residency(jurorResponse.getResidency())
+            .mentalHealthAct(jurorResponse.getMentalHealthAct())
+            .bail(jurorResponse.getBail())
+            .convictions(jurorResponse.getConvictions())
+            .deferralDate(jurorResponse.getDeferralDate())
+            .excusalReason(jurorResponse.getExcusalReason())
+            .poolNumber(pool.getPoolNumber())
+            .replyMethod(jurorResponse.getReplyType().getType())
+            .urgent(jurorResponse.isUrgent())
+            .slaOverdue(slaOverdue)
+            .dateReceived(jurorResponse.getDateReceived().toLocalDate())
+            .assignedStaffMember(jurorResponse.getStaff() != null
+                ? toStaffDto(jurorResponse.getStaff()) : null)
+            .completedAt(jurorResponse.getCompletedAt())
+            .version(jurorResponse.getVersion())
+            .build();
+    }
+    @Override
+    public CourtResponseSummaryDto detailCourtToDto(
+        CombinedJurorResponse jurorResponse,
+        Juror juror,
+        JurorPool jurorPool,
+        PoolRequest pool,
+        String locCode) {
+
+        CourtLocation courtLocation = pool.getCourtLocation();
+        Boolean slaOverdue =
+            urgencyCalculator.slaBreached(jurorResponse.getProcessingStatus(), jurorPool.getNextDate());
+        return CourtResponseSummaryDto.builder()
+            .jurorNumber(juror.getJurorNumber())
+            .title(juror.getTitle())
+            .firstName(juror.getFirstName())
+            .lastName(juror.getLastName())
+            .courtCode(locCode)
             .courtName(courtLocation.getName())
             .postcode(juror.getPostcode())
             .processingStatus(jurorResponse.getProcessingStatus().name())

@@ -3,6 +3,8 @@ package uk.gov.hmcts.juror.api.bureau.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +27,8 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.AutoAssignResponse;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseOverviewDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseSummaryWrapper;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauYourWorkCounts;
+import uk.gov.hmcts.juror.api.bureau.controller.response.CourtResponseSummaryWrapper;
+import uk.gov.hmcts.juror.api.bureau.controller.response.CourtYourWorkCounts;
 import uk.gov.hmcts.juror.api.bureau.controller.response.JurorResponseSearchResults;
 import uk.gov.hmcts.juror.api.bureau.exception.AutoAssignException;
 import uk.gov.hmcts.juror.api.bureau.exception.ReassignException;
@@ -34,6 +38,7 @@ import uk.gov.hmcts.juror.api.bureau.service.JurorResponseSearchService;
 import uk.gov.hmcts.juror.api.bureau.service.UserService;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.AvailablePoolsInCourtLocationDto;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 /**
@@ -68,12 +73,31 @@ public class BureauResponsesController {
         return ResponseEntity.ok().body(bureauService.getCounts(SecurityUtil.getActiveLogin()));
     }
 
+    @GetMapping(path = "/courtCounts")
+    @Operation(summary = "Retrieve counts of responses assigned to the current user")
+    public ResponseEntity<CourtYourWorkCounts> getCourtCountsTodo() {
+        return ResponseEntity.ok().body(bureauService.getCountsForCourt(SecurityUtil.getActiveOwner()));
+    }
+
+
+
+
 
     @GetMapping(path = "/todo")
     @Operation(summary = "Retrieve all todo responses assigned to the current user")
     public ResponseEntity<BureauResponseSummaryWrapper> getCurrentUserTodo(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload) {
         BureauResponseSummaryWrapper wrapper = bureauService.getTodo(payload.getLogin());
+        return ResponseEntity.ok().body(wrapper);
+    }
+
+    @GetMapping("/courtTodo/{locCode}")
+    @Operation(summary = "Retrieve all todo responses transferred to a given court location")
+    public ResponseEntity<CourtResponseSummaryWrapper> getTodoInCourtLocation(
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
+        @Parameter(description = "3-digit numeric string to identify the court") @PathVariable(name = "locCode")
+        @Size(min = 3, max = 3) @Valid String locCode){
+        CourtResponseSummaryWrapper wrapper = bureauService.getTodoCourt(SecurityUtil.getActiveOwner());
         return ResponseEntity.ok().body(wrapper);
     }
 

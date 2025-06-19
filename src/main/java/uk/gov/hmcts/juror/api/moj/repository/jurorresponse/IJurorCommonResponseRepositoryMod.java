@@ -15,5 +15,9 @@ public interface IJurorCommonResponseRepositoryMod {
                                                            Collection<ProcessingStatus> processingStatus,
                                                            Predicate... predicates);
 
+    List<Tuple> getJurorResponseDetailsByCourtAndStatus(String locCode,
+                                                           Collection<ProcessingStatus> processingStatus,
+                                                           Predicate... predicates);
+
     Map<ProcessingStatus, Long> getJurorResponseCounts(Predicate... predicates);
 }
