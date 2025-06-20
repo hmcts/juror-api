@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.bureau.domain.IPoolStatus;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -191,8 +192,8 @@ public final class JurorPoolUtils {
                                                          JurorPoolRepository jurorPoolRepository) {
 
         List<Integer> validSourceStatusList = new ArrayList<>();
-        validSourceStatusList.add(Math.toIntExact(IPoolStatus.SUMMONED));
-        validSourceStatusList.add(Math.toIntExact(IPoolStatus.RESPONDED));
+        validSourceStatusList.add(Math.toIntExact(IJurorStatus.SUMMONED));
+        validSourceStatusList.add(Math.toIntExact(IJurorStatus.RESPONDED));
 
         log.debug("Find summoned/responded jurors from Pool: {} and location {}", poolNumber, courtLocation);
 

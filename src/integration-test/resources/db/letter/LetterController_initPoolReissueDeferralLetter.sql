@@ -2,7 +2,7 @@ INSERT INTO juror_mod.pool (pool_no,"owner",return_date,no_requested,pool_type,l
 ('415220401','400',current_date + 10,2,'CRO','415','N',current_date + 10,NULL,NULL,false,2,NULL),
 ('415220504','400',current_date + 14,4,'CRO','415','N','2022-03-02 09:22:09',NULL,NULL,false,4,NULL),
 ('415220402','400',current_date + 10,2,'CRO','415','N',current_date + 10,NULL,NULL,false,2,NULL),
-('415220403','400',current_date + 20,2,'CRO','415','N',current_date + 10,NULL,NULL,false,2,NULL),
+('415220403','400',current_date + 20,2,'CRO','411','N',current_date + 10,NULL,NULL,false,2,NULL),
 ('415220404','400',current_date + 25,2,'CRO','415','N',current_date + 10,NULL,NULL,false,2,NULL);
 
 INSERT INTO juror_mod.juror (juror_number,poll_number,title,last_name,first_name,dob,address_line_1,address_line_2,
@@ -16,7 +16,7 @@ INSERT INTO juror_mod.juror (juror_number,poll_number,title,last_name,first_name
 ('555555564','540',NULL,'LNAMEFIVEFOURZERO','FNAMEFIVEFOURZERO','1998-03-08 00:00:00.000','Address Line 1','Address   Line 2','Address Line 3','CARDIFF','Some County','CH1 2AN',NULL,NULL,NULL,true,NULL,NULL,NULL,NULL,NULL,'BUREAU_USER',NULL,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'NOT_CHECKED','2024-01-16 12:07:42.000',NULL,NULL,NULL,0,0,NULL,'12345678','Mr','Test','Person',NULL,NULL,NULL),
 ('555555565','540',NULL,'LNAMEFIVEFOURZERO','FNAMEFIVEFOURZERO','1998-03-08 00:00:00.000','Address Line 1','Address  Line 2','Address Line 3','CARDIFF','Some County','CH1 2AN',NULL,NULL,NULL,true,NULL,NULL,NULL,NULL,NULL,'BUREAU_USER',NULL,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'NOT_CHECKED','2024-01-16 12:07:42.000',NULL,NULL,NULL,0,0,NULL,'12345678','Mr','Test','Person',NULL,NULL,NULL),
 ('555555566','540',NULL,'LNAMEFIVEFOURZERO','FNAMEFIVEFOURZERO','1998-03-08 00:00:00.000','Address Line 1','Address  Line 2','Address Line 3','CARDIFF','Some County','CH1 2AN',NULL,NULL,NULL,true,NULL,NULL,NULL,NULL,NULL,'BUREAU_USER',NULL,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'NOT_CHECKED','2024-01-16 12:07:42.000',NULL,NULL,NULL,0,0,NULL,'12345678','Mr','Test','Person',NULL,NULL,NULL),
-('555555567','540',NULL,'LNAMEFIVEFOURZERO','FNAMEFIVEFOURZERO','1998-03-08 00:00:00.000','Address Line 1','Address  Line 2','Address Line 3','CARDIFF','Some County','CH1 2AN',NULL,NULL,NULL,true,NULL,NULL,NULL,NULL,NULL,'BUREAU_USER',NULL,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'NOT_CHECKED','2024-01-16 12:07:42.000',NULL,NULL,NULL,0,0,NULL,'12345678','Mr','Test','Person',NULL,NULL,NULL);
+('555555567','540',NULL,'LNAMEFIVEFOURZERO','FNAMEFIVEFOURZERO','1998-03-08 00:00:00.000','Address Line 1','Address  Line 2','Address Line 3','CARDIFF','Some County','CH1 2AN',NULL,NULL,NULL,true,NULL,NULL,NULL,NULL,NULL,'BUREAU_USER',NULL,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,true,'NOT_CHECKED','2024-01-16 12:07:42.000',NULL,NULL,NULL,0,0,NULL,'12345678','Mr','Test','Person',NULL,NULL,NULL);
 
 INSERT INTO juror_mod.juror_pool (juror_number,pool_number,"owner",user_edtq,is_active,status,times_sel,def_date,"location",no_attendances,no_attended,no_fta,no_awol,pool_seq,edit_tag,next_date,on_call,smart_card,was_deferred,deferral_code,id_checked,postpone,paid_cash,scan_code,last_update,reminder_sent,transfer_date,date_created) VALUES
 ('555555561','415220401','400','BUREAU_USER',true,7,NULL,current_date + 10,NULL,NULL,NULL,NULL,NULL,'0109',NULL,NULL,false,NULL,NULL,'A',NULL,NULL,NULL,NULL,'2024-01-16 12:07:42.162505',NULL,NULL,NULL),

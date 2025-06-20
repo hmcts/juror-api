@@ -173,9 +173,9 @@ class JurorValidationResponseDtoTest extends AbstractValidatorTest<JurorValidati
                 createJurorValidationResponseDto(
                     "123456789",
                     "John",
-                    RandomStringUtils.randomAlphabetic(21)
+                    RandomStringUtils.randomAlphabetic(26)
                 ),
-                new Violation("lastName", "length must be between 0 and 20")
+                new Violation("lastName", "length must be between 0 and 25")
             );
         }
 
