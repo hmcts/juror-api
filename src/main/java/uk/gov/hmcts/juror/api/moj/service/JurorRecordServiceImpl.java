@@ -1610,7 +1610,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
 
     }
-    
+
     @Override
     public PaginatedList<FilterJurorRecord> searchForJurorRecords(JurorRecordFilterRequestQuery query) {
 
