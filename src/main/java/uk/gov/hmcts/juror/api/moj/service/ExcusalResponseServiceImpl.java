@@ -137,9 +137,6 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
 
         //Store the current status of the juror JS-367
         JurorStatus currentStatus = jurorPool.getStatus();
-        AbstractJurorResponse jurorResponseStatus =
-            jurorResponseService.getCommonJurorResponse(juror.getJurorNumber());
-        String responseProcessStatus = jurorResponseStatus.getProcessingStatus().getDescription();
 
         juror.setResponded(true);
         if (jurorPool.getStatus().getStatus() != IJurorStatus.EXCUSED) {
@@ -166,8 +163,6 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
             jurorPool.setStatus(getPoolStatus(IJurorStatus.RESPONDED));
         }
 
-      //  jurorPool.setUserEdtq(payload.getLogin());
-       // jurorPoolRepository.save(jurorPool);
 
         // Restore the original status of the juror
         jurorPool.setStatus(currentStatus);
