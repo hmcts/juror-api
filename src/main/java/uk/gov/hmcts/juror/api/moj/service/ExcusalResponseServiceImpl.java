@@ -14,7 +14,6 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.exception.ExcusalResponseException;
@@ -22,6 +21,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
@@ -51,6 +51,8 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
     private final JurorResponseService jurorResponseService;
 
 
+
+
     @Override
     @Transactional
     public void respondToExcusalRequest(BureauJwtPayload payload, ExcusalDecisionDto excusalDecisionDto,
@@ -66,10 +68,9 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
 
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, owner);
 
-        // process the response first so any updated juror details are saved
-        jurorResponseService.setResponseProcessingStatusToClosed(jurorNumber);
 
         if (excusalDecisionDto.getExcusalDecision().equals(ExcusalDecision.GRANT)) {
+            jurorResponseService.setResponseProcessingStatusToClosed(jurorNumber);
             grantExcusalForJuror(payload, excusalDecisionDto, jurorPool);
             if (!ExcusalCodeEnum.D.getCode().equals(excusalDecisionDto.getExcusalReasonCode())
                 && SecurityUtil.BUREAU_OWNER.equals(owner)) {
@@ -168,6 +169,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
         jurorPool.setStatus(currentStatus);
         jurorPool.setUserEdtq(payload.getLogin());
         jurorPoolRepository.save(jurorPool);
+
 
         JurorHistory jurorHistory = JurorHistory.builder()
             .jurorNumber(jurorPool.getJurorNumber())
