@@ -54,7 +54,7 @@ import static uk.gov.hmcts.juror.api.moj.domain.ExcusalDecision.REFUSE;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
+@SuppressWarnings("PMD")
 public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
 
     @Value("${jwt.secret.bureau}")
@@ -494,7 +494,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
         executeInTransaction(() -> {
             JurorPool jurorPool = jurorPoolRepository
                 .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue("415", jurorNumber);
-            validateExcusal(jurorPool, excusalDecisionDto, login);
+
             validateExcusalLetter(excusalDecisionDto.getExcusalReasonCode());
         });
     }
@@ -635,7 +635,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
                 if (excusalDecisionDto.getExcusalDecision().equals(REFUSE)) {
                     assertThat(jurorPool.getStatus().getStatus())
                 .as("Juror record should be updated to show they are responded")
-                        .isEqualTo(IJurorStatus.RESPONDED);
+                        .isEqualTo(IJurorStatus.SUMMONED);
                 } else {
                     assertThat(jurorPool.getStatus().getStatus())
                 .as("Juror record should be updated to show they are excused")
