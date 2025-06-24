@@ -24,6 +24,7 @@ import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -259,8 +260,14 @@ public class ManagePoolsServiceImpl implements ManagePoolsService {
             }
             availablePoolsList.add(availablePool);
         }
+
+        List<AvailablePoolsInCourtLocationDto.AvailablePoolsDto> availablePoolsListSorted = new ArrayList<>();
+        availablePoolsList.stream().sorted(
+            Comparator.comparing(AvailablePoolsInCourtLocationDto.AvailablePoolsDto::getServiceStartDate)
+        ).forEach(availablePoolsListSorted::add);
+
         log.trace("Juror record owner: {} - Exit method mapActivePoolStatsToDto", owner);
-        return availablePoolsList;
+        return availablePoolsListSorted;
     }
 
     private int calculateUtilisation(Integer requested, int poolMemberCount) {
