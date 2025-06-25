@@ -51,4 +51,5 @@ public interface JurorResponseService {
     JurorCommonResponseRepositoryMod.AbstractResponse getCommonJurorResponse(String jurorNumber);
 
     void setResponseProcessingStatusToClosed(String jurorNumber);
+
 }

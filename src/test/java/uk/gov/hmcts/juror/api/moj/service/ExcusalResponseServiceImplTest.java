@@ -113,7 +113,6 @@ class ExcusalResponseServiceImplTest {
 
         verify(jurorPoolService, times(1)).getJurorPoolFromUser(any());
 
-        verify(jurorResponseService, times(1)).setResponseProcessingStatusToClosed(jurorNumber);
         verifyHappyRefuseJurorPoolPath(2, true);
         verifyHappyExcusalDeniedLetter();
     }
@@ -131,7 +130,6 @@ class ExcusalResponseServiceImplTest {
         verify(jurorPoolService, times(1))
             .getJurorPoolFromUser(jurorNumber);
 
-        verify(jurorResponseService, times(1)).setResponseProcessingStatusToClosed(jurorNumber);
         verifyHappyRefuseJurorPoolPath(2, false);
 
         verify(printDataService, times(0))
@@ -196,7 +194,6 @@ class ExcusalResponseServiceImplTest {
 
         verify(jurorPoolService, times(1)).getJurorPoolFromUser(any());
 
-        verify(jurorResponseService, times(1)).setResponseProcessingStatusToClosed(JUROR_NUMBER);
         verifyHappyRefuseJurorPoolPath(2, true);
         verifyHappyExcusalDeniedLetter();
     }
@@ -214,7 +211,6 @@ class ExcusalResponseServiceImplTest {
         verify(jurorPoolService, times(1))
             .getJurorPoolFromUser(any());
 
-        verify(jurorResponseService, times(1)).setResponseProcessingStatusToClosed(JUROR_NUMBER2);
         verifyHappyRefuseJurorPoolPath(2, false);
         verify(printDataService, times(0))
             .printExcusalDeniedLetter(any());
@@ -449,7 +445,6 @@ class ExcusalResponseServiceImplTest {
 
         verify(jurorPoolService, times(1)).getJurorPoolFromUser(any());
 
-        verify(jurorResponseService, times(1)).setResponseProcessingStatusToClosed(JUROR_NUMBER);
     }
 
     @Test
