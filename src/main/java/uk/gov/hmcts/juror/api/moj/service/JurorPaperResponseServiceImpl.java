@@ -270,7 +270,11 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
             jurorPaperResponse.getMentalHealthAct(),
             jurorPaperResponse.getMentalHealthCapacity(),
             jurorPaperResponse.getBail(),
-            jurorPaperResponse.getConvictions()
+            jurorPaperResponse.getConvictions(),
+            jurorPaperResponse.getResidencyDetail(),
+            jurorPaperResponse.getMentalHealthActDetails(),
+            jurorPaperResponse.getBailDetails(),
+            jurorPaperResponse.getConvictionsDetails()
         );
         jurorPaperResponseDetailDto.setEligibility(eligibility);
     }
@@ -773,12 +777,15 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
             RESIDENCY, jurorNumber
         )) {
             jurorPaperResponse.setResidency(eligibility.getLivedConsecutive());
+            jurorPaperResponse.setResidencyDetail(eligibility.getLivedConsecutiveDetails());
         }
 
         if (checkForUpdatedValue(jurorPaperResponse.getMentalHealthAct(), eligibility.getMentalHealthAct(),
             MENTAL_HEALTH, jurorNumber
         )) {
             jurorPaperResponse.setMentalHealthAct(eligibility.getMentalHealthAct());
+            jurorPaperResponse.setMentalHealthActDetails(eligibility.getMentalHealthActDetails());
+
         }
 
         if (checkForUpdatedValue(jurorPaperResponse.getMentalHealthCapacity(), eligibility.getMentalHealthCapacity(),
