@@ -50,8 +50,6 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
     private final JurorResponseService jurorResponseService;
 
 
-
-
     @Override
     @Transactional
     public void respondToExcusalRequest(BureauJwtPayload payload, ExcusalDecisionDto excusalDecisionDto,
@@ -67,9 +65,10 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
 
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, owner);
 
+        // process the response first so any updated juror details are saved
+        jurorResponseService.setResponseProcessingStatusToClosed(jurorNumber);
 
         if (excusalDecisionDto.getExcusalDecision().equals(ExcusalDecision.GRANT)) {
-            jurorResponseService.setResponseProcessingStatusToClosed(jurorNumber);
             grantExcusalForJuror(payload, excusalDecisionDto, jurorPool);
             if (!ExcusalCodeEnum.D.getCode().equals(excusalDecisionDto.getExcusalReasonCode())
                 && SecurityUtil.BUREAU_OWNER.equals(owner)) {
@@ -135,9 +134,6 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
         Juror juror = jurorPool.getJuror();
         log.info(String.format("Processing officer decision to refuse excusal for Juror %s", juror.getJurorNumber()));
 
-        //Store the current status of the juror JS-367
-        JurorStatus currentStatus = jurorPool.getStatus();
-
         juror.setResponded(true);
         if (jurorPool.getStatus().getStatus() != IJurorStatus.EXCUSED) {
             juror.setExcusalCode(excusalDecisionDto.getExcusalReasonCode());
@@ -163,12 +159,8 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
             jurorPool.setStatus(getPoolStatus(IJurorStatus.RESPONDED));
         }
 
-
-        // Restore the original status of the juror
-        jurorPool.setStatus(currentStatus);
         jurorPool.setUserEdtq(payload.getLogin());
         jurorPoolRepository.save(jurorPool);
-
 
         JurorHistory jurorHistory = JurorHistory.builder()
             .jurorNumber(jurorPool.getJurorNumber())
