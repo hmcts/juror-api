@@ -283,12 +283,35 @@ public class BureauServiceImpl implements BureauService {
 
     @Override
     @Transactional(readOnly = true)
+    public CourtResponseSummaryWrapper getCourtPending(String locCode) {
+        log.debug("Getting pending responses assigned to court {}", locCode);
+        return getCourtResponseSummaryWrapperFromTransferCourtAndStatus(
+            locCode,
+            JurorCommonResponseRepositoryMod.PENDING_STATUS,
+            JurorResponseQueries.byOwnerAndJurorTransferredCourt(locCode)
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public BureauResponseSummaryWrapper getCompletedToday(String staffLogin) {
         log.debug("Getting responses assigned to {} which were marked as complete today", staffLogin);
         return getBureauResponseSummaryWrapperFromUsernameAndStatus(
             staffLogin,
             JurorCommonResponseRepositoryMod.COMPLETE_STATUS,
             QCombinedJurorResponse.combinedJurorResponse.completedAt.between(startOfToday(), endOfToday())
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CourtResponseSummaryWrapper getCourtCompletedToday(String locCode) {
+        log.debug("Getting responses assigned to {} which were marked as complete today", locCode);
+        return getCourtResponseSummaryWrapperFromTransferCourtAndStatus(
+            locCode,
+            JurorCommonResponseRepositoryMod.COMPLETE_STATUS,
+            QCombinedJurorResponse.combinedJurorResponse.completedAt.between(startOfToday(), endOfToday()),
+            JurorResponseQueries.byOwnerAndJurorTransferredCourt(locCode)
         );
     }
 

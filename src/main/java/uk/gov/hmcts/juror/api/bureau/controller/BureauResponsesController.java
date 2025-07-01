@@ -109,12 +109,29 @@ public class BureauResponsesController {
         return ResponseEntity.ok().body(wrapper);
     }
 
+    @GetMapping(path = "/courtPending")
+    @Operation(summary = "Retrieve all pending responses assigned to the current court")
+    public ResponseEntity<CourtResponseSummaryWrapper> getCurrentCourtPending(
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload) {
+        CourtResponseSummaryWrapper wrapper = bureauService.getCourtPending(SecurityUtil.getActiveOwner());
+        return ResponseEntity.ok().body(wrapper);
+    }
+
     @GetMapping(path = "/completedToday")
     @Operation(summary = "Retrieve all responses assigned to the current user "
         + "which were completed today")
     public ResponseEntity<BureauResponseSummaryWrapper> getCurrentUserCompletedToday(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload) {
         BureauResponseSummaryWrapper wrapper = bureauService.getCompletedToday(payload.getLogin());
+        return ResponseEntity.ok().body(wrapper);
+    }
+
+    @GetMapping(path = "/courtCompletedToday")
+    @Operation(summary = "Retrieve all responses assigned to the current user "
+        + "which were completed today")
+    public ResponseEntity<CourtResponseSummaryWrapper> getCurrentCourtCompletedToday(
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload) {
+        CourtResponseSummaryWrapper wrapper = bureauService.getCourtCompletedToday(SecurityUtil.getActiveOwner());
         return ResponseEntity.ok().body(wrapper);
     }
 

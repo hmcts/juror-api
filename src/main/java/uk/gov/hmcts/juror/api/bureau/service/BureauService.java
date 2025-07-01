@@ -26,9 +26,16 @@ public interface BureauService {
 
     BureauResponseSummaryWrapper getPending(String staffLogin);
 
+    CourtResponseSummaryWrapper getCourtPending(String locCode);
+
+
     BureauResponseSummaryWrapper getCompletedToday(String staffLogin);
+
+    CourtResponseSummaryWrapper getCourtCompletedToday(String locCode);
 
     BureauResponseOverviewDto getOverview(String staffLogin);
 
     BureauJurorDetailDto mapJurorDetailsToDto(ModJurorDetail jurorDetail);
+
+
 }
