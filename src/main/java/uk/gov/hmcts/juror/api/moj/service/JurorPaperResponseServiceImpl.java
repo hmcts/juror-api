@@ -444,6 +444,11 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         jurorPaperResponse.setMentalHealthCapacity(eligibility.getMentalHealthCapacity());
         jurorPaperResponse.setConvictions(eligibility.getConvicted());
         jurorPaperResponse.setBail(eligibility.getOnBail());
+
+        jurorPaperResponse.setResidencyDetail(eligibility.getLivedConsecutiveDetails());
+        jurorPaperResponse.setMentalHealthActDetails(eligibility.getMentalHealthActDetails());
+        jurorPaperResponse.setBailDetails(eligibility.getOnBailDetails());
+        jurorPaperResponse.setConvictionsDetails(eligibility.getConvictedDetails());
     }
 
     private void setUpCjsEmployment(PaperResponse jurorPaperResponse,

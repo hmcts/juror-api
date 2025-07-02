@@ -641,6 +641,51 @@ public class JurorPaperResponseServiceImplTest {
                 any(JurorPool.class), any());
     }
 
+
+    @Test
+    public void test_saveResponse_bureauUser_with_eligibility_details() {
+        final ArgumentCaptor<PaperResponse> paperResponseArgumentCaptor =
+            ArgumentCaptor.forClass(PaperResponse.class);
+        final BureauJwtPayload payload = buildPayload();
+
+        JurorPaperResponseDto responseDto = buildJurorPaperResponseDto();
+        setEligibilityDetailsIneligible(responseDto);
+        setThirdPartyDetails(responseDto);
+
+        Mockito.doReturn(true).when(straightThroughProcessorService)
+            .isValidForStraightThroughAgeDisqualification(any(PaperResponse.class),
+                                                          any(LocalDate.class), any(JurorPool.class));
+        Mockito.doNothing().when(straightThroughProcessorService)
+            .processAgeDisqualification(any(PaperResponse.class), any(LocalDate.class),
+                                        any(JurorPool.class), any());
+
+        jurorPaperResponseService.saveResponse(payload, responseDto);
+
+        Mockito.verify(jurorPoolService, Mockito.times(1))
+            .getJurorPoolFromUser(VALID_JUROR_NUMBER_BUREAU);
+        Mockito.verify(jurorPaperResponseRepository, Mockito.times(1))
+            .save(paperResponseArgumentCaptor.capture());
+        PaperResponse paperResponse = paperResponseArgumentCaptor.getValue();
+        verifyJurorPaperResponseDto(paperResponse, responseDto);
+
+        Assertions.assertThat(paperResponse.getResidencyDetail()).isEqualTo("Lived in the UK for less than 5 years");
+        Assertions.assertThat(paperResponse.getConvictionsDetails()).isEqualTo(
+            "I have a conviction for a criminal offence");
+        Assertions.assertThat(paperResponse.getMentalHealthActDetails()).isEqualTo(
+            "I am detained under the Mental Health Act [MENTAL HEALTH Q2] "
+                + "I have mental health capacity issues");
+        Assertions.assertThat(paperResponse.getBailDetails()).isEqualTo("I am on bail for a criminal offence");
+
+        Mockito.verify(jurorResponseCjsRepository, Mockito.never()).save(any());
+        Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.never()).save(any());
+        Mockito.verify(straightThroughProcessorService, Mockito.times(1))
+            .isValidForStraightThroughAgeDisqualification(any(PaperResponse.class),
+                                                          any(LocalDate.class), any(JurorPool.class));
+        Mockito.verify(straightThroughProcessorService, Mockito.times(1))
+            .processAgeDisqualification(any(PaperResponse.class), any(LocalDate.class),
+                                        any(JurorPool.class), any());
+    }
+
     @Test
     public void test_updatePaperResponse_CjsEmployment_Happy_bureauUser_bureauOwner() {
         BureauJwtPayload payload = buildPayload();
@@ -1495,6 +1540,23 @@ public class JurorPaperResponseServiceImplTest {
             .mentalHealthCapacity(false)
             .onBail(false)
             .convicted(false)
+            .build();
+
+        jurorPaperResponseDto.setEligibility(eligibility);
+    }
+
+    private void setEligibilityDetailsIneligible(JurorPaperResponseDto jurorPaperResponseDto) {
+        JurorPaperResponseDto.Eligibility eligibility = JurorPaperResponseDto.Eligibility.builder()
+            .livedConsecutive(false)
+            .livedConsecutiveDetails("Lived in the UK for less than 5 years")
+            .mentalHealthAct(true)
+            .mentalHealthActDetails("I am detained under the Mental Health Act [MENTAL HEALTH Q2] "
+                + "I have mental health capacity issues")
+            .mentalHealthCapacity(true)
+            .onBail(true)
+            .onBailDetails("I am on bail for a criminal offence")
+            .convicted(true)
+            .convictedDetails("I have a conviction for a criminal offence")
             .build();
 
         jurorPaperResponseDto.setEligibility(eligibility);
