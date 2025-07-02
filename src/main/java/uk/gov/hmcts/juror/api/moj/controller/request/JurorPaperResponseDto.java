@@ -182,10 +182,6 @@ public class JurorPaperResponseDto {
         @Schema(description = "Whether the Juror has the Mental Health Capacity")
         private Boolean mentalHealthCapacity;
 
-        @JsonProperty("mentalHealthCapacityDetails")
-        @Schema(description = "Details of the Juror who does not have the Mental Health Capacity")
-        private String mentalHealthCapacityDetails;
-
         @JsonProperty("onBail")
         @Schema(description = "Whether the Juror is on bail")
         private Boolean onBail;

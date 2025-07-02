@@ -1003,6 +1003,48 @@ public class JurorPaperResponseServiceImplTest {
     }
 
     @Test
+    public void test_updatePaperResponse_EligibilityDetails_make_ineligible() {
+        final BureauJwtPayload payload = buildPayload();
+        final EligibilityDetailsDto eligibilityDto = buildJurorIneligibilityDetailsDto();
+
+        PaperResponse paperResponse = new PaperResponse();
+        paperResponse.setJurorNumber(VALID_JUROR_NUMBER_BUREAU);
+        paperResponse.setResidency(true);
+        paperResponse.setMentalHealthAct(false);
+        paperResponse.setMentalHealthCapacity(false);
+        paperResponse.setBail(false);
+        paperResponse.setConvictions(false);
+
+        Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository)
+            .findByJurorNumber(any());
+
+        jurorPaperResponseService.updateJurorEligibilityDetails(payload, eligibilityDto,
+                                                                VALID_JUROR_NUMBER_BUREAU);
+
+        ArgumentCaptor<PaperResponse> responseArgumentCaptor = ArgumentCaptor.forClass(PaperResponse.class);
+
+        Mockito.verify(jurorPaperResponseRepository, Mockito.times(1)).findByJurorNumber(any());
+        Mockito.verify(jurorPaperResponseRepository, Mockito.times(1)).save(responseArgumentCaptor.capture());
+
+        PaperResponse updatedPaperResponse = responseArgumentCaptor.getValue();
+        Assertions.assertThat(updatedPaperResponse.getResidency()).isFalse();
+        Assertions.assertThat(updatedPaperResponse.getMentalHealthAct()).isTrue();
+        Assertions.assertThat(updatedPaperResponse.getMentalHealthCapacity()).isTrue();
+        Assertions.assertThat(updatedPaperResponse.getBail()).isTrue();
+        Assertions.assertThat(updatedPaperResponse.getConvictions()).isTrue();
+
+        Assertions.assertThat(updatedPaperResponse.getResidencyDetail()).isEqualTo(
+            "Lived in the UK for less than 5 years");
+        Assertions.assertThat(updatedPaperResponse.getMentalHealthActDetails()).isEqualTo(
+            "I am detained under the Mental Health Act [MENTAL HEALTH Q2] "
+                + "I have mental health capacity issues");
+        Assertions.assertThat(updatedPaperResponse.getBailDetails()).isEqualTo("I am on bail for a criminal offence");
+        Assertions.assertThat(updatedPaperResponse.getConvictionsDetails()).isEqualTo(
+            "I have a conviction for a criminal offence");
+
+    }
+
+    @Test
     public void test_updatePaperResponse_ReplyTypeDetails_Happy_bureauUser_bureauOwner() {
         BureauJwtPayload payload = buildPayload();
 
@@ -1213,6 +1255,7 @@ public class JurorPaperResponseServiceImplTest {
 
 
         JurorPaperResponseDto.Eligibility eligibility = JurorPaperResponseDto.Eligibility.builder()
+            .livedConsecutive(true)
             .onBail(false)
             .mentalHealthCapacity(false)
             .mentalHealthAct(false)
@@ -1223,6 +1266,30 @@ public class JurorPaperResponseServiceImplTest {
 
         return eligibilityDetailsDto;
     }
+
+    private EligibilityDetailsDto buildJurorIneligibilityDetailsDto() {
+
+        EligibilityDetailsDto eligibilityDetailsDto = new EligibilityDetailsDto();
+
+
+        JurorPaperResponseDto.Eligibility eligibility = JurorPaperResponseDto.Eligibility.builder()
+            .livedConsecutive(false)
+            .livedConsecutiveDetails("Lived in the UK for less than 5 years")
+            .onBail(true)
+            .onBailDetails("I am on bail for a criminal offence")
+            .mentalHealthCapacity(true)
+            .mentalHealthAct(true)
+            .mentalHealthActDetails("I am detained under the Mental Health Act [MENTAL HEALTH Q2] "
+                                        + "I have mental health capacity issues")
+            .convicted(true)
+            .convictedDetails("I have a conviction for a criminal offence")
+            .build();
+
+        eligibilityDetailsDto.setEligibility(eligibility);
+
+        return eligibilityDetailsDto;
+    }
+
 
     private CjsEmploymentDetailsDto buildCjsEmploymentDetailsDto() {
         final CjsEmploymentDetailsDto cjsEmploymentDetailsDto = new CjsEmploymentDetailsDto();
