@@ -162,7 +162,7 @@ public static BooleanExpression byOwnerAndJurorTransferredCourt(String owner) {
         return paperJurorResponse.juror.bureauTransferDate.isNull();
     }
 
-    public static Predicate jurorTransferredCourt() {
+    public static BooleanExpression jurorTransferredCourt() {
         return jurorResponse.juror.bureauTransferDate.isNotNull();
     }
 
@@ -170,7 +170,7 @@ public static BooleanExpression byOwnerAndJurorTransferredCourt(String owner) {
         return paperJurorResponse.juror.bureauTransferDate.isNotNull();
     }
 
-    public static Predicate poolStatusIsActive() {
+    public static  BooleanExpression poolStatusIsActive() {
         return jurorPool.isActive.isTrue();
     }
 

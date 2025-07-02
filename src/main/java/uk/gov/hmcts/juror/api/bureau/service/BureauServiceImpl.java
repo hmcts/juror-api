@@ -137,8 +137,6 @@ public class BureauServiceImpl implements BureauService {
 
     private Map<ProcessingStatus, Long> getJurorResponseCountsCourt(String locCode) {
         return jurorCommonResponseRepositoryMod.getJurorResponseCounts(
-           // JurorResponseQueries.byOwnerAndJurorTransferredCourt(locCode),
-            QPoolRequest.poolRequest.owner.eq(locCode),
             QCombinedJurorResponse.combinedJurorResponse.processingStatus.ne(ProcessingStatus.CLOSED),
             QCombinedJurorResponse.combinedJurorResponse.juror.bureauTransferDate.isNotNull()
 
@@ -186,7 +184,6 @@ public class BureauServiceImpl implements BureauService {
 
     long getCompleteCourtCount(String locCode, LocalDateTime start, LocalDateTime end) {
         return combineMapCounts(jurorCommonResponseRepositoryMod.getJurorResponseCounts(
-                                    JurorResponseQueries.byOwnerAndJurorTransferredCourt(locCode),
                                     QCombinedJurorResponse.combinedJurorResponse.completedAt.between(start, end)),
                                 JurorCommonResponseRepositoryMod.COMPLETE_STATUS);
     }
@@ -266,8 +263,7 @@ public class BureauServiceImpl implements BureauService {
         log.debug("Getting todo responses assigned to court {}", locCode);
         return getCourtResponseSummaryWrapperFromTransferCourtAndStatus(
             locCode,
-            JurorCommonResponseRepositoryMod.TODO_STATUS,
-            JurorResponseQueries.byOwnerAndJurorTransferredCourt(locCode)
+            JurorCommonResponseRepositoryMod.TODO_STATUS
         );
     }
 
@@ -287,8 +283,7 @@ public class BureauServiceImpl implements BureauService {
         log.debug("Getting pending responses assigned to court {}", locCode);
         return getCourtResponseSummaryWrapperFromTransferCourtAndStatus(
             locCode,
-            JurorCommonResponseRepositoryMod.PENDING_STATUS,
-            JurorResponseQueries.byOwnerAndJurorTransferredCourt(locCode)
+            JurorCommonResponseRepositoryMod.PENDING_STATUS
         );
     }
 
