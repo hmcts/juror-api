@@ -175,6 +175,7 @@ public class JurorPaperResponseDto {
 
         @JsonProperty("mentalHealthActDetails")
         @Schema(description = "Details of the Juror who has been sectioned under the Mental Health Act")
+        // the same field is used for both mental health act and mental health capacity with a delimiter
         private String mentalHealthActDetails;
 
         @JsonProperty("mentalHealthCapacity")

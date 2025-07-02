@@ -792,18 +792,22 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
             MENTAL_CAPACITY, jurorNumber
         )) {
             jurorPaperResponse.setMentalHealthCapacity(eligibility.getMentalHealthCapacity());
+            // the same details are used for both mental health act and mental health capacity with a delimiter
+            jurorPaperResponse.setMentalHealthActDetails(eligibility.getMentalHealthActDetails());
         }
 
         if (checkForUpdatedValue(jurorPaperResponse.getBail(), eligibility.getOnBail(),
             BAIL, jurorNumber
         )) {
             jurorPaperResponse.setBail(eligibility.getOnBail());
+            jurorPaperResponse.setBailDetails(eligibility.getOnBailDetails());
         }
 
         if (checkForUpdatedValue(jurorPaperResponse.getConvictions(), eligibility.getConvicted(),
             CONVICTION, jurorNumber
         )) {
             jurorPaperResponse.setConvictions(eligibility.getConvicted());
+            jurorPaperResponse.setConvictionsDetails(eligibility.getConvictedDetails());
         }
 
         paperResponseRepository.save(jurorPaperResponse);
