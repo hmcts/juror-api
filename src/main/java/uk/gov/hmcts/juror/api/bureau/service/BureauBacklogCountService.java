@@ -10,6 +10,8 @@ public interface BureauBacklogCountService {
 
     long getBacklogAllRepliesCount();
 
+    long getBacklogAwaitingInfoCount();
+
     BureauBacklogCountData getBacklogResponseCount();
 
 

@@ -89,4 +89,6 @@ public interface JurorAppearanceService {
 
     int getAbsentCountAtCourt(String locationCode, LocalDate attendanceDateFrom,
                               LocalDate attendanceDateTo);
+                              
+    boolean hasAttendancesInPool(String jurorNumber, String poolNumber);
 }

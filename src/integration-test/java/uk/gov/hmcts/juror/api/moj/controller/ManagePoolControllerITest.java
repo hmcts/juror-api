@@ -1436,6 +1436,9 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         // this endpoint should return 4 available pools as it does not filter by court owner
         assertThat(availablePoolsList.size()).isEqualTo(4);
 
+        // confirm the first pool in the list is the one for 2025-05-23 as it should sorted in ascending order
+        assertThat(availablePoolsList.get(0).getPoolNumber()).isEqualTo(POOL_NUMBER_416220502);
+
         availablePoolsList.sort(Comparator.comparing(AvailablePoolsInCourtLocationDto
             .AvailablePoolsDto::getPoolNumber));
 

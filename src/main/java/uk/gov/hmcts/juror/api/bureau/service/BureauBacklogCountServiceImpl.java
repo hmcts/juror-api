@@ -33,6 +33,11 @@ public class BureauBacklogCountServiceImpl implements BureauBacklogCountService 
         return jurorResponseRepository.count(JurorResponseQueries.byUnassignedTodoUrgent());
     }
 
+    @Override
+    public long getBacklogAwaitingInfoCount() {
+        return jurorResponseRepository.count(JurorResponseQueries.byAllAwaitingInfo());
+    }
+
 
     @Override
     public long getBacklogAllRepliesCount() {
@@ -44,6 +49,7 @@ public class BureauBacklogCountServiceImpl implements BureauBacklogCountService 
         BureauBacklogCountData dto = new BureauBacklogCountData();
         dto.setNonUrgent(getBacklogNonUrgentCount());
         dto.setUrgent(getBacklogUrgentCount());
+        dto.setAwaitingInfo(getBacklogAwaitingInfoCount());
         dto.setAllReplies(getBacklogAllRepliesCount());
         return dto;
 

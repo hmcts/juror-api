@@ -376,7 +376,7 @@ class JurorRecordControllerTest {
 
     @ParameterizedTest
     @NullSource
-    @ValueSource(strings = {"", "LastNameLastNameLastN", "Person|"})
+    @ValueSource(strings = {"", "LastNameLastNameLastNameLast", "Person|"})
     void testFixJurorNameBureauUserLastNameEmpty(String lastName) throws Exception {
         BureauJwtPayload jwtPayload = TestUtils.createJwt(OWNER_COURT, USERNAME_COURT);
         jwtPayload.setStaff(BureauJwtPayload.Staff.builder().rank(0).build());
