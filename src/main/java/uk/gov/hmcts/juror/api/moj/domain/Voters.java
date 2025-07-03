@@ -60,7 +60,7 @@ public class Voters implements Serializable {
     private String firstName;
 
     @Column(name = "LNAME")
-    @Length(max = 20)
+    @Length(max = 25)
     @Pattern(regexp = NO_PIPES_REGEX)
     @NotNull
     private String lastName;

@@ -14,7 +14,8 @@ VALUES (7344729, 1716296213630, 'COURT.469'),
        (7344741, 1716139255370, 'COURT.469'),
        (7344742, 1716225683502, 'COURT.469'),
        (7344743, 1716225704762, 'COURT.469'),
-       (7344744, 1716571310787, 'COURT.469');
+       (7344744, 1716571210787, 'COURT.469'),
+       (7344745, 1716571310787, 'COURT.999'); -- this user is not an active user in the system
 
 INSERT INTO juror_mod.users (username, "name", active, last_logged_in, team_id, approval_limit,
                              user_type, email, created_by, updated_by)
@@ -112,7 +113,6 @@ VALUES (7344736, '200160029', 1, 'Ms', 'Norma3', 'Adeniran', '1996-08-26', ' AIR
        (7344741, '200160267', 1, 'Miss', 'Joline', 'Marfori', '1994-05-26', '109 IMY Shores', 'Apartment Number 7',
         'Edinburgh', 'North Yorkshire', '', NULL, 'BD3 5HB', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
         NULL, NULL, false, NULL),
-
        (7344742, '200160267', 1, 'Miss', 'Joline', 'Marfori', '1994-05-26', '109 IMY Shores', 'Apartment Number 7',
         'Edinburgh 2', 'North Yorkshire 3', '', NULL, 'BD2 5HB', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
         NULL, NULL, NULL, false, NULL),
@@ -121,4 +121,7 @@ VALUES (7344736, '200160029', 1, 'Ms', 'Norma3', 'Adeniran', '1996-08-26', ' AIR
         NULL, NULL, NULL, false, NULL),
        (7344744, '200160267', 1, 'Miss', 'Joline', 'Marfori', '1994-05-26', '109 IMY Shores', 'Apartment Number 7',
         'Edinburgh 2', 'North Yorkshire 4', '', NULL, 'BD2 5HB', '', NULL, NULL, NULL, NULL, 'Test Person', '30459873',
-        NULL, '608407', NULL, NULL, NULL, false, NULL);
+        NULL, '608407', NULL, NULL, NULL, false, NULL),
+       (7344745, '200160029', 1, 'Ms', 'Norma3', 'Adeniran', '1996-08-26', ' AIRLL Nook 3', 'Box Number 74', 'Swansea',
+        'Special post town 2', '', NULL, 'BD2 7BN', 'Norma.Adeniran1@email.coam', '011111111111', NULL, NULL, NULL, NULL,
+        NULL, NULL, NULL, NULL, NULL, NULL, false, NULL);
