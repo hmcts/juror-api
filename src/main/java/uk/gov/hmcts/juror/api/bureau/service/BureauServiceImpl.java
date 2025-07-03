@@ -13,6 +13,7 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseOverviewD
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseSummaryDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseSummaryWrapper;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauYourWorkCounts;
+import uk.gov.hmcts.juror.api.bureau.controller.response.CourtResponseSummaryDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.CourtResponseSummaryWrapper;
 import uk.gov.hmcts.juror.api.bureau.controller.response.CourtYourWorkCounts;
 import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetailQueries;
@@ -115,7 +116,8 @@ public class BureauServiceImpl implements BureauService {
         wrapper.setResponses(filteredResponses);
 
         wrapper.setTodoCount(
-            jurorCommonResponseRepositoryMod.countByProcessingStatusIn(JurorCommonResponseRepositoryMod.TODO_STATUS));
+            jurorCommonResponseRepositoryMod.countByProcessingStatusIn(
+                JurorCommonResponseRepositoryMod.TODO_STATUS));
 
         wrapper.setRepliesPendingCount(
             jurorCommonResponseRepositoryMod.countByProcessingStatusIn(
@@ -127,7 +129,39 @@ public class BureauServiceImpl implements BureauService {
         return wrapper;
     }
 
-    private Map<ProcessingStatus, Long> getJurorResponseCounts(String username) {
+    @Override
+    @Transactional(readOnly = true)
+    public CourtResponseSummaryWrapper getCourtDetailsByProcessingStatus(String category) {
+
+        List<ModJurorDetail> detailsByStatus = Lists.newLinkedList(bureauJurorDetailRepository.findAll(
+            BureauJurorDetailQueries.byStatus(queryableStatusList(category)),
+            BureauJurorDetailQueries.dateReceivedAscending()
+        ));
+        List<ModJurorDetail> enrichedDetails = urgencyCalculator.flagSlaOverdueFromList(detailsByStatus);
+        List<CourtResponseSummaryDto> filteredResponses =
+            enrichedDetails.stream().map(bureauTransformsService::detailCourtToDto).collect(
+                Collectors.toCollection(LinkedList::new));
+        CourtResponseSummaryWrapper courtWrapper = new CourtResponseSummaryWrapper();
+
+        courtWrapper.setResponses(filteredResponses);
+
+        courtWrapper.setTodoCourtCount(
+            jurorCommonResponseRepositoryMod.countByProcessingStatusIn(
+                JurorCommonResponseRepositoryMod.TODO_STATUS));
+
+        courtWrapper.setRepliesPendingCourtCount(jurorCommonResponseRepositoryMod.countByProcessingStatusIn(
+            JurorCommonResponseRepositoryMod.PENDING_STATUS));
+        courtWrapper.setCompletedCourtCount(jurorCommonResponseRepositoryMod.countByProcessingStatusIn(
+            JurorCommonResponseRepositoryMod.COMPLETE_STATUS));
+
+
+        return courtWrapper;
+    }
+
+
+
+
+        private Map<ProcessingStatus, Long> getJurorResponseCounts(String username) {
         return jurorCommonResponseRepositoryMod.getJurorResponseCounts(
             QCombinedJurorResponse.combinedJurorResponse.staff.username.eq(username),
             QCombinedJurorResponse.combinedJurorResponse.processingStatus.ne(ProcessingStatus.CLOSED),
@@ -136,7 +170,7 @@ public class BureauServiceImpl implements BureauService {
     }
 
     private Map<ProcessingStatus, Long> getJurorResponseCountsCourt(String locCode) {
-        return jurorCommonResponseRepositoryMod.getJurorResponseCounts(
+        return jurorCommonResponseRepositoryMod.getJurorCourtResponseCounts(
             QCombinedJurorResponse.combinedJurorResponse.processingStatus.ne(ProcessingStatus.CLOSED),
             QCombinedJurorResponse.combinedJurorResponse.juror.bureauTransferDate.isNotNull()
 
@@ -170,8 +204,16 @@ public class BureauServiceImpl implements BureauService {
         return combineMapCounts(countMap, JurorCommonResponseRepositoryMod.TODO_STATUS);
     }
 
+    long getCourtTodoCount(Map<ProcessingStatus, Long> courtCountMap) {
+        return combineCourtMapCounts(courtCountMap, JurorCommonResponseRepositoryMod.TODO_STATUS);
+    }
+
     long getPendingCount(Map<ProcessingStatus, Long> countMap) {
         return combineMapCounts(countMap, JurorCommonResponseRepositoryMod.PENDING_STATUS);
+    }
+
+    long getCourtPendingCount(Map<ProcessingStatus, Long> courtCountMap) {
+        return combineCourtMapCounts(courtCountMap, JurorCommonResponseRepositoryMod.PENDING_STATUS);
     }
 
 
@@ -183,7 +225,7 @@ public class BureauServiceImpl implements BureauService {
     }
 
     long getCompleteCourtCount(String locCode, LocalDateTime start, LocalDateTime end) {
-        return combineMapCounts(jurorCommonResponseRepositoryMod.getJurorResponseCounts(
+        return combineCourtMapCounts(jurorCommonResponseRepositoryMod.getJurorCourtResponseCounts(
                                     QCombinedJurorResponse.combinedJurorResponse.completedAt.between(start, end)),
                                 JurorCommonResponseRepositoryMod.COMPLETE_STATUS);
     }
@@ -191,6 +233,12 @@ public class BureauServiceImpl implements BureauService {
     long combineMapCounts(Map<ProcessingStatus, Long> countMap, Collection<ProcessingStatus> processingStatuses) {
         return processingStatuses.stream()
             .mapToLong(value -> countMap.getOrDefault(value, 0L))
+            .sum();
+    }
+
+    long combineCourtMapCounts(Map<ProcessingStatus, Long> courtCountMap, Collection<ProcessingStatus> processingStatuses) {
+        return processingStatuses.stream()
+            .mapToLong(value -> courtCountMap.getOrDefault(value, 0L))
             .sum();
     }
 
@@ -241,10 +289,10 @@ public class BureauServiceImpl implements BureauService {
                     }).toList()
             ).build();
 
-        Map<ProcessingStatus, Long> countMap = getJurorResponseCountsCourt(locCode);
+        Map<ProcessingStatus, Long> courtCountMap = getJurorResponseCountsCourt(locCode);
         wrapper.setCompletedCourtCount(getCompleteCourtCount(locCode, startOfToday(), endOfToday()));
-        wrapper.setTodoCourtCount(getTodoCount(countMap));
-        wrapper.setRepliesPendingCourtCount(getPendingCount(countMap));
+        wrapper.setTodoCourtCount(getCourtTodoCount(courtCountMap));
+        wrapper.setRepliesPendingCourtCount(getCourtPendingCount(courtCountMap));
         return wrapper;
     }
 
@@ -305,8 +353,7 @@ public class BureauServiceImpl implements BureauService {
         return getCourtResponseSummaryWrapperFromTransferCourtAndStatus(
             locCode,
             JurorCommonResponseRepositoryMod.COMPLETE_STATUS,
-            QCombinedJurorResponse.combinedJurorResponse.completedAt.between(startOfToday(), endOfToday()),
-            JurorResponseQueries.byOwnerAndJurorTransferredCourt(locCode)
+            QCombinedJurorResponse.combinedJurorResponse.completedAt.between(startOfToday(), endOfToday())
         );
     }
 

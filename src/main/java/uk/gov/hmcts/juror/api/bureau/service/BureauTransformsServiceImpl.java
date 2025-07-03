@@ -109,6 +109,35 @@ public class BureauTransformsServiceImpl implements BureauTransformsService {
             .version(jurorResponse.getVersion())
             .build();
     }
+
+    @Override
+    public CourtResponseSummaryDto detailCourtToDto(ModJurorDetail detail) {
+        return CourtResponseSummaryDto.builder()
+            .jurorNumber(detail.getJurorNumber())
+            .title(detail.getNewTitle())
+            .firstName(detail.getNewFirstName())
+            .lastName(detail.getNewLastName())
+            .courtCode(detail.getCourtCode())
+            .courtName(detail.getCourtName())
+            .postcode(detail.getNewJurorPostcode())
+            .processingStatus(detail.getProcessingStatus())
+            .residency(detail.getResidency())
+            .mentalHealthAct(detail.getMentalHealthAct())
+            .bail(detail.getBail())
+            .convictions(detail.getConvictions())
+            .deferralDate(detail.getDeferralDate())
+            .excusalReason(detail.getExcusalReason())
+            .poolNumber(detail.getPoolNumber())
+            .replyMethod(detail.getReplyType())
+            .urgent(detail.getUrgent())
+            .slaOverdue(detail.getSlaOverdue())
+            .dateReceived(detail.getDateReceived())
+            .assignedStaffMember(detail.getAssignedStaffMember() != null
+                                     ? toStaffDto(detail.getAssignedStaffMember()) : null)
+            .completedAt(detail.getCompletedAt())
+            .version(detail.getVersion())
+            .build();
+    }
     @Override
     public CourtResponseSummaryDto detailCourtToDto(
         CombinedJurorResponse jurorResponse,

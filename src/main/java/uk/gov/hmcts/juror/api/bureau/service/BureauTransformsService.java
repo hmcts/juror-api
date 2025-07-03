@@ -48,6 +48,8 @@ public interface BureauTransformsService {
      */
     StaffDto toStaffDto(User staffMember);
 
+    CourtResponseSummaryDto detailCourtToDto(ModJurorDetail detail);
+
     CourtResponseSummaryDto detailCourtToDto(
         CombinedJurorResponse jurorResponse,
         Juror juror,

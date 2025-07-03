@@ -16,6 +16,8 @@ public interface BureauService {
 
     BureauResponseSummaryWrapper getDetailsByProcessingStatus(String status);
 
+    CourtResponseSummaryWrapper getCourtDetailsByProcessingStatus(String status);
+
     BureauYourWorkCounts getCounts(String staffLogin);
 
     CourtYourWorkCounts getCountsForCourt(String locCode);

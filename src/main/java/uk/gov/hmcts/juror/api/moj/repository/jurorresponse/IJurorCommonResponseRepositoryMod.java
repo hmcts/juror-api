@@ -20,4 +20,6 @@ public interface IJurorCommonResponseRepositoryMod {
                                                            Predicate... predicates);
 
     Map<ProcessingStatus, Long> getJurorResponseCounts(Predicate... predicates);
+
+    Map<ProcessingStatus, Long> getJurorCourtResponseCounts(Predicate... predicates);
 }

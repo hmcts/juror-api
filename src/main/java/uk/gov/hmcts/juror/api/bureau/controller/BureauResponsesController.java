@@ -38,7 +38,6 @@ import uk.gov.hmcts.juror.api.bureau.service.JurorResponseSearchService;
 import uk.gov.hmcts.juror.api.bureau.service.UserService;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
-import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.AvailablePoolsInCourtLocationDto;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 /**
@@ -67,6 +66,16 @@ public class BureauResponsesController {
         return ResponseEntity.ok().body(wrapper);
     }
 
+    @GetMapping(path = "/courtDetails")
+    @Operation(summary = "Retrieve all juror details filtered by status category(todo,pending,"
+        + "completed)",
+        description = "Retrieve all juror details filtered by status category(todo,pending,completed)")
+    public ResponseEntity<CourtResponseSummaryWrapper> filterCourtDetailsByStatus(@Parameter(description =
+        "Response category filter") @RequestParam("filterBy") String filterBy) {
+        CourtResponseSummaryWrapper wrapper = bureauService.getCourtDetailsByProcessingStatus(filterBy);
+        return ResponseEntity.ok().body(wrapper);
+    }
+
     @GetMapping(path = "/counts")
     @Operation(summary = "Retrieve counts of responses assigned to the current user")
     public ResponseEntity<BureauYourWorkCounts> getCurrentUserTodo() {
@@ -74,12 +83,10 @@ public class BureauResponsesController {
     }
 
     @GetMapping(path = "/courtCounts")
-    @Operation(summary = "Retrieve counts of responses assigned to the current user")
+    @Operation(summary = "Retrieve counts of responses assigned to the court location of the current user")
     public ResponseEntity<CourtYourWorkCounts> getCourtCountsTodo() {
         return ResponseEntity.ok().body(bureauService.getCountsForCourt(SecurityUtil.getActiveOwner()));
     }
-
-
 
 
 

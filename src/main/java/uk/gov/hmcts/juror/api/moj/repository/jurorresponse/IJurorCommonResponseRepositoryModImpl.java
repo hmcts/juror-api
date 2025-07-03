@@ -74,6 +74,33 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
     }
 
 
+    @Override
+    public Map<ProcessingStatus, Long> getJurorCourtResponseCounts(Predicate... predicates) {
+        JPAQuery<Tuple> query = getJpaQueryFactory().select(
+                QCombinedJurorResponse.combinedJurorResponse.processingStatus,
+                QCombinedJurorResponse.combinedJurorResponse.count()
+            )
+            .from(QCombinedJurorResponse.combinedJurorResponse)
+            .join(QJurorPool.jurorPool)
+            .on(QJurorPool.jurorPool.juror.eq(QCombinedJurorResponse.combinedJurorResponse.juror))
+            .where(QJurorPool.jurorPool.isActive.isTrue())
+            .where(QCombinedJurorResponse.combinedJurorResponse.juror.bureauTransferDate.isNotNull())
+            .where(QJurorPool.jurorPool.owner.eq(SecurityUtil.getActiveOwner()));
+
+        if (predicates != null && predicates.length > 0) {
+            query.where(predicates);
+        }
+
+        return query.groupBy(QCombinedJurorResponse.combinedJurorResponse.processingStatus)
+            .fetch()
+            .stream()
+            .collect(Collectors.toMap(
+                tuple -> tuple.get(QCombinedJurorResponse.combinedJurorResponse.processingStatus),
+                tuple -> tuple.get(QCombinedJurorResponse.combinedJurorResponse.count())
+            ));
+    }
+
+
 @Override
     public List<Tuple> getJurorResponseDetailsByCourtAndStatus(String locCode,
                                                                 Collection<ProcessingStatus> processingStatus,
