@@ -7,6 +7,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QCombinedJurorResponse;
@@ -76,4 +77,23 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
     JPAQueryFactory getJpaQueryFactory() {
         return new JPAQueryFactory(entityManager);
     }
+
+
+    @Override
+    public int getOpenResponsesAtCourt(String locationCode) {
+        return getJpaQueryFactory().select(
+                QCombinedJurorResponse.combinedJurorResponse
+            )
+            .from(QCombinedJurorResponse.combinedJurorResponse)
+            .join(QJurorPool.jurorPool)
+            .on(QJurorPool.jurorPool.juror.eq(QCombinedJurorResponse.combinedJurorResponse.juror))
+            .where(QJurorPool.jurorPool.isActive.isTrue())
+            .where(QCombinedJurorResponse.combinedJurorResponse.processingStatus.ne(ProcessingStatus.CLOSED))
+            .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED))
+            .where(QJurorPool.jurorPool.owner.eq(SecurityUtil.getActiveOwner()))
+            .where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(locationCode))
+            .fetch().size();
+
+    }
+
 }

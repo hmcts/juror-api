@@ -16,4 +16,6 @@ public interface IJurorCommonResponseRepositoryMod {
                                                            Predicate... predicates);
 
     Map<ProcessingStatus, Long> getJurorResponseCounts(Predicate... predicates);
+
+    int getOpenResponsesAtCourt(String locCode);
 }
