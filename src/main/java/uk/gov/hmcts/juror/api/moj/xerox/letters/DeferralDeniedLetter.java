@@ -40,6 +40,8 @@ public class DeferralDeniedLetter extends LetterBase {
         addData(LetterDataType.BUREAU_FAX, 12);
         addWelshCourtAddress();
         sharedSetup();
+        addData(LetterDataType.JUROR_LAST_NAME, 25); // revised length and position
+
     }
 
     @Override
@@ -53,6 +55,7 @@ public class DeferralDeniedLetter extends LetterBase {
         addData(LetterDataType.BUREAU_FAX, 12);
         addEnglishCourtAddress();
         sharedSetup();
+        addData(LetterDataType.JUROR_LAST_NAME, 25); // revised length and position
     }
 
 
@@ -60,7 +63,7 @@ public class DeferralDeniedLetter extends LetterBase {
     private void sharedSetup() {
         addData(LetterDataType.JUROR_TITLE, 10);
         addData(LetterDataType.JUROR_FIRST_NAME, 20);
-        addData(LetterDataType.JUROR_LAST_NAME, 20);
+        addData(LetterDataType.JUROR_LAST_NAME, 20); // keeping old length and position
         addJurorAddress();
         addData(LetterDataType.JUROR_NUMBER, 9);
         addData(LetterDataType.BUREAU_SIGNATORY, 30);

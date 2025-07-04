@@ -7,10 +7,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.juror.api.moj.audit.dto.JurorAudit;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.service.JurorServiceMod;
 import uk.gov.hmcts.juror.api.moj.service.UserService;
 import uk.gov.hmcts.juror.api.moj.service.audit.JurorAuditService;
@@ -25,10 +27,12 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
+@Slf4j
 public abstract class AbstractJurorAmendmentReport implements IReport {
 
     protected final JurorAuditService jurorAuditService;
@@ -64,6 +68,17 @@ public abstract class AbstractJurorAmendmentReport implements IReport {
                     continue;
                 }
                 if (afterChangeValue == null || !afterChangeValue.equals(beforeChangeValue)) {
+                    String username;
+                    Optional<User> user = userService.findUserByUsernameOpt(afterChangeJuror.getRevisionInfo()
+                                                                         .getChangedBy());
+                    if (user.isPresent()) {
+                        username = user.get().getName();
+                    } else {
+                        username = afterChangeJuror.getRevisionInfo().getChangedBy();
+                        log.info("User {} is not an active user in the system",
+                                 afterChangeJuror.getRevisionInfo().getChangedBy());
+                    }
+
                     changes.add(
                         new JurorAmendmentReportRow(
                             afterChangeJuror.getJurorNumber(),
@@ -71,7 +86,7 @@ public abstract class AbstractJurorAmendmentReport implements IReport {
                             formatObject(beforeChangeValue),
                             formatObject(afterChangeValue),
                             afterChangeJuror.getRevisionInfo().getRevisionDate(),
-                            userService.findUserByUsername(afterChangeJuror.getRevisionInfo().getChangedBy()).getName()
+                            username
                         ));
                 }
             }

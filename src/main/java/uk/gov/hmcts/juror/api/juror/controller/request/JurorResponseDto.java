@@ -57,7 +57,7 @@ public class JurorResponseDto {
     private String firstName;
 
     @NotEmpty
-    @Length(max = 20)
+    @Length(max = 25)
     @Pattern(regexp = NO_PIPES_REGEX)
     @Null(groups = ThirdPartyDeceasedValidationGroup.class)
     @Schema(description = "Juror last name", requiredMode = Schema.RequiredMode.REQUIRED)
