@@ -69,6 +69,8 @@ public class BureauServiceImpl implements BureauService {
     public BureauJurorDetailDto getDetailsByJurorNumber(final String jurorNumber) {
         final Optional<ModJurorDetail> jurorDetails = bureauJurorDetailRepository.findOne(
             QModJurorDetail.modJurorDetail.jurorNumber.eq(jurorNumber));
+        log.info("*** Retrieving juror details for {}", jurorNumber);
+        log.info("*** final Optional<ModJurorDetail> jurorDetails {}", jurorDetails);
 
         if (jurorDetails.isEmpty()) {
             log.error("Could not find juror response for {}", jurorNumber);
@@ -84,6 +86,8 @@ public class BureauServiceImpl implements BureauService {
         jurorDetails.getContactLogs().size();
         jurorDetails.getCjsEmployments().size();
         jurorDetails.getReasonableAdjustments().size();
+        log.info("*** ModJurorDetail jurorDetails {}", jurorDetails);
+        log.info("*** ModJurorDetail jurorDetails {}", jurorDetails.getJurorAddress1());
 
         if (log.isDebugEnabled()) {
             log.debug("Found {}", jurorDetails);
@@ -91,6 +95,9 @@ public class BureauServiceImpl implements BureauService {
 
         final ModJurorDetail slaFlaggedJurorDetails = urgencyCalculator.flagSlaOverdueForResponse(jurorDetails);
         final BureauJurorDetailDto responseDto = new BureauJurorDetailDto(slaFlaggedJurorDetails);
+        log.info("***  ModJurorDetail slaFlaggedJurorDetails {}", slaFlaggedJurorDetails);
+        log.info("***  BureauJurorDetailDto responseDto {}", responseDto);
+
 
         if (log.isTraceEnabled()) {
             log.trace("Converted to {}", responseDto);
@@ -107,12 +114,17 @@ public class BureauServiceImpl implements BureauService {
             BureauJurorDetailQueries.byStatus(queryableStatusList(category)),
             BureauJurorDetailQueries.dateReceivedAscending()
         ));
+        log.info("***   List<ModJurorDetail> detailsByStatus {}", detailsByStatus);
         List<ModJurorDetail> enrichedDetails = urgencyCalculator.flagSlaOverdueFromList(detailsByStatus);
+        log.info("***   List<ModJurorDetail> enrichedDetails {}", enrichedDetails);
         List<BureauResponseSummaryDto> filteredResponses =
             enrichedDetails.stream().map(bureauTransformsService::detailToDto).collect(
                 Collectors.toCollection(LinkedList::new));
+        log.info("***   List<BureauResponseSummaryDto> filteredResponses {}", filteredResponses);
         BureauResponseSummaryWrapper wrapper = new BureauResponseSummaryWrapper();
-
+        log.info("***   BureauResponseSummaryWrapper wrapper {}", wrapper);
+        log.info("***   BureauResponseSummaryWrapper wrapper.getResponses() {}", wrapper.getResponses());
+        log.info("***    wrapper.setResponses(filteredResponses) {}",filteredResponses);
         wrapper.setResponses(filteredResponses);
 
         wrapper.setTodoCount(
@@ -137,11 +149,18 @@ public class BureauServiceImpl implements BureauService {
             BureauJurorDetailQueries.byStatus(queryableStatusList(category)),
             BureauJurorDetailQueries.dateReceivedAscending()
         ));
+        log.info("****Cstuff   List<ModJurorDetail> detailsByStatus {}", detailsByStatus);
         List<ModJurorDetail> enrichedDetails = urgencyCalculator.flagSlaOverdueFromList(detailsByStatus);
+        log.info("****Cstuff   List<ModJurorDetail> enrichedDetails {}", enrichedDetails);
         List<CourtResponseSummaryDto> filteredResponses =
             enrichedDetails.stream().map(bureauTransformsService::detailCourtToDto).collect(
                 Collectors.toCollection(LinkedList::new));
+        log.info("****Cstuff   List<CourtResponseSummaryDto> filteredResponses {}", filteredResponses);
+
         CourtResponseSummaryWrapper courtWrapper = new CourtResponseSummaryWrapper();
+        log.info("****Cstuff   CourtResponseSummaryWrapper courtWrapper {}", courtWrapper);
+        log.info("****Cstuff   CourtResponseSummaryWrapper courtWrapper.getResponses() {}", courtWrapper.getResponses());
+        log.info("****Cstuff    courtWrapper.setResponses(filteredResponses) {}", filteredResponses);
 
         courtWrapper.setResponses(filteredResponses);
 
@@ -157,9 +176,6 @@ public class BureauServiceImpl implements BureauService {
 
         return courtWrapper;
     }
-
-
-
 
         private Map<ProcessingStatus, Long> getJurorResponseCounts(String username) {
         return jurorCommonResponseRepositoryMod.getJurorResponseCounts(
@@ -243,12 +259,14 @@ public class BureauServiceImpl implements BureauService {
     }
 
     private BureauResponseSummaryWrapper getBureauResponseSummaryWrapperFromUsernameAndStatus(
+
         String staffLogin,
         Collection<ProcessingStatus> processingStatus,
         Predicate... predicates) {
 
         List<Tuple> tuples = jurorCommonResponseRepositoryMod
             .getJurorResponseDetailsByUsernameAndStatus(staffLogin, processingStatus, predicates);
+        log.info("*********List<Tuple> bureautuples {}", tuples);
         BureauResponseSummaryWrapper wrapper = BureauResponseSummaryWrapper.builder()
             .responses(
                 tuples.stream()
@@ -261,7 +279,7 @@ public class BureauServiceImpl implements BureauService {
                         return bureauTransformsService.detailToDto(jurorResponseRepository1, juror, jurorPool, pool);
                     }).toList()
             ).build();
-
+        log.info("******BureauResponseSummaryWrapper wrapper {}", wrapper);
         Map<ProcessingStatus, Long> countMap = getJurorResponseCounts(staffLogin);
         wrapper.setCompletedCount(getCompleteCount(staffLogin, startOfToday(), endOfToday()));
         wrapper.setTodoCount(getTodoCount(countMap));
@@ -276,23 +294,27 @@ public class BureauServiceImpl implements BureauService {
 
         List<Tuple> tuples = jurorCommonResponseRepositoryMod
             .getJurorResponseDetailsByCourtAndStatus(locCode, processingStatus, predicates);
+        log.info("*********List<Tuple> tuples {}", tuples);
         CourtResponseSummaryWrapper wrapper = CourtResponseSummaryWrapper.builder()
             .responses(
                 tuples.stream()
                     .map(tuple -> {
-                        CombinedJurorResponse jurorResponseRepository1 =
+                        CombinedJurorResponse jurorResponseRepositoryCourt =
                             tuple.get(QCombinedJurorResponse.combinedJurorResponse);
-                        Juror juror = jurorResponseRepository1.getJuror();
+                        Juror juror = jurorResponseRepositoryCourt.getJuror();
                         JurorPool jurorPool = tuple.get(QJurorPool.jurorPool);
                         PoolRequest pool = tuple.get(QPoolRequest.poolRequest);
-                        return bureauTransformsService.detailCourtToDto(jurorResponseRepository1, juror, jurorPool, pool,locCode);
+                        log.info("********* inside getCourtResponseSummaryWrapperFromTransferCourtAndStatus line 306");
+                        return bureauTransformsService.detailCourtToDto(jurorResponseRepositoryCourt, juror, jurorPool, pool,locCode);
+
                     }).toList()
             ).build();
-
+           log.info("*******CourtResponseSummaryWrapper wrapper {}", wrapper);
         Map<ProcessingStatus, Long> courtCountMap = getJurorResponseCountsCourt(locCode);
         wrapper.setCompletedCourtCount(getCompleteCourtCount(locCode, startOfToday(), endOfToday()));
         wrapper.setTodoCourtCount(getCourtTodoCount(courtCountMap));
         wrapper.setRepliesPendingCourtCount(getCourtPendingCount(courtCountMap));
+        log.info("*******CourtResponseSummaryWrapper 2ndwrapper {}", wrapper);
         return wrapper;
     }
 

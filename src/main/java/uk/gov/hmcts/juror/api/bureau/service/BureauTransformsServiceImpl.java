@@ -167,7 +167,7 @@ public class BureauTransformsServiceImpl implements BureauTransformsService {
             .poolNumber(pool.getPoolNumber())
             .replyMethod(jurorResponse.getReplyType().getType())
             .urgent(jurorResponse.isUrgent())
-            .slaOverdue(slaOverdue)
+           .slaOverdue(slaOverdue)
             .dateReceived(jurorResponse.getDateReceived().toLocalDate())
             .assignedStaffMember(jurorResponse.getStaff() != null
                 ? toStaffDto(jurorResponse.getStaff()) : null)

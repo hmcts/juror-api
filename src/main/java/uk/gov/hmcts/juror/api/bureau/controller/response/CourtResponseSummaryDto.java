@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@Schema(description = "Summary returning most important fields of relative to juror response")
 public class CourtResponseSummaryDto {
     @Schema(description = "Juror number")
     private String jurorNumber;
