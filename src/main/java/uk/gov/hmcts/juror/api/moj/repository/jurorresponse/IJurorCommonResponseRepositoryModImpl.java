@@ -11,13 +11,12 @@ import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QCombinedJurorResponse;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-@Slf4j
+
 
 public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonResponseRepositoryMod {
     @PersistenceContext
@@ -78,7 +77,7 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
 
 
 
-@Override
+    @Override
     public List<Tuple> getJurorResponseDetailsByCourtAndStatus(String locCode,
                                                                 Collection<ProcessingStatus> processingStatus,
                                                                 Predicate... predicates) {
@@ -99,7 +98,6 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
         if (predicates != null && predicates.length > 0) {
             query.where(predicates);
         }
-        log.info("*******Query for juror response details by court and status: {}", query);
         query.orderBy(QCombinedJurorResponse.combinedJurorResponse.dateReceived.asc());
         return query.fetch();
     }

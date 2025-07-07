@@ -117,7 +117,7 @@ public class JurorResponseQueries {
         }
     }
 
-public static BooleanExpression byOwnerAndJurorTransferredCourt(String owner) {
+    public static BooleanExpression byOwnerAndJurorTransferredCourt(String owner) {
         return jurorPool.owner.eq(owner).and(poolStatusIsActive())
             .and(jurorTransferredCourt()).and(jurorResponse.processingStatus.ne(ProcessingStatus.CLOSED));
 

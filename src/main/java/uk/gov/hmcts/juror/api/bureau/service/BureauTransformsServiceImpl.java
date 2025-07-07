@@ -138,6 +138,7 @@ public class BureauTransformsServiceImpl implements BureauTransformsService {
             .version(detail.getVersion())
             .build();
     }
+
     @Override
     public CourtResponseSummaryDto detailCourtToDto(
         CombinedJurorResponse jurorResponse,

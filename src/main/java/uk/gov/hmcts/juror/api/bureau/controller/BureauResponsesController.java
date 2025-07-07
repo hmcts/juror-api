@@ -82,14 +82,6 @@ public class BureauResponsesController {
         return ResponseEntity.ok().body(bureauService.getCounts(SecurityUtil.getActiveLogin()));
     }
 
-    @GetMapping(path = "/courtCounts")
-    @Operation(summary = "Retrieve counts of responses assigned to the court location of the current user")
-    public ResponseEntity<CourtYourWorkCounts> getCourtCountsTodo() {
-        return ResponseEntity.ok().body(bureauService.getCountsForCourt(SecurityUtil.getActiveOwner()));
-    }
-
-
-
     @GetMapping(path = "/todo")
     @Operation(summary = "Retrieve all todo responses assigned to the current user")
     public ResponseEntity<BureauResponseSummaryWrapper> getCurrentUserTodo(
@@ -98,12 +90,20 @@ public class BureauResponsesController {
         return ResponseEntity.ok().body(wrapper);
     }
 
+    @GetMapping(path = "/courtCounts")
+    @Operation(summary = "Retrieve counts of responses assigned to the court location of the current user")
+    public ResponseEntity<CourtYourWorkCounts> getCourtCountsTodo() {
+        return ResponseEntity.ok().body(bureauService.getCountsForCourt(SecurityUtil.getActiveOwner()));
+    }
+
+
+
     @GetMapping("/courtTodo/{locCode}")
     @Operation(summary = "Retrieve all todo responses transferred to a given court location")
     public ResponseEntity<CourtResponseSummaryWrapper> getTodoInCourtLocation(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Parameter(description = "3-digit numeric string to identify the court") @PathVariable(name = "locCode")
-        @Size(min = 3, max = 3) @Valid String locCode){
+        @Size(min = 3, max = 3) @Valid String locCode) {
         CourtResponseSummaryWrapper wrapper = bureauService.getTodoCourt(SecurityUtil.getActiveOwner());
         return ResponseEntity.ok().body(wrapper);
     }
