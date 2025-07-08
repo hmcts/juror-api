@@ -21,5 +21,9 @@ public interface IJurorCommonResponseRepositoryMod {
 
     Map<ProcessingStatus, Long> getJurorResponseCounts(Predicate... predicates);
 
+
     Map<ProcessingStatus, Long> getJurorCourtResponseCounts(Predicate... predicates);
+
+    int getOpenResponsesAtCourt(String locCode);
+
 }
