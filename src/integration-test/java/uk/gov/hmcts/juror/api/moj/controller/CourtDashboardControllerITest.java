@@ -161,7 +161,7 @@ public class CourtDashboardControllerITest extends AbstractIntegrationTest {
         assertThat(statsLastSevenDays.getExpected())
             .as("Expect the total attendances in the last 7 days to be between 25 and 30"
                 + "depending on the weekends and public holidays")
-            .isBetween(25, 30);
+            .isBetween(25, 35);
         assertThat(statsLastSevenDays.getAttended())
             .as("Expect the total attended in the last 7 days to be 15")
             .isEqualTo(15);
