@@ -29,7 +29,7 @@ class PostponeLetterTest extends AbstractLetterTest {
         addEnglishField("", 12);
         addEnglishField("MR", 10);
         addEnglishField("FNAMEEIGHTTHREEONE", 20);
-        addEnglishField("LNAMEEIGHTTHREEONE", 20);
+        addEnglishField("LNAMEEIGHTTHREEONEFI", 20);
         addEnglishField("831 STREET NAME", 35);
         addEnglishField("ANYTOWN", 35);
         addEnglishField("JUROR_ADDRESS_3", 35);
@@ -41,6 +41,7 @@ class PostponeLetterTest extends AbstractLetterTest {
         addEnglishField("JURY MANAGER", 30);
         addEnglishField("MONDAY 6 FEBRUARY, 2017", 32);
         addEnglishField("10:00AM", 8);
+        addEnglishField("LNAMEEIGHTTHREEONEFIVE", 25);
     }
 
     @Override
@@ -59,7 +60,7 @@ class PostponeLetterTest extends AbstractLetterTest {
         addWelshField("", 12);
         addWelshField("MR", 10);
         addWelshField("FNAMEEIGHTTHREEONE", 20);
-        addWelshField("LNAMEEIGHTTHREEONE", 20);
+        addWelshField("LNAMEEIGHTTHREEONEFI", 20);
         addWelshField("831 STREET NAME", 35);
         addWelshField("ANYTOWN", 35);
         addWelshField("JUROR_ADDRESS_3", 35);
@@ -71,6 +72,7 @@ class PostponeLetterTest extends AbstractLetterTest {
         addWelshField("JURY MANAGER", 30);
         addWelshField("DYDD LLUN 6 CHWEFROR, 2017", 32);
         addWelshField("10:00AM", 8);
+        addWelshField("LNAMEEIGHTTHREEONEFIVE", 25);
     }
 
 

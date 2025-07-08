@@ -19,7 +19,7 @@ class SummonsLetterTest extends AbstractLetterTest {
         addEnglishField("415221201", 9);
         addEnglishField("MR", 10);
         addEnglishField("FNAMEEIGHTTHREEONE", 20);
-        addEnglishField("LNAMEEIGHTTHREEONE", 20);
+        addEnglishField("LNAMEEIGHTTHREEONEFI", 20);
         addEnglishField("831 STREET NAME", 35);
         addEnglishField("ANYTOWN", 35);
         addEnglishField("JUROR_ADDRESS_3", 35);
@@ -55,6 +55,7 @@ class SummonsLetterTest extends AbstractLetterTest {
         addEnglishField("SE1 0YG", 10);
         addEnglishField("0845 3555567", 12);
         addEnglishField("", 12);
+        addEnglishField("LNAMEEIGHTTHREEONEFIVE", 25);
     }
 
     @Override
@@ -62,7 +63,7 @@ class SummonsLetterTest extends AbstractLetterTest {
         addWelshField("415221201", 9);
         addWelshField("MR", 10);
         addWelshField("FNAMEEIGHTTHREEONE", 20);
-        addWelshField("LNAMEEIGHTTHREEONE", 20);
+        addWelshField("LNAMEEIGHTTHREEONEFI", 20);
         addWelshField("831 STREET NAME", 35);
         addWelshField("ANYTOWN", 35);
         addWelshField("JUROR_ADDRESS_3", 35);
@@ -107,6 +108,7 @@ class SummonsLetterTest extends AbstractLetterTest {
         addWelshField("SY2 6LU", 35);
         // repeated field
         addWelshField("641500541", 9);
+        addWelshField("LNAMEEIGHTTHREEONEFIVE", 25);
     }
 
 
