@@ -1593,15 +1593,20 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     }
 
     @Override
+    public List<String> getExpectedJurorsAtCourt(String locationCode, LocalDate attendanceDate) {
+        return appearanceRepository.getExpectedJurorNumbers(locationCode, attendanceDate);
+    }
+
+    @Override
     public int getCountCheckedInJurors(String locationCode, LocalDate attendanceDate) {
         return appearanceRepository
-            .getCountJurorsCheckedInOutToday(locationCode, attendanceDate, true, false);
+            .getCountJurorsCheckedInOut(locationCode, attendanceDate, true, false);
     }
 
     @Override
     public int getCountCheckedOutJurors(String locationCode, LocalDate attendanceDate) {
         return appearanceRepository
-            .getCountJurorsCheckedInOutToday(locationCode, attendanceDate, false, true);
+            .getCountJurorsCheckedInOut(locationCode, attendanceDate, false, true);
     }
 
     @Override

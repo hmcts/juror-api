@@ -141,8 +141,8 @@ public class CourtDashboardControllerITest extends AbstractIntegrationTest {
         CourtAttendanceInfoDto.AttendanceStatsToday statsToday = responseBody.getAttendanceStatsToday();
 
         assertThat(statsToday.getExpected())
-            .as("Expect the total attendances today to be 5")
-            .isEqualTo(5);
+            .as("Expect the total expected in today to be 7")
+            .isEqualTo(7);
         assertThat(statsToday.getCheckedIn())
             .as("Expect the total checked in today to be 2")
             .isEqualTo(2);
@@ -153,14 +153,14 @@ public class CourtDashboardControllerITest extends AbstractIntegrationTest {
             .as("Expect the total on trials today to be 1")
             .isEqualTo(1);
         assertThat(statsToday.getNotCheckedIn())
-            .as("Expect the total not checked in today to be 0")
-            .isEqualTo(0);
+            .as("Expect the total not checked in today to be 2")
+            .isEqualTo(2);
         // one juror is also absent
 
         CourtAttendanceInfoDto.AttendanceStatsLastSevenDays statsLastSevenDays = responseBody.getAttendanceStatsLastSevenDays();
         assertThat(statsLastSevenDays.getExpected())
-            .as("Expect the total attendances in the last 7 days to be between 25 and 30"
-                + "depending on the weekends and public holidays")
+            .as("Expect the total attendances in the last 7 days to be between 25 and 35"
+                + "depending on the weekends and public holidays as one juror is on a trial and works last 3 days")
             .isBetween(25, 35);
         assertThat(statsLastSevenDays.getAttended())
             .as("Expect the total attended in the last 7 days to be 15")
@@ -173,11 +173,11 @@ public class CourtDashboardControllerITest extends AbstractIntegrationTest {
             .isEqualTo(1);
 
         assertThat(responseBody.getTotalDueToAttend())
-            .as("Expect the total due to attend to be 6")
-            .isEqualTo(6);
+            .as("Expect the total due to attend to be 5")
+            .isEqualTo(5);
         assertThat(responseBody.getReasonableAdjustments())
-            .as("Expect the total reasonable adjustments to be 2")
-            .isEqualTo(2);
+            .as("Expect the total reasonable adjustments to be 1")
+            .isEqualTo(1);
         assertThat(responseBody.getUnconfirmedAttendances())
             .as("Expect the total unconfirmed attendances to be 7")
             .isEqualTo(7);

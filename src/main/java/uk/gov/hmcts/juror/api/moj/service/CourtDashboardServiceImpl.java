@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.moj.controller.courtdashboard.CourtAdminInfoDto;
 import uk.gov.hmcts.juror.api.moj.controller.courtdashboard.CourtAttendanceInfoDto;
 import uk.gov.hmcts.juror.api.moj.controller.courtdashboard.CourtNotificationInfoDto;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportJurorsResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.PendingJurorsResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
@@ -155,13 +156,27 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
         int expectedToday = 0;
         int onTrialsToday = 0;
 
+        // expected today is those with the next sitting date today
+        List<String> jurorsWithNextDate = appearanceService.getExpectedJurorsAtCourt(locCode, LocalDate.now());
+
+        // get the jurors on trials today as well as those who are expected to attend today with existing attendance
+        DailyUtilisationReportJurorsResponse utilisationReportJurorsResponse =
+            utilisationReportService.viewDailyUtilisationJurors(locCode, LocalDate.now());
+
+        // need to read all the juror numbers from utilisation report
+        List<String> utilisationJurors = utilisationReportJurorsResponse.getTableData().getJurors().stream()
+            .map(DailyUtilisationReportJurorsResponse.TableData.Juror::getJuror)
+            .toList();
+
+        jurorsWithNextDate.addAll(utilisationJurors);
+        expectedToday = jurorsWithNextDate.stream().distinct().toList().size();
+
         boolean skip = true;
 
         for (DailyUtilisationReportResponse.TableData.Week.Day day : dailyUtilisationDays) {
 
             // skip the first day as it is today's stats
             if (skip) {
-                expectedToday = day.getJurorWorkingDays();
                 onTrialsToday = day.getSittingDays();
                 skip = false;
                 continue;
