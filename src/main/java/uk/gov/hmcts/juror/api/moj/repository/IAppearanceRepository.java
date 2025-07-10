@@ -36,8 +36,10 @@ public interface IAppearanceRepository {
 
     JPAQuery<JurorPool> buildJurorPoolsCheckedInTodayQuery(String locCode, LocalDate date);
 
-    int getCountJurorsCheckedInOutToday(String locCode, LocalDate attendanceDate,
-                                               boolean includeCheckedIn, boolean includeCheckedOut);
+    List<String> getExpectedJurorNumbers(String locCode, LocalDate attendanceDate);
+
+    int getCountJurorsCheckedInOut(String locCode, LocalDate attendanceDate,
+                                   boolean includeCheckedIn, boolean includeCheckedOut);
 
     long countPendingApproval(String locCode, boolean isCash);
 

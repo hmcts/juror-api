@@ -286,10 +286,22 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .where(JUROR_POOL.isActive.isTrue());
     }
 
+    @Override
+    public List<String> getExpectedJurorNumbers(String locCode, LocalDate attendanceDate) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        return queryFactory.select(JUROR_POOL.juror.jurorNumber)
+            .from(JUROR_POOL)
+            .where(JUROR_POOL.nextDate.eq(attendanceDate))
+            .where(JUROR_POOL.pool.courtLocation.locCode.eq(locCode))
+            .where(JUROR_POOL.status.status.eq(IJurorStatus.RESPONDED))
+            .where(JUROR_POOL.isActive.isTrue())
+            .fetch();
+
+    }
 
     @Override
-    public int getCountJurorsCheckedInOutToday(String locCode, LocalDate attendanceDate,
-                                                               boolean includeCheckedIn, boolean includeCheckedOut) {
+    public int getCountJurorsCheckedInOut(String locCode, LocalDate attendanceDate,
+                                          boolean includeCheckedIn, boolean includeCheckedOut) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         JPAQuery<Long> partialQuery = queryFactory.select(JUROR_POOL.count())
             .from(APPEARANCE)

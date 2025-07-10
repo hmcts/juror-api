@@ -80,6 +80,8 @@ public interface JurorAppearanceService {
 
     int getUnconfirmedAttendanceCountAtCourt(String locCode);
 
+    List<String> getExpectedJurorsAtCourt(String locationCode, LocalDate attendanceDate);
+
     int getCountCheckedInJurors(String locationCode, LocalDate attendanceDate);
 
     int getCountCheckedOutJurors(String locationCode, LocalDate attendanceDate);
@@ -89,6 +91,6 @@ public interface JurorAppearanceService {
 
     int getAbsentCountAtCourt(String locationCode, LocalDate attendanceDateFrom,
                               LocalDate attendanceDateTo);
-                              
+
     boolean hasAttendancesInPool(String jurorNumber, String poolNumber);
 }
