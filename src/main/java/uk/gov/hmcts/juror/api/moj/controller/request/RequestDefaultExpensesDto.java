@@ -35,8 +35,8 @@ public class RequestDefaultExpensesDto {
     @Length(max = 20)
     private String smartCardNumber;
 
-    @JsonProperty("apply_to_all_draft")
-    boolean overwriteExistingDraftExpenses;
+  //  @JsonProperty("apply_to_all_draft")
+  //  boolean overwriteExistingDraftExpenses;
 
     @JsonProperty("food_and_drink")
     boolean hasFoodAndDrink;
