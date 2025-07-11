@@ -16,11 +16,11 @@ import java.util.List;
 @Schema(description = "Wrapper for returning juror details transferred to court")
 public class CourtResponseSummaryWrapper {
     @Schema(description = "Count of responses still not processed")
-    private Long todoCourtCount;
+    private Long todoCount;
     @Schema(description = "Count of responses still pending")
-    private Long repliesPendingCourtCount;
+    private Long repliesPendingCount;
     @Schema(description = "Count of responses closed")
-    private Long completedCourtCount;
+    private Long completedCount;
 
     @JsonProperty("data")
     @Schema(description = "List of juror response details transferred to court")
