@@ -156,7 +156,6 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
         int expected = 0;
         int attended = 0;
         int onTrials = 0;
-        int expectedToday = 0;
         int onTrialsToday = 0;
 
         // expected today is those with the next sitting date today
@@ -172,7 +171,7 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
             .toList();
 
         jurorsWithNextDate.addAll(utilisationJurors);
-        expectedToday = jurorsWithNextDate.stream().distinct().toList().size();
+        int expectedToday = jurorsWithNextDate.stream().distinct().toList().size();
 
         boolean skip = true;
 
@@ -192,7 +191,6 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
 
         // also need to add those jurors who are panelled to be part of on trials today
         onTrialsToday += panelService.getCountPanelledJurors(locCode);
-
 
         // set the last 7 days stats
         CourtAttendanceInfoDto.AttendanceStatsLastSevenDays attendanceStatsLastSevenDays =

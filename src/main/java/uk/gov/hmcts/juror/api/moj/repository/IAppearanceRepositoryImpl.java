@@ -503,10 +503,8 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .select(APPEARANCE.count())
             .from(APPEARANCE)
             .where(APPEARANCE.courtLocation.locCode.eq(locCode))
-
             .where(APPEARANCE.attendanceDate.eq(attendanceDate))
-            .where(APPEARANCE.noShow.isNull().or(APPEARANCE.noShow.isFalse()))
-            .where(APPEARANCE.nonAttendanceDay.isNull().or(APPEARANCE.nonAttendanceDay.isFalse()));
+            .where(APPEARANCE.noShow.isNull().or(APPEARANCE.noShow.isFalse()));
 
         if (includeNonAttendance) {
             partialQuery.where((APPEARANCE.appearanceStage.in(AppearanceStage.EXPENSE_ENTERED,
@@ -514,7 +512,8 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
                                                              AppearanceStage.EXPENSE_EDITED))
                                    .or(APPEARANCE.nonAttendanceDay.isTrue()));
         } else {
-            partialQuery.where(APPEARANCE.appearanceStage.in(AppearanceStage.EXPENSE_ENTERED,
+            partialQuery.where(APPEARANCE.nonAttendanceDay.isNull().or(APPEARANCE.nonAttendanceDay.isFalse()))
+                        .where(APPEARANCE.appearanceStage.in(AppearanceStage.EXPENSE_ENTERED,
                                                  AppearanceStage.EXPENSE_AUTHORISED,
                                                  AppearanceStage.EXPENSE_EDITED));
         }
