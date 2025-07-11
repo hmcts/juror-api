@@ -9,4 +9,6 @@ public interface IPanelRepository {
     List<Panel> retrieveMembersOnTrial(String trialNumber, String locationCode);
 
     boolean isEmpanelledJuror(String jurorNumber, String locationCode, LocalDate date);
+
+    long getCountPanelledJurors(String locCode);
 }
