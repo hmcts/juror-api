@@ -283,8 +283,8 @@ public class BureauServiceImpl implements BureauService {
                         Juror juror = jurorResponseRepositoryCourt.getJuror();
                         JurorPool jurorPool = tuple.get(QJurorPool.jurorPool);
                         PoolRequest pool = tuple.get(QPoolRequest.poolRequest);
-                        return bureauTransformsService.detailCourtToDto
-                            (jurorResponseRepositoryCourt, juror, jurorPool, pool,locCode);
+                        return bureauTransformsService.detailCourtToDto(
+                            jurorResponseRepositoryCourt, juror, jurorPool, pool,locCode);
 
                     }).toList()
             ).build();

@@ -20,6 +20,7 @@ import uk.gov.hmcts.juror.api.moj.repository.UtilisationStatsRepository;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService;
 import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseService;
+import uk.gov.hmcts.juror.api.moj.service.trial.PanelService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
@@ -42,6 +43,8 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
     private final UtilisationStatsRepository utilisationStatsRepository;
 
     private final UtilisationReportService utilisationReportService;
+
+    private final PanelService panelService;
 
     @Override
     public CourtNotificationInfoDto getCourtNotifications(String locCode) {
@@ -186,6 +189,9 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
             attended += day.getAttendanceDays();
             onTrials += day.getSittingDays();
         }
+
+        // also need to add those jurors who are panelled to be part of on trials today
+        onTrialsToday += panelService.getCountPanelledJurors(locCode);
 
 
         // set the last 7 days stats

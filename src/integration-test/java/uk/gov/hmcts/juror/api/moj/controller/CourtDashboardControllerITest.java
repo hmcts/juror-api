@@ -142,7 +142,7 @@ public class CourtDashboardControllerITest extends AbstractIntegrationTest {
 
         assertThat(statsToday.getExpected())
             .as("Expect the total expected in today to be 7")
-            .isEqualTo(7);
+            .isEqualTo(8);
         assertThat(statsToday.getCheckedIn())
             .as("Expect the total checked in today to be 2")
             .isEqualTo(2);
@@ -150,8 +150,8 @@ public class CourtDashboardControllerITest extends AbstractIntegrationTest {
             .as("Expect the total checked out today to be 1")
             .isEqualTo(1);
         assertThat(statsToday.getOnTrials())
-            .as("Expect the total on trials today to be 1")
-            .isEqualTo(1);
+            .as("Expect the total on trials today to be 2")
+            .isEqualTo(2);
         assertThat(statsToday.getNotCheckedIn())
             .as("Expect the total not checked in today to be 2")
             .isEqualTo(2);
@@ -174,13 +174,13 @@ public class CourtDashboardControllerITest extends AbstractIntegrationTest {
 
         assertThat(responseBody.getTotalDueToAttend())
             .as("Expect the total due to attend to be 5")
-            .isEqualTo(5);
+            .isEqualTo(6);
         assertThat(responseBody.getReasonableAdjustments())
             .as("Expect the total reasonable adjustments to be 1")
             .isEqualTo(1);
         assertThat(responseBody.getUnconfirmedAttendances())
-            .as("Expect the total unconfirmed attendances to be 7")
-            .isEqualTo(7);
+            .as("Expect the total unconfirmed attendances to be 8")
+            .isEqualTo(8);
     }
 
     @Test

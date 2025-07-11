@@ -10,6 +10,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
+import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 
 import java.time.LocalDate;
@@ -71,6 +72,25 @@ public class PanelRepositoryImpl implements IPanelRepository {
                                                             .and(PANEL.returnDate.isNull()
                                                                      .or(PANEL.returnDate.after(date)))))
             .fetch().isEmpty();
+    }
+
+    @Override
+    public long getCountPanelledJurors(String locCode) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        Long count = queryFactory
+            .select(PANEL.count())
+            .from(PANEL)
+            .join(JUROR_POOL)
+            .on(PANEL.juror.eq(JUROR_POOL.juror))
+            .where(PANEL.completed.isFalse())
+            .where(PANEL.result.isNull())
+            .where(PANEL.empanelledDate.isNull())
+            .where(JUROR_POOL.pool.courtLocation.locCode.eq(locCode))
+            .where(JUROR_POOL.isActive.isTrue())
+            .where(JUROR_POOL.status.status.eq(JurorStatusEnum.PANEL.getStatus()))
+            .fetchFirst();
+
+        return count != null ? count : 0L;
     }
 
 }
