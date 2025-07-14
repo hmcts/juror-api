@@ -144,13 +144,13 @@ public class BureauServiceImpl implements BureauService {
 
         courtWrapper.setResponses(filteredResponses);
 
-        courtWrapper.setTodoCourtCount(
+        courtWrapper.setTodoCount(
             jurorCommonResponseRepositoryMod.countByProcessingStatusIn(
                 JurorCommonResponseRepositoryMod.TODO_STATUS));
 
-        courtWrapper.setRepliesPendingCourtCount(jurorCommonResponseRepositoryMod.countByProcessingStatusIn(
+        courtWrapper.setRepliesPendingCount(jurorCommonResponseRepositoryMod.countByProcessingStatusIn(
             JurorCommonResponseRepositoryMod.PENDING_STATUS));
-        courtWrapper.setCompletedCourtCount(jurorCommonResponseRepositoryMod.countByProcessingStatusIn(
+        courtWrapper.setCompletedCount(jurorCommonResponseRepositoryMod.countByProcessingStatusIn(
             JurorCommonResponseRepositoryMod.COMPLETE_STATUS));
 
 
@@ -289,9 +289,9 @@ public class BureauServiceImpl implements BureauService {
                     }).toList()
             ).build();
         Map<ProcessingStatus, Long> courtCountMap = getJurorResponseCountsCourt(locCode);
-        wrapper.setCompletedCourtCount(getCompleteCourtCount(locCode, startOfToday(), endOfToday()));
-        wrapper.setTodoCourtCount(getCourtTodoCount(courtCountMap));
-        wrapper.setRepliesPendingCourtCount(getCourtPendingCount(courtCountMap));
+        wrapper.setCompletedCount(getCompleteCourtCount(locCode, startOfToday(), endOfToday()));
+        wrapper.setTodoCount(getCourtTodoCount(courtCountMap));
+        wrapper.setRepliesPendingCount(getCourtPendingCount(courtCountMap));
         return wrapper;
     }
 

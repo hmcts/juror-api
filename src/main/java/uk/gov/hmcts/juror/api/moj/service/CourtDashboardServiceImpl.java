@@ -171,6 +171,7 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
             .toList();
 
         jurorsWithNextDate.addAll(utilisationJurors);
+        
         final int expectedToday = jurorsWithNextDate.stream().distinct().toList().size();
 
         boolean skip = true;
