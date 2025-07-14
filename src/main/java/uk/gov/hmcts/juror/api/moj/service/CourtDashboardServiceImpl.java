@@ -171,7 +171,8 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
             .toList();
 
         jurorsWithNextDate.addAll(utilisationJurors);
-        int expectedToday = jurorsWithNextDate.stream().distinct().toList().size();
+        
+        final int expectedToday = jurorsWithNextDate.stream().distinct().toList().size();
 
         boolean skip = true;
 
@@ -221,10 +222,14 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
 
         // get jurors with confirmed attendance today, this does not include jurors on trials
         // but does include non-attendance
-        int confirmedAttendances = appearanceService.getConfirmedAttendanceCountAtCourt(locCode, LocalDate.now(),
+        final int confirmedAttendances = appearanceService.getConfirmedAttendanceCountAtCourt(locCode, LocalDate.now(),
                                                                                         true, false);
 
+        // get the absent jurors today, those who have not checked in or checked out
+        final int absentToday = appearanceService.getAbsentCountAtCourt(locCode, LocalDate.now(), LocalDate.now());
+
         attendanceStatsToday.setNotCheckedIn(expectedToday - (confirmedAttendances
+                                                            + absentToday
                                                             + attendanceStatsToday.getCheckedIn()
                                                             + attendanceStatsToday.getCheckedOut()
                                                             + attendanceStatsToday.getOnTrials()));
