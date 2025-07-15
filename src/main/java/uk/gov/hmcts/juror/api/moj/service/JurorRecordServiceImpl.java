@@ -51,10 +51,13 @@ import uk.gov.hmcts.juror.api.moj.controller.response.PendingJurorsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorHistoryResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorPaymentsResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
+import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.ContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
 import uk.gov.hmcts.juror.api.moj.domain.FilterJurorRecord;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
+import uk.gov.hmcts.juror.api.moj.domain.FormAttribute;
+import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.IContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -239,11 +242,23 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             addressChanged = true;
         }
 
-
         // Log address change in history if updated PDET CODE ADDRESS OTHER
         if (addressChanged) {
             jurorHistoryService.createEditChangeOfPersonalDetailsHistory(myJurorPool, jurorNumber,
                                  myJurorPool.getPool().getPoolNumber(), "Address Changed");
+
+            // check for and update any pending letters with new address details
+            List<BulkPrintData> queuedLetters = printDataService.getLettersQueuedForJuror(jurorNumber);
+
+            List<FormCode> formCodes  = queuedLetters.stream()
+                .map(BulkPrintData::getFormAttribute)
+                .map(formAttribute -> FormCode.getFormCode(formAttribute.getFormType()))
+                .toList();
+
+            printDataService.removeQueuedLetterForJuror(myJurorPool, formCodes);
+
+            formCodes.forEach( formCode -> formCode.getLetterPrinter().accept(printDataService, myJurorPool));
+
         }
 
         juror.setTitle(requestDto.getTitle());
