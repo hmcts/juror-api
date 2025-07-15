@@ -779,9 +779,14 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         }
 
         if (checkForUpdatedValue(jurorPaperResponse.getResidency(), eligibility.getLivedConsecutive(),
-            RESIDENCY, jurorNumber
+                                 RESIDENCY, jurorNumber
         )) {
             jurorPaperResponse.setResidency(eligibility.getLivedConsecutive());
+        }
+
+        if (checkForUpdatedValue(jurorPaperResponse.getResidencyDetail(), eligibility.getLivedConsecutiveDetails(),
+            RESIDENCY_DETAILS, jurorNumber
+        )) {
             jurorPaperResponse.setResidencyDetail(eligibility.getLivedConsecutiveDetails());
         }
 
@@ -789,22 +794,31 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
             MENTAL_HEALTH, jurorNumber
         )) {
             jurorPaperResponse.setMentalHealthAct(eligibility.getMentalHealthAct());
-            jurorPaperResponse.setMentalHealthActDetails(eligibility.getMentalHealthActDetails());
+        }
 
+        if (checkForUpdatedValue(jurorPaperResponse.getMentalHealthActDetails(),
+                                 eligibility.getMentalHealthActDetails(),
+                                 MENTAL_HEALTH_DETAILS, jurorNumber
+        )) {
+            // the same details are used for both mental health act and mental health capacity with a delimiter
+            jurorPaperResponse.setMentalHealthActDetails(eligibility.getMentalHealthActDetails());
         }
 
         if (checkForUpdatedValue(jurorPaperResponse.getMentalHealthCapacity(), eligibility.getMentalHealthCapacity(),
             MENTAL_CAPACITY, jurorNumber
         )) {
             jurorPaperResponse.setMentalHealthCapacity(eligibility.getMentalHealthCapacity());
-            // the same details are used for both mental health act and mental health capacity with a delimiter
-            jurorPaperResponse.setMentalHealthActDetails(eligibility.getMentalHealthActDetails());
         }
 
         if (checkForUpdatedValue(jurorPaperResponse.getBail(), eligibility.getOnBail(),
             BAIL, jurorNumber
         )) {
             jurorPaperResponse.setBail(eligibility.getOnBail());
+        }
+
+        if (checkForUpdatedValue(jurorPaperResponse.getBailDetails(), eligibility.getOnBailDetails(),
+                                 BAIL_DETAILS, jurorNumber
+        )) {
             jurorPaperResponse.setBailDetails(eligibility.getOnBailDetails());
         }
 
@@ -812,6 +826,11 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
             CONVICTION, jurorNumber
         )) {
             jurorPaperResponse.setConvictions(eligibility.getConvicted());
+        }
+
+        if (checkForUpdatedValue(jurorPaperResponse.getConvictionsDetails(), eligibility.getConvictedDetails(),
+                                 CONVICTION_DETAILS, jurorNumber
+        )) {
             jurorPaperResponse.setConvictionsDetails(eligibility.getConvictedDetails());
         }
 
@@ -878,7 +897,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
     }
 
-    private boolean checkForUpdatedValue(Boolean currentValue, Boolean newValue, String fieldName, String jurorNumber) {
+    private <T> boolean checkForUpdatedValue(T currentValue, T newValue, String fieldName, String jurorNumber) {
         if ((currentValue != null && !currentValue.equals(newValue))
             || (currentValue == null && newValue != null)) {
             log.debug(String.format(RESPONSE_UPDATED_LOG,
