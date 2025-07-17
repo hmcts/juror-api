@@ -544,6 +544,60 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         });
     }
 
+    // need a new test where address details are updated but there are pending letters for the juror
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_editJurorRecord.sql"})
+    void editJurorAddressHappyPath() {
+        String jurorNumber = "123456789";
+
+        EditJurorRecordRequestDto requestDto = createEditJurorRequestUpdateAddressOnly();
+
+        ResponseEntity<?> response =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PATCH,
+                                                      URI.create("/api/v1/moj/juror-record/edit-juror/" + jurorNumber)), String.class);
+
+        assertThat(response.getStatusCode())
+            .as("Expect the HTTP status to be NO CONTENT")
+            .isEqualTo(HttpStatus.NO_CONTENT);
+        executeInTransaction(() -> {
+            Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
+
+        //Check data has been changed and now matches what was in the dto.
+        assertThat(juror.getAddressLine1()).isEqualTo(requestDto.getAddressLineOne());
+        assertThat(juror.getAddressLine2()).isEqualTo(requestDto.getAddressLineTwo());
+        assertThat(juror.getAddressLine3()).isEqualTo(requestDto.getAddressLineThree());
+        assertThat(juror.getAddressLine4()).isEqualTo(requestDto.getAddressTown());
+        assertThat(juror.getAddressLine5()).isEqualTo(requestDto.getAddressCounty());
+        assertThat(juror.getPostcode()).isEqualTo(requestDto.getAddressPostcode());
+        });
+
+        // read the bulk print data records
+        List<BulkPrintData> bulkPrintDataList = bulkPrintDataRepository.findAll();
+        assertThat(bulkPrintDataList).isNotNull();
+        assertThat(bulkPrintDataList.size()).as("Expect the bulk print data to have 4 records").isEqualTo(4);
+
+        // validate one of the records for the new address details
+        BulkPrintData bulkPrintData = bulkPrintDataList.get(0);
+        assertThat(bulkPrintData.getJurorNo()).isEqualTo(jurorNumber);
+
+        String detailRec = bulkPrintData.getDetailRec();
+        // check that the address line one is in the detail record
+        assertThat(detailRec).contains(requestDto.getAddressLineOne().toUpperCase());
+        // check that the address line two is in the detail record
+        assertThat(detailRec).contains(requestDto.getAddressLineTwo().toUpperCase());
+        // check that the address line three is in the detail record
+        assertThat(detailRec).contains(requestDto.getAddressLineThree().toUpperCase());
+        // check that the address town is in the detail record
+        assertThat(detailRec).contains(requestDto.getAddressTown().toUpperCase());
+        // check that the address county is in the detail record
+        assertThat(detailRec).contains(requestDto.getAddressCounty().toUpperCase());
+        // check that the address postcode is in the detail record
+        assertThat(detailRec).contains(requestDto.getAddressPostcode().toUpperCase());
+
+    }
+
+
+
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_editJurorRecord.sql"})
     void editJurorDetailsWrongAccess() throws Exception {
@@ -6122,6 +6176,28 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         return editJurorRecordRequestDto;
     }
 
+
+    private EditJurorRecordRequestDto createEditJurorRequestUpdateAddressOnly() {
+        EditJurorRecordRequestDto editJurorRecordRequestDto = new EditJurorRecordRequestDto();
+
+        // current mandatory details
+        editJurorRecordRequestDto.setFirstName("FNAME");
+        editJurorRecordRequestDto.setLastName("LNAME");
+        editJurorRecordRequestDto.setDateOfBirth(LocalDate.parse("1989-03-31"));
+
+        // new address details
+
+        // address line one is mandatory
+        editJurorRecordRequestDto.setAddressLineOne("123 STREET NAME");
+        editJurorRecordRequestDto.setAddressTown("addressTown");
+        editJurorRecordRequestDto.setAddressLineTwo("addressLineTwo");
+        editJurorRecordRequestDto.setAddressLineThree("addressLineThree");
+        editJurorRecordRequestDto.setAddressCounty("addressCounty");
+        // postcode is mandatory
+        editJurorRecordRequestDto.setAddressPostcode("M24 4BP");
+
+        return editJurorRecordRequestDto;
+    }
 
     @SneakyThrows
     private void setAuthorization(String login, String owner, UserType userType, Role... roles) {
