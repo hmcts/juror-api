@@ -73,6 +73,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
     private static final String PHONE_NO = "phoneNumber";
     private static final String ALT_PHONE_NO = "altPhoneNumber";
     private static final String EMAIL = "email";
+    private static final String DATE_OF_BIRTH = "dateOfBirth";
     private final JurorResponseAuditRepositoryMod jurorResponseAuditRepositoryMod;
     @Autowired
     @Lazy
@@ -547,9 +548,9 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
                 juror.getJurorNumber()
             );
             BeanUtils.copyProperties(updatedDetails, juror, PHONE_NO, ALT_PHONE_NO, EMAIL, TITLE,
-                FIRST_NAME, LAST_NAME);
+                FIRST_NAME, LAST_NAME, DATE_OF_BIRTH);
         } else {
-            BeanUtils.copyProperties(updatedDetails, juror, TITLE, FIRST_NAME, LAST_NAME);
+            BeanUtils.copyProperties(updatedDetails, juror, TITLE, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH);
             applyPhoneNumberRules(juror, updatedDetails);
         }
 
@@ -560,7 +561,12 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
         juror.setAddressLine4(updatedDetails.getAddressLine4());
         juror.setAddressLine5(updatedDetails.getAddressLine5());
         juror.setPostcode(updatedDetails.getPostcode());
-        juror.setDateOfBirth(updatedDetails.getDateOfBirth());
+
+        // check to make sure we have a valid date of birth and not overwriting juror record
+        if (juror.getDateOfBirth() == null && updatedDetails.getDateOfBirth() != null) {
+            log.debug("Juror: {}. Setting date of birth from summons reply", juror.getJurorNumber());
+            juror.setDateOfBirth(updatedDetails.getDateOfBirth());
+        }
 
         // check for a potential name change and store the pending change data for future approval
         if (jurorAuditChangeService.hasNameChanged(updatedDetails.getFirstName(), juror.getFirstName(),
