@@ -56,7 +56,6 @@ import uk.gov.hmcts.juror.api.moj.domain.ContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
 import uk.gov.hmcts.juror.api.moj.domain.FilterJurorRecord;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
-import uk.gov.hmcts.juror.api.moj.domain.FormAttribute;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.IContactCode;
@@ -291,7 +290,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         // Log address change in history if updated PDET CODE ADDRESS OTHER
         if (addressChanged) {
             jurorHistoryService.createEditChangeOfPersonalDetailsHistory(myJurorPool, jurorNumber,
-                                                                         myJurorPool.getPool().getPoolNumber(), "Address Changed");
+                myJurorPool.getPool().getPoolNumber(), "Address Changed");
 
             // check for and update any pending letters with new address details
             List<BulkPrintData> queuedLetters = printDataService.getLettersQueuedForJuror(jurorNumber);
@@ -311,10 +310,10 @@ public class JurorRecordServiceImpl implements JurorRecordService {
                         log.info("Reprinting queued letter {} for juror {}", formCode, jurorNumber);
                         formCode.getLetterPrinter().accept(printDataService, myJurorPool);
                     } catch (Exception e) {
-                        log.info("Failed to update queued letter {} for juror {}: {}", formCode, jurorNumber, e.getMessage());
-                        // There could be queued letters that failed to print, but we do not want to stop the update process.
-                        // For example, the juror might be in the wrong state for the letter
-                        printDataService.removeQueuedLetterForJuror(myJurorPool, List.of(formCode));
+                        // There could be queued letters that failed to print, but we do not want to stop the
+                        // update process. For example, the juror might be in the wrong state for the letter.
+                        log.info("Failed to update queued letter {} for juror {}: {}", formCode, jurorNumber,
+                                 e.getMessage());
                     }
                 });
 

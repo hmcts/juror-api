@@ -554,7 +554,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<?> response =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PATCH,
-                                                      URI.create("/api/v1/moj/juror-record/edit-juror/" + jurorNumber)), String.class);
+                URI.create("/api/v1/moj/juror-record/edit-juror/" + jurorNumber)), String.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP status to be NO CONTENT")
@@ -562,37 +562,37 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         executeInTransaction(() -> {
             Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
 
-        //Check data has been changed and now matches what was in the dto.
-        assertThat(juror.getAddressLine1()).isEqualTo(requestDto.getAddressLineOne());
-        assertThat(juror.getAddressLine2()).isEqualTo(requestDto.getAddressLineTwo());
-        assertThat(juror.getAddressLine3()).isEqualTo(requestDto.getAddressLineThree());
-        assertThat(juror.getAddressLine4()).isEqualTo(requestDto.getAddressTown());
-        assertThat(juror.getAddressLine5()).isEqualTo(requestDto.getAddressCounty());
-        assertThat(juror.getPostcode()).isEqualTo(requestDto.getAddressPostcode());
+            //Check data has been changed and now matches what was in the dto.
+            assertThat(juror.getAddressLine1()).isEqualTo(requestDto.getAddressLineOne());
+            assertThat(juror.getAddressLine2()).isEqualTo(requestDto.getAddressLineTwo());
+            assertThat(juror.getAddressLine3()).isEqualTo(requestDto.getAddressLineThree());
+            assertThat(juror.getAddressLine4()).isEqualTo(requestDto.getAddressTown());
+            assertThat(juror.getAddressLine5()).isEqualTo(requestDto.getAddressCounty());
+            assertThat(juror.getPostcode()).isEqualTo(requestDto.getAddressPostcode());
+
+            // read the bulk print data records
+            List<BulkPrintData> bulkPrintDataList = bulkPrintDataRepository.findAll();
+            assertThat(bulkPrintDataList).isNotNull();
+            assertThat(bulkPrintDataList.size()).as("Expect the bulk print data to have 4 records").isEqualTo(4);
+
+            // validate one of the records for the new address details
+            BulkPrintData bulkPrintData = bulkPrintDataList.get(0);
+            assertThat(bulkPrintData.getJurorNo()).isEqualTo(jurorNumber);
+
+            String detailRec = bulkPrintData.getDetailRec();
+            // check that the address line one is in the detail record
+            assertThat(detailRec).contains(requestDto.getAddressLineOne().toUpperCase());
+            // check that the address line two is in the detail record
+            assertThat(detailRec).contains(requestDto.getAddressLineTwo().toUpperCase());
+            // check that the address line three is in the detail record
+            assertThat(detailRec).contains(requestDto.getAddressLineThree().toUpperCase());
+            // check that the address town is in the detail record
+            assertThat(detailRec).contains(requestDto.getAddressTown().toUpperCase());
+            // check that the address county is in the detail record
+            assertThat(detailRec).contains(requestDto.getAddressCounty().toUpperCase());
+            // check that the address postcode is in the detail record
+            assertThat(detailRec).contains(requestDto.getAddressPostcode().toUpperCase());
         });
-
-        // read the bulk print data records
-        List<BulkPrintData> bulkPrintDataList = bulkPrintDataRepository.findAll();
-        assertThat(bulkPrintDataList).isNotNull();
-        assertThat(bulkPrintDataList.size()).as("Expect the bulk print data to have 4 records").isEqualTo(4);
-
-        // validate one of the records for the new address details
-        BulkPrintData bulkPrintData = bulkPrintDataList.get(0);
-        assertThat(bulkPrintData.getJurorNo()).isEqualTo(jurorNumber);
-
-        String detailRec = bulkPrintData.getDetailRec();
-        // check that the address line one is in the detail record
-        assertThat(detailRec).contains(requestDto.getAddressLineOne().toUpperCase());
-        // check that the address line two is in the detail record
-        assertThat(detailRec).contains(requestDto.getAddressLineTwo().toUpperCase());
-        // check that the address line three is in the detail record
-        assertThat(detailRec).contains(requestDto.getAddressLineThree().toUpperCase());
-        // check that the address town is in the detail record
-        assertThat(detailRec).contains(requestDto.getAddressTown().toUpperCase());
-        // check that the address county is in the detail record
-        assertThat(detailRec).contains(requestDto.getAddressCounty().toUpperCase());
-        // check that the address postcode is in the detail record
-        assertThat(detailRec).contains(requestDto.getAddressPostcode().toUpperCase());
 
     }
 
