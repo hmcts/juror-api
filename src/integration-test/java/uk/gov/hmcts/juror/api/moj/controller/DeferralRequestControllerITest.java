@@ -19,8 +19,10 @@ import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralRequestDto;
 import uk.gov.hmcts.juror.api.moj.domain.DeferralDecision;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 
 import java.net.URI;
@@ -42,6 +44,8 @@ public class DeferralRequestControllerITest extends AbstractIntegrationTest {
     private TestRestTemplate restTemplate;
     @Autowired
     private JurorPaperResponseRepositoryMod paperResponseRepository;
+    @Autowired
+    private JurorDigitalResponseRepositoryMod digitalResponseRepository;
     @Autowired
     private JurorRepository jurorRepository;
 
@@ -280,6 +284,39 @@ public class DeferralRequestControllerITest extends AbstractIntegrationTest {
             .as("Expect the juror to keep DOB in juror record")
             .extracting(Juror::getDateOfBirth)
             .isEqualTo(LocalDate.of(1989, 3, 31));
+
+    }
+
+
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/DeferralRequestController_createPoolAndResponse.sql"})
+    public void grantDeferralHappyPathBureauUserOpenDigitalResponseDobOverwritten() {
+        String jurorNumber = "987654322";
+        String deferralReason = "B";
+
+        DeferralRequestDto requestDto = createGrantDeferralDecisionDto(jurorNumber, deferralReason);
+
+        ResponseEntity<DeferralRequestDto> response =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PUT,
+                                                      URI.create("/api/v1/moj/deferral-response/juror/" + jurorNumber)), DeferralRequestDto.class);
+
+        assertThat(response.getStatusCode())
+            .as("Expect the HTTP PUT request to be OK")
+            .isEqualTo(HttpStatus.OK);
+
+        // check if digital response record has been closed
+        DigitalResponse digitalResponse = digitalResponseRepository.findByJurorNumber(jurorNumber);
+        assertThat(digitalResponse).isNotNull()
+            .as("Expect the paper response to be closed")
+            .extracting(DigitalResponse::getProcessingStatus)
+            .isEqualTo(ProcessingStatus.CLOSED);
+
+        Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
+        assertThat(juror).isNotNull()
+            .as("Expect the juror to have DOB in digital response")
+            .extracting(Juror::getDateOfBirth)
+            .isEqualTo(LocalDate.of(1995, 8, 24));
 
     }
 

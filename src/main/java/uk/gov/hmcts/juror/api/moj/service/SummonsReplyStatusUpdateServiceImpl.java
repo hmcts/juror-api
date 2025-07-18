@@ -562,9 +562,14 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
         juror.setAddressLine5(updatedDetails.getAddressLine5());
         juror.setPostcode(updatedDetails.getPostcode());
 
-        // check to make sure we have a valid date of birth and not overwriting juror record
-        if (juror.getDateOfBirth() == null && updatedDetails.getDateOfBirth() != null) {
-            log.debug("Juror: {}. Setting date of birth from summons reply", juror.getJurorNumber());
+        if (updatedDetails instanceof PaperResponse) {
+            // check to make sure we have a valid date of birth and not overwriting juror record
+            if (juror.getDateOfBirth() == null && updatedDetails.getDateOfBirth() != null) {
+                log.debug("Juror: {}. Setting date of birth from Paper summons reply", juror.getJurorNumber());
+                juror.setDateOfBirth(updatedDetails.getDateOfBirth());
+            }
+        } else {
+            // For digital responses, we always set the date of birth
             juror.setDateOfBirth(updatedDetails.getDateOfBirth());
         }
 
