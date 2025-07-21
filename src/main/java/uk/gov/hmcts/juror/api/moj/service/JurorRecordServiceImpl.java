@@ -309,6 +309,9 @@ public class JurorRecordServiceImpl implements JurorRecordService {
                     try {
                         log.info("Reprinting queued letter {} for juror {}", formCode, jurorNumber);
                         formCode.getLetterPrinter().accept(printDataService, myJurorPool);
+
+                        removeRsupHistory(jurorNumber, formCode);
+
                     } catch (Exception e) {
                         // There could be queued letters that failed to print, but we do not want to stop the
                         // update process. For example, the juror might be in the wrong state for the letter.
@@ -317,6 +320,23 @@ public class JurorRecordServiceImpl implements JurorRecordService {
                     }
                 });
 
+            }
+        }
+    }
+
+    private void removeRsupHistory(String jurorNumber, FormCode formCode) {
+        // Need to remove any unnecessary RSUP history entries
+        if (formCode.equals(FormCode.ENG_SUMMONS)
+            || formCode.equals(FormCode.BI_SUMMONS)) {
+            List<JurorHistory> jurorHistories = jurorHistoryRepository
+                .findByJurorNumberAndDateCreatedGreaterThanEqual(
+                    jurorNumber,
+                    LocalDateTime.now().minusSeconds(10));
+
+            if (!jurorHistories.isEmpty()) {
+                jurorHistories.stream()
+                    .filter(jh -> jh.getHistoryCode().equals(HistoryCodeMod.SUMMONS_REPRINTED))
+                    .findFirst().ifPresent(jurorHistoryRepository::delete);
             }
         }
     }
