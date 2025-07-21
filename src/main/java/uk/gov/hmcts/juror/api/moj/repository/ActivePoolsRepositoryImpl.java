@@ -28,6 +28,8 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Objects;
 
+import static org.hibernate.query.results.Builders.fetch;
+
 
 /**
  * Custom Repository implementation for the ActivePools at court entity.

@@ -53,4 +53,24 @@ public interface JurorResponseService {
     void setResponseProcessingStatusToClosed(String jurorNumber);
 
     int getOpenSummonsRepliesCount(String courtCode);
+
+    int getSummonsRepliesCount(String locCode);
+
+    int getOpenSummonsRepliesFourWeeksCount(String locCode);
+
+    int getOpenSummonsRepliesStandardCount(String locCode);
+
+    int getOpenSummonsRepliesOverdueCount(String locCode);
+
+    int getOpenSummonsRepliesAssignedCount(String locCode);
+
+    int getOpenSummonsRepliesUnassignedCount(String locCode);
+
+    int getDeferredJurorsStartDateNextWeekCount(String locCode);
+
+    int getPoolsNotYetSummonedCount(String locCode);
+
+    int getPoolsTransferringNextWeekCount(String locCode);
+
+
 }
