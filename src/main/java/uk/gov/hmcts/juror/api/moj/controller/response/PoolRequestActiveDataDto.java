@@ -60,4 +60,9 @@ public class PoolRequestActiveDataDto {
     @Schema(name = "Type of Pool Requested",
         description = "The Type of the pool being requested, e.g. Crown Court")
     private String poolType;
+
+    @JsonProperty("required")
+    @Schema(name = "Required",
+        description = "Indicates if the pool is required for the court to operate, e.g. 'Yes' or 'No'")
+    private int required;
 }

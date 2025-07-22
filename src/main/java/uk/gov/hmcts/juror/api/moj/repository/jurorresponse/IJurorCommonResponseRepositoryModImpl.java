@@ -299,25 +299,18 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
     public int getPoolsNotYetSummonedCount(String locCode) {
         return getJpaQueryFactory()
             .select(
-                QCombinedJurorResponse.combinedJurorResponse,
-                QJurorPool.jurorPool,
                 QPoolRequest.poolRequest)
-            .from(QCombinedJurorResponse.combinedJurorResponse)
-            .join(QJurorPool.jurorPool)
-            .on(QJurorPool.jurorPool.juror.eq(QCombinedJurorResponse.combinedJurorResponse.juror))
-            .join(QPoolRequest.poolRequest)
-            .on(QPoolRequest.poolRequest.eq(QJurorPool.jurorPool.pool))
+            .from(QPoolRequest.poolRequest)
+            .leftJoin(QJurorPool.jurorPool)
+            .on(QPoolRequest.poolRequest.poolNumber.eq(QJurorPool.jurorPool.pool.poolNumber))
             .where(QPoolRequest.poolRequest.owner.eq(SecurityUtil.BUREAU_OWNER))
-            .where(QPoolRequest.poolRequest.poolType.description.in(PoolRequestUtils.POOL_TYPES_DESC_LIST))
-            .fetch().size();
-
-    }
+            .where(QJurorPool.jurorPool.pool.poolNumber.isNull()).fetch().size();
+  }
 
     @Override
     public int getPoolsTransferringNextWeekCount(String locCode) {
         return getJpaQueryFactory()
             .select(
-                QCombinedJurorResponse.combinedJurorResponse,
                 QJurorPool.jurorPool,
                 QPoolRequest.poolRequest)
             .from(QCombinedJurorResponse.combinedJurorResponse)
@@ -329,9 +322,6 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
             .where(
                 QCombinedJurorResponse.combinedJurorResponse.dateReceived
                     .between(LocalDateTime.now(), LocalDateTime.now().plusWeeks(1)))
-            .where(QPoolRequest.poolRequest.newRequest.eq('N'))
-            .where(QPoolRequest.poolRequest.numberRequested.ne(0))
-            .where(QPoolRequest.poolRequest.poolType.description.in(PoolRequestUtils.POOL_TYPES_DESC_LIST))
             .fetch().size();
     }
 }
