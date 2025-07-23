@@ -13,7 +13,6 @@ import uk.gov.hmcts.juror.api.moj.domain.QCurrentlyDeferred;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QCombinedJurorResponse;
-import uk.gov.hmcts.juror.api.moj.utils.PoolRequestUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.Collection;
@@ -21,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Slf4j
 public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonResponseRepositoryMod {
@@ -309,19 +309,15 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
 
     @Override
     public int getPoolsTransferringNextWeekCount(String locCode) {
+       LocalDate weekDateBeforeTransfer = LocalDate.now().plusDays(18);
         return getJpaQueryFactory()
             .select(
-                QJurorPool.jurorPool,
                 QPoolRequest.poolRequest)
-            .from(QCombinedJurorResponse.combinedJurorResponse)
+            .from(QPoolRequest.poolRequest)
             .join(QJurorPool.jurorPool)
-            .on(QJurorPool.jurorPool.juror.eq(QCombinedJurorResponse.combinedJurorResponse.juror))
-            .join(QPoolRequest.poolRequest)
-            .on(QPoolRequest.poolRequest.eq(QJurorPool.jurorPool.pool))
+            .on(QPoolRequest.poolRequest.poolNumber.eq(QJurorPool.jurorPool.pool.poolNumber))
             .where(QPoolRequest.poolRequest.owner.eq(SecurityUtil.BUREAU_OWNER))
-            .where(
-                QCombinedJurorResponse.combinedJurorResponse.dateReceived
-                    .between(LocalDateTime.now(), LocalDateTime.now().plusWeeks(1)))
-            .fetch().size();
+            .where(QJurorPool.jurorPool.pool.poolNumber.isNotNull())
+            .where(QPoolRequest.poolRequest.returnDate.eq(weekDateBeforeTransfer)).fetch().size();
     }
 }
