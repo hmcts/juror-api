@@ -275,23 +275,11 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
     @Override
     public int getDeferredJurorsStartDateNextWeek(String locCode) {
     return getJpaQueryFactory()
-        .select(QCombinedJurorResponse.combinedJurorResponse)
-        .from(QCombinedJurorResponse.combinedJurorResponse)
-        .join(QJurorPool.jurorPool)
-        .on(QJurorPool.jurorPool.juror.eq(QCombinedJurorResponse.combinedJurorResponse.juror))
-        .join(QCurrentlyDeferred.currentlyDeferred)
-        .on(
-            QCurrentlyDeferred.currentlyDeferred.jurorNumber.eq(
-                QCombinedJurorResponse.combinedJurorResponse.juror.jurorNumber))
-        .where(QCombinedJurorResponse.combinedJurorResponse.deferral.eq(true))
+        .select(QCurrentlyDeferred.currentlyDeferred)
         .where(QCurrentlyDeferred.currentlyDeferred.owner.eq(SecurityUtil.BUREAU_OWNER))
         .where(
             QCurrentlyDeferred.currentlyDeferred.deferredTo.between(
                 LocalDateTime.now().toLocalDate(), LocalDateTime.now().plusWeeks(1).toLocalDate()))
-        .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.DEFERRED))
-        .where(QJurorPool.jurorPool.isActive.isTrue())
-        .where(QJurorPool.jurorPool.owner.eq(SecurityUtil.BUREAU_OWNER))
-        .where(QCombinedJurorResponse.combinedJurorResponse.juror.bureauTransferDate.isNull())
         .fetch()
         .size();
     }
