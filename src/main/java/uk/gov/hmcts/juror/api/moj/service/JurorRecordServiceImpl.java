@@ -1346,6 +1346,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             if (dueInCourtDate.isAfter(LocalDate.now(clock))) {
                 log.debug("Juror {} is due in court after today, printing confirmation letter", jurorNumber);
                 printDataService.printConfirmationLetter(jurorPool);
+                jurorHistoryService.createConfirmationLetterHistory(jurorPool, "Confirmation Letter Auto");
             } else {
                 // if the juror is due in court already, then don't print confirmation letter
                 log.debug("Juror {} is due in court already, skipping confirmation letter", jurorNumber);
