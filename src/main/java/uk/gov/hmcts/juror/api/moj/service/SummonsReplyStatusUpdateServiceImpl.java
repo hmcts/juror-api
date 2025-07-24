@@ -44,6 +44,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
+
 /**
  * Implementation of operations for updating the status of a Juror's response by a Bureau officer.
  */
@@ -112,7 +115,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
 
         // if response is closed already and new processing status is closed (responded) and juror is not
         // responded then update the juror status to responded and return
-        if (ProcessingStatus.CLOSED == status && Boolean.TRUE.equals(paperResponse.getProcessingComplete())
+        if (ProcessingStatus.CLOSED == status && TRUE.equals(paperResponse.getProcessingComplete())
             && jurorPool.getStatus().getStatus() != IJurorStatus.RESPONDED) {
             log.info("Juror {} has already responded, marking as responded", jurorNumber);
             updateJurorAsResponded(jurorNumber, payload.getLogin());
@@ -130,7 +133,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
         }
 
         // merge the changes if required/allowed
-        if (Boolean.TRUE.equals(paperResponse.getProcessingComplete())) {
+        if (TRUE.equals(paperResponse.getProcessingComplete())) {
             log.debug("Unable to update the response status for juror {} as response processing is already complete.",
                 jurorNumber);
             throw new JurorPaperResponseException.JurorPaperResponseAlreadyExists(jurorNumber);
@@ -178,7 +181,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
         final String auditorUsername = payload.getLogin();
         // if response is closed already and new processing status is closed (responded) and juror is not
         // responded then update the juror status to responded and return
-        if (ProcessingStatus.CLOSED == status && Boolean.TRUE.equals(jurorResponse.getProcessingComplete())
+        if (ProcessingStatus.CLOSED == status && TRUE.equals(jurorResponse.getProcessingComplete())
             && jurorPool.getStatus().getStatus() != IJurorStatus.RESPONDED) {
             log.info("Juror {} has already responded, marking as responded", jurorNumber);
             updateJurorAsResponded(jurorNumber, auditorUsername);
@@ -197,7 +200,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
         jurorResponse.setProcessingStatus(jurorResponseAuditRepositoryMod, status);
 
         // merge the changes if required/allowed
-        if (Boolean.TRUE.equals(jurorResponse.getProcessingComplete())) {
+        if (TRUE.equals(jurorResponse.getProcessingComplete())) {
             log.debug(
                 "Unable to update the response status for juror {} as response processing is already complete.",
                 jurorNumber
@@ -261,7 +264,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
 
         log.trace("Juror: {}. Enter mergeJurorResponseImplementation", jurorNumber);
 
-        if (Boolean.TRUE.equals(jurorResponse.getProcessingComplete())) {
+        if (TRUE.equals(jurorResponse.getProcessingComplete())) {
             log.info("Juror: {}. Summons reply has not been merged because it has already been processed", jurorNumber);
             return;
         }
@@ -285,7 +288,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
         markSummonReplyAsCompleted(jurorResponse);
 
         changedPropertiesMap.keySet().forEach(propName -> {
-            if (Boolean.TRUE.equals(changedPropertiesMap.get(propName))) {
+            if (TRUE.equals(changedPropertiesMap.get(propName))) {
                 jurorAuditChangeService.recordPersonalDetailsHistory(propName, juror, jurorPool.getPoolNumber(),
                     auditorUsername);
             }
@@ -342,6 +345,68 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
                 paperResponse.getJurorNumber()
             );
             throw new JurorPaperResponseException.JurorPaperResponseMissingMandatoryFields();
+        }
+
+        validateEligibilityDetails(paperResponse);
+    }
+
+    private void validateEligibilityDetails(PaperResponse paperResponse) {
+        validateResidencyDetails(paperResponse);
+        validateConvictionsDetails(paperResponse);
+        validateMentalHealthDetails(paperResponse);
+        validateBailDetails(paperResponse);
+    }
+
+    private static void validateBailDetails(PaperResponse paperResponse) {
+        if (TRUE.equals(paperResponse.getBail()) && (paperResponse.getBailDetails() == null
+            || paperResponse.getBailDetails().isEmpty())) {
+            log.info(
+                "Summons reply for Juror {} is missing mandatory bail details",
+                paperResponse.getJurorNumber()
+            );
+            throw new MojException.BusinessRuleViolation(
+                "Missing mandatory bail details",
+                MojException.BusinessRuleViolation.ErrorCode.MISSING_ELIGIBILITY_DETAILS);
+        }
+    }
+
+
+    private static void validateMentalHealthDetails(PaperResponse paperResponse) {
+        if (TRUE.equals(paperResponse.getMentalHealthAct()) && (paperResponse.getMentalHealthActDetails() == null
+            || paperResponse.getMentalHealthActDetails().isEmpty())) {
+            log.info(
+                "Summons reply for Juror {} is missing mandatory mental health act details",
+                paperResponse.getJurorNumber()
+            );
+            throw new MojException.BusinessRuleViolation(
+                "Missing mandatory mental health details",
+                MojException.BusinessRuleViolation.ErrorCode.MISSING_ELIGIBILITY_DETAILS);
+        }
+    }
+
+    private static void validateConvictionsDetails(PaperResponse paperResponse) {
+        if (TRUE.equals(paperResponse.getConvictions()) && (paperResponse.getConvictionsDetails() == null
+            || paperResponse.getConvictionsDetails().isEmpty())) {
+            log.info(
+                "Summons reply for Juror {} is missing mandatory conviction details",
+                paperResponse.getJurorNumber()
+            );
+            throw new MojException.BusinessRuleViolation(
+                "Missing mandatory convictions details",
+                MojException.BusinessRuleViolation.ErrorCode.MISSING_ELIGIBILITY_DETAILS);
+        }
+    }
+
+    private static void validateResidencyDetails(PaperResponse paperResponse) {
+        if (FALSE.equals(paperResponse.getResidency()) && (paperResponse.getResidencyDetail() == null
+            || paperResponse.getResidencyDetail().isEmpty())) {
+            log.info(
+                "Summons reply for Juror {} is missing mandatory residency details",
+                paperResponse.getJurorNumber()
+            );
+            throw new MojException.BusinessRuleViolation(
+                "Missing mandatory residency details",
+                MojException.BusinessRuleViolation.ErrorCode.MISSING_ELIGIBILITY_DETAILS);
         }
     }
 
@@ -467,12 +532,12 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
 
                             @Override
                             public boolean isContactJurorByEmail() {
-                                return Boolean.TRUE.equals(abstractJurorResponse.getJurorEmailDetails());
+                                return TRUE.equals(abstractJurorResponse.getJurorEmailDetails());
                             }
 
                             @Override
                             public boolean isContactJurorByPhone() {
-                                return Boolean.TRUE.equals(abstractJurorResponse.getJurorPhoneDetails());
+                                return TRUE.equals(abstractJurorResponse.getJurorPhoneDetails());
                             }
                         });
                 }
@@ -572,10 +637,10 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
         }
 
         // Derive the value for Welsh
-        if (Boolean.TRUE.equals(updatedDetails.getWelsh())
+        if (TRUE.equals(updatedDetails.getWelsh())
             && welshCourtLocationRepository.findByLocCode(locCode) != null) {
-            juror.setWelsh(Boolean.TRUE);
-        } else if (Boolean.TRUE.equals(updatedDetails.getWelsh())
+            juror.setWelsh(TRUE);
+        } else if (TRUE.equals(updatedDetails.getWelsh())
             && welshCourtLocationRepository.findByLocCode(locCode) == null) {
             log.trace("Unable to provide Welsh language communications as the selected court is not within Wales.");
             juror.setWelsh(null);
@@ -589,7 +654,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
 
     private void markSummonReplyAsCompleted(AbstractJurorResponse originalDetails) {
         log.trace("Juror: {}. Enter markSummonReplyAsCompleted", originalDetails.getJurorNumber());
-        originalDetails.setProcessingComplete(Boolean.TRUE);
+        originalDetails.setProcessingComplete(TRUE);
         originalDetails.setCompletedAt(LocalDateTime.now());
 
         if (originalDetails.getReplyType().getType().equals(ReplyMethod.PAPER.getDescription())) {

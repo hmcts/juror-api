@@ -51,18 +51,6 @@ public class DigitalResponse extends AbstractJurorResponse
     @Builder.Default
     private Boolean mentalHealthAct = Boolean.FALSE;
 
-    @Column(name = "residency_detail")
-    private String residencyDetail;
-
-    @Column(name = "mental_health_act_details")
-    private String mentalHealthActDetails;
-
-    @Column(name = "bail_details")
-    private String bailDetails;
-
-    @Column(name = "convictions_details")
-    private String convictionsDetails;
-
     @Column(name = "deferral_reason")
     private String deferralReason;
 
