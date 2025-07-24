@@ -65,7 +65,7 @@ public class BureauDashboardInfoController {
     @IsBureauUser
     @GetMapping("/pools-under-responded/")
     @Operation(summary = "Retrieves pools under responded information for bureau")
-    public ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> getActivePoolRequests(
+    public ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> getActivePoolUnderResponded(
         @CourtLocationCode @Size(min = 3, max = 3) @Valid String locCode,
         @RequestParam @Valid String tab,
         @RequestParam @Valid @Min(1) Integer pageNumber,
@@ -81,7 +81,7 @@ public class BureauDashboardInfoController {
             .pageLimit(pageLimit)
             .pageNumber(pageNumber)
             .build();
-        return ResponseEntity.ok().body(poolRequestService.getActivePoolRequests(filterQuery));
+        return ResponseEntity.ok().body(poolRequestService.getActivePoolUnderResponded(filterQuery));
     }
 }
 

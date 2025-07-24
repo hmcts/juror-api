@@ -11,4 +11,5 @@ import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 public interface IActivePoolsRepository {
 
     PaginatedList<PoolRequestActiveDataDto> getActivePoolRequests(ActivePoolFilterQuery filterQuery);
+    PaginatedList<PoolRequestActiveDataDto> getActivePoolUnderResponded(ActivePoolFilterQuery filterQuery);
 }
