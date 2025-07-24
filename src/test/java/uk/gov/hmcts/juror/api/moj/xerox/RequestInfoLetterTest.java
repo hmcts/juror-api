@@ -33,7 +33,7 @@ class RequestInfoLetterTest extends AbstractLetterTest {
         addEnglishField(additionalInformation.toUpperCase(), 210);
         addEnglishField("MR", 10);
         addEnglishField("FNAMEEIGHTTHREEONE", 20);
-        addEnglishField("LNAMEEIGHTTHREEONE", 20);
+        addEnglishField("LNAMEEIGHTTHREEONEFI", 20);
         addEnglishField("831 STREET NAME", 35);
         addEnglishField("ANYTOWN", 35);
         addEnglishField("JUROR_ADDRESS_3", 35);
@@ -43,6 +43,7 @@ class RequestInfoLetterTest extends AbstractLetterTest {
         addEnglishField("", 10);
         addEnglishField("641500541", 9);
         addEnglishField("JURY MANAGER", 30);
+        addEnglishField("LNAMEEIGHTTHREEONEFIVE", 25);
     }
 
     @Override
@@ -62,7 +63,7 @@ class RequestInfoLetterTest extends AbstractLetterTest {
         addWelshField(additionalInformation.toUpperCase(), 210);
         addWelshField("MR", 10);
         addWelshField("FNAMEEIGHTTHREEONE", 20);
-        addWelshField("LNAMEEIGHTTHREEONE", 20);
+        addWelshField("LNAMEEIGHTTHREEONEFI", 20);
         addWelshField("831 STREET NAME", 35);
         addWelshField("ANYTOWN", 35);
         addWelshField("JUROR_ADDRESS_3", 35);
@@ -72,6 +73,7 @@ class RequestInfoLetterTest extends AbstractLetterTest {
         addWelshField("", 10);
         addWelshField("641500541", 9);
         addWelshField("JURY MANAGER", 30);
+        addWelshField("LNAMEEIGHTTHREEONEFIVE", 25);
     }
 
 
