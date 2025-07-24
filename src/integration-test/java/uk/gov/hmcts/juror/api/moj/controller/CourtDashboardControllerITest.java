@@ -157,7 +157,8 @@ public class CourtDashboardControllerITest extends AbstractIntegrationTest {
             .isEqualTo(2);
         // one juror is also absent
 
-        CourtAttendanceInfoDto.AttendanceStatsLastSevenDays statsLastSevenDays = responseBody.getAttendanceStatsLastSevenDays();
+        CourtAttendanceInfoDto.AttendanceStatsLastSevenDays statsLastSevenDays =
+            responseBody.getAttendanceStatsLastSevenDays();
         assertThat(statsLastSevenDays.getExpected())
             .as("Expect the total attendances in the last 7 days to be between 30 and 40"
                 + "depending on the weekends and public holidays")
