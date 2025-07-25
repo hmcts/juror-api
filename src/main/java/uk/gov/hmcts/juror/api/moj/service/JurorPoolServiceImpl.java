@@ -15,6 +15,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -103,6 +104,17 @@ public class JurorPoolServiceImpl implements JurorPoolService {
     public JurorPool save(JurorPool jurorPool) {
         return jurorPoolRepository.save(jurorPool);
     }
+
+    @Override
+    public int getCountJurorsDueToAttendCourtNextWeek(String locCode, boolean reasonableAdjustments) {
+
+        LocalDate startDate = LocalDate.now().plusDays(1); // Start from tomorrow
+        LocalDate endDate = startDate.plusDays(6); // Up to 7 days from tomorrow
+
+        return jurorPoolRepository
+            .getCountJurorsDueToAttendCourt(locCode, startDate, endDate, reasonableAdjustments);
+    }
+
 
     private List<JurorPool> getJurorPools(String locCode, String jurorNumber) {
         return jurorPoolRepository.findByPoolCourtLocationLocCodeAndJurorJurorNumber(locCode, jurorNumber);
