@@ -26,6 +26,7 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -158,6 +159,7 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
             .filter(dto -> dto.getRequired() > 0)
             .filter(dto -> dto.getAttendanceDate() != null &&
                 dto.getAttendanceDate().isBefore(LocalDate.now().plusDays(35)))
+            .sorted(Comparator.comparing(PoolRequestActiveDataDto::getRequired).reversed())
             .toList();
         return new PaginatedList<>(
             allResults.getCurrentPage(),
