@@ -101,6 +101,13 @@ public class JurorResponseServiceImpl implements JurorResponseService {
         return Optional.ofNullable(jurorCommonResponseRepository.findByJurorNumber(jurorNumber));
     }
 
+    @Override
+    public int getOpenSummonsRepliesCount(String courtCode) {
+        log.info("Retrieving open summons replies count for court code: {}", courtCode);
+        return jurorCommonResponseRepository.getOpenResponsesAtCourt(courtCode);
+
+    }
+
     private boolean hasSummonsReplyDataChanged(AbstractJurorResponse jurorResponse,
                                                JurorPersonalDetailsDto jurorPersonalDetailsDto) {
         final String jurorNumber = jurorResponse.getJurorNumber();

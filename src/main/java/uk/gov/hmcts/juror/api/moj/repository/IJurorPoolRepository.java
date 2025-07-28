@@ -13,6 +13,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.PoolMemberFilterRequestQuer
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -56,6 +57,9 @@ public interface IJurorPoolRepository {
     List<String> fetchThinPoolMembers(String poolNumber, String owner);
 
     boolean hasPoolWithLocCode(String jurorNumber, List<String> locCodes);
+
+    int getCountJurorsDueToAttendCourt(String locCode, LocalDate startDate, LocalDate endDate,
+                                       boolean reasonableAdjustmentRequired);
 
 
 }

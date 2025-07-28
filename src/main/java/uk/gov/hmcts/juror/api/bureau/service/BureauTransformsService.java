@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.bureau.service;
 
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseSummaryDto;
+import uk.gov.hmcts.juror.api.bureau.controller.response.CourtResponseSummaryDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffDto;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
@@ -46,4 +47,13 @@ public interface BureauTransformsService {
      * @return transformed DTO
      */
     StaffDto toStaffDto(User staffMember);
+
+    CourtResponseSummaryDto detailCourtToDto(ModJurorDetail detail);
+
+    CourtResponseSummaryDto detailCourtToDto(
+        CombinedJurorResponse jurorResponse,
+        Juror juror,
+        JurorPool jurorPool,
+        PoolRequest pool,
+        String locCode);
 }
