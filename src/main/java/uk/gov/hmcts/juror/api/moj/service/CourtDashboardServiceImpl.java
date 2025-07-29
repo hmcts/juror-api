@@ -171,7 +171,13 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
             .toList();
 
         jurorsWithNextDate.addAll(utilisationJurors);
-        
+
+        // find jurors who have an appearance record and completed today
+        List<String> jurorsWithCompletedToday =
+            appearanceService.getCompletedJurorsAtCourt(locCode, LocalDate.now());
+
+        jurorsWithNextDate.addAll(jurorsWithCompletedToday);
+
         final int expectedToday = jurorsWithNextDate.stream().distinct().toList().size();
 
         boolean skip = true;
