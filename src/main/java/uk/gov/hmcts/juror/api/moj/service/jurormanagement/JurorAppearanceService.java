@@ -89,6 +89,8 @@ public interface JurorAppearanceService {
     int getConfirmedAttendanceCountAtCourt(String locationCode, LocalDate attendanceDate,
                                            boolean includeNonAttendance, boolean includeOnTrial);
 
+    List<String> getCompletedJurorsAtCourt(String locationCode, LocalDate attendanceDate);
+
     int getAbsentCountAtCourt(String locationCode, LocalDate attendanceDateFrom,
                               LocalDate attendanceDateTo);
 

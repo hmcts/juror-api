@@ -41,6 +41,8 @@ public interface IAppearanceRepository {
     int getCountJurorsCheckedInOut(String locCode, LocalDate attendanceDate,
                                    boolean includeCheckedIn, boolean includeCheckedOut);
 
+    List<String> getCompletedJurorsAtCourt(String locationCode, LocalDate attendanceDate);
+
     long countPendingApproval(String locCode, boolean isCash);
 
     Optional<Appearance> findByJurorNumberAndLocCodeAndAttendanceDateAndVersion(
