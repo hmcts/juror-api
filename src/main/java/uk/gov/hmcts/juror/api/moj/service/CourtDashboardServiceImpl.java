@@ -159,7 +159,7 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
         int onTrialsToday = 0;
 
         // expected today is those with the next sitting date today
-        List<String> jurorsWithNextDate = appearanceService.getExpectedJurorsAtCourt(locCode, LocalDate.now());
+        List<String> expectedJurorsAtCourt = appearanceService.getExpectedJurorsAtCourt(locCode, LocalDate.now());
 
         // get the jurors on trials today as well as those who are expected to attend today with existing attendance
         DailyUtilisationReportJurorsResponse utilisationReportJurorsResponse =
@@ -170,15 +170,15 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
             .map(DailyUtilisationReportJurorsResponse.TableData.Juror::getJuror)
             .toList();
 
-        jurorsWithNextDate.addAll(utilisationJurors);
+        expectedJurorsAtCourt.addAll(utilisationJurors);
 
         // find jurors who have an appearance record and completed today
         List<String> jurorsWithCompletedToday =
             appearanceService.getCompletedJurorsAtCourt(locCode, LocalDate.now());
 
-        jurorsWithNextDate.addAll(jurorsWithCompletedToday);
+        expectedJurorsAtCourt.addAll(jurorsWithCompletedToday);
 
-        final int expectedToday = jurorsWithNextDate.stream().distinct().toList().size();
+        final int expectedToday = expectedJurorsAtCourt.stream().distinct().toList().size();
 
         boolean skip = true;
 
