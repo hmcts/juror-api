@@ -276,6 +276,7 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
     public int getDeferredJurorsStartDateNextWeek(String locCode) {
     return getJpaQueryFactory()
         .select(QCurrentlyDeferred.currentlyDeferred)
+        .from(QCurrentlyDeferred.currentlyDeferred)
         .where(QCurrentlyDeferred.currentlyDeferred.owner.eq(SecurityUtil.BUREAU_OWNER))
         .where(
             QCurrentlyDeferred.currentlyDeferred.deferredTo.between(
