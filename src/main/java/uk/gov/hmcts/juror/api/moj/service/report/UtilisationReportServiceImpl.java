@@ -1,12 +1,15 @@
 package uk.gov.hmcts.juror.api.moj.service.report;
 
+import com.querydsl.core.Tuple;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.moj.controller.reports.request.CourtUtilisationStatsReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.CourtUtilisationStatsReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportJurorsResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.MonthlyUtilisationReportResponse;
@@ -372,6 +375,41 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
 
     }
 
+    @Override
+    public CourtUtilisationStatsReportResponse courtUtilisationStatsReport(
+                                                        CourtUtilisationStatsReportRequest request) {
+
+        String courtNames;
+        if (request.isAllCourts()) {
+            log.info("Fetching court utilisation jurors stats for all locations");
+            courtNames = "All Courts";
+        } else {
+            if (request.getCourtLocCodes().isEmpty()) {
+                throw new MojException.BadRequest("Court location codes cannot be empty", null);
+            }
+            log.info("Fetching court utilisation jurors stats for locations: {}", request.getCourtLocCodes());
+
+            List<CourtLocation> courtLocations = courtLocationRepository
+                .findByLocCodeIn(request.getCourtLocCodes());
+            if (courtLocations.isEmpty()) {
+                throw new MojException.BadRequest("No court locations found for the provided codes", null);
+            }
+            // create a comma separated list of court names and location codes
+            courtNames = courtLocations.stream()
+                .map(cl -> cl.getLocCourtName() + " (" + cl.getLocCode() + ")")
+                .reduce((a, b) -> a + ", " + b)
+                .orElse("No Court Locations Found");
+        }
+
+        List<Tuple> utilisationStats = utilisationStatsRepository.getCourtUtilisationStats();
+
+        Map<String, AbstractReportResponse.DataTypeValue> reportHeadings = getCourtUtilStatsReportHeaders(courtNames);
+
+        CourtUtilisationStatsReportResponse response = new CourtUtilisationStatsReportResponse(reportHeadings);
+
+        return response;
+    }
+
     private void updateTotalStats(MonthlyUtilisationReportResponse.TableData tableData, UtilisationStats stats) {
         tableData.setTotalJurorWorkingDays(tableData.getTotalJurorWorkingDays() + stats.getAvailableDays());
         tableData.setTotalSittingDays(tableData.getTotalSittingDays() + stats.getSittingDays());
@@ -510,6 +548,11 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
                 .value(courtName)
                 .build()
         );
+    }
+
+    private Map<String, AbstractReportResponse.DataTypeValue> getCourtUtilStatsReportHeaders(String courtName) {
+        // uses the same headers as the monthly utilisation report
+        return getViewMonthlyUtilReportHeaders(courtName);
     }
 
     public enum ReportHeading {

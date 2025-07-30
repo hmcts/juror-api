@@ -11,7 +11,9 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.moj.controller.reports.request.CourtUtilisationStatsReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.CourtUtilisationStatsReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportJurorsResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.MonthlyUtilisationReportResponse;
@@ -587,6 +589,18 @@ class UtilisationReportServiceImplTest {
             verifyNoInteractions(utilisationStatsRepository);
 
         }
+    }
+
+    @Test
+    @SneakyThrows
+    void courtUtilisationStatsAllCourtsHappy() {
+
+        CourtUtilisationStatsReportRequest request = new CourtUtilisationStatsReportRequest();
+        request.setAllCourts(true);
+        CourtUtilisationStatsReportResponse response = utilisationReportService.courtUtilisationStatsReport(request);
+
+        assertThat(response).isNotNull();
+
     }
 
     private void setupCourt(String locCode, String owner, String owner1) {
