@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        springBootVersion = '3.3.7'
+        springBootVersion = '3.5.3'
         notifyVersion = '5.2.1-RELEASE'
         springDocVersion = '2.6.0'
         queryDslVersion = '5.1.0'
@@ -89,7 +89,7 @@ dependencies {
     //
     implementation("org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}")
-    implementation("org.springframework.data:spring-data-envers:${springBootVersion}")
+    implementation("org.springframework.data:spring-data-envers")
     implementation("org.springframework.boot:spring-boot-starter-security:${springBootVersion}")
     implementation("org.springframework.boot:spring-boot-starter-web:${springBootVersion}")
     implementation("org.springframework.boot:spring-boot-starter-json:${springBootVersion}")
@@ -105,7 +105,7 @@ dependencies {
     implementation 'javax.mail:mail:1.4.7'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
-    implementation 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
+    implementation 'org.apache.httpcomponents.client5:httpclient5:5.4.4'
 
     implementation('com.google.guava:guava:33.4.0-jre')
 
