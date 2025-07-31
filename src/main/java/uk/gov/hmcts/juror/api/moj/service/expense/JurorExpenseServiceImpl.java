@@ -246,12 +246,11 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
         jurorRepository.save(juror);
 
-        if (dto.isOverwriteExistingDraftExpenses()) {
-            applyDefaultExpenses(appearanceRepository
-                .findAllByJurorNumberAndAppearanceStageInAndCourtLocationOwnerAndIsDraftExpenseTrueOrderByAttendanceDateDesc(
-                    jurorNumber,
-                    Set.of(AppearanceStage.EXPENSE_ENTERED), owner));
-        }
+        applyDefaultExpenses(appearanceRepository
+            .findAllByJurorNumberAndAppearanceStageInAndCourtLocationOwnerAndIsDraftExpenseTrueOrderByAttendanceDateDesc(
+                jurorNumber,
+                Set.of(AppearanceStage.EXPENSE_ENTERED), owner));
+
     }
 
     /**
