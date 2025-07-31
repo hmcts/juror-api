@@ -601,6 +601,51 @@ class UtilisationReportServiceImplTest {
 
         assertThat(response).isNotNull();
 
+        assertThat(response.getHeadings()).isNotNull();
+        Map<String, AbstractReportResponse.DataTypeValue> headings = response.getHeadings();
+        assertThat(headings.get("report_created").getDisplayName()).isEqualTo("Report created");
+        assertThat(headings.get("report_created").getDataType()).isEqualTo("LocalDate");
+        assertThat(headings.get("report_created").getValue()).isEqualTo(LocalDateTime.now()
+                                                                            .format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        AbstractReportResponse.DataTypeValue timeCreated = response.getHeadings().get("time_created");
+        Assertions.assertThat(timeCreated.getDisplayName()).isEqualTo("Time created");
+        Assertions.assertThat(timeCreated.getDataType()).isEqualTo("LocalDateTime");
+        LocalDateTime localDateTime = LocalDateTime.parse((String) timeCreated.getValue(),
+                                                          DateTimeFormatter.ISO_DATE_TIME);
+        Assertions.assertThat(localDateTime).isCloseTo(LocalDateTime.now(),
+                                                       within(10, ChronoUnit.SECONDS));
+
+        assertThat(headings.get("court_name").getDisplayName()).isEqualTo("Court name");
+        assertThat(headings.get("court_name").getDataType()).isEqualTo("String");
+        assertThat(headings.get("court_name").getValue()).isEqualTo("All Courts");
+
+        assertThat(response.getTableData()).isNotNull();
+        CourtUtilisationStatsReportResponse.TableData tableData = response.getTableData();
+        assertThat(tableData.getHeadings()).isNotNull();
+
+        Assertions.assertThat(tableData.getHeadings()).hasSize(4);
+
+        CourtUtilisationStatsReportResponse.TableData.Heading tableHeading = tableData.getHeadings().get(0);
+        assertThat(tableHeading.getId()).isEqualTo(UtilisationReportService.TableHeading.COURT_NAME);
+        assertThat(tableHeading.getName()).isEqualTo("Court Name");
+        assertThat(tableHeading.getDataType()).isEqualTo("String");
+
+        tableHeading = tableData.getHeadings().get(1);
+        assertThat(tableHeading.getId()).isEqualTo(UtilisationReportService.TableHeading.UTILISATION);
+        assertThat(tableHeading.getName()).isEqualTo("Utilisation");
+        assertThat(tableHeading.getDataType()).isEqualTo("Double");
+
+        tableHeading = tableData.getHeadings().get(2);
+        assertThat(tableHeading.getId()).isEqualTo(UtilisationReportService.TableHeading.MONTH);
+        assertThat(tableHeading.getName()).isEqualTo("Month");
+        assertThat(tableHeading.getDataType()).isEqualTo("String");
+
+        tableHeading = tableData.getHeadings().get(3);
+        assertThat(tableHeading.getId()).isEqualTo(UtilisationReportService.TableHeading.DATE_LAST_RUN);
+        assertThat(tableHeading.getName()).isEqualTo("Date Last Run");
+        assertThat(tableHeading.getDataType()).isEqualTo("LocalDate");
+
     }
 
     private void setupCourt(String locCode, String owner, String owner1) {
