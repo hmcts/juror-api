@@ -127,7 +127,7 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
             .where(POOL_REQUEST.newRequest.eq('N'))
             .where(POOL_REQUEST.numberRequested.ne(0))
             .where(POOL_REQUEST.poolType.description.in(PoolRequestUtils.POOL_TYPES_DESC_LIST))
-            .where(POOL_REQUEST.returnDate.after(LocalDate.now().minusDays(ACTIVE_POOL_DAYS_LIMIT)))
+            .where(POOL_REQUEST.returnDate.loe(LocalDate.now().plusDays(35)))
             .groupBy(POOL_REQUEST, POOL_REQUEST.courtLocation.name);
 
         if (StringUtils.isNotBlank(filterQuery.getLocCode())) {
