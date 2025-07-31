@@ -85,6 +85,7 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
     }
 
     private CourtAdminInfoDto getUnpaidAttendancesInfo(String locCode) {
+        log.info("Retrieving unpaid attendances for location code: {}", locCode);
         List<Appearance> unpaidAttendances = appearanceService.getUnpaidAttendancesAtCourt(locCode);
 
         CourtAdminInfoDto courtAdminInfoDto = CourtAdminInfoDto.builder()
@@ -97,11 +98,9 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
                 .map(Appearance::getAttendanceDate)
                 .min(LocalDate::compareTo)
                 .ifPresent(date -> {
-                    log.info("Earliest unpaid attendance date found: {}", date);
                     courtAdminInfoDto.setOldestUnpaidAttendanceDate(date);
 
                     long daysSinceOldest = LocalDate.now().toEpochDay() - date.toEpochDay();
-                    log.info("Days since oldest unpaid attendance: {}", daysSinceOldest);
                     courtAdminInfoDto.setOldestUnpaidAttendanceDays(daysSinceOldest);
 
                     // find the juror number associated with the oldest unpaid attendance
@@ -109,7 +108,6 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
                         .filter(a -> a.getAttendanceDate().equals(date))
                         .findFirst()
                         .ifPresent(appearance -> {
-                            log.info("Oldest unpaid juror number: {}", appearance.getJurorNumber());
                             courtAdminInfoDto.setOldestUnpaidJurorNumber(appearance.getJurorNumber());
                         });
                 });
@@ -141,7 +139,7 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
                 LocalDate.now());
 
         if (dailyUtilisation == null) {
-            log.warn("No daily utilisation report found for location code: {}", locCode);
+            log.info("No daily utilisation report found for location code: {}", locCode);
             return courtAttendanceInfoDto;
         }
 
@@ -259,13 +257,13 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
     }
 
     private void getUtilisationInfo(String locCode, CourtAdminInfoDto courtAdminInfoDto) {
+        log.info("Retrieving utilisation info for location code: {}", locCode);
         // get the last run utilisation report for the court
         List<UtilisationStats> utilisationStats = utilisationStatsRepository
             .findTop12ByLocCodeOrderByMonthStartDesc(locCode);
 
         if (!utilisationStats.isEmpty()) {
             UtilisationStats lastUtilisationStats = utilisationStats.get(0);
-            log.info("Last utilisation stats found for month: {}", lastUtilisationStats.getMonthStart());
             courtAdminInfoDto.setUtilisationReportDate(lastUtilisationStats.getLastUpdate());
 
             // calculate the overall utilisation
@@ -273,7 +271,6 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
                 ? 0.0
                 : (double)  lastUtilisationStats.getSittingDays() / lastUtilisationStats.getAvailableDays() * 100;
 
-            log.info("Overall utilisation percentage: {}", overallUtilisation);
             courtAdminInfoDto.setUtilisationPercentage(overallUtilisation);
 
         } else {
