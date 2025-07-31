@@ -234,11 +234,24 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
         // get the absent jurors today, those who have not checked in or checked out
         final int absentToday = appearanceService.getAbsentCountAtCourt(locCode, LocalDate.now(), LocalDate.now());
 
-        attendanceStatsToday.setNotCheckedIn(expectedToday - (confirmedAttendances
-                                                            + absentToday
-                                                            + attendanceStatsToday.getCheckedIn()
-                                                            + attendanceStatsToday.getCheckedOut()
-                                                            + attendanceStatsToday.getOnTrials()));
+        int notCheckedIn = expectedToday - (confirmedAttendances
+            + absentToday
+            + attendanceStatsToday.getCheckedIn()
+            + attendanceStatsToday.getCheckedOut()
+            + attendanceStatsToday.getOnTrials());
+
+        if (notCheckedIn < 0) {
+            // log the values of the calculations
+            log.info("Not checked in count is negative for court {}, resetting to 0. Current value: {}\n"
+                         + "Expected: {}, Confirmed: {}, Absent: {}, Checked In: {}, Checked Out: {}, On Trials: {}",
+                     locCode, notCheckedIn, expectedToday, confirmedAttendances,
+                     absentToday, attendanceStatsToday.getCheckedIn(),
+                     attendanceStatsToday.getCheckedOut(), attendanceStatsToday.getOnTrials());
+            notCheckedIn = 0; // ensure not negative
+
+        }
+
+        attendanceStatsToday.setNotCheckedIn(notCheckedIn);
 
         courtAttendanceInfoDto.setAttendanceStatsToday(attendanceStatsToday);
 
