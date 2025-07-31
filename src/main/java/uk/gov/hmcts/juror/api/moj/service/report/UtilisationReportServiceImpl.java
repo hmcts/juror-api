@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.service.report;
 
-import com.querydsl.core.Tuple;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -383,6 +382,8 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
         if (request.isAllCourts()) {
             log.info("Fetching court utilisation jurors stats for all locations");
             courtNames = "All Courts";
+            // if all courts are requested, we don't need to filter by location codes
+            request.setCourtLocCodes(new ArrayList<>());
         } else {
             if (request.getCourtLocCodes().isEmpty()) {
                 throw new MojException.BadRequest("Court location codes cannot be empty", null);
@@ -396,18 +397,69 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
             }
             // create a comma separated list of court names and location codes
             courtNames = courtLocations.stream()
-                .map(cl -> cl.getLocCourtName() + " (" + cl.getLocCode() + ")")
+                .map(cl -> cl.getName() + " (" + cl.getLocCode() + ")")
                 .reduce((a, b) -> a + ", " + b)
                 .orElse("No Court Locations Found");
         }
 
-        List<Tuple> utilisationStats = utilisationStatsRepository.getCourtUtilisationStats();
-
         Map<String, AbstractReportResponse.DataTypeValue> reportHeadings = getCourtUtilStatsReportHeaders(courtNames);
-
         CourtUtilisationStatsReportResponse response = new CourtUtilisationStatsReportResponse(reportHeadings);
 
+        List<String> utilisationStats = utilisationStatsRepository.getCourtUtilisationStats();
+
+        if (utilisationStats != null && !utilisationStats.isEmpty()) {
+            getCourtUtilisationStats(utilisationStats, response.getTableData(), request.getCourtLocCodes());
+        }
+
         return response;
+    }
+
+    private void getCourtUtilisationStats(List<String> utilisationStats,
+                                          CourtUtilisationStatsReportResponse.TableData tableData,
+                                          List<String> courtLocCodes) {
+        for (String line : utilisationStats) {
+
+            List<String> stats = List.of(line.split(","));
+
+            if (stats.size() < 5) {
+                log.warn("Invalid utilisation stats line: {}", line);
+                continue;
+            }
+
+            try {
+                String locCode = stats.get(0);
+                String locName = stats.get(1);
+
+                if (!courtLocCodes.isEmpty() && !courtLocCodes.contains(locCode)) {
+                    // skip this record if the location code is not in the requested list
+                    continue;
+                }
+
+                LocalDate monthStart = LocalDate.parse(stats.get(2), DateTimeFormatter.ISO_LOCAL_DATE);
+                int availableDays = Integer.parseInt(stats.get(3));
+                int sittingDays = Integer.parseInt(stats.get(4));
+                LocalDateTime lastUpdate = LocalDateTime.parse(
+                    stats.get(5).substring(0, 19),
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                );
+
+                double utilisation = availableDays == 0 ? 0.0 : (double) sittingDays / availableDays * 100;
+
+                CourtUtilisationStatsReportResponse.UtilisationStats utilisationStat =
+                    CourtUtilisationStatsReportResponse.UtilisationStats.builder()
+                        .courtName(locName + " (" + locCode + ")")
+                        .utilisation(utilisation)
+                        .month(monthStart.getMonth().getDisplayName(TextStyle.FULL, Locale.UK) + " "
+                            + monthStart.getYear())
+                        .dateLastRun(lastUpdate)
+                        .build();
+
+                tableData.getStats().add(utilisationStat);
+            } catch (Exception e) {
+                log.warn("Error parsing utilisation stats line: {}", line, e);
+            }
+
+        }
     }
 
     private void updateTotalStats(MonthlyUtilisationReportResponse.TableData tableData, UtilisationStats stats) {

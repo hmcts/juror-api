@@ -27,6 +27,7 @@ import uk.gov.hmcts.juror.api.moj.repository.UtilisationStatsRepository;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
@@ -567,6 +568,28 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
                                                               URI.create(COURT_UTILISATION_STATS_REPORT_URL)),
                                       CourtUtilisationStatsReportResponse.class);
 
+            CourtUtilisationStatsReportResponse responseBody = responseEntity.getBody();
+            assertThat(responseBody).isNotNull();
+            // validate the table data
+            CourtUtilisationStatsReportResponse.TableData tableData = responseBody.getTableData();
+            assertThat(tableData).isNotNull();
+            assertThat(tableData.getHeadings()).isNotNull();
+            assertThat(tableData.getHeadings()).hasSize(4);
+            assertThat(tableData.getStats()).isNotNull();
+            assertThat(tableData.getStats()).hasSize(2);
+            CourtUtilisationStatsReportResponse.UtilisationStats stats = tableData.getStats().get(0);
+            assertThat(stats.getCourtName()).isEqualTo("CHESTER (415)");
+            assertThat(Math.round(stats.getUtilisation())).isEqualTo(Math.round(12.28));
+            assertThat(stats.getMonth()).isEqualTo("June 2024");
+            assertThat(stats.getDateLastRun()).isEqualTo(LocalDateTime.parse("2024-06-18T17:22:05",
+                                                                             DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+            stats = tableData.getStats().get(1);
+            assertThat(stats.getCourtName()).isEqualTo("LEWES SITTING AT CHICHESTER (416)");
+            assertThat(Math.round(stats.getUtilisation())).isEqualTo(Math.round(11.89));
+            assertThat(stats.getMonth()).isEqualTo("April 2024");
+            assertThat(stats.getDateLastRun()).isEqualTo(LocalDateTime.parse("2024-04-18T17:22:05",
+                                                                             DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+
             assertThat(responseEntity.getStatusCode()).as("Expect HTTP OK response").isEqualTo(HttpStatus.OK);
 
         }
@@ -577,7 +600,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
 
             CourtUtilisationStatsReportRequest request = CourtUtilisationStatsReportRequest.builder()
                 .allCourts(false)
-                .courtLocCodes(List.of("415", "416"))
+                .courtLocCodes(List.of("415"))
                 .build();
 
             ResponseEntity<CourtUtilisationStatsReportResponse> responseEntity =
@@ -587,6 +610,23 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
                                       CourtUtilisationStatsReportResponse.class);
 
             assertThat(responseEntity.getStatusCode()).as("Expect HTTP OK response").isEqualTo(HttpStatus.OK);
+
+            CourtUtilisationStatsReportResponse responseBody = responseEntity.getBody();
+            assertThat(responseBody).isNotNull();
+            // validate the table data
+            CourtUtilisationStatsReportResponse.TableData tableData = responseBody.getTableData();
+            assertThat(tableData).isNotNull();
+            assertThat(tableData.getHeadings()).isNotNull();
+            assertThat(tableData.getHeadings()).hasSize(4);
+            assertThat(tableData.getStats()).isNotNull();
+            assertThat(tableData.getStats()).hasSize(1);
+            CourtUtilisationStatsReportResponse.UtilisationStats stats = tableData.getStats().get(0);
+            assertThat(stats.getCourtName()).isEqualTo("CHESTER (415)");
+            assertThat(Math.round(stats.getUtilisation())).isEqualTo(Math.round(12.28));
+            assertThat(stats.getMonth()).isEqualTo("June 2024");
+            assertThat(stats.getDateLastRun()).isEqualTo(LocalDateTime.parse("2024-06-18T17:22:05",
+                                                                             DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+
 
         }
 

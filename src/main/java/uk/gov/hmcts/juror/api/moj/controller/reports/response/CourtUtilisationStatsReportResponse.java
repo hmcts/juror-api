@@ -8,6 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -28,16 +30,21 @@ public class CourtUtilisationStatsReportResponse {
             TableData.Heading.builder().id(UtilisationReportService.TableHeading.UTILISATION)
                 .name(UtilisationReportService.TableHeading.UTILISATION.getDisplayName())
                 .dataType(UtilisationReportService.TableHeading.UTILISATION.getDataType()).build(),
+            TableData.Heading.builder().id(UtilisationReportService.TableHeading.MONTH)
+                .name(UtilisationReportService.TableHeading.MONTH.getDisplayName())
+                .dataType(UtilisationReportService.TableHeading.MONTH.getDataType()).build(),
             TableData.Heading.builder().id(UtilisationReportService.TableHeading.DATE_LAST_RUN)
                 .name(UtilisationReportService.TableHeading.DATE_LAST_RUN.getDisplayName())
                 .dataType(UtilisationReportService.TableHeading.DATE_LAST_RUN.getDataType()).build()
         ));
+        this.tableData.setStats(new ArrayList<>());
     }
 
     @Data
     @NoArgsConstructor
     public static class TableData {
         private List<Heading> headings;
+        private List<UtilisationStats> stats;
 
         public TableData(List<Heading> headings) {
             this.headings = headings;
@@ -52,6 +59,18 @@ public class CourtUtilisationStatsReportResponse {
             private String name;
             private String dataType;
         }
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UtilisationStats {
+        private String courtName;
+        private Double utilisation;
+        private String month;
+        private LocalDateTime dateLastRun;
+
     }
 
 }
