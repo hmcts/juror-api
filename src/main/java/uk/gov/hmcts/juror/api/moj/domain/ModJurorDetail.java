@@ -310,6 +310,13 @@ public class ModJurorDetail implements Serializable {
     @Column(name = "is_active")
     private Boolean isActive;
 
+    @Column(name = "deferral")
+    private Boolean deferral;
+
+    @Column(name = "excusal")
+    private Boolean excusal;
+
+
     public boolean isWelshCourt() {
         return this.welshCourt;
     }
