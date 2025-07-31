@@ -411,7 +411,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             payload.setFinancialLoss(createBigDecimal(2.00));
             payload.setTravelTime(LocalTime.of(0, 40));
             payload.setDistanceTraveledMiles(2);
-            payload.setOverwriteExistingDraftExpenses(false);
 
             RequestEntity<RequestDefaultExpensesDto> request = new RequestEntity<>(payload, httpHeaders, POST,
                 URI.create(toUrl(COURT_LOCATION, JUROR_NUMBER)));
@@ -432,7 +431,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             payload.setFinancialLoss(createBigDecimal(1.03));
             payload.setTravelTime(LocalTime.of(0, 40));
             payload.setDistanceTraveledMiles(2);
-            payload.setOverwriteExistingDraftExpenses(true);
 
             RequestEntity<RequestDefaultExpensesDto> request = new RequestEntity<>(payload, httpHeaders, POST,
                 URI.create(toUrl(COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER)));
