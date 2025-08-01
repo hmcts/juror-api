@@ -108,6 +108,7 @@ public class JurorResponseServiceImpl implements JurorResponseService {
 
     }
 
+
     @Override
     public int getSummonsRepliesCount(String locCode) {
         log.info("Retrieving open summons replies count for bureau");
@@ -161,6 +162,7 @@ public class JurorResponseServiceImpl implements JurorResponseService {
         log.info("Retrieving pools transferring next week count for location code: {}", locCode);
         return jurorCommonResponseRepository.getPoolsTransferringNextWeekCount(locCode);
     }
+
 
 
     private boolean hasSummonsReplyDataChanged(AbstractJurorResponse jurorResponse,
