@@ -38,7 +38,7 @@ public class BureauDashboardInfoController {
     private final PoolRequestService poolRequestService;
 
     @IsBureauUser
-    @GetMapping("/notification-management/")
+    @GetMapping("/notification-management")
     @Operation(summary = "Retrieves notification management information for bureau")
     public ResponseEntity<BureauNotificationManagementInfoDto> getBureauNotificationManagementInfo() {
         BureauNotificationManagementInfoDto dto = bureauDashboardService.getBureauNotificationManagementInfo(
@@ -47,7 +47,7 @@ public class BureauDashboardInfoController {
     }
 
     @IsBureauUser
-    @GetMapping("/summons-management/")
+    @GetMapping("/summons-management")
     @Operation(summary = "Retrieves summons management information for bureau")
     public ResponseEntity<BureauSummonsManagementInfoDto> getBureauSummonsManagementInfo() {
         BureauSummonsManagementInfoDto dto
@@ -56,7 +56,7 @@ public class BureauDashboardInfoController {
     }
 
     @IsBureauUser
-    @GetMapping("/pool-management/")
+    @GetMapping("/pool-management")
     @Operation(summary = "Retrieves pool management information for bureau")
     public ResponseEntity<BureauPoolManagementInfoDto> getBureauPoolManagementInfo() {
         BureauPoolManagementInfoDto dto =
@@ -65,7 +65,7 @@ public class BureauDashboardInfoController {
     }
 
     @IsBureauUser
-    @GetMapping("/pools-under-responded/")
+    @GetMapping("/pools-under-responded")
     @Operation(summary = "Retrieves pools under responded information for bureau")
     public ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> getActivePoolUnderResponded(
         @CourtLocationCode @Size(min = 3, max = 3) @Valid String locCode,
