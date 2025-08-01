@@ -50,7 +50,8 @@ public class BureauDashboardInfoController {
     @GetMapping("/summons-management/")
     @Operation(summary = "Retrieves summons management information for bureau")
     public ResponseEntity<BureauSummonsManagementInfoDto> getBureauSummonsManagementInfo() {
-        BureauSummonsManagementInfoDto dto = bureauDashboardService.getBureauSummonsManagementInfo( SecurityUtil.getActiveOwner());
+        BureauSummonsManagementInfoDto dto
+            = bureauDashboardService.getBureauSummonsManagementInfo(SecurityUtil.getActiveOwner());
         return ResponseEntity.ok().body(dto);
     }
 
@@ -58,7 +59,8 @@ public class BureauDashboardInfoController {
     @GetMapping("/pool-management/")
     @Operation(summary = "Retrieves pool management information for bureau")
     public ResponseEntity<BureauPoolManagementInfoDto> getBureauPoolManagementInfo() {
-        BureauPoolManagementInfoDto dto = bureauDashboardService.getBureauPoolManagementInfo(SecurityUtil.getActiveOwner());
+        BureauPoolManagementInfoDto dto =
+            bureauDashboardService.getBureauPoolManagementInfo(SecurityUtil.getActiveOwner());
         return ResponseEntity.ok().body(dto);
     }
 

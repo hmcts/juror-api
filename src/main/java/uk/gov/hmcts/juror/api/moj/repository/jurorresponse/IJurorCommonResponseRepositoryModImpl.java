@@ -15,64 +15,64 @@ import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QCombinedJurorResponse;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.time.LocalDateTime;
-import java.time.LocalDate;
 
 @Slf4j
 public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonResponseRepositoryMod {
-  @PersistenceContext EntityManager entityManager;
+    @PersistenceContext EntityManager entityManager;
 
-  @Override
+    @Override
   public List<Tuple> getJurorResponseDetailsByUsernameAndStatus(
-      String staffLogin, Collection<ProcessingStatus> processingStatus, Predicate... predicates) {
-    JPAQuery<Tuple> query =
-        getJpaQueryFactory()
-            .select(
+        String staffLogin, Collection<ProcessingStatus> processingStatus, Predicate... predicates) {
+        JPAQuery<Tuple> query =
+                getJpaQueryFactory()
+                .select(
                 QCombinedJurorResponse.combinedJurorResponse,
                 QJurorPool.jurorPool,
                 QPoolRequest.poolRequest)
-            .from(QCombinedJurorResponse.combinedJurorResponse)
-            .join(QJurorPool.jurorPool)
-            .on(QJurorPool.jurorPool.juror.eq(QCombinedJurorResponse.combinedJurorResponse.juror))
-            .join(QPoolRequest.poolRequest)
-            .on(QPoolRequest.poolRequest.eq(QJurorPool.jurorPool.pool))
-            .where(QCombinedJurorResponse.combinedJurorResponse.staff.username.eq(staffLogin))
-            .where(
+                .from(QCombinedJurorResponse.combinedJurorResponse)
+                .join(QJurorPool.jurorPool)
+                .on(QJurorPool.jurorPool.juror.eq(QCombinedJurorResponse.combinedJurorResponse.juror))
+                .join(QPoolRequest.poolRequest)
+                .on(QPoolRequest.poolRequest.eq(QJurorPool.jurorPool.pool))
+                .where(QCombinedJurorResponse.combinedJurorResponse.staff.username.eq(staffLogin))
+                .where(
                 QCombinedJurorResponse.combinedJurorResponse.processingStatus.in(processingStatus))
-            .where(QCombinedJurorResponse.combinedJurorResponse.juror.bureauTransferDate.isNull())
-            .where(QJurorPool.jurorPool.isActive.isTrue())
-            .where(QJurorPool.jurorPool.owner.eq(SecurityUtil.BUREAU_OWNER));
+                .where(QCombinedJurorResponse.combinedJurorResponse.juror.bureauTransferDate.isNull())
+                .where(QJurorPool.jurorPool.isActive.isTrue())
+                .where(QJurorPool.jurorPool.owner.eq(SecurityUtil.BUREAU_OWNER));
 
-    if (predicates != null && predicates.length > 0) {
-      query.where(predicates);
+        if (predicates != null && predicates.length > 0) {
+            query.where(predicates);
+        }
+        query.orderBy(QCombinedJurorResponse.combinedJurorResponse.dateReceived.asc());
+        return query.fetch();
     }
-    query.orderBy(QCombinedJurorResponse.combinedJurorResponse.dateReceived.asc());
-    return query.fetch();
-  }
 
-  @Override
+    @Override
   public Map<ProcessingStatus, Long> getJurorResponseCounts(Predicate... predicates) {
-    JPAQuery<Tuple> query =
-        getJpaQueryFactory()
-            .select(
+        JPAQuery<Tuple> query =
+             getJpaQueryFactory()
+             .select(
                 QCombinedJurorResponse.combinedJurorResponse.processingStatus,
                 QCombinedJurorResponse.combinedJurorResponse.count())
-            .from(QCombinedJurorResponse.combinedJurorResponse)
-            .join(QJurorPool.jurorPool)
-            .on(QJurorPool.jurorPool.juror.eq(QCombinedJurorResponse.combinedJurorResponse.juror))
-            .where(QJurorPool.jurorPool.isActive.isTrue())
-            .where(QCombinedJurorResponse.combinedJurorResponse.juror.bureauTransferDate.isNull())
-            .where(QJurorPool.jurorPool.owner.eq(SecurityUtil.BUREAU_OWNER));
+             .from(QCombinedJurorResponse.combinedJurorResponse)
+             .join(QJurorPool.jurorPool)
+             .on(QJurorPool.jurorPool.juror.eq(QCombinedJurorResponse.combinedJurorResponse.juror))
+             .where(QJurorPool.jurorPool.isActive.isTrue())
+             .where(QCombinedJurorResponse.combinedJurorResponse.juror.bureauTransferDate.isNull())
+             .where(QJurorPool.jurorPool.owner.eq(SecurityUtil.BUREAU_OWNER));
 
-    if (predicates != null && predicates.length > 0) {
-      query.where(predicates);
-    }
+        if (predicates != null && predicates.length > 0) {
+            query.where(predicates);
+        }
 
-    return query
+        return query
         .groupBy(QCombinedJurorResponse.combinedJurorResponse.processingStatus)
         .fetch()
         .stream()
@@ -80,13 +80,13 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
             Collectors.toMap(
                 tuple -> tuple.get(QCombinedJurorResponse.combinedJurorResponse.processingStatus),
                 tuple -> tuple.get(QCombinedJurorResponse.combinedJurorResponse.count())));
-  }
+    }
 
-  @Override
+    @Override
   public List<Tuple> getJurorResponseDetailsByCourtAndStatus(
-      String locCode, Collection<ProcessingStatus> processingStatus, Predicate... predicates) {
-    JPAQuery<Tuple> query =
-        getJpaQueryFactory()
+        String locCode, Collection<ProcessingStatus> processingStatus, Predicate... predicates) {
+        JPAQuery<Tuple> query =
+            getJpaQueryFactory()
             .select(
                 QCombinedJurorResponse.combinedJurorResponse,
                 QJurorPool.jurorPool,
@@ -103,17 +103,17 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
             .where(QJurorPool.jurorPool.isActive.isTrue())
             .where(QJurorPool.jurorPool.owner.eq(SecurityUtil.getActiveOwner()));
 
-    if (predicates != null && predicates.length > 0) {
-      query.where(predicates);
+        if (predicates != null && predicates.length > 0) {
+            query.where(predicates);
+        }
+        query.orderBy(QCombinedJurorResponse.combinedJurorResponse.dateReceived.asc());
+        return query.fetch();
     }
-    query.orderBy(QCombinedJurorResponse.combinedJurorResponse.dateReceived.asc());
-    return query.fetch();
-  }
 
-  @Override
+    @Override
   public Map<ProcessingStatus, Long> getJurorCourtResponseCounts(Predicate... predicates) {
-    JPAQuery<Tuple> query =
-        getJpaQueryFactory()
+        JPAQuery<Tuple> query =
+            getJpaQueryFactory()
             .select(
                 QCombinedJurorResponse.combinedJurorResponse.processingStatus,
                 QCombinedJurorResponse.combinedJurorResponse.count())
@@ -125,11 +125,11 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
                 QCombinedJurorResponse.combinedJurorResponse.juror.bureauTransferDate.isNotNull())
             .where(QJurorPool.jurorPool.owner.eq(SecurityUtil.getActiveOwner()));
 
-    if (predicates != null && predicates.length > 0) {
-      query.where(predicates);
-    }
+        if (predicates != null && predicates.length > 0) {
+            query.where(predicates);
+        }
 
-    return query
+        return query
         .groupBy(QCombinedJurorResponse.combinedJurorResponse.processingStatus)
         .fetch()
         .stream()
@@ -137,15 +137,15 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
             Collectors.toMap(
                 tuple -> tuple.get(QCombinedJurorResponse.combinedJurorResponse.processingStatus),
                 tuple -> tuple.get(QCombinedJurorResponse.combinedJurorResponse.count())));
-  }
+    }
 
-  JPAQueryFactory getJpaQueryFactory() {
-    return new JPAQueryFactory(entityManager);
-  }
+    JPAQueryFactory getJpaQueryFactory() {
+        return new JPAQueryFactory(entityManager);
+    }
 
-  @Override
+    @Override
   public int getOpenResponsesAtCourt(String locationCode) {
-    return getJpaQueryFactory()
+        return getJpaQueryFactory()
         .select(QCombinedJurorResponse.combinedJurorResponse)
         .from(QCombinedJurorResponse.combinedJurorResponse)
         .join(QJurorPool.jurorPool)
@@ -159,12 +159,12 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
         .where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(locationCode))
         .fetch()
         .size();
-  }
+    }
 
-  @Override
+    @Override
   public int getOpenResponsesAtBureau(String locCode) {
 
-    return getJpaQueryFactory()
+        return getJpaQueryFactory()
         .select(QCombinedJurorResponse.combinedJurorResponse)
         .from(QCombinedJurorResponse.combinedJurorResponse)
         .join(QJurorPool.jurorPool)
@@ -178,12 +178,12 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
         .where(QCombinedJurorResponse.combinedJurorResponse.juror.bureauTransferDate.isNull())
         .fetch()
         .size();
-  }
+    }
 
-  @Override
+    @Override
   public int getSummonsRepliesFourWeeks(String locCode) {
 
-    return getJpaQueryFactory()
+        return getJpaQueryFactory()
         .select(QCombinedJurorResponse.combinedJurorResponse)
         .from(QCombinedJurorResponse.combinedJurorResponse)
         .join(QJurorPool.jurorPool)
@@ -198,11 +198,11 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
         .where(QCombinedJurorResponse.combinedJurorResponse.juror.bureauTransferDate.isNull())
         .fetch()
         .size();
-  }
+    }
 
-  @Override
+    @Override
   public int getSummonsRepliesStandard(String locCode) {
-    return getJpaQueryFactory()
+        return getJpaQueryFactory()
         .select(QCombinedJurorResponse.combinedJurorResponse)
         .from(QCombinedJurorResponse.combinedJurorResponse)
         .join(QJurorPool.jurorPool)
@@ -217,7 +217,8 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
         .where(QCombinedJurorResponse.combinedJurorResponse.juror.bureauTransferDate.isNull())
         .fetch()
         .size();
-  }
+    }
+
     @Override
     public int getSummonsRepliesUrgent(String locCode) {
         return getJpaQueryFactory()
@@ -236,6 +237,7 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
             .fetch()
             .size();
     }
+
     @Override
     public int getSummonsRepliesUnassigned(String locCode) {
         return getJpaQueryFactory()
@@ -254,6 +256,7 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
             .fetch()
             .size();
     }
+
     @Override
     public int getSummonsRepliesAssigned(String locCode) {
         return getJpaQueryFactory()
@@ -272,9 +275,10 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
             .fetch()
             .size();
     }
+
     @Override
     public int getDeferredJurorsStartDateNextWeek(String locCode) {
-    return getJpaQueryFactory()
+        return getJpaQueryFactory()
         .select(QCurrentlyDeferred.currentlyDeferred)
         .from(QCurrentlyDeferred.currentlyDeferred)
         .where(QCurrentlyDeferred.currentlyDeferred.owner.eq(SecurityUtil.BUREAU_OWNER))
@@ -284,6 +288,7 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
         .fetch()
         .size();
     }
+
     @Override
     public int getPoolsNotYetSummonedCount(String locCode) {
         return getJpaQueryFactory()
@@ -294,11 +299,11 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
             .on(QPoolRequest.poolRequest.poolNumber.eq(QJurorPool.jurorPool.pool.poolNumber))
             .where(QPoolRequest.poolRequest.owner.eq(SecurityUtil.BUREAU_OWNER))
             .where(QJurorPool.jurorPool.pool.poolNumber.isNull()).fetch().size();
-  }
+    }
 
     @Override
     public int getPoolsTransferringNextWeekCount(String locCode) {
-       LocalDate weekDateBeforeTransfer = LocalDate.now().plusDays(18);
+        LocalDate weekDateBeforeTransfer = LocalDate.now().plusDays(18);
         return getJpaQueryFactory()
             .select(
                 QPoolRequest.poolRequest)

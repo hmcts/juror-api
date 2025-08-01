@@ -30,7 +30,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
-import static org.hibernate.query.results.Builders.fetch;
 
 
 /**
@@ -116,7 +115,8 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
         );
     }
 
-    private PaginatedList<PoolRequestActiveDataDto> getActiveBureauTabUnderResponded(ActivePoolFilterQuery filterQuery) {
+    private PaginatedList<PoolRequestActiveDataDto>
+        getActiveBureauTabUnderResponded(ActivePoolFilterQuery filterQuery) {
 
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
 
@@ -137,7 +137,7 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
             query.where(POOL_REQUEST.courtLocation.locCode.in(SecurityUtil.getCourts()));
         }
 
-       // return PaginationUtil.toPaginatedList(
+        // return PaginationUtil.toPaginatedList(
         PaginatedList<PoolRequestActiveDataDto> allResults = PaginationUtil.toPaginatedList(
             query,
             filterQuery,
@@ -157,7 +157,8 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
         );
         List<PoolRequestActiveDataDto> filtered = allResults.getData().stream()
             .filter(dto -> dto.getRequired() > 0)
-            .filter(dto -> dto.getAttendanceDate() != null &&
+            .filter(dto -> dto.getAttendanceDate() != null
+                &&
                 dto.getAttendanceDate().isBefore(LocalDate.now().plusDays(35)))
             .sorted(Comparator.comparing(PoolRequestActiveDataDto::getRequired).reversed())
             .toList();

@@ -11,7 +11,7 @@ import lombok.Setter;
 @Schema(description = "Bureau notification management information DTO")
 public class BureauNotificationManagementInfoDto {
 
-    @Schema(description = "Number of open summons replies less than 4 weeks to start date for jurors owned by the bureau")
+    @Schema(description = "Number of open summons replies less than 4 weeks to start date for jurors")
     private int fourWeeksSummonsReplies;
 
 
