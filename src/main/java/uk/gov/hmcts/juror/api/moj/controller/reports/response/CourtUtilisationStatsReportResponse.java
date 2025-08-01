@@ -37,14 +37,14 @@ public class CourtUtilisationStatsReportResponse {
                 .name(UtilisationReportService.TableHeading.DATE_LAST_RUN.getDisplayName())
                 .dataType(UtilisationReportService.TableHeading.DATE_LAST_RUN.getDataType()).build()
         ));
-        this.tableData.setStats(new ArrayList<>());
+        this.tableData.setData(new ArrayList<>());
     }
 
     @Data
     @NoArgsConstructor
     public static class TableData {
         private List<Heading> headings;
-        private List<UtilisationStats> stats;
+        private List<UtilisationStats> data;
 
         public TableData(List<Heading> headings) {
             this.headings = headings;

@@ -454,7 +454,7 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
                         .dateLastRun(lastUpdate)
                         .build();
 
-                tableData.getStats().add(utilisationStat);
+                tableData.getData().add(utilisationStat);
             } catch (Exception e) {
                 log.warn("Error parsing utilisation stats line: {}", line, e);
             }

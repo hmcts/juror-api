@@ -575,15 +575,15 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
             assertThat(tableData).isNotNull();
             assertThat(tableData.getHeadings()).isNotNull();
             assertThat(tableData.getHeadings()).hasSize(4);
-            assertThat(tableData.getStats()).isNotNull();
-            assertThat(tableData.getStats()).hasSize(2);
-            CourtUtilisationStatsReportResponse.UtilisationStats stats = tableData.getStats().get(0);
+            assertThat(tableData.getData()).isNotNull();
+            assertThat(tableData.getData()).hasSize(2);
+            CourtUtilisationStatsReportResponse.UtilisationStats stats = tableData.getData().get(0);
             assertThat(stats.getCourtName()).isEqualTo("CHESTER (415)");
             assertThat(Math.round(stats.getUtilisation())).isEqualTo(Math.round(12.28));
             assertThat(stats.getMonth()).isEqualTo("June 2024");
             assertThat(stats.getDateLastRun()).isEqualTo(LocalDateTime.parse("2024-06-18T17:22:05",
                                                                              DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-            stats = tableData.getStats().get(1);
+            stats = tableData.getData().get(1);
             assertThat(stats.getCourtName()).isEqualTo("LEWES SITTING AT CHICHESTER (416)");
             assertThat(Math.round(stats.getUtilisation())).isEqualTo(Math.round(11.89));
             assertThat(stats.getMonth()).isEqualTo("April 2024");
@@ -618,9 +618,9 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
             assertThat(tableData).isNotNull();
             assertThat(tableData.getHeadings()).isNotNull();
             assertThat(tableData.getHeadings()).hasSize(4);
-            assertThat(tableData.getStats()).isNotNull();
-            assertThat(tableData.getStats()).hasSize(1);
-            CourtUtilisationStatsReportResponse.UtilisationStats stats = tableData.getStats().get(0);
+            assertThat(tableData.getData()).isNotNull();
+            assertThat(tableData.getData()).hasSize(1);
+            CourtUtilisationStatsReportResponse.UtilisationStats stats = tableData.getData().get(0);
             assertThat(stats.getCourtName()).isEqualTo("CHESTER (415)");
             assertThat(Math.round(stats.getUtilisation())).isEqualTo(Math.round(12.28));
             assertThat(stats.getMonth()).isEqualTo("June 2024");
