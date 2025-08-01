@@ -421,9 +421,9 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
 
             List<String> stats = List.of(line.split(","));
 
-            if (stats.size() < 5) {
+            if (stats.size() < 6) {
                 log.warn("Invalid utilisation stats line: {}", line);
-                continue;
+                throw new MojException.InternalServerError("Invalid utilisation stats line: " + line, null);
             }
 
             try {
