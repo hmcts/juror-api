@@ -287,6 +287,11 @@ public class PoolRequestServiceImpl implements PoolRequestService {
     }
 
     @Override
+    public PaginatedList<PoolRequestActiveDataDto> getActivePoolUnderResponded(ActivePoolFilterQuery filterQuery) {
+        return activePoolsRepository.getActivePoolUnderResponded(filterQuery);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public PoolsAtCourtLocationListDto getActivePoolsAtCourtLocation(String locCode) {
 

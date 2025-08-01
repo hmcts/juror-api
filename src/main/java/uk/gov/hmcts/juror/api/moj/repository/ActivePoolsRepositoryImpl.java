@@ -26,6 +26,8 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 
 
@@ -56,6 +58,17 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
     public PaginatedList<PoolRequestActiveDataDto> getActivePoolRequests(ActivePoolFilterQuery filterQuery) {
         if (filterQuery.getTab().equals(BUREAU_TAB)) {
             return getActiveBureauTabRequests(filterQuery);
+        } else if (filterQuery.getTab().equals(COURT_TAB)) {
+            return getActiveCourtTabRequests(filterQuery);
+        } else {
+            throw new MojException.BadRequest("Invalid tab type", null);
+        }
+    }
+
+    @Override
+    public PaginatedList<PoolRequestActiveDataDto> getActivePoolUnderResponded(ActivePoolFilterQuery filterQuery) {
+        if (filterQuery.getTab().equals(BUREAU_TAB)) {
+            return getActiveBureauTabUnderResponded(filterQuery);
         } else if (filterQuery.getTab().equals(COURT_TAB)) {
             return getActiveCourtTabRequests(filterQuery);
         } else {
@@ -101,6 +114,63 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
             }
         );
     }
+
+    private PaginatedList<PoolRequestActiveDataDto>
+    getActiveBureauTabUnderResponded(ActivePoolFilterQuery filterQuery) {
+
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+
+        JPAQuery<Tuple> query = queryFactory.select(POOL_REQUEST, CONFIRMED_FROM_BUREAU)
+            .from(POOL_REQUEST)
+            .leftJoin(JUROR_POOL).on(POOL_REQUEST.eq(JUROR_POOL.pool))
+            .where(POOL_REQUEST.owner.eq(SecurityUtil.BUREAU_OWNER))
+            .where(POOL_REQUEST.newRequest.eq('N'))
+            .where(POOL_REQUEST.numberRequested.ne(0))
+            .where(POOL_REQUEST.poolType.description.in(PoolRequestUtils.POOL_TYPES_DESC_LIST))
+            .where(POOL_REQUEST.returnDate.loe(LocalDate.now().plusDays(35)))
+            .groupBy(POOL_REQUEST, POOL_REQUEST.courtLocation.name);
+
+        if (StringUtils.isNotBlank(filterQuery.getLocCode())) {
+            query.where(POOL_REQUEST.courtLocation.locCode.eq(filterQuery.getLocCode()));
+        }
+        if (SecurityUtil.isCourt()) {
+            query.where(POOL_REQUEST.courtLocation.locCode.in(SecurityUtil.getCourts()));
+        }
+
+        // return PaginationUtil.toPaginatedList(
+        PaginatedList<PoolRequestActiveDataDto> allResults = PaginationUtil.toPaginatedList(
+            query,
+            filterQuery,
+            PoolRequestedFilterQuery.SortField.POOL_NUMBER,
+            SortMethod.ASC,
+            data -> {
+                PoolRequest poolRequest = Objects.requireNonNull(data.get(POOL_REQUEST));
+                return PoolRequestActiveDataDto.builder()
+                    .poolNumber(poolRequest.getPoolNumber())
+                    .requestedFromBureau(poolRequest.getNumberRequested())
+                    .confirmedFromBureau(data.get(CONFIRMED_FROM_BUREAU))
+                    .courtName(poolRequest.getCourtLocation().getName())
+                    .poolType(poolRequest.getPoolType().getDescription())
+                    .attendanceDate(poolRequest.getReturnDate())
+                    .build();
+            }
+        );
+        List<PoolRequestActiveDataDto> filtered = allResults.getData().stream()
+            .filter(dto -> dto.getRequired() > 0)
+            .filter(dto -> dto.getAttendanceDate() != null
+                &&
+                dto.getAttendanceDate().isBefore(LocalDate.now().plusDays(35)))
+            .sorted(Comparator.comparing(PoolRequestActiveDataDto::getRequired).reversed())
+            .toList();
+        return new PaginatedList<>(
+            allResults.getCurrentPage(),
+            (long) filtered.size(),
+            allResults.getTotalItems(),
+            filtered
+        );
+    }
+
+
 
 
     private PaginatedList<PoolRequestActiveDataDto> getActiveCourtTabRequests(ActivePoolFilterQuery filterQuery) {
