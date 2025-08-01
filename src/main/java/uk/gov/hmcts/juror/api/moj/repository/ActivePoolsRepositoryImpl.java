@@ -116,7 +116,7 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
     }
 
     private PaginatedList<PoolRequestActiveDataDto>
-    getActiveBureauTabUnderResponded(ActivePoolFilterQuery filterQuery) {
+        getActiveBureauTabUnderResponded(ActivePoolFilterQuery filterQuery) {
 
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
 

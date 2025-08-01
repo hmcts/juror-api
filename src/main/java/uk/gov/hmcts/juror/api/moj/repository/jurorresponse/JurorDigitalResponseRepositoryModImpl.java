@@ -26,7 +26,8 @@ public class JurorDigitalResponseRepositoryModImpl implements IJurorDigitalRespo
     public Tuple getAssignRepliesStatistics() {
         JPAQuery<Tuple> query = getJpaQueryFactory().select(
                 new CaseBuilder()
-                    .when(digitalResponse.urgent.isFalse().and(digitalResponse.processingStatus.ne(ProcessingStatus.AWAITING_CONTACT)
+                    .when(digitalResponse.urgent.isFalse().
+                              and(digitalResponse.processingStatus.ne(ProcessingStatus.AWAITING_CONTACT)
                     .or(digitalResponse.processingStatus.ne(ProcessingStatus.AWAITING_COURT_REPLY))
                               .or(digitalResponse.processingStatus.ne(ProcessingStatus.AWAITING_TRANSLATION))))
                     .then(1L).otherwise(0L).sum().as("nonUrgent"),
