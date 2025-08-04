@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 /**
  * DTO of entire Juror response in the Juror Digital bureau screens.
  *
- * @see uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetail
+ * @see uk.gov.hmcts.juror.api.bureau.domain
  */
 @Data
 @Slf4j

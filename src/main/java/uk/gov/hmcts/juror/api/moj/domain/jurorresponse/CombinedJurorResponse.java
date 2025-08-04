@@ -251,12 +251,6 @@ public class CombinedJurorResponse extends Address implements Serializable {
     @Column(name = "mental_health_capacity")
     private Boolean mentalHealthCapacity;
 
-    @Column(name = "deferral")
-    private Boolean deferral;
-
-    @Column(name = "excusal")
-    private Boolean excusal;
-
     @Column(name = "signed")
     private Boolean signed;
 

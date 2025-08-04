@@ -256,11 +256,17 @@ public class ModJurorDetail implements Serializable {
     @Column(name = "deferral_date")
     private String deferralDate;
 
+    @Column(name = "deferral")
+    private Boolean deferral;
+
     @Column(name = "reasonable_adjustments_arrangements")
     private String reasonableAdjustmentsArrangements;
 
     @Column(name = "excusal_reason")
     private String excusalReason;
+
+    @Column(name = "excusal")
+    private Boolean excusal;
 
     /**
      * Whether the juror's email details should be used (false = use third party details).
@@ -310,11 +316,9 @@ public class ModJurorDetail implements Serializable {
     @Column(name = "is_active")
     private Boolean isActive;
 
-    @Column(name = "deferral")
-    private Boolean deferral;
 
-    @Column(name = "excusal")
-    private Boolean excusal;
+
+
 
 
     public boolean isWelshCourt() {
