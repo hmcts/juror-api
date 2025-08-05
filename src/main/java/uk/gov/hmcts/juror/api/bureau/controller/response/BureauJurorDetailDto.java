@@ -274,6 +274,9 @@ public class BureauJurorDetailDto implements Serializable, IJurorResponse {
     @Schema(description = "Details about convictions")
     private String convictionsDetails;
 
+    @Schema(description = "Deferral")
+    private Boolean deferral;
+
     @Schema(description = "Reason about deferring jury duties")
     private String deferralReason;
 
@@ -285,6 +288,9 @@ public class BureauJurorDetailDto implements Serializable, IJurorResponse {
 
     @Schema(description = "Details about any special arrangements or needs")
     private String specialNeedsArrangements;
+
+    @Schema(description = "Excusal")
+    private Boolean excusal;
 
     @Schema(description = "Details about jury duty excusal")
     private String excusalReason;
@@ -419,9 +425,11 @@ public class BureauJurorDetailDto implements Serializable, IJurorResponse {
         this.bailDetails = jurorDetails.getBailDetails();
         this.convictions = jurorDetails.getConvictions();
         this.convictionsDetails = jurorDetails.getConvictionsDetails();
+        this.deferral = jurorDetails.getDeferral();
         this.deferralReason = jurorDetails.getDeferralReason();
         this.deferralDate = jurorDetails.getDeferralDate();
         this.specialNeedsArrangements = jurorDetails.getReasonableAdjustmentsArrangements();
+        this.excusal = jurorDetails.getExcusal();
         this.excusalReason = jurorDetails.getExcusalReason();
         this.useJurorEmailDetails = jurorDetails.getUseJurorEmailDetails();
         this.useJurorPhoneDetails = jurorDetails.getUseJurorPhoneDetails();
