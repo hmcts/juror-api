@@ -23,6 +23,15 @@ public abstract class AbstractRemoteRestClient {
             this.restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(baseUrl));
 
           //  this.restTemplate.setUriTemplateHandler(new RootUriTemplateHandler(baseUrl));
+
+         //   protected AbstractRemoteRestClient(RestTemplateBuilder restTemplateBuilder, String baseUrl) {
+         //       this.restTemplate = restTemplateBuilder.build();
+         //       if (baseUrl != null) {
+         //           DefaultUriBuilderFactory uriBuilderFactory = new DefaultUriBuilderFactory(baseUrl);
+         //           uriBuilderFactory.setEncodingMode(DefaultUriBuilderFactory.EncodingMode.TEMPLATE_AND_VALUES);
+         //           this.restTemplate.setUriTemplateHandler(uriBuilderFactory);
+
+
         }
     }
 }
