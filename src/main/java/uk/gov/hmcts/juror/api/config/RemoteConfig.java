@@ -42,14 +42,43 @@ public class RemoteConfig {
 
     private RestTemplateBuilder restTemplateBuilder(final WebConfig webConfig,
                                                     final JwtService jwtService) {
-        final List<ClientHttpRequestInterceptor> clientHttpRequestInterceptorList =
+    //    final List<ClientHttpRequestInterceptor> clientHttpRequestInterceptorList =
+     //       List.of(new JwtAuthenticationInterceptor(jwtService, webConfig.getSecurity()));
+
+        final List<ClientHttpRequestInterceptor> interceptors =
             List.of(new JwtAuthenticationInterceptor(jwtService, webConfig.getSecurity()));
 
-        DefaultUriBuilderFactory uriBuilderFactory = new DefaultUriBuilderFactory(
-            webConfig.getScheme() + "://" + webConfig.getHost() + ":" + webConfig.getPort());
+        String baseUrl;
+        try {
+            int port = Integer.parseInt(webConfig.getPort());
+            URI uri = new URI(webConfig.getScheme(), null, webConfig.getHost(), port, null, null, null);
+            baseUrl = uri.toString();
+        } catch (URISyntaxException | NumberFormatException | NullPointerException e) {
+            log.error("Invalid URI for RestTemplate: scheme={}, host={}, port={}",
+                      webConfig.getScheme(), webConfig.getHost(), webConfig.getPort(), e);
+            throw new IllegalStateException("Cannot build RestTemplate: invalid URI components", e);
+        }
+
+        log.info("Creating RestTemplate for base URL: {}", baseUrl);
+
+        DefaultUriBuilderFactory uriBuilderFactory = new DefaultUriBuilderFactory(baseUrl);
         uriBuilderFactory.setEncodingMode(DefaultUriBuilderFactory.EncodingMode.URI_COMPONENT);
 
         return new RestTemplateBuilder()
+            .requestFactory(webConfig::getRequestFactory)
+            .uriTemplateHandler(uriBuilderFactory)
+            .additionalInterceptors(interceptors);
+    }
+}
+
+
+
+
+      //  DefaultUriBuilderFactory uriBuilderFactory = new DefaultUriBuilderFactory(
+      //      webConfig.getScheme() + "://" + webConfig.getHost() + ":" + webConfig.getPort());
+      //  uriBuilderFactory.setEncodingMode(DefaultUriBuilderFactory.EncodingMode.URI_COMPONENT);
+
+       // return new RestTemplateBuilder()
 
          //   .requestFactory(webConfig::getRequestFactory)
         //    .uriTemplateHandler(new RootUriTemplateHandler(
@@ -58,32 +87,11 @@ public class RemoteConfig {
         //    .uriTemplateHandler(uriBuilderFactory)
         //    .additionalInterceptors(clientHttpRequestInterceptorList);
 
-            .requestFactory(webConfig::getRequestFactory)
-            .uriTemplateHandler(uriBuilderFactory)
-            .additionalInterceptors(clientHttpRequestInterceptorList);
+       //     .requestFactory(webConfig::getRequestFactory)
+       //     .uriTemplateHandler(uriBuilderFactory)
+       //     .additionalInterceptors(clientHttpRequestInterceptorList);
 
-    }
+  //  }
 
-  //  private RestTemplateBuilder restTemplateBuilder(final WebConfig webConfig,
-  //                                                  final JwtService jwtService) {
-  //      final List<ClientHttpRequestInterceptor> clientHttpRequestInterceptorList =
- //           List.of(new JwtAuthenticationInterceptor(jwtService, webConfig.getSecurity()));
 
- //       String baseUrl;
- //       try {
- //           int port = Integer.parseInt(webConfig.getPort()); // Convert String to int
- //           URI uri = new URI(webConfig.getScheme(), null, webConfig.getHost(), port, null, null, null);
- //           baseUrl = uri.toString(); // Safe URI
- //       } catch (URISyntaxException | NumberFormatException e) {
- //           throw new IllegalStateException("Invalid URI components in WebConfig", e);
- //       }
-
-   //     DefaultUriBuilderFactory uriBuilderFactory = new DefaultUriBuilderFactory(baseUrl);
-   //     uriBuilderFactory.setEncodingMode(DefaultUriBuilderFactory.EncodingMode.URI_COMPONENT);
-
-    //    return new RestTemplateBuilder()
-    //        .requestFactory(webConfig::getRequestFactory)
-     //       .uriTemplateHandler(uriBuilderFactory)
-     //       .additionalInterceptors(clientHttpRequestInterceptorList);
-   // }
-}
+//}
