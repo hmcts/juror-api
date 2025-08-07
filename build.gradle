@@ -50,7 +50,7 @@ bootJar {
 }
 
 jacoco {
-    toolVersion = "0.8.12"
+    toolVersion = "0.8.13"
 }
 
 version = '5.11.0'
