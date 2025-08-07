@@ -551,7 +551,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
     @Sql({
         "/db/truncate.sql",
         "/db/mod/truncate.sql",
-        "/db/mod/reports/MonthlyUtilisationReportsITest_typical.sql"
+        "/db/mod/reports/CourtUtilisationReportsITest_typical.sql"
     })
     class GetCourtUtilisationStatsReportTests {
 
@@ -568,6 +568,8 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
                                                               URI.create(COURT_UTILISATION_STATS_REPORT_URL)),
                                       CourtUtilisationStatsReportResponse.class);
 
+            assertThat(responseEntity.getStatusCode()).as("Expect HTTP OK response").isEqualTo(HttpStatus.OK);
+
             CourtUtilisationStatsReportResponse responseBody = responseEntity.getBody();
             assertThat(responseBody).isNotNull();
             // validate the table data
@@ -576,7 +578,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
             assertThat(tableData.getHeadings()).isNotNull();
             assertThat(tableData.getHeadings()).hasSize(4);
             assertThat(tableData.getData()).isNotNull();
-            assertThat(tableData.getData()).hasSize(2);
+            assertThat(tableData.getData()).hasSize(3);
             CourtUtilisationStatsReportResponse.UtilisationStats stats = tableData.getData().get(0);
             assertThat(stats.getCourtName()).isEqualTo("CHESTER (415)");
             assertThat(Math.round(stats.getUtilisation())).isEqualTo(Math.round(12.28));
@@ -590,7 +592,13 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
             assertThat(stats.getDateLastRun()).isEqualTo(LocalDateTime.parse("2024-04-18T17:22:05",
                                                                              DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 
-            assertThat(responseEntity.getStatusCode()).as("Expect HTTP OK response").isEqualTo(HttpStatus.OK);
+            stats = tableData.getData().get(2);
+            assertThat(stats.getCourtName()).isEqualTo("MANCHESTER, MINSHULL STREET (436)");
+            assertThat(Math.round(stats.getUtilisation())).isEqualTo(Math.round(24.49));
+            assertThat(stats.getMonth()).isEqualTo("July 2025");
+            assertThat(stats.getDateLastRun()).isEqualTo(LocalDateTime.parse("2025-07-01T17:22:05",
+                                                                             DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+
 
         }
 
