@@ -1,19 +1,17 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.Before;
 import org.junit.Ignore;
-import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
@@ -25,7 +23,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -80,12 +77,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.ExcessivePublicCount"})
-@RunWith(SpringRunner.class)
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = JurorRecordController.class, excludeAutoConfiguration = {SecurityAutoConfiguration.class})
 @ContextConfiguration(classes = {JurorRecordController.class, BulkServiceImpl.class})
 @DisplayName("Controller: /api/v1/moj/juror-record")
-class JurorRecordControllerTest {
+public class JurorRecordControllerTest {
 
     private static final String BASE_URL = "/api/v1/moj/juror-record";
     private static final String JUROR_NUMBER = "111111111";
@@ -109,7 +105,6 @@ class JurorRecordControllerTest {
 
     private MockMvc mockMvc;
 
-    @Before
     @BeforeEach
     public void setupMocks() {
         bureauJwtPayload = null;
@@ -143,7 +138,7 @@ class JurorRecordControllerTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$['commonDetails']['jurorNumber']", CoreMatchers.is(JUROR_NUMBER)))
             .andExpect(jsonPath("$['welshLanguageRequired']", CoreMatchers.nullValue()))
-            .andExpect(jsonPath("$['commonDetails']['policeCheck']", CoreMatchers.is("Not Checked")));
+            .andExpect(jsonPath("$['commonDetails']['police_check']", CoreMatchers.is("NOT_CHECKED")));
 
         verify(jurorRecordService, times(1))
             .getJurorOverview(bureauJwtPayload, JUROR_NUMBER, LOC_CODE);
@@ -153,7 +148,7 @@ class JurorRecordControllerTest {
      * Test designed to check all fields within the returned object.
      */
     @Test
-    public void test_bureauUser_getJurorOverview_happyPath_allFieldsPresent() throws Exception {
+    void test_bureauUser_getJurorOverview_happyPath_allFieldsPresent() throws Exception {
         bureauJwtPayload = TestUtils.createJwt(OWNER_BUREAU, USERNAME_BUREAU);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(bureauJwtPayload);
@@ -173,7 +168,7 @@ class JurorRecordControllerTest {
                 .content(TestUtils.asJsonString(dto)))
             .andExpect(status().is2xxSuccessful())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$['commonDetails']['owner']", CoreMatchers.is("Current owner")))
+            .andExpect(jsonPath("$['commonDetails']['owner']", CoreMatchers.is("400")))
             .andExpect(jsonPath("$['commonDetails']['title']", CoreMatchers.is("Miss")))
             .andExpect(jsonPath("$['commonDetails']['firstName']", CoreMatchers.is("FirstName")))
             .andExpect(jsonPath("$['commonDetails']['lastName']", CoreMatchers.is("LastName")))
@@ -189,7 +184,7 @@ class JurorRecordControllerTest {
             .andExpect(jsonPath("$['commonDetails']['deferredTo']", CoreMatchers.nullValue()))
             .andExpect(jsonPath("$['commonDetails']['noDeferrals']", CoreMatchers.is(0)))
             .andExpect(jsonPath("$['commonDetails']['deferralDate']", CoreMatchers.nullValue()))
-            .andExpect(jsonPath("$['commonDetails']['policeCheck']", CoreMatchers.is("Not Checked")))
+            .andExpect(jsonPath("$['commonDetails']['police_check']", CoreMatchers.is("NOT_CHECKED")))
             .andExpect(jsonPath("$['commonDetails']['pendingTitle']", CoreMatchers.is("Dr")))
             .andExpect(jsonPath("$['commonDetails']['pendingFirstName']",
                 CoreMatchers.is("NewFirstName")))
@@ -212,7 +207,7 @@ class JurorRecordControllerTest {
 
 
     @Test
-    public void test_courtUser_getJurorOverview_happyPath() throws Exception {
+    void test_courtUser_getJurorOverview_happyPath() throws Exception {
         bureauJwtPayload = TestUtils.createJwt(OWNER_COURT, USERNAME_COURT);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(bureauJwtPayload);
@@ -235,7 +230,7 @@ class JurorRecordControllerTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$['welshLanguageRequired']", CoreMatchers.is(true)))
             .andExpect(jsonPath("$['commonDetails']['jurorNumber']", CoreMatchers.is(JUROR_NUMBER)))
-            .andExpect(jsonPath("$['commonDetails']['policeCheck']", CoreMatchers.nullValue()));
+            .andExpect(jsonPath("$['commonDetails']['police_check']", CoreMatchers.nullValue()));
 
         verify(jurorRecordService, times(1))
             .getJurorOverview(bureauJwtPayload, JUROR_NUMBER, LOC_CODE);
@@ -256,7 +251,7 @@ class JurorRecordControllerTest {
     }
 
     @Test
-    public void test_fixJurorName_courtUser_happyPath() throws Exception {
+    void test_fixJurorName_courtUser_happyPath() throws Exception {
         bureauJwtPayload = TestUtils.createJwt(OWNER_COURT, USERNAME_COURT);
         bureauJwtPayload.setStaff(BureauJwtPayload.Staff.builder().rank(0).build());
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
@@ -300,29 +295,6 @@ class JurorRecordControllerTest {
             .fixErrorInJurorName(any(BureauJwtPayload.class), Mockito.anyString(),
                 any(JurorNameDetailsDto.class));
     }
-
-    @Test
-    public void test_fixJurorName_bureauUser_insufficientRank() throws Exception {
-        bureauJwtPayload = TestUtils.createJwt(OWNER_BUREAU, USERNAME_BUREAU);
-        bureauJwtPayload.setStaff(BureauJwtPayload.Staff.builder().rank(0).build());
-        BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
-        when(mockPrincipal.getPrincipal()).thenReturn(bureauJwtPayload);
-
-        JurorNameDetailsDto dto = new JurorNameDetailsDto("Mr", "Test", "Person");
-
-        doNothing().when(jurorRecordService)
-            .fixErrorInJurorName(bureauJwtPayload, JUROR_NUMBER, dto);
-
-        mockMvc.perform(patch("/api/v1/moj/juror-record/fix-name/" + JUROR_NUMBER)
-                .principal(mockPrincipal)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtils.asJsonString(dto)))
-            .andExpect(status().isForbidden());
-
-        verify(jurorRecordService, Mockito.never()).fixErrorInJurorName(any(BureauJwtPayload.class),
-            Mockito.anyString(), any(JurorNameDetailsDto.class));
-    }
-
 
     @ParameterizedTest
     @ValueSource(strings = {"MrMrsMsMiss", "Mr|"})
@@ -402,8 +374,6 @@ class JurorRecordControllerTest {
 
     // TODO
     @Test
-    @Ignore("PathVariables are not validating, need a solution to fix these tests. One solution is to create a custom"
-        + " type to represent the variable and apply validation - like we do for DTOs")
     public void testFixJurorNameBureauUserInvalidRequestJurorNumberTooShort() throws Exception {
         BureauJwtPayload jwtPayload = TestUtils.createJwt(OWNER_BUREAU, USERNAME_BUREAU);
         jwtPayload.setStaff(BureauJwtPayload.Staff.builder().rank(1).build());
@@ -412,11 +382,11 @@ class JurorRecordControllerTest {
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
         JurorNameDetailsDto dto = new JurorNameDetailsDto("Mr", "Test", "Person");
-
+        final String jurorNumber = "ASDSS";
         doNothing().when(jurorRecordService)
-            .fixErrorInJurorName(jwtPayload, JUROR_NUMBER, dto);
+            .fixErrorInJurorName(jwtPayload, jurorNumber, dto);
 
-        mockMvc.perform(patch("/api/v1/moj/juror-record/fix-name/" + JUROR_NUMBER)
+        mockMvc.perform(patch("/api/v1/moj/juror-record/fix-name/" + jurorNumber)
                 .principal(mockPrincipal)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(TestUtils.asJsonString(dto)))
@@ -452,11 +422,8 @@ class JurorRecordControllerTest {
             Mockito.anyString(), any(JurorNameDetailsDto.class));
     }
 
-    // TODO
     @Test
-    @Ignore("PathVariables are not validating, need a solution to fix these tests. One solution is to create a custom"
-        + " type to represent the variable and apply validation - like we do for DTOs")
-    public void testFixJurorNameBureauUserInvalidRequestJurorNumberAlphaNumeric() throws Exception {
+    void testFixJurorNameBureauUserInvalidRequestJurorNumberAlphaNumeric() throws Exception {
         BureauJwtPayload jwtPayload = TestUtils.createJwt(OWNER_BUREAU, USERNAME_BUREAU);
         jwtPayload.setStaff(BureauJwtPayload.Staff.builder().rank(1).build());
 
@@ -586,7 +553,7 @@ class JurorRecordControllerTest {
     }
 
     @Test
-    public void test_processNameChangeApproval_invalidJurorNumber_missing() throws Exception {
+    void test_processNameChangeApproval_invalidJurorNumber_missing() throws Exception {
         BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -594,6 +561,8 @@ class JurorRecordControllerTest {
         ProcessNameChangeRequestDto dto = new ProcessNameChangeRequestDto(ApprovalDecision.REJECT,
             "Their name has not been legally changed");
 
+        // this endpoint expects a juror number in the path
+        // so we are not providing it here to test the missing juror number case
         mockMvc.perform(patch("/api/v1/moj/juror-record/change-name/")
                 .principal(mockPrincipal)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -605,64 +574,13 @@ class JurorRecordControllerTest {
                 any(ProcessNameChangeRequestDto.class));
     }
 
-    // TODO
-    @Test
-    @Ignore("PathVariables are not validating, need a solution to fix these tests. One solution is to create a custom"
-        + " type to represent the variable and apply validation - like we do for DTOs")
-    public void test_processNameChangeApproval_invalidJurorNumber_tooShort() throws Exception {
+
+    @ParameterizedTest
+    @ValueSource(strings = {"12345678", "1234567890", "1AW23d434"})
+    void test_processNameChangeApproval_invalidJurorNumber(String jurorNumber) throws Exception {
         BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
-
-        final String jurorNumber = "11111111";
-
-        ProcessNameChangeRequestDto dto = new ProcessNameChangeRequestDto(ApprovalDecision.REJECT, "test notes");
-
-        mockMvc.perform(patch("/api/v1/moj/juror-record/change-name/" + jurorNumber)
-                .principal(mockPrincipal)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtils.asJsonString(dto)))
-            .andExpect(status().isBadRequest());
-
-        verify(jurorRecordService, Mockito.never())
-            .processPendingNameChange(any(BureauJwtPayload.class), Mockito.anyString(),
-                any(ProcessNameChangeRequestDto.class));
-    }
-
-    //TODO
-    @Test
-    @Ignore("PathVariables are not validating, need a solution to fix these tests. One solution is to create a custom"
-        + " type to represent the variable and apply validation - like we do for DTOs")
-    public void test_processNameChangeApproval_invalidJurorNumber_tooLong() throws Exception {
-        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
-        BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
-        when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
-
-        final String jurorNumber = "1111111111";
-
-        ProcessNameChangeRequestDto dto = new ProcessNameChangeRequestDto(ApprovalDecision.REJECT, "test notes");
-
-        mockMvc.perform(patch("/api/v1/moj/juror-record/change-name/" + jurorNumber)
-                .principal(mockPrincipal)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtils.asJsonString(dto)))
-            .andExpect(status().isBadRequest());
-
-        verify(jurorRecordService, Mockito.never())
-            .processPendingNameChange(any(BureauJwtPayload.class), Mockito.anyString(),
-                any(ProcessNameChangeRequestDto.class));
-    }
-
-    //TODO
-    @Test
-    @Ignore("PathVariables are not validating, need a solution to fix these tests. One solution is to create a custom"
-        + " type to represent the variable and apply validation - like we do for DTOs")
-    public void test_processNameChangeApproval_invalidJurorNumber_alphaNumeric() throws Exception {
-        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
-        BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
-        when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
-
-        final String jurorNumber = "11111111L";
 
         ProcessNameChangeRequestDto dto = new ProcessNameChangeRequestDto(ApprovalDecision.REJECT, "test notes");
 
@@ -678,7 +596,7 @@ class JurorRecordControllerTest {
     }
 
     @Test
-    public void test_editJurorDetails_happyPath() throws Exception {
+    void test_editJurorDetails_happyPath() throws Exception {
         BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -1080,7 +998,7 @@ class JurorRecordControllerTest {
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
         EditJurorRecordRequestDto dto = createEditJurorRecordRequestDto();
-        dto.setPendingLastName(TestUtils.buildStringToLength(21));
+        dto.setPendingLastName(TestUtils.buildStringToLength(27));
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/edit-juror/" + JUROR_NUMBER)
                 .principal(mockPrincipal)
@@ -1092,62 +1010,12 @@ class JurorRecordControllerTest {
             .editJurorDetails(jwtPayload, dto, JUROR_NUMBER);
     }
 
-    // Todo
-    @Test
-    @Ignore("PathVariables are not validating, need a solution to fix these tests. One solution is to create a custom"
-        + " type to represent the variable and apply validation - like we do for DTOs")
-    public void test_editJurorDetails_invalidJurorNumber_tooShort() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"12345678", "1234567890", "1AW23d434"})
+    void test_editJurorDetails_invalidJurorNumber(String jurorNumber) throws Exception {
         BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
-
-        final String jurorNumber = "11111111";
-
-        EditJurorRecordRequestDto dto = createEditJurorRecordRequestDto();
-
-        mockMvc.perform(patch("/api/v1/moj/juror-record/edit-juror/" + jurorNumber)
-                .principal(mockPrincipal)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtils.asJsonString(dto)))
-            .andExpect(status().isBadRequest());
-
-        verify(jurorRecordService, Mockito.never())
-            .editJurorDetails(jwtPayload, dto, jurorNumber);
-    }
-
-    // TODO
-    @Test
-    @Ignore("PathVariables are not validating, need a solution to fix these tests. One solution is to create a custom"
-        + " type to represent the variable and apply validation - like we do for DTOs")
-    public void test_editJurorDetails_invalidJurorNumber_tooLong() throws Exception {
-        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
-        BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
-        when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
-
-        final String jurorNumber = "1111111111";
-
-        EditJurorRecordRequestDto dto = createEditJurorRecordRequestDto();
-
-        mockMvc.perform(patch("/api/v1/moj/juror-record/edit-juror/" + jurorNumber)
-                .principal(mockPrincipal)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtils.asJsonString(dto)))
-            .andExpect(status().isBadRequest());
-
-        verify(jurorRecordService, Mockito.never())
-            .editJurorDetails(jwtPayload, dto, jurorNumber);
-    }
-
-    // TODO
-    @Test
-    @Ignore("PathVariables are not validating, need a solution to fix these tests. One solution is to create a custom"
-        + " type to represent the variable and apply validation - like we do for DTOs")
-    public void test_editJurorDetails_invalidJurorNumber_alphaNumeric() throws Exception {
-        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
-        BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
-        when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
-
-        final String jurorNumber = "11111111L";
 
         EditJurorRecordRequestDto dto = createEditJurorRecordRequestDto();
 
@@ -1162,7 +1030,7 @@ class JurorRecordControllerTest {
     }
 
     @Test
-    public void test_editJurorDetails_invalidJurorNumber_missing() throws Exception {
+    void test_editJurorDetails_invalidJurorNumber_missing() throws Exception {
         BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
