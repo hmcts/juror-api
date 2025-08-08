@@ -74,6 +74,7 @@ import uk.gov.hmcts.juror.api.moj.service.BulkService;
 import uk.gov.hmcts.juror.api.moj.service.JurorRecordService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import uk.gov.hmcts.juror.api.validation.JurorNumber;
+import uk.gov.hmcts.juror.api.validation.JurorNumberValidator;
 
 import java.util.List;
 
@@ -344,9 +345,8 @@ public class JurorRecordController {
     public void fixJurorName(@Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
                              @RequestBody @Valid JurorNameDetailsDto jurorNameDetailsDto,
                              @Parameter(description = "Valid juror number", required = true)
-                             @Size(min = 9, max = 9)
-                             @PathVariable("jurorNumber")
-                             @Valid @JurorNumber String jurorNumber) {
+                             @PathVariable("jurorNumber") String jurorNumber) {
+        JurorNumberValidator.isValidJurorNumber(jurorNumber);
         jurorRecordService.fixErrorInJurorName(payload, jurorNumber, jurorNameDetailsDto);
     }
 
@@ -366,8 +366,9 @@ public class JurorRecordController {
     public void processNameChangeApproval(@Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
                                           @RequestBody @Valid ProcessNameChangeRequestDto requestDto,
                                           @Parameter(description = "Valid juror number", required = true)
-                                          @JurorNumber @PathVariable("jurorNumber")
-                                          @Valid String jurorNumber) {
+                                          @PathVariable("jurorNumber") String jurorNumber) {
+        JurorNumberValidator.isValidJurorNumber(jurorNumber);
+
         boolean isBureauUser = JurorDigitalApplication.JUROR_OWNER.equalsIgnoreCase(payload.getOwner());
 
         if (isBureauUser) {
@@ -391,8 +392,8 @@ public class JurorRecordController {
     public void editJurorDetails(@Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
                                  @RequestBody @Valid EditJurorRecordRequestDto requestDto,
                                  @Parameter(description = "Valid juror number", required = true)
-                                 @JurorNumber @PathVariable("jurorNumber")
-                                 @Valid String jurorNumber) {
+                                 @PathVariable("jurorNumber") String jurorNumber) {
+        JurorNumberValidator.isValidJurorNumber(jurorNumber);
         jurorRecordService.editJurorDetails(payload, requestDto, jurorNumber);
     }
 
