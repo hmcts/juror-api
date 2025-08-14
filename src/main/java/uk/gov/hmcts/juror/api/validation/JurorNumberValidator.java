@@ -11,10 +11,8 @@ public class JurorNumberValidator {
     }
 
     public static void isValidJurorNumber(String jurorNumber) {
-        if (jurorNumber == null || jurorNumber.isEmpty()) {
-            return; // Consider empty or null as valid
-        }
-        if (!jurorNumber.matches(ValidationConstants.JUROR_NUMBER)) {;
+        if (jurorNumber == null || jurorNumber.isEmpty()
+            || !jurorNumber.matches(ValidationConstants.JUROR_NUMBER)) {
             log.warn("Invalid juror number format: {}", jurorNumber);
             // throw a bad request exception if needed
             throw new MojException.BadRequest("Invalid juror number format: " + jurorNumber, null);
