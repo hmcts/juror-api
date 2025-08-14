@@ -211,8 +211,14 @@ public class CombinedJurorResponse extends Address implements Serializable {
     @Column(name = "deferral_date")
     private String deferralDate;
 
+    @Column(name = "deferral")
+    private Boolean deferral;
+
     @Column(name = "excusal_reason")
     private String excusalReason;
+
+    @Column(name = "excusal")
+    private Boolean excusal;
 
     @Column(name = "thirdparty_fname")
     private String thirdPartyFName;
@@ -244,12 +250,6 @@ public class CombinedJurorResponse extends Address implements Serializable {
     //Paper
     @Column(name = "mental_health_capacity")
     private Boolean mentalHealthCapacity;
-
-    @Column(name = "deferral")
-    private Boolean deferral;
-
-    @Column(name = "excusal")
-    private Boolean excusal;
 
     @Column(name = "signed")
     private Boolean signed;
