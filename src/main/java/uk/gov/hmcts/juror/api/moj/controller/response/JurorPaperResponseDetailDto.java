@@ -301,6 +301,23 @@ public class JurorPaperResponseDetailDto implements IJurorResponse {
         @JsonProperty("convicted")
         @Schema(description = "Whether the Juror has a criminal conviction")
         private Boolean convicted;
+
+        @JsonProperty("livedConsecutiveDetails")
+        @Schema(description = "Textual description of the Juror's lived consecutive details")
+        private String livedConsecutiveDetails;
+
+        @JsonProperty("mentalHealthActDetails")
+        @Schema(description = "Textual description of the Juror's mental health act details")
+        private String mentalHealthActDetails;
+
+        @JsonProperty("onBailDetails")
+        @Schema(description = "Textual description of the Juror's on bail details")
+        private String onBailDetails;
+
+        @JsonProperty("convictedDetails")
+        @Schema(description = "Textual description of the Juror's criminal conviction details")
+        private String convictedDetails;
+
     }
 
     @AllArgsConstructor

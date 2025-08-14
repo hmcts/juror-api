@@ -274,8 +274,6 @@ class JurorExpenseControllerTest {
             payload.setFinancialLoss(BigDecimal.ZERO);
             payload.setSmartCardNumber("12345678");
             payload.setDistanceTraveledMiles(5);
-            payload.setOverwriteExistingDraftExpenses(false);
-
 
             mockMvc.perform(post(toUrl(TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER))
                     .contentType(MediaType.APPLICATION_JSON)
