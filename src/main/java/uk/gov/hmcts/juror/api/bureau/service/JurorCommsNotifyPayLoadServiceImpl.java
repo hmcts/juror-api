@@ -116,7 +116,7 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
                 context.setPositionFrom(field.getPositionFrom());
                 context.setPositionTo(field.getPositionTo());
                 context.setDetailData(detailData);
-                if (field.getTemplateField().equals(SERVICE_START_DATE)) {
+                if (SERVICE_START_DATE.equals(field.getTemplateField())) {
                     fieldValue = invokeGetter(context, mapperObject);
                     String formattedDate;
 
@@ -140,7 +140,7 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
                         }
                     }
                     map.put(field.getTemplateField(), formattedDate);
-                } else if (field.getTemplateField().equals(SERVICE_START_TIME)) {
+                } else if (SERVICE_START_TIME.equals(field.getTemplateField())) {
                     final String attendTime = getAttendTime(context.getJurorPool());
                     map.put(field.getTemplateField(), attendTime);
                 } else if (mapperObject.getType() == NotifyTemplateMapperMod.Type.COURT) {
