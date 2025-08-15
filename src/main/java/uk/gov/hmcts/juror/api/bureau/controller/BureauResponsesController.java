@@ -3,6 +3,8 @@ package uk.gov.hmcts.juror.api.bureau.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +27,8 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.AutoAssignResponse;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseOverviewDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseSummaryWrapper;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauYourWorkCounts;
+import uk.gov.hmcts.juror.api.bureau.controller.response.CourtResponseSummaryWrapper;
+import uk.gov.hmcts.juror.api.bureau.controller.response.CourtYourWorkCounts;
 import uk.gov.hmcts.juror.api.bureau.controller.response.JurorResponseSearchResults;
 import uk.gov.hmcts.juror.api.bureau.exception.AutoAssignException;
 import uk.gov.hmcts.juror.api.bureau.exception.ReassignException;
@@ -44,6 +48,7 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 @RequestMapping(value = "/api/v1/bureau/responses", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Bureau Responses API", description = "Bureau operations relating to juror responses")
 @AllArgsConstructor(onConstructor = @__(@Autowired))
+@SuppressWarnings("PMD")
 public class BureauResponsesController {
 
     private final BureauService bureauService;
@@ -62,18 +67,45 @@ public class BureauResponsesController {
         return ResponseEntity.ok().body(wrapper);
     }
 
+    @GetMapping(path = "/courtDetails")
+    @Operation(summary = "Retrieve all juror details filtered by status category(todo,pending,"
+        + "completed)",
+        description = "Retrieve all juror details filtered by status category(todo,pending,completed)")
+    public ResponseEntity<CourtResponseSummaryWrapper> filterCourtDetailsByStatus(@Parameter(description =
+        "Response category filter") @RequestParam("filterBy") String filterBy) {
+        CourtResponseSummaryWrapper wrapper = bureauService.getCourtDetailsByProcessingStatus(filterBy);
+        return ResponseEntity.ok().body(wrapper);
+    }
+
     @GetMapping(path = "/counts")
     @Operation(summary = "Retrieve counts of responses assigned to the current user")
     public ResponseEntity<BureauYourWorkCounts> getCurrentUserTodo() {
         return ResponseEntity.ok().body(bureauService.getCounts(SecurityUtil.getActiveLogin()));
     }
 
-
     @GetMapping(path = "/todo")
     @Operation(summary = "Retrieve all todo responses assigned to the current user")
     public ResponseEntity<BureauResponseSummaryWrapper> getCurrentUserTodo(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload) {
         BureauResponseSummaryWrapper wrapper = bureauService.getTodo(payload.getLogin());
+        return ResponseEntity.ok().body(wrapper);
+    }
+
+    @GetMapping(path = "/courtCounts")
+    @Operation(summary = "Retrieve counts of responses assigned to the court location of the current user")
+    public ResponseEntity<CourtYourWorkCounts> getCourtCountsTodo() {
+        return ResponseEntity.ok().body(bureauService.getCountsForCourt(SecurityUtil.getActiveOwner()));
+    }
+
+
+
+    @GetMapping("/courtTodo/{locCode}")
+    @Operation(summary = "Retrieve all todo responses transferred to a given court location")
+    public ResponseEntity<CourtResponseSummaryWrapper> getTodoInCourtLocation(
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
+        @Parameter(description = "3-digit numeric string to identify the court") @PathVariable(name = "locCode")
+        @Size(min = 3, max = 3) @Valid String locCode) {
+        CourtResponseSummaryWrapper wrapper = bureauService.getTodoCourt(SecurityUtil.getActiveOwner());
         return ResponseEntity.ok().body(wrapper);
     }
 
@@ -85,12 +117,29 @@ public class BureauResponsesController {
         return ResponseEntity.ok().body(wrapper);
     }
 
+    @GetMapping(path = "/courtPending")
+    @Operation(summary = "Retrieve all pending responses assigned to the current court")
+    public ResponseEntity<CourtResponseSummaryWrapper> getCurrentCourtPending(
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload) {
+        CourtResponseSummaryWrapper wrapper = bureauService.getCourtPending(SecurityUtil.getActiveOwner());
+        return ResponseEntity.ok().body(wrapper);
+    }
+
     @GetMapping(path = "/completedToday")
     @Operation(summary = "Retrieve all responses assigned to the current user "
         + "which were completed today")
     public ResponseEntity<BureauResponseSummaryWrapper> getCurrentUserCompletedToday(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload) {
         BureauResponseSummaryWrapper wrapper = bureauService.getCompletedToday(payload.getLogin());
+        return ResponseEntity.ok().body(wrapper);
+    }
+
+    @GetMapping(path = "/courtCompletedToday")
+    @Operation(summary = "Retrieve all responses assigned to the current user "
+        + "which were completed today")
+    public ResponseEntity<CourtResponseSummaryWrapper> getCurrentCourtCompletedToday(
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload) {
+        CourtResponseSummaryWrapper wrapper = bureauService.getCourtCompletedToday(SecurityUtil.getActiveOwner());
         return ResponseEntity.ok().body(wrapper);
     }
 

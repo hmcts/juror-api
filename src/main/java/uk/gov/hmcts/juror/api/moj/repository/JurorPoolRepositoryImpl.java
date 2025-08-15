@@ -394,6 +394,33 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
         );
     }
 
+    @Override
+    public int getCountJurorsDueToAttendCourt(String locCode, LocalDate startDate, LocalDate endDate,
+                                              boolean reasonableAdjustmentRequired) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+
+        JPAQuery<Long> partialQuery = queryFactory
+            .select(JUROR_POOL.count())
+            .from(JUROR_POOL)
+            .where(JUROR_POOL.pool.courtLocation.locCode.eq(locCode))
+            .where(JUROR_POOL.status.status.in(IJurorStatus.RESPONDED, IJurorStatus.PANEL, IJurorStatus.JUROR))
+            .where(JUROR_POOL.isActive.isTrue())
+            .where(JUROR_POOL.nextDate.between(startDate, endDate))
+            .where(JUROR_POOL.owner.eq(SecurityUtil.getActiveOwner()));
+
+        if (reasonableAdjustmentRequired) {
+            partialQuery.where(JUROR_POOL.juror.reasonableAdjustmentCode.isNotNull());
+        }
+
+        Long count = partialQuery.fetchOne();
+
+        if (count == null) {
+            return 0;
+        } else {
+            return count.intValue();
+        }
+    }
+
 
     public static List<YieldPerformanceData> getYieldPerformanceData(JurorPoolRepository jurorPoolRepository,
                                                                      String courtLocCodes, LocalDate fromDate,
