@@ -496,15 +496,34 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
     }
 
     @Override
+    public List<String> getCompletedJurorsAtCourt(String locationCode, LocalDate attendanceDate) {
+
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        return queryFactory
+            .selectDistinct(APPEARANCE.jurorNumber)
+            .from(APPEARANCE)
+            .join(JUROR_POOL).on(APPEARANCE.poolNumber.eq(JUROR_POOL.pool.poolNumber))
+            .join(JUROR).on(JUROR_POOL.juror.jurorNumber.eq(JUROR.jurorNumber))
+            .where(APPEARANCE.courtLocation.locCode.eq(locationCode))
+            .where(APPEARANCE.attendanceDate.eq(attendanceDate))
+            .where(JUROR_POOL.status.status.eq(IJurorStatus.COMPLETED))
+            .where(JUROR.completionDate.eq(attendanceDate))
+            .where(JUROR_POOL.isActive.isTrue())
+            .fetch();
+    }
+
+    @Override
     public int getConfirmedAttendanceCountAtCourt(String locCode, LocalDate attendanceDate,
                                                   boolean includeNonAttendance, boolean includeOnTrial) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         JPAQuery<Long> partialQuery = queryFactory
             .select(APPEARANCE.count())
             .from(APPEARANCE)
+            .join(JUROR).on(APPEARANCE.jurorNumber.eq(JUROR.jurorNumber))
             .where(APPEARANCE.courtLocation.locCode.eq(locCode))
             .where(APPEARANCE.attendanceDate.eq(attendanceDate))
-            .where(APPEARANCE.noShow.isNull().or(APPEARANCE.noShow.isFalse()));
+            .where(APPEARANCE.noShow.isNull().or(APPEARANCE.noShow.isFalse()))
+            .where(JUROR.completionDate.isNull().or(JUROR.completionDate.eq(LocalDate.now())));
 
         if (includeNonAttendance) {
             partialQuery.where((APPEARANCE.appearanceStage.in(AppearanceStage.EXPENSE_ENTERED,
@@ -519,7 +538,8 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
         }
 
         if (!includeOnTrial) {
-            partialQuery.where(APPEARANCE.trialNumber.isNull().or(APPEARANCE.trialNumber.isEmpty()));
+            partialQuery.where((APPEARANCE.trialNumber.isNull().or(APPEARANCE.trialNumber.isEmpty()))
+                .or(APPEARANCE.trialNumber.isNotNull().and(APPEARANCE.satOnJury.isNull())));
         }
 
         Long count = partialQuery.fetchOne();
