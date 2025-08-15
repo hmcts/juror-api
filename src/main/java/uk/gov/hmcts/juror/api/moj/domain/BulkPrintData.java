@@ -28,7 +28,6 @@ import java.time.LocalDate;
 @Setter
 @Entity
 @Builder
-//@IdClass(BulkPrintDataKey.class)
 @Table(name = "bulk_print_data", schema = "juror_mod")
 public class BulkPrintData {
 
@@ -40,7 +39,6 @@ public class BulkPrintData {
         allocationSize = 1)
     @GeneratedValue(generator = GENERATOR_NAME, strategy = GenerationType.SEQUENCE)
     private Long id;
-
 
     @Length(max = 9)
     @Column(name = "juror_no")

@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
+import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 
@@ -40,4 +41,6 @@ public interface PrintDataService {
     void checkLetterInBulkPrint(String jurorNumber, String formType, LocalDate creationDate, boolean extractedFlag);
 
     void removeQueuedLetterForJuror(JurorPool jurorPool, List<FormCode> formCodes);
+
+    List<BulkPrintData> getLettersQueuedForJuror(String jurorNumber);
 }

@@ -51,10 +51,12 @@ import uk.gov.hmcts.juror.api.moj.controller.response.PendingJurorsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorHistoryResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorPaymentsResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
+import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.ContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
 import uk.gov.hmcts.juror.api.moj.domain.FilterJurorRecord;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
+import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.IContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -209,7 +211,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         JurorUtils.checkOwnershipForCurrentUser(juror, owner);
 
         final JurorPool myJurorPool = JurorPoolUtils.getActiveJurorPoolForUser(
-            jurorPoolRepository, jurorNumber,payload.getOwner());
+            jurorPoolRepository, jurorNumber, payload.getOwner());
 
         //Track changes to address fields
         boolean addressChanged = false;
@@ -237,13 +239,6 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         if (!Objects.equals(juror.getPostcode(), requestDto.getAddressPostcode())) {
             juror.setPostcode(requestDto.getAddressPostcode());
             addressChanged = true;
-        }
-
-
-        // Log address change in history if updated PDET CODE ADDRESS OTHER
-        if (addressChanged) {
-            jurorHistoryService.createEditChangeOfPersonalDetailsHistory(myJurorPool, jurorNumber,
-                                 myJurorPool.getPool().getPoolNumber(), "Address Changed");
         }
 
         juror.setTitle(requestDto.getTitle());
@@ -290,9 +285,60 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         juror.setWelsh(requestDto.getWelshLanguageRequired());
         juror.setLivingOverseas(requestDto.getLivingOverseas());
 
-
-
         jurorRepository.save(juror);
+
+        // Log address change in history if updated PDET CODE ADDRESS OTHER
+        if (addressChanged) {
+            jurorHistoryService.createEditChangeOfPersonalDetailsHistory(myJurorPool, jurorNumber,
+                myJurorPool.getPool().getPoolNumber(), "Address Changed");
+
+            // check for and update any pending letters with new address details
+            List<BulkPrintData> queuedLetters = printDataService.getLettersQueuedForJuror(jurorNumber);
+
+            List<FormCode> formCodes  = queuedLetters.stream()
+                .map(BulkPrintData::getFormAttribute)
+                .map(formAttribute -> FormCode.getFormCode(formAttribute.getFormType()))
+                .distinct()
+                .toList();
+
+            if (!formCodes.isEmpty()) {
+                log.info("Removing queued letters for juror {} with form codes: {}", jurorNumber, formCodes);
+                printDataService.removeQueuedLetterForJuror(myJurorPool, formCodes);
+
+                formCodes.forEach(formCode -> {
+                    try {
+                        log.info("Reprinting queued letter {} for juror {}", formCode, jurorNumber);
+                        formCode.getLetterPrinter().accept(printDataService, myJurorPool);
+
+                        removeRsupHistory(jurorNumber, formCode);
+
+                    } catch (Exception e) {
+                        // There could be queued letters that failed to print, but we do not want to stop the
+                        // update process. For example, the juror might be in the wrong state for the letter.
+                        log.info("Failed to update queued letter {} for juror {}: {}", formCode, jurorNumber,
+                                 e.getMessage());
+                    }
+                });
+
+            }
+        }
+    }
+
+    private void removeRsupHistory(String jurorNumber, FormCode formCode) {
+        // Need to remove any unnecessary RSUP history entries
+        if (formCode.equals(FormCode.ENG_SUMMONS)
+            || formCode.equals(FormCode.BI_SUMMONS)) {
+            List<JurorHistory> jurorHistories = jurorHistoryRepository
+                .findByJurorNumberAndDateCreatedGreaterThanEqual(
+                    jurorNumber,
+                    LocalDateTime.now().minusSeconds(10));
+
+            if (!jurorHistories.isEmpty()) {
+                jurorHistories.stream()
+                    .filter(jh -> jh.getHistoryCode().equals(HistoryCodeMod.SUMMONS_REPRINTED))
+                    .findFirst().ifPresent(jurorHistoryRepository::delete);
+            }
+        }
     }
 
     private void updateJurorReasonableAdjustments(EditJurorRecordRequestDto requestDto, String jurorNumber) {

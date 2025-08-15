@@ -230,6 +230,11 @@ public class PrintDataServiceImpl implements PrintDataService {
         }
     }
 
+    @Override
+    public List<BulkPrintData> getLettersQueuedForJuror(String jurorNumber) {
+        return bulkPrintDataRepository.findByJurorNo(jurorNumber);
+    }
+
     public void commitData(LetterBase letter) {
         final LocalDate date = LocalDate.now();
 
