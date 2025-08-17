@@ -42,8 +42,6 @@ public class RemoteConfig {
 
     private RestTemplateBuilder restTemplateBuilder(final WebConfig webConfig,
                                                     final JwtService jwtService) {
-    //    final List<ClientHttpRequestInterceptor> clientHttpRequestInterceptorList =
-     //       List.of(new JwtAuthenticationInterceptor(jwtService, webConfig.getSecurity()));
 
         final List<ClientHttpRequestInterceptor> interceptors =
             List.of(new JwtAuthenticationInterceptor(jwtService, webConfig.getSecurity()));
@@ -70,28 +68,3 @@ public class RemoteConfig {
             .additionalInterceptors(interceptors);
     }
 }
-
-
-
-
-      //  DefaultUriBuilderFactory uriBuilderFactory = new DefaultUriBuilderFactory(
-      //      webConfig.getScheme() + "://" + webConfig.getHost() + ":" + webConfig.getPort());
-      //  uriBuilderFactory.setEncodingMode(DefaultUriBuilderFactory.EncodingMode.URI_COMPONENT);
-
-       // return new RestTemplateBuilder()
-
-         //   .requestFactory(webConfig::getRequestFactory)
-        //    .uriTemplateHandler(new RootUriTemplateHandler(
-        //        webConfig.getScheme() + "://" + webConfig.getHost() + ":" + webConfig.getPort()))
-
-        //    .uriTemplateHandler(uriBuilderFactory)
-        //    .additionalInterceptors(clientHttpRequestInterceptorList);
-
-       //     .requestFactory(webConfig::getRequestFactory)
-       //     .uriTemplateHandler(uriBuilderFactory)
-       //     .additionalInterceptors(clientHttpRequestInterceptorList);
-
-  //  }
-
-
-//}
