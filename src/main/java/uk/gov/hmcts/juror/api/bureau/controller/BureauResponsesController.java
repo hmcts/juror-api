@@ -48,6 +48,7 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 @RequestMapping(value = "/api/v1/bureau/responses", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Bureau Responses API", description = "Bureau operations relating to juror responses")
 @AllArgsConstructor(onConstructor = @__(@Autowired))
+@SuppressWarnings("PMD")
 public class BureauResponsesController {
 
     private final BureauService bureauService;

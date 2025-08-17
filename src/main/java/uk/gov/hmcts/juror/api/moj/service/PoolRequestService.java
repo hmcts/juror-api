@@ -29,6 +29,8 @@ public interface PoolRequestService {
 
     PaginatedList<PoolRequestActiveDataDto> getActivePoolRequests(ActivePoolFilterQuery filterQuery);
 
+    PaginatedList<PoolRequestActiveDataDto> getActivePoolUnderResponded(ActivePoolFilterQuery filterQuery);
+
     PoolsAtCourtLocationListDto getActivePoolsAtCourtLocation(String locCode);
 
     PoolsAtCourtLocationListDto getAllActivePoolsAtCourtLocation(String locCode);

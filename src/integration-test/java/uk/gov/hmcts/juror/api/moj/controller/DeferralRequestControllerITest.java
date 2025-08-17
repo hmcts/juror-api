@@ -15,8 +15,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
+import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralRequestDto;
 import uk.gov.hmcts.juror.api.moj.domain.DeferralDecision;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
+import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -35,6 +42,12 @@ public class DeferralRequestControllerITest extends AbstractIntegrationTest {
 
     @Autowired
     private TestRestTemplate restTemplate;
+    @Autowired
+    private JurorPaperResponseRepositoryMod paperResponseRepository;
+    @Autowired
+    private JurorDigitalResponseRepositoryMod digitalResponseRepository;
+    @Autowired
+    private JurorRepository jurorRepository;
 
     private HttpHeaders httpHeaders;
 
@@ -171,6 +184,139 @@ public class DeferralRequestControllerITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode())
             .as("Expect the HTTP PUT request to be OK")
             .isEqualTo(HttpStatus.OK);
+
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/DeferralRequestController_createPoolAndResponse.sql"})
+    public void grantDeferralHappyPathBureauUserOpenPaperResponseNoDob() {
+        String jurorNumber = "987654321";
+        String deferralReason = "B";
+
+        DeferralRequestDto requestDto = createGrantDeferralDecisionDto(jurorNumber, deferralReason);
+
+        ResponseEntity<DeferralRequestDto> response =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PUT,
+                URI.create("/api/v1/moj/deferral-response/juror/" + jurorNumber)), DeferralRequestDto.class);
+
+        assertThat(response.getStatusCode())
+            .as("Expect the HTTP PUT request to be OK")
+            .isEqualTo(HttpStatus.OK);
+
+        // check if paper response record has been closed
+        PaperResponse paperResponse = paperResponseRepository.findByJurorNumber(jurorNumber);
+        assertThat(paperResponse).isNotNull()
+            .as("Expect the paper response to be closed")
+            .extracting(PaperResponse::getProcessingStatus)
+            .isEqualTo(ProcessingStatus.CLOSED);
+
+        Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
+        assertThat(juror).isNotNull()
+            .as("Expect the juror to keep the DOB in juror record")
+            .extracting(Juror::getDateOfBirth)
+            .isEqualTo(LocalDate.of(1989, 3, 31));
+
+    }
+
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/DeferralRequestController_createPoolAndResponse.sql"})
+    @Sql(statements = "update juror_mod.juror set dob = null where juror_number = '987654321'")
+    @Sql(statements = "update juror_mod.juror_response set date_of_birth = '2020-05-17' "
+        + "where juror_number = '987654321'")
+    public void grantDeferralHappyPathBureauUserOpenPaperResponseWithDob() {
+        String jurorNumber = "987654321";
+        String deferralReason = "B";
+
+        DeferralRequestDto requestDto = createGrantDeferralDecisionDto(jurorNumber, deferralReason);
+
+        ResponseEntity<DeferralRequestDto> response =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PUT,
+                URI.create("/api/v1/moj/deferral-response/juror/" + jurorNumber)), DeferralRequestDto.class);
+
+        assertThat(response.getStatusCode())
+            .as("Expect the HTTP PUT request to be OK")
+            .isEqualTo(HttpStatus.OK);
+
+        // check if paper response record has been closed
+        PaperResponse paperResponse = paperResponseRepository.findByJurorNumber(jurorNumber);
+        assertThat(paperResponse).isNotNull()
+            .as("Expect the paper response to be closed")
+            .extracting(PaperResponse::getProcessingStatus)
+            .isEqualTo(ProcessingStatus.CLOSED);
+
+        Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
+        assertThat(juror).isNotNull()
+            .as("Expect the juror to have updated DOB in juror record")
+            .extracting(Juror::getDateOfBirth)
+            .isEqualTo(LocalDate.of(2020, 5, 17));
+
+    }
+
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/DeferralRequestController_createPoolAndResponse.sql"})
+    @Sql(statements = "update juror_mod.juror_response set date_of_birth = '2020-05-17' "
+        + "where juror_number = '987654321'")
+    public void grantDeferralHappyPathBureauUserOpenPaperResponseDobNotOverwritten() {
+        String jurorNumber = "987654321";
+        String deferralReason = "B";
+
+        DeferralRequestDto requestDto = createGrantDeferralDecisionDto(jurorNumber, deferralReason);
+
+        ResponseEntity<DeferralRequestDto> response =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PUT,
+                URI.create("/api/v1/moj/deferral-response/juror/" + jurorNumber)), DeferralRequestDto.class);
+
+        assertThat(response.getStatusCode())
+            .as("Expect the HTTP PUT request to be OK")
+            .isEqualTo(HttpStatus.OK);
+
+        // check if paper response record has been closed
+        PaperResponse paperResponse = paperResponseRepository.findByJurorNumber(jurorNumber);
+        assertThat(paperResponse).isNotNull()
+            .as("Expect the paper response to be closed")
+            .extracting(PaperResponse::getProcessingStatus)
+            .isEqualTo(ProcessingStatus.CLOSED);
+
+        Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
+        assertThat(juror).isNotNull()
+            .as("Expect the juror to keep DOB in juror record")
+            .extracting(Juror::getDateOfBirth)
+            .isEqualTo(LocalDate.of(1989, 3, 31));
+
+    }
+
+
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/DeferralRequestController_createPoolAndResponse.sql"})
+    public void grantDeferralHappyPathBureauUserOpenDigitalResponseDobOverwritten() {
+        String jurorNumber = "987654322";
+        String deferralReason = "B";
+
+        DeferralRequestDto requestDto = createGrantDeferralDecisionDto(jurorNumber, deferralReason);
+
+        ResponseEntity<DeferralRequestDto> response =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PUT,
+                    URI.create("/api/v1/moj/deferral-response/juror/" + jurorNumber)), DeferralRequestDto.class);
+
+        assertThat(response.getStatusCode())
+            .as("Expect the HTTP PUT request to be OK")
+            .isEqualTo(HttpStatus.OK);
+
+        // check if digital response record has been closed
+        DigitalResponse digitalResponse = digitalResponseRepository.findByJurorNumber(jurorNumber);
+        assertThat(digitalResponse).isNotNull()
+            .as("Expect the paper response to be closed")
+            .extracting(DigitalResponse::getProcessingStatus)
+            .isEqualTo(ProcessingStatus.CLOSED);
+
+        Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
+        assertThat(juror).isNotNull()
+            .as("Expect the juror to have DOB in digital response")
+            .extracting(Juror::getDateOfBirth)
+            .isEqualTo(LocalDate.of(1995, 8, 24));
 
     }
 

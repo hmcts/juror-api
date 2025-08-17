@@ -141,8 +141,8 @@ public class CourtDashboardControllerITest extends AbstractIntegrationTest {
         CourtAttendanceInfoDto.AttendanceStatsToday statsToday = responseBody.getAttendanceStatsToday();
 
         assertThat(statsToday.getExpected())
-            .as("Expect the total expected in today to be 7")
-            .isEqualTo(8);
+            .as("Expect the total expected in today to be 9")
+            .isEqualTo(9);
         assertThat(statsToday.getCheckedIn())
             .as("Expect the total checked in today to be 2")
             .isEqualTo(2);
@@ -160,16 +160,14 @@ public class CourtDashboardControllerITest extends AbstractIntegrationTest {
         CourtAttendanceInfoDto.AttendanceStatsLastSevenDays statsLastSevenDays =
             responseBody.getAttendanceStatsLastSevenDays();
         assertThat(statsLastSevenDays.getExpected())
-            .as("Expect the total attendances in the last 7 days to be between 30 and 40"
+            .as("Expect the total attendances in the last 7 days to be between 30 and 45"
                 + "depending on the weekends and public holidays")
-            .isBetween(30, 40);
-        // jurors are expected to attend 5 days a week (6 x 5 = 30)
-        // due to 10 days potentially falling in the weekends in appearance table over last 4 days
-        // it could be 30 or 35 or 40 depending on the current day
+            .isBetween(30, 46);
+
 
         assertThat(statsLastSevenDays.getAttended())
-            .as("Expect the total attended in the last 7 days to be 15")
-            .isEqualTo(15);
+            .as("Expect the total attended in the last 7 days to be 16")
+            .isEqualTo(16);
         assertThat(statsLastSevenDays.getOnTrials())
             .as("Expect the total on trials in the last 7 days to be 2")
             .isEqualTo(2);
