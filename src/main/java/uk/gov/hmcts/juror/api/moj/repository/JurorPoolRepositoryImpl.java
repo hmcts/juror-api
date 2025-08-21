@@ -283,8 +283,11 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
             .leftJoin(PANEL)
             .on(JUROR.eq(PANEL.juror))
             .where(JUROR_POOL.isActive.isTrue())
-            .where(JUROR_POOL.pool.poolNumber.eq(search.getPoolNumber()))
-            .where(JUROR_POOL.owner.eq(owner));
+            .where(JUROR_POOL.pool.poolNumber.eq(search.getPoolNumber()));
+
+        if (!SecurityUtil.BUREAU_OWNER.equals(owner)) {
+            partialQuery.where(JUROR_POOL.owner.eq(owner));
+        }
 
         if (null != search.getJurorNumber()) {
             partialQuery.where(JUROR.jurorNumber.like(search.getJurorNumber() + "%"));
