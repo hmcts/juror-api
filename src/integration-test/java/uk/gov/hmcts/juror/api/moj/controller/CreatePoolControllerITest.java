@@ -802,19 +802,31 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
         assertThat(response.getBody()).isNotNull();
         List<FilterPoolMember> poolMembers = response.getBody().getData();
-        assertThat(poolMembers.size()).isEqualTo(1);
+        assertThat(poolMembers.size()).isEqualTo(2);
 
-        FilterPoolMember responseData = poolMembers.get(0);
-        assertThat(responseData.getJurorNumber()).isEqualToIgnoringCase("111111111");
-        assertThat(responseData.getFirstName()).isEqualToIgnoringCase("TEST");
-        assertThat(responseData.getLastName()).isEqualToIgnoringCase("ONE");
-        assertThat(responseData.getPostcode()).isEqualToIgnoringCase("CH1 2AN");
-        assertThat(responseData.getStatus()).isEqualToIgnoringCase("Summoned");
-        assertThat(responseData.getAttendance()).isNull();
-        assertThat(responseData.getCheckedInToday()).isNull();
-        assertThat(responseData.getCheckedIn()).isNull();
-        assertThat(responseData.getNextDate()).isNull();
 
+
+        FilterPoolMember responseData1 = poolMembers.get(0);
+        assertThat(responseData1.getJurorNumber()).isEqualToIgnoringCase("111111111");
+        assertThat(responseData1.getFirstName()).isEqualToIgnoringCase("TEST");
+        assertThat(responseData1.getLastName()).isEqualToIgnoringCase("ONE");
+        assertThat(responseData1.getPostcode()).isEqualToIgnoringCase("CH1 2AN");
+        assertThat(responseData1.getStatus()).isEqualToIgnoringCase("Summoned");
+        assertThat(responseData1.getAttendance()).isNull();
+        assertThat(responseData1.getCheckedInToday()).isNull();
+        assertThat(responseData1.getCheckedIn()).isNull();
+        assertThat(responseData1.getNextDate()).isNull();
+
+        FilterPoolMember responseData2 = poolMembers.get(1);
+        assertThat(responseData2.getJurorNumber()).isEqualToIgnoringCase("333333333");
+        assertThat(responseData2.getFirstName()).isEqualToIgnoringCase("TEST");
+        assertThat(responseData2.getLastName()).isEqualToIgnoringCase("THREE");
+        assertThat(responseData2.getPostcode()).isEqualToIgnoringCase("CH1 2AN");
+        assertThat(responseData2.getStatus()).isEqualToIgnoringCase("Summoned");
+        assertThat(responseData2.getAttendance()).isNull();
+        assertThat(responseData2.getCheckedInToday()).isNull();
+        assertThat(responseData2.getCheckedIn()).isNull();
+        assertThat(responseData2.getNextDate()).isNull();
     }
 
     @Test
@@ -841,19 +853,29 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
         assertThat(response.getBody()).isNotNull();
         List<FilterPoolMember> poolMembers = response.getBody().getData();
-        assertThat(poolMembers.size()).isEqualTo(1);
+        assertThat(poolMembers.size()).isEqualTo(2);
 
-        FilterPoolMember responseData = poolMembers.get(0);
-        assertThat(responseData.getJurorNumber()).isEqualToIgnoringCase("666666666");
-        assertThat(responseData.getFirstName()).isEqualToIgnoringCase("TEST");
-        assertThat(responseData.getLastName()).isEqualToIgnoringCase("SIX");
-        assertThat(responseData.getPostcode()).isEqualToIgnoringCase("CH1 2AN");
-        assertThat(responseData.getStatus()).isEqualToIgnoringCase("Summoned");
-        assertThat(responseData.getAttendance()).isNull();
-        assertThat(responseData.getCheckedInToday()).isNull();
-        assertThat(responseData.getCheckedIn()).isNull();
-        assertThat(responseData.getNextDate()).isNull();
+        FilterPoolMember responseData1 = poolMembers.get(0);
+        assertThat(responseData1.getJurorNumber()).isEqualToIgnoringCase("666666666");
+        assertThat(responseData1.getFirstName()).isEqualToIgnoringCase("TEST");
+        assertThat(responseData1.getLastName()).isEqualToIgnoringCase("SIX");
+        assertThat(responseData1.getPostcode()).isEqualToIgnoringCase("CH1 2AN");
+        assertThat(responseData1.getStatus()).isEqualToIgnoringCase("Summoned");
+        assertThat(responseData1.getAttendance()).isNull();
+        assertThat(responseData1.getCheckedInToday()).isNull();
+        assertThat(responseData1.getCheckedIn()).isNull();
+        assertThat(responseData1.getNextDate()).isNull();
 
+        FilterPoolMember responseData2 = poolMembers.get(1);
+        assertThat(responseData2.getJurorNumber()).isEqualToIgnoringCase("999999999");
+        assertThat(responseData2.getFirstName()).isEqualToIgnoringCase("TEST");
+        assertThat(responseData2.getLastName()).isEqualToIgnoringCase("NINE");
+        assertThat(responseData2.getPostcode()).isEqualToIgnoringCase("CH1 2AN");
+        assertThat(responseData2.getStatus()).isEqualToIgnoringCase("Responded");
+        assertThat(responseData2.getAttendance()).isNull();
+        assertThat(responseData2.getCheckedInToday()).isNull();
+        assertThat(responseData2.getCheckedIn()).isNull();
+        assertThat(responseData2.getNextDate()).isNull();
     }
 
     @Test
@@ -895,7 +917,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
-    public void testGPoolMembers_noPoolMembers() {
+    public void testGPoolMembers_courtUser_courtOwnedPool_withBureauOwnedJurors() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("COURT_USER")
@@ -906,6 +928,44 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/moj/pool-create/members");
         final PoolMemberFilterRequestQuery body = PoolMemberFilterRequestQuery.builder()
             .poolNumber("415230102").pageNumber(1).pageLimit(25).build();
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        RequestEntity<PoolMemberFilterRequestQuery> requestEntity = new RequestEntity<>(body, httpHeaders,
+            HttpMethod.POST, uri);
+        ResponseEntity<PaginatedList<FilterPoolMember>> response = template
+            .exchange(requestEntity, new ParameterizedTypeReference<>() {
+            });
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        assertThat(response.getBody()).isNotNull();
+        List<FilterPoolMember> poolMembers = response.getBody().getData();
+        assertThat(poolMembers.size()).isEqualTo(1);
+
+        FilterPoolMember responseData = poolMembers.get(0);
+        assertThat(responseData.getJurorNumber()).isEqualToIgnoringCase("999999999");
+        assertThat(responseData.getFirstName()).isEqualToIgnoringCase("TEST");
+        assertThat(responseData.getLastName()).isEqualToIgnoringCase("NINE");
+        assertThat(responseData.getPostcode()).isNull();
+        assertThat(responseData.getStatus()).isEqualToIgnoringCase("Responded");
+        assertThat(responseData.getAttendance()).isEqualToIgnoringCase("");
+        assertThat(responseData.getCheckedInToday()).isNull();
+        assertThat(responseData.getCheckedIn()).isNull();
+        assertThat(responseData.getNextDate()).isEqualTo(LocalDate.parse("2023-01-01"));
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
+    public void testGPoolMembers_noPoolMembers() {
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
+            .userLevel("1")
+            .login("COURT_USER")
+            .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).rank(1).build())
+            .owner("415")
+            .build());
+
+        final URI uri = URI.create("/api/v1/moj/pool-create/members");
+        final PoolMemberFilterRequestQuery body = PoolMemberFilterRequestQuery.builder()
+            .poolNumber("415230105").pageNumber(1).pageLimit(25).build();
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
         RequestEntity<PoolMemberFilterRequestQuery> requestEntity = new RequestEntity<>(body, httpHeaders,
