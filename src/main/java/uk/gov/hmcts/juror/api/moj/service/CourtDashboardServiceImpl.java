@@ -253,7 +253,7 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
 
         courtAttendanceInfoDto.setAttendanceStatsToday(attendanceStatsToday);
 
-        courtAttendanceInfoDto.setJurorOnCall(jurorPoolService.getCountOfJurorsOnCallAtCourt(locCode));
+        courtAttendanceInfoDto.setJurorsOnCall(jurorPoolService.getCountOfJurorsOnCallAtCourt(locCode));
 
         return courtAttendanceInfoDto;
     }

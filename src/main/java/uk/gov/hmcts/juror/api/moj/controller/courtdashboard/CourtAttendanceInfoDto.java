@@ -35,9 +35,9 @@ public class CourtAttendanceInfoDto {
     @Schema(description = "Number of jurors with unconfirmed attendances at the court")
     private int unconfirmedAttendances;
 
-    @JsonProperty("juror_on_call")
+    @JsonProperty("jurors_on_call")
     @Schema(description = "Number of jurors on call at the court")
-    private int jurorOnCall;
+    private int jurorsOnCall;
 
     @Builder
     @Setter
