@@ -115,6 +115,11 @@ public class JurorPoolServiceImpl implements JurorPoolService {
             .getCountJurorsDueToAttendCourt(locCode, startDate, endDate, reasonableAdjustments);
     }
 
+    @Override
+    public int getCountOfJurorsOnCallAtCourt(String locCode) {
+        return jurorPoolRepository.findJurorsOnCallAtCourtLocation(locCode, List.of()).size();
+    }
+
 
     private List<JurorPool> getJurorPools(String locCode, String jurorNumber) {
         return jurorPoolRepository.findByPoolCourtLocationLocCodeAndJurorJurorNumber(locCode, jurorNumber);
