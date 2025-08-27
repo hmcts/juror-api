@@ -1,4 +1,5 @@
 -- DROP PROCEDURE juror_mod.payment_files_to_clob_write_to_clob(in date, in numeric, inout varchar);
+
 DROP PROCEDURE IF EXISTS juror_mod.payment_files_to_clob_write_to_clob(IN date, IN numeric, INOUT varchar);
 
 CREATE OR REPLACE PROCEDURE juror_mod.payment_files_to_clob_write_to_clob(
