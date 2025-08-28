@@ -32,4 +32,7 @@ public interface PanelService {
     Boolean getPanelStatus(String trialNumber, String courtLocationCode);
 
     boolean isEmpanelledJuror(String jurorNumber, String locationCode, LocalDate date);
+
+    int getCountPanelledJurors(String locCode);
+
 }

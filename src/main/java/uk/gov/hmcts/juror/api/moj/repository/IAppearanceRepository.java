@@ -36,6 +36,13 @@ public interface IAppearanceRepository {
 
     JPAQuery<JurorPool> buildJurorPoolsCheckedInTodayQuery(String locCode, LocalDate date);
 
+    List<String> getExpectedJurorNumbers(String locCode, LocalDate attendanceDate);
+
+    int getCountJurorsCheckedInOut(String locCode, LocalDate attendanceDate,
+                                   boolean includeCheckedIn, boolean includeCheckedOut);
+
+    List<String> getCompletedJurorsAtCourt(String locationCode, LocalDate attendanceDate);
+
     long countPendingApproval(String locCode, boolean isCash);
 
     Optional<Appearance> findByJurorNumberAndLocCodeAndAttendanceDateAndVersion(
@@ -50,4 +57,14 @@ public interface IAppearanceRepository {
                                                                       UnpaidExpenseSummaryRequestDto search);
 
     List<Tuple> getUnconfirmedJurors(String locationCode, LocalDate attendanceDate);
+
+    List<Tuple> getUnpaidAttendancesAtCourt(String locCode);
+
+    int getUnconfirmedAttendanceCountAtCourt(String locCode);
+
+    int getConfirmedAttendanceCountAtCourt(String locCode, LocalDate attendanceDate,
+                                           boolean includeNonAttendance, boolean includeOnTrial);
+
+    int getAbsentCountAtCourt(String locationCode, LocalDate attendanceDateFrom,
+                              LocalDate attendanceDateTo);
 }

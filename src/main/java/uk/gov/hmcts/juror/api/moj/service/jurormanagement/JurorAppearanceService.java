@@ -76,5 +76,23 @@ public interface JurorAppearanceService {
 
     Appearance saveAppearance(Appearance appearance);
 
+    List<Appearance> getUnpaidAttendancesAtCourt(String locCode);
+
+    int getUnconfirmedAttendanceCountAtCourt(String locCode);
+
+    List<String> getExpectedJurorsAtCourt(String locationCode, LocalDate attendanceDate);
+
+    int getCountCheckedInJurors(String locationCode, LocalDate attendanceDate);
+
+    int getCountCheckedOutJurors(String locationCode, LocalDate attendanceDate);
+
+    int getConfirmedAttendanceCountAtCourt(String locationCode, LocalDate attendanceDate,
+                                           boolean includeNonAttendance, boolean includeOnTrial);
+
+    List<String> getCompletedJurorsAtCourt(String locationCode, LocalDate attendanceDate);
+
+    int getAbsentCountAtCourt(String locationCode, LocalDate attendanceDateFrom,
+                              LocalDate attendanceDateTo);
+
     boolean hasAttendancesInPool(String jurorNumber, String poolNumber);
 }

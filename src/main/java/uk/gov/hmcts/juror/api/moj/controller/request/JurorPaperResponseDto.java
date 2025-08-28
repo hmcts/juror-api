@@ -165,9 +165,18 @@ public class JurorPaperResponseDto {
         @Schema(description = "Whether the Juror has lived in the UK for the required period")
         private Boolean livedConsecutive;
 
+        @JsonProperty("livedConsecutiveDetails")
+        @Schema(description = "Details of the Juror who has not lived in the UK for the required period")
+        private String livedConsecutiveDetails;
+
         @JsonProperty("mentalHealthAct")
         @Schema(description = "Whether the Juror has been sectioned under the Mental Health Act")
         private Boolean mentalHealthAct;
+
+        @JsonProperty("mentalHealthActDetails")
+        @Schema(description = "Details of the Juror who has been sectioned under the Mental Health Act")
+        // the same field is used for both mental health act and mental health capacity with a delimiter
+        private String mentalHealthActDetails;
 
         @JsonProperty("mentalHealthCapacity")
         @Schema(description = "Whether the Juror has the Mental Health Capacity")
@@ -177,9 +186,17 @@ public class JurorPaperResponseDto {
         @Schema(description = "Whether the Juror is on bail")
         private Boolean onBail;
 
+        @JsonProperty("onBailDetails")
+        @Schema(description = "Details of the Juror who is on bail")
+        private String onBailDetails;
+
         @JsonProperty("convicted")
         @Schema(description = "Whether the Juror has a criminal conviction")
         private Boolean convicted;
+
+        @JsonProperty("convictedDetails")
+        @Schema(description = "Details of the Juror who has a criminal conviction")
+        private String convictedDetails;
     }
 
     @Builder
