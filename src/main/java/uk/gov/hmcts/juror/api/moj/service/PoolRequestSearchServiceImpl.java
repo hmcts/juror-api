@@ -173,7 +173,7 @@ public class PoolRequestSearchServiceImpl implements PoolRequestSearchService {
         List<PoolSearchRequestDto.PoolStatus> poolStatus = poolSearchRequestDto.getPoolStatus();
         List<PoolSearchRequestDto.PoolStage> poolStage = poolSearchRequestDto.getPoolStage();
         List<String> poolTypeCode = poolSearchRequestDto.getPoolType();
-        String nilPool = poolSearchRequestDto.getNilPool();
+        Boolean isNilPool = poolSearchRequestDto.getIsNilPool();
 
         if (isListPopulated(poolStatus) && poolStatus.size() < PoolSearchRequestDto.PoolStatus.values().length) {
             log.debug(String.format("Pool Status supplied as Pool Request Search parameter: %s", poolStatus));
@@ -188,9 +188,9 @@ public class PoolRequestSearchServiceImpl implements PoolRequestSearchService {
             poolRequestRepository.addPoolTypePredicate(query, poolTypeCode);
         }
 
-        if (nilPool != null) {
-            log.debug(String.format("Nil Pool supplied as Pool Request Search parameter: %s", nilPool));
-            poolRequestRepository.addNilPoolPredicate(query, nilPool);
+        if (isNilPool != null) {
+            log.debug(String.format("Nil Pool supplied as Pool Request Search parameter: %s", isNilPool));
+            poolRequestRepository.addNilPoolPredicate(query, isNilPool);
         }
 
         log.trace("Exit evaluateAdvancedSearchCriteria");

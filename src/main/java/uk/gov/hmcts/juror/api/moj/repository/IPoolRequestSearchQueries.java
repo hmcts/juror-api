@@ -32,7 +32,7 @@ public interface IPoolRequestSearchQueries {
 
     void addPoolTypePredicate(JPAQuery<Tuple> query, List<String> poolType);
 
-    void addNilPoolPredicate(JPAQuery<Tuple> query, String nilPool);
+    void addNilPoolPredicate(JPAQuery<Tuple> query, Boolean isNilPool);
 
     void orderByStringColumn(JPAQuery<Tuple> query, StringPath simpleColumn, SortDirection sortDirection);
 

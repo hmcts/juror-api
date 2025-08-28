@@ -239,8 +239,8 @@ public class PoolRequestSearchQueries implements IPoolRequestSearchQueries {
     }
 
     @Override
-    public void addNilPoolPredicate(JPAQuery<Tuple> query, String nilPool) {
-        if (nilPool.equals("true")) {
+    public void addNilPoolPredicate(JPAQuery<Tuple> query, Boolean isNilPool) {
+        if (Boolean.TRUE.equals(isNilPool)) {
             query.where(POOL_REQUEST.nilPool.eq(true));
         }
     }
