@@ -232,7 +232,7 @@ public class PrintDataServiceImpl implements PrintDataService {
 
     @Override
     public List<BulkPrintData> getLettersQueuedForJuror(String jurorNumber) {
-        return bulkPrintDataRepository.findByJurorNo(jurorNumber);
+        return bulkPrintDataRepository.findByJurorNoAndExtractedFlag(jurorNumber, false);
     }
 
     public void commitData(LetterBase letter) {
