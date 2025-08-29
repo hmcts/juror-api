@@ -82,13 +82,9 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
             .from(JUROR)
             .join(JUROR_POOL)
             .on(JUROR.eq(JUROR_POOL.juror))
-            .where(JUROR_POOL.isActive.isTrue());
-        if (isCourt || !"400".equals(locCode)) {
-            query.where(JUROR_POOL.pool.courtLocation.locCode.eq(locCode));
-            if (isCourt) {
-                query.where(JUROR_POOL.owner.ne("400"));
-            }
-        }
+            .where(JUROR_POOL.isActive.isTrue())
+            .where(JUROR_POOL.pool.courtLocation.locCode.eq(locCode))
+            .where(JUROR_POOL.owner.eq(SecurityUtil.getActiveOwner()));
 
         if (search.getTrialNumber() != null || !simpleResponse) {
 
@@ -165,6 +161,9 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
         if (SecurityUtil.isCourt()) {
             query.where(JUROR_POOL.pool.courtLocation.locCode.eq(locCode));
         }
+
+        // only return owned jurors, even for bureau users
+        query.where(JUROR_POOL.owner.eq(SecurityUtil.getActiveOwner()));
 
         query.where(or.stream().reduce(BooleanExpression::or).get());
 

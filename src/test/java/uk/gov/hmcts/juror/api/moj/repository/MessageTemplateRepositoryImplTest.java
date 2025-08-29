@@ -106,6 +106,8 @@ class MessageTemplateRepositoryImplTest {
         when(jpaQuery.offset(anyLong())).thenReturn(jpaQuery);
         when(jpaQuery.orderBy(any(OrderSpecifier.class))).thenReturn(jpaQuery);
 
+        when(SecurityUtil.getActiveOwner()).thenReturn("400");
+
         doNothing().when(messageSearch).apply(jpaQuery);
 
         when(messageSearch.getPageNumber()).thenReturn(1L);
@@ -122,7 +124,7 @@ class MessageTemplateRepositoryImplTest {
 
 
         PaginatedList<? extends JurorToSendMessageBase> result = messageTemplateRepositoryImpl
-            .messageSearch(messageSearch, "400", true, 500L);
+            .messageSearch(messageSearch, "415", true, 500L);
 
 
         assertThat(result).isNotNull();
@@ -132,6 +134,10 @@ class MessageTemplateRepositoryImplTest {
         verify(jpaQuery, times(1)).from(JUROR);
         verify(jpaQuery, times(1)).join(JUROR_POOL);
         verify(jpaQuery, times(1)).on(JUROR.eq(JUROR_POOL.juror));
+        verify(jpaQuery, times(1)).where(
+            JUROR_POOL.pool.courtLocation.locCode.eq(TestConstants.VALID_COURT_LOCATION));
+        verify(jpaQuery, times(1)).where(
+            JUROR_POOL.owner.eq("400"));
 
         verify(jpaQuery, times(1)).limit(4L);
         verify(jpaQuery, times(1)).offset(0L);
@@ -156,6 +162,7 @@ class MessageTemplateRepositoryImplTest {
         verify(queryResult, times(1)).getTotal();
         verify(queryResult, times(1)).getResults();
         securityUtilMockedStatic.verify(SecurityUtil::isCourt, times(1));
+        securityUtilMockedStatic.verify(SecurityUtil::getActiveOwner, times(1));
         securityUtilMockedStatic.verifyNoMoreInteractions();
         verifyNoMoreInteractions(queryResult,
             queryFactory,
@@ -178,6 +185,8 @@ class MessageTemplateRepositoryImplTest {
         when(jpaQuery.leftJoin(any(EntityPath.class))).thenReturn(jpaQuery);
         when(jpaQuery.on(any(Predicate[].class))).thenReturn(jpaQuery);
 
+        when(SecurityUtil.getActiveOwner()).thenReturn("400");
+
         doNothing().when(messageSearch).apply(jpaQuery);
 
         when(messageSearch.getPageNumber()).thenReturn(1L);
@@ -194,7 +203,7 @@ class MessageTemplateRepositoryImplTest {
 
 
         PaginatedList<? extends JurorToSendMessageBase> result = messageTemplateRepositoryImpl
-            .messageSearch(messageSearch, "400", false, 500L);
+            .messageSearch(messageSearch, "415", false, 500L);
 
         assertThat(result).isNotNull();
         assertThat(result.getData()).isNotNull();
@@ -203,6 +212,10 @@ class MessageTemplateRepositoryImplTest {
         verify(jpaQuery, times(1)).from(JUROR);
         verify(jpaQuery, times(1)).join(JUROR_POOL);
         verify(jpaQuery, times(1)).on(JUROR.eq(JUROR_POOL.juror));
+        verify(jpaQuery, times(1)).where(
+            JUROR_POOL.pool.courtLocation.locCode.eq(TestConstants.VALID_COURT_LOCATION));
+        verify(jpaQuery, times(1)).where(
+            JUROR_POOL.owner.eq("400"));
 
         verify(jpaQuery, times(1)).leftJoin(PANEL);
         verify(jpaQuery, times(1)).on(
@@ -242,6 +255,7 @@ class MessageTemplateRepositoryImplTest {
         verify(queryResult, times(1)).getTotal();
         verify(queryResult, times(1)).getResults();
         securityUtilMockedStatic.verify(SecurityUtil::isCourt, times(1));
+        securityUtilMockedStatic.verify(SecurityUtil::getActiveOwner, times(1));
         securityUtilMockedStatic.verifyNoMoreInteractions();
 
         verifyNoMoreInteractions(queryResult,
@@ -265,6 +279,8 @@ class MessageTemplateRepositoryImplTest {
         when(jpaQuery.limit(anyLong())).thenReturn(jpaQuery);
         when(jpaQuery.offset(anyLong())).thenReturn(jpaQuery);
         when(jpaQuery.orderBy(any(OrderSpecifier.class))).thenReturn(jpaQuery);
+
+        when(SecurityUtil.getActiveOwner()).thenReturn("415");
 
         doNothing().when(messageSearch).apply(jpaQuery);
 
@@ -294,8 +310,10 @@ class MessageTemplateRepositoryImplTest {
         verify(jpaQuery, times(1))
             .where(JUROR_POOL.pool.courtLocation.locCode.eq(TestConstants.VALID_COURT_LOCATION));
         verify(jpaQuery, times(1)).where(JUROR_POOL.isActive.isTrue());
-        verify(jpaQuery, times(1))
-            .where(JUROR_POOL.owner.ne("400"));
+        verify(jpaQuery, times(1)).where(
+            JUROR_POOL.pool.courtLocation.locCode.eq(TestConstants.VALID_COURT_LOCATION));
+        verify(jpaQuery, times(1)).where(
+            JUROR_POOL.owner.eq("415"));
 
         verify(jpaQuery, times(1)).limit(4L);
         verify(jpaQuery, times(1)).offset(0L);
@@ -319,6 +337,7 @@ class MessageTemplateRepositoryImplTest {
         verify(queryResult, times(1)).getTotal();
         verify(queryResult, times(1)).getResults();
         securityUtilMockedStatic.verify(SecurityUtil::isCourt, times(1));
+        securityUtilMockedStatic.verify(SecurityUtil::getActiveOwner, times(1));
         securityUtilMockedStatic.verifyNoMoreInteractions();
         verifyNoMoreInteractions(queryResult,
             queryFactory,
@@ -340,6 +359,8 @@ class MessageTemplateRepositoryImplTest {
         when(jpaQuery.offset(anyLong())).thenReturn(jpaQuery);
         when(jpaQuery.leftJoin(any(EntityPath.class))).thenReturn(jpaQuery);
         when(jpaQuery.on(any(Predicate[].class))).thenReturn(jpaQuery);
+
+        when(SecurityUtil.getActiveOwner()).thenReturn("415");
 
         doNothing().when(messageSearch).apply(jpaQuery);
 
@@ -369,8 +390,11 @@ class MessageTemplateRepositoryImplTest {
         verify(jpaQuery, times(1))
             .where(JUROR_POOL.pool.courtLocation.locCode.eq(TestConstants.VALID_COURT_LOCATION));
         verify(jpaQuery, times(1)).where(JUROR_POOL.isActive.isTrue());
+
         verify(jpaQuery, times(1))
-            .where(JUROR_POOL.owner.ne("400"));
+            .where(JUROR_POOL.pool.courtLocation.locCode.eq(TestConstants.VALID_COURT_LOCATION));
+        verify(jpaQuery, times(1)).where(
+            JUROR_POOL.owner.eq("415"));
 
         verify(jpaQuery, times(1)).leftJoin(PANEL);
         verify(jpaQuery, times(1)).on(
@@ -413,6 +437,7 @@ class MessageTemplateRepositoryImplTest {
         verify(queryResult, times(1)).getTotal();
         verify(queryResult, times(1)).getResults();
         securityUtilMockedStatic.verify(SecurityUtil::isCourt, times(1));
+        securityUtilMockedStatic.verify(SecurityUtil::getActiveOwner, times(1));
         securityUtilMockedStatic.verifyNoMoreInteractions();
 
         verifyNoMoreInteractions(queryResult,
@@ -436,6 +461,8 @@ class MessageTemplateRepositoryImplTest {
         when(jpaQuery.offset(anyLong())).thenReturn(jpaQuery);
         when(jpaQuery.leftJoin(any(EntityPath.class))).thenReturn(jpaQuery);
         when(jpaQuery.on(any(Predicate[].class))).thenReturn(jpaQuery);
+
+        when(SecurityUtil.getActiveOwner()).thenReturn("415");
 
         doNothing().when(messageSearch).apply(jpaQuery);
 
@@ -465,8 +492,11 @@ class MessageTemplateRepositoryImplTest {
         verify(jpaQuery, times(1))
             .where(JUROR_POOL.pool.courtLocation.locCode.eq(TestConstants.VALID_COURT_LOCATION));
         verify(jpaQuery, times(1)).where(JUROR_POOL.isActive.isTrue());
+
         verify(jpaQuery, times(1))
-            .where(JUROR_POOL.owner.ne("400"));
+            .where(JUROR_POOL.pool.courtLocation.locCode.eq(TestConstants.VALID_COURT_LOCATION));
+        verify(jpaQuery, times(1)).where(
+            JUROR_POOL.owner.eq("415"));
 
         verify(jpaQuery, times(1)).leftJoin(PANEL);
         verify(jpaQuery, times(1)).on(
@@ -501,6 +531,7 @@ class MessageTemplateRepositoryImplTest {
         verify(queryResult, times(1)).getTotal();
         verify(queryResult, times(1)).getResults();
         securityUtilMockedStatic.verify(SecurityUtil::isCourt, times(1));
+        securityUtilMockedStatic.verify(SecurityUtil::getActiveOwner, times(1));
         securityUtilMockedStatic.verifyNoMoreInteractions();
 
         verifyNoMoreInteractions(queryResult,
