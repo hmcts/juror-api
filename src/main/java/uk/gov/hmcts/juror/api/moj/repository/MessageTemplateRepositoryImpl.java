@@ -83,8 +83,12 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
             .join(JUROR_POOL)
             .on(JUROR.eq(JUROR_POOL.juror))
             .where(JUROR_POOL.isActive.isTrue())
-            .where(JUROR_POOL.pool.courtLocation.locCode.eq(locCode))
             .where(JUROR_POOL.owner.eq(SecurityUtil.getActiveOwner()));
+
+        if (isCourt) {
+            query.where(JUROR_POOL.pool.courtLocation.locCode.eq(locCode));
+        }
+
 
         if (search.getTrialNumber() != null || !simpleResponse) {
 
