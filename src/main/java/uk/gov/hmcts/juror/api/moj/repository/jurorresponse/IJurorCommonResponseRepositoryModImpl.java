@@ -12,14 +12,19 @@ import uk.gov.hmcts.juror.api.moj.domain.QCurrentlyDeferred;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QCombinedJurorResponse;
+import uk.gov.hmcts.juror.api.moj.repository.SystemParameterRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static com.querydsl.jpa.JPAExpressions.select;
 
 
 public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonResponseRepositoryMod {
@@ -297,16 +302,44 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
 
     @Override
     public int getPoolsTransferringNextWeekCount(String locCode) {
-        LocalDate weekDateBeforeTransfer = LocalDate.now().plusDays(18);
+      //  final SystemParameterRepositoryMod systemParameterRepository;
+
+     //   int weeksAdjustment = Integer.parseInt(systemParameterRepository.findById(7).get().getValue());
+    //    String transferDay = systemParameterRepository.findById(8).get().getValue();
+        // Calculate the latest return date using the same logic as stored procedure
+        LocalDate effectiveDate = LocalDate.now();
+
+        // If running before 6pm on transfer day, use previous day
+        if (LocalTime.now().isBefore(LocalTime.of(18, 0)) &&
+            effectiveDate.getDayOfWeek() == DayOfWeek.THURSDAY) {
+            effectiveDate = effectiveDate.minusDays(1);
+        }
+
+        // Add weekday adjustment (9 days for thu->thu based on pool transfer weekday)
+        effectiveDate = effectiveDate.plusDays(9);
+
+        // Add weeks adjustment (1 week = 7 days)
+        LocalDate latestReturnDate = effectiveDate.plusDays(7);
+
         return getJpaQueryFactory()
-            .select(
-                QPoolRequest.poolRequest)
+            .select(QPoolRequest.poolRequest)
             .from(QPoolRequest.poolRequest)
-            .join(QJurorPool.jurorPool)
-            .on(QPoolRequest.poolRequest.poolNumber.eq(QJurorPool.jurorPool.pool.poolNumber))
             .where(QPoolRequest.poolRequest.owner.eq(SecurityUtil.BUREAU_OWNER))
-            .where(QJurorPool.jurorPool.pool.poolNumber.isNotNull())
-            .where(QPoolRequest.poolRequest.returnDate.eq(weekDateBeforeTransfer)).fetch().size();
+            .where(QPoolRequest.poolRequest.returnDate.loe(latestReturnDate))
+            .where(QPoolRequest.poolRequest.courtLocation.locCode.eq(locCode))
+            .fetch().size();
     }
+
+   //     LocalDate weekDateBeforeTransfer = LocalDate.now().plusDays(18);
+   //     return getJpaQueryFactory()
+   //         .select(
+   //             QPoolRequest.poolRequest)
+   //         .from(QPoolRequest.poolRequest)
+   //         .join(QJurorPool.jurorPool)
+   //         .on(QPoolRequest.poolRequest.poolNumber.eq(QJurorPool.jurorPool.pool.poolNumber))
+   //         .where(QPoolRequest.poolRequest.owner.eq(SecurityUtil.BUREAU_OWNER))
+   //         .where(QJurorPool.jurorPool.pool.poolNumber.isNotNull())
+   //         .where(QPoolRequest.poolRequest.returnDate.eq(weekDateBeforeTransfer)).fetch().size();
+
 
 }
