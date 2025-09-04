@@ -24,10 +24,10 @@ BEGIN
     v_date_prefix := TO_CHAR(p_creation_date, 'FMDDMONYYYY');
 
     -- Get the current max suffix for today's file name
-    SELECT MAX(CAST(SUBSTRING(expense_file_name FROM 10 FOR 9) AS INTEGER))
+    SELECT cast(substring(document_id FROM 14 FOR 4) as integer)
     INTO v_max_suffix
-    FROM juror_mod.payment_data
-    WHERE expense_file_name LIKE v_date_prefix || '%.dat';
+    from juror_mod.content_store where file_type = 'PAYMENT'
+    order by date_on_q_for_send desc limit 1;
 
     -- If no files yet, start from 0
     IF v_max_suffix IS NULL THEN
