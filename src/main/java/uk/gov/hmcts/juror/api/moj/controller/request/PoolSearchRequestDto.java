@@ -79,6 +79,9 @@ public class PoolSearchRequestDto {
     @Schema(description = "Which type of court the pool was requested for")
     private List<String> poolType;
 
+    @JsonProperty("isNilPool")
+    @Schema(description = "Whether the pool is a Nil pool")
+    private Boolean isNilPool;
 
     public enum SortColumn {
         POOL_NO,
