@@ -121,14 +121,18 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
     public List<JurorPool> findJurorsOnCallAtCourtLocation(String locCode, List<String> poolNumbers) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
 
-        return queryFactory.selectFrom(JUROR_POOL)
+        JPQLQuery<JurorPool> query = queryFactory.selectFrom(JUROR_POOL)
             .join(POOL_REQUEST).on(POOL_REQUEST.eq(JUROR_POOL.pool))
             .where(JUROR_POOL.status.status.eq(IJurorStatus.RESPONDED))
             .where(JUROR_POOL.onCall.eq(true))
             .where(POOL_REQUEST.courtLocation.locCode.eq(locCode))
-            .where(JUROR_POOL.isActive.eq(true))
-            .where(JUROR_POOL.pool.poolNumber.in(poolNumbers))
-            .fetch();
+            .where(JUROR_POOL.isActive.eq(true));
+
+        if (!poolNumbers.isEmpty()) {
+            query.where(JUROR_POOL.pool.poolNumber.in(poolNumbers));
+        }
+
+        return query.fetch();
     }
 
     @Override
@@ -283,8 +287,11 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
             .leftJoin(PANEL)
             .on(JUROR.eq(PANEL.juror))
             .where(JUROR_POOL.isActive.isTrue())
-            .where(JUROR_POOL.pool.poolNumber.eq(search.getPoolNumber()))
-            .where(JUROR_POOL.owner.eq(owner));
+            .where(JUROR_POOL.pool.poolNumber.eq(search.getPoolNumber()));
+
+        if (!SecurityUtil.BUREAU_OWNER.equals(owner)) {
+            partialQuery.where(JUROR_POOL.owner.eq(owner));
+        }
 
         if (null != search.getJurorNumber()) {
             partialQuery.where(JUROR.jurorNumber.like(search.getJurorNumber() + "%"));
