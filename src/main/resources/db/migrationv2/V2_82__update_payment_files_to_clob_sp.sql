@@ -24,7 +24,7 @@ BEGIN
     v_date_prefix := TO_CHAR(p_creation_date, 'DDMONYYYY');
 
     -- Get the current max suffix for today's file name
-    SELECT cast(substring(document_id FROM 15 FOR 4) as integer)
+    SELECT substring(document_id FROM 15 FOR 4) as integer
     INTO v_max_suffix
     from juror_mod.content_store where file_type = 'PAYMENT'
     order by date_on_q_for_send desc limit 1;
