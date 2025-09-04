@@ -8,11 +8,14 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.QCurrentlyDeferred;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QCombinedJurorResponse;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -150,6 +153,160 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
             .where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(locationCode))
             .fetch().size();
 
+    }
+
+    @Override
+    public int getOpenResponsesAtBureau(String locCode) {
+
+        return getJpaQueryFactory()
+            .select(QCombinedJurorResponse.combinedJurorResponse)
+            .from(QCombinedJurorResponse.combinedJurorResponse)
+            .join(QJurorPool.jurorPool)
+            .on(QJurorPool.jurorPool.juror.eq(QCombinedJurorResponse.combinedJurorResponse.juror))
+            .where(QJurorPool.jurorPool.isActive.isTrue())
+            .where(
+                QCombinedJurorResponse.combinedJurorResponse.processingStatus.ne(
+                    ProcessingStatus.CLOSED))
+            .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED))
+            .where(QJurorPool.jurorPool.owner.eq(SecurityUtil.BUREAU_OWNER))
+            .where(QCombinedJurorResponse.combinedJurorResponse.juror.bureauTransferDate.isNull())
+            .fetch()
+            .size();
+    }
+
+    @Override
+    public int getSummonsRepliesFourWeeks(String locCode) {
+
+        return getJpaQueryFactory()
+            .select(QCombinedJurorResponse.combinedJurorResponse)
+            .from(QCombinedJurorResponse.combinedJurorResponse)
+            .join(QJurorPool.jurorPool)
+            .on(QJurorPool.jurorPool.juror.eq(QCombinedJurorResponse.combinedJurorResponse.juror))
+            .where(QJurorPool.jurorPool.isActive.isTrue())
+            .where(
+                QCombinedJurorResponse.combinedJurorResponse.processingStatus.ne(
+                    ProcessingStatus.CLOSED))
+            .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED))
+            .where(QJurorPool.jurorPool.owner.eq(SecurityUtil.BUREAU_OWNER))
+            .where(QJurorPool.jurorPool.nextDate.before(LocalDateTime.now().plusWeeks(4).toLocalDate()))
+            .where(QCombinedJurorResponse.combinedJurorResponse.juror.bureauTransferDate.isNull())
+            .fetch()
+            .size();
+    }
+
+    @Override
+    public int getSummonsRepliesStandard(String locCode) {
+        return getJpaQueryFactory()
+            .select(QCombinedJurorResponse.combinedJurorResponse)
+            .from(QCombinedJurorResponse.combinedJurorResponse)
+            .join(QJurorPool.jurorPool)
+            .on(QJurorPool.jurorPool.juror.eq(QCombinedJurorResponse.combinedJurorResponse.juror))
+            .where(QJurorPool.jurorPool.isActive.isTrue())
+            .where(
+                QCombinedJurorResponse.combinedJurorResponse.processingStatus.ne(
+                    ProcessingStatus.CLOSED))
+            .where(QCombinedJurorResponse.combinedJurorResponse.urgent.eq(false))
+            .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED))
+            .where(QJurorPool.jurorPool.owner.eq(SecurityUtil.BUREAU_OWNER))
+            .where(QCombinedJurorResponse.combinedJurorResponse.juror.bureauTransferDate.isNull())
+            .fetch()
+            .size();
+    }
+
+    @Override
+    public int getSummonsRepliesUrgent(String locCode) {
+        return getJpaQueryFactory()
+            .select(QCombinedJurorResponse.combinedJurorResponse)
+            .from(QCombinedJurorResponse.combinedJurorResponse)
+            .join(QJurorPool.jurorPool)
+            .on(QJurorPool.jurorPool.juror.eq(QCombinedJurorResponse.combinedJurorResponse.juror))
+            .where(QJurorPool.jurorPool.isActive.isTrue())
+            .where(
+                QCombinedJurorResponse.combinedJurorResponse.processingStatus.ne(
+                    ProcessingStatus.CLOSED))
+            .where(QCombinedJurorResponse.combinedJurorResponse.urgent.eq(true))
+            .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED))
+            .where(QJurorPool.jurorPool.owner.eq(SecurityUtil.BUREAU_OWNER))
+            .where(QCombinedJurorResponse.combinedJurorResponse.juror.bureauTransferDate.isNull())
+            .fetch()
+            .size();
+    }
+
+    @Override
+    public int getSummonsRepliesUnassigned(String locCode) {
+        return getJpaQueryFactory()
+            .select(QCombinedJurorResponse.combinedJurorResponse)
+            .from(QCombinedJurorResponse.combinedJurorResponse)
+            .join(QJurorPool.jurorPool)
+            .on(QJurorPool.jurorPool.juror.eq(QCombinedJurorResponse.combinedJurorResponse.juror))
+            .where(QJurorPool.jurorPool.isActive.isTrue())
+            .where(
+                QCombinedJurorResponse.combinedJurorResponse.processingStatus.ne(
+                    ProcessingStatus.CLOSED))
+            .where(QCombinedJurorResponse.combinedJurorResponse.staff.isNull())
+            .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED))
+            .where(QJurorPool.jurorPool.owner.eq(SecurityUtil.BUREAU_OWNER))
+            .where(QCombinedJurorResponse.combinedJurorResponse.juror.bureauTransferDate.isNull())
+            .fetch()
+            .size();
+    }
+
+    @Override
+    public int getSummonsRepliesAssigned(String locCode) {
+        return getJpaQueryFactory()
+            .select(QCombinedJurorResponse.combinedJurorResponse)
+            .from(QCombinedJurorResponse.combinedJurorResponse)
+            .join(QJurorPool.jurorPool)
+            .on(QJurorPool.jurorPool.juror.eq(QCombinedJurorResponse.combinedJurorResponse.juror))
+            .where(QJurorPool.jurorPool.isActive.isTrue())
+            .where(
+                QCombinedJurorResponse.combinedJurorResponse.processingStatus.ne(
+                    ProcessingStatus.CLOSED))
+            .where(QCombinedJurorResponse.combinedJurorResponse.staff.isNotNull())
+            .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED))
+            .where(QJurorPool.jurorPool.owner.eq(SecurityUtil.BUREAU_OWNER))
+            .where(QCombinedJurorResponse.combinedJurorResponse.juror.bureauTransferDate.isNull())
+            .fetch()
+            .size();
+    }
+
+    @Override
+    public int getDeferredJurorsStartDateNextWeek(String locCode) {
+        return getJpaQueryFactory()
+            .select(QCurrentlyDeferred.currentlyDeferred)
+            .from(QCurrentlyDeferred.currentlyDeferred)
+            .where(QCurrentlyDeferred.currentlyDeferred.owner.eq(SecurityUtil.BUREAU_OWNER))
+            .where(
+                QCurrentlyDeferred.currentlyDeferred.deferredTo.between(
+                    LocalDateTime.now().toLocalDate(), LocalDateTime.now().plusWeeks(1).toLocalDate()))
+            .fetch()
+            .size();
+    }
+
+    @Override
+    public int getPoolsNotYetSummonedCount(String locCode) {
+        return getJpaQueryFactory()
+            .select(
+                QPoolRequest.poolRequest)
+            .from(QPoolRequest.poolRequest)
+            .leftJoin(QJurorPool.jurorPool)
+            .on(QPoolRequest.poolRequest.poolNumber.eq(QJurorPool.jurorPool.pool.poolNumber))
+            .where(QPoolRequest.poolRequest.owner.eq(SecurityUtil.BUREAU_OWNER))
+            .where(QJurorPool.jurorPool.pool.poolNumber.isNull()).fetch().size();
+    }
+
+    @Override
+    public int getPoolsTransferringNextWeekCount(String locCode) {
+        LocalDate weekDateBeforeTransfer = LocalDate.now().plusDays(18);
+        return getJpaQueryFactory()
+            .select(
+                QPoolRequest.poolRequest)
+            .from(QPoolRequest.poolRequest)
+            .join(QJurorPool.jurorPool)
+            .on(QPoolRequest.poolRequest.poolNumber.eq(QJurorPool.jurorPool.pool.poolNumber))
+            .where(QPoolRequest.poolRequest.owner.eq(SecurityUtil.BUREAU_OWNER))
+            .where(QJurorPool.jurorPool.pool.poolNumber.isNotNull())
+            .where(QPoolRequest.poolRequest.returnDate.eq(weekDateBeforeTransfer)).fetch().size();
     }
 
 }

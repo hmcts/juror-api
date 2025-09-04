@@ -1617,6 +1617,11 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     }
 
     @Override
+    public List<String> getCompletedJurorsAtCourt(String locationCode, LocalDate attendanceDate) {
+        return appearanceRepository.getCompletedJurorsAtCourt(locationCode, attendanceDate);
+    }
+
+    @Override
     public int getAbsentCountAtCourt(String locationCode, LocalDate attendanceDateFrom,
                               LocalDate attendanceDateTo) {
         return appearanceRepository

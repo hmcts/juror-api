@@ -26,7 +26,10 @@ public class JurorDigitalResponseRepositoryModImpl implements IJurorDigitalRespo
     public Tuple getAssignRepliesStatistics() {
         JPAQuery<Tuple> query = getJpaQueryFactory().select(
                 new CaseBuilder()
-                    .when(digitalResponse.urgent.isFalse())
+                    .when(digitalResponse.urgent.isFalse()
+                                .and(digitalResponse.processingStatus.ne(ProcessingStatus.AWAITING_CONTACT)
+                    .or(digitalResponse.processingStatus.ne(ProcessingStatus.AWAITING_COURT_REPLY))
+                                .or(digitalResponse.processingStatus.ne(ProcessingStatus.AWAITING_TRANSLATION))))
                     .then(1L).otherwise(0L).sum().as("nonUrgent"),
                 new CaseBuilder()
                     .when(digitalResponse.urgent.isTrue())
@@ -52,10 +55,13 @@ public class JurorDigitalResponseRepositoryModImpl implements IJurorDigitalRespo
                 user.username.as("login"),
                 user.name.as("name"),
                 new CaseBuilder()
-                    .when(digitalResponse.urgent.isFalse().and(QJuror.juror.isNotNull()))
+                    .when(digitalResponse.urgent.isFalse()
+                            .and(QJuror.juror.isNotNull())
+                           .and(digitalResponse.processingStatus.eq(ProcessingStatus.TODO)))
                     .then(1L).otherwise(0L).sum().as("nonUrgent"),
                 new CaseBuilder()
-                    .when(digitalResponse.urgent.isTrue().and(QJuror.juror.isNotNull()))
+                    .when(digitalResponse.urgent.isTrue().and(QJuror.juror.isNotNull())
+                    .and(digitalResponse.processingStatus.eq(ProcessingStatus.TODO)))
                     .then(1L).otherwise(0L).sum().as("urgent"),
                 new CaseBuilder()
                     .when(digitalResponse.processingStatus.eq(ProcessingStatus.AWAITING_CONTACT)

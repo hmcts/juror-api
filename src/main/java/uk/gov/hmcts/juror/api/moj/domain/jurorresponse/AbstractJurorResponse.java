@@ -133,6 +133,18 @@ public class AbstractJurorResponse extends Address implements Serializable {
     @Column(name = "thirdparty_lname")
     private String thirdPartyLName;
 
+    @Column(name = "residency_detail")
+    private String residencyDetail;
+
+    @Column(name = "mental_health_act_details")
+    private String mentalHealthActDetails;
+
+    @Column(name = "bail_details")
+    private String bailDetails;
+
+    @Column(name = "convictions_details")
+    private String convictionsDetails;
+
     @Column(name = "relationship")
     @Length(max = 50)
     @Pattern(regexp = NO_PIPES_REGEX)
