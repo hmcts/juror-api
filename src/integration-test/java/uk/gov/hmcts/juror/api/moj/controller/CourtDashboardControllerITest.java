@@ -184,6 +184,9 @@ public class CourtDashboardControllerITest extends AbstractIntegrationTest {
         assertThat(responseBody.getUnconfirmedAttendances())
             .as("Expect the total unconfirmed attendances to be 8")
             .isEqualTo(8);
+        assertThat(responseBody.getJurorsOnCall())
+            .as("Expect the total jurors on call to be 1")
+            .isEqualTo(1);
     }
 
     @Test
