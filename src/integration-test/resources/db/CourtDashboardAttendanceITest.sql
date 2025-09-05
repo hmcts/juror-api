@@ -18,7 +18,8 @@ values ('100000000', 'FName', 'LName', true, 'addressLine1', 'D', NULL),
        ('100000007', 'FName', 'LName', true, 'addressLine1', NULL, NULL),
        ('100000008', 'FName', 'LName', true, 'addressLine1', NULL, NULL),
        ('100000009', 'FName', 'LName', true, 'addressLine1', NULL, current_date),
-       ('100000010', 'FName', 'LName', true, 'addressLine1', NULL, current_date - 1);
+       ('100000010', 'FName', 'LName', true, 'addressLine1', NULL, current_date - 1),
+       ('100000011', 'FName', 'LName', true, 'addressLine1', NULL, NULL);
 
 -- create juror_pool associative records
 insert into juror_mod.juror_pool (owner, juror_number, pool_number, is_active, status, next_date)
@@ -33,6 +34,10 @@ values ('415', '100000000', '200000000', true, 2, current_date),
        ('415', '100000008', '200000000', true, 3, current_date + 1),
        ('415', '100000009', '200000005', true, 13, current_date + 1),
        ('415', '100000010', '200000004', true, 13, current_date);
+
+ insert into juror_mod.juror_pool (owner, juror_number, pool_number, is_active, status, next_date, on_call)
+ values
+       ('415', '100000011', '200000005', true, 2, NULL, true);
 
 INSERT INTO juror_mod.appearance (attendance_date, juror_number, pool_number, loc_code, attendance_type, appearance_stage, no_show)
 values (current_date - 3, '100000000', '200000000', '415', 'ABSENT', NULL, true);

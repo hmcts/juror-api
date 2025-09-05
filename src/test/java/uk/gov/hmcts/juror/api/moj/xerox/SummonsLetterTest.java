@@ -72,7 +72,7 @@ class SummonsLetterTest extends AbstractLetterTest {
         addWelshField("SY2 6LU", 35);
         addWelshField("", 10);
         addWelshField("641500541", 9);
-        addWelshLetterDate();
+        addEnglishWelshLetterDate();
         addWelshField("MONDAY 6 FEBRUARY, 2017", 32);
         addWelshField("DYDD LLUN 6 CHWEFROR, 2017", 32);
         addWelshField("10:00AM", 8);

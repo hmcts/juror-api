@@ -13,6 +13,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -29,6 +32,7 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.stream.Stream;
 
 import static uk.gov.hmcts.juror.api.moj.repository.IJurorPoolRepository.ATTENDANCE;
 import static uk.gov.hmcts.juror.api.moj.repository.IJurorPoolRepository.CHECKED_IN_TODAY;
@@ -157,9 +161,26 @@ class JurorPoolRepositoryImplTest {
             Mockito.when(jpaQuery.distinct()).thenReturn(jpaQuery);
         }
 
-        @Test
-        void happyPath() {
-            final String ownerId = "415";
+        private static Stream<Arguments> ownerArguments() {
+            return Stream.of(
+                Arguments.of("415", false), // Court user
+                Arguments.of(SecurityUtil.BUREAU_OWNER, true) // Bureau user
+            );
+        }
+
+        private int getExpectedWhereClauseCount(boolean isBureauUser, int additionalFilters) {
+            // Base where clauses: isActive + poolNumber
+            int baseCount = 2;
+            // Add owner clause for court users
+            if (!isBureauUser) {
+                baseCount++;
+            }
+            return baseCount + additionalFilters;
+        }
+
+        @ParameterizedTest
+        @MethodSource("ownerArguments")
+        void happyPath(String ownerId, boolean isBureauUser) {
             final LocalDate today = LocalDate.now();
             jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder().build(), ownerId);
             Mockito.verify(queryFactory, Mockito.times(1)).from(JUROR_POOL);
@@ -180,6 +201,14 @@ class JurorPoolRepositoryImplTest {
                 .where(JUROR_POOL.isActive.isTrue());
             Mockito.verify(jpaQuery, Mockito.times(1))
                 .where(JUROR_POOL.pool.poolNumber.eq("41500000"));
+            
+            if (isBureauUser) {
+                Mockito.verify(jpaQuery, Mockito.times(0))
+                    .where(JUROR_POOL.owner.eq(ownerId));
+            } else {
+                Mockito.verify(jpaQuery, Mockito.times(1))
+                    .where(JUROR_POOL.owner.eq(ownerId));
+            }
 
             Mockito.verify(jpaQuery, Mockito.times(1)).select(
                 Mockito.eq(JUROR_POOL.juror.jurorNumber),
@@ -224,21 +253,25 @@ class JurorPoolRepositoryImplTest {
         }
 
 
-        @Test
-        void checkJurorOwner() {
-            String ownerId = "415";
+        @ParameterizedTest
+        @MethodSource("ownerArguments")
+        void checkJurorOwner(String ownerId, boolean isBureauUser) {
             jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder().build(), ownerId);
-            Mockito.verify(jpaQuery, Mockito.times(1)).where(JUROR_POOL.owner.eq(ownerId));
-
-            ownerId = SecurityUtil.BUREAU_OWNER;
-            jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder().build(), ownerId);
-            Mockito.verify(jpaQuery, Mockito.times(1)).where(JUROR_POOL.owner.eq(ownerId));
+            
+            if (isBureauUser) {
+                Mockito.verify(jpaQuery, Mockito.times(0)).where(JUROR_POOL.owner.eq(ownerId));
+            } else {
+                Mockito.verify(jpaQuery, Mockito.times(1)).where(JUROR_POOL.owner.eq(ownerId));
+            }
         }
 
-        @Test
-        void noFilters() {
-            jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder().build(), "");
-            Mockito.verify(jpaQuery, Mockito.times(3))
+        @ParameterizedTest
+        @MethodSource("ownerArguments")
+        void noFilters(String ownerId, boolean isBureauUser) {
+            jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder().build(), ownerId);
+            
+            int expectedWhereCount = getExpectedWhereClauseCount(isBureauUser, 0);
+            Mockito.verify(jpaQuery, Mockito.times(expectedWhereCount))
                 .where(Mockito.any(Predicate.class));
             Mockito.verify(jpaQuery, Mockito.times(0))
                 .where(JUROR.jurorNumber.like("123456%"));
@@ -292,40 +325,51 @@ class JurorPoolRepositoryImplTest {
                         APPEARANCE.appearanceStage.eq(AppearanceStage.CHECKED_IN),
                         APPEARANCE.attendanceDate.eq(LocalDate.now())))
                     .or(JUROR_POOL.nextDate.eq(LocalDate.now())));
-
         }
 
-        @Test
-        void filterByJurorNumber() {
-            jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder().jurorNumber("123456").build(), "");
-            Mockito.verify(jpaQuery, Mockito.times(4))
+        @ParameterizedTest
+        @MethodSource("ownerArguments")
+        void filterByJurorNumber(String ownerId, boolean isBureauUser) {
+            jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder().jurorNumber("123456").build(), ownerId);
+            
+            int expectedWhereCount = getExpectedWhereClauseCount(isBureauUser, 1);
+            Mockito.verify(jpaQuery, Mockito.times(expectedWhereCount))
                 .where(Mockito.any(Predicate.class));
             Mockito.verify(jpaQuery, Mockito.times(1))
                 .where(JUROR.jurorNumber.like("123456%"));
         }
 
-        @Test
-        void filterByFirstName() {
-            jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder().firstName("Test").build(), "");
-            Mockito.verify(jpaQuery, Mockito.times(4))
+        @ParameterizedTest
+        @MethodSource("ownerArguments")
+        void filterByFirstName(String ownerId, boolean isBureauUser) {
+            jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder().firstName("Test").build(), ownerId);
+            
+            int expectedWhereCount = getExpectedWhereClauseCount(isBureauUser, 1);
+            Mockito.verify(jpaQuery, Mockito.times(expectedWhereCount))
                 .where(Mockito.any(Predicate.class));
             Mockito.verify(jpaQuery, Mockito.times(1))
                 .where(JUROR.firstName.startsWithIgnoreCase("Test"));
         }
 
-        @Test
-        void filterByLastName() {
-            jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder().lastName("Person").build(), "");
-            Mockito.verify(jpaQuery, Mockito.times(4))
+        @ParameterizedTest
+        @MethodSource("ownerArguments")
+        void filterByLastName(String ownerId, boolean isBureauUser) {
+            jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder().lastName("Person").build(), ownerId);
+            
+            int expectedWhereCount = getExpectedWhereClauseCount(isBureauUser, 1);
+            Mockito.verify(jpaQuery, Mockito.times(expectedWhereCount))
                 .where(Mockito.any(Predicate.class));
             Mockito.verify(jpaQuery, Mockito.times(1))
                 .where(JUROR.lastName.startsWithIgnoreCase("Person"));
         }
 
-        @Test
-        void dontFilterByFalseCheckedIn() {
-            jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder().checkedIn(false).build(), "");
-            Mockito.verify(jpaQuery, Mockito.times(3))
+        @ParameterizedTest
+        @MethodSource("ownerArguments")
+        void dontFilterByFalseCheckedIn(String ownerId, boolean isBureauUser) {
+            jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder().checkedIn(false).build(), ownerId);
+            
+            int expectedWhereCount = getExpectedWhereClauseCount(isBureauUser, 0);
+            Mockito.verify(jpaQuery, Mockito.times(expectedWhereCount))
                 .where(Mockito.any(Predicate.class));
             Mockito.verify(jpaQuery, Mockito.times(0))
                 .where(Expressions.booleanOperation(
@@ -335,10 +379,13 @@ class JurorPoolRepositoryImplTest {
                 ));
         }
 
-        @Test
-        void filterByCheckedIn() {
-            jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder().checkedIn(true).build(), "");
-            Mockito.verify(jpaQuery, Mockito.times(4))
+        @ParameterizedTest
+        @MethodSource("ownerArguments")
+        void filterByCheckedIn(String ownerId, boolean isBureauUser) {
+            jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder().checkedIn(true).build(), ownerId);
+            
+            int expectedWhereCount = getExpectedWhereClauseCount(isBureauUser, 1);
+            Mockito.verify(jpaQuery, Mockito.times(expectedWhereCount))
                 .where(Mockito.any(Predicate.class));
             Mockito.verify(jpaQuery, Mockito.times(1))
                 .where(Expressions.booleanOperation(
@@ -348,31 +395,40 @@ class JurorPoolRepositoryImplTest {
                 ));
         }
 
-        @Test
-        void filterByNextDue() {
+        @ParameterizedTest
+        @MethodSource("ownerArguments")
+        void filterByNextDue(String ownerId, boolean isBureauUser) {
             jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder()
-                .nextDue(Arrays.asList("set")).build(), "");
-            Mockito.verify(jpaQuery, Mockito.times(4))
+                .nextDue(Arrays.asList("set")).build(), ownerId);
+            
+            int expectedWhereCount = getExpectedWhereClauseCount(isBureauUser, 1);
+            Mockito.verify(jpaQuery, Mockito.times(expectedWhereCount))
                 .where(Mockito.any(Predicate.class));
             Mockito.verify(jpaQuery, Mockito.times(1))
                 .where(JUROR_POOL.nextDate.isNotNull());
         }
 
-        @Test
-        void filterByNextDueFalse() {
+        @ParameterizedTest
+        @MethodSource("ownerArguments")
+        void filterByNextDueFalse(String ownerId, boolean isBureauUser) {
             jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder()
-                .nextDue(Arrays.asList("notSet")).build(), "");
-            Mockito.verify(jpaQuery, Mockito.times(4))
+                .nextDue(Arrays.asList("notSet")).build(), ownerId);
+            
+            int expectedWhereCount = getExpectedWhereClauseCount(isBureauUser, 1);
+            Mockito.verify(jpaQuery, Mockito.times(expectedWhereCount))
                 .where(Mockito.any(Predicate.class));
             Mockito.verify(jpaQuery, Mockito.times(1))
                 .where(JUROR_POOL.nextDate.isNull());
         }
 
-        @Test
-        void filterByBothNextDueValues() {
+        @ParameterizedTest
+        @MethodSource("ownerArguments")
+        void filterByBothNextDueValues(String ownerId, boolean isBureauUser) {
             jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder()
-                .nextDue(Arrays.asList("set", "notSet")).build(), "");
-            Mockito.verify(jpaQuery, Mockito.times(3))
+                .nextDue(Arrays.asList("set", "notSet")).build(), ownerId);
+            
+            int expectedWhereCount = getExpectedWhereClauseCount(isBureauUser, 0);
+            Mockito.verify(jpaQuery, Mockito.times(expectedWhereCount))
                 .where(Mockito.any(Predicate.class));
             Mockito.verify(jpaQuery, Mockito.times(0))
                 .where(JUROR_POOL.nextDate.isNull());
@@ -380,21 +436,27 @@ class JurorPoolRepositoryImplTest {
                 .where(JUROR_POOL.nextDate.isNotNull());
         }
 
-        @Test
-        void filterByStatus() {
+        @ParameterizedTest
+        @MethodSource("ownerArguments")
+        void filterByStatus(String ownerId, boolean isBureauUser) {
             jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder().statuses(
-                Arrays.asList("Status1", "Status2")).build(), "");
-            Mockito.verify(jpaQuery, Mockito.times(4))
+                Arrays.asList("Status1", "Status2")).build(), ownerId);
+            
+            int expectedWhereCount = getExpectedWhereClauseCount(isBureauUser, 1);
+            Mockito.verify(jpaQuery, Mockito.times(expectedWhereCount))
                 .where(Mockito.any(Predicate.class));
             Mockito.verify(jpaQuery, Mockito.times(1))
                 .where(JUROR_STATUS.statusDesc.in(Arrays.asList("Status1", "Status2")));
         }
 
-        @Test
-        void filterByAttendance() {
+        @ParameterizedTest
+        @MethodSource("ownerArguments")
+        void testAttendanceFilters(String ownerId, boolean isBureauUser) {
+            int expectedWhereCount = getExpectedWhereClauseCount(isBureauUser, 1);
+            
             jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder().attendance(Arrays.asList(
-                PoolMemberFilterRequestQuery.AttendanceEnum.ON_CALL)).build(), "");
-            Mockito.verify(jpaQuery, Mockito.times(4))
+                PoolMemberFilterRequestQuery.AttendanceEnum.ON_CALL)).build(), ownerId);
+            Mockito.verify(jpaQuery, Mockito.times(expectedWhereCount))
                 .where(Mockito.any(Predicate.class));
             Mockito.verify(jpaQuery, Mockito.times(1))
                 .where(JUROR_POOL.onCall.eq(true)
@@ -405,8 +467,8 @@ class JurorPoolRepositoryImplTest {
             Mockito.clearInvocations(jpaQuery);
 
             jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder().attendance(Arrays.asList(
-                PoolMemberFilterRequestQuery.AttendanceEnum.ON_A_TRIAL)).build(), "");
-            Mockito.verify(jpaQuery, Mockito.times(4))
+                PoolMemberFilterRequestQuery.AttendanceEnum.ON_A_TRIAL)).build(), ownerId);
+            Mockito.verify(jpaQuery, Mockito.times(expectedWhereCount))
                 .where(Mockito.any(Predicate.class));
             Mockito.verify(jpaQuery, Mockito.times(1))
                 .where(Expressions.FALSE
@@ -417,8 +479,8 @@ class JurorPoolRepositoryImplTest {
             Mockito.clearInvocations(jpaQuery);
 
             jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder().attendance(Arrays.asList(
-                PoolMemberFilterRequestQuery.AttendanceEnum.IN_ATTENDANCE)).build(), "");
-            Mockito.verify(jpaQuery, Mockito.times(4))
+                PoolMemberFilterRequestQuery.AttendanceEnum.IN_ATTENDANCE)).build(), ownerId);
+            Mockito.verify(jpaQuery, Mockito.times(expectedWhereCount))
                 .where(Mockito.any(Predicate.class));
             Mockito.verify(jpaQuery, Mockito.times(1))
                 .where(Expressions.FALSE
@@ -432,8 +494,8 @@ class JurorPoolRepositoryImplTest {
             Mockito.clearInvocations(jpaQuery);
 
             jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder().attendance(
-                Arrays.asList(PoolMemberFilterRequestQuery.AttendanceEnum.OTHER)).build(), "");
-            Mockito.verify(jpaQuery, Mockito.times(4))
+                Arrays.asList(PoolMemberFilterRequestQuery.AttendanceEnum.OTHER)).build(), ownerId);
+            Mockito.verify(jpaQuery, Mockito.times(expectedWhereCount))
                 .where(Mockito.any(Predicate.class));
             Mockito.verify(jpaQuery, Mockito.times(1))
                 .where(Expressions.FALSE
@@ -450,8 +512,8 @@ class JurorPoolRepositoryImplTest {
                 PoolMemberFilterRequestQuery.AttendanceEnum.ON_CALL,
                 PoolMemberFilterRequestQuery.AttendanceEnum.ON_A_TRIAL,
                 PoolMemberFilterRequestQuery.AttendanceEnum.IN_ATTENDANCE,
-                PoolMemberFilterRequestQuery.AttendanceEnum.OTHER)).build(), "");
-            Mockito.verify(jpaQuery, Mockito.times(4))
+                PoolMemberFilterRequestQuery.AttendanceEnum.OTHER)).build(), ownerId);
+            Mockito.verify(jpaQuery, Mockito.times(expectedWhereCount))
                 .where(Mockito.any(Predicate.class));
             Mockito.verify(jpaQuery, Mockito.times(1))
                 .where(JUROR_POOL.onCall.eq(true)
