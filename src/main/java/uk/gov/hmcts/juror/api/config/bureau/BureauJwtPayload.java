@@ -140,7 +140,8 @@ public class BureauJwtPayload {
 
         // Handle permissions claim - defensive type checking
         Object permissionsObj = claims.get("permissions");
-        final List<String> permissionString = (permissionsObj instanceof List) ? (List<String>) permissionsObj : Collections.emptyList();
+        final List<String> permissionString = (permissionsObj instanceof List)
+            ? (List<String>) permissionsObj : Collections.emptyList();
 
         final List<Permission> permissions = permissionString
             .stream()
