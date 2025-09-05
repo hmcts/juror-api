@@ -155,8 +155,6 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
             .map(jurorAndPoolRequest -> JUROR.jurorNumber.eq(jurorAndPoolRequest.getJurorNumber())
                 .and(JUROR_POOL.pool.poolNumber.eq(jurorAndPoolRequest.getPoolNumber()))).toList();
 
-
-        List<List<String>> rows = new ArrayList<>();
         JPQLQuery<Tuple> query = queryFactory.select(returnFields.toArray(new Expression<?>[0]))
             .from(JUROR)
             .join(JUROR_POOL)
@@ -171,6 +169,7 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
 
         query.where(or.stream().reduce(BooleanExpression::or).get());
 
+        List<List<String>> rows = new ArrayList<>();
         query.fetch().stream().map(tuple -> {
             List<String> row = new ArrayList<>();
             exportContactDetailsRequest.getExportItems()
