@@ -141,14 +141,17 @@ class BureauJwtPayloadTest {
     @Test
     void positiveFromClaims() {
         Claims claims = mock(Claims.class);
-        when(claims.get("staff", Map.class)).thenReturn(Map.of(
+        when(claims.get("staff")).thenReturn(Map.of(
             "name", "staffName",
             "rank", 1,
             "active", 2,
             "courts", List.of("400", "415")
         ));
         when(claims.containsKey("roles")).thenReturn(true);
-        when(claims.get("roles", List.class)).thenReturn(List.of(Role.MANAGER.name()));
+        when(claims.get("roles")).thenReturn(List.of(Role.MANAGER.name()));
+
+        when(claims.containsKey("permissions")).thenReturn(true);
+        when(claims.get("permissions")).thenReturn(Collections.emptyList());
         when(claims.containsKey("userType")).thenReturn(true);
         when(claims.get("userType", String.class)).thenReturn(UserType.COURT.name());
         when(claims.containsKey("activeUserType")).thenReturn(true);
@@ -188,13 +191,18 @@ class BureauJwtPayloadTest {
     @Test
     void positiveFromClaimsMissingKeys() {
         Claims claims = mock(Claims.class);
-        when(claims.get("staff", Map.class)).thenReturn(Map.of(
+        when(claims.get("staff")).thenReturn(Map.of(
             "name", "staffName",
             "rank", 1,
             "active", 2,
             "courts", List.of("400", "415")
         ));
         when(claims.containsKey("roles")).thenReturn(false);
+        when(claims.get("roles")).thenReturn(null);
+
+        when(claims.containsKey("permissions")).thenReturn(false);
+        when(claims.get("permissions")).thenReturn(null);
+
         when(claims.containsKey("userType")).thenReturn(false);
 
         when(claims.get("daysToExpire", Integer.class)).thenReturn(999);
@@ -228,6 +236,7 @@ class BureauJwtPayloadTest {
                     Collections.emptyList()
                 )
             );
+
     }
 
     @Nested
