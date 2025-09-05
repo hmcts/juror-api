@@ -239,6 +239,13 @@ public class PoolRequestSearchQueries implements IPoolRequestSearchQueries {
     }
 
     @Override
+    public void addNilPoolPredicate(JPAQuery<Tuple> query, Boolean isNilPool) {
+        if (Boolean.TRUE.equals(isNilPool)) {
+            query.where(POOL_REQUEST.nilPool.eq(true));
+        }
+    }
+
+    @Override
     public void orderByStringColumn(JPAQuery<Tuple> query, StringPath simpleColumn, SortDirection sortDirection) {
         if (Objects.requireNonNull(sortDirection) == SortDirection.DESC) {
             query.orderBy(simpleColumn.desc());
