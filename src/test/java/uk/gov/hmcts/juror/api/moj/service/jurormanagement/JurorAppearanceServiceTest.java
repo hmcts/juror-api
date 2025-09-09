@@ -3437,6 +3437,67 @@ class JurorAppearanceServiceTest {
 
         }
 
+    @Test
+    @DisplayName(
+        "findJurorsInAttendanceAtCourtLocation - distinct prevents duplicates from multiple appearances")
+    void findJurorsInAttendanceDistinctPreventsDuplicates() {
+      List<String> pools = new ArrayList<>();
+      pools.add(TestConstants.VALID_POOL_NUMBER);
+
+      JurorStatus jurorStatus = new JurorStatus();
+      jurorStatus.setStatus(IJurorStatus.RESPONDED);
+
+      PoolRequest poolRequest =
+          PoolRequest.builder().poolNumber(TestConstants.VALID_POOL_NUMBER).build();
+
+      CourtLocation courtLocation = new CourtLocation();
+      courtLocation.setOwner("415");
+      courtLocation.setLocCode(VALID_COURT_LOCATION);
+      poolRequest.setCourtLocation(courtLocation);
+
+      Juror juror = new Juror();
+      juror.setJurorNumber("111111111");
+
+      JurorPool jurorPool = new JurorPool();
+      jurorPool.setJuror(juror);
+      jurorPool.setStatus(jurorStatus);
+      jurorPool.setPool(poolRequest);
+      jurorPool.setIsActive(true);
+      jurorPool.setOnCall(false);
+
+      // Create multiple appearance records for the same juror
+      Appearance appearance1 = new Appearance();
+      appearance1.setJurorNumber("111111111");
+      appearance1.setPoolNumber(TestConstants.VALID_POOL_NUMBER);
+      appearance1.setAppearanceStage(AppearanceStage.CHECKED_IN);
+      appearance1.setAttendanceDate(now().minusDays(1));
+
+      Appearance appearance2 = new Appearance();
+      appearance2.setJurorNumber("111111111");
+      appearance2.setPoolNumber(TestConstants.VALID_POOL_NUMBER);
+      appearance2.setAppearanceStage(AppearanceStage.CHECKED_IN);
+      appearance2.setAttendanceDate(now().minusDays(2));
+
+     
+      List<JurorPool> expectedResult = new ArrayList<>();
+      expectedResult.add(jurorPool);
+
+      when(jurorPoolRepository.findJurorsInAttendanceAtCourtLocation(VALID_COURT_LOCATION, pools))
+          .thenReturn(expectedResult);
+
+      List<JurorPool> result =
+          jurorPoolRepository.findJurorsInAttendanceAtCourtLocation(VALID_COURT_LOCATION, pools);
+
+      assertThat(result).hasSize(1);
+      assertThat(result.get(0).getJuror().getJurorNumber()).isEqualTo("111111111");
+      assertThat(result.get(0).getPool().getPoolNumber())
+          .isEqualTo(TestConstants.VALID_POOL_NUMBER);
+      assertThat(result.get(0).getStatus().getStatus()).isEqualTo(IJurorStatus.RESPONDED);
+
+      verify(jurorPoolRepository, times(1))
+          .findJurorsInAttendanceAtCourtLocation(VALID_COURT_LOCATION, pools);
+    }
+
         @Test
         @DisplayName("confirm juror - no owned active juror pool")
         void confirmJurorNoOwnedActiveJurorPool() {
