@@ -51,10 +51,8 @@ public class SummonsRepliesReportServiceImpl implements SummonsRepliesReportServ
                 new DigitalSummonsRepliesReportResponse(
                         getDigitalSummonsRepliesReportHeaders(totalReplies)
                 );
-        DigitalSummonsRepliesReportResponse.TableData tableData =
-                new DigitalSummonsRepliesReportResponse.TableData();
-        tableData.setData(dataRows);
-        reportResponse.setTableData(tableData);
+
+        reportResponse.getTableData().setData(dataRows);
 
         return reportResponse;
     }
