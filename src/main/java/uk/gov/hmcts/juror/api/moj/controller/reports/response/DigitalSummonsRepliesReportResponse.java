@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import uk.gov.hmcts.juror.api.moj.service.report.SummonsRepliesReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.SummonsRepliesReportServiceImpl;
-import uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -29,8 +28,8 @@ public class DigitalSummonsRepliesReportResponse {
         this.headings = reportHeadings;
         this.tableData = new TableData(List.of(
             TableData.Heading.builder().id(SummonsRepliesReportService.TableHeading.DATE)
-                .name(UtilisationReportService.TableHeading.DATE.getDisplayName())
-                .dataType(UtilisationReportService.TableHeading.DATE.getDataType()).build(),
+                .name(SummonsRepliesReportService.TableHeading.DATE.getDisplayName())
+                .dataType(SummonsRepliesReportService.TableHeading.DATE.getDataType()).build(),
             TableData.Heading.builder().id(SummonsRepliesReportService.TableHeading.NO_OF_REPLIES)
                 .name(SummonsRepliesReportService.TableHeading.NO_OF_REPLIES.getDisplayName())
                 .dataType(SummonsRepliesReportService.TableHeading.NO_OF_REPLIES.getDataType()).build()

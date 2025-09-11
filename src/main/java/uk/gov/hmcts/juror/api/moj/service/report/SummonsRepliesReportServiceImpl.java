@@ -30,8 +30,6 @@ public class SummonsRepliesReportServiceImpl implements SummonsRepliesReportServ
     public DigitalSummonsRepliesReportResponse getDigitalSummonsRepliesReport(LocalDate month) {
 
         List<Tuple> results = jurorDigitalResponseRepositoryMod.getDigitalSummonsRepliesForMonth(month);
-
-
         List<DigitalSummonsRepliesReportResponse.TableData.DataRow> dataRows = new ArrayList<>();
 
         int totalReplies = 0;
@@ -48,9 +46,7 @@ public class SummonsRepliesReportServiceImpl implements SummonsRepliesReportServ
         }
 
         DigitalSummonsRepliesReportResponse reportResponse =
-                new DigitalSummonsRepliesReportResponse(
-                        getDigitalSummonsRepliesReportHeaders(totalReplies)
-                );
+                new DigitalSummonsRepliesReportResponse(getDigitalSummonsRepliesReportHeaders(totalReplies));
 
         reportResponse.getTableData().setData(dataRows);
 
