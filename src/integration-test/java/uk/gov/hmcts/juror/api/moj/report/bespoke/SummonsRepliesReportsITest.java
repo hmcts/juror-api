@@ -68,16 +68,97 @@ class SummonsRepliesReportsITest extends AbstractIntegrationTest {
     class GetDigitalSummonsRepliesReportTests {
 
         @Test
-        void digitalSummonsRepliesReportsHappy() {
+        void digitalSummonsRepliesReportsHappyAug2025() {
 
             ResponseEntity<DigitalSummonsRepliesReportResponse> responseEntity =
                 restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create(URL_BASE + "/digital-summons-replies-report/2025-09-01")),
+                        URI.create(URL_BASE + "/digital-summons-replies-report/2025-08-01")),
                                       DigitalSummonsRepliesReportResponse.class);
 
             assertThat(responseEntity.getStatusCode()).as("Expect HTTP OK response").isEqualTo(HttpStatus.OK);
             DigitalSummonsRepliesReportResponse responseBody = responseEntity.getBody();
             assertThat(responseBody).isNotNull();
+
+            assertThat(responseBody.getHeadings()).isNotNull();
+            assertThat(responseBody.getHeadings().size()).isEqualTo(3);
+
+            assertThat(responseBody.getTableData()).isNotNull();
+            assertThat(responseBody.getTableData().getHeadings()).isNotNull();
+            assertThat(responseBody.getTableData().getHeadings().size()).isEqualTo(2);
+            assertThat(responseBody.getTableData().getData()).isNotNull();
+            assertThat(responseBody.getTableData().getData().size()).isEqualTo(7);
+
+            // Data rows should be in date order ascending
+            DigitalSummonsRepliesReportResponse.TableData.DataRow row = responseBody.getTableData().getData().get(0);
+            assertThat(row.getDate().toString()).isEqualTo("2025-08-04");
+            assertThat(row.getNoOfReplies()).isEqualTo(2);
+            row = responseBody.getTableData().getData().get(1);
+            assertThat(row.getDate().toString()).isEqualTo("2025-08-05");
+            assertThat(row.getNoOfReplies()).isEqualTo(1);
+            row = responseBody.getTableData().getData().get(2);
+            assertThat(row.getDate().toString()).isEqualTo("2025-08-06");
+            assertThat(row.getNoOfReplies()).isEqualTo(1);
+            row = responseBody.getTableData().getData().get(3);
+            assertThat(row.getDate().toString()).isEqualTo("2025-08-09");
+            assertThat(row.getNoOfReplies()).isEqualTo(1);
+            row = responseBody.getTableData().getData().get(4);
+            assertThat(row.getDate().toString()).isEqualTo("2025-08-10");
+            assertThat(row.getNoOfReplies()).isEqualTo(4);
+            row = responseBody.getTableData().getData().get(5);
+            assertThat(row.getDate().toString()).isEqualTo("2025-08-11");
+            assertThat(row.getNoOfReplies()).isEqualTo(3);
+            row = responseBody.getTableData().getData().get(6);
+            assertThat(row.getDate().toString()).isEqualTo("2025-08-20");
+            assertThat(row.getNoOfReplies()).isEqualTo(2);
+        }
+
+        @Test
+        void digitalSummonsRepliesReportsHappySep2025() {
+
+            ResponseEntity<DigitalSummonsRepliesReportResponse> responseEntity =
+                    restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                                    URI.create(URL_BASE + "/digital-summons-replies-report/2025-09-01")),
+                            DigitalSummonsRepliesReportResponse.class);
+
+            assertThat(responseEntity.getStatusCode()).as("Expect HTTP OK response").isEqualTo(HttpStatus.OK);
+            DigitalSummonsRepliesReportResponse responseBody = responseEntity.getBody();
+            assertThat(responseBody).isNotNull();
+
+            assertThat(responseBody.getHeadings()).isNotNull();
+            assertThat(responseBody.getHeadings().size()).isEqualTo(3);
+
+            assertThat(responseBody.getTableData()).isNotNull();
+            assertThat(responseBody.getTableData().getHeadings()).isNotNull();
+            assertThat(responseBody.getTableData().getHeadings().size()).isEqualTo(2);
+            assertThat(responseBody.getTableData().getData()).isNotNull();
+            assertThat(responseBody.getTableData().getData().size()).isEqualTo(1);
+
+            DigitalSummonsRepliesReportResponse.TableData.DataRow row = responseBody.getTableData().getData().get(0);
+            assertThat(row.getDate().toString()).isEqualTo("2025-09-01");
+            assertThat(row.getNoOfReplies()).isEqualTo(1);
+        }
+
+
+        @Test
+        void digitalSummonsRepliesReportsNoData() {
+
+            ResponseEntity<DigitalSummonsRepliesReportResponse> responseEntity =
+                    restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                                    URI.create(URL_BASE + "/digital-summons-replies-report/2025-10-01")),
+                            DigitalSummonsRepliesReportResponse.class);
+
+            assertThat(responseEntity.getStatusCode()).as("Expect HTTP OK response").isEqualTo(HttpStatus.OK);
+            DigitalSummonsRepliesReportResponse responseBody = responseEntity.getBody();
+            assertThat(responseBody).isNotNull();
+
+            assertThat(responseBody.getHeadings()).isNotNull();
+            assertThat(responseBody.getHeadings().size()).isEqualTo(3);
+
+            assertThat(responseBody.getTableData()).isNotNull();
+            assertThat(responseBody.getTableData().getHeadings()).isNotNull();
+            assertThat(responseBody.getTableData().getHeadings().size()).isEqualTo(2);
+            assertThat(responseBody.getTableData().getData()).isNotNull();
+            assertThat(responseBody.getTableData().getData().size()).isEqualTo(0);
 
         }
 
