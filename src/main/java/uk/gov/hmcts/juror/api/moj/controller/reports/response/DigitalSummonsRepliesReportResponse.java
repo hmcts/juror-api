@@ -35,7 +35,7 @@ public class DigitalSummonsRepliesReportResponse {
                 .name(SummonsRepliesReportService.TableHeading.NO_OF_REPLIES.getDisplayName())
                 .dataType(SummonsRepliesReportService.TableHeading.NO_OF_REPLIES.getDataType()).build()
         ));
-        this.tableData.setDataRow(new ArrayList<>());
+        this.tableData.setData(new ArrayList<>());
     }
 
     @Data
@@ -44,7 +44,7 @@ public class DigitalSummonsRepliesReportResponse {
     @AllArgsConstructor
     public static class TableData {
         private List<Heading> headings;
-        private List<DataRow> dataRow;
+        private List<DataRow> data;
 
         public TableData(List<Heading> headings) {
             this.headings = headings;

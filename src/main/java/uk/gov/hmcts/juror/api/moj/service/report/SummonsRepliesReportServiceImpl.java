@@ -40,7 +40,7 @@ public class SummonsRepliesReportServiceImpl implements SummonsRepliesReportServ
                     new DigitalSummonsRepliesReportResponse.TableData.DataRow();
                 dataRow.setDate(result.get(0, Date.class).toLocalDate());
                 dataRow.setNoOfReplies(result.get(1, Long.class).intValue());
-                reportResponse.getTableData().getDataRow().add(dataRow);
+                reportResponse.getTableData().getData().add(dataRow);
             }
         }
 
