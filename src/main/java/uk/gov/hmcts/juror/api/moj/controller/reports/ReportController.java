@@ -141,7 +141,8 @@ public class ReportController {
     }
 
     @GetMapping("/digital-summons-replies-report/{month}")
-    @Operation(summary = "Get a breakdown of digital summons replies on each day of a specific month")
+    @Operation(summary = "Get a breakdown of digital summons replies on each day of a specific month"
+        + ", provide the start date of month, e.g. 2025-10-01 (for bureau users only)")
     @ResponseStatus(HttpStatus.OK)
     @IsBureauUser
     public ResponseEntity<DigitalSummonsRepliesReportResponse>  getDigitalSummonsRepliesReport(

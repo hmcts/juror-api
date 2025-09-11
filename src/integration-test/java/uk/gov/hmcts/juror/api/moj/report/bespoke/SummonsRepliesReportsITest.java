@@ -162,6 +162,21 @@ class SummonsRepliesReportsITest extends AbstractIntegrationTest {
 
         }
 
+
+        @Test
+        void digitalSummonsRepliesReportsInvalidDate() {
+
+            ResponseEntity<DigitalSummonsRepliesReportResponse> responseEntity =
+                    restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                                    URI.create(URL_BASE + "/digital-summons-replies-report/20sdf")),
+                    DigitalSummonsRepliesReportResponse.class);
+
+            assertThat(responseEntity.getStatusCode()).as("Expect HTTP Bad Request response")
+                    .isEqualTo(HttpStatus.BAD_REQUEST);
+
+        }
+
+
         @Test
         void digitalSummonsRepliesReportsInvalidUserType() {
 
