@@ -78,8 +78,7 @@ class SummonsRepliesReportsITest extends AbstractIntegrationTest {
             assertThat(responseEntity.getStatusCode()).as("Expect HTTP OK response").isEqualTo(HttpStatus.OK);
             DigitalSummonsRepliesReportResponse responseBody = responseEntity.getBody();
             assertThat(responseBody).isNotNull();
-
-
+            
         }
 
         @Test

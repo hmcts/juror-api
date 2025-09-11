@@ -14,6 +14,7 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -29,20 +30,31 @@ public class SummonsRepliesReportServiceImpl implements SummonsRepliesReportServ
     public DigitalSummonsRepliesReportResponse getDigitalSummonsRepliesReport(LocalDate month) {
 
         List<Tuple> results = jurorDigitalResponseRepositoryMod.getDigitalSummonsRepliesForMonth(month);
-        DigitalSummonsRepliesReportResponse reportResponse =
-                new DigitalSummonsRepliesReportResponse(
-                        getDigitalSummonsRepliesReportHeaders(results.size())
-                );
 
+
+        List<DigitalSummonsRepliesReportResponse.TableData.DataRow> dataRows = new ArrayList<>();
+
+        int totalReplies = 0;
         if (!results.isEmpty()) {
             for (Tuple result : results) {
                 DigitalSummonsRepliesReportResponse.TableData.DataRow dataRow =
                     new DigitalSummonsRepliesReportResponse.TableData.DataRow();
                 dataRow.setDate(result.get(0, Date.class).toLocalDate());
-                dataRow.setNoOfReplies(result.get(1, Long.class).intValue());
-                reportResponse.getTableData().getData().add(dataRow);
+                final int total = result.get(1, Long.class).intValue();
+                dataRow.setNoOfReplies(total);
+                totalReplies += total;
+                dataRows.add(dataRow);
             }
         }
+
+        DigitalSummonsRepliesReportResponse reportResponse =
+                new DigitalSummonsRepliesReportResponse(
+                        getDigitalSummonsRepliesReportHeaders(totalReplies)
+                );
+        DigitalSummonsRepliesReportResponse.TableData tableData =
+                new DigitalSummonsRepliesReportResponse.TableData();
+        tableData.setData(dataRows);
+        reportResponse.setTableData(tableData);
 
         return reportResponse;
     }
