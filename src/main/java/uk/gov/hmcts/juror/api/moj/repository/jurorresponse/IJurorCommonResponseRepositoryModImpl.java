@@ -6,14 +6,18 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.QCurrentlyDeferred;
+import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QCombinedJurorResponse;
-import uk.gov.hmcts.juror.api.moj.repository.SystemParameterRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
+import uk.gov.hmcts.juror.api.moj.repository.PoolTransferDayRepository;
+
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -24,10 +28,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.querydsl.jpa.JPAExpressions.select;
 
 
+
+@Slf4j
 public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonResponseRepositoryMod {
+    private final PoolTransferDayRepository poolTransferDayRepository;
+
+    public IJurorCommonResponseRepositoryModImpl(PoolTransferDayRepository poolTransferDayRepository) {
+        this.poolTransferDayRepository = poolTransferDayRepository;
+    }
     @PersistenceContext
     EntityManager entityManager;
 
@@ -38,6 +48,7 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
         JPAQuery<Tuple> query = getJpaQueryFactory().select(
                 QCombinedJurorResponse.combinedJurorResponse,
                 QJurorPool.jurorPool,
+                QCourtLocation.courtLocation,
                 QPoolRequest.poolRequest
             )
             .from(QCombinedJurorResponse.combinedJurorResponse)
@@ -302,44 +313,71 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
 
     @Override
     public int getPoolsTransferringNextWeekCount(String locCode) {
-      //  final SystemParameterRepositoryMod systemParameterRepository;
+        LocalDate today = LocalDate.now();
+        DayOfWeek currentDay = today.getDayOfWeek();
 
-     //   int weeksAdjustment = Integer.parseInt(systemParameterRepository.findById(7).get().getValue());
-    //    String transferDay = systemParameterRepository.findById(8).get().getValue();
-        // Calculate the latest return date using the same logic as stored procedure
+       //  Return 0 on Friday, Saturday, Sunday
+       // Only count Monday through Thursday JS-534
+       if (currentDay == DayOfWeek.FRIDAY ||
+           currentDay == DayOfWeek.SATURDAY ||
+           currentDay == DayOfWeek.SUNDAY) {
+           return 0;
+       }
+
+        // Calculate latest return date using proper stored procedure logic
+        LocalDate latestReturnDate = calculateLatestReturnDate();
+
+
+
+        List<String> distinctPoolNumbers = getJpaQueryFactory()
+            .select(QPoolRequest.poolRequest.poolNumber)
+            .distinct()
+            .from(QPoolRequest.poolRequest)
+            .join(QJurorPool.jurorPool).on(QPoolRequest.poolRequest.poolNumber.eq(QJurorPool.jurorPool.pool.poolNumber))
+            .join(QJuror.juror).on(QJurorPool.jurorPool.juror.jurorNumber.eq(QJuror.juror.jurorNumber))
+            .join(QCourtLocation.courtLocation).on(QPoolRequest.poolRequest.courtLocation.locCode.eq(QCourtLocation.courtLocation.locCode))
+            .where(QPoolRequest.poolRequest.owner.eq(SecurityUtil.BUREAU_OWNER))
+            .where(QPoolRequest.poolRequest.returnDate.loe(latestReturnDate))
+            .where(QJurorPool.jurorPool.status.status.in(IJurorStatus.SUMMONED,IJurorStatus.RESPONDED,IJurorStatus.ADDITIONAL_INFO))
+            .where(QJuror.juror.bureauTransferDate.isNull())
+            .where(QCourtLocation.courtLocation.owner.ne(SecurityUtil.BUREAU_OWNER))
+            .fetch();
+            return distinctPoolNumbers.size();
+    }
+
+    private LocalDate calculateLatestReturnDate() {
         LocalDate effectiveDate = LocalDate.now();
 
-        // If running before 6pm on transfer day, use previous day
+        // If running before 6pm on transfer day (Thursday), use previous day
         if (LocalTime.now().isBefore(LocalTime.of(18, 0)) &&
             effectiveDate.getDayOfWeek() == DayOfWeek.THURSDAY) {
             effectiveDate = effectiveDate.minusDays(1);
         }
 
-        // Add weekday adjustment (9 days for thu->thu based on pool transfer weekday)
-        effectiveDate = effectiveDate.plusDays(9);
+        // Get the day AFTER applying 6pm rule
+        String runDay = effectiveDate.getDayOfWeek().toString().toLowerCase().substring(0, 3);
 
-        // Add weeks adjustment (1 week = 7 days)
-        LocalDate latestReturnDate = effectiveDate.plusDays(7);
+        // weekday adjustment lookup
+        int weekdayAdjustment = getWeekdayAdjustmentFromDB("thu", runDay);
 
-        return getJpaQueryFactory()
-            .select(QPoolRequest.poolRequest)
-            .from(QPoolRequest.poolRequest)
-            .where(QPoolRequest.poolRequest.owner.eq(SecurityUtil.BUREAU_OWNER))
-            .where(QPoolRequest.poolRequest.returnDate.loe(latestReturnDate))
-            .where(QPoolRequest.poolRequest.courtLocation.locCode.eq(locCode))
-            .fetch().size();
+
+
+        // Apply adjustments
+        effectiveDate = effectiveDate.plusDays(weekdayAdjustment);
+        LocalDate latestReturnDate = effectiveDate.plusDays(7);  // 1 week
+
+        return latestReturnDate;
     }
 
-   //     LocalDate weekDateBeforeTransfer = LocalDate.now().plusDays(18);
-   //     return getJpaQueryFactory()
-   //         .select(
-   //             QPoolRequest.poolRequest)
-   //         .from(QPoolRequest.poolRequest)
-   //         .join(QJurorPool.jurorPool)
-   //         .on(QPoolRequest.poolRequest.poolNumber.eq(QJurorPool.jurorPool.pool.poolNumber))
-   //         .where(QPoolRequest.poolRequest.owner.eq(SecurityUtil.BUREAU_OWNER))
-   //         .where(QJurorPool.jurorPool.pool.poolNumber.isNotNull())
-   //         .where(QPoolRequest.poolRequest.returnDate.eq(weekDateBeforeTransfer)).fetch().size();
-
-
+    private int getWeekdayAdjustmentFromDB(String transferDay, String runDay) {
+        if (transferDay == null || runDay == null) {
+            return 0;
+        }
+        String t = transferDay.trim();
+        String r = runDay.trim();
+        return poolTransferDayRepository
+            .findByTransferDayAndRunDayIgnoreCase(t, r)
+            .map(ptw -> ptw.getAdjustment())
+            .orElse(0);
+    }
 }
