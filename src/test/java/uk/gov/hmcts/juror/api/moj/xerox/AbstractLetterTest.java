@@ -31,6 +31,10 @@ public abstract class AbstractLetterTest {
         addWelshField(generateWelshDate().toUpperCase(), 18);
     }
 
+    protected void addEnglishWelshLetterDate() {
+        addWelshField(generateDate().toUpperCase(), 18);
+    }
+
     private String generateDate() {
         SimpleDateFormat formatter = new SimpleDateFormat("dd MMMM yyyy", Locale.ENGLISH);
         Calendar cal = Calendar.getInstance();
