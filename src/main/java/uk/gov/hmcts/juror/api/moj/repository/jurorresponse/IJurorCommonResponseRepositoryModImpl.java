@@ -15,9 +15,8 @@ import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QCombinedJurorResponse;
-import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import uk.gov.hmcts.juror.api.moj.repository.PoolTransferDayRepository;
-
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -38,7 +37,9 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
     public IJurorCommonResponseRepositoryModImpl(PoolTransferDayRepository poolTransferDayRepository) {
         this.poolTransferDayRepository = poolTransferDayRepository;
     }
+
     @PersistenceContext
+
     EntityManager entityManager;
 
     @Override
@@ -316,13 +317,16 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
         LocalDate today = LocalDate.now();
         DayOfWeek currentDay = today.getDayOfWeek();
 
-       //  Return 0 on Friday, Saturday, Sunday
-       // Only count Monday through Thursday JS-534
-       if (currentDay == DayOfWeek.FRIDAY ||
-           currentDay == DayOfWeek.SATURDAY ||
-           currentDay == DayOfWeek.SUNDAY) {
-           return 0;
-       }
+        //Return 0 on Friday, Saturday, Sunday
+        //Only count Monday through Thursday JS-534
+
+        if (currentDay == DayOfWeek.FRIDAY
+            ||
+            currentDay == DayOfWeek.SATURDAY
+            ||
+            currentDay == DayOfWeek.SUNDAY) {
+            return 0;
+        }
 
         // Calculate latest return date using proper stored procedure logic
         LocalDate latestReturnDate = calculateLatestReturnDate();
@@ -335,21 +339,24 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
             .from(QPoolRequest.poolRequest)
             .join(QJurorPool.jurorPool).on(QPoolRequest.poolRequest.poolNumber.eq(QJurorPool.jurorPool.pool.poolNumber))
             .join(QJuror.juror).on(QJurorPool.jurorPool.juror.jurorNumber.eq(QJuror.juror.jurorNumber))
-            .join(QCourtLocation.courtLocation).on(QPoolRequest.poolRequest.courtLocation.locCode.eq(QCourtLocation.courtLocation.locCode))
+            .join(QCourtLocation.courtLocation)
+            .on(QPoolRequest.poolRequest.courtLocation.locCode.eq(QCourtLocation.courtLocation.locCode))
             .where(QPoolRequest.poolRequest.owner.eq(SecurityUtil.BUREAU_OWNER))
             .where(QPoolRequest.poolRequest.returnDate.loe(latestReturnDate))
-            .where(QJurorPool.jurorPool.status.status.in(IJurorStatus.SUMMONED,IJurorStatus.RESPONDED,IJurorStatus.ADDITIONAL_INFO))
+            .where(QJurorPool.jurorPool.status.status.in(
+             IJurorStatus.SUMMONED,IJurorStatus.RESPONDED,IJurorStatus.ADDITIONAL_INFO))
             .where(QJuror.juror.bureauTransferDate.isNull())
             .where(QCourtLocation.courtLocation.owner.ne(SecurityUtil.BUREAU_OWNER))
             .fetch();
-            return distinctPoolNumbers.size();
+        return distinctPoolNumbers.size();
     }
 
     private LocalDate calculateLatestReturnDate() {
         LocalDate effectiveDate = LocalDate.now();
 
         // If running before 6pm on transfer day (Thursday), use previous day
-        if (LocalTime.now().isBefore(LocalTime.of(18, 0)) &&
+        if (LocalTime.now().isBefore(LocalTime.of(18, 0))
+            &&
             effectiveDate.getDayOfWeek() == DayOfWeek.THURSDAY) {
             effectiveDate = effectiveDate.minusDays(1);
         }
