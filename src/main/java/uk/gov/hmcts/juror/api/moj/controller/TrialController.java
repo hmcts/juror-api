@@ -13,7 +13,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -66,7 +65,6 @@ public class TrialController {
     @PostMapping("/create")
     @Operation(summary = "Enable the officer to create a trial")
     @PreAuthorize(SecurityUtil.IS_COURT)
-
     public ResponseEntity<TrialSummaryDto> createTrial(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid TrialDto trialDto) {
@@ -96,8 +94,8 @@ public class TrialController {
     @PreAuthorize(SecurityUtil.IS_COURT)
     public ResponseEntity<TrialSummaryDto> getTrialSummary(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
-        @RequestParam(name = "trial_number") @PathVariable(name = "trialNumber") String trialNumber,
-        @RequestParam(name = "location_code") @PathVariable(name = "locationCode") String locationCode) {
+        @RequestParam(name = "trial_number") String trialNumber,
+        @RequestParam(name = "location_code") String locationCode) {
         return ResponseEntity.ok().body(trialService.getTrialSummary(payload, trialNumber, locationCode));
     }
 
@@ -106,8 +104,8 @@ public class TrialController {
     @PreAuthorize(SecurityUtil.IS_COURT)
     public ResponseEntity<Void> returnPanel(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
-        @RequestParam(name = "trial_number") @PathVariable(name = "trialNumber") String trialNumber,
-        @RequestParam(name = "location_code") @PathVariable(name = "locationCode") String locationCode,
+        @RequestParam(name = "trial_number") String trialNumber,
+        @RequestParam(name = "location_code") String locationCode,
         @RequestBody @Valid List<JurorDetailRequestDto> jurorDetailRequestDto
     ) {
         trialService.returnPanel(payload, trialNumber, locationCode, jurorDetailRequestDto);
@@ -119,8 +117,8 @@ public class TrialController {
     @PreAuthorize(SecurityUtil.IS_COURT)
     public ResponseEntity<Void> returnJury(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
-        @RequestParam(name = "trial_number") @PathVariable(name = "trialNumber") String trialNumber,
-        @RequestParam(name = "location_code") @PathVariable(name = "locationCode") String locationCode,
+        @RequestParam(name = "trial_number") String trialNumber,
+        @RequestParam(name = "location_code") String locationCode,
         @RequestBody @Valid ReturnJuryDto returnJuryDto) {
 
         trialService.returnJury(payload, trialNumber, locationCode, returnJuryDto);
