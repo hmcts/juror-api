@@ -44,7 +44,7 @@ public class HolidaysDateServiceImpl implements HolidaysDateService {
 
         List<Holidays> holidayDatesList = Lists.newLinkedList(holidaysRepository.findAll(matchHolidayDates));
         log.info("Count of Holiday Dates: {}", holidayDatesList.size());
-        log.info("Contents of holidayDatesList:{}", holidayDatesList);
+        log.debug("Contents of holidayDatesList:{}", holidayDatesList);
 
         return holidayDatesList;
     }

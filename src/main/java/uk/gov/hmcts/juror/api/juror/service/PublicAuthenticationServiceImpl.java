@@ -62,7 +62,8 @@ public class PublicAuthenticationServiceImpl implements PublicAuthenticationServ
 
             Juror juror = jurorServiceModImpl.getJurorOptionalFromJurorNumber(credentials.getJurorNumber())
                 .orElseThrow(() -> {
-                    log.info("Could not find juror using credentials {}", credentials);
+                    log.info("Could not find juror {} using credentials supplied", credentials.getJurorNumber());
+                    log.debug("Juror {} using credentials {}", credentials.getJurorNumber(), credentials);
                     log.debug("Juror may not be active");
                     return new InvalidJurorCredentialsException("Bad credentials");
                 });
