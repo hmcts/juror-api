@@ -2,6 +2,8 @@ package uk.gov.hmcts.juror.api.moj.report.standard;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
@@ -21,8 +23,10 @@ import java.util.Map;
 @Component
 public class CurrentPoolStatusReport extends AbstractStandardReport {
 
+    private final JPAQueryFactory jpaQueryFactory;
+
     @Autowired
-    public CurrentPoolStatusReport(PoolRequestRepository poolRequestRepository) {
+    public CurrentPoolStatusReport(PoolRequestRepository poolRequestRepository, EntityManager entityManager) {
         super(
             poolRequestRepository,
             QJurorPool.jurorPool,
@@ -34,6 +38,7 @@ public class CurrentPoolStatusReport extends AbstractStandardReport {
             DataType.ABSENCES,
             DataType.CONTACT_DETAILS,
             DataType.WARNING);
+        this.jpaQueryFactory = new JPAQueryFactory(entityManager);
     }
 
 
@@ -68,14 +73,34 @@ public class CurrentPoolStatusReport extends AbstractStandardReport {
             .build());
       //  return map;
 
+        long attendedCount = getJurorsAttendedCount(request.getPoolNumber());
         map.put("number_of_jurors_attended", StandardReportResponse.DataTypeValue.builder()
             .displayName("Number of Jurors Attended")
             .dataType(Long.class.getSimpleName())
-           // .value(attendedCount)
-            .value(tableData.getData().size())
+            .value(attendedCount)
+           // .value(tableData.getData().size())
             .build());
 
         return map;
+    }
+
+    /**
+     * Count the number of unique jurors who have attended (not absent) for this pool
+     */
+    private long getJurorsAttendedCount(String poolNumber) {
+        Long result = jpaQueryFactory
+            .select(QJurorPool.jurorPool.juror.jurorNumber.countDistinct())
+            .from(QJurorPool.jurorPool)
+            .join(QAppearance.appearance).on(
+                QAppearance.appearance.jurorNumber.eq(QJurorPool.jurorPool.juror.jurorNumber),
+                QAppearance.appearance.poolNumber.eq(QJurorPool.jurorPool.pool.poolNumber)
+            )
+            .where(
+                QJurorPool.jurorPool.pool.poolNumber.eq(poolNumber),
+                QAppearance.appearance.nonAttendanceDay.eq(false)
+            )
+            .fetchOne();
+        return result != null ? result : 0L;
     }
 
 
