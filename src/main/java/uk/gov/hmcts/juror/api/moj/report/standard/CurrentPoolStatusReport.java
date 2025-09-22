@@ -66,8 +66,18 @@ public class CurrentPoolStatusReport extends AbstractStandardReport {
             .dataType(Long.class.getSimpleName())
             .value(tableData.getData().size())
             .build());
+      //  return map;
+
+        map.put("number_of_jurors_attended", StandardReportResponse.DataTypeValue.builder()
+            .displayName("Number of Jurors Attended")
+            .dataType(Long.class.getSimpleName())
+           // .value(attendedCount)
+            .value(tableData.getData().size())
+            .build());
+
         return map;
     }
+
 
     @Override
     public Class<? extends Validators.AbstractRequestValidator> getRequestValidatorClass() {
