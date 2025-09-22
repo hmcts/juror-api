@@ -24,6 +24,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialSearch;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.CourtroomsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.JudgeDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.trial.PanelListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialSummaryDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
@@ -1022,115 +1023,177 @@ class TrialControllerITest extends AbstractIntegrationTest {
             .isEqualTo(FORBIDDEN);
     }
 
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/trial/ReassignPanel.sql"})
-    void reassignPanelMembersHappyPath() {
-        final String locationCode = "415";
 
-        JurorPanelReassignRequestDto dto = new JurorPanelReassignRequestDto();
-        dto.setSourceTrialNumber("T10000001");
-        dto.setSourceTrialLocCode(locationCode);
-        dto.setTargetTrialNumber("T10000002");
-        dto.setTargetTrialLocCode(locationCode);
 
-        dto.setJurors(Arrays.asList("415000006", "415000007", "415000008"));
+    @Nested
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
+    class ReassignJurors {
 
-        initialiseHeader(singletonList(locationCode), locationCode, COURT_USER);
 
-        ResponseEntity<Void> responseEntity =
-            restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, POST,
-                                                      URI.create(REASSIGN_PANEL_MEMBERS)), Void.class);
+        @Test
+        @Sql({"/db/mod/truncate.sql", "/db/trial/ReassignPanel.sql"})
+        void reassignPanelMembersHappyPath() {
+            final String locationCode = "415";
 
-        assertThat(responseEntity.getStatusCode()).as("Expect status code to be 200 (ok)").isEqualTo(OK);
+            JurorPanelReassignRequestDto dto = new JurorPanelReassignRequestDto();
+            dto.setSourceTrialNumber("T10000001");
+            dto.setSourceTrialLocCode(locationCode);
+            dto.setTargetTrialNumber("T10000002");
+            dto.setTargetTrialLocCode(locationCode);
 
-        executeInTransaction(() -> {
-            // confirm that the jurors have been reassigned
-            List<Panel> panelList = panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(
-                "T10000002", locationCode);
+            dto.setJurors(Arrays.asList("415000006", "415000007", "415000008"));
 
-            assertThat(panelList).hasSize(3);
-            assertThat(panelList).extracting(Panel::getJurorNumber)
-                .containsExactlyInAnyOrder("415000006", "415000007", "415000008");
+            initialiseHeader(singletonList(locationCode), locationCode, COURT_USER);
 
-            // confirm that the jurors have been removed from the source trial
-            List<Panel> sourcePanelList = panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(
-                "T10000001", locationCode);
+            ResponseEntity<Void> responseEntity =
+                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, POST,
+                                                          URI.create(REASSIGN_PANEL_MEMBERS)), Void.class);
 
-            // confirm the result of the source panel is now 3 returned, 2 null
-            assertThat(sourcePanelList).hasSize(5);
-            assertThat(sourcePanelList).extracting(Panel::getResult)
-                .containsExactlyInAnyOrder(
-                    PanelResult.RETURNED,
-                    PanelResult.RETURNED,
-                    PanelResult.RETURNED,
-                    null,
-                    null);
+            assertThat(responseEntity.getStatusCode()).as("Expect status code to be 200 (ok)").isEqualTo(OK);
 
-            // confirm panel reassigned history
-            List<JurorHistory> jurorHistory = jurorHistoryRepository.findByJurorNumberOrderById("415000006");
-            assertThat(jurorHistory).hasSize(1);
-            assertThat(jurorHistory.get(0).getHistoryCode()).isEqualTo(HistoryCodeMod.REASSIGN_PANEL);
-        });
+            executeInTransaction(() -> {
+                // confirm that the jurors have been reassigned
+                List<Panel> panelList = panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(
+                    "T10000002", locationCode);
 
+                assertThat(panelList).hasSize(3);
+                assertThat(panelList).extracting(Panel::getJurorNumber)
+                    .containsExactlyInAnyOrder("415000006", "415000007", "415000008");
+
+                // confirm that the jurors have been removed from the source trial
+                List<Panel> sourcePanelList = panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(
+                    "T10000001", locationCode);
+
+                // confirm the result of the source panel is now 3 returned, 2 null
+                assertThat(sourcePanelList).hasSize(5);
+                assertThat(sourcePanelList).extracting(Panel::getResult)
+                    .containsExactlyInAnyOrder(
+                        PanelResult.RETURNED,
+                        PanelResult.RETURNED,
+                        PanelResult.RETURNED,
+                        null,
+                        null);
+
+                // confirm panel reassigned history
+                List<JurorHistory> jurorHistory = jurorHistoryRepository.findByJurorNumberOrderById("415000006");
+                assertThat(jurorHistory).hasSize(1);
+                assertThat(jurorHistory.get(0).getHistoryCode()).isEqualTo(HistoryCodeMod.REASSIGN_PANEL);
+            });
+
+        }
+
+
+        @Test
+        @Sql({"/db/mod/truncate.sql", "/db/trial/ReassignPanel.sql"})
+        void reassignPanelMembersWasOnTargetPanel() {
+            final String locationCode = "415";
+
+            JurorPanelReassignRequestDto dto = new JurorPanelReassignRequestDto();
+            dto.setSourceTrialNumber("T10000000");
+            dto.setSourceTrialLocCode(locationCode);
+            dto.setTargetTrialNumber("T10000001");
+            dto.setTargetTrialLocCode(locationCode);
+
+            dto.setJurors(singletonList("415000006"));
+
+            initialiseHeader(singletonList(locationCode), locationCode, COURT_USER);
+
+            ResponseEntity<String> responseEntity =
+                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, POST,
+                                                          URI.create(REASSIGN_PANEL_MEMBERS)), String.class);
+
+            assertThat(responseEntity.getStatusCode()).as("Expect status code to be 422 (unprocessable entity)")
+                .isEqualTo(UNPROCESSABLE_ENTITY);
+
+            assertBusinessRuleViolation(responseEntity,
+                                        "Juror 415000006 was already in the target panel",
+                                        CANNOT_RE_ADD_JUROR_TO_PANEL);
+
+        }
+
+
+        @Test
+        @Sql({"/db/mod/truncate.sql", "/db/trial/ReassignPanel.sql"})
+        void reassignPanelMembersAlreadyEmpanelled() {
+            final String locationCode = "415";
+
+            JurorPanelReassignRequestDto dto = new JurorPanelReassignRequestDto();
+            dto.setSourceTrialNumber("T10000000");
+            dto.setSourceTrialLocCode(locationCode);
+            dto.setTargetTrialNumber("T10000001");
+            dto.setTargetTrialLocCode(locationCode);
+
+            dto.setJurors(Arrays.asList("415000001", "415000002", "415000003"));
+
+            initialiseHeader(singletonList(locationCode), locationCode, COURT_USER);
+
+            ResponseEntity<String> responseEntity =
+                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, POST,
+                                                          URI.create(REASSIGN_PANEL_MEMBERS)), String.class);
+
+            assertThat(responseEntity.getStatusCode()).as("Expect status code to be 422 (unprocessable entity)")
+                .isEqualTo(UNPROCESSABLE_ENTITY);
+
+            assertBusinessRuleViolation(responseEntity,
+                                        "Cannot reassign a juror that has been empanelled",
+                                        CANNOT_PROCESS_EMPANELLED_JUROR);
+
+        }
     }
 
 
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/trial/ReassignPanel.sql"})
-    void reassignPanelMembersAlreadyEmpanelled() {
-        final String locationCode = "415";
+    @Nested
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
+    class ReturnedJurors {
 
-        JurorPanelReassignRequestDto dto = new JurorPanelReassignRequestDto();
-        dto.setSourceTrialNumber("T10000000");
-        dto.setSourceTrialLocCode(locationCode);
-        dto.setTargetTrialNumber("T10000001");
-        dto.setTargetTrialLocCode(locationCode);
+        @Test
+        @Sql({"/db/mod/truncate.sql", "/db/trial/ReturnedJurors.sql"})
+        void returnedJurorsHappyPath() {
+            initialiseHeader(singletonList("415"), "415", COURT_USER);
+            RequestEntity<Void> requestEntity =
+                new RequestEntity<>(
+                    httpHeaders,
+                    GET,
+                    URI.create("/api/v1/moj/trial/get-returned-jurors?trial_number=TRIAL2"
+                                   + "&location_code=415"));
 
-        dto.setJurors(Arrays.asList("415000001", "415000002", "415000003"));
+            ResponseEntity<PanelListDto[]> responseEntity =
+                restTemplate.exchange(requestEntity, PanelListDto[].class);
 
-        initialiseHeader(singletonList(locationCode), locationCode, COURT_USER);
+            assertThat(responseEntity.getStatusCode())
+                .as("Expected status code to be ok")
+                .isEqualTo(OK);
 
-        ResponseEntity<String> responseEntity =
-            restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, POST,
-                                                      URI.create(REASSIGN_PANEL_MEMBERS)), String.class);
+            PanelListDto[] responseBody = responseEntity.getBody();
+            assertThat(responseBody).isNotNull();
+            assertThat(responseBody.length).isEqualTo(5);
 
-        assertThat(responseEntity.getStatusCode()).as("Expect status code to be 422 (unprocessable entity)")
-            .isEqualTo(UNPROCESSABLE_ENTITY);
+            assertThat(responseBody[0].getJurorNumber()).isEqualTo("641549001");
+            assertThat(responseBody[0].getFirstName()).isEqualTo("FNAMEFIVE");
+            assertThat(responseBody[0].getLastName()).isEqualTo("LNAMEFIVE");
+            assertThat(responseBody[0].getJurorStatus()).isEqualTo("Panel");
 
-        assertBusinessRuleViolation(responseEntity,
-                                    "Cannot reassign a juror that has been empanelled",
-                                    CANNOT_PROCESS_EMPANELLED_JUROR
-        );
+            assertThat(responseBody[1].getJurorNumber()).isEqualTo("641618001");
+            assertThat(responseBody[1].getFirstName()).isEqualTo("FNAMETWO");
+            assertThat(responseBody[1].getLastName()).isEqualTo("LNAMETWO");
+            assertThat(responseBody[1].getJurorStatus()).isEqualTo("Juror");
 
-    }
+            assertThat(responseBody[2].getJurorNumber()).isEqualTo("641674001");
+            assertThat(responseBody[2].getFirstName()).isEqualTo("FNAMEONE");
+            assertThat(responseBody[2].getLastName()).isEqualTo("LNAMEONE");
+            assertThat(responseBody[2].getJurorStatus()).isEqualTo("Responded");
 
+            assertThat(responseBody[3].getJurorNumber()).isEqualTo("641684001");
+            assertThat(responseBody[3].getFirstName()).isEqualTo("FNAMETHREE");
+            assertThat(responseBody[3].getLastName()).isEqualTo("LNAMTHREE");
+            assertThat(responseBody[3].getJurorStatus()).isEqualTo("Responded");
 
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/trial/ReassignPanel.sql"})
-    void reassignPanelMembersWasOnTargetPanel() {
-        final String locationCode = "415";
+            assertThat(responseBody[4].getJurorNumber()).isEqualTo("641716001");
+            assertThat(responseBody[4].getFirstName()).isEqualTo("FNAMEFOUR");
+            assertThat(responseBody[4].getLastName()).isEqualTo("LNAMEFOUR");
+            assertThat(responseBody[4].getJurorStatus()).isEqualTo("Excused");
 
-        JurorPanelReassignRequestDto dto = new JurorPanelReassignRequestDto();
-        dto.setSourceTrialNumber("T10000000");
-        dto.setSourceTrialLocCode(locationCode);
-        dto.setTargetTrialNumber("T10000001");
-        dto.setTargetTrialLocCode(locationCode);
-
-        dto.setJurors(singletonList("415000006"));
-
-        initialiseHeader(singletonList(locationCode), locationCode, COURT_USER);
-
-        ResponseEntity<String> responseEntity =
-            restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, POST,
-                                                      URI.create(REASSIGN_PANEL_MEMBERS)), String.class);
-
-        assertThat(responseEntity.getStatusCode()).as("Expect status code to be 422 (unprocessable entity)")
-            .isEqualTo(UNPROCESSABLE_ENTITY);
-
-        assertBusinessRuleViolation(responseEntity,
-                                    "Juror 415000006 was already in the target panel",
-                                    CANNOT_RE_ADD_JUROR_TO_PANEL
-        );
+        }
 
     }
 

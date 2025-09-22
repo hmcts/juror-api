@@ -108,12 +108,13 @@ public class ITrialRepositoryImpl implements ITrialRepository {
             .where(PANEL.trial.courtLocation.locCode.eq(locCode))
             .where(PANEL.trial.trialNumber.eq(trialNo))
             .where(JUROR_POOL.isActive.isTrue())
+            .orderBy(JUROR_POOL.juror.jurorNumber.asc())
             .fetch();
 
         return query.stream().map(t -> new PanelListDto(
-                t.get(JUROR.jurorNumber),
-                t.get(JUROR.firstName),
-                t.get(JUROR.lastName),
+                t.get(JUROR_POOL.juror.jurorNumber),
+                t.get(JUROR_POOL.juror.firstName),
+                t.get(JUROR_POOL.juror.lastName),
                 t.get(JUROR_POOL.status.statusDesc)
             )).toList();
     }
