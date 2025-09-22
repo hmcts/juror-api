@@ -29,6 +29,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorPanelReassignReq
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReturnJuryDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialSearch;
+import uk.gov.hmcts.juror.api.moj.controller.response.trial.PanelListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialSummaryDto;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
@@ -152,4 +153,14 @@ public class TrialController {
         trialService.reassignPanelMembers(jurorPanelMoveRequest);
         return ResponseEntity.ok(null);
     }
+
+    @GetMapping("/get-returned-jurors")
+    @Operation(summary = "Get jurors that were returned from a trial")
+    @PreAuthorize(SecurityUtil.IS_COURT)
+    public ResponseEntity<List<PanelListDto>> getReturnedJurors(
+        @RequestParam(name = "trial_number") String trialNumber,
+        @RequestParam(name = "location_code") String locationCode) {
+        return ResponseEntity.ok().body(trialService.getReturnedJurors(trialNumber, locationCode));
+    }
+
 }

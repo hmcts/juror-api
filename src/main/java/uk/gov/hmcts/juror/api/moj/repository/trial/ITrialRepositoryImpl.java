@@ -7,8 +7,11 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialSearch;
+import uk.gov.hmcts.juror.api.moj.controller.response.trial.PanelListDto;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
+import uk.gov.hmcts.juror.api.moj.domain.QJuror;
+import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
@@ -29,6 +32,8 @@ public class ITrialRepositoryImpl implements ITrialRepository {
     private static final QTrial TRIAL = QTrial.trial;
     private static final QPanel PANEL = QPanel.panel;
     private static final QAppearance APPEARANCE = QAppearance.appearance;
+    private static final QJurorPool JUROR_POOL = QJurorPool.jurorPool;
+    private static final QJuror JUROR = QJuror.juror;
 
     @Override
     public <T> PaginatedList<T> getListOfTrials(TrialSearch trialSearch,
@@ -87,5 +92,29 @@ public class ITrialRepositoryImpl implements ITrialRepository {
             .groupBy(TRIAL.trialNumber, TRIAL.description, TRIAL.trialType, TRIAL.courtroom.description,
                 TRIAL.judge.name)
             .fetch();
+    }
+
+    @Override
+    public List<PanelListDto> getReturnedJurors(String trialNo, String locCode) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+
+        List<Tuple> query = queryFactory.select(JUROR_POOL.juror.jurorNumber,
+                                                JUROR_POOL.juror.firstName,
+                                                JUROR_POOL.juror.lastName,
+                                   JUROR_POOL.status.statusDesc)
+            .from(JUROR_POOL)
+            .join(PANEL)
+            .on(JUROR_POOL.juror.jurorNumber.eq(PANEL.juror.jurorNumber))
+            .where(PANEL.trial.courtLocation.locCode.eq(locCode))
+            .where(PANEL.trial.trialNumber.eq(trialNo))
+            .where(JUROR_POOL.isActive.isTrue())
+            .fetch();
+
+        return query.stream().map(t -> new PanelListDto(
+                t.get(JUROR.jurorNumber),
+                t.get(JUROR.firstName),
+                t.get(JUROR.lastName),
+                t.get(JUROR_POOL.status.statusDesc)
+            )).toList();
     }
 }

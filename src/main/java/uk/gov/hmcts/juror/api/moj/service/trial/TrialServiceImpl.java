@@ -18,6 +18,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialSearch;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.CourtroomsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.JudgeDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.trial.PanelListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialSummaryDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
@@ -275,6 +276,11 @@ public class TrialServiceImpl implements TrialService {
 
         });
 
+    }
+
+    @Override
+    public List<PanelListDto> getReturnedJurors(String trialNo, String locCode) {
+        return trialRepository.getReturnedJurors(trialNo, locCode);
     }
 
     private void validateAppearances(String jurorNumber, Panel panel, String sourceTrialLocCode) {
