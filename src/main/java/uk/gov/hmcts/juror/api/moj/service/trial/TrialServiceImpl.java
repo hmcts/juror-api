@@ -341,8 +341,8 @@ public class TrialServiceImpl implements TrialService {
         // update the panel records to remove the return date and set the result to null
         panelList.forEach(panel -> {
             panel.setReturnDate(null);
-            panel.setResult(null);
-            panel.setCompleted(false);
+            panel.setResult(PanelResult.JUROR);
+            panel.setCompleted(true);
             panelRepository.saveAndFlush(panel);
 
             // update the juror pool status to juror

@@ -1224,11 +1224,11 @@ class TrialControllerITest extends AbstractIntegrationTest {
 
                 for (Panel panel : panelList) {
                     if ("641684001".equals(panel.getJurorNumber()) || "641674001".equals(panel.getJurorNumber())) {
-                        assertThat(panel.getResult()).as("Expect result to be null")
-                            .isNull();
+                        assertThat(panel.getResult()).as("Expect result to be Juror")
+                            .isEqualTo(PanelResult.JUROR);
                         assertThat(panel.getReturnDate()).as("Expect return date to be null")
                             .isNull();
-                        assertThat(panel.isCompleted()).as("Expect completed status to be false").isFalse();
+                        assertThat(panel.isCompleted()).as("Expect completed status to be true").isTrue();
                         JurorPool jurorPool = PanelUtils.getAssociatedJurorPool(jurorPoolRepository, panel);
                         assertThat(jurorPool.getStatus().getStatus()).as(
                             "Expect status to be juror").isEqualTo(IJurorStatus.JUROR);
