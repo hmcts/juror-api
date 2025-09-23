@@ -26,6 +26,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.JurorNonAtt
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.EndTrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorPanelReassignRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReinstateJurorsRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReturnJuryDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialSearch;
@@ -161,6 +162,15 @@ public class TrialController {
         @RequestParam(name = "trial_number") String trialNumber,
         @RequestParam(name = "location_code") String locationCode) {
         return ResponseEntity.ok().body(trialService.getReturnedJurors(trialNumber, locationCode));
+    }
+
+    @PostMapping("/reinstate-jurors")
+    @Operation(summary = "Reinstate jurors that were returned from a trial")
+    @PreAuthorize(SecurityUtil.IS_COURT)
+    public ResponseEntity<Void> reinstateJurors(
+        @RequestBody @Valid ReinstateJurorsRequestDto reinstateJurorsRequest) {
+        trialService.reinstateJurors(reinstateJurorsRequest);
+        return ResponseEntity.ok(null);
     }
 
 }

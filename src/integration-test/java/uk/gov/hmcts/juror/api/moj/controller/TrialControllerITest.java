@@ -19,6 +19,7 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.EndTrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorPanelReassignRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReinstateJurorsRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReturnJuryDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialSearch;
@@ -1193,6 +1194,62 @@ class TrialControllerITest extends AbstractIntegrationTest {
             assertThat(responseBody[4].getLastName()).isEqualTo("LNAMEFOUR");
             assertThat(responseBody[4].getJurorStatus()).isEqualTo("Excused");
 
+        }
+
+
+        @Test
+        @Sql({"/db/mod/truncate.sql", "/db/trial/ReturnedJurors.sql"})
+        void reinstateJurorsHappyPath() {
+            initialiseHeader(singletonList("415"), "415", COURT_USER);
+
+            ReinstateJurorsRequestDto dto = new ReinstateJurorsRequestDto();
+
+            dto.setTrialNumber("TRIAL2");
+            dto.setCourtLocationCode("415");
+            dto.setJurors(Arrays.asList("641684001", "641674001"));
+
+            ResponseEntity<Void> responseEntity =
+                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, POST,
+                                                      URI.create("/api/v1/moj/trial/reinstate-jurors")), Void.class);
+
+            assertThat(responseEntity.getStatusCode())
+                .as("Expected status code to be ok")
+                .isEqualTo(OK);
+
+            executeInTransaction(() -> {
+                List<Panel> panelList = panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(
+                    "TRIAL2", "415");
+
+                assertThat(panelList).hasSize(5);
+
+                for (Panel panel : panelList) {
+                    if ("641684001".equals(panel.getJurorNumber()) || "641674001".equals(panel.getJurorNumber())) {
+                        assertThat(panel.getResult()).as("Expect result to be null")
+                            .isNull();
+                        assertThat(panel.getReturnDate()).as("Expect return date to be null")
+                            .isNull();
+                        assertThat(panel.isCompleted()).as("Expect completed status to be false").isFalse();
+                        JurorPool jurorPool = PanelUtils.getAssociatedJurorPool(jurorPoolRepository, panel);
+                        assertThat(jurorPool.getStatus().getStatus()).as(
+                            "Expect status to be juror").isEqualTo(IJurorStatus.JUROR);
+                    } else {
+                        assertThat(panel.getResult()).as("Expect result to be not null")
+                            .isNotNull();
+                        assertThat(panel.getReturnDate()).as("Expect return date to be not null")
+                            .isNotNull();
+                        assertThat(panel.isCompleted()).as("Expect completed status to be true").isTrue();
+                    }
+                }
+
+                // check history records created
+                List<JurorHistory> jurorHistory = jurorHistoryRepository.findByJurorNumberOrderById("641684001");
+                assertThat(jurorHistory).hasSize(1);
+                assertThat(jurorHistory.get(0).getHistoryCode()).isEqualTo(HistoryCodeMod.JURY_EMPANELMENT);
+
+                jurorHistory = jurorHistoryRepository.findByJurorNumberOrderById("641674001");
+                assertThat(jurorHistory).hasSize(1);
+                assertThat(jurorHistory.get(0).getHistoryCode()).isEqualTo(HistoryCodeMod.JURY_EMPANELMENT);
+            });
         }
 
     }

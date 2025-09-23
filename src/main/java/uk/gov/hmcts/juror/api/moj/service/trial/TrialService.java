@@ -4,6 +4,7 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.EndTrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorPanelReassignRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReinstateJurorsRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReturnJuryDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialSearch;
@@ -34,4 +35,6 @@ public interface TrialService {
     void reassignPanelMembers(JurorPanelReassignRequestDto request);
 
     List<PanelListDto> getReturnedJurors(String trialNo, String locCode);
+
+    void reinstateJurors(ReinstateJurorsRequestDto reinstateJurorsRequest);
 }
