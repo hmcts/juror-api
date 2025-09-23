@@ -160,7 +160,7 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
             .filter(dto -> dto.getAttendanceDate() != null
                 &&
                 dto.getAttendanceDate().isBefore(LocalDate.now().plusDays(35)))
-            .sorted(Comparator.comparing(PoolRequestActiveDataDto::getRequired).reversed())
+            .sorted(Comparator.comparing(PoolRequestActiveDataDto::getAttendanceDate))
             .toList();
         return new PaginatedList<>(
             allResults.getCurrentPage(),
