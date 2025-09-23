@@ -124,6 +124,7 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -1337,6 +1338,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             if (SecurityUtil.BUREAU_OWNER.equals(jurorPool.getOwner())) {
                 printDataService.printConfirmationLetter(jurorPool);
                 jurorHistoryService.createConfirmationLetterHistory(jurorPool, "Confirmation Letter Auto");
+            } else {
+                processCourtConfirmationLetter(jurorNumber, jurorPool);
             }
         } else if (newPoliceCheckValue == PoliceCheck.INELIGIBLE) {
             log.debug("Juror {} is ineligible disqualifying for police check", jurorNumber);
@@ -1365,6 +1368,36 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         jurorPoolRepository.save(jurorPool);
         jurorRepository.save(juror);
         return new PoliceCheckStatusDto(newPoliceCheckValue);
+    }
+
+    private void processCourtConfirmationLetter(String jurorNumber, JurorPool jurorPool) {
+
+        final LocalDate dueInCourtDate = jurorPool.getNextDate();
+
+        List<JurorHistory> jurorHistoryList = jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(
+            jurorPool.getJurorNumber(), LocalDate.now(clock).atTime(LocalTime.MIN));
+
+        boolean respondedToday = false;
+        for (JurorHistory jurorHistory : jurorHistoryList) {
+            if (jurorHistory.getHistoryCode().equals(HistoryCodeMod.RESPONDED_POSITIVELY)) {
+                respondedToday = true;
+                break;
+            }
+        }
+
+        if (dueInCourtDate != null
+            && respondedToday
+            && jurorPool.getStatus().getStatus() == IJurorStatus.RESPONDED) {
+
+            if (dueInCourtDate.isAfter(LocalDate.now(clock))) {
+                log.debug("Juror {} is due in court after today, printing confirmation letter", jurorNumber);
+                printDataService.printConfirmationLetter(jurorPool);
+                jurorHistoryService.createConfirmationLetterHistory(jurorPool, "Confirmation Letter Auto");
+            } else {
+                // if the juror is due in court already, then don't print confirmation letter
+                log.debug("Juror {} is due in court already, skipping confirmation letter", jurorNumber);
+            }
+        }
     }
 
     @Override
