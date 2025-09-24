@@ -1196,6 +1196,25 @@ class TrialControllerITest extends AbstractIntegrationTest {
 
         }
 
+        @Test
+        void returnedJurorsInvalidUser() {
+            initialiseHeader(singletonList("400"), "400", BUREAU_USER);
+            RequestEntity<Void> requestEntity =
+                new RequestEntity<>(
+                    httpHeaders,
+                    GET,
+                    URI.create("/api/v1/moj/trial/get-returned-jurors?trial_number=TRIAL2"
+                                   + "&location_code=415")
+                );
+
+            ResponseEntity<Void> responseEntity =
+                restTemplate.exchange(requestEntity, Void.class);
+
+            assertThat(responseEntity.getStatusCode())
+                .as("Expected status code to be forbidden")
+                .isEqualTo(FORBIDDEN);
+        }
+
 
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/trial/ReturnedJurors.sql"})
@@ -1233,10 +1252,10 @@ class TrialControllerITest extends AbstractIntegrationTest {
                         assertThat(jurorPool.getStatus().getStatus()).as(
                             "Expect status to be juror").isEqualTo(IJurorStatus.JUROR);
                     } else {
-                        assertThat(panel.getResult()).as("Expect result to be not null")
-                            .isNotNull();
-                        assertThat(panel.getReturnDate()).as("Expect return date to be not null")
-                            .isNotNull();
+                        assertThat(panel.getResult()).as("Expect result to be returned")
+                            .isEqualTo(PanelResult.RETURNED);
+                        assertThat(panel.getReturnDate()).as("Expect return date to be 2025-09-22")
+                            .isEqualTo(LocalDate.of(2025,9,22));
                         assertThat(panel.isCompleted()).as("Expect completed status to be true").isTrue();
                     }
                 }
@@ -1250,6 +1269,39 @@ class TrialControllerITest extends AbstractIntegrationTest {
                 assertThat(jurorHistory).hasSize(1);
                 assertThat(jurorHistory.get(0).getHistoryCode()).isEqualTo(HistoryCodeMod.JURY_EMPANELMENT);
             });
+        }
+
+        @Test
+        void reinstateJurorsInvalidPayload() {
+            initialiseHeader(singletonList("415"), "415", COURT_USER);
+            ReinstateJurorsRequestDto dto = new ReinstateJurorsRequestDto();
+
+            ResponseEntity<Void> responseEntity =
+                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, POST,
+                                                  URI.create("/api/v1/moj/trial/reinstate-jurors")), Void.class);
+
+            assertThat(responseEntity.getStatusCode())
+                .as("Expected status code to be bad request")
+                .isEqualTo(BAD_REQUEST);
+        }
+
+
+        @Test
+        void reinstateJurorsInvalidUser() {
+            initialiseHeader(singletonList("400"), "400", BUREAU_USER);
+            ReinstateJurorsRequestDto dto = new ReinstateJurorsRequestDto();
+
+            dto.setTrialNumber("TRIAL2");
+            dto.setCourtLocationCode("415");
+            dto.setJurors(Arrays.asList("641684001", "641674001"));
+
+            ResponseEntity<Void> responseEntity =
+                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, POST,
+                                              URI.create("/api/v1/moj/trial/reinstate-jurors")), Void.class);
+
+            assertThat(responseEntity.getStatusCode())
+                .as("Expected status code to be forbidden")
+                .isEqualTo(FORBIDDEN);
         }
 
     }

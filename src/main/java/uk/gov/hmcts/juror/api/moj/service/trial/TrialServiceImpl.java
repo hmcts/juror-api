@@ -298,7 +298,7 @@ public class TrialServiceImpl implements TrialService {
             jurorPools.forEach(jurorPool -> foundJurors.add(jurorPool.getJuror().getJurorNumber()));
             reinstateJurorsRequest.getJurors().forEach(jurorNumber -> {
                 if (!foundJurors.contains(jurorNumber)) {
-                    throw new MojException.NotFound("Juror %s not found in the court location"
+                    throw new MojException.NotFound("Juror %s not found in the pool at court"
                                                         .formatted(jurorNumber), null);
                 }
             });
@@ -346,7 +346,8 @@ public class TrialServiceImpl implements TrialService {
             panelRepository.saveAndFlush(panel);
 
             // update the juror pool status to juror
-            JurorPool jurorPool = PanelUtils.getAssociatedJurorPool(jurorPoolRepository, panel);
+            JurorPool jurorPool = jurorPools.stream().filter(
+                p -> p.getJuror().getJurorNumber().equals(panel.getJurorNumber())).findFirst().get();
             JurorStatus jurorStatus = new JurorStatus();
             jurorStatus.setStatus(IJurorStatus.JUROR);
             jurorPool.setStatus(jurorStatus);
