@@ -2532,6 +2532,100 @@ class JurorRecordServiceTest {
         }
 
         @Test
+        @DisplayName("ELIGIBLE - Court with confirmation letter")
+        void positiveEligibleCourtConfirmationLetter() {
+            JurorPool jurorPool = setupJurorPool(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR);
+            jurorPool.setNextDate(LocalDate.now(clock).plusDays(7));
+            JurorStatus jurorStatus = new JurorStatus();
+            jurorStatus.setStatus(IJurorStatus.RESPONDED);
+            jurorPool.setStatus(jurorStatus);
+            jurorPool.setOwner(TestConstants.VALID_COURT_LOCATION);
+
+            JurorHistory jurorHistory = new JurorHistory();
+            jurorHistory.setJurorNumber(jurorPool.getJurorNumber());
+            jurorHistory.setHistoryCode(HistoryCodeMod.RESPONDED_POSITIVELY);
+            jurorHistory.setDateCreated(LocalDate.now(clock).atTime(LocalTime.MIN));
+            when(jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(
+                jurorPool.getJurorNumber(), LocalDate.now(clock).atTime(LocalTime.MIN)))
+                .thenReturn(Collections.singletonList(jurorHistory));
+
+            jurorRecordService.updatePncStatus(TestConstants.VALID_JUROR_NUMBER, PoliceCheck.ELIGIBLE);
+            assertEquals(PoliceCheck.ELIGIBLE, jurorPool.getJuror().getPoliceCheck(),
+                         "Police status be ELIGIBLE.");
+
+            verify(jurorHistoryService, times(1))
+                .createPoliceCheckQualifyHistory(jurorPool, true);
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
+            verify(jurorPoolRepository, times(1)).save(jurorPool);
+            verify(jurorRepository, times(1)).save(jurorPool.getJuror());
+            verify(printDataService, times(1)).printConfirmationLetter(jurorPool);
+            verify(jurorHistoryService, times(1)).createConfirmationLetterHistory(jurorPool,
+                                                                                  "Confirmation Letter Auto");
+            verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
+        }
+
+
+        @Test
+        @DisplayName("ELIGIBLE - Court without confirmation letter, already present at court")
+        void positiveEligibleCourtNoConfirmationLetter() {
+            JurorPool jurorPool = setupJurorPool(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR);
+            jurorPool.setNextDate(LocalDate.now(clock)); // next date is today, so no confirmation letter
+            JurorStatus jurorStatus = new JurorStatus();
+            jurorStatus.setStatus(IJurorStatus.RESPONDED);
+            jurorPool.setStatus(jurorStatus);
+            jurorPool.setOwner(TestConstants.VALID_COURT_LOCATION);
+
+            JurorHistory jurorHistory = new JurorHistory();
+            jurorHistory.setJurorNumber(jurorPool.getJurorNumber());
+            jurorHistory.setHistoryCode(HistoryCodeMod.RESPONDED_POSITIVELY);
+            jurorHistory.setDateCreated(LocalDate.now(clock).atTime(LocalTime.MIN));
+            when(jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(
+                jurorPool.getJurorNumber(), LocalDate.now(clock).atTime(LocalTime.MIN)))
+                .thenReturn(Collections.singletonList(jurorHistory));
+
+            jurorRecordService.updatePncStatus(TestConstants.VALID_JUROR_NUMBER, PoliceCheck.ELIGIBLE);
+            assertEquals(PoliceCheck.ELIGIBLE, jurorPool.getJuror().getPoliceCheck(),
+                         "Police status be ELIGIBLE.");
+
+            verify(jurorHistoryService, times(1))
+                .createPoliceCheckQualifyHistory(jurorPool, true);
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
+            verify(jurorPoolRepository, times(1)).save(jurorPool);
+            verify(jurorRepository, times(1)).save(jurorPool.getJuror());
+            verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
+        }
+
+
+        @Test
+        @DisplayName("ELIGIBLE - Court without confirmation letter, wasn't responded today")
+        void positiveEligibleCourtNoConfirmationLetterNotRespondedToday() {
+            JurorPool jurorPool = setupJurorPool(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR);
+            jurorPool.setNextDate(LocalDate.now(clock).plusDays(4));
+            JurorStatus jurorStatus = new JurorStatus();
+            jurorStatus.setStatus(IJurorStatus.RESPONDED);
+            jurorPool.setStatus(jurorStatus);
+            jurorPool.setOwner(TestConstants.VALID_COURT_LOCATION);
+
+            when(jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(
+                jurorPool.getJurorNumber(), LocalDate.now(clock).atTime(LocalTime.MIN)))
+                .thenReturn(Collections.emptyList()); // wasn't responded today
+
+            jurorRecordService.updatePncStatus(TestConstants.VALID_JUROR_NUMBER, PoliceCheck.ELIGIBLE);
+            assertEquals(PoliceCheck.ELIGIBLE, jurorPool.getJuror().getPoliceCheck(),
+                         "Police status be ELIGIBLE.");
+
+            verify(jurorHistoryService, times(1))
+                .createPoliceCheckQualifyHistory(jurorPool, true);
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
+            verify(jurorPoolRepository, times(1)).save(jurorPool);
+            verify(jurorRepository, times(1)).save(jurorPool.getJuror());
+            verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
+        }
+
+        @Test
         @DisplayName("INELIGIBLE")
         void positiveInEligible() {
             JurorStatus jurorStatus = new JurorStatus();

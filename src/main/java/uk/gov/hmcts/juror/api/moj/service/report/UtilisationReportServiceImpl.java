@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.moj.controller.reports.request.CourtUtilisationStatsReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.CourtUtilisationStatsReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportJurorsResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.MonthlyUtilisationReportResponse;
@@ -372,6 +374,108 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
 
     }
 
+    @Override
+    public CourtUtilisationStatsReportResponse courtUtilisationStatsReport(
+                                                        CourtUtilisationStatsReportRequest request) {
+
+        String courtNames;
+        if (request.isAllCourts()) {
+            log.info("Fetching court utilisation jurors stats for all locations");
+            courtNames = "All Courts";
+            // if all courts are requested, we don't need to filter by location codes
+            request.setCourtLocCodes(new ArrayList<>());
+        } else {
+            if (request.getCourtLocCodes().isEmpty()) {
+                throw new MojException.BadRequest("Court location codes cannot be empty", null);
+            }
+            log.info("Fetching court utilisation jurors stats for locations: {}", request.getCourtLocCodes());
+
+            List<CourtLocation> courtLocations = courtLocationRepository
+                .findByLocCodeIn(request.getCourtLocCodes());
+            if (courtLocations.isEmpty()) {
+                throw new MojException.BadRequest("No court locations found for the provided codes", null);
+            }
+            // create a comma separated list of court names and location codes
+            courtNames = courtLocations.stream()
+                .map(cl -> cl.getName() + " (" + cl.getLocCode() + ")")
+                .reduce((a, b) -> a + ", " + b)
+                .orElse("No Court Locations Found");
+        }
+
+        Map<String, AbstractReportResponse.DataTypeValue> reportHeadings = getCourtUtilStatsReportHeaders(courtNames);
+        CourtUtilisationStatsReportResponse response = new CourtUtilisationStatsReportResponse(reportHeadings);
+
+        List<String> utilisationStats = utilisationStatsRepository.getCourtUtilisationStats();
+
+        if (utilisationStats != null && !utilisationStats.isEmpty()) {
+            getCourtUtilisationStats(utilisationStats, response.getTableData(), request.getCourtLocCodes());
+        }
+
+        return response;
+    }
+
+    private void getCourtUtilisationStats(List<String> utilisationStats,
+                                          CourtUtilisationStatsReportResponse.TableData tableData,
+                                          List<String> courtLocCodes) {
+        for (String line : utilisationStats) {
+
+            List<String> stats = List.of(line.split(","));
+
+            if (stats.size() < 6) {
+                log.warn("Invalid utilisation stats line: {}", line);
+                throw new MojException.InternalServerError("Invalid utilisation stats line: " + line, null);
+            }
+
+            stats = adjustedStatsForCommas(stats);
+
+            try {
+                String locCode = stats.get(0);
+                String locName = stats.get(1);
+
+                if (!courtLocCodes.isEmpty() && !courtLocCodes.contains(locCode)) {
+                    // skip this record if the location code is not in the requested list
+                    continue;
+                }
+
+                LocalDate monthStart = LocalDate.parse(stats.get(2), DateTimeFormatter.ISO_LOCAL_DATE);
+                int availableDays = Integer.parseInt(stats.get(3));
+                int sittingDays = Integer.parseInt(stats.get(4));
+                LocalDateTime lastUpdate = LocalDateTime.parse(
+                    stats.get(5).substring(0, 19),
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                );
+
+                double utilisation = availableDays == 0 ? 0.0 : (double) sittingDays / availableDays * 100;
+
+                CourtUtilisationStatsReportResponse.UtilisationStats utilisationStat =
+                    CourtUtilisationStatsReportResponse.UtilisationStats.builder()
+                        .courtName(locName + " (" + locCode + ")")
+                        .utilisation(utilisation)
+                        .month(monthStart.getMonth().getDisplayName(TextStyle.FULL, Locale.UK) + " "
+                            + monthStart.getYear())
+                        .dateLastRun(lastUpdate)
+                        .build();
+
+                tableData.getData().add(utilisationStat);
+            } catch (Exception e) {
+                log.warn("Error parsing utilisation stats line: {}", line, e);
+            }
+
+        }
+    }
+
+    private List<String> adjustedStatsForCommas(List<String> stats) {
+        if (stats.size() > 6) {
+            String locName = String.join(",", stats.subList(1, stats.size() - 4));
+            List<String> adjustedStats = new ArrayList<>();
+            adjustedStats.add(stats.get(0)); // locCode
+            adjustedStats.add(locName); // locName
+            adjustedStats.addAll(stats.subList(stats.size() - 4, stats.size())); // Remaining stats
+            return adjustedStats;
+        }
+        return stats;
+    }
+
     private void updateTotalStats(MonthlyUtilisationReportResponse.TableData tableData, UtilisationStats stats) {
         tableData.setTotalJurorWorkingDays(tableData.getTotalJurorWorkingDays() + stats.getAvailableDays());
         tableData.setTotalSittingDays(tableData.getTotalSittingDays() + stats.getSittingDays());
@@ -510,6 +614,11 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
                 .value(courtName)
                 .build()
         );
+    }
+
+    private Map<String, AbstractReportResponse.DataTypeValue> getCourtUtilStatsReportHeaders(String courtName) {
+        // uses the same headers as the monthly utilisation report
+        return getViewMonthlyUtilReportHeaders(courtName);
     }
 
     public enum ReportHeading {

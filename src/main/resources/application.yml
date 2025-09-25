@@ -35,7 +35,7 @@ notifyregion:
     - ${NOTIFY_REGION_KEY_7:}
 smartsurvey:
   enabled: false
-  exportsurl: https://api.smartsurvey.io/v1/surveys/{surveyId}/exports?page_size=50&page=1
+  exportsurl: https://api.smartsurvey.io/v2/surveys/{surveyId}/exports?page_size=50&page=1
   token: ${SMART_SURVEY_TOKEN:}
   secret: ${SMART_SURVEY_SECRET:}
   proxy:
@@ -131,8 +131,8 @@ uk:
               subject: ${PNC_CHECK_SERVICE_SUBJECT}
               token-validity: 300000
             scheme: https
-            host: ${PNC_CHECK_SERVICE_HOST}
-            port: ${PNC_CHECK_SERVICE_PORT}
+            host: ${PNC_CHECK_SERVICE_HOST:localhost}
+            port: ${PNC_CHECK_SERVICE_PORT:8090}
             url: /jurors/check
             retry-delay: 1000
             max-retries: 3
@@ -146,8 +146,8 @@ uk:
               subject: ${SCHEDULER_SERVICE_SUBJECT}
               token-validity: 300000
             scheme: https
-            host: ${SCHEDULER_SERVICE_HOST}
-            port: ${SCHEDULER_SERVICE_PORT}
+            host: ${SCHEDULER_SERVICE_HOST:localhost}
+            port: ${SCHEDULER_SERVICE_PORT:8080}
             url: /job/{job-key}/task/{task-id}/status
             retry-delay: 1000
             max-retries: 3

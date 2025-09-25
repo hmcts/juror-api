@@ -23,6 +23,7 @@ public class SchedulerServiceClientImpl extends AbstractRemoteRestClient impleme
         final RemoteConfig config) {
         super(config.schedulerServiceRestTemplateBuilder(jwtService));
         this.updateStatusUrl = config.getSchedulerService().getUrl();
+        log.info("******** SchedulerService updateStatusUrl: " + this.updateStatusUrl);
     }
 
     @Override

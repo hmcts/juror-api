@@ -254,11 +254,11 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
             throw new IllegalStateException("call to smart survey API failed: " + e.getMessage());
         }
 
-        smartSurveyExportList = "{surveyexportlist:" + smartSurveyExportList + "}";
-
         // Parse the returned list of exports
+        log.info("parsing the returned smart survey export list in JSON Object format");
         JSONObject jsonObj = new JSONObject(smartSurveyExportList);
-        JSONArray jsonArr = jsonObj.getJSONArray("surveyexportlist");
+        JSONArray jsonArr = jsonObj.getJSONArray("records");
+        log.info("Smart Survey export list - total records: {}", jsonArr.length());
 
         // Find the latest survey export matching the name set in the config
         List<JSONObject> jsonList = new ArrayList<JSONObject>();
