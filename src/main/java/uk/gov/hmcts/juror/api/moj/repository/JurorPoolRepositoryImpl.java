@@ -142,6 +142,7 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
 
         return queryFactory.selectFrom(JUROR_POOL)
+            .distinct()
             .join(POOL_REQUEST).on(POOL_REQUEST.eq(JUROR_POOL.pool))
             .leftJoin(APPEARANCE).on(JUROR_POOL.juror.jurorNumber.eq(APPEARANCE.jurorNumber).and(
                 JUROR_POOL.pool.poolNumber.eq(APPEARANCE.poolNumber)))

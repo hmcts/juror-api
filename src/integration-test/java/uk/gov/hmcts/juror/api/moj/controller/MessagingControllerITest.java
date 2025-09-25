@@ -672,6 +672,42 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 .welshLanguage(true)
                 .build();
         }
+
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000031() {
+            return JurorToSendMessageCourt.builder()
+                .jurorNumber("100000031")
+                .firstName("FNAME31")
+                .lastName("LNAME31")
+                .email("FNAME31.LNAME31@email.com")
+                .phone("07777000031")
+                .poolNumber("200000003")
+                .status("Deferred")
+                .trialNumber(null)
+                .onCall(false)
+                .nextDueAtCourt(LocalDate.of(2022, 1, 30))
+                .dateDeferredTo(LocalDate.of(2022, 3, 12))
+                .completionDate(null)
+                .welshLanguage(false)
+                .build();
+        }
+
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000032() {
+            return JurorToSendMessageCourt.builder()
+                .jurorNumber("100000032")
+                .firstName("FNAME32")
+                .lastName("LNAME32")
+                .email("FNAME32.LNAME32@email.com")
+                .phone("07777000032")
+                .poolNumber("200000003")
+                .status("Deferred")
+                .trialNumber(null)
+                .onCall(false)
+                .nextDueAtCourt(LocalDate.of(2022, 1, 30))
+                .dateDeferredTo(LocalDate.of(2022, 3, 12))
+                .completionDate(null)
+                .welshLanguage(false)
+                .build();
+        }
     }
 
     @Nested
@@ -1192,7 +1228,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             private ResponseEntity<PaginatedList<JurorToSendMessageBureau>> triggerValidBureau(
                 MessageSearch search) {
-                final String jwt = createJwt(COURT_USER, "400", "400");
+                final String jwt = createJwt(BUREAU_USER, "400", "400");
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
                 ResponseEntity<PaginatedList<JurorToSendMessageBureau>> response = template.exchange(
@@ -1682,11 +1718,9 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         .build());
 
                 assertJurorToSendMessage(response.getBody(),
-                    4, 1, 1, false,
-                    TestData.getExpectedJurorToSendMessageFor100000003(),
-                    TestData.getExpectedJurorToSendMessageFor100000012(),
-                    TestData.getExpectedJurorToSendMessageFor100000021(),
-                    TestData.getExpectedJurorToSendMessageFor100000030()
+                    2, 1, 1, false,
+                    TestData.getExpectedJurorToSendMessageFor100000031(),
+                    TestData.getExpectedJurorToSendMessageFor100000032()
                 );
             }
 
@@ -3516,7 +3550,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void typicalCourt() {
-                ExportContactDetailsRequest payload = getValidPayload();
+                ExportContactDetailsRequest payload = getExportContactDetailsRequestCourt();
+
                 payload.setExportItems(List.of(ExportContactDetailsRequest.ExportItems.values()));
                 testBuilder()
                     .payload(payload)
@@ -3525,19 +3560,19 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         "Juror Number,Title,First Name,Last Name,Email,Main Phone,Other Phone,Work Phone,Address Line"
                             + " 1,Address Line 2,Address Line 3,Address Line 4,Address Line 5,Postcode,Welsh language,"
                             + "Status,Pool Number,Next due at court date,Date deferred to,Completion date\n"
+                            + "641500023,T3,FName3,LName3,email3@email.com,1234567893,1234567883,1234567873,address1 "
+                            + "3,address2 3,address3 3,address4 3,address5 3,CF10 3AA,true,Panel,415230103,,03/02/2023"
+                            + ",03/01/2023\n"
                             + "641500024,T4,FName4,LName4,email4@email.com,1234567894,1234567884,1234567874,address1 "
-                            + "4,address2 4,address3 4,address4 4,address5 4,CF10 4AA,false,Juror,415230103,04/01/2023,"
-                            + ",04/01/2023\n"
-                            + "641500025,T5,FName5,LName5,email5@email.com,1234567896,1234567885,1234567875,address1 "
-                            + "5,address2 5,address3 5,address4 5,address5 5,CF10 5AA,false,Excused,415230104,"
-                            + "05/01/2023,"
-                            + "05/02/2023,05/01/2023"
+                            + "4,address2 4,address3 4,address4 4,address5 4,CF10 4AA,false,Juror,415230103,04/01/2023"
+                            + ",,04/01/2023"
                     );
+
             }
 
             @Test
             void typicalCourtReduced() {
-                ExportContactDetailsRequest payload = getValidPayload();
+                ExportContactDetailsRequest payload = getExportContactDetailsRequestCourt();
                 payload.setExportItems(List.of(
                     ExportContactDetailsRequest.ExportItems.JUROR_NUMBER,
                     ExportContactDetailsRequest.ExportItems.FIRST_NAME,
@@ -3546,13 +3581,14 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                     .payload(payload)
                     .triggerValid()
                     .assertEquals("Juror Number,First Name,Last Name\n"
-                        + "641500024,FName4,LName4\n"
-                        + "641500025,FName5,LName5"
+                        + "641500023,FName3,LName3\n"
+                        + "641500024,FName4,LName4"
                     );
             }
 
             @Test
             void typicalBureau() {
+
                 ExportContactDetailsRequest payload = ExportContactDetailsRequest.builder()
                     .exportItems(List.of(ExportContactDetailsRequest.ExportItems.values()))
                     .jurors(List.of(
@@ -3568,20 +3604,38 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
                 testBuilder()
                     .payload(payload)
+                    .jwt(getBureauJwt())
                     .triggerValid()
                     .assertEquals(
                         "Juror Number,Title,First Name,Last Name,Email,Main Phone,Other Phone,Work Phone,Address Line"
                             + " 1,Address Line 2,Address Line 3,Address Line 4,Address Line 5,Postcode,Welsh language,"
                             + "Status,Pool Number,Next due at court date,Date deferred to,Completion date\n"
                             + "641500021,T1,FName1,LName1,email1@email.com,1234567891,1234567881,1234567871,address1 "
-                            + "1,address2 1,address3 1,address4 1,address5 1,CF10 1AA,false,Summoned,415230101,,,"
+                            + "1,address2 1,address3 1,address4 1,address5 1,CF10 1AA,false,Summoned,415230101,02/01/2023,,"
                             + "01/01/2023\n"
                             + "641500025,T5,FName5,LName5,email5@email.com,1234567896,1234567885,1234567875,address1 "
                             + "5,address2 5,address3 5,address4 5,address5 5,CF10 5AA,false,Excused,415230104,"
-                            + "05/01/2023,"
-                            + "05/02/2023,05/01/2023");
+                            + ",05/02/2023,05/01/2023");
+            }
+
+
+            private ExportContactDetailsRequest getExportContactDetailsRequestCourt() {
+                return ExportContactDetailsRequest.builder()
+                    .exportItems(List.of(ExportContactDetailsRequest.ExportItems.JUROR_NUMBER))
+                    .jurors(List.of(
+                        JurorAndPoolRequest.builder()
+                            .jurorNumber("641500023")
+                            .poolNumber("415230103")
+                            .build(),
+                        JurorAndPoolRequest.builder()
+                            .jurorNumber("641500024")
+                            .poolNumber("415230103")
+                            .build()
+                    ))
+                    .build();
             }
         }
+
 
         @Nested
         @DisplayName("Negative")
