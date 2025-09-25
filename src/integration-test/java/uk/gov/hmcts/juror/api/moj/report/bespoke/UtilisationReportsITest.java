@@ -17,6 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
+import uk.gov.hmcts.juror.api.moj.controller.reports.request.CourtUtilisationStatsReportRequest;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.CourtUtilisationStatsReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportJurorsResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.MonthlyUtilisationReportResponse;
@@ -25,8 +27,10 @@ import uk.gov.hmcts.juror.api.moj.repository.UtilisationStatsRepository;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,6 +50,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
     public static final String GENERATE_MONTHLY_UTILISATION_REPORT_URL = URL_BASE + "/generate-monthly-utilisation";
     public static final String VIEW_MONTHLY_UTILISATION_REPORT_URL = URL_BASE + "/view-monthly-utilisation";
     public static final String GET_MONTHLY_UTILISATION_REPORT_URL = URL_BASE + "/monthly-utilisation-reports";
+    public static final String COURT_UTILISATION_STATS_REPORT_URL = URL_BASE + "/court-utilisation-stats-report";
 
     private HttpHeaders httpHeaders;
 
@@ -533,6 +538,122 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
                 restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
                         URI.create(GET_MONTHLY_UTILISATION_REPORT_URL + "/415")),
                     MonthlyUtilisationReportResponse.class);
+
+            assertThat(responseEntity.getStatusCode()).as("Expect HTTP FORBIDDEN response")
+                .isEqualTo(HttpStatus.FORBIDDEN);
+        }
+
+    }
+
+
+    @Nested
+    @DisplayName("Get Court Utilisation Stats Report Integration Tests")
+    @Sql({
+        "/db/truncate.sql",
+        "/db/mod/truncate.sql",
+        "/db/mod/reports/CourtUtilisationReportsITest_typical.sql"
+    })
+    class GetCourtUtilisationStatsReportTests {
+
+        @Test
+        void courtUtilisationStatsReportAllCourtsHappy() {
+
+            CourtUtilisationStatsReportRequest request = CourtUtilisationStatsReportRequest.builder()
+                .allCourts(true)
+                .build();
+
+            ResponseEntity<CourtUtilisationStatsReportResponse> responseEntity =
+                restTemplate.exchange(new RequestEntity<>(request,
+                                                              httpHeaders, HttpMethod.POST,
+                                                              URI.create(COURT_UTILISATION_STATS_REPORT_URL)),
+                                      CourtUtilisationStatsReportResponse.class);
+
+            assertThat(responseEntity.getStatusCode()).as("Expect HTTP OK response").isEqualTo(HttpStatus.OK);
+
+            CourtUtilisationStatsReportResponse responseBody = responseEntity.getBody();
+            assertThat(responseBody).isNotNull();
+            // validate the table data
+            CourtUtilisationStatsReportResponse.TableData tableData = responseBody.getTableData();
+            assertThat(tableData).isNotNull();
+            assertThat(tableData.getHeadings()).isNotNull();
+            assertThat(tableData.getHeadings()).hasSize(4);
+            assertThat(tableData.getData()).isNotNull();
+            assertThat(tableData.getData()).hasSize(3);
+            CourtUtilisationStatsReportResponse.UtilisationStats stats = tableData.getData().get(0);
+            assertThat(stats.getCourtName()).isEqualTo("CHESTER (415)");
+            assertThat(Math.round(stats.getUtilisation())).isEqualTo(Math.round(12.28));
+            assertThat(stats.getMonth()).isEqualTo("June 2024");
+            assertThat(stats.getDateLastRun()).isEqualTo(LocalDateTime.parse("2024-06-18T17:22:05",
+                                                                             DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+            stats = tableData.getData().get(1);
+            assertThat(stats.getCourtName()).isEqualTo("LEWES SITTING AT CHICHESTER (416)");
+            assertThat(Math.round(stats.getUtilisation())).isEqualTo(Math.round(11.89));
+            assertThat(stats.getMonth()).isEqualTo("April 2024");
+            assertThat(stats.getDateLastRun()).isEqualTo(LocalDateTime.parse("2024-04-18T17:22:05",
+                                                                             DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+
+            stats = tableData.getData().get(2);
+            assertThat(stats.getCourtName()).isEqualTo("MANCHESTER, MINSHULL STREET (436)");
+            assertThat(Math.round(stats.getUtilisation())).isEqualTo(Math.round(24.49));
+            assertThat(stats.getMonth()).isEqualTo("July 2025");
+            assertThat(stats.getDateLastRun()).isEqualTo(LocalDateTime.parse("2025-07-01T17:22:05",
+                                                                             DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+
+
+        }
+
+
+        @Test
+        void courtUtilisationStatsReportSelectCourtHappy() {
+
+            CourtUtilisationStatsReportRequest request = CourtUtilisationStatsReportRequest.builder()
+                .allCourts(false)
+                .courtLocCodes(List.of("415"))
+                .build();
+
+            ResponseEntity<CourtUtilisationStatsReportResponse> responseEntity =
+                restTemplate.exchange(new RequestEntity<>(request,
+                                                          httpHeaders, HttpMethod.POST,
+                                                          URI.create(COURT_UTILISATION_STATS_REPORT_URL)),
+                                      CourtUtilisationStatsReportResponse.class);
+
+            assertThat(responseEntity.getStatusCode()).as("Expect HTTP OK response").isEqualTo(HttpStatus.OK);
+
+            CourtUtilisationStatsReportResponse responseBody = responseEntity.getBody();
+            assertThat(responseBody).isNotNull();
+            // validate the table data
+            CourtUtilisationStatsReportResponse.TableData tableData = responseBody.getTableData();
+            assertThat(tableData).isNotNull();
+            assertThat(tableData.getHeadings()).isNotNull();
+            assertThat(tableData.getHeadings()).hasSize(4);
+            assertThat(tableData.getData()).isNotNull();
+            assertThat(tableData.getData()).hasSize(1);
+            CourtUtilisationStatsReportResponse.UtilisationStats stats = tableData.getData().get(0);
+            assertThat(stats.getCourtName()).isEqualTo("CHESTER (415)");
+            assertThat(Math.round(stats.getUtilisation())).isEqualTo(Math.round(12.28));
+            assertThat(stats.getMonth()).isEqualTo("June 2024");
+            assertThat(stats.getDateLastRun()).isEqualTo(LocalDateTime.parse("2024-06-18T17:22:05",
+                                                                             DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+
+
+        }
+
+        @Test
+        void courtUtilisationStatsReportsInvalidUserType() {
+
+            final String bureauJwt = createBureauJwt();
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            CourtUtilisationStatsReportRequest request = CourtUtilisationStatsReportRequest.builder()
+                .allCourts(true)
+                .build();
+
+            ResponseEntity<CourtUtilisationStatsReportResponse> responseEntity =
+                restTemplate.exchange(new RequestEntity<>(request,
+                                                httpHeaders, HttpMethod.POST,
+                                                URI.create(COURT_UTILISATION_STATS_REPORT_URL)),
+                                                CourtUtilisationStatsReportResponse.class);
 
             assertThat(responseEntity.getStatusCode()).as("Expect HTTP FORBIDDEN response")
                 .isEqualTo(HttpStatus.FORBIDDEN);
