@@ -20,6 +20,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReinstateJurorsReques
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReturnJuryDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialSearch;
+import uk.gov.hmcts.juror.api.moj.controller.response.trial.PanelListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialSummaryDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
@@ -643,19 +644,28 @@ class TrialServiceImplTest {
     @Nested
     class ReinstateJurors {
 
+        static final String TRIAL_NUMBER = "TRIAL2";
+        static final String LOC_CODE = "415";
+        final List<String> jurors = Arrays.asList("641684001", "641674001");
+        final ReinstateJurorsRequestDto dto = new ReinstateJurorsRequestDto();
+        {
+            dto.setTrialNumber(TRIAL_NUMBER);
+            dto.setCourtLocationCode(LOC_CODE);
+            dto.setJurors(jurors);
+        }
+
+        @Test
+        void returnedJurorsNoResults() {
+
+            List<PanelListDto> returnedJurors = trialService.getReturnedJurors(TRIAL_NUMBER, LOC_CODE);
+            assertThat(returnedJurors).isNotNull().isEmpty();
+        }
+
         @Test
         void reinstateJurorsHappy() {
 
             payload = TestUtils.createJwt("415", "COURT_USER", "1", Collections.singletonList("415"));
             TestUtils.mockSecurityUtil(payload);
-            final String trialNumber = "TRIAL2";
-            final String locCode = "415";
-            final List<String> jurors = Arrays.asList("641684001", "641674001");
-
-            ReinstateJurorsRequestDto dto = new ReinstateJurorsRequestDto();
-            dto.setTrialNumber(trialNumber);
-            dto.setCourtLocationCode(locCode);
-            dto.setJurors(jurors);
 
             JurorStatus status = new JurorStatus();
             status.setStatus(IJurorStatus.RESPONDED);
@@ -671,21 +681,21 @@ class TrialServiceImplTest {
             List<JurorPool> jurorPoolsList = Arrays.asList(juror1, juror2);
 
             when(jurorPoolRepository.findByPoolCourtLocationLocCodeAndJurorJurorNumberIn(
-                locCode,
+                LOC_CODE,
                 Arrays.asList("641684001", "641674001")
             ))
                 .thenReturn(jurorPoolsList);
 
             CourtLocation courtLocation = new CourtLocation();
-            courtLocation.setLocCode(locCode);
+            courtLocation.setLocCode(LOC_CODE);
             courtLocation.setOwner("415");
 
-            Trial trial = createTrial(trialNumber);
-            trial.setTrialNumber(trialNumber);
+            Trial trial = createTrial(TRIAL_NUMBER);
+            trial.setTrialNumber(TRIAL_NUMBER);
             trial.setCourtLocation(courtLocation);
 
             when(trialRepository.findByTrialNumberAndCourtLocationLocCode(
-                trialNumber, locCode)).thenReturn(Optional.of(trial));
+                TRIAL_NUMBER, LOC_CODE)).thenReturn(Optional.of(trial));
 
             final List<Panel> panelList = new ArrayList<>();
             Panel panel1 = new Panel();
@@ -698,7 +708,7 @@ class TrialServiceImplTest {
             panelList.add(panel2);
 
             when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumberIn(
-                trialNumber, locCode, jurors)).thenReturn(panelList);
+                TRIAL_NUMBER, LOC_CODE, jurors)).thenReturn(panelList);
             when(jurorPoolRepository.findByJurorNumberAndIsActiveAndCourt(
                 juror1.getJurorNumber(), true,
                 courtLocation
@@ -712,14 +722,14 @@ class TrialServiceImplTest {
             trialService.reinstateJurors(dto);
 
             verify(jurorPoolRepository, times(1)).findByPoolCourtLocationLocCodeAndJurorJurorNumberIn(
-                locCode,
+                LOC_CODE,
                 Arrays.asList("641684001", "641674001")
             );
             verify(trialRepository, times(1)).findByTrialNumberAndCourtLocationLocCode(
-                trialNumber, locCode);
+                TRIAL_NUMBER, LOC_CODE);
             verify(panelRepository, times(1))
                 .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumberIn(
-                    trialNumber, locCode, jurors);
+                    TRIAL_NUMBER, LOC_CODE, jurors);
             verify(jurorPoolRepository, times(1)).findByJurorNumberAndIsActiveAndCourt(
                 juror1.getJurorNumber(), true,
                 courtLocation
@@ -736,14 +746,6 @@ class TrialServiceImplTest {
 
             payload = TestUtils.createJwt("415", "COURT_USER", "1", Collections.singletonList("415"));
             TestUtils.mockSecurityUtil(payload);
-            final String trialNumber = "TRIAL2";
-            final String locCode = "415";
-            final List<String> jurors = Arrays.asList("641684001", "641674001");
-
-            ReinstateJurorsRequestDto dto = new ReinstateJurorsRequestDto();
-            dto.setTrialNumber(trialNumber);
-            dto.setCourtLocationCode(locCode);
-            dto.setJurors(jurors);
 
             JurorStatus status = new JurorStatus();
             status.setStatus(IJurorStatus.RESPONDED);
@@ -756,7 +758,7 @@ class TrialServiceImplTest {
             List<JurorPool> jurorPoolsList = List.of(juror1);
 
             when(jurorPoolRepository.findByPoolCourtLocationLocCodeAndJurorJurorNumberIn(
-                locCode, Arrays.asList("641684001", "641674001"))).thenReturn(jurorPoolsList);
+                LOC_CODE, Arrays.asList("641684001", "641674001"))).thenReturn(jurorPoolsList);
 
             // invoke the method to test
             MojException.NotFound notFoundException = Assertions.assertThrows(MojException.NotFound.class, () ->
@@ -766,7 +768,7 @@ class TrialServiceImplTest {
                 .isEqualTo("Juror 641674001 not found in the pool at court");
 
             verify(jurorPoolRepository, times(1)).findByPoolCourtLocationLocCodeAndJurorJurorNumberIn(
-                locCode, Arrays.asList("641684001", "641674001"));
+                LOC_CODE, Arrays.asList("641684001", "641674001"));
 
             verifyNoInteractions(panelRepository);
             verifyNoInteractions(trialRepository);
@@ -780,14 +782,6 @@ class TrialServiceImplTest {
 
             payload = TestUtils.createJwt("415", "COURT_USER", "1", Collections.singletonList("415"));
             TestUtils.mockSecurityUtil(payload);
-            final String trialNumber = "TRIAL2";
-            final String locCode = "415";
-            final List<String> jurors = Arrays.asList("641684001", "641674001");
-
-            ReinstateJurorsRequestDto dto = new ReinstateJurorsRequestDto();
-            dto.setTrialNumber(trialNumber);
-            dto.setCourtLocationCode(locCode);
-            dto.setJurors(jurors);
 
             JurorStatus status = new JurorStatus();
             status.setStatus(IJurorStatus.JUROR);
@@ -803,7 +797,7 @@ class TrialServiceImplTest {
             List<JurorPool> jurorPoolsList = Arrays.asList(juror1, juror2);
 
             when(jurorPoolRepository.findByPoolCourtLocationLocCodeAndJurorJurorNumberIn(
-                locCode, Arrays.asList("641684001", "641674001"))).thenReturn(jurorPoolsList);
+                LOC_CODE, Arrays.asList("641684001", "641674001"))).thenReturn(jurorPoolsList);
 
             // invoke the method to test
             MojException.BusinessRuleViolation brv = Assertions.assertThrows(
@@ -814,7 +808,7 @@ class TrialServiceImplTest {
                 .isEqualTo("Juror 641684001 is not in responded status");
 
             verify(jurorPoolRepository, times(1)).findByPoolCourtLocationLocCodeAndJurorJurorNumberIn(
-                locCode, Arrays.asList("641684001", "641674001"));
+                LOC_CODE, Arrays.asList("641684001", "641674001"));
 
             verifyNoInteractions(panelRepository);
             verifyNoInteractions(trialRepository);
@@ -826,14 +820,6 @@ class TrialServiceImplTest {
         void reinstateJurorsTrialNotFound() {
             payload = TestUtils.createJwt("415", "COURT_USER", "1", Collections.singletonList("415"));
             TestUtils.mockSecurityUtil(payload);
-            final String trialNumber = "TRIAL2";
-            final String locCode = "415";
-            final List<String> jurors = Arrays.asList("641684001", "641674001");
-
-            ReinstateJurorsRequestDto dto = new ReinstateJurorsRequestDto();
-            dto.setTrialNumber(trialNumber);
-            dto.setCourtLocationCode(locCode);
-            dto.setJurors(jurors);
 
             JurorStatus status = new JurorStatus();
             status.setStatus(IJurorStatus.RESPONDED);
@@ -849,10 +835,10 @@ class TrialServiceImplTest {
             List<JurorPool> jurorPoolsList = Arrays.asList(juror1, juror2);
 
             when(jurorPoolRepository.findByPoolCourtLocationLocCodeAndJurorJurorNumberIn(
-                locCode, Arrays.asList("641684001", "641674001"))).thenReturn(jurorPoolsList);
+                LOC_CODE, Arrays.asList("641684001", "641674001"))).thenReturn(jurorPoolsList);
 
             when(trialRepository.findByTrialNumberAndCourtLocationLocCode(
-                trialNumber, locCode)).thenReturn(Optional.empty());
+                TRIAL_NUMBER, LOC_CODE)).thenReturn(Optional.empty());
 
             // invoke the method to test
             MojException.NotFound notFoundException = Assertions.assertThrows(MojException.NotFound.class, () ->
@@ -861,11 +847,11 @@ class TrialServiceImplTest {
                 .isEqualTo("Cannot find trial with number: TRIAL2 for court location 415");
 
             verify(jurorPoolRepository, times(1)).findByPoolCourtLocationLocCodeAndJurorJurorNumberIn(
-                locCode,
+                LOC_CODE,
                 Arrays.asList("641684001", "641674001")
             );
             verify(trialRepository, times(1)).findByTrialNumberAndCourtLocationLocCode(
-                trialNumber, locCode);
+                TRIAL_NUMBER, LOC_CODE);
 
             verifyNoInteractions(panelRepository);
             verifyNoMoreInteractions(trialRepository);
@@ -878,14 +864,6 @@ class TrialServiceImplTest {
         void reinstateJurorsJurorNotOnTrial() {
             payload = TestUtils.createJwt("415", "COURT_USER", "1", Collections.singletonList("415"));
             TestUtils.mockSecurityUtil(payload);
-            final String trialNumber = "TRIAL2";
-            final String locCode = "415";
-            final List<String> jurors = Arrays.asList("641684001", "641674001");
-
-            ReinstateJurorsRequestDto dto = new ReinstateJurorsRequestDto();
-            dto.setTrialNumber(trialNumber);
-            dto.setCourtLocationCode(locCode);
-            dto.setJurors(jurors);
 
             JurorStatus status = new JurorStatus();
             status.setStatus(IJurorStatus.RESPONDED);
@@ -901,21 +879,21 @@ class TrialServiceImplTest {
             List<JurorPool> jurorPoolsList = Arrays.asList(juror1, juror2);
 
             when(jurorPoolRepository.findByPoolCourtLocationLocCodeAndJurorJurorNumberIn(
-                locCode, Arrays.asList("641684001", "641674001"))).thenReturn(jurorPoolsList);
+                LOC_CODE, Arrays.asList("641684001", "641674001"))).thenReturn(jurorPoolsList);
 
             when(trialRepository.findByTrialNumberAndCourtLocationLocCode(
-                trialNumber, locCode)).thenReturn(Optional.empty());
+                TRIAL_NUMBER, LOC_CODE)).thenReturn(Optional.empty());
 
             CourtLocation courtLocation = new CourtLocation();
-            courtLocation.setLocCode(locCode);
+            courtLocation.setLocCode(LOC_CODE);
             courtLocation.setOwner("415");
 
-            Trial trial = createTrial(trialNumber);
-            trial.setTrialNumber(trialNumber);
+            Trial trial = createTrial(TRIAL_NUMBER);
+            trial.setTrialNumber(TRIAL_NUMBER);
             trial.setCourtLocation(courtLocation);
 
             when(trialRepository.findByTrialNumberAndCourtLocationLocCode(
-                trialNumber, locCode)).thenReturn(Optional.of(trial));
+                TRIAL_NUMBER, LOC_CODE)).thenReturn(Optional.of(trial));
 
             List<Panel> panelList = new ArrayList<>();
             Panel panel1 = new Panel();
@@ -925,27 +903,28 @@ class TrialServiceImplTest {
             // note juror 641674001 is not on the trial
 
             when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumberIn(
-                trialNumber, locCode, jurors)).thenReturn(panelList);
+                TRIAL_NUMBER, LOC_CODE, jurors)).thenReturn(panelList);
 
             MojException.NotFound notFoundException = Assertions.assertThrows(MojException.NotFound.class, () ->
                                                                                   trialService.reinstateJurors(dto));
             assertThat(notFoundException.getMessage()).isEqualTo("Juror 641674001 not found on the trial");
 
             verify(jurorPoolRepository, times(1)).findByPoolCourtLocationLocCodeAndJurorJurorNumberIn(
-                locCode,
+                LOC_CODE,
                 Arrays.asList("641684001", "641674001")
             );
             verify(trialRepository, times(1)).findByTrialNumberAndCourtLocationLocCode(
-                trialNumber, locCode);
+                TRIAL_NUMBER, LOC_CODE);
 
             verify(panelRepository, times(1))
                 .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumberIn(
-                    trialNumber, locCode, jurors);
+                    TRIAL_NUMBER, LOC_CODE, jurors);
 
             verifyNoMoreInteractions(trialRepository);
             verifyNoInteractions(jurorHistoryService);
             verifyNoMoreInteractions(jurorPoolRepository);
         }
+
     }
 
     private JurorPanelReassignRequestDto createReassignPanelMembersRequestDto(List<String> jurors,
