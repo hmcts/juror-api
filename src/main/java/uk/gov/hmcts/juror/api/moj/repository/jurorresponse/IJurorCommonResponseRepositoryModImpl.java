@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.moj.repository.jurorresponse;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -194,81 +195,6 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
             .size();
     }
 
-    @Override
-    public int getSummonsRepliesStandard(String locCode) {
-        return getJpaQueryFactory()
-            .select(QCombinedJurorResponse.combinedJurorResponse)
-            .from(QCombinedJurorResponse.combinedJurorResponse)
-            .join(QJurorPool.jurorPool)
-            .on(QJurorPool.jurorPool.juror.eq(QCombinedJurorResponse.combinedJurorResponse.juror))
-            .where(QJurorPool.jurorPool.isActive.isTrue())
-            .where(
-                QCombinedJurorResponse.combinedJurorResponse.processingStatus.ne(
-                    ProcessingStatus.CLOSED))
-            .where(QCombinedJurorResponse.combinedJurorResponse.urgent.eq(false))
-            .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED))
-            .where(QJurorPool.jurorPool.owner.eq(SecurityUtil.BUREAU_OWNER))
-            .where(QCombinedJurorResponse.combinedJurorResponse.juror.bureauTransferDate.isNull())
-            .fetch()
-            .size();
-    }
-
-    @Override
-    public int getSummonsRepliesUrgent(String locCode) {
-        return getJpaQueryFactory()
-            .select(QCombinedJurorResponse.combinedJurorResponse)
-            .from(QCombinedJurorResponse.combinedJurorResponse)
-            .join(QJurorPool.jurorPool)
-            .on(QJurorPool.jurorPool.juror.eq(QCombinedJurorResponse.combinedJurorResponse.juror))
-            .where(QJurorPool.jurorPool.isActive.isTrue())
-            .where(
-                QCombinedJurorResponse.combinedJurorResponse.processingStatus.ne(
-                    ProcessingStatus.CLOSED))
-            .where(QCombinedJurorResponse.combinedJurorResponse.urgent.eq(true))
-            .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED))
-            .where(QJurorPool.jurorPool.owner.eq(SecurityUtil.BUREAU_OWNER))
-            .where(QCombinedJurorResponse.combinedJurorResponse.juror.bureauTransferDate.isNull())
-            .fetch()
-            .size();
-    }
-
-    @Override
-    public int getSummonsRepliesUnassigned(String locCode) {
-        return getJpaQueryFactory()
-            .select(QCombinedJurorResponse.combinedJurorResponse)
-            .from(QCombinedJurorResponse.combinedJurorResponse)
-            .join(QJurorPool.jurorPool)
-            .on(QJurorPool.jurorPool.juror.eq(QCombinedJurorResponse.combinedJurorResponse.juror))
-            .where(QJurorPool.jurorPool.isActive.isTrue())
-            .where(
-                QCombinedJurorResponse.combinedJurorResponse.processingStatus.ne(
-                    ProcessingStatus.CLOSED))
-            .where(QCombinedJurorResponse.combinedJurorResponse.staff.isNull())
-            .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED))
-            .where(QJurorPool.jurorPool.owner.eq(SecurityUtil.BUREAU_OWNER))
-            .where(QCombinedJurorResponse.combinedJurorResponse.juror.bureauTransferDate.isNull())
-            .fetch()
-            .size();
-    }
-
-    @Override
-    public int getSummonsRepliesAssigned(String locCode) {
-        return getJpaQueryFactory()
-            .select(QCombinedJurorResponse.combinedJurorResponse)
-            .from(QCombinedJurorResponse.combinedJurorResponse)
-            .join(QJurorPool.jurorPool)
-            .on(QJurorPool.jurorPool.juror.eq(QCombinedJurorResponse.combinedJurorResponse.juror))
-            .where(QJurorPool.jurorPool.isActive.isTrue())
-            .where(
-                QCombinedJurorResponse.combinedJurorResponse.processingStatus.ne(
-                    ProcessingStatus.CLOSED))
-            .where(QCombinedJurorResponse.combinedJurorResponse.staff.isNotNull())
-            .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED))
-            .where(QJurorPool.jurorPool.owner.eq(SecurityUtil.BUREAU_OWNER))
-            .where(QCombinedJurorResponse.combinedJurorResponse.juror.bureauTransferDate.isNull())
-            .fetch()
-            .size();
-    }
 
     @Override
     public int getDeferredJurorsStartDateNextWeek(String locCode) {
@@ -308,5 +234,61 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
             .where(QJurorPool.jurorPool.pool.poolNumber.isNotNull())
             .where(QPoolRequest.poolRequest.returnDate.eq(weekDateBeforeTransfer)).fetch().size();
     }
+
+    @Override
+    public Tuple getAllSummonsCountsTuple(String locCode) {
+        JPAQueryFactory queryFactory = getJpaQueryFactory();
+        LocalDateTime fourWeeksFromNow = LocalDateTime.now().plusWeeks(4);
+
+        return queryFactory.select(
+                // Total count
+                QCombinedJurorResponse.combinedJurorResponse.jurorNumber.count(),
+
+                // Standard (not urgent)
+                new CaseBuilder()
+                    .when(QCombinedJurorResponse.combinedJurorResponse.urgent.eq(false))
+                    .then(1)
+                    .otherwise(0)
+                    .sum(),
+
+                // Urgent/Overdue
+                new CaseBuilder()
+                    .when(QCombinedJurorResponse.combinedJurorResponse.urgent.eq(true))
+                    .then(1)
+                    .otherwise(0)
+                    .sum(),
+
+                // Four weeks before start date
+                new CaseBuilder()
+                    .when(QJurorPool.jurorPool.nextDate.before(fourWeeksFromNow.toLocalDate()))
+                    .then(1)
+                    .otherwise(0)
+                    .sum(),
+
+                // Assigned (has staff)
+                new CaseBuilder()
+                    .when(QCombinedJurorResponse.combinedJurorResponse.staff.isNotNull())
+                    .then(1)
+                    .otherwise(0)
+                    .sum(),
+
+                // Unassigned (no staff)
+                new CaseBuilder()
+                    .when(QCombinedJurorResponse.combinedJurorResponse.staff.isNull())
+                    .then(1)
+                    .otherwise(0)
+                    .sum()
+            )
+            .from(QCombinedJurorResponse.combinedJurorResponse)
+            .join(QJurorPool.jurorPool)
+            .on(QJurorPool.jurorPool.juror.eq(QCombinedJurorResponse.combinedJurorResponse.juror))
+            .where(QJurorPool.jurorPool.isActive.isTrue())
+            .where(QCombinedJurorResponse.combinedJurorResponse.processingStatus.ne(ProcessingStatus.CLOSED))
+            .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED))
+            .where(QJurorPool.jurorPool.owner.eq(SecurityUtil.BUREAU_OWNER))
+            .where(QCombinedJurorResponse.combinedJurorResponse.juror.bureauTransferDate.isNull())
+            .fetchOne();
+    }
+
 
 }
