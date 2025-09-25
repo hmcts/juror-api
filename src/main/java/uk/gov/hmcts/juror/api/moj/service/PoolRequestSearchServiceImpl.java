@@ -173,7 +173,7 @@ public class PoolRequestSearchServiceImpl implements PoolRequestSearchService {
         List<PoolSearchRequestDto.PoolStatus> poolStatus = poolSearchRequestDto.getPoolStatus();
         List<PoolSearchRequestDto.PoolStage> poolStage = poolSearchRequestDto.getPoolStage();
         List<String> poolTypeCode = poolSearchRequestDto.getPoolType();
-        Boolean isNilPool = poolSearchRequestDto.getIsNilPool();
+        final Boolean isNilPool = poolSearchRequestDto.getIsNilPool();
 
         if (isListPopulated(poolStatus) && poolStatus.size() < PoolSearchRequestDto.PoolStatus.values().length) {
             log.debug(String.format("Pool Status supplied as Pool Request Search parameter: %s", poolStatus));

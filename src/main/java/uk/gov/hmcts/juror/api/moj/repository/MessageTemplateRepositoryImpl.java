@@ -82,13 +82,13 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
             .from(JUROR)
             .join(JUROR_POOL)
             .on(JUROR.eq(JUROR_POOL.juror))
-            .where(JUROR_POOL.isActive.isTrue());
-        if (isCourt || !"400".equals(locCode)) {
+            .where(JUROR_POOL.isActive.isTrue())
+            .where(JUROR_POOL.owner.eq(SecurityUtil.getActiveOwner()));
+
+        if (isCourt) {
             query.where(JUROR_POOL.pool.courtLocation.locCode.eq(locCode));
-            if (isCourt) {
-                query.where(JUROR_POOL.owner.ne("400"));
-            }
         }
+
 
         if (search.getTrialNumber() != null || !simpleResponse) {
 
@@ -155,8 +155,6 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
             .map(jurorAndPoolRequest -> JUROR.jurorNumber.eq(jurorAndPoolRequest.getJurorNumber())
                 .and(JUROR_POOL.pool.poolNumber.eq(jurorAndPoolRequest.getPoolNumber()))).toList();
 
-
-        List<List<String>> rows = new ArrayList<>();
         JPQLQuery<Tuple> query = queryFactory.select(returnFields.toArray(new Expression<?>[0]))
             .from(JUROR)
             .join(JUROR_POOL)
@@ -166,8 +164,12 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
             query.where(JUROR_POOL.pool.courtLocation.locCode.eq(locCode));
         }
 
+        // only return owned jurors, even for bureau users
+        query.where(JUROR_POOL.owner.eq(SecurityUtil.getActiveOwner()));
+
         query.where(or.stream().reduce(BooleanExpression::or).get());
 
+        List<List<String>> rows = new ArrayList<>();
         query.fetch().stream().map(tuple -> {
             List<String> row = new ArrayList<>();
             exportContactDetailsRequest.getExportItems()

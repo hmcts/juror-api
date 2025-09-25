@@ -5,7 +5,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.querydsl.core.Tuple;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.apache.commons.text.WordUtils;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
@@ -35,6 +37,8 @@ public class PoolRequestSearchListDto {
     private long resultsCount;
 
     @AllArgsConstructor
+    @Data
+    @NoArgsConstructor
     @Getter
     @Schema(description = "Pool Request data")
     @ToString
