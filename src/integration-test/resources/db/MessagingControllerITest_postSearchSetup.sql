@@ -59,7 +59,11 @@ VALUES ('100000001', 'FNAME01', 'LNAME01', '2000-01-01', 'CH01 1AN', 'FNAME01.LN
        ('100000029', 'FNAME29', 'LNAME29', '2000-01-29', 'CH29 1AN', 'FNAME29.LNAME29@email.com', '07777000029', 'Y',
         null, '540 STREET NAME', 'ANYTOWN', false),
        ('100000030', 'FNAME30', 'LNAME30', '2000-01-30', 'CH30 1AN', 'FNAME30.LNAME30@email.com', '07777000030', 'Y',
-        null, '540 STREET NAME', 'ANYTOWN', true);
+        null, '540 STREET NAME', 'ANYTOWN', true),
+       ('100000031', 'FNAME31', 'LNAME31', '2000-01-03', 'CH31 1AN', 'FNAME31.LNAME31@email.com', '07777000031', 'Y',
+        null, '540 STREET NAME', 'ANYTOWN', false),
+       ('100000032', 'FNAME32', 'LNAME32', '2000-01-03', 'CH32 1AN', 'FNAME32.LNAME32@email.com', '07777000032', 'Y',
+        null, '540 STREET NAME', 'ANYTOWN', false);
 
 
 INSERT INTO JUROR_MOD.POOL (OWNER, POOL_NO, RETURN_DATE, TOTAL_NO_REQUIRED, NO_REQUESTED, POOL_TYPE, LOC_CODE,
@@ -105,7 +109,9 @@ VALUES ('415', '100000001', '200000015', '2022-01-01', null, false, 2, TRUE),
        ('415', '100000027', '200000001', '2022-01-27', null, false, 5, TRUE),
        ('415', '100000028', '200000015', '2022-01-28', null, true, 2, TRUE),
        ('415', '100000029', '200000002', '2022-01-29', null, false, 12, TRUE),
-       ('415', '100000030', '200000003', '2022-01-30', '2022-03-12', false, 7, TRUE);
+       ('415', '100000030', '200000003', '2022-01-30', '2022-03-12', false, 7, TRUE),
+       ('400', '100000031', '200000003', '2022-01-01', '2022-03-12', false, 7, TRUE),
+       ('400', '100000032', '200000003', '2022-01-01', '2022-03-12', false, 7, TRUE);
 
 
 -- Reset sequence numbers

@@ -11,7 +11,9 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.moj.controller.reports.request.CourtUtilisationStatsReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.CourtUtilisationStatsReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportJurorsResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.MonthlyUtilisationReportResponse;
@@ -586,6 +588,109 @@ class UtilisationReportServiceImplTest {
             verify(courtLocationRepository, times(1)).findById(locCode);
             verifyNoInteractions(utilisationStatsRepository);
 
+        }
+    }
+
+    @Nested
+    @DisplayName("Court Utilisation Stats tests")
+    class CourtUtilisationStatsTests {
+
+        @Test
+        @SneakyThrows
+        void courtUtilisationStatsAllCourtsNoData() {
+
+            CourtUtilisationStatsReportRequest request = new CourtUtilisationStatsReportRequest();
+            request.setAllCourts(true);
+
+            when(utilisationStatsRepository.getCourtUtilisationStats()).thenReturn(List.of());
+
+            CourtUtilisationStatsReportResponse response = utilisationReportService
+                                                                .courtUtilisationStatsReport(request);
+
+            assertThat(response).isNotNull();
+
+            assertThat(response.getHeadings()).isNotNull();
+            Map<String, AbstractReportResponse.DataTypeValue> headings = response.getHeadings();
+            assertThat(headings.get("report_created").getDisplayName()).isEqualTo("Report created");
+            assertThat(headings.get("report_created").getDataType()).isEqualTo("LocalDate");
+            assertThat(headings.get("report_created").getValue()).isEqualTo(LocalDateTime.now()
+                                                                    .format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+            AbstractReportResponse.DataTypeValue timeCreated = response.getHeadings().get("time_created");
+            Assertions.assertThat(timeCreated.getDisplayName()).isEqualTo("Time created");
+            Assertions.assertThat(timeCreated.getDataType()).isEqualTo("LocalDateTime");
+            LocalDateTime localDateTime = LocalDateTime.parse(
+                (String) timeCreated.getValue(),
+                DateTimeFormatter.ISO_DATE_TIME
+            );
+            Assertions.assertThat(localDateTime).isCloseTo(
+                LocalDateTime.now(),
+                within(10, ChronoUnit.SECONDS)
+            );
+
+            assertThat(headings.get("court_name").getDisplayName()).isEqualTo("Court name");
+            assertThat(headings.get("court_name").getDataType()).isEqualTo("String");
+            assertThat(headings.get("court_name").getValue()).isEqualTo("All Courts");
+
+            assertThat(response.getTableData()).isNotNull();
+            CourtUtilisationStatsReportResponse.TableData tableData = response.getTableData();
+            assertThat(tableData.getHeadings()).isNotNull();
+
+            Assertions.assertThat(tableData.getHeadings()).hasSize(4);
+
+            checkTableHeadings(tableData);
+
+        }
+
+        @Test
+        @SneakyThrows
+        void courtUtilisationStatsBadRequestNoCourtsSpecified() {
+
+            CourtUtilisationStatsReportRequest request = new CourtUtilisationStatsReportRequest();
+            request.setAllCourts(false);
+            request.setCourtLocCodes(List.of());
+
+            assertThatExceptionOfType(MojException.BadRequest.class)
+                .isThrownBy(() -> utilisationReportService.courtUtilisationStatsReport(request));
+
+        }
+
+        @Test
+        @SneakyThrows
+        void courtUtilisationStatsBadRequestNoCourtsFound() {
+
+            CourtUtilisationStatsReportRequest request = new CourtUtilisationStatsReportRequest();
+            request.setAllCourts(false);
+            request.setCourtLocCodes(List.of("999"));
+
+            when(courtLocationRepository.findById("999")).thenReturn(Optional.empty());
+
+            assertThatExceptionOfType(MojException.BadRequest.class)
+                .isThrownBy(() -> utilisationReportService.courtUtilisationStatsReport(request));
+
+        }
+
+
+        private void checkTableHeadings(CourtUtilisationStatsReportResponse.TableData tableData) {
+            CourtUtilisationStatsReportResponse.TableData.Heading tableHeading = tableData.getHeadings().get(0);
+            assertThat(tableHeading.getId()).isEqualTo(UtilisationReportService.TableHeading.COURT_NAME);
+            assertThat(tableHeading.getName()).isEqualTo("Court Name");
+            assertThat(tableHeading.getDataType()).isEqualTo("String");
+
+            tableHeading = tableData.getHeadings().get(1);
+            assertThat(tableHeading.getId()).isEqualTo(UtilisationReportService.TableHeading.UTILISATION);
+            assertThat(tableHeading.getName()).isEqualTo("Utilisation");
+            assertThat(tableHeading.getDataType()).isEqualTo("Double");
+
+            tableHeading = tableData.getHeadings().get(2);
+            assertThat(tableHeading.getId()).isEqualTo(UtilisationReportService.TableHeading.MONTH);
+            assertThat(tableHeading.getName()).isEqualTo("Month");
+            assertThat(tableHeading.getDataType()).isEqualTo("String");
+
+            tableHeading = tableData.getHeadings().get(3);
+            assertThat(tableHeading.getId()).isEqualTo(UtilisationReportService.TableHeading.DATE_LAST_RUN);
+            assertThat(tableHeading.getName()).isEqualTo("Date Last Run");
+            assertThat(tableHeading.getDataType()).isEqualTo("LocalDate");
         }
     }
 
