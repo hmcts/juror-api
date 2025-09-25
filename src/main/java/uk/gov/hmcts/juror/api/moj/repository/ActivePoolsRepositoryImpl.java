@@ -137,24 +137,25 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
             query.where(POOL_REQUEST.courtLocation.locCode.in(SecurityUtil.getCourts()));
         }
 
-        // return PaginationUtil.toPaginatedList(
-        PaginatedList<PoolRequestActiveDataDto> allResults = PaginationUtil.toPaginatedList(
+    // return PaginationUtil.toPaginatedList(
+    PaginatedList<PoolRequestActiveDataDto> allResults =
+        PaginationUtil.toPaginatedList(
             query,
             filterQuery,
             PoolRequestedFilterQuery.SortField.POOL_NUMBER,
             SortMethod.ASC,
             data -> {
-                PoolRequest poolRequest = Objects.requireNonNull(data.get(POOL_REQUEST));
-                return PoolRequestActiveDataDto.builder()
-                    .poolNumber(poolRequest.getPoolNumber())
-                    .requestedFromBureau(poolRequest.getNumberRequested())
-                    .confirmedFromBureau(data.get(CONFIRMED_FROM_BUREAU))
-                    .courtName(poolRequest.getCourtLocation().getName())
-                    .poolType(poolRequest.getPoolType().getDescription())
-                    .attendanceDate(poolRequest.getReturnDate())
-                    .build();
-            }
-        );
+              PoolRequest poolRequest = Objects.requireNonNull(data.get(POOL_REQUEST));
+              return PoolRequestActiveDataDto.builder()
+                  .poolNumber(poolRequest.getPoolNumber())
+                  .requestedFromBureau(poolRequest.getNumberRequested())
+                  .confirmedFromBureau(data.get(CONFIRMED_FROM_BUREAU))
+                  .courtName(poolRequest.getCourtLocation().getName())
+                  .poolType(poolRequest.getPoolType().getDescription())
+                  .attendanceDate(poolRequest.getReturnDate())
+                  .required(poolRequest.getTotalNoRequired())
+                  .build();
+            });
         List<PoolRequestActiveDataDto> filtered = allResults.getData().stream()
             .filter(dto -> dto.getRequired() > 0)
             .filter(dto -> dto.getAttendanceDate() != null
