@@ -288,8 +288,9 @@ public class TrialServiceImpl implements TrialService {
     public void reinstateJurors(ReinstateJurorsRequestDto reinstateJurorsRequest) {
 
         // check the jurors supplied are in responded status
-        List<JurorPool> jurorPools = jurorPoolRepository.findByPoolCourtLocationLocCodeAndJurorJurorNumberIn(
+        List<JurorPool> jurorPools = jurorPoolRepository.findByPoolCourtLocationLocCodeAndIsActiveAndJurorJurorNumberIn(
             reinstateJurorsRequest.getCourtLocationCode(),
+            true,
             reinstateJurorsRequest.getJurors()
         );
 
