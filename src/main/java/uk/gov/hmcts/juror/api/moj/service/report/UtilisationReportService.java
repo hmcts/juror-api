@@ -1,5 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.service.report;
 
+import uk.gov.hmcts.juror.api.moj.controller.reports.request.CourtUtilisationStatsReportRequest;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.CourtUtilisationStatsReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportJurorsResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.MonthlyUtilisationReportResponse;
@@ -19,6 +21,8 @@ public interface UtilisationReportService {
 
     String getMonthlyUtilisationReports(String locCode);
 
+    CourtUtilisationStatsReportResponse courtUtilisationStatsReport(CourtUtilisationStatsReportRequest request);
+
 
     enum TableHeading {
         DATE("Date", LocalDate.class.getSimpleName()),
@@ -28,7 +32,9 @@ public interface UtilisationReportService {
         SITTING_DAYS("Sitting days", Integer.class.getSimpleName()),
         ATTENDANCE_DAYS("Attendance days", Integer.class.getSimpleName()),
         NON_ATTENDANCE_DAYS("Non-attendance days",  Integer.class.getSimpleName()),
-        UTILISATION("Utilisation", Double.class.getSimpleName());
+        UTILISATION("Utilisation", Double.class.getSimpleName()),
+        COURT_NAME("Court Name", String.class.getSimpleName()),
+        DATE_LAST_RUN("Date Last Run", LocalDate.class.getSimpleName());
 
         private String displayName;
         private String dataType;

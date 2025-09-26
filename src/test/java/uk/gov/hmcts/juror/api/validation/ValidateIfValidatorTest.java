@@ -25,6 +25,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("PMD")
 class ValidateIfValidatorTest extends AbstractValidatorTest<ValidateIfTrigger> {
 
     private ValidateIfValidator validator;
@@ -503,10 +504,10 @@ class ValidateIfValidatorTest extends AbstractValidatorTest<ValidateIfTrigger> {
             fields = {"field2", "field3"},
             message = "Some message that I have overridden")
         @Getter
-        private String field1 = null;
-        private String field2 = "abc";
+        private final String field1 = null;
+        private final String field2 = "abc";
         @Getter
-        private String field3 = "abc";
+        private final String field3 = "abc";
 
     }
 }
