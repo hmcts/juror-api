@@ -140,6 +140,7 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
         // return PaginationUtil.toPaginatedList(
         PaginatedList<PoolRequestActiveDataDto> allResults =
             PaginationUtil.toPaginatedList(
+
             query,
             filterQuery,
             PoolRequestedFilterQuery.SortField.POOL_NUMBER,
@@ -156,6 +157,7 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
                   .required(poolRequest.getTotalNoRequired())
                   .build();
             });
+
         List<PoolRequestActiveDataDto> filtered = allResults.getData().stream()
             .filter(dto -> dto.getRequired() > 0)
             .filter(dto -> dto.getAttendanceDate() != null
