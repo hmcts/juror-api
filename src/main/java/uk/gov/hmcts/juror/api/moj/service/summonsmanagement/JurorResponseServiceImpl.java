@@ -374,10 +374,10 @@ public class JurorResponseServiceImpl implements JurorResponseService {
         }
         jurorResponse.setProcessingStatus(jurorResponseAuditRepositoryMod, ProcessingStatus.CLOSED);
         if (jurorResponse.getStaff() == null) {
-            log.info(String.format("No staff assigned to response for Juror %s", jurorResponse));
+            log.info(String.format("No staff assigned to response for Juror %s", jurorResponse.getJurorNumber()));
             User staff = userRepository.findByUsername(SecurityUtil.getActiveLogin());
             jurorResponse.setStaff(staff);
-            log.info(String.format("Assigned current user to response for Juror %s", jurorResponse));
+            log.info(String.format("Assigned current user to response for Juror %s", jurorResponse.getJurorNumber()));
         }
         if (jurorResponse instanceof PaperResponse paperResponse) {
             mergeService.mergePaperResponse(paperResponse, SecurityUtil.getActiveLogin());
