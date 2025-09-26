@@ -195,7 +195,7 @@ class SummonsRepliesReportsITest extends AbstractIntegrationTest {
     }
 
     private String createCourtJwt() {
-         return createJwt(
+        return createJwt(
             "test_court_standard",
             "415",
             UserType.COURT,
