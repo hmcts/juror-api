@@ -721,14 +721,9 @@ class TrialServiceImplTest {
             verify(panelRepository, times(1))
                 .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumberIn(
                     TRIAL_NUMBER, LOC_CODE, jurors);
-            verify(jurorPoolRepository, times(1)).findByJurorNumberAndIsActiveAndCourt(
-                juror1.getJurorNumber(), true,
-                courtLocation
-            );
-            verify(jurorPoolRepository, times(1)).findByJurorNumberAndIsActiveAndCourt(
-                juror2.getJurorNumber(), true,
-                courtLocation
-            );
+
+            verify(panelRepository, times(2)).saveAndFlush(any(Panel.class));
+            verify(jurorHistoryService, times(2)).createJuryReinstatementHistory(any(), any());
 
         }
 

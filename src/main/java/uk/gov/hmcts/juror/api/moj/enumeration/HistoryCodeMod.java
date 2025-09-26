@@ -54,6 +54,7 @@ public enum HistoryCodeMod {
     COMPLETE_SERVICE("SCOM", "Complete Service"),
     JURY_EMPANELMENT("TADD", "Jury Empanelment"),
     ADD_TO_PANEL("VADD", "Add To Panel"),
+    REINSTATED_TO_JURY("RADD", "Reinstated to Jury"),
     CREATE_NEW_PANEL("VCRE", "Create New Panel"),
     REASSIGN_PANEL("VREA", "Reassign Panel"),
     RETURN_PANEL("VRET", "Return Panel"),

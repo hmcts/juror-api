@@ -1239,7 +1239,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
                 List<Panel> panelList = panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(
                     "TRIAL2", "415");
 
-                assertThat(panelList).hasSize(5);
+                assertThat(panelList).hasSize(6);
 
                 for (Panel panel : panelList) {
                     if ("641684001".equals(panel.getJurorNumber()) || "641674001".equals(panel.getJurorNumber())) {
@@ -1251,6 +1251,12 @@ class TrialControllerITest extends AbstractIntegrationTest {
                         JurorPool jurorPool = PanelUtils.getAssociatedJurorPool(jurorPoolRepository, panel);
                         assertThat(jurorPool.getStatus().getStatus()).as(
                             "Expect status to be juror").isEqualTo(IJurorStatus.JUROR);
+                    } else if ("641685001".equals(panel.getJurorNumber())) {
+                        assertThat(panel.getResult()).as("Expect result to be returned")
+                            .isEqualTo(PanelResult.JUROR);
+                        assertThat(panel.getReturnDate()).as("Expect return date to be null")
+                            .isNull();
+                        assertThat(panel.isCompleted()).as("Expect completed status to be true").isTrue();
                     } else {
                         assertThat(panel.getResult()).as("Expect result to be returned")
                             .isEqualTo(PanelResult.RETURNED);
@@ -1263,11 +1269,13 @@ class TrialControllerITest extends AbstractIntegrationTest {
                 // check history records created
                 List<JurorHistory> jurorHistory = jurorHistoryRepository.findByJurorNumberOrderById("641684001");
                 assertThat(jurorHistory).hasSize(1);
-                assertThat(jurorHistory.get(0).getHistoryCode()).isEqualTo(HistoryCodeMod.JURY_EMPANELMENT);
+                assertThat(jurorHistory.get(0).getHistoryCode()).isEqualTo(HistoryCodeMod.REINSTATED_TO_JURY);
+                assertThat(jurorHistory.get(0).getOtherInformationRef()).isEqualTo("TRIAL2");
 
                 jurorHistory = jurorHistoryRepository.findByJurorNumberOrderById("641674001");
                 assertThat(jurorHistory).hasSize(1);
-                assertThat(jurorHistory.get(0).getHistoryCode()).isEqualTo(HistoryCodeMod.JURY_EMPANELMENT);
+                assertThat(jurorHistory.get(0).getHistoryCode()).isEqualTo(HistoryCodeMod.REINSTATED_TO_JURY);
+                assertThat(jurorHistory.get(0).getOtherInformationRef()).isEqualTo("TRIAL2");
             });
         }
 

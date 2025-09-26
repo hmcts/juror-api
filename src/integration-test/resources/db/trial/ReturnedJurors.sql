@@ -26,7 +26,6 @@ INSERT INTO juror_mod.juror (juror_number,poll_number,title,last_name,first_name
 INSERT INTO juror_mod.pool (pool_no,"owner",return_date,no_requested,pool_type,loc_code,new_request,last_update,additional_summons,attend_time,nil_pool,total_no_required,date_created) VALUES
 	 ('415251101','415','2025-09-21',10,'CRO','415','N','2025-09-22 16:23:05',NULL,'2025-11-24 09:00:00',false,10,'2025-09-22 16:22:57.011124');
 
-
 INSERT INTO juror_mod.juror_pool (juror_number,pool_number,"owner",user_edtq,is_active,status,times_sel,def_date,"location",no_attendances,no_attended,no_fta,no_awol,pool_seq,edit_tag,next_date,on_call,smart_card,was_deferred,deferral_code,id_checked,postpone,paid_cash,scan_code,last_update,reminder_sent,transfer_date,date_created,reassign_date) VALUES
 	 ('641662001','415251101','415','MODTESTBUREAU',true,2,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'0006',NULL,'2025-09-22',false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2025-09-22 16:23:05.305959',NULL,NULL,'2025-09-22 16:23:05.305959',NULL),
 	 ('641575001','415251101','415','MODTESTBUREAU',true,2,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'0007',NULL,'2025-09-22',false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2025-09-22 16:23:05.307713',NULL,NULL,'2025-09-22 16:23:05.307713',NULL),
@@ -36,15 +35,18 @@ INSERT INTO juror_mod.juror_pool (juror_number,pool_number,"owner",user_edtq,is_
 	 ('641674001','415251101','415','MODTESTBUREAU',true,2,1,NULL,'1',NULL,NULL,NULL,NULL,'0001',NULL,'2025-09-23',false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2025-09-22 16:27:07.588153',NULL,NULL,'2025-09-22 16:23:05.299147',NULL),
 	 ('641684001','415251101','415','MODTESTBUREAU',true,2,1,NULL,'1',NULL,NULL,NULL,NULL,'0003',NULL,'2025-09-23',false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2025-09-22 16:27:07.596473',NULL,NULL,'2025-09-22 16:23:05.302525',NULL),
 	 ('641716001','415251101','415','MODTESTBUREAU',true,5,1,NULL,'1',NULL,NULL,NULL,NULL,'0004',NULL,'2025-09-23',false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2025-09-22 16:27:07.60321',NULL,NULL,'2025-09-22 16:23:05.303581',NULL),
-	 ('641685001','415251101','415','MODTESTBUREAU',true,2,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'0009',NULL,'2025-09-22',false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2025-09-22 16:23:05.310496',NULL,NULL,'2025-09-22 16:23:05.310496',NULL),
+	 ('641685001','415251101','415','MODTESTBUREAU',true,4,1,NULL,NULL,NULL,NULL,NULL,NULL,'0009',NULL,'2025-09-23',false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2025-09-22 16:23:05.310496',NULL,NULL,'2025-09-22 16:23:05.310496',NULL),
 	 ('641712001','415251101','415','MODTESTBUREAU',true,2,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'0010',NULL,'2025-09-22',false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2025-09-22 16:23:05.312047',NULL,NULL,'2025-09-22 16:23:05.312046',NULL);
 
 INSERT INTO juror_mod.trial (trial_number,loc_code,description,courtroom,judge,trial_type,trial_start_date,trial_end_date,anonymous,juror_requested,jurors_sent) VALUES
-	 ('TRIAL2','415','sfsdf',1,1,'CRI','2025-09-22',NULL,false,NULL,NULL);
+	 ('TRIAL2','415','sfsdf',1,1,'CRI','2025-09-22',NULL,false,NULL,NULL),
+	 ('TRIAL4','415','sfsdfd',2,2,'CRI','2025-09-22',NULL,false,NULL,NULL);
 
 INSERT INTO juror_mod.juror_trial (loc_code,juror_number,trial_number,rand_number,date_selected,"result",completed,empanelled_date,return_date) VALUES
 	 ('415','641549001','TRIAL2',NULL,'2025-09-22 16:26:30.20504','R',true,'2025-09-22','2025-09-22'),
 	 ('415','641618001','TRIAL2',NULL,'2025-09-22 16:26:30.23737','R',true,'2025-09-22','2025-09-22'),
 	 ('415','641674001','TRIAL2',NULL,'2025-09-22 16:26:30.256209','R',true,'2025-09-22','2025-09-22'),
 	 ('415','641684001','TRIAL2',NULL,'2025-09-22 16:26:30.297384','R',true,'2025-09-22','2025-09-22'),
-	 ('415','641716001','TRIAL2',NULL,'2025-09-22 16:26:30.276812','R',true,'2025-09-22','2025-09-22');
+	 ('415','641716001','TRIAL2',NULL,'2025-09-22 16:26:30.276812','R',true,'2025-09-22','2025-09-22'),
+	 ('415','641685001','TRIAL2',NULL,'2025-09-22 16:26:30.23737','J',true,'2025-09-22',null),
+	 ('415','641618001','TRIAL4',NULL,'2025-09-22 16:26:30.23737','J',true,'2025-09-22',null);

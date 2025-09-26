@@ -74,7 +74,8 @@ public interface JurorPoolRepository extends IJurorPoolRepository, JpaRepository
 
     List<JurorPool> findByPoolCourtLocationLocCodeAndJurorJurorNumber(String locCode, String jurorNumber);
 
-    List<JurorPool> findByPoolCourtLocationLocCodeAndIsActiveAndJurorJurorNumberIn(String locCode, boolean isActive, List<String> jurorNumber);
+    List<JurorPool> findByPoolCourtLocationLocCodeAndIsActiveAndJurorJurorNumberIn(
+        String locCode, boolean isActive, List<String> jurorNumber);
 
 
 }

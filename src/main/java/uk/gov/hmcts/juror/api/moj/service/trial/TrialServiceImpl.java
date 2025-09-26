@@ -280,6 +280,9 @@ public class TrialServiceImpl implements TrialService {
 
     @Override
     public List<PanelListDto> getReturnedJurors(String trialNo, String locCode) {
+
+
+
         return trialRepository.getReturnedJurors(trialNo, locCode);
     }
 
@@ -353,13 +356,11 @@ public class TrialServiceImpl implements TrialService {
             jurorStatus.setStatus(IJurorStatus.JUROR);
             jurorPool.setStatus(jurorStatus);
             jurorPoolRepository.saveAndFlush(jurorPool);
+
+            // add history records for the jurors reinstated
+            jurorHistoryService.createJuryReinstatementHistory(jurorPool, panel);
         });
 
-        // add history records for the jurors reinstated
-        panelList.forEach(panel -> {
-            JurorPool jurorPool = PanelUtils.getAssociatedJurorPool(jurorPoolRepository, panel);
-            jurorHistoryService.createJuryEmpanelmentHistory(jurorPool, panel);
-        });
     }
 
     private void validateAppearances(String jurorNumber, Panel panel, String sourceTrialLocCode) {

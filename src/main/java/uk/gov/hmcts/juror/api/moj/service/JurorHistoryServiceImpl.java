@@ -42,6 +42,12 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     }
 
     @Override
+    public void createJuryReinstatementHistory(JurorPool jurorPool, Panel panelMember) {
+        registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.REINSTATED_TO_JURY, null, null,
+                                               panelMember.getTrial().getTrialNumber());
+    }
+
+    @Override
     public void createPanelCreationHistory(JurorPool jurorPool, Panel panelMember) {
         registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.CREATE_NEW_PANEL, null, null,
             panelMember.getTrial().getTrialNumber());
