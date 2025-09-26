@@ -15,8 +15,10 @@ import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QCombinedJurorResponse;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -223,17 +225,80 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
 
     @Override
     public int getPoolsTransferringNextWeekCount(String locCode) {
-        LocalDate weekDateBeforeTransfer = LocalDate.now().plusDays(18);
-        return getJpaQueryFactory()
-            .select(
-                QPoolRequest.poolRequest)
+        LocalDate today = LocalDate.now();
+        DayOfWeek currentDay = today.getDayOfWeek();
+
+        //Return 0 on Friday, Saturday, Sunday
+        //Only count Monday through Thursday JS-534
+
+        if (currentDay == DayOfWeek.FRIDAY
+            ||
+            currentDay == DayOfWeek.SATURDAY
+            ||
+            currentDay == DayOfWeek.SUNDAY) {
+            return 0;
+        }
+
+        // Calculate latest return date using proper stored procedure logic
+        LocalDate latestReturnDate = calculateLatestReturnDate();
+
+
+
+        List<String> distinctPoolNumbers = getJpaQueryFactory()
+            .select(QPoolRequest.poolRequest.poolNumber)
+            .distinct()
             .from(QPoolRequest.poolRequest)
-            .join(QJurorPool.jurorPool)
-            .on(QPoolRequest.poolRequest.poolNumber.eq(QJurorPool.jurorPool.pool.poolNumber))
+            .join(QJurorPool.jurorPool).on(QPoolRequest.poolRequest.poolNumber.eq(QJurorPool.jurorPool.pool.poolNumber))
+            .join(QJuror.juror).on(QJurorPool.jurorPool.juror.jurorNumber.eq(QJuror.juror.jurorNumber))
+            .join(QCourtLocation.courtLocation)
+            .on(QPoolRequest.poolRequest.courtLocation.locCode.eq(QCourtLocation.courtLocation.locCode))
             .where(QPoolRequest.poolRequest.owner.eq(SecurityUtil.BUREAU_OWNER))
-            .where(QJurorPool.jurorPool.pool.poolNumber.isNotNull())
-            .where(QPoolRequest.poolRequest.returnDate.eq(weekDateBeforeTransfer)).fetch().size();
+            .where(QPoolRequest.poolRequest.returnDate.loe(latestReturnDate))
+            .where(QJurorPool.jurorPool.status.status.in(
+                IJurorStatus.SUMMONED,IJurorStatus.RESPONDED,IJurorStatus.ADDITIONAL_INFO))
+            .where(QJuror.juror.bureauTransferDate.isNull())
+            .where(QCourtLocation.courtLocation.owner.ne(SecurityUtil.BUREAU_OWNER))
+            .fetch();
+        return distinctPoolNumbers.size();
     }
+
+    private LocalDate calculateLatestReturnDate() {
+        LocalDate effectiveDate = LocalDate.now();
+
+        // If running before 6pm on transfer day (Thursday), use previous day
+        if (LocalTime.now().isBefore(LocalTime.of(18, 0))
+            &&
+            effectiveDate.getDayOfWeek() == DayOfWeek.THURSDAY) {
+            effectiveDate = effectiveDate.minusDays(1);
+        }
+
+        // Get the day AFTER applying 6pm rule
+        String runDay = effectiveDate.getDayOfWeek().toString().toLowerCase().substring(0, 3);
+
+        // weekday adjustment lookup
+        int weekdayAdjustment = getWeekdayAdjustmentFromDB("thu", runDay);
+
+
+
+        // Apply adjustments
+        effectiveDate = effectiveDate.plusDays(weekdayAdjustment);
+        LocalDate latestReturnDate = effectiveDate.plusDays(7);  // 1 week
+
+        return latestReturnDate;
+    }
+
+    private int getWeekdayAdjustmentFromDB(String transferDay, String runDay) {
+        if (transferDay == null || runDay == null) {
+            return 0;
+        }
+        String t = transferDay.trim();
+        String r = runDay.trim();
+        return poolTransferDayRepository
+            .findByTransferDayAndRunDayIgnoreCase(t, r)
+            .map(ptw -> ptw.getAdjustment())
+            .orElse(0);
+    }
+
 
     @Override
     public Tuple getAllSummonsCountsTuple(String locCode) {
