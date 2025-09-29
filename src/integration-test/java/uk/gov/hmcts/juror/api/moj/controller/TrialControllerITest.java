@@ -57,6 +57,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.Collections.singletonList;
@@ -1269,13 +1270,17 @@ class TrialControllerITest extends AbstractIntegrationTest {
                 // check history records created
                 List<JurorHistory> jurorHistory = jurorHistoryRepository.findByJurorNumberOrderById("641684001");
                 assertThat(jurorHistory).hasSize(3);
-//                assertThat(jurorHistory.get(0).getHistoryCode()).isEqualTo(HistoryCodeMod.REINSTATED_TO_JURY);
-//                assertThat(jurorHistory.get(0).getOtherInformationRef()).isEqualTo("TRIAL2");
+                Optional<JurorHistory> history = jurorHistory.stream().filter(h -> h.getHistoryCode() == HistoryCodeMod.REINSTATED_TO_JURY)
+                    .findFirst();
+                assertThat(history).isPresent();
+                assertThat(history.get().getOtherInformationRef()).isEqualTo("TRIAL2");
 
                 jurorHistory = jurorHistoryRepository.findByJurorNumberOrderById("641674001");
                 assertThat(jurorHistory).hasSize(3);
-//                assertThat(jurorHistory.get(0).getHistoryCode()).isEqualTo(HistoryCodeMod.REINSTATED_TO_JURY);
-//                assertThat(jurorHistory.get(0).getOtherInformationRef()).isEqualTo("TRIAL2");
+                history = jurorHistory.stream().filter(h -> h.getHistoryCode() == HistoryCodeMod.REINSTATED_TO_JURY)
+                    .findFirst();
+                assertThat(history).isPresent();
+                assertThat(history.get().getOtherInformationRef()).isEqualTo("TRIAL2");
             });
         }
 

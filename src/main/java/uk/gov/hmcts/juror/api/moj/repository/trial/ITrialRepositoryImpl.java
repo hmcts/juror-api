@@ -10,7 +10,6 @@ import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialSearch;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.PanelListDto;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
-import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
@@ -107,8 +106,9 @@ public class ITrialRepositoryImpl implements ITrialRepository {
                                                 JUROR_POOL.status.statusDesc)
             .from(JUROR_POOL)
             .join(PANEL)
-            .on(JUROR_POOL.juror.jurorNumber.eq(PANEL.juror.jurorNumber).and(PANEL.trial.courtLocation.locCode.eq(locCode)
-                                                                                 .and(PANEL.trial.trialNumber.eq(trialNo))))
+            .on(JUROR_POOL.juror.jurorNumber.eq(PANEL.juror.jurorNumber)
+                    .and(PANEL.trial.courtLocation.locCode.eq(locCode)
+                             .and(PANEL.trial.trialNumber.eq(trialNo))))
             .join(JUROR_HISTORY)
             .on(JUROR_POOL.juror.jurorNumber.eq(JUROR_HISTORY.jurorNumber).and(JUROR_HISTORY.historyCode.eq(
                 HistoryCodeMod.JURY_EMPANELMENT).and(JUROR_HISTORY.otherInformationRef.eq(trialNo))))
