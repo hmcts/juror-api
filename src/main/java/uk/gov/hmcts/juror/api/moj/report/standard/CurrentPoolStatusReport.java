@@ -67,18 +67,22 @@ public class CurrentPoolStatusReport extends AbstractStandardReport {
 
         Map<String, StandardReportResponse.DataTypeValue> map = loadStandardPoolHeaders(request, true, true);
         map.put("total_pool_members", StandardReportResponse.DataTypeValue.builder()
-            .displayName("Total Pool Members")
+            .displayName("Total Pool Members ")
             .dataType(Long.class.getSimpleName())
             .value(tableData.getData().size())
             .build());
-      //  return map;
 
         long attendedCount = getJurorsAttendedCount(request.getPoolNumber());
         map.put("number_of_jurors_attended", StandardReportResponse.DataTypeValue.builder()
             .displayName("Number of Jurors Attended")
             .dataType(Long.class.getSimpleName())
             .value(attendedCount)
-           // .value(tableData.getData().size())
+            .build());
+
+        map.put("number_of_jurors_summoned",StandardReportResponse.DataTypeValue.builder()
+            .displayName("Number of Jurors Summoned")
+            .dataType(Long.class.getSimpleName())
+            .value(tableData.getData().size())
             .build());
 
         return map;
@@ -97,7 +101,8 @@ public class CurrentPoolStatusReport extends AbstractStandardReport {
             )
             .where(
                 QJurorPool.jurorPool.pool.poolNumber.eq(poolNumber),
-                QAppearance.appearance.nonAttendanceDay.eq(false)
+                QAppearance.appearance.nonAttendanceDay.eq(false),
+                QAppearance.appearance.noShow.eq(false)
             )
             .fetchOne();
         return result != null ? result : 0L;
