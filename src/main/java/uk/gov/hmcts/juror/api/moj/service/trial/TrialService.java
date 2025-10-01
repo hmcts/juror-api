@@ -36,5 +36,7 @@ public interface TrialService {
 
     List<PanelListDto> getReturnedJurors(String trialNo, String locCode);
 
+    int getOriginalEmpanelledJurorCount(String trialNo, String locCode);
+
     void reinstateJurors(ReinstateJurorsRequestDto reinstateJurorsRequest);
 }

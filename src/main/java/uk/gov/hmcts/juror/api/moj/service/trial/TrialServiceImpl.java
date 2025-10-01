@@ -280,10 +280,12 @@ public class TrialServiceImpl implements TrialService {
 
     @Override
     public List<PanelListDto> getReturnedJurors(String trialNo, String locCode) {
-
-
-
         return trialRepository.getReturnedJurors(trialNo, locCode);
+    }
+
+    @Override
+    public int getOriginalEmpanelledJurorCount(String trialNo, String locCode) {
+        return trialRepository.getOriginalEmpanelledJurorCount(trialNo, locCode);
     }
 
     @Override

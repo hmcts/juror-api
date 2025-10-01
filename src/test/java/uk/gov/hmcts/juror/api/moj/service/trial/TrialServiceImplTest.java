@@ -663,6 +663,13 @@ class TrialServiceImplTest {
         }
 
         @Test
+        void originalEmpanelledJurorsCountNoResults() {
+
+            int originalEmpanelledJurorCount = trialService.getOriginalEmpanelledJurorCount(TRIAL_NUMBER, LOC_CODE);
+            assertThat(originalEmpanelledJurorCount).isZero();
+        }
+
+        @Test
         void reinstateJurorsHappy() {
 
             payload = TestUtils.createJwt("415", "COURT_USER", "1", Collections.singletonList("415"));

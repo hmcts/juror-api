@@ -20,4 +20,6 @@ public interface ITrialRepository {
     List<Tuple> getActiveTrialsWithJurorCount(String locationCode, LocalDate attendanceDate);
 
     List<PanelListDto> getReturnedJurors(String trialNo, String locCode);
+
+    int getOriginalEmpanelledJurorCount(String trialNo, String locCode);
 }

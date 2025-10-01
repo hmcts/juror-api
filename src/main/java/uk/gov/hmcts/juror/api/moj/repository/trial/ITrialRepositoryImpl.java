@@ -124,4 +124,25 @@ public class ITrialRepositoryImpl implements ITrialRepository {
                 t.get(JUROR_POOL.status.statusDesc)
             )).toList();
     }
+
+    @Override
+    public int getOriginalEmpanelledJurorCount(String trialNo, String locCode) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+
+        List<Tuple> query =  queryFactory.select(PANEL.empanelledDate,
+                                   PANEL.empanelledDate.count())
+            .from(PANEL)
+            .where(PANEL.trial.courtLocation.locCode.eq(locCode))
+            .where(PANEL.trial.trialNumber.eq(trialNo))
+            .where(PANEL.empanelledDate.isNotNull())
+            .groupBy(PANEL.empanelledDate)
+            .orderBy(PANEL.empanelledDate.asc())
+            .fetch();
+
+        if (query.isEmpty()) {
+            return 0;
+        } else {
+            return query.get(0).get(PANEL.empanelledDate.count()).intValue();
+        }
+    }
 }

@@ -26,6 +26,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialSearch;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.CourtroomsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.JudgeDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.PanelListDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.trial.ReturnedJurorsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialSummaryDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
@@ -1159,15 +1160,21 @@ class TrialControllerITest extends AbstractIntegrationTest {
                     URI.create("/api/v1/moj/trial/get-returned-jurors?trial_number=TRIAL2"
                                    + "&location_code=415"));
 
-            ResponseEntity<PanelListDto[]> responseEntity =
-                restTemplate.exchange(requestEntity, PanelListDto[].class);
+            ResponseEntity<ReturnedJurorsResponseDto> responseEntity =
+                restTemplate.exchange(requestEntity, ReturnedJurorsResponseDto.class);
 
             assertThat(responseEntity.getStatusCode())
                 .as("Expected status code to be ok")
                 .isEqualTo(OK);
 
-            PanelListDto[] responseBody = responseEntity.getBody();
-            assertThat(responseBody).isNotNull();
+            ReturnedJurorsResponseDto response = responseEntity.getBody();
+            assertThat(response).isNotNull();
+
+            assertThat(response.getOriginalJurorsCount()).isEqualTo(6);
+
+            List<PanelListDto> responseBodyList = response.getReturnedJurors();
+            assertThat(responseBodyList).isNotNull();
+            PanelListDto[] responseBody = responseBodyList.toArray(new PanelListDto[0]);
             assertThat(responseBody.length).isEqualTo(5);
 
             assertThat(responseBody[0].getJurorNumber()).isEqualTo("641549001");
@@ -1270,7 +1277,8 @@ class TrialControllerITest extends AbstractIntegrationTest {
                 // check history records created
                 List<JurorHistory> jurorHistory = jurorHistoryRepository.findByJurorNumberOrderById("641684001");
                 assertThat(jurorHistory).hasSize(3);
-                Optional<JurorHistory> history = jurorHistory.stream().filter(h -> h.getHistoryCode() == HistoryCodeMod.REINSTATED_TO_JURY)
+                Optional<JurorHistory> history = jurorHistory.stream()
+                    .filter(h -> h.getHistoryCode() == HistoryCodeMod.REINSTATED_TO_JURY)
                     .findFirst();
                 assertThat(history).isPresent();
                 assertThat(history.get().getOtherInformationRef()).isEqualTo("TRIAL2");

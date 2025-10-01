@@ -30,7 +30,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReinstateJurorsReques
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReturnJuryDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialSearch;
-import uk.gov.hmcts.juror.api.moj.controller.response.trial.PanelListDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.trial.ReturnedJurorsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialSummaryDto;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
@@ -156,12 +156,15 @@ public class TrialController {
     }
 
     @GetMapping("/get-returned-jurors")
-    @Operation(summary = "Get jurors that were returned from a trial")
+    @Operation(summary = "Get jurors that were returned from a trial with a count of original empanelled jurors")
     @PreAuthorize(SecurityUtil.IS_COURT)
-    public ResponseEntity<List<PanelListDto>> getReturnedJurors(
+    public ResponseEntity<ReturnedJurorsResponseDto> getReturnedJurors(
         @RequestParam(name = "trial_number") String trialNumber,
         @RequestParam(name = "location_code") String locationCode) {
-        return ResponseEntity.ok().body(trialService.getReturnedJurors(trialNumber, locationCode));
+        ReturnedJurorsResponseDto response = new ReturnedJurorsResponseDto();
+        response.setOriginalJurorsCount(trialService.getOriginalEmpanelledJurorCount(trialNumber, locationCode));
+        response.setReturnedJurors(trialService.getReturnedJurors(trialNumber, locationCode));
+        return ResponseEntity.ok().body(response);
     }
 
     @PostMapping("/reinstate-jurors")
