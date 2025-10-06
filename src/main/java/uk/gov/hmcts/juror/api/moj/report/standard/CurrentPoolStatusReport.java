@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
@@ -66,8 +67,8 @@ public class CurrentPoolStatusReport extends AbstractStandardReport {
         StandardReportResponse.TableData<StandardTableData> tableData) {
 
         Map<String, StandardReportResponse.DataTypeValue> map = loadStandardPoolHeaders(request, true, true);
-        map.put("total_pool_members", StandardReportResponse.DataTypeValue.builder()
-            .displayName("Total Pool Members ")
+        map.put("number_of_jurors_summoned",StandardReportResponse.DataTypeValue.builder()
+            .displayName("Number of Jurors Summoned")
             .dataType(Long.class.getSimpleName())
             .value(tableData.getData().size())
             .build());
@@ -79,19 +80,21 @@ public class CurrentPoolStatusReport extends AbstractStandardReport {
             .value(attendedCount)
             .build());
 
-        map.put("number_of_jurors_summoned",StandardReportResponse.DataTypeValue.builder()
-            .displayName("Number of Jurors Summoned")
+
+        long poolMemberCount = getPoolMembersCount(request.getPoolNumber());
+        map.put("total_pool_members", StandardReportResponse.DataTypeValue.builder()
+            .displayName("Total Pool Members ")
             .dataType(Long.class.getSimpleName())
-            .value(tableData.getData().size())
+            .value(poolMemberCount)
             .build());
 
         return map;
     }
 
     /**
-     * Count the number of unique jurors who have attended (not absent) for this pool
-     */
-    private long getJurorsAttendedCount(String poolNumber) {
+     * Count the number of unique jurors who have attended (not absent) for this pool.
+    */
+    long getJurorsAttendedCount(String poolNumber) {
         Long result = jpaQueryFactory
             .select(QJurorPool.jurorPool.juror.jurorNumber.countDistinct())
             .from(QJurorPool.jurorPool)
@@ -108,6 +111,17 @@ public class CurrentPoolStatusReport extends AbstractStandardReport {
         return result != null ? result : 0L;
     }
 
+    long getPoolMembersCount(String poolNumber) {
+        Long result = jpaQueryFactory
+            .select(QJurorPool.jurorPool.juror.jurorNumber.count())
+            .from(QJurorPool.jurorPool)
+            .where(
+                QJurorPool.jurorPool.pool.poolNumber.eq(poolNumber),
+            QJurorPool.jurorPool.status.status.in(IJurorStatus.RESPONDED,IJurorStatus.PANEL,IJurorStatus.JUROR))
+            .fetchOne();
+        return result != null ? result : 0L;
+
+    }
 
     @Override
     public Class<? extends Validators.AbstractRequestValidator> getRequestValidatorClass() {
