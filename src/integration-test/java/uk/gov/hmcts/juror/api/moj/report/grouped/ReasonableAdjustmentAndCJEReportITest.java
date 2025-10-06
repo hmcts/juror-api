@@ -22,14 +22,14 @@ import java.util.List;
     "/db/truncate.sql",
     "/db/mod/truncate.sql",
     "/db/administration/createUsers.sql",
-    "/db/mod/reports/ReasonableAdjustmentsReportITest_typical.sql"
+    "/db/mod/reports/ReasonableAdjustmentAndCJEReportITest_typical.sql"
 })
 @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-class ReasonableAdjustmentsReportITest extends AbstractGroupedReportControllerITest {
+class ReasonableAdjustmentAndCJEReportITest extends AbstractGroupedReportControllerITest {
 
     @Autowired
-    public ReasonableAdjustmentsReportITest(TestRestTemplate template) {
-        super(template, ReasonableAdjustmentsReport.class);
+    public ReasonableAdjustmentAndCJEReportITest(TestRestTemplate template) {
+        super(template, ReasonableAdjustmentAndCJEReport.class);
     }
 
     @Override
