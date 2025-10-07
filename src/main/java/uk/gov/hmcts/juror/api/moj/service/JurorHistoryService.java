@@ -111,4 +111,7 @@ public interface JurorHistoryService {
                                                   String jurorNumber,
                                                   String poolNumber,
                                                   String otherInfo);
+
+    void createResponseSubmittedHistory(JurorPool jurorPool, String otherInfo, String username);
+
 }

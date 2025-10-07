@@ -28,6 +28,7 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReasonableAdjustments;
+import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurorresponse.ReasonableAdjustmentsEnum;
 import uk.gov.hmcts.juror.api.moj.exception.JurorPaperResponseException;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -43,6 +44,7 @@ import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorResponseUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -71,6 +73,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
     private final StraightThroughProcessorService straightThroughProcessorService;
     private final JurorRepository jurorRepository;
     private final JurorPoolService jurorPoolService;
+    private final JurorHistoryService jurorHistoryService;
 
     @Override
     @Transactional
@@ -347,6 +350,9 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         jurorRepository.save(juror);
 
         log.info(String.format("[Paper Response] Saved paper response for Juror %s", jurorNumber));
+        // create a history entry
+        jurorHistoryService.createResponseSubmittedHistory(jurorPool, ReplyMethod.PAPER.getDescription(),
+                                                           SecurityUtil.getActiveLogin());
 
         jurorResponseCjsEmploymentRepository.saveAll(jurorPaperResponse.getCjsEmployments());
         log.info(String.format("Saved CJS employment for Juror %s", jurorNumber));

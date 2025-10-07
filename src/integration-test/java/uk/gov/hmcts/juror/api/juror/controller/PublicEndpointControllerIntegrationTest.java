@@ -639,7 +639,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             .isEqualTo(false);
         assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history", Integer.class)).isEqualTo(0);
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history", Integer.class)).isEqualTo(1);
         assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_AUD",
             Integer.class)).isEqualTo(0);
     }

@@ -101,6 +101,8 @@ public class JurorPaperResponseServiceImplTest {
     private JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
     @Mock
     private JurorPoolService jurorPoolService;
+    @Mock
+    private JurorHistoryService jurorHistoryService;
     @InjectMocks
     private JurorPaperResponseServiceImpl jurorPaperResponseService;
 
@@ -145,6 +147,8 @@ public class JurorPaperResponseServiceImplTest {
         Mockito.doReturn(false).when(straightThroughProcessorService)
             .isValidForStraightThroughAgeDisqualification(any(PaperResponse.class),
                 any(LocalDate.class), any(JurorPool.class));
+
+        TestUtils.setUpMockAuthentication("400", "Bureau", "1", List.of("400"));
     }
 
     @Test
