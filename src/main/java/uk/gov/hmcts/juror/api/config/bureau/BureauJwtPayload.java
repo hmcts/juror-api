@@ -79,9 +79,9 @@ public class BureauJwtPayload {
             .toList();
 
         List<String> courts = new ArrayList<>(courtLocations.stream()
-            .map(CourtLocation::getLocCode)
-            .sorted()
-            .toList());
+                                                  .map(CourtLocation::getLocCode)
+                                                  .sorted()
+                                                  .toList());
 
         this.staff = new Staff(
             user.getName(),
@@ -89,7 +89,6 @@ public class BureauJwtPayload {
             user.isActive() ? 1 : 0,
             courts);
     }
-
 
     public BureauJwtPayload(String owner, String login, String userLevel,
                             Staff staff) {
@@ -124,22 +123,25 @@ public class BureauJwtPayload {
 
     @SuppressWarnings("unchecked")
     public static BureauJwtPayload fromClaims(Claims claims) {
-        // parse the staff object
-        final Map<String, Object> staffMap = claims.get("staff", Map.class);
+        // Handle staff claim - defensive type checking
+        Object staffObj = claims.get("staff");
+        Map<String, Object> staffMap = (staffObj instanceof Map) ? (Map<String, Object>) staffObj : null;
 
         final BureauJwtPayload.Staff staff = BureauJwtPayload.Staff.fromClaims(staffMap);
 
-
-        final List<String> roleString =
-            claims.containsKey("roles") ? claims.get("roles", List.class) : Collections.emptyList();
+        // Handle roles claim - defensive type checking
+        Object rolesObj = claims.get("roles");
+        final List<String> roleString = (rolesObj instanceof List) ? (List<String>) rolesObj : Collections.emptyList();
 
         final List<Role> roles = roleString
             .stream()
             .map(o -> Role.valueOf(String.valueOf(o)))
             .toList();
 
-        final List<String> permissionString =
-            claims.containsKey("permissions") ? claims.get("permissions", List.class) : Collections.emptyList();
+        // Handle permissions claim - defensive type checking
+        Object permissionsObj = claims.get("permissions");
+        final List<String> permissionString = (permissionsObj instanceof List)
+            ? (List<String>) permissionsObj : Collections.emptyList();
 
         final List<Permission> permissions = permissionString
             .stream()
@@ -184,14 +186,20 @@ public class BureauJwtPayload {
         @SuppressWarnings("unchecked")
         public static Staff fromClaims(Map<String, Object> staffMap) {
             StaffBuilder staffBuilder = Staff.builder();
-            if (!ObjectUtils.isEmpty(staffMap)) {
+            if (staffMap != null && !ObjectUtils.isEmpty(staffMap)) {
                 staffBuilder.name(String.valueOf(staffMap.getOrDefault("name", "")));
                 staffBuilder.rank((Integer) staffMap.getOrDefault("rank", Integer.MIN_VALUE));
                 staffBuilder.active((Integer) staffMap.getOrDefault("active", 0));
-                staffBuilder.courts((List<String>) staffMap.getOrDefault("courts", Collections.emptyList()));
+
+                // Handle courts with type checking
+                Object courtsObj = staffMap.getOrDefault("courts", Collections.emptyList());
+                if (courtsObj instanceof List) {
+                    staffBuilder.courts((List<String>) courtsObj);
+                } else {
+                    staffBuilder.courts(Collections.emptyList());
+                }
             }
-            return staffBuilder
-                .build();
+            return staffBuilder.build();
         }
 
         public Map<String, Object> toClaims() {

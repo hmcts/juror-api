@@ -724,6 +724,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_updatePaperResponseStatus.sql"})
+    @Sql(statements = "update juror_mod.juror_response set first_name = null where juror_number = '666666601'")
     public void updateJurorPaperResponseStatus_bureauUser_missing_firstName() throws Exception {
         final String bureauJwt = createJwt("BUREAU_USER", "411");
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/update-status/666666601/CLOSED");
@@ -752,6 +753,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_updatePaperResponseStatus.sql"})
+    @Sql(statements = "update juror_mod.juror_response set last_name = null where juror_number = '666666602'")
     public void updateJurorPaperResponseStatus_bureauUser_missing_lastName() throws Exception {
         final String bureauJwt = createJwt("BUREAU_USER", "411");
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/update-status/666666602/CLOSED");
@@ -761,11 +763,11 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         ResponseEntity<Void> response = template.exchange(requestEntity, Void.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
 
-
     }
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_updatePaperResponseStatus.sql"})
+    @Sql(statements = "update juror_mod.juror_response set date_of_birth = null where juror_number = '666666603'")
     public void updateJurorPaperResponseStatus_bureauUser_missing_dob() throws Exception {
         final String bureauJwt = createJwt("BUREAU_USER", "411");
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/update-status/666666603/CLOSED");
@@ -778,6 +780,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_updatePaperResponseStatus.sql"})
+    @Sql(statements = "update juror_mod.juror_response set address_line_1 = null where juror_number = '666666604'")
     public void updateJurorPaperResponseStatus_bureauUser_missing_address() throws Exception {
         final String bureauJwt = createJwt("BUREAU_USER", "411");
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/update-status/666666604/CLOSED");
@@ -790,6 +793,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_updatePaperResponseStatus.sql"})
+    @Sql(statements = "update juror_mod.juror_response set address_line_4 = null where juror_number = '666666605'")
     public void updateJurorPaperResponseStatus_bureauUser_missing_address4() throws Exception {
         final String bureauJwt = createJwt("BUREAU_USER", "411");
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/update-status/666666605/CLOSED");
@@ -802,6 +806,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_updatePaperResponseStatus.sql"})
+    @Sql(statements = "update juror_mod.juror_response set postcode = null where juror_number = '666666606'")
     public void updateJurorPaperResponseStatus_bureauUser_missing_postcode() throws Exception {
         final String bureauJwt = createJwt("BUREAU_USER", "411");
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/update-status/666666606/CLOSED");
@@ -812,8 +817,10 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_updatePaperResponseStatus.sql"})
+    @Sql(statements = "update juror_mod.juror_response set bail = null where juror_number = '666666607'")
     public void updateJurorPaperResponseStatus_bureauUser_missing_bail() throws Exception {
         final String bureauJwt = createJwt("BUREAU_USER", "411");
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/update-status/666666607/CLOSED");
@@ -826,6 +833,20 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_updatePaperResponseStatus.sql"})
+    @Sql(statements = "update juror_mod.juror_response set bail = true where juror_number = '666666607'")
+    public void updateJurorPaperResponseStatus_bureauUser_missing_bail_details() throws Exception {
+        final String bureauJwt = createJwt("BUREAU_USER", "411");
+        final URI uri = URI.create("/api/v1/moj/juror-paper-response/update-status/666666607/CLOSED");
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        RequestEntity<Void> requestEntity = new RequestEntity<>(httpHeaders, HttpMethod.PUT, uri);
+        ResponseEntity<Void> response = template.exchange(requestEntity, Void.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_updatePaperResponseStatus.sql"})
+    @Sql(statements = "update juror_mod.juror_response set convictions = null where juror_number = '666666608'")
     public void updateJurorPaperResponseStatus_bureauUser_missing_convictions() throws Exception {
         final String bureauJwt = createJwt("BUREAU_USER", "411");
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/update-status/666666608/CLOSED");
@@ -838,6 +859,21 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_updatePaperResponseStatus.sql"})
+    @Sql(statements = "update juror_mod.juror_response set convictions = true where juror_number = '666666608'")
+    public void updateJurorPaperResponseStatus_bureauUser_missing_convictions_details() throws Exception {
+        final String bureauJwt = createJwt("BUREAU_USER", "411");
+        final URI uri = URI.create("/api/v1/moj/juror-paper-response/update-status/666666608/CLOSED");
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        RequestEntity<Void> requestEntity = new RequestEntity<>(httpHeaders, HttpMethod.PUT, uri);
+        ResponseEntity<Void> response = template.exchange(requestEntity, Void.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_updatePaperResponseStatus.sql"})
+    @Sql(statements = "update juror_mod.juror_response set mental_health_act = null where juror_number = '666666609'")
     public void updateJurorPaperResponseStatus_bureauUser_missing_mentalHealthAct() throws Exception {
         final String bureauJwt = createJwt("BUREAU_USER", "411");
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/update-status/666666609/CLOSED");
@@ -850,6 +886,8 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_updatePaperResponseStatus.sql"})
+    @Sql(statements = "update juror_mod.juror_response set mental_health_capacity = null where juror_number = "
+        + "'666666610'")
     public void updateJurorPaperResponseStatus_bureauUser_missing_mentalHealthCapacity() throws Exception {
         final String bureauJwt = createJwt("BUREAU_USER", "411");
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/update-status/666666610/CLOSED");
@@ -862,6 +900,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_updatePaperResponseStatus.sql"})
+    @Sql(statements = "update juror_mod.juror_response set residency = null where juror_number = '666666611'")
     public void updateJurorPaperResponseStatus_bureauUser_missing_residency() throws Exception {
         final String bureauJwt = createJwt("BUREAU_USER", "411");
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/update-status/666666611/CLOSED");
@@ -874,6 +913,20 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_updatePaperResponseStatus.sql"})
+    @Sql(statements = "update juror_mod.juror_response set residency = false where juror_number = '666666611'")
+    public void updateJurorPaperResponseStatus_bureauUser_missing_residency_details() throws Exception {
+        final String bureauJwt = createJwt("BUREAU_USER", "411");
+        final URI uri = URI.create("/api/v1/moj/juror-paper-response/update-status/666666611/CLOSED");
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        RequestEntity<Void> requestEntity = new RequestEntity<>(httpHeaders, HttpMethod.PUT, uri);
+        ResponseEntity<Void> response = template.exchange(requestEntity, Void.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_updatePaperResponseStatus.sql"})
+    @Sql(statements = "update juror_mod.juror_response set signed = null where juror_number = '666666612'")
     public void updateJurorPaperResponseStatus_bureauUser_missing_signature() throws Exception {
         final String bureauJwt = createJwt("BUREAU_USER", "411");
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/update-status/666666612/CLOSED");
@@ -897,10 +950,15 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         // set up values different to what is in the current juror record
         JurorPaperResponseDto.Eligibility eligibility = JurorPaperResponseDto.Eligibility.builder()
             .livedConsecutive(false)
+            .livedConsecutiveDetails("Details about living abroad")
             .onBail(true)
+            .onBailDetails("Details about bail")
             .convicted(true)
+            .convictedDetails("Details about conviction")
             .mentalHealthAct(true)
             .mentalHealthCapacity(true)
+            .mentalHealthActDetails("Details about mental health act [MENTAL HEALTH Q2] "
+                                        + "Details about mental health capacity")
             .build();
         eligibilityDetailsDto.setEligibility(eligibility);
 
@@ -927,10 +985,15 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         // set up values different to what is in the current juror record
         JurorPaperResponseDto.Eligibility eligibility = JurorPaperResponseDto.Eligibility.builder()
             .livedConsecutive(false)
+            .livedConsecutiveDetails("Details about living abroad")
             .onBail(true)
+            .onBailDetails("Details about bail")
             .convicted(true)
+            .convictedDetails("Details about conviction")
             .mentalHealthAct(true)
             .mentalHealthCapacity(true)
+            .mentalHealthActDetails("Details about mental health act [MENTAL HEALTH Q2] "
+                                        + "Details about mental health capacity")
             .build();
         eligibilityDetailsDto.setEligibility(eligibility);
 
@@ -1704,10 +1767,18 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
                                                                 JurorPaperResponseDto.Eligibility eligibility) {
 
         assertThat(jurorPaperResponse.getResidency()).isEqualTo(eligibility.getLivedConsecutive());
+        assertThat(jurorPaperResponse.getResidencyDetail()).isEqualTo(eligibility.getLivedConsecutiveDetails());
+
         assertThat(jurorPaperResponse.getMentalHealthAct()).isEqualTo(eligibility.getMentalHealthAct());
         assertThat(jurorPaperResponse.getMentalHealthCapacity()).isEqualTo(eligibility.getMentalHealthCapacity());
+
+        assertThat(jurorPaperResponse.getMentalHealthActDetails()).isEqualTo(eligibility.getMentalHealthActDetails());
+
         assertThat(jurorPaperResponse.getBail()).isEqualTo(eligibility.getOnBail());
+        assertThat(jurorPaperResponse.getBailDetails()).isEqualTo(eligibility.getOnBailDetails());
+
         assertThat(jurorPaperResponse.getConvictions()).isEqualTo(eligibility.getConvicted());
+        assertThat(jurorPaperResponse.getConvictionsDetails()).isEqualTo(eligibility.getConvictedDetails());
 
     }
 

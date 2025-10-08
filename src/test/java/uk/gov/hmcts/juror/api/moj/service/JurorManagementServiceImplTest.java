@@ -584,7 +584,7 @@ public class JurorManagementServiceImplTest {
         JurorManagementRequestDto jurorManagementRequestDto = new JurorManagementRequestDto(sourcePoolNumber,
             courtOwner, List.of("123456789"), targetPoolNumber, courtOwner, LocalDate.now());
 
-       jurorManagementService.reassignJurors(payload, jurorManagementRequestDto);
+        jurorManagementService.reassignJurors(payload, jurorManagementRequestDto);
 
         verify(poolRequestRepository, times(2))
             .findByPoolNumber(anyString());

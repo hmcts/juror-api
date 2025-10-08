@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseSummaryDto;
+import uk.gov.hmcts.juror.api.bureau.controller.response.CourtResponseSummaryDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffDto;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
@@ -57,7 +58,9 @@ public class BureauTransformsServiceImpl implements BureauTransformsService {
             .bail(detail.getBail())
             .convictions(detail.getConvictions())
             .deferralDate(detail.getDeferralDate())
+            .deferral(detail.getDeferral())
             .excusalReason(detail.getExcusalReason())
+            .excusal(detail.getExcusal())
             .poolNumber(detail.getPoolNumber())
             .replyMethod(detail.getReplyType())
             .urgent(detail.getUrgent())
@@ -96,11 +99,84 @@ public class BureauTransformsServiceImpl implements BureauTransformsService {
             .bail(jurorResponse.getBail())
             .convictions(jurorResponse.getConvictions())
             .deferralDate(jurorResponse.getDeferralDate())
+            .deferral(jurorResponse.getDeferral())
             .excusalReason(jurorResponse.getExcusalReason())
+            .excusal(jurorResponse.getExcusal())
             .poolNumber(pool.getPoolNumber())
             .replyMethod(jurorResponse.getReplyType().getType())
             .urgent(jurorResponse.isUrgent())
             .slaOverdue(slaOverdue)
+            .dateReceived(jurorResponse.getDateReceived().toLocalDate())
+            .assignedStaffMember(jurorResponse.getStaff() != null
+                ? toStaffDto(jurorResponse.getStaff()) : null)
+            .completedAt(jurorResponse.getCompletedAt())
+            .version(jurorResponse.getVersion())
+            .build();
+    }
+
+    @Override
+    public CourtResponseSummaryDto detailCourtToDto(ModJurorDetail detail) {
+        return CourtResponseSummaryDto.builder()
+            .jurorNumber(detail.getJurorNumber())
+            .title(detail.getNewTitle())
+            .firstName(detail.getNewFirstName())
+            .lastName(detail.getNewLastName())
+            .courtCode(detail.getCourtCode())
+            .courtName(detail.getCourtName())
+            .postcode(detail.getNewJurorPostcode())
+            .processingStatus(detail.getProcessingStatus())
+            .residency(detail.getResidency())
+            .mentalHealthAct(detail.getMentalHealthAct())
+            .bail(detail.getBail())
+            .convictions(detail.getConvictions())
+            .deferralDate(detail.getDeferralDate())
+            .deferral(detail.getDeferral())
+            .excusalReason(detail.getExcusalReason())
+            .excusal(detail.getExcusal())
+            .poolNumber(detail.getPoolNumber())
+            .replyMethod(detail.getReplyType())
+            .urgent(detail.getUrgent())
+            .slaOverdue(detail.getSlaOverdue())
+            .dateReceived(detail.getDateReceived())
+            .assignedStaffMember(detail.getAssignedStaffMember() != null
+                                     ? toStaffDto(detail.getAssignedStaffMember()) : null)
+            .completedAt(detail.getCompletedAt())
+            .version(detail.getVersion())
+            .build();
+    }
+
+    @Override
+    public CourtResponseSummaryDto detailCourtToDto(
+        CombinedJurorResponse jurorResponse,
+        Juror juror,
+        JurorPool jurorPool,
+        PoolRequest pool,
+        String locCode) {
+
+        CourtLocation courtLocation = pool.getCourtLocation();
+        Boolean slaOverdue =
+            urgencyCalculator.slaBreached(jurorResponse.getProcessingStatus(), jurorPool.getNextDate());
+        return CourtResponseSummaryDto.builder()
+            .jurorNumber(juror.getJurorNumber())
+            .title(juror.getTitle())
+            .firstName(juror.getFirstName())
+            .lastName(juror.getLastName())
+            .courtCode(locCode)
+            .courtName(courtLocation.getName())
+            .postcode(juror.getPostcode())
+            .processingStatus(jurorResponse.getProcessingStatus().name())
+            .residency(jurorResponse.getResidency())
+            .mentalHealthAct(jurorResponse.getMentalHealthAct())
+            .bail(jurorResponse.getBail())
+            .convictions(jurorResponse.getConvictions())
+            .deferralDate(jurorResponse.getDeferralDate())
+            .deferral(jurorResponse.getDeferral())
+            .excusalReason(jurorResponse.getExcusalReason())
+            .excusal(jurorResponse.getExcusal())
+            .poolNumber(pool.getPoolNumber())
+            .replyMethod(jurorResponse.getReplyType().getType())
+            .urgent(jurorResponse.isUrgent())
+           .slaOverdue(slaOverdue)
             .dateReceived(jurorResponse.getDateReceived().toLocalDate())
             .assignedStaffMember(jurorResponse.getStaff() != null
                 ? toStaffDto(jurorResponse.getStaff()) : null)

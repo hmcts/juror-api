@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.juror.domain;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QDigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QPaperResponse;
@@ -23,6 +24,7 @@ public class JurorResponseQueries {
     private static final QDigitalResponse jurorResponse = QDigitalResponse.digitalResponse;
     private static final QPaperResponse paperJurorResponse = QPaperResponse.paperResponse;
 
+    private static final QJurorPool jurorPool = QJurorPool.jurorPool;
 
     /**
      * Query to match 'urgent' / 'super-urgent' responses which are assigned to any staff member.
@@ -97,6 +99,10 @@ public class JurorResponseQueries {
     }
 
 
+
+
+
+
     public static BooleanExpression byAssignmentAndProcessingStatusAndUrgency(String staffLogin,
                                                                               List<ProcessingStatus> statuses,
                                                                               boolean isUrgent) {
@@ -111,6 +117,11 @@ public class JurorResponseQueries {
         }
     }
 
+    public static BooleanExpression byOwnerAndJurorTransferredCourt(String owner) {
+        return jurorPool.owner.eq(owner).and(poolStatusIsActive())
+            .and(jurorTransferredCourt()).and(jurorResponse.processingStatus.ne(ProcessingStatus.CLOSED));
+
+    }
 
     /**
      * return all  responses.
@@ -150,6 +161,21 @@ public class JurorResponseQueries {
     public static Predicate jurorIsNotTransferredPaper() {
         return paperJurorResponse.juror.bureauTransferDate.isNull();
     }
+
+    public static BooleanExpression jurorTransferredCourt() {
+        return jurorResponse.juror.bureauTransferDate.isNotNull();
+    }
+
+    public static Predicate jurorTransferredCourtPaper() {
+        return paperJurorResponse.juror.bureauTransferDate.isNotNull();
+    }
+
+    public static  BooleanExpression poolStatusIsActive() {
+        return jurorPool.isActive.isTrue();
+    }
+
+
+
 
     public static Predicate isDigital() {
         return jurorResponse.replyType.type.eq("Digital");

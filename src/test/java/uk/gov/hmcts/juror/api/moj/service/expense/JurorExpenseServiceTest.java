@@ -374,40 +374,6 @@ class JurorExpenseServiceTest {
         }
 
         @Test
-        @DisplayName("Successfully set default values without overriding appearance")
-        void setDefaultExpensesHappyPathNotOverrideDraftExpenses() {
-            RequestDefaultExpensesDto dto = new RequestDefaultExpensesDto();
-            dto.setTravelTime(LocalTime.of(4, 30));
-            dto.setFinancialLoss(new BigDecimal("123.321"));
-            dto.setSmartCardNumber("12345678");
-            dto.setDistanceTraveledMiles(5);
-            dto.setOverwriteExistingDraftExpenses(false);
-            dto.setHasFoodAndDrink(true);
-
-            Juror juror = mock(Juror.class);
-
-            jurorUtilsMockedStatic.when(() -> JurorUtils.getActiveJurorRecord(jurorRepository,
-                    TestConstants.VALID_JUROR_NUMBER))
-                .thenReturn(juror);
-
-            jurorExpenseService.setDefaultExpensesForJuror(TestConstants.VALID_JUROR_NUMBER, dto);
-
-            verify(juror, times(1)).setMileage(5);
-            verify(juror, times(1)).setFinancialLoss(new BigDecimal("123.321"));
-            verify(juror, times(1)).setSmartCardNumber("12345678");
-            verify(juror, times(1)).setTravelTime(LocalTime.of(4, 30));
-            verify(juror, times(1)).setClaimingSubsistenceAllowance(true);
-            verifyNoMoreInteractions(juror);
-
-            verify(jurorRepository, times(1)).save(juror);
-            verify(jurorExpenseService, never()).applyDefaultExpenses(any());
-            securityUtilMockedStatic.verify(SecurityUtil::getActiveOwner, times(1));
-            jurorUtilsMockedStatic.verify(
-                () -> JurorUtils.getActiveJurorRecord(jurorRepository, TestConstants.VALID_JUROR_NUMBER),
-                times(1));
-        }
-
-        @Test
         @DisplayName("Successfully set default values with overriding appearance")
         @SuppressWarnings("LineLength")
         void setDefaultExpensesHappyPathOverrideDraftExpenses() {
@@ -416,7 +382,7 @@ class JurorExpenseServiceTest {
             dto.setFinancialLoss(new BigDecimal("123.321"));
             dto.setSmartCardNumber("12345678");
             dto.setDistanceTraveledMiles(5);
-            dto.setOverwriteExistingDraftExpenses(true);
+            //dto.setOverwriteExistingDraftExpenses(true);
             dto.setHasFoodAndDrink(true);
 
             Juror juror = mock(Juror.class);

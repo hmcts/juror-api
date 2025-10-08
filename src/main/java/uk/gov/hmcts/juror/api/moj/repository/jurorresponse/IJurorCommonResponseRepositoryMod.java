@@ -15,5 +15,33 @@ public interface IJurorCommonResponseRepositoryMod {
                                                            Collection<ProcessingStatus> processingStatus,
                                                            Predicate... predicates);
 
+    List<Tuple> getJurorResponseDetailsByCourtAndStatus(String locCode,
+                                                           Collection<ProcessingStatus> processingStatus,
+                                                           Predicate... predicates);
+
     Map<ProcessingStatus, Long> getJurorResponseCounts(Predicate... predicates);
+
+
+    Map<ProcessingStatus, Long> getJurorCourtResponseCounts(Predicate... predicates);
+
+    int getOpenResponsesAtCourt(String locCode);
+
+    int getOpenResponsesAtBureau(String locCode);
+
+    int getSummonsRepliesFourWeeks(String locCode);
+
+    int getSummonsRepliesStandard(String locCode);
+
+    int getSummonsRepliesUrgent(String locCode);
+
+    int getSummonsRepliesAssigned(String locCode);
+
+    int getSummonsRepliesUnassigned(String locCode);
+
+    int getDeferredJurorsStartDateNextWeek(String locCode);
+
+    int getPoolsNotYetSummonedCount(String locCode);
+
+    int getPoolsTransferringNextWeekCount(String locCode);
+
 }

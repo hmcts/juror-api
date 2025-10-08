@@ -46,8 +46,12 @@ public class BureauResponseSummaryDto {
     private Boolean convictions;
     @Schema(description = "Reason about deferring jury duties")
     private String deferralDate;
+    @Schema(description = "Deferral")
+    private Boolean deferral;
     @Schema(description = "Details about jury duty excusal")
     private String excusalReason;
+    @Schema(description = "Excusal")
+    private Boolean excusal;
     @Schema(description = "Juror pool number")
     private String poolNumber;
     @Schema(description = "Response flagged as urgent")

@@ -22,4 +22,8 @@ public interface JurorPoolService {
     JurorPool getJurorPoolForJuror(String jurorNumber, String poolNumber);
 
     JurorPool save(JurorPool jurorPool);
+
+    int getCountJurorsDueToAttendCourtNextWeek(String locCode, boolean reasonableAdjustmentRequired);
+
+    int getCountOfJurorsOnCallAtCourt(String locCode);
 }

@@ -1,9 +1,3 @@
-delete from juror_mod.juror_audit;
-delete from juror_mod.juror_history;
-delete from juror_mod.juror_pool;
-delete from juror_mod.juror;
-delete from juror_mod.pool;
-
 -- Pool 415220502 requested 4 jurors for 2023-06-01, 2 already supplied (2 needed) - active with the bureau
 INSERT INTO juror_mod.pool (OWNER, POOL_NO, RETURN_DATE, TOTAL_NO_REQUIRED, NO_REQUESTED, POOL_TYPE, LOC_CODE, NEW_REQUEST, LAST_UPDATE)
 VALUES
