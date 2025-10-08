@@ -61,6 +61,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 
 @SuppressWarnings({
     "PMD.ExcessiveImports",
@@ -353,6 +354,8 @@ public class JurorPaperResponseServiceImplTest {
         PaperResponse paperResponse = paperResponseArgumentCaptor.getValue();
         verifyJurorPaperResponseDto(paperResponse, responseDto);
 
+        Mockito.verify(jurorHistoryService, Mockito.times(1))
+            .createResponseSubmittedHistory(any(JurorPool.class), anyString(), anyString());
         Mockito.verify(jurorResponseCjsRepository, Mockito.never()).save(any());
         Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.never()).save(any());
         Mockito.verify(straightThroughProcessorService, Mockito.times(1))
@@ -378,6 +381,8 @@ public class JurorPaperResponseServiceImplTest {
         Mockito.verify(jurorPoolService, Mockito.times(1))
             .getJurorPoolFromUser("987654321");
         Mockito.verify(jurorPaperResponseRepository, Mockito.never()).save(any());
+        Mockito.verify(jurorHistoryService, Mockito.never())
+            .createResponseSubmittedHistory(any(JurorPool.class), anyString(), anyString());
         Mockito.verify(jurorResponseCjsRepository, Mockito.never()).save(any());
         Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.never()).save(any());
         Mockito.verify(straightThroughProcessorService, Mockito.never())
@@ -403,6 +408,8 @@ public class JurorPaperResponseServiceImplTest {
         Mockito.verify(jurorPoolService, Mockito.times(1))
             .getJurorPoolFromUser("123456789");
         Mockito.verify(jurorPaperResponseRepository, Mockito.never()).save(any());
+        Mockito.verify(jurorHistoryService, Mockito.never())
+            .createResponseSubmittedHistory(any(JurorPool.class), anyString(), anyString());
         Mockito.verify(jurorResponseCjsRepository, Mockito.never()).save(any());
         Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.never()).save(any());
         Mockito.verify(straightThroughProcessorService, Mockito.never())
@@ -434,6 +441,8 @@ public class JurorPaperResponseServiceImplTest {
         PaperResponse paperResponse = paperResponseArgumentCaptor.getValue();
         verifyJurorPaperResponseDto(paperResponse, responseDto);
 
+        Mockito.verify(jurorHistoryService, Mockito.times(1))
+            .createResponseSubmittedHistory(any(JurorPool.class), anyString(), anyString());
         Mockito.verify(jurorResponseCjsRepository, Mockito.never()).save(any());
         Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.never()).save(any());
         Mockito.verify(straightThroughProcessorService, Mockito.times(1))
@@ -460,6 +469,8 @@ public class JurorPaperResponseServiceImplTest {
         Mockito.verify(jurorPoolService, Mockito.times(1))
             .getJurorPoolFromUser("987654321");
         Mockito.verify(jurorPaperResponseRepository, Mockito.never()).save(any());
+        Mockito.verify(jurorHistoryService, Mockito.never())
+            .createResponseSubmittedHistory(any(JurorPool.class), anyString(), anyString());
         Mockito.verify(jurorResponseCjsRepository, Mockito.never()).save(any());
         Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.never()).save(any());
         Mockito.verify(straightThroughProcessorService, Mockito.never())
@@ -496,6 +507,8 @@ public class JurorPaperResponseServiceImplTest {
         Mockito.verify(jurorPoolService, Mockito.times(1))
             .getJurorPoolFromUser("123456789");
         Mockito.verify(jurorPaperResponseRepository, Mockito.times(1)).save(any());
+        Mockito.verify(jurorHistoryService, Mockito.times(1))
+            .createResponseSubmittedHistory(any(JurorPool.class), anyString(), anyString());
         Mockito.verify(jurorResponseCjsRepository, Mockito.times(1)).saveAll(any());
         Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.times(1)).saveAll(any());
         Mockito.verify(straightThroughProcessorService, Mockito.times(1))
@@ -519,6 +532,8 @@ public class JurorPaperResponseServiceImplTest {
         Mockito.verify(jurorPoolService, Mockito.times(1))
             .getJurorPoolFromUser("123456789");
         Mockito.verify(jurorPaperResponseRepository, Mockito.times(1)).save(any());
+        Mockito.verify(jurorHistoryService, Mockito.times(1))
+            .createResponseSubmittedHistory(any(JurorPool.class), anyString(), anyString());
         Mockito.verify(jurorResponseCjsRepository, Mockito.times(1)).saveAll(any());
         Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.times(1)).saveAll(any());
         Mockito.verify(straightThroughProcessorService, Mockito.times(1))
@@ -545,6 +560,8 @@ public class JurorPaperResponseServiceImplTest {
         Mockito.verify(jurorPoolService, Mockito.times(1))
             .getJurorPoolFromUser("123456789");
         Mockito.verify(jurorPaperResponseRepository, Mockito.times(1)).save(any());
+        Mockito.verify(jurorHistoryService, Mockito.times(1))
+            .createResponseSubmittedHistory(any(JurorPool.class), anyString(), anyString());
         Mockito.verify(jurorResponseCjsRepository, Mockito.times(1)).saveAll(any());
         Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.times(1)).saveAll(any());
         Mockito.verify(straightThroughProcessorService, Mockito.times(1))
@@ -643,6 +660,8 @@ public class JurorPaperResponseServiceImplTest {
         Mockito.verify(straightThroughProcessorService, Mockito.times(1))
             .processAgeDisqualification(any(PaperResponse.class), any(LocalDate.class),
                 any(JurorPool.class), any());
+        Mockito.verify(jurorHistoryService, Mockito.times(1))
+            .createResponseSubmittedHistory(any(JurorPool.class), anyString(), anyString());
     }
 
 
@@ -688,6 +707,8 @@ public class JurorPaperResponseServiceImplTest {
         Mockito.verify(straightThroughProcessorService, Mockito.times(1))
             .processAgeDisqualification(any(PaperResponse.class), any(LocalDate.class),
                                         any(JurorPool.class), any());
+        Mockito.verify(jurorHistoryService, Mockito.times(1))
+            .createResponseSubmittedHistory(any(JurorPool.class), anyString(), anyString());
     }
 
     @Test

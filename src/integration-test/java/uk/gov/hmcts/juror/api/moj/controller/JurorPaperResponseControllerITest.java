@@ -182,6 +182,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False positive
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_initPoolMembers.sql"})
     public void respondToSummons_bureauUser_noJurorRecord() {
         final String bureauJwt = createJwtBureau("BUREAU_USER");
@@ -196,6 +197,12 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         ResponseEntity<SaveJurorPaperReplyResponseDto> response = template.exchange(requestEntity,
             SaveJurorPaperReplyResponseDto.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+        // check that no response has been created
+        executeInTransaction(() -> {
+            PaperResponse jurorPaperResponse = jurorPaperResponseRepository.findByJurorNumber("111111110");
+            assertNull(jurorPaperResponse);
+        });
     }
 
     @Test
@@ -379,6 +386,13 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
             verifyStraightThroughAgeDisqualificationNotProcessed(jurorPaperResponse, jurorPool.get(),
                 IJurorStatus.DEFERRED);
+
+            // check a juror history record has been created for the response submission
+            Collection<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById("222222222");
+            assertThat(history).isNotEmpty();
+            Optional<JurorHistory> historyRecord = history.stream().filter(h ->
+                h.getHistoryCode().equals(HistoryCodeMod.RESPONSE_SUBMITTED)).findFirst();
+            assertThat(historyRecord).isPresent();
         });
     }
 
