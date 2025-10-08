@@ -52,6 +52,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -152,11 +153,20 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         assertThat(responseDto.isStraightThroughAcceptance()).isTrue();
 
         verifyRequestDtoMapping(requestDto);
+
+        executeInTransaction(() -> {
+            Collection<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById("111111111");
+            assertThat(history).isNotEmpty();
+            Optional<JurorHistory> historyRecord = history.stream().filter(h ->
+                h.getHistoryCode().equals(HistoryCodeMod.RESPONSE_SUBMITTED)).findFirst();
+            assertThat(historyRecord).isPresent();
+        });
     }
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_initPoolMembers.sql"})
-    public void respondToSummons_courtUser_noAccess() throws Exception {
+    public void respondToSummons_courtUser_noAccessToJuror() throws Exception {
+        // juror is owned by court 415, we are using a court user from court 416
         final String bureauJwt = createJwt("COURT_USER", "416");
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/response");
 
@@ -281,6 +291,12 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
             validateMergedJurorRecord(jurorPool, jurorPaperResponse, IJurorStatus.DISQUALIFIED);
             verifyAgeDisqualification(jurorPool);
+
+            Collection<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById("555555555");
+            assertThat(history).isNotEmpty();
+            Optional<JurorHistory> historyRecord = history.stream().filter(h ->
+                h.getHistoryCode().equals(HistoryCodeMod.RESPONSE_SUBMITTED)).findFirst();
+            assertThat(historyRecord).isPresent();
         });
     }
 
@@ -403,6 +419,12 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
             verifyStraightThroughAgeDisqualificationNotProcessed(jurorPaperResponse, jurorPool.get(),
                 IJurorStatus.SUMMONED);
+
+            Collection<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById("444444444");
+            assertThat(history).isNotEmpty();
+            Optional<JurorHistory> historyRecord = history.stream().filter(h ->
+                h.getHistoryCode().equals(HistoryCodeMod.RESPONSE_SUBMITTED)).findFirst();
+            assertThat(historyRecord).isPresent();
         });
     }
 
@@ -506,6 +528,12 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             assertThat(jurorPool.getJuror().getJurorNumber()).isEqualTo(jurorNumber);
 
             assertThat(jurorPool.getJuror().isResponseEntered()).isTrue();
+
+            Collection<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById("111111111");
+            assertThat(history).isNotEmpty();
+            Optional<JurorHistory> historyRecord = history.stream().filter(h ->
+                h.getHistoryCode().equals(HistoryCodeMod.RESPONSE_SUBMITTED)).findFirst();
+            assertThat(historyRecord).isPresent();
         });
     }
 
