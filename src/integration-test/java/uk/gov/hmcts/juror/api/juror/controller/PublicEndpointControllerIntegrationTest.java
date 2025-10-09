@@ -1247,15 +1247,14 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                     + "juror_number='644892530'",
                 Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject(
-            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='PDIS' and OTHER_INFORMATION='Disqualify"
-                + " Code A'"
+            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='PDIS' and OTHER_INFO_REFERENCE='A'"
                 + " and juror_number='644892530'",
             Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject(
-            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='RDIS' and OTHER_INFORMATION='Disqualify"
-                + " Letter "
-                + "Code A' and juror_number='644892530'",
+            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='RDIS' and OTHER_INFO_REFERENCE='A'"
+                + " and juror_number='644892530'",
             Integer.class)).isEqualTo(0);
+
         assertThat(jdbcTemplate.queryForObject(
             "select count(*) from juror_mod.bulk_print_data WHERE juror_no='644892530' and form_type in ('5224',"
                 + "'5224C')",
@@ -1426,14 +1425,12 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 Integer.class)).isEqualTo(0);
 
         assertThat(jdbcTemplate.queryForObject(
-            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='PDIS' and OTHER_INFORMATION='Disqualify"
-                + " Code A'"
+            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='PDIS' and OTHER_INFO_REFERENCE='A'"
                 + " and juror_number='644892530'",
             Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject(
-            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='RDIS' and OTHER_INFORMATION='Disqualify"
-                + " Letter "
-                + "Code A' and juror_number='644892530'",
+            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='RDIS' and OTHER_INFO_REFERENCE='A'"
+                + " and juror_number='644892530'",
             Integer.class)).isEqualTo(0);
 
         assertThat(jdbcTemplate.queryForObject(
