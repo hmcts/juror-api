@@ -105,7 +105,7 @@ class CurrentPoolStatusReportITest extends AbstractStandardReportControllerITest
                     .add("number_of_jurors_attended", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Number of Jurors Attended")
                     .dataType("Long")
-                    .value(4)
+                    .value(2)
                     .build())
                 .add("pool_type", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Pool Type")

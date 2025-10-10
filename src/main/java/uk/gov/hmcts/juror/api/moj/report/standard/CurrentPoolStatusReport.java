@@ -104,8 +104,8 @@ public class CurrentPoolStatusReport extends AbstractStandardReport {
             )
             .where(
                 QJurorPool.jurorPool.pool.poolNumber.eq(poolNumber),
-                QAppearance.appearance.nonAttendanceDay.eq(false),
-                QAppearance.appearance.noShow.eq(false)
+                QAppearance.appearance.nonAttendanceDay.coalesce(false).eq(false),
+                QAppearance.appearance.noShow.coalesce(false).eq(false)
             )
             .fetchOne();
         return result != null ? result : 0L;
