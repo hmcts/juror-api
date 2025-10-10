@@ -35,23 +35,18 @@ values ('400', '641500020', '415230101', 1, true),
        ('415', '641500026', '415230103', 3, true);  -- PANEL - counts toward total_pool_members
 
 -- Appearance records for pool 415230103
--- All 4 jurors have at least one appearance where non_attendance=false AND no_show=false
--- This means all 4 count toward number_of_jurors_attended
+-- All 4 jurors have at least one appearance record
 INSERT INTO juror_mod.appearance (attendance_date, juror_number, pool_number, loc_code, attendance_type,
                                    non_attendance, no_show)
 values
        -- Juror 641500023 - has attendance records
-       ('2023-01-01', '641500023', '415230103', '415', 'ABSENT', false, false),
-       ('2023-01-02', '641500023', '415230103', '415', 'FULL_DAY', false, false),
-       ('2023-01-03', '641500023', '415230103', '415', 'NON_ATTENDANCE', true, false),
+       ('2023-01-01', '641500023', '415230103', '415', 'ABSENT', null, true),
 
        -- Juror 641500024 - has attendance records
-       ('2023-01-01', '641500024', '415230103', '415', 'HALF_DAY', false, false),
-       ('2023-01-02', '641500024', '415230103', '415', 'FULL_DAY', false, false),
-       ('2023-01-03', '641500024', '415230103', '415', 'NON_ATTENDANCE', true, false),
+       ('2023-01-03', '641500024', '415230103', '415', 'NON_ATTENDANCE', true, null),
 
        -- Juror 641500025 - has attendance records
-       ('2023-01-01', '641500025', '415230103', '415', 'FULL_DAY', false, false),
+       ('2023-01-01', '641500025', '415230103', '415', 'FULL_DAY', null, null),
 
        -- Juror 641500026 - has attendance records
-       ('2023-01-02', '641500026', '415230103', '415', 'HALF_DAY', false, false);
+       ('2023-01-02', '641500026', '415230103', '415', 'HALF_DAY', null, null);
