@@ -176,7 +176,12 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
 
         // Sum up active jurors only
         NumberExpression<Integer> activeJurorCountExpr =
-            JUROR_POOL.isActive.when(true).then(1).otherwise(0).sum().as("activeJurorCount");
+            new CaseBuilder()
+                .when(JUROR_POOL.isActive.isTrue())
+                .then(1)
+                .otherwise(0)
+                .sum()
+                .as("activeJurorCount");
 
         JPAQuery<Tuple> activePoolsQuery = queryFactory.select(
                 POOL_REQUEST.poolNumber,
