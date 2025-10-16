@@ -3439,7 +3439,7 @@ class JurorAppearanceServiceTest {
 
         @Test
         @DisplayName(
-            "findJurorsInAttendanceAtCourtLocation - distinct prevents duplicates from multiple appearances")
+        "findJurorsInAttendanceAtCourtLocation - distinct prevents duplicates from multiple appearances")
     void findJurorsInAttendanceDistinctPreventsDuplicates() {
             List<String> pools = new ArrayList<>();
             pools.add(TestConstants.VALID_POOL_NUMBER);

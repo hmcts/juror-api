@@ -63,7 +63,10 @@ public class PoolRequestActiveDataDto {
 
     @JsonProperty("required")
     @Schema(name = "Required",
-        description = "Indicates total amount required for the court to operate")
+        description = "Indicates if the pool is required for the court to operate, e.g. 'Yes' or 'No'")
     private int required;
 
+    public int getRequired() {
+        return requestedFromBureau - confirmedFromBureau;
+    }
 }

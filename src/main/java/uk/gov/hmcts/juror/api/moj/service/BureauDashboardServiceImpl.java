@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
-import com.querydsl.core.Tuple;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,27 +40,16 @@ public class BureauDashboardServiceImpl implements BureauDashboardService {
 
     @Override
     public BureauSummonsManagementInfoDto getBureauSummonsManagementInfo(String locCode) {
-        log.info("Retrieving all bureau summons management info for location: {}", locCode);
-        Tuple result = jurorCommonResponseRepositoryMod.getAllSummonsCountsTuple(locCode);
-
-        // Extract values from the Tuple result
-        Long total = result.get(0, Long.class);
-        Integer standard = result.get(1, Integer.class);
-        Integer overdue = result.get(2, Integer.class);
-        Integer fourWeeks = result.get(3, Integer.class);
-        Integer assigned = result.get(4, Integer.class);
-        Integer unassigned = result.get(5, Integer.class);
-
-        return BureauSummonsManagementInfoDto.builder()
-            .total(total.intValue())
-            .summonsToProcess(total.intValue()) // Same as total based on your current logic
-            .standard(standard)
-            .overdue(overdue)
-            .fourWeeks(fourWeeks)
-            .assigned(assigned)
-            .unassigned(unassigned)
+        BureauSummonsManagementInfoDto bureauSummonsManagementInfoDto = BureauSummonsManagementInfoDto.builder()
+            .total(jurorResponseService.getSummonsRepliesCount(locCode))
+            .summonsToProcess(jurorResponseService.getSummonsRepliesCount(locCode))
+            .overdue(jurorResponseService.getOpenSummonsRepliesOverdueCount(locCode))
+            .standard(jurorResponseService.getOpenSummonsRepliesStandardCount(locCode))
+            .fourWeeks(jurorResponseService.getOpenSummonsRepliesFourWeeksCount(locCode))
+            .assigned(jurorResponseService.getOpenSummonsRepliesAssignedCount(locCode))
+            .unassigned(jurorResponseService.getOpenSummonsRepliesUnassignedCount(locCode))
             .build();
-
+        return bureauSummonsManagementInfoDto;
     }
 
     @Override
@@ -71,6 +59,8 @@ public class BureauDashboardServiceImpl implements BureauDashboardService {
             BureauNotificationManagementInfoDto.builder()
                 .fourWeeksSummonsReplies(jurorResponseService.getOpenSummonsRepliesFourWeeksCount(locCode))
                 .build();
+
+
         return bureauNotificationManagementInfoDto;
     }
 }

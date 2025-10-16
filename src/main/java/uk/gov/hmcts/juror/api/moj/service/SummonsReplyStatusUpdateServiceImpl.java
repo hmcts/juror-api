@@ -480,8 +480,8 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
             || StringUtils.isNotBlank(abstractJurorResponse.getEmailAddress())
             || StringUtils.isNotBlank(abstractJurorResponse.getMainPhone())
             || StringUtils.isNotBlank(abstractJurorResponse.getOtherPhone())
-            || StringUtils.isNotBlank(abstractJurorResponse.getThirdPartyFName())
-            || StringUtils.isNotBlank(abstractJurorResponse.getThirdPartyLName())
+            || StringUtils.isNotBlank(abstractJurorResponse.getFirstName())
+            || StringUtils.isNotBlank(abstractJurorResponse.getLastName())
             || StringUtils.isNotBlank(abstractJurorResponse.getRelationship())) {
             if (abstractJurorResponse instanceof DigitalResponse digitalResponse) {
                 jurorThirdPartyService.createOrUpdateThirdParty(juror, digitalResponse);

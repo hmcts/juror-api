@@ -50,8 +50,6 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
     private final JurorResponseService jurorResponseService;
 
 
-
-
     @Override
     @Transactional
     public void respondToExcusalRequest(BureauJwtPayload payload, ExcusalDecisionDto excusalDecisionDto,
@@ -62,11 +60,15 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
         log.info(String.format("Processing excusal request for Juror %s, by user %s", jurorNumber, login));
 
         checkExcusalCodeIsValid(excusalDecisionDto.getExcusalReasonCode());
+
         JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
+
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, owner);
 
+        // process the response first so any updated juror details are saved
+        jurorResponseService.setResponseProcessingStatusToClosed(jurorNumber);
+
         if (excusalDecisionDto.getExcusalDecision().equals(ExcusalDecision.GRANT)) {
-            jurorResponseService.setResponseProcessingStatusToClosed(jurorNumber);
             grantExcusalForJuror(payload, excusalDecisionDto, jurorPool);
             if (!ExcusalCodeEnum.D.getCode().equals(excusalDecisionDto.getExcusalReasonCode())
                 && SecurityUtil.BUREAU_OWNER.equals(owner)) {
@@ -147,8 +149,14 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
                 .ifPresent(jurorResponse -> juror.setDateOfBirth(jurorResponse.getDateOfBirth()));
         }
 
+        // Need to avoid setting to responded without a date of birth else PNC check will fail
+        if (jurorPool.getStatus().getStatus() == IJurorStatus.SUMMONED && juror.getDateOfBirth() != null) {
+            jurorPool.setStatus(getPoolStatus(IJurorStatus.RESPONDED));
+        }
+
         if (jurorPool.getNextDate() == null) {
             jurorPool.setNextDate(jurorPool.getPool().getReturnDate());
+            jurorPool.setStatus(getPoolStatus(IJurorStatus.RESPONDED));
         }
 
         jurorPool.setUserEdtq(payload.getLogin());

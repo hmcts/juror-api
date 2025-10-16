@@ -21,32 +21,24 @@ values ('641500020', 'Smith0', 'John0', '1980-01-01', 0, '000000001', '000000002
        ('641500025', 'Smith5', 'John5', '1980-01-01', 0, '500000001', '500000002', '500000003',
         '641500025@email.gov.uk', 'INELIGIBLE', 'addressLine1','A55 5AA', true),
        ('641500026', 'Smith6', 'John6', '1980-01-01', 0, '600000001', '600000002', '600000003',
-        '641500026@email.gov.uk', 'NOT_CHECKED', 'addressLine1','A66 6AA', true);
+        '641500026@email.gov.uk', 'NOT_CHECKED', 'addressLine1','A66 6AA', true)
+    ;
 
 -- create juror_pool associative records
--- Pool 415230103 has 4 jurors with valid statuses (RESPONDED=2, PANEL=3, JUROR=4)
 insert into juror_mod.juror_pool (owner, juror_number, pool_number, status, is_active)
 values ('400', '641500020', '415230101', 1, true),
        ('400', '641500021', '415230101', 2, true),
        ('400', '641500022', '415230101', 3, true),
-       ('415', '641500023', '415230103', 4, true),  -- JUROR - counts toward total_pool_members
-       ('415', '641500024', '415230103', 2, true),  -- RESPONDED - counts toward total_pool_members
-       ('415', '641500025', '415230103', 2, true),  -- RESPONDED - counts toward total_pool_members
-       ('415', '641500026', '415230103', 3, true);  -- PANEL - counts toward total_pool_members
+       ('415', '641500023', '415230103', 4, true),
+       ('415', '641500024', '415230103', 5, true),
+       ('415', '641500025', '415230103', 6, true),
+       ('415', '641500026', '415230103', 7, true);
 
--- Appearance records for pool 415230103
--- All 4 jurors have at least one appearance record
-INSERT INTO juror_mod.appearance (attendance_date, juror_number, pool_number, loc_code, attendance_type,
-                                   non_attendance, no_show)
-values
-       -- Juror 641500023 - has attendance records
-       ('2023-01-01', '641500023', '415230103', '415', 'ABSENT', null, true),
+INSERT INTO juror_mod.appearance (attendance_date, juror_number, pool_number, loc_code, attendance_type)
+values ('2023-01-01', '641500023', '415230103', '415', 'ABSENT'),
+       ('2023-01-02', '641500023', '415230103', '415', 'FULL_DAY'),
+       ('2023-01-03', '641500023', '415230103', '415', 'NON_ATTENDANCE'),
 
-       -- Juror 641500024 - has attendance records
-       ('2023-01-03', '641500024', '415230103', '415', 'NON_ATTENDANCE', true, null),
-
-       -- Juror 641500025 - has attendance records
-       ('2023-01-01', '641500025', '415230103', '415', 'FULL_DAY', null, null),
-
-       -- Juror 641500026 - has attendance records
-       ('2023-01-02', '641500026', '415230103', '415', 'HALF_DAY', null, null);
+       ('2023-01-01', '641500024', '415230103', '415', 'HALF_DAY'),
+       ('2023-01-02', '641500024', '415230103', '415', 'FULL_DAY'),
+       ('2023-01-03', '641500024', '415230103', '415', 'NON_ATTENDANCE');
