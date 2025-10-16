@@ -56,9 +56,6 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
         SimpleDateFormat dateFormat = new SimpleDateFormat();
         log.info("Letter Comms Processing : Started - {}", dateFormat.format(new Date()));
 
-        // remove any unwanted records from the bulk_print_data table based on the business rules
-        bulkPrintDataRepository.deletePrintfiles();
-
         final List<BulkPrintDataNotifyComms> bulkPrintDataNotifyCommsList =
             Lists.newLinkedList(bulkPrintDataNotifyCommsRepository.findAll());
 

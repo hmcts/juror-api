@@ -21,7 +21,6 @@ import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.service.report.FinancialAuditReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.JurySummoningMonitorReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.ReportService;
-import uk.gov.hmcts.juror.api.moj.service.report.SummonsRepliesReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.YieldPerformanceReportService;
 
@@ -65,9 +64,6 @@ class ReportControllerTest {
 
     @MockBean
     private YieldPerformanceReportService yieldPerformanceReportService;
-
-    @MockBean
-    private SummonsRepliesReportService summonsRepliesReportService;
 
     @Nested
     @DisplayName("POST (GET) " + ViewReportStandard.URL)

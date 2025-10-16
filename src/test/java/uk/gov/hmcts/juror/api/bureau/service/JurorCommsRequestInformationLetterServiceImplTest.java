@@ -167,6 +167,6 @@ public class JurorCommsRequestInformationLetterServiceImplTest {
 
         service.process();
         verifyNoInteractions(jurorCommsNotificationService);
-        verify(printFileRepository, times(1)).deletePrintfiles();
+        verifyNoInteractions(printFileRepository);
     }
 }

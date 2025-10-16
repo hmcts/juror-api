@@ -2,8 +2,6 @@ package uk.gov.hmcts.juror.api.moj.repository.jurorresponse;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.CaseBuilder;
-import com.querydsl.core.types.dsl.DateExpression;
-import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -16,7 +14,6 @@ import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QDigitalResponse;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 
-import java.time.LocalDate;
 import java.util.List;
 
 public class JurorDigitalResponseRepositoryModImpl implements IJurorDigitalResponseRepositoryMod {
@@ -82,32 +79,6 @@ public class JurorDigitalResponseRepositoryModImpl implements IJurorDigitalRespo
                 .and(QJuror.juror.bureauTransferDate.isNull()))
             .groupBy(user.username, user.name);
         return query.fetch();
-    }
-
-
-    @Override
-    @Transactional
-    public List<Tuple> getDigitalSummonsRepliesForMonth(LocalDate startMonth) {
-        JPAQueryFactory queryFactory = getJpaQueryFactory();
-
-        // Extract day of month from dateReceived
-        DateExpression<LocalDate> dayOfMonth =
-            Expressions.dateTemplate(LocalDate.class, "cast({0} as date)", digitalResponse.dateReceived);
-
-        LocalDate nextMonth = startMonth.plusMonths(1);
-
-        return queryFactory
-            .select(dayOfMonth.as("day_of_month"), digitalResponse.count().as("responses"))
-            .from(digitalResponse)
-            .where(
-                digitalResponse.replyType.type.eq("Digital"),
-                digitalResponse.dateReceived.goe(startMonth.atStartOfDay()),
-                digitalResponse.dateReceived.lt(nextMonth.atStartOfDay())
-            )
-            .groupBy(dayOfMonth)
-            .orderBy(dayOfMonth.asc())
-            .fetch();
-
     }
 
     JPAQueryFactory getJpaQueryFactory() {
