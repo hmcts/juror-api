@@ -875,10 +875,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                 updateJurorHistory(deferredJurorPool, newPool.getPoolNumber(), userId, JurorHistory.ADDED,
                     HistoryCodeMod.DEFERRED_POOL_MEMBER);
 
-                if (JurorDigitalApplication.JUROR_OWNER.equals(deferralRecord.getOwner())) {
-                    printDataService.printConfirmationLetter(newJurorPool);
-                    jurorHistoryService.createConfirmationLetterHistory(newJurorPool, "Confirmation Letter");
-                }
+                printConfirmationLetter(deferralRecord.getOwner(), newJurorPool);
 
                 deferralsUsed++;
                 log.trace(String.format("Deferred juror %s has been added to Pool: %s", deferralRecord.getJurorNumber(),
