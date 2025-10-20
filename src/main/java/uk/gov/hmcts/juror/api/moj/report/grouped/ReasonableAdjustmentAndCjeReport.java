@@ -21,12 +21,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
-public class ReasonableAdjustmentAndCJEReport extends AbstractGroupedReport {
+public class ReasonableAdjustmentAndCjeReport extends AbstractGroupedReport {
 
     private final CourtLocationService courtLocationService;
 
     @Autowired
-    public ReasonableAdjustmentAndCJEReport(CourtLocationService courtLocationService) {
+    public ReasonableAdjustmentAndCjeReport(CourtLocationService courtLocationService) {
         super(QJurorPool.jurorPool,
               ReportGroupBy.builder()
                   .dataType(DataType.COURT_LOCATION_NAME_AND_CODE)

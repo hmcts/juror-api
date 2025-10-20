@@ -25,11 +25,11 @@ import java.util.List;
     "/db/mod/reports/ReasonableAdjustmentAndCJEReportITest_typical.sql"
 })
 @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-class ReasonableAdjustmentAndCJEReportITest extends AbstractGroupedReportControllerITest {
+class ReasonableAdjustmentAndCjeReportITest extends AbstractGroupedReportControllerITest {
 
     @Autowired
-    public ReasonableAdjustmentAndCJEReportITest(TestRestTemplate template) {
-        super(template, ReasonableAdjustmentAndCJEReport.class);
+    public ReasonableAdjustmentAndCjeReportITest(TestRestTemplate template) {
+        super(template, ReasonableAdjustmentAndCjeReport.class);
     }
 
     @Override

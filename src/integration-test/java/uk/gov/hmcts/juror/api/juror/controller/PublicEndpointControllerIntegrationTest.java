@@ -828,7 +828,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         Collection<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById("644892530");
         assertThat(history).isNotEmpty();
         Optional<JurorHistory> historyRecord = history.stream().filter(h ->
-                                                                           h.getHistoryCode().equals(HistoryCodeMod.RESPONSE_SUBMITTED)).findFirst();
+                                        h.getHistoryCode().equals(HistoryCodeMod.RESPONSE_SUBMITTED)).findFirst();
         assertThat(historyRecord).isPresent();
         assertThat(historyRecord.get().getCreatedBy()).isEqualTo("SYSTEM");
         assertThat(historyRecord.get().getOtherInformation()).isEqualTo("Digital");
