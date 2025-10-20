@@ -30,6 +30,7 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResp
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.CourtUtilisationStatsReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportJurorsResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.DigitalSummonsRepliesReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.FinancialAuditReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.JurySummoningMonitorReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.MonthlyUtilisationReportResponse;
@@ -37,6 +38,7 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.YieldPerformanceRe
 import uk.gov.hmcts.juror.api.moj.service.report.FinancialAuditReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.JurySummoningMonitorReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.ReportService;
+import uk.gov.hmcts.juror.api.moj.service.report.SummonsRepliesReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.YieldPerformanceReportService;
 import uk.gov.hmcts.juror.api.validation.CourtLocationCode;
@@ -57,6 +59,7 @@ public class ReportController {
     private final UtilisationReportService utilisationReportService;
     private final JurySummoningMonitorReportService jurySummoningMonitorReportService;
     private final YieldPerformanceReportService yieldPerformanceReportService;
+    private final SummonsRepliesReportService summonsRepliesReportService;
 
     @PostMapping("/standard")
     @Operation(summary = "View a given report")
@@ -139,6 +142,17 @@ public class ReportController {
         return ResponseEntity.ok(utilisationReportService.getMonthlyUtilisationReports(locCode));
     }
 
+    @GetMapping("/digital-summons-replies-report/{month}")
+    @Operation(summary = "Get a breakdown of digital summons replies on each day of a specific month"
+        + ", provide the start date of month, e.g. 2025-10-01 (for bureau users only)")
+    @ResponseStatus(HttpStatus.OK)
+    @IsBureauUser
+    public ResponseEntity<DigitalSummonsRepliesReportResponse>  getDigitalSummonsRepliesReport(
+        @P("month") @PathVariable("month") LocalDate month
+    ) {
+        return ResponseEntity.ok(summonsRepliesReportService.getDigitalSummonsRepliesReport(month));
+    }
+    
     @PostMapping("/court-utilisation-stats-report")
     @Operation(summary = "GET With Body", description = "View court utilisation stats report for "
         + "a number of courts")
