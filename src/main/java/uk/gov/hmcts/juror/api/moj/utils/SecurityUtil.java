@@ -70,16 +70,6 @@ public final class SecurityUtil {
         throw new MojException.Forbidden("User must be authorised with BureauJwtAuthentication", null);
     }
 
-    public static PublicJwtAuthentication getActiveUsersPublicJwtAuthentication() {
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        Authentication authentication = securityContext.getAuthentication();
-        if (authentication instanceof PublicJwtAuthentication publicJwtAuthentication) {
-            return publicJwtAuthentication;
-        }
-        throw new MojException.Forbidden("User must be authorised with BureauJwtAuthentication", null);
-    }
-
-
     public static BureauJwtPayload getActiveUsersBureauPayload() {
         Object principal = getActiveUsersBureauJwtAuthentication().getPrincipal();
 

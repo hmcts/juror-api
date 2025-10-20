@@ -76,6 +76,8 @@ public interface JurorHistoryService {
 
     void createJuryEmpanelmentHistory(JurorPool jurorPool, Panel panelMember);
 
+    void createJuryReinstatementHistory(JurorPool jurorPool, Panel panelMember);
+
     void createPanelCreationHistory(JurorPool jurorPool, Panel panelMember);
 
     void createAddedToPanelHistory(JurorPool jurorPool, Panel panel);
