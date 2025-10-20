@@ -58,6 +58,7 @@ public enum HistoryCodeMod {
     REASSIGN_PANEL("VREA", "Reassign Panel"),
     RETURN_PANEL("VRET", "Return Panel"),
     RESPONDED_POSITIVELY("RESP", "Responded Positively"),
+    RESPONSE_SUBMITTED("RESS", "Response submitted"),
     CERTIFICATE_OF_EXEMPTION("REXE", "Certificate of Exemption"),
     CASH_PAYMENT_APPROVAL("CASH", "Cash Payment Approval"),
     NUMBER_OF_SUMMONS_ISSUED("PHSI", "Number of Summons Issued"),
