@@ -475,6 +475,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
     }
 
     private void mergeThirdPartyDetails(AbstractJurorResponse abstractJurorResponse, Juror juror) {
+
         if (StringUtils.isNotBlank(abstractJurorResponse.getThirdPartyReason())
             || StringUtils.isNotBlank(abstractJurorResponse.getThirdPartyOtherReason())
             || StringUtils.isNotBlank(abstractJurorResponse.getEmailAddress())
@@ -606,16 +607,27 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
                                              String locCode) {
         log.trace("Juror: {}. Enter updateJurorPoolFromSummonsReply", juror.getJurorNumber());
 
+        // Copy the actual details to juror record.
+        BeanUtils.copyProperties(updatedDetails, juror, TITLE, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH);
+
         if (!ObjectUtils.isEmpty(updatedDetails.getThirdPartyReason())) {
-            // Copy the actual details to pool. Avoid copying 3rd party details.
             log.debug(
-                "Juror: {}.  Summons reply completed by a third-party, ignore contact details",
-                juror.getJurorNumber()
-            );
-            BeanUtils.copyProperties(updatedDetails, juror, PHONE_NO, ALT_PHONE_NO, EMAIL, TITLE,
-                FIRST_NAME, LAST_NAME, DATE_OF_BIRTH);
+                "Juror: {}. Summons reply completed by a third-party, check to see what details to keep",
+                juror.getJurorNumber());
+
+            if (updatedDetails.getJurorEmailDetails() == null
+                || !updatedDetails.getJurorEmailDetails()) {
+                juror.setEmail(null);
+            }
+
+            if (updatedDetails.getJurorPhoneDetails() == null
+                || !updatedDetails.getJurorPhoneDetails()) {
+                juror.setPhoneNumber(null);
+                juror.setAltPhoneNumber(null);
+            } else {
+                applyPhoneNumberRules(juror, updatedDetails);
+            }
         } else {
-            BeanUtils.copyProperties(updatedDetails, juror, TITLE, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH);
             applyPhoneNumberRules(juror, updatedDetails);
         }
 

@@ -184,8 +184,8 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
             jurorPaperResponse.getRelationship(),
             jurorPaperResponse.getThirdPartyReason(),
             jurorPaperResponse.getThirdPartyOtherReason(),
-            jurorPaperResponse.getJurorPhoneDetails(),
-            jurorPaperResponse.getJurorEmailDetails()));
+            jurorPaperResponse.getJurorEmailDetails(),
+            jurorPaperResponse.getJurorPhoneDetails()));
 
         // copy address details
         copyAddressToDto(jurorPaperResponse, jurorPaperResponseDetailDto);
