@@ -155,7 +155,7 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
                   .attendanceDate(poolRequest.getReturnDate())
                   .required(poolRequest.getTotalNoRequired())
                   .build();
-            });
+                });
 
         List<PoolRequestActiveDataDto> filtered = allResults.getData().stream()
             .filter(dto -> dto.getRequired() > 0)
