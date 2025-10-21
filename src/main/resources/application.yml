@@ -35,7 +35,7 @@ notifyregion:
     - ${NOTIFY_REGION_KEY_7:}
 smartsurvey:
   enabled: false
-  exportsurl: https://api.smartsurvey.io/v1/surveys/{surveyId}/exports?page_size=50&page=1
+  exportsurl: https://api.smartsurvey.io/v2/surveys/{surveyId}/exports?page_size=50&page=1
   token: ${SMART_SURVEY_TOKEN:}
   secret: ${SMART_SURVEY_SECRET:}
   proxy:

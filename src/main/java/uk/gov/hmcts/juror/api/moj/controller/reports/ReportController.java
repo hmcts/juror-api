@@ -22,10 +22,12 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.config.security.IsBureauUser;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
+import uk.gov.hmcts.juror.api.moj.controller.reports.request.CourtUtilisationStatsReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.JurySummoningMonitorReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.YieldPerformanceReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.CourtUtilisationStatsReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportJurorsResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.FinancialAuditReportResponse;
@@ -135,6 +137,17 @@ public class ReportController {
         @P("locCode") @PathVariable("locCode") @CourtLocationCode @Valid String locCode
     ) {
         return ResponseEntity.ok(utilisationReportService.getMonthlyUtilisationReports(locCode));
+    }
+
+    @PostMapping("/court-utilisation-stats-report")
+    @Operation(summary = "GET With Body", description = "View court utilisation stats report for "
+        + "a number of courts")
+    @ResponseStatus(HttpStatus.OK)
+    @IsCourtUser
+    public ResponseEntity<CourtUtilisationStatsReportResponse> getCourtUtilisationStatsReport(
+        @RequestBody CourtUtilisationStatsReportRequest request
+    ) {
+        return ResponseEntity.ok(utilisationReportService.courtUtilisationStatsReport(request));
     }
 
     @PostMapping("/jury-summoning-monitor")
