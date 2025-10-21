@@ -2,7 +2,6 @@ package uk.gov.hmcts.juror.api.juror.controller;
 
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -32,7 +31,10 @@ import uk.gov.hmcts.juror.api.config.public1.PublicJwtPayload;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.JurorDetailDto;
 import uk.gov.hmcts.juror.api.juror.service.StraightThroughType;
+import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
+import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
+import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.service.notify.NotificationClientApi;
 
 import java.net.URI;
@@ -41,8 +43,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyMap;
@@ -60,6 +64,9 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Autowired
     private TestRestTemplate template;
     private HttpHeaders httpHeaders;
+
+    @Autowired
+    private JurorHistoryRepository jurorHistoryRepository;
 
     @SuppressWarnings("SpringJavaAutowiringInspection")
     @Autowired
@@ -314,6 +321,14 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         assertThat(jdbcTemplate.queryForObject(
            "select response_entered from juror_mod.juror where juror_number = '644892530'",
             boolean.class)).isTrue();
+        // check the response submitted history is present for juror
+        Collection<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById("644892530");
+        assertThat(history).isNotEmpty();
+        Optional<JurorHistory> historyRecord = history.stream().filter(h ->
+            h.getHistoryCode().equals(HistoryCodeMod.RESPONSE_SUBMITTED)).findFirst();
+        assertThat(historyRecord).isPresent();
+        assertThat(historyRecord.get().getCreatedBy()).isEqualTo("SYSTEM");
+        assertThat(historyRecord.get().getOtherInformation()).isEqualTo("Digital");
     }
 
     /**
@@ -415,9 +430,9 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class))
             .isEqualTo(false);
         assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
-        assertThat(
-            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history WHERE pool_number= '644892530'",
-                Integer.class)).isEqualTo(0);
+        // check the response submitted history is present for juror
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history WHERE "
+            + "juror_number='644892530' AND history_code = 'RESS'", Integer.class)).isEqualTo(1);
     }
 
     @Test
@@ -515,6 +530,9 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_reasonable_adjustment",
             Integer.class)).isEqualTo(0);
+        // check the response submitted history is present for juror
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history WHERE "
+            + "juror_number='644892530' AND history_code = 'RESS'", Integer.class)).isEqualTo(0);
     }
 
     @Test
@@ -569,19 +587,23 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_reasonable_adjustment",
             Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject(
-            "select count(*) from juror_mod.juror_history WHERE OTHER_INFORMATION='Responded' and "
-                + "juror_number='644892530'",
-            Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject(
-            "select HISTORY_CODE from juror_mod.juror_history WHERE OTHER_INFORMATION='Responded' and "
-                + "juror_number='644892530'",
-            String.class)).isEqualTo("RESP");
-        assertThat(jdbcTemplate.queryForObject(
-            "select USER_ID from juror_mod.juror_history WHERE OTHER_INFORMATION='Responded' and "
-                + "juror_number='644892530'",
-            String.class)).isEqualTo(JurorDigitalApplication.AUTO_USER);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_AUD",
+
+        // check the response submitted history is present for juror
+        Collection<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById("644892530");
+        assertThat(history).isNotEmpty();
+        Optional<JurorHistory> historyRecord = history.stream().filter(h ->
+            h.getHistoryCode().equals(HistoryCodeMod.RESPONSE_SUBMITTED)).findFirst();
+        assertThat(historyRecord).isPresent();
+        assertThat(historyRecord.get().getCreatedBy()).isEqualTo("SYSTEM");
+        assertThat(historyRecord.get().getOtherInformation()).isEqualTo("Digital");
+
+        historyRecord = history.stream().filter(h ->
+            h.getHistoryCode().equals(HistoryCodeMod.RESPONDED_POSITIVELY)).findFirst();
+        assertThat(historyRecord).isPresent();
+        assertThat(historyRecord.get().getCreatedBy()).isEqualTo(JurorDigitalApplication.AUTO_USER);
+        assertThat(historyRecord.get().getOtherInformation()).isEqualTo("Responded");
+
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_aud",
             Integer.class)).isEqualTo(1);
         assertNullExcusalDate();
 
@@ -630,6 +652,10 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         RequestEntity<JurorResponseDto> requestEntity = new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
         template.exchange(requestEntity, String.class);
 
+        // check the response submitted history is present for juror
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history WHERE "
+            + "juror_number='644892530' AND history_code = 'RESS'", Integer.class)).isEqualTo(1);
+
         assertThat(
             jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             1);
@@ -639,7 +665,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             .isEqualTo(false);
         assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history", Integer.class)).isEqualTo(0);
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history", Integer.class)).isEqualTo(1);
         assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_AUD",
             Integer.class)).isEqualTo(0);
     }
@@ -717,20 +743,20 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             1);//summoned
         assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_CJS_EMPLOYMENT",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject(
-            "select count(*) from juror_mod.juror_history WHERE OTHER_INFORMATION='Responded' and "
-                + "juror_number='644892530'",
-            Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject(
-            "select count(HISTORY_CODE) from juror_mod.juror_history WHERE OTHER_INFORMATION='Responded' and "
-                + "juror_number='644892530'",
-            Integer.class))
-            .describedAs("No code history audit as straight through did not happen").isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject(
-            "select count(USER_ID) from juror_mod.juror_history WHERE OTHER_INFORMATION='Responded' and "
-                + "juror_number='644892530'",
-            Integer.class))
-            .describedAs("No user id history audit as straight through did not happen").isEqualTo(0);
+
+        // check the response submitted history is present for juror
+        Collection<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById("644892530");
+        assertThat(history).isNotEmpty();
+        Optional<JurorHistory> historyRecord = history.stream().filter(h ->
+            h.getHistoryCode().equals(HistoryCodeMod.RESPONSE_SUBMITTED)).findFirst();
+        assertThat(historyRecord).isPresent();
+        assertThat(historyRecord.get().getCreatedBy()).isEqualTo("SYSTEM");
+        assertThat(historyRecord.get().getOtherInformation()).isEqualTo("Digital");
+
+        historyRecord = history.stream().filter(h ->
+            h.getHistoryCode().equals(HistoryCodeMod.RESPONDED_POSITIVELY)).findFirst();
+        assertThat(historyRecord.isPresent()).isFalse();
+
         assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_AUD",
             Integer.class)).isEqualTo(0);
     }
@@ -797,20 +823,20 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             1);//summoned
         assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_reasonable_adjustment",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject(
-            "select count(*) from juror_mod.juror_history WHERE OTHER_INFORMATION='Responded' and "
-                + "juror_number='644892530'",
-            Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject(
-            "select count(HISTORY_CODE) from juror_mod.juror_history WHERE OTHER_INFORMATION='Responded' and "
-                + "juror_number='644892530'",
-            Integer.class))
-            .describedAs("No code history audit as straight through did not happen").isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject(
-            "select count(USER_ID) from juror_mod.juror_history WHERE OTHER_INFORMATION='Responded' and "
-                + "juror_number='644892530'",
-            Integer.class))
-            .describedAs("No user id history audit as straight through did not happen").isEqualTo(0);
+
+        // check the response submitted history is present for juror
+        Collection<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById("644892530");
+        assertThat(history).isNotEmpty();
+        Optional<JurorHistory> historyRecord = history.stream().filter(h ->
+                                        h.getHistoryCode().equals(HistoryCodeMod.RESPONSE_SUBMITTED)).findFirst();
+        assertThat(historyRecord).isPresent();
+        assertThat(historyRecord.get().getCreatedBy()).isEqualTo("SYSTEM");
+        assertThat(historyRecord.get().getOtherInformation()).isEqualTo("Digital");
+
+        historyRecord = history.stream().filter(h ->
+            h.getHistoryCode().equals(HistoryCodeMod.RESPONDED_POSITIVELY)).findFirst();
+        assertThat(historyRecord.isPresent()).isFalse();
+
         assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_AUD",
             Integer.class)).isEqualTo(0);
     }
@@ -1062,7 +1088,6 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     }
 
     @Test
-    @Ignore
     @Sql("/db/truncate.sql")
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
@@ -1131,17 +1156,16 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                     + "juror_number='644892530'",
                 Integer.class)).isEqualTo(1);
         assertThat(jdbcTemplate.queryForObject(
-            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='PDIS' and OTHER_INFORMATION='Disqualify"
-                + " Code A'"
+            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='PDIS' and OTHER_INFO_REFERENCE='A'"
                 + " and juror_number='644892530'",
             Integer.class)).isEqualTo(1);
         assertThat(jdbcTemplate.queryForObject(
-            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='RDIS' and OTHER_INFORMATION='Disqualify"
-                + " Letter "
-                + "Code A' and juror_number='644892530'",
+            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='RDIS' and OTHER_INFO_REFERENCE='A'"
+                + "and juror_number='644892530'",
             Integer.class)).isEqualTo(1);
+        // check disqualification letter is queued for printing
         assertThat(jdbcTemplate.queryForObject(
-            "select count(*) from JUROR.DISQ_LETT WHERE DISQ_CODE='A' and PART_NO='644892530'",
+            "select count(*) from juror_mod.bulk_print_data where form_type='5224' and juror_no='644892530'",
             Integer.class)).isEqualTo(1);
 
         Mockito.verify(this.notificationClientApi).sendEmail(anyString(), anyString(), anyMap(), anyString());
@@ -1223,15 +1247,14 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                     + "juror_number='644892530'",
                 Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject(
-            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='PDIS' and OTHER_INFORMATION='Disqualify"
-                + " Code A'"
+            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='PDIS' and OTHER_INFO_REFERENCE='A'"
                 + " and juror_number='644892530'",
             Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject(
-            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='RDIS' and OTHER_INFORMATION='Disqualify"
-                + " Letter "
-                + "Code A' and juror_number='644892530'",
+            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='RDIS' and OTHER_INFO_REFERENCE='A'"
+                + " and juror_number='644892530'",
             Integer.class)).isEqualTo(0);
+
         assertThat(jdbcTemplate.queryForObject(
             "select count(*) from juror_mod.bulk_print_data WHERE juror_no='644892530' and form_type in ('5224',"
                 + "'5224C')",
@@ -1239,7 +1262,6 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     }
 
     @Test
-    @Ignore
     @Sql("/db/truncate.sql")
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
@@ -1314,17 +1336,15 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "select count(*) from juror_mod.juror_pool WHERE STATUS='6' and juror_number='644892530'",
                 Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject(
-            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='PDIS' and OTHER_INFORMATION='Disqualify"
-                + " Code A'"
+            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='PDIS' and OTHER_INFO_REFERENCE='A'"
                 + " and juror_number='644892530'",
             Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject(
-            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='RDIS' and OTHER_INFORMATION='Disqualify"
-                + " Letter "
-                + "Code A' and juror_number='644892530'",
+            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='RDIS' and OTHER_INFO_REFERENCE='A'"
+                + " and juror_number='644892530'",
             Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject(
-            "select count(*) from JUROR.DISQ_LETT WHERE DISQ_CODE='A' and PART_NO='644892530'",
+            "select count(*) from JUROR_MOD.BULK_PRINT_DATA WHERE FORM_TYPE='5225' and JUROR_NO='644892530'",
             Integer.class)).isEqualTo(0);
     }
 
@@ -1403,16 +1423,16 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             jdbcTemplate.queryForObject(
                 "select count(*) from juror_mod.juror_pool WHERE STATUS='6' and juror_number='644892530'",
                 Integer.class)).isEqualTo(0);
+
         assertThat(jdbcTemplate.queryForObject(
-            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='PDIS' and OTHER_INFORMATION='Disqualify"
-                + " Code A'"
+            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='PDIS' and OTHER_INFO_REFERENCE='A'"
                 + " and juror_number='644892530'",
             Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject(
-            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='RDIS' and OTHER_INFORMATION='Disqualify"
-                + " Letter "
-                + "Code A' and juror_number='644892530'",
+            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='RDIS' and OTHER_INFO_REFERENCE='A'"
+                + " and juror_number='644892530'",
             Integer.class)).isEqualTo(0);
+
         assertThat(jdbcTemplate.queryForObject(
             "select count(*) from juror_mod.bulk_print_data WHERE form_type in ('5224','5224C') "
                 + "and juror_no='644892530'",

@@ -21,7 +21,7 @@ public class TrialSummaryDto {
     @JsonProperty("trial_number")
     private String trialNumber;
 
-    @JsonProperty
+    @JsonProperty("defendants")
     private String defendants;
 
     @JsonProperty("trial_type")

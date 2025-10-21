@@ -79,7 +79,6 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
 
     private PaginatedList<PoolRequestActiveDataDto> getActiveBureauTabRequests(ActivePoolFilterQuery filterQuery) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-
         JPAQuery<Tuple> query = queryFactory.select(POOL_REQUEST, CONFIRMED_FROM_BUREAU)
             .from(POOL_REQUEST)
             .leftJoin(JUROR_POOL).on(POOL_REQUEST.eq(JUROR_POOL.pool))
@@ -119,7 +118,6 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
         getActiveBureauTabUnderResponded(ActivePoolFilterQuery filterQuery) {
 
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-
         JPAQuery<Tuple> query = queryFactory.select(POOL_REQUEST, CONFIRMED_FROM_BUREAU)
             .from(POOL_REQUEST)
             .leftJoin(JUROR_POOL).on(POOL_REQUEST.eq(JUROR_POOL.pool))
@@ -128,7 +126,8 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
             .where(POOL_REQUEST.numberRequested.ne(0))
             .where(POOL_REQUEST.poolType.description.in(PoolRequestUtils.POOL_TYPES_DESC_LIST))
             .where(POOL_REQUEST.returnDate.loe(LocalDate.now().plusDays(35)))
-            .groupBy(POOL_REQUEST, POOL_REQUEST.courtLocation.name);
+            .groupBy(POOL_REQUEST, POOL_REQUEST.courtLocation.name)
+            .having(POOL_REQUEST.numberRequested.gt(CONFIRMED_FROM_BUREAU));
 
         if (StringUtils.isNotBlank(filterQuery.getLocCode())) {
             query.where(POOL_REQUEST.courtLocation.locCode.eq(filterQuery.getLocCode()));
@@ -138,29 +137,32 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
         }
 
         // return PaginationUtil.toPaginatedList(
-        PaginatedList<PoolRequestActiveDataDto> allResults = PaginationUtil.toPaginatedList(
+        PaginatedList<PoolRequestActiveDataDto> allResults =
+            PaginationUtil.toPaginatedList(
+
             query,
             filterQuery,
             PoolRequestedFilterQuery.SortField.POOL_NUMBER,
             SortMethod.ASC,
-            data -> {
-                PoolRequest poolRequest = Objects.requireNonNull(data.get(POOL_REQUEST));
-                return PoolRequestActiveDataDto.builder()
-                    .poolNumber(poolRequest.getPoolNumber())
-                    .requestedFromBureau(poolRequest.getNumberRequested())
-                    .confirmedFromBureau(data.get(CONFIRMED_FROM_BUREAU))
-                    .courtName(poolRequest.getCourtLocation().getName())
-                    .poolType(poolRequest.getPoolType().getDescription())
-                    .attendanceDate(poolRequest.getReturnDate())
-                    .build();
-            }
-        );
+                data -> {
+                    PoolRequest poolRequest = Objects.requireNonNull(data.get(POOL_REQUEST));
+                    return PoolRequestActiveDataDto.builder()
+                  .poolNumber(poolRequest.getPoolNumber())
+                  .requestedFromBureau(poolRequest.getNumberRequested())
+                  .confirmedFromBureau(data.get(CONFIRMED_FROM_BUREAU))
+                  .courtName(poolRequest.getCourtLocation().getName())
+                  .poolType(poolRequest.getPoolType().getDescription())
+                  .attendanceDate(poolRequest.getReturnDate())
+                  .required(poolRequest.getTotalNoRequired())
+                  .build();
+                });
+
         List<PoolRequestActiveDataDto> filtered = allResults.getData().stream()
             .filter(dto -> dto.getRequired() > 0)
             .filter(dto -> dto.getAttendanceDate() != null
                 &&
                 dto.getAttendanceDate().isBefore(LocalDate.now().plusDays(35)))
-            .sorted(Comparator.comparing(PoolRequestActiveDataDto::getRequired).reversed())
+            .sorted(Comparator.comparing(PoolRequestActiveDataDto::getAttendanceDate))
             .toList();
         return new PaginatedList<>(
             allResults.getCurrentPage(),
@@ -170,16 +172,22 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
         );
     }
 
-
-
-
     private PaginatedList<PoolRequestActiveDataDto> getActiveCourtTabRequests(ActivePoolFilterQuery filterQuery) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+
+        // Sum up active jurors only
+        NumberExpression<Integer> activeJurorCountExpr =
+            new CaseBuilder()
+                .when(JUROR_POOL.isActive.isTrue())
+                .then(1)
+                .otherwise(0)
+                .sum()
+                .as("activeJurorCount");
 
         JPAQuery<Tuple> activePoolsQuery = queryFactory.select(
                 POOL_REQUEST.poolNumber,
                 POOL_REQUEST.totalNoRequired,
-                JUROR_POOL.isActive.count(),
+                activeJurorCountExpr,
                 POOL_REQUEST.courtLocation.name,
                 POOL_REQUEST.poolType.description,
                 POOL_REQUEST.returnDate
@@ -220,7 +228,7 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
             data -> PoolRequestActiveDataDto.builder()
                 .poolNumber(data.get(POOL_REQUEST.poolNumber))
                 .poolCapacity(data.get(POOL_REQUEST.totalNoRequired).intValue())
-                .jurorsInPool(data.get(JUROR_POOL.isActive.count()).intValue())
+                .jurorsInPool(data.get(activeJurorCountExpr).intValue())
                 .courtName(data.get(POOL_REQUEST.courtLocation.name))
                 .poolType(data.get(POOL_REQUEST.poolType.description))
                 .attendanceDate(data.get(POOL_REQUEST.returnDate))

@@ -7,12 +7,17 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialSearch;
+import uk.gov.hmcts.juror.api.moj.controller.response.trial.PanelListDto;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
+import uk.gov.hmcts.juror.api.moj.domain.QJurorHistory;
+import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
+import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
+import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.utils.PaginationUtil;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -29,6 +34,8 @@ public class ITrialRepositoryImpl implements ITrialRepository {
     private static final QTrial TRIAL = QTrial.trial;
     private static final QPanel PANEL = QPanel.panel;
     private static final QAppearance APPEARANCE = QAppearance.appearance;
+    private static final QJurorPool JUROR_POOL = QJurorPool.jurorPool;
+    private static final QJurorHistory JUROR_HISTORY = QJurorHistory.jurorHistory;
 
     @Override
     public <T> PaginatedList<T> getListOfTrials(TrialSearch trialSearch,
@@ -87,5 +94,55 @@ public class ITrialRepositoryImpl implements ITrialRepository {
             .groupBy(TRIAL.trialNumber, TRIAL.description, TRIAL.trialType, TRIAL.courtroom.description,
                 TRIAL.judge.name)
             .fetch();
+    }
+
+    @Override
+    public List<PanelListDto> getReturnedJurors(String trialNo, String locCode) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+
+        List<Tuple> query = queryFactory.select(JUROR_POOL.juror.jurorNumber,
+                                                JUROR_POOL.juror.firstName,
+                                                JUROR_POOL.juror.lastName,
+                                                JUROR_POOL.status.statusDesc)
+            .from(JUROR_POOL)
+            .join(PANEL)
+            .on(JUROR_POOL.juror.jurorNumber.eq(PANEL.juror.jurorNumber)
+                    .and(PANEL.trial.courtLocation.locCode.eq(locCode)
+                             .and(PANEL.trial.trialNumber.eq(trialNo))))
+            .join(JUROR_HISTORY)
+            .on(JUROR_POOL.juror.jurorNumber.eq(JUROR_HISTORY.jurorNumber).and(JUROR_HISTORY.historyCode.eq(
+                HistoryCodeMod.JURY_EMPANELMENT).and(JUROR_HISTORY.otherInformationRef.eq(trialNo))))
+            .where(PANEL.result.eq(PanelResult.RETURNED))
+            .where(JUROR_POOL.isActive.isTrue())
+            .orderBy(JUROR_POOL.juror.jurorNumber.asc())
+            .fetch();
+
+        return query.stream().map(t -> new PanelListDto(
+                t.get(JUROR_POOL.juror.jurorNumber),
+                t.get(JUROR_POOL.juror.firstName),
+                t.get(JUROR_POOL.juror.lastName),
+                t.get(JUROR_POOL.status.statusDesc)
+            )).toList();
+    }
+
+    @Override
+    public int getOriginalEmpanelledJurorCount(String trialNo, String locCode) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+
+        List<Tuple> query =  queryFactory.select(PANEL.empanelledDate,
+                                   PANEL.empanelledDate.count())
+            .from(PANEL)
+            .where(PANEL.trial.courtLocation.locCode.eq(locCode))
+            .where(PANEL.trial.trialNumber.eq(trialNo))
+            .where(PANEL.empanelledDate.isNotNull())
+            .groupBy(PANEL.empanelledDate)
+            .orderBy(PANEL.empanelledDate.asc())
+            .fetch();
+
+        if (query.isEmpty()) {
+            return 0;
+        } else {
+            return query.get(0).get(PANEL.empanelledDate.count()).intValue();
+        }
     }
 }

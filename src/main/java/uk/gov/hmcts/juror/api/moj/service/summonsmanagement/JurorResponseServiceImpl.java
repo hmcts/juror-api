@@ -110,40 +110,12 @@ public class JurorResponseServiceImpl implements JurorResponseService {
 
 
     @Override
-    public int getSummonsRepliesCount(String locCode) {
-        log.info("Retrieving open summons replies count for bureau");
-        return jurorCommonResponseRepository.getOpenResponsesAtBureau(locCode);
-    }
-
-    @Override
     public int getOpenSummonsRepliesFourWeeksCount(String locCode) {
         log.info("Retrieving open summons replies 4 weeks before start date: {}", locCode);
         return jurorCommonResponseRepository.getSummonsRepliesFourWeeks(locCode);
     }
 
-    @Override
-    public int getOpenSummonsRepliesStandardCount(String locCode) {
-        log.info("Retrieving open standard summons replies: {}", locCode);
-        return jurorCommonResponseRepository.getSummonsRepliesStandard(locCode);
-    }
 
-    @Override
-    public int getOpenSummonsRepliesOverdueCount(String locCode) {
-        log.info("Retrieving open overdue summons replies: {}", locCode);
-        return jurorCommonResponseRepository.getSummonsRepliesUrgent(locCode);
-    }
-
-    @Override
-    public int getOpenSummonsRepliesAssignedCount(String locCode) {
-        log.info("Retrieving open summons replies assigned: {}", locCode);
-        return jurorCommonResponseRepository.getSummonsRepliesAssigned(locCode);
-    }
-
-    @Override
-    public int getOpenSummonsRepliesUnassignedCount(String locCode) {
-        log.info("Retrieving open summons replies unassigned: {}", locCode);
-        return jurorCommonResponseRepository.getSummonsRepliesUnassigned(locCode);
-    }
 
     @Override
     public int getDeferredJurorsStartDateNextWeekCount(String locCode) {

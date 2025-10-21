@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.moj.repository.trial;
 
 import com.querydsl.core.Tuple;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialSearch;
+import uk.gov.hmcts.juror.api.moj.controller.response.trial.PanelListDto;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 
@@ -17,4 +18,8 @@ public interface ITrialRepository {
     List<Trial> getListOfActiveTrials(String locCode);
 
     List<Tuple> getActiveTrialsWithJurorCount(String locationCode, LocalDate attendanceDate);
+
+    List<PanelListDto> getReturnedJurors(String trialNo, String locCode);
+
+    int getOriginalEmpanelledJurorCount(String trialNo, String locCode);
 }
