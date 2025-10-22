@@ -496,7 +496,10 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         juror.setAddressLine1(voter.getAddress());
         juror.setAddressLine2(voter.getAddress2());
         juror.setAddressLine3(voter.getAddress3());
-        juror.setAddressLine4(voter.getAddress4());
+
+        // need to ensure address line 4 is not null
+        setAddress4(voter, juror);
+
         juror.setAddressLine5(voter.getAddress5());
         juror.setPostcode(voter.getPostcode());
         juror.setDateOfBirth(voter.getDateOfBirth());
@@ -515,6 +518,25 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         log.info("Pool member {} added to the Pool Member table", juror.getJurorNumber());
 
         return jurorPool;
+    }
+
+    private void setAddress4(Voters voter, Juror juror) {
+        if (voter.getAddress4() == null || voter.getAddress4().isBlank()) {
+            // need to ensure address line 4 does not begin with a number
+            if (juror.getAddressLine3() != null && !juror.getAddressLine3().isBlank()
+                && juror.getAddressLine3().matches("^\\D.*")) {
+                // move address line 3 to address line 4
+                juror.setAddressLine4(juror.getAddressLine3());
+                juror.setAddressLine3(null);
+            } else if (juror.getAddressLine2() != null && !juror.getAddressLine2().isBlank()
+                && juror.getAddressLine2().matches("^\\D.*")) {
+                // move address line 2 to address line 4
+                juror.setAddressLine4(juror.getAddressLine2());
+                juror.setAddressLine2(null);
+            }
+        } else {
+            juror.setAddressLine4(voter.getAddress4());
+        }
     }
 
     private void validateCreatePoolRequest(PoolCreateRequestDto poolCreateRequestDto) {
