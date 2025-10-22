@@ -30,17 +30,22 @@ import uk.gov.hmcts.juror.api.config.InvalidJwtAuthenticationException;
 import uk.gov.hmcts.juror.api.config.public1.PublicJwtPayload;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.JurorDetailDto;
+import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.service.StraightThroughType;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
+import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
+import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
+import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.service.notify.NotificationClientApi;
 
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
@@ -67,6 +72,12 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
     @Autowired
     private JurorHistoryRepository jurorHistoryRepository;
+
+    @Autowired
+    private PoolRequestRepository poolRequestRepository;
+
+    @Autowired
+    private CourtLocationRepository courtLocationRepository;
 
     @SuppressWarnings("SpringJavaAutowiringInspection")
     @Autowired
@@ -191,7 +202,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     }
 
     /**
-     * A JUROR.UNIQUE_POOL entry with ATTEND_TIME set overrides the LOC_ATTEND_TIME column in JUROR_MOD.COURT_LOCATION
+     * A JUROR_MOD.POOL entry with ATTEND_TIME set overrides the LOC_ATTEND_TIME column in JUROR_MOD.COURT_LOCATION
      *
      * @throws Exception if the test falls over
      * @since JDB-2042
@@ -213,21 +224,26 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
         ResponseEntity<JurorDetailDto> exchange = template.exchange(new RequestEntity<Void>(httpHeaders,
             HttpMethod.GET, URI.create("/api/v1/public/juror/209092530")), JurorDetailDto.class);
+
+        assertThat(exchange.getBody()).isNotNull();
         assertThat(exchange.getBody()).extracting("jurorNumber", "title", "firstName", "lastName", "postcode")
             .contains("209092530", "Dr", "Jane", "CASTILLO", "AB39RY");
 
-        final LocalDateTime courtAttendTime =
-            jdbcTemplate.queryForObject("SELECT LOC_ATTEND_TIME FROM JUROR_MOD.COURT_LOCATION WHERE LOC_CODE='407'",
-                LocalDateTime.class);
-        final LocalDateTime poolAttendTime =
-            jdbcTemplate.queryForObject("SELECT ATTEND_TIME FROM juror_mod.pool", LocalDateTime.class);
+        Optional<CourtLocation> courtLocation = courtLocationRepository.findByLocCode("407");
+        assertThat(courtLocation).isPresent();
+        final LocalTime courtAttendTime = courtLocation.get().getCourtAttendTime();
+
+        Optional<PoolRequest> poolRequest = poolRequestRepository.findByPoolNumber("101000000");
+        assertThat(poolRequest).isPresent();
+        final LocalDateTime poolAttendTime = poolRequest.get().getAttendTime();
 
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm");
-        assertThat(exchange.getBody().getCourtAttendTime()).isNotNull();
-        assertThat(exchange.getBody().getCourtAttendTime()).isNotEqualTo(dateTimeFormatter.format(courtAttendTime));
-        assertThat(exchange.getBody().getCourtAttendTime()).isEqualTo(dateTimeFormatter.format(poolAttendTime));
+        String attendTime = exchange.getBody().getCourtAttendTime();
+        assertThat(attendTime).isNotNull();
+        assertThat(attendTime).isNotEqualTo(dateTimeFormatter.format(courtAttendTime));
+        assertThat(attendTime).isEqualTo(dateTimeFormatter.format(poolAttendTime));
 
-        assertThat(exchange.getBody().getCourtAttendTime()).contains("10:30").doesNotContain("09:30");
+        assertThat(attendTime).contains("10:30").doesNotContain("09:30");
     }
 
     @Test
