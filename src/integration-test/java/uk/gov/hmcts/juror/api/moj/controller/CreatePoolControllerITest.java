@@ -251,9 +251,21 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             assertThat(jurors).isNotEmpty();
             assertThat(jurors.size()).isEqualTo(8);
 
+            // check the address details have been saved correctly, not shuffled
+            Juror juror = jurors.get(0);
+            assertThat(juror.getAddressLine2()).isEqualTo("2nd ADDRESS LINE");
+            assertThat(juror.getAddressLine3()).isEqualTo("ADDRESS LINE 3");
+            assertThat(juror.getAddressLine4()).isEqualTo("ANYTOWN");
+
             List<JurorPool> jurorPools = jurorPoolRepository.findAll();
             assertThat(jurorPools).isNotEmpty();
             assertThat(jurorPools.size()).isEqualTo(8);
+
+            for (JurorPool jurorPool : jurorPools) {
+                JurorStatus expectedJurorStatus = jurorPool.getStatus();
+                assertThat(expectedJurorStatus.getStatus()).isEqualTo(IJurorStatus.SUMMONED);
+                assertThat(jurorPool.getIsActive()).isTrue();
+            }
         });
     }
 
