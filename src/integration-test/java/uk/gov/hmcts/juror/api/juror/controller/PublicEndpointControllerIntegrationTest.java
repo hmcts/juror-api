@@ -34,6 +34,7 @@ import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.juror.service.StraightThroughType;
 import uk.gov.hmcts.juror.api.moj.domain.AppSetting;
+import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
@@ -47,6 +48,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.repository.AppSettingRepository;
+import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -117,6 +119,9 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
     @Autowired
     private JurorResponseAuditRepositoryMod jurorResponseAuditRepositoryMod;
+
+    @Autowired
+    private BulkPrintDataRepository bulkPrintDataRepository;
 
     @Autowired
     private AppSettingRepository appSettingRepository;
@@ -1243,6 +1248,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/standing_data.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_ageExcusal.sql")
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     public void respondToSummons_happy_ageExcusal_successfulStraightThrough_young() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
@@ -1273,47 +1279,75 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             .title("DR")
             .build();
 
-        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.app_setting where SETTING='"
-            + StraightThroughType.AGE_EXCUSAL.getDbName() + "' AND VALUE='TRUE'", Integer.class)).isEqualTo(0);
-        assertThat(
-            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
-            0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_AUD",
-            Integer.class)).isEqualTo(0);
+
+        Optional<AppSetting> applicationSettings = appSettingRepository
+            .findById(StraightThroughType.AGE_EXCUSAL.getDbName());
+        assertThat(applicationSettings).isEmpty();
+
+        checkResponseTablesEmpty();
 
         RequestEntity<JurorResponseDto> requestEntity = new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
         ResponseEntity<String> exchange = template.exchange(requestEntity, String.class);
 
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(
-            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
-            1);
-        assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
-            String.class)).isEqualTo("CLOSED");
-        assertThat(
-            jdbcTemplate.queryForObject(
-                "select count(*) from juror_mod.juror WHERE RESPONDED='Y' and juror_number='644892530'",
-                Integer.class)).isEqualTo(1);
-        assertThat(
-            jdbcTemplate.queryForObject(
-                "select count(*) from juror_mod.juror WHERE DISQ_CODE='A' and juror_number='644892530'",
-                Integer.class)).isEqualTo(1);
-        assertThat(
-            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_pool WHERE STATUS='6' and "
-                    + "juror_number='644892530'",
-                Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject(
-            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='PDIS' and other_info_reference='A'"
-                + " and juror_number='644892530'",
-            Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject(
-            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='RDIS' "
-                + "and other_info_reference='A' and juror_number='644892530'",
-            Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject(
-            "select count(*) from juror_mod.bulk_print_data WHERE form_type in ('5224','5224C') "
-                + "and juror_no='644892530'",
-            Integer.class)).isEqualTo(1);
+
+        executeInTransaction(() -> {
+
+            checkSingleResponseCreated();
+
+            // get the juror response and check the processing status
+            DigitalResponse response = jurorDigitalResponseRepositoryMod.findByJurorNumber("644892530");
+            assertThat(response).isNotNull();
+            // processing status should be closed as the straight through succeeded
+            assertThat(response.getProcessingStatus()).isEqualTo(ProcessingStatus.CLOSED);
+            assertThat(response.getReplyType().getType()).isEqualTo(ReplyMethod.DIGITAL.getDescription());
+
+            // get juror record and check responded and DOB
+            Optional<Juror> juror = jurorRepository.findById("644892530");
+            assertThat(juror).isPresent();
+            Juror jurorRecord = juror.get();
+            assertThat(jurorRecord.getDateOfBirth()).isEqualTo(dob); // juror DOB should have been updated
+            assertThat(jurorRecord.isResponded()).isTrue();
+            assertThat(jurorRecord.getDisqualifyCode()).isEqualTo("A");
+
+            // get the juror pool record and check status
+            JurorPool jurorPool = jurorPoolRepository
+                .findByJurorJurorNumberAndPoolPoolNumber("644892530", "555000000");
+            assertThat(jurorPool).isNotNull();
+            // status should be DISQUALIFIED
+            assertThat(jurorPool.getStatus().getStatus()).isEqualTo(JurorStatusEnum.DISQUALIFIED.getStatus());
+
+            Collection<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById("644892530");
+            assertThat(history).isNotEmpty();
+            assertThat(history.size()).isEqualTo(5);
+
+            checkResponseSubmittedHistory(history);
+            checkDisqualifyPoolMemberHistory(history);
+            checkWithdrawalLetterHistory(history);
+            // there are two juror details updated history records too for dob and postcode
+
+            List<BulkPrintData> bulkPrintDataList = bulkPrintDataRepository.findByJurorNo("644892530");
+            assertThat(bulkPrintDataList.size()).isEqualTo(1);
+            assertThat(bulkPrintDataList.get(0).getFormAttribute().getFormType())
+                .as("form code should be withdrawal codes").isIn("5224", "5224C");
+
+        });
+    }
+
+    private static void checkWithdrawalLetterHistory(Collection<JurorHistory> history) {
+        Optional<JurorHistory> historyRecord = history.stream().filter(h ->
+                               h.getHistoryCode().equals(HistoryCodeMod.WITHDRAWAL_LETTER)).findFirst();
+        assertThat(historyRecord).isPresent();
+        assertThat(historyRecord.get().getCreatedBy()).isEqualTo("SYSTEM");
+        assertThat(historyRecord.get().getOtherInformationRef()).isEqualTo("A");
+    }
+
+    private static void checkDisqualifyPoolMemberHistory(Collection<JurorHistory> history) {
+        Optional<JurorHistory> historyRecord = history.stream().filter(h ->
+                        h.getHistoryCode().equals(HistoryCodeMod.DISQUALIFY_POOL_MEMBER)).findFirst();
+        assertThat(historyRecord).isPresent();
+        assertThat(historyRecord.get().getCreatedBy()).isEqualTo("AUTO");
+        assertThat(historyRecord.get().getOtherInformationRef()).isEqualTo("A");
     }
 
     @Test
@@ -1322,6 +1356,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/standing_data.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_ageExcusal.sql")
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     public void respondToSummons_happy_ageExcusal_successfulStraightThrough_old() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
@@ -1355,47 +1390,57 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             .title("DR")
             .build();
 
-        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.app_setting where SETTING='"
-            + StraightThroughType.AGE_EXCUSAL.getDbName() + "' AND VALUE='TRUE'", Integer.class)).isEqualTo(0);
-        assertThat(
-            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
-            0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_AUD",
-            Integer.class)).isEqualTo(0);
+        Optional<AppSetting> applicationSettings = appSettingRepository
+            .findById(StraightThroughType.AGE_EXCUSAL.getDbName());
+        assertThat(applicationSettings).isEmpty();
+
+        checkResponseTablesEmpty();
 
         RequestEntity<JurorResponseDto> requestEntity = new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
         ResponseEntity<String> exchange = template.exchange(requestEntity, String.class);
 
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(
-            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
-            1);
-        assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
-            String.class)).isEqualTo("CLOSED");
-        assertThat(
-            jdbcTemplate.queryForObject(
-                "select count(*) from juror_mod.juror WHERE RESPONDED='Y' and juror_number='644892530'",
-                Integer.class)).isEqualTo(1);
-        assertThat(
-            jdbcTemplate.queryForObject(
-                "select count(*) from juror_mod.juror WHERE DISQ_CODE='A' and juror_number='644892530'",
-                Integer.class)).isEqualTo(1);
-        assertThat(
-            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_pool WHERE STATUS='6' and "
-                    + "juror_number='644892530'",
-                Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject(
-            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='PDIS' and OTHER_INFO_REFERENCE='A'"
-                + " and juror_number='644892530'",
-            Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject(
-            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='RDIS' and OTHER_INFO_REFERENCE='A'"
-                + "and juror_number='644892530'",
-            Integer.class)).isEqualTo(1);
-        // check disqualification letter is queued for printing
-        assertThat(jdbcTemplate.queryForObject(
-            "select count(*) from juror_mod.bulk_print_data where form_type='5224' and juror_no='644892530'",
-            Integer.class)).isEqualTo(1);
+
+        executeInTransaction(() -> {
+
+            checkSingleResponseCreated();
+
+            // get the juror response and check the processing status
+            DigitalResponse response = jurorDigitalResponseRepositoryMod.findByJurorNumber("644892530");
+            assertThat(response).isNotNull();
+            // processing status should be closed as the straight through succeeded
+            assertThat(response.getProcessingStatus()).isEqualTo(ProcessingStatus.CLOSED);
+            assertThat(response.getReplyType().getType()).isEqualTo(ReplyMethod.DIGITAL.getDescription());
+
+            // get juror record and check responded and DOB
+            Optional<Juror> juror = jurorRepository.findById("644892530");
+            assertThat(juror).isPresent();
+            Juror jurorRecord = juror.get();
+            assertThat(jurorRecord.getDateOfBirth()).isEqualTo(dob); // juror DOB should have been updated
+            assertThat(jurorRecord.isResponded()).isTrue();
+            assertThat(jurorRecord.getDisqualifyCode()).isEqualTo("A");
+
+            // get the juror pool record and check status
+            JurorPool jurorPool = jurorPoolRepository
+                .findByJurorJurorNumberAndPoolPoolNumber("644892530", "555000000");
+            assertThat(jurorPool).isNotNull();
+            // status should be DISQUALIFIED
+            assertThat(jurorPool.getStatus().getStatus()).isEqualTo(JurorStatusEnum.DISQUALIFIED.getStatus());
+
+            Collection<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById("644892530");
+            assertThat(history).isNotEmpty();
+            assertThat(history.size()).isEqualTo(4);
+
+            checkResponseSubmittedHistory(history);
+            checkDisqualifyPoolMemberHistory(history);
+            checkWithdrawalLetterHistory(history);
+            // there is also a juror details updated history record for dob
+
+            List<BulkPrintData> bulkPrintDataList = bulkPrintDataRepository.findByJurorNo("644892530");
+            assertThat(bulkPrintDataList.size()).isEqualTo(1);
+            assertThat(bulkPrintDataList.get(0).getFormAttribute().getFormType())
+                .as("form code should be withdrawal codes").isIn("5224", "5224C").isIn("5224", "5224C");
+        });
 
         Mockito.verify(this.notificationClientApi).sendEmail(anyString(), anyString(), anyMap(), anyString());
     }
