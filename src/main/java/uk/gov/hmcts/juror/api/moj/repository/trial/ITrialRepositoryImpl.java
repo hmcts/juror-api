@@ -114,6 +114,7 @@ public class ITrialRepositoryImpl implements ITrialRepository {
                 HistoryCodeMod.JURY_EMPANELMENT).and(JUROR_HISTORY.otherInformationRef.eq(trialNo))))
             .where(PANEL.result.eq(PanelResult.RETURNED))
             .where(JUROR_POOL.isActive.isTrue())
+            .where(JUROR_POOL.owner.eq(SecurityUtil.getActiveOwner()))
             .orderBy(JUROR_POOL.juror.jurorNumber.asc())
             .fetch();
 
