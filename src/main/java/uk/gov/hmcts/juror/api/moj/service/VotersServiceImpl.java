@@ -11,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.bureau.domain.SystemParameter;
 import uk.gov.hmcts.juror.api.bureau.domain.SystemParameterRepository;
+import uk.gov.hmcts.juror.api.juror.service.JurorService;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolCreateRequestDto;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.QVoters;
 import uk.gov.hmcts.juror.api.moj.domain.Voters;
 import uk.gov.hmcts.juror.api.moj.repository.VotersRepository;
@@ -27,6 +29,9 @@ import java.util.Optional;
 public class VotersServiceImpl implements VotersService {
     static final int AGE_LOWER_SP_ID = 101;
     static final int AGE_UPPER_SP_ID = 100;
+
+    @Autowired
+    private JurorService jurorService;
 
     private final VotersRepository votersRepository;
     private final SystemParameterRepository systemParameterRepository;
@@ -69,9 +74,20 @@ public class VotersServiceImpl implements VotersService {
         if (isCoroners) {
             query.where(QVoters.voters.flags.isNull());
         }
-        return query.orderBy(NumberExpression.random().asc())
+        List<Voters> votersList = query.orderBy(NumberExpression.random().asc())
             .limit((long) (citizensToSummon * 1.4))
             .fetch();
+
+        // filter out deceased voters
+        List<Juror> deceasedJurors = jurorService.getDeceasedJurors();
+
+        votersList.removeIf(voter -> deceasedJurors.stream()
+            .anyMatch(juror -> juror.getFirstName().equals(voter.getFirstName())
+                && juror.getLastName().equals(voter.getLastName())
+                && juror.getAddressLine1().equals(voter.getAddress())
+                && juror.getPostcode().equals(voter.getPostcode())));
+
+        return votersList;
     }
 
     JPAQueryFactory getQueryFactory() {
