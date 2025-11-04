@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.bureau.domain.SystemParameter;
 import uk.gov.hmcts.juror.api.bureau.domain.SystemParameterRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolCreateRequestDto;
+import uk.gov.hmcts.juror.api.moj.domain.ExcludedVoters;
+import uk.gov.hmcts.juror.api.moj.domain.QExcludedVoters;
 import uk.gov.hmcts.juror.api.moj.domain.QVoters;
 import uk.gov.hmcts.juror.api.moj.domain.Voters;
 import uk.gov.hmcts.juror.api.moj.repository.VotersRepository;
@@ -69,10 +71,29 @@ public class VotersServiceImpl implements VotersService {
         if (isCoroners) {
             query.where(QVoters.voters.flags.isNull());
         }
-        return query.orderBy(NumberExpression.random().asc())
+        List<Voters> votersSelected = query.orderBy(NumberExpression.random().asc())
             .limit((long) (citizensToSummon * 1.4))
             .fetch();
+
+        // need to do some filtering in case excluded or deceased voters were fetched
+        List<ExcludedVoters> excludedVoters = getExcludedVoters();
+
+        // filter out excluded voters
+        votersSelected.removeIf(voter -> excludedVoters.stream()
+            .anyMatch(excludedVoter -> excludedVoter.getFirstName().equals(voter.getFirstName())
+                && excludedVoter.getLastName().equals(voter.getLastName())
+                && excludedVoter.getAddress1().equals(voter.getAddress())
+                && excludedVoter.getPostcode().equals(voter.getPostcode())));
+
+        return votersSelected;
     }
+
+    @Override
+    public List<ExcludedVoters> getExcludedVoters() {
+        JPAQueryFactory queryFactory = getQueryFactory();
+        return queryFactory.selectFrom(QExcludedVoters.excludedVoters).fetch();
+    }
+
 
     JPAQueryFactory getQueryFactory() {
         return new JPAQueryFactory(entityManager);
