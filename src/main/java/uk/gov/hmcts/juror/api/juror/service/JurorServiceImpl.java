@@ -23,7 +23,6 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
-import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ReplyTypeRepository;
@@ -104,8 +103,8 @@ public class JurorServiceImpl implements JurorService {
     }
 
     @Override
-    public List<Juror> getDeceasedJurors() {
-        return jurorRepository.findByExcusalCode(ExcusalCodeEnum.D.getCode());
+    public List<Juror> getDeceasedJurors(List<String> postcodes) {
+        return jurorRepository.findDeceasedJurors(postcodes);
     }
 
     /**

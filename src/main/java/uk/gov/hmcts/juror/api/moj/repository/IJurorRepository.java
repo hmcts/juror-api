@@ -25,5 +25,7 @@ public interface IJurorRepository {
 
     JPAQuery<Tuple> fetchFilteredJurorRecords(JurorRecordFilterRequestQuery query);
 
+    List<Juror> findDeceasedJurors(List<String> postcodes);
+
     StringPath JUROR_FULL_NAME = Expressions.stringPath("jurorName");
 }

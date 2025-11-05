@@ -11,6 +11,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -126,5 +127,15 @@ public class JurorRepositoryImpl implements IJurorRepository {
             JUROR_POOL.pool.courtLocation.name,
             JUROR_POOL.status.statusDesc,
             JUROR_POOL.pool.courtLocation.locCode);
+    }
+
+    @Override
+    public List<Juror> findDeceasedJurors(List<String> postcodes) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+
+        return queryFactory.selectFrom(JUROR)
+            .where(JUROR.excusalCode.eq(ExcusalCodeEnum.D.getCode()))
+            .where(JUROR.postcode.in(postcodes))
+            .fetch();
     }
 }

@@ -26,7 +26,7 @@ VALUES
 
 INSERT INTO juror_mod.juror (juror_number, last_name, first_name, address_line_1, address_line_4, postcode, responded, excusal_code)
 VALUES
-('641600090', 'LNAMEFOUR', 'FNAMEFOUR', '4 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, 'D'),
-('641600091', 'LNAMEFIVE', 'FNAMEFIVE', '5 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, 'D'),
-('641600092', 'LNAMESIX', 'FNAMESIX', '6 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, 'D'),
-('641600093', 'LNAMENOMATCH', 'FNAMENOMATCH', '6 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, 'D');
+('641600095', 'LNAMEFOUR', 'FNAMEFOUR', '4 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, 'D'),
+('641600096', 'LNAMEFIVE', 'FNAMEFIVE', '5 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, 'D'),
+('641600097', 'LNAMESIX', 'FNAMESIX', '6 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, 'D'),
+('641600098', 'LNAMENOMATCH', 'FNAMENOMATCH', '6 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, 'D');

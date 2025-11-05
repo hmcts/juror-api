@@ -20,7 +20,7 @@ public interface JurorService {
      */
     JurorDetailDto getJurorByJurorNumber(String jurorNumber);
 
-    List<Juror> getDeceasedJurors();
+    List<Juror> getDeceasedJurors(List<String> postcodes);
 
     /**
      * Save a juror response to persistence.

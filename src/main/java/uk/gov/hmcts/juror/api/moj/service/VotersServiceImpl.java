@@ -78,8 +78,19 @@ public class VotersServiceImpl implements VotersService {
             .limit((long) (citizensToSummon * 1.4))
             .fetch();
 
-        // filter out deceased voters
-        List<Juror> deceasedJurors = jurorService.getDeceasedJurors();
+        /* Filter out deceased voters -
+        Not running a query to join juror with the voters table as that would be potentially slower
+        (work was done on optimising the performance of the getVoters function)
+        Not using a join with pool for loc_code/owner of user as voters postcodes may cover multiple courts
+        and jurors could have been moved between catchment areas */
+
+        // create a list of all postcodes from votersList and iterate through returned jurors to remove any matches
+        List<String> voterPostcodes = votersList.stream()
+            .map(Voters::getPostcode)
+            .distinct()
+            .toList();
+
+        List<Juror> deceasedJurors = jurorService.getDeceasedJurors(voterPostcodes);
 
         votersList.removeIf(voter -> deceasedJurors.stream()
             .anyMatch(juror -> juror.getFirstName().equals(voter.getFirstName())
