@@ -13,7 +13,7 @@ import uk.gov.hmcts.juror.api.bureau.domain.SystemParameter;
 import uk.gov.hmcts.juror.api.bureau.domain.SystemParameterRepository;
 import uk.gov.hmcts.juror.api.juror.service.JurorService;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolCreateRequestDto;
-import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.DeceasedJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QVoters;
 import uk.gov.hmcts.juror.api.moj.domain.Voters;
 import uk.gov.hmcts.juror.api.moj.repository.VotersRepository;
@@ -90,13 +90,13 @@ public class VotersServiceImpl implements VotersService {
             .distinct()
             .toList();
 
-        List<Juror> deceasedJurors = jurorService.getDeceasedJurors(voterPostcodes);
+        List<DeceasedJuror> deceasedJurors = jurorService.getDeceasedJurors(voterPostcodes);
 
         votersList.removeIf(voter -> deceasedJurors.stream()
-            .anyMatch(juror -> juror.getFirstName().equals(voter.getFirstName())
-                && juror.getLastName().equals(voter.getLastName())
-                && juror.getAddressLine1().equals(voter.getAddress())
-                && juror.getPostcode().equals(voter.getPostcode())));
+            .anyMatch(juror -> juror.getFirstName().equalsIgnoreCase(voter.getFirstName())
+                && juror.getLastName().equalsIgnoreCase(voter.getLastName())
+                && juror.getAddressLine1().equalsIgnoreCase(voter.getAddress())
+                && juror.getPostcode().equalsIgnoreCase(voter.getPostcode())));
 
         return votersList;
     }

@@ -304,11 +304,11 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     public void createPool_withDeceasedVoters() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-                                                   .userType(UserType.BUREAU)
-                                                   .login("BUREAU_USER")
-                                                   .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).build())
-                                                   .owner("400")
-                                                   .build());
+                                   .userType(UserType.BUREAU)
+                                   .login("BUREAU_USER")
+                                   .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).build())
+                                   .owner("400")
+                                   .build());
 
         PoolCreateRequestDto poolCreateRequest = setUpPoolCreateRequestDto();
         poolCreateRequest.setNoRequested(8);

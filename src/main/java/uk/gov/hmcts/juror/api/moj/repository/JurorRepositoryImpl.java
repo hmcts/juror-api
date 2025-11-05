@@ -7,6 +7,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorRecordFilterRequestQuery;
+import uk.gov.hmcts.juror.api.moj.domain.DeceasedJuror;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
@@ -130,12 +131,25 @@ public class JurorRepositoryImpl implements IJurorRepository {
     }
 
     @Override
-    public List<Juror> findDeceasedJurors(List<String> postcodes) {
+    public List<DeceasedJuror> findDeceasedJurors(List<String> postcodes) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
 
-        return queryFactory.selectFrom(JUROR)
+        List<Tuple> deceasedJurors = queryFactory.select(JUROR.firstName,
+                                                         JUROR.lastName,
+                                                         JUROR.addressLine1,
+                                                         JUROR.postcode)
+            .from(JUROR)
             .where(JUROR.excusalCode.eq(ExcusalCodeEnum.D.getCode()))
             .where(JUROR.postcode.in(postcodes))
             .fetch();
+
+        return deceasedJurors.stream()
+            .map(tuple -> new DeceasedJuror(
+                tuple.get(JUROR.firstName),
+                tuple.get(JUROR.lastName),
+                tuple.get(JUROR.addressLine1),
+                tuple.get(JUROR.postcode)))
+            .toList();
+
     }
 }

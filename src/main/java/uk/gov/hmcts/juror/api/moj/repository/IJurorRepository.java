@@ -6,6 +6,7 @@ import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorRecordFilterRequestQuery;
+import uk.gov.hmcts.juror.api.moj.domain.DeceasedJuror;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 
 import java.util.List;
@@ -25,7 +26,7 @@ public interface IJurorRepository {
 
     JPAQuery<Tuple> fetchFilteredJurorRecords(JurorRecordFilterRequestQuery query);
 
-    List<Juror> findDeceasedJurors(List<String> postcodes);
+    List<DeceasedJuror> findDeceasedJurors(List<String> postcodes);
 
     StringPath JUROR_FULL_NAME = Expressions.stringPath("jurorName");
 }
