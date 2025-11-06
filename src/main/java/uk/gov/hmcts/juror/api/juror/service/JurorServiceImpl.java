@@ -30,6 +30,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseR
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.ReasonableAdjustmentsRepository;
+import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.PoolRequestService;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
@@ -59,6 +60,7 @@ public class JurorServiceImpl implements JurorService {
     private final ReasonableAdjustmentsRepository reasonableAdjustmentsRepository;
     private final JurorRepository jurorRepository;
     private final JurorPoolService jurorPoolService;
+    private final JurorHistoryService jurorHistoryService;
 
 
     @Override
@@ -191,6 +193,10 @@ public class JurorServiceImpl implements JurorService {
 
             juror.setResponseEntered(true);
             jurorRepository.save(juror);
+
+            // create juror history record
+            jurorHistoryService.createResponseSubmittedHistory(jurorDetails,
+                                                               ReplyMethod.DIGITAL.getDescription(), null);
 
             log.info("[Digital Response] Juror response saved for juror {}", responseEntity.getJurorNumber());
             return savedJurorResponse;
