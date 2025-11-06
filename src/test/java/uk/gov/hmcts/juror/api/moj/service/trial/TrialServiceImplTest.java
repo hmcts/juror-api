@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.moj.service.trial;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
@@ -15,9 +16,11 @@ import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.EndTrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorPanelReassignRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReinstateJurorsRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReturnJuryDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialSearch;
+import uk.gov.hmcts.juror.api.moj.controller.response.trial.PanelListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialSummaryDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
@@ -70,6 +73,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.juror.api.TestUtils.staffBuilder;
 
@@ -515,100 +519,388 @@ class TrialServiceImplTest {
         Assertions.assertThrows(MojException.NotFound.class, () -> trialService.endTrial(dto));
     }
 
-    @Test
-    void reassignPanelMembersHappy() {
+    @Nested
+    class ReassignPanelMembers {
 
-        payload = TestUtils.createJwt("415", "COURT_USER", "1", Collections.singletonList("415"));
-        TestUtils.mockSecurityUtil(payload);
-        final String sourceTrialNumber = "T100000000";
-        final String targetTrialNumber = "T100000001";
-        final String locCode = "415";
-        final List<String> jurors = Arrays.asList("111111101", "111111102", "111111103");
-        List<Panel> panelMembers = createPanelMembers(10, null, sourceTrialNumber, IJurorStatus.PANEL);
+        @Test
+        void reassignPanelMembersHappy() {
 
-        Trial trial = createTrial(targetTrialNumber);
-        when(trialRepository.findByTrialNumberAndCourtLocationLocCode(targetTrialNumber, locCode))
-            .thenReturn(Optional.of(trial));
+            payload = TestUtils.createJwt("415", "COURT_USER", "1", Collections.singletonList("415"));
+            TestUtils.mockSecurityUtil(payload);
+            final String sourceTrialNumber = "T100000000";
+            final String targetTrialNumber = "T100000001";
+            final String locCode = "415";
+            final List<String> jurors = Arrays.asList("111111101", "111111102", "111111103");
+            List<Panel> panelMembers = createPanelMembers(10, null, sourceTrialNumber, IJurorStatus.PANEL);
 
-        when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(sourceTrialNumber, "415"))
-            .thenReturn(panelMembers);
+            Trial trial = createTrial(targetTrialNumber);
+            when(trialRepository.findByTrialNumberAndCourtLocationLocCode(targetTrialNumber, locCode))
+                .thenReturn(Optional.of(trial));
 
-        when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(targetTrialNumber, "415"))
-            .thenReturn(Collections.emptyList());
+            when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(sourceTrialNumber, "415"))
+                .thenReturn(panelMembers);
 
-        trialService.reassignPanelMembers(createReassignPanelMembersRequestDto(
-            jurors, sourceTrialNumber, targetTrialNumber, locCode));
+            when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(targetTrialNumber, "415"))
+                .thenReturn(Collections.emptyList());
 
-        verify(panelRepository, times(1))
-            .findByTrialTrialNumberAndTrialCourtLocationLocCode(sourceTrialNumber, "415");
-        verify(panelRepository, times(6)).saveAndFlush(any()); // 2 * 3 jurors
-        verify(jurorHistoryService, times(jurors.size())).createReassignedToPanelHistory(any(), any());
-    }
-
-    @Test
-    void reassignPanelMembersTrialEnded() {
-
-        payload = TestUtils.createJwt("415", "COURT_USER", "1", Collections.singletonList("415"));
-        TestUtils.mockSecurityUtil(payload);
-        final String sourceTrialNumber = "T100000000";
-        final String targetTrialNumber = "T100000001";
-        final String locCode = "415";
-        final List<String> jurors = Arrays.asList("111111101", "111111102", "111111103");
-
-        Trial trial = createTrial(targetTrialNumber);
-        trial.setTrialEndDate(now());
-
-        when(trialRepository.findByTrialNumberAndCourtLocationLocCode(targetTrialNumber, locCode))
-            .thenReturn(Optional.of(trial));
-
-        assertThatExceptionOfType(MojException.BusinessRuleViolation.class).isThrownBy(() ->
             trialService.reassignPanelMembers(createReassignPanelMembersRequestDto(
-            jurors, sourceTrialNumber, targetTrialNumber, locCode)));
+                jurors, sourceTrialNumber, targetTrialNumber, locCode));
 
-        verify(panelRepository, never()).findByTrialTrialNumberAndTrialCourtLocationLocCode(anyString(), anyString());
-        verify(panelRepository, never()).saveAndFlush(any());
-        verify(jurorHistoryService, never()).createReassignedToPanelHistory(any(), any());
+            verify(panelRepository, times(1))
+                .findByTrialTrialNumberAndTrialCourtLocationLocCode(sourceTrialNumber, "415");
+            verify(panelRepository, times(6)).saveAndFlush(any()); // 2 * 3 jurors
+            verify(jurorHistoryService, times(jurors.size())).createReassignedToPanelHistory(any(), any());
+        }
 
+        @Test
+        void reassignPanelMembersTrialEnded() {
+
+            payload = TestUtils.createJwt("415", "COURT_USER", "1", Collections.singletonList("415"));
+            TestUtils.mockSecurityUtil(payload);
+            final String sourceTrialNumber = "T100000000";
+            final String targetTrialNumber = "T100000001";
+            final String locCode = "415";
+            final List<String> jurors = Arrays.asList("111111101", "111111102", "111111103");
+
+            Trial trial = createTrial(targetTrialNumber);
+            trial.setTrialEndDate(now());
+
+            when(trialRepository.findByTrialNumberAndCourtLocationLocCode(targetTrialNumber, locCode))
+                .thenReturn(Optional.of(trial));
+
+            assertThatExceptionOfType(MojException.BusinessRuleViolation.class).isThrownBy(() ->
+                                                                           trialService.reassignPanelMembers(
+                                                                               createReassignPanelMembersRequestDto(
+                                                                                   jurors,
+                                                                                   sourceTrialNumber,
+                                                                                   targetTrialNumber,
+                                                                                   locCode
+                                                                               )));
+
+            verify(panelRepository, never()).findByTrialTrialNumberAndTrialCourtLocationLocCode(
+                                                                            anyString(), anyString());
+            verify(panelRepository, never()).saveAndFlush(any());
+            verify(jurorHistoryService, never()).createReassignedToPanelHistory(any(), any());
+
+        }
+
+        @Test
+        void reassignPanelMembersSameTrialNumbers() {
+
+            payload = TestUtils.createJwt("415", "COURT_USER", "1", Collections.singletonList("415"));
+            TestUtils.mockSecurityUtil(payload);
+            final String sourceTrialNumber = "T100000000";
+            final String targetTrialNumber = "T100000000";
+            final String locCode = "415";
+            final List<String> jurors = Arrays.asList("111111101", "111111102", "111111103");
+
+            assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
+                                                                    trialService.reassignPanelMembers(
+                                                                        createReassignPanelMembersRequestDto(
+                                                                            jurors,
+                                                                            sourceTrialNumber,
+                                                                            targetTrialNumber,
+                                                                            locCode
+                                                                        )));
+
+            verify(panelRepository, never()).findByTrialTrialNumberAndTrialCourtLocationLocCode(
+                anyString(),
+                anyString()
+            );
+            verify(panelRepository, never()).saveAndFlush(any());
+            verify(jurorHistoryService, never()).createReassignedToPanelHistory(any(), any());
+
+        }
+
+        @Test
+        void reassignPanelMembersInvalidCourtLocation() {
+
+            payload = TestUtils.createJwt("415", "COURT_USER", "1", Collections.singletonList("415"));
+            TestUtils.mockSecurityUtil(payload);
+            final String sourceTrialNumber = "T100000000";
+            final String targetTrialNumber = "T100000001";
+            final String locCode = "416";
+            final List<String> jurors = Arrays.asList("111111101", "111111102", "111111103");
+
+            assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
+                                                                               trialService.reassignPanelMembers(
+                                                                                   createReassignPanelMembersRequestDto(
+                                                                                       jurors,
+                                                                                       sourceTrialNumber,
+                                                                                       targetTrialNumber,
+                                                                                       locCode
+                                                                                   )));
+
+            verify(panelRepository, never()).findByTrialTrialNumberAndTrialCourtLocationLocCode(
+                anyString(),
+                anyString()
+            );
+            verify(panelRepository, never()).saveAndFlush(any());
+            verify(jurorHistoryService, never()).createReassignedToPanelHistory(any(), any());
+
+        }
     }
 
-    @Test
-    void reassignPanelMembersSameTrialNumbers() {
+    @Nested
+    class ReinstateJurors {
 
-        payload = TestUtils.createJwt("415", "COURT_USER", "1", Collections.singletonList("415"));
-        TestUtils.mockSecurityUtil(payload);
-        final String sourceTrialNumber = "T100000000";
-        final String targetTrialNumber = "T100000000";
-        final String locCode = "415";
-        final List<String> jurors = Arrays.asList("111111101", "111111102", "111111103");
+        static final String TRIAL_NUMBER = "TRIAL2";
+        static final String LOC_CODE = "415";
+        final List<String> jurors = Arrays.asList("641684001", "641674001");
+        final ReinstateJurorsRequestDto dto = new ReinstateJurorsRequestDto();
 
-        assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
-                                                   trialService.reassignPanelMembers(
-                                                       createReassignPanelMembersRequestDto(
-                                                       jurors, sourceTrialNumber, targetTrialNumber, locCode)));
+        {
+            dto.setTrialNumber(TRIAL_NUMBER);
+            dto.setCourtLocationCode(LOC_CODE);
+            dto.setJurors(jurors);
+        }
 
-        verify(panelRepository, never()).findByTrialTrialNumberAndTrialCourtLocationLocCode(anyString(), anyString());
-        verify(panelRepository, never()).saveAndFlush(any());
-        verify(jurorHistoryService, never()).createReassignedToPanelHistory(any(), any());
+        @Test
+        void returnedJurorsNoResults() {
 
-    }
+            List<PanelListDto> returnedJurors = trialService.getReturnedJurors(TRIAL_NUMBER, LOC_CODE);
+            assertThat(returnedJurors).isNotNull().isEmpty();
+        }
 
-    @Test
-    void reassignPanelMembersInvalidCourtLocation() {
+        @Test
+        void originalEmpanelledJurorsCountNoResults() {
 
-        payload = TestUtils.createJwt("415", "COURT_USER", "1", Collections.singletonList("415"));
-        TestUtils.mockSecurityUtil(payload);
-        final String sourceTrialNumber = "T100000000";
-        final String targetTrialNumber = "T100000001";
-        final String locCode = "416";
-        final List<String> jurors = Arrays.asList("111111101", "111111102", "111111103");
+            int originalEmpanelledJurorCount = trialService.getOriginalEmpanelledJurorCount(TRIAL_NUMBER, LOC_CODE);
+            assertThat(originalEmpanelledJurorCount).isZero();
+        }
 
-        assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
-                                            trialService.reassignPanelMembers(createReassignPanelMembersRequestDto(
-                                                jurors, sourceTrialNumber, targetTrialNumber, locCode)));
+        @Test
+        void reinstateJurorsHappy() {
 
-        verify(panelRepository, never()).findByTrialTrialNumberAndTrialCourtLocationLocCode(anyString(), anyString());
-        verify(panelRepository, never()).saveAndFlush(any());
-        verify(jurorHistoryService, never()).createReassignedToPanelHistory(any(), any());
+            payload = TestUtils.createJwt("415", "COURT_USER", "1", Collections.singletonList("415"));
+            TestUtils.mockSecurityUtil(payload);
+
+            JurorStatus status = new JurorStatus();
+            status.setStatus(IJurorStatus.RESPONDED);
+
+            JurorPool juror1 = getJurorPool(status, "641684001");
+            JurorPool juror2 = getJurorPool(status, "641674001");
+            List<JurorPool> jurorPoolsList = Arrays.asList(juror1, juror2);
+
+            when(jurorPoolRepository.findByPoolCourtLocationLocCodeAndIsActiveAndJurorJurorNumberIn(
+                LOC_CODE, true, Arrays.asList("641684001", "641674001")))
+                .thenReturn(jurorPoolsList);
+
+            CourtLocation courtLocation = new CourtLocation();
+            courtLocation.setLocCode(LOC_CODE);
+            courtLocation.setOwner("415");
+
+            Trial trial = createTrial(TRIAL_NUMBER);
+            trial.setTrialNumber(TRIAL_NUMBER);
+            trial.setCourtLocation(courtLocation);
+
+            when(trialRepository.findByTrialNumberAndCourtLocationLocCode(
+                TRIAL_NUMBER, LOC_CODE)).thenReturn(Optional.of(trial));
+
+            final List<Panel> panelList = new ArrayList<>();
+            Panel panel1 = new Panel();
+            panel1.setJuror(Juror.builder().jurorNumber("641684001").build());
+            panel1.setTrial(trial);
+            Panel panel2 = new Panel();
+            panel2.setJuror(Juror.builder().jurorNumber("641674001").build());
+            panel2.setTrial(trial);
+            panelList.add(panel1);
+            panelList.add(panel2);
+
+            when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumberIn(
+                TRIAL_NUMBER, LOC_CODE, jurors)).thenReturn(panelList);
+            when(jurorPoolRepository.findByJurorNumberAndIsActiveAndCourt(
+                juror1.getJurorNumber(), true,
+                courtLocation
+            )).thenReturn(juror1);
+            when(jurorPoolRepository.findByJurorNumberAndIsActiveAndCourt(
+                juror2.getJurorNumber(), true,
+                courtLocation
+            )).thenReturn(juror2);
+
+            // invoke the method to test
+            trialService.reinstateJurors(dto);
+
+            verify(jurorPoolRepository, times(1)).findByPoolCourtLocationLocCodeAndIsActiveAndJurorJurorNumberIn(
+                LOC_CODE, true, Arrays.asList("641684001", "641674001"));
+            verify(trialRepository, times(1)).findByTrialNumberAndCourtLocationLocCode(
+                TRIAL_NUMBER, LOC_CODE);
+            verify(panelRepository, times(1))
+                .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumberIn(
+                    TRIAL_NUMBER, LOC_CODE, jurors);
+
+            verify(panelRepository, times(2)).saveAndFlush(any(Panel.class));
+            verify(jurorHistoryService, times(2)).createJuryReinstatementHistory(any(), any());
+
+        }
+
+        @Test
+        void reinstateJurorsJurorNotInPool() {
+
+            payload = TestUtils.createJwt("415", "COURT_USER", "1", Collections.singletonList("415"));
+            TestUtils.mockSecurityUtil(payload);
+
+            JurorStatus status = new JurorStatus();
+            status.setStatus(IJurorStatus.RESPONDED);
+
+            JurorPool juror1 = getJurorPool(status, "641684001");
+
+            List<JurorPool> jurorPoolsList = List.of(juror1);
+
+            when(jurorPoolRepository.findByPoolCourtLocationLocCodeAndIsActiveAndJurorJurorNumberIn(
+                LOC_CODE, true, Arrays.asList("641684001", "641674001"))).thenReturn(jurorPoolsList);
+
+            // invoke the method to test
+            MojException.NotFound notFoundException = Assertions.assertThrows(MojException.NotFound.class, () ->
+                                                                                      trialService.reinstateJurors(
+                                                                                          dto));
+            assertThat(notFoundException.getMessage())
+                .isEqualTo("Juror 641674001 not found in the pool at court");
+
+            verify(jurorPoolRepository, times(1)).findByPoolCourtLocationLocCodeAndIsActiveAndJurorJurorNumberIn(
+                LOC_CODE, true, Arrays.asList("641684001", "641674001"));
+
+            verifyNoInteractions(panelRepository);
+            verifyNoInteractions(trialRepository);
+            verifyNoInteractions(jurorHistoryService);
+            verifyNoMoreInteractions(jurorPoolRepository);
+
+        }
+
+        @Test
+        void reinstateJurorsJurorInWrongStatus() {
+
+            payload = TestUtils.createJwt("415", "COURT_USER", "1", Collections.singletonList("415"));
+            TestUtils.mockSecurityUtil(payload);
+
+            JurorStatus status = new JurorStatus();
+            status.setStatus(IJurorStatus.JUROR);
+
+            JurorPool juror1 = getJurorPool(status, "641684001");
+            JurorPool juror2 = getJurorPool(status, "641674001");
+            List<JurorPool> jurorPoolsList = Arrays.asList(juror1, juror2);
+
+            when(jurorPoolRepository.findByPoolCourtLocationLocCodeAndIsActiveAndJurorJurorNumberIn(
+                LOC_CODE, true, Arrays.asList("641684001", "641674001"))).thenReturn(jurorPoolsList);
+
+            // invoke the method to test
+            MojException.BusinessRuleViolation brv = Assertions.assertThrows(
+                MojException.BusinessRuleViolation.class, () ->
+                                                               trialService.reinstateJurors(
+                                                               dto));
+            assertThat(brv.getMessage())
+                .isEqualTo("Juror 641684001 is not in responded status");
+
+            verify(jurorPoolRepository, times(1)).findByPoolCourtLocationLocCodeAndIsActiveAndJurorJurorNumberIn(
+                LOC_CODE, true, Arrays.asList("641684001", "641674001"));
+
+            verifyNoInteractions(panelRepository);
+            verifyNoInteractions(trialRepository);
+            verifyNoInteractions(jurorHistoryService);
+            verifyNoMoreInteractions(jurorPoolRepository);
+        }
+
+
+        @Test
+        void reinstateJurorsTrialNotFound() {
+            payload = TestUtils.createJwt("415", "COURT_USER", "1", Collections.singletonList("415"));
+            TestUtils.mockSecurityUtil(payload);
+
+            JurorStatus status = new JurorStatus();
+            status.setStatus(IJurorStatus.RESPONDED);
+
+            JurorPool juror1 = getJurorPool(status, "641684001");
+            JurorPool juror2 = getJurorPool(status, "641674001");
+            List<JurorPool> jurorPoolsList = Arrays.asList(juror1, juror2);
+
+            when(jurorPoolRepository.findByPoolCourtLocationLocCodeAndIsActiveAndJurorJurorNumberIn(
+                LOC_CODE, true, Arrays.asList("641684001", "641674001"))).thenReturn(jurorPoolsList);
+
+            when(trialRepository.findByTrialNumberAndCourtLocationLocCode(
+                TRIAL_NUMBER, LOC_CODE)).thenReturn(Optional.empty());
+
+            // invoke the method to test
+            MojException.NotFound notFoundException = Assertions.assertThrows(MojException.NotFound.class, () ->
+                                                                                  trialService.reinstateJurors(dto));
+            assertThat(notFoundException.getMessage())
+                .isEqualTo("Cannot find trial with number: TRIAL2 for court location 415");
+
+            verify(jurorPoolRepository, times(1)).findByPoolCourtLocationLocCodeAndIsActiveAndJurorJurorNumberIn(
+                LOC_CODE, true, Arrays.asList("641684001", "641674001"));
+            verify(trialRepository, times(1)).findByTrialNumberAndCourtLocationLocCode(
+                TRIAL_NUMBER, LOC_CODE);
+
+            verifyNoInteractions(panelRepository);
+            verifyNoMoreInteractions(trialRepository);
+            verifyNoInteractions(jurorHistoryService);
+            verifyNoMoreInteractions(jurorPoolRepository);
+        }
+
+
+        @Test
+        void reinstateJurorsJurorNotOnTrial() {
+            payload = TestUtils.createJwt("415", "COURT_USER", "1", Collections.singletonList("415"));
+            TestUtils.mockSecurityUtil(payload);
+
+            JurorStatus status = new JurorStatus();
+            status.setStatus(IJurorStatus.RESPONDED);
+
+            JurorPool juror1 = getJurorPool(status, "641684001");
+            JurorPool juror2 = getJurorPool(status, "641674001");
+            List<JurorPool> jurorPoolsList = Arrays.asList(juror1, juror2);
+
+            when(jurorPoolRepository.findByPoolCourtLocationLocCodeAndIsActiveAndJurorJurorNumberIn(
+                LOC_CODE, true, Arrays.asList("641684001", "641674001"))).thenReturn(jurorPoolsList);
+
+            when(trialRepository.findByTrialNumberAndCourtLocationLocCode(
+                TRIAL_NUMBER, LOC_CODE)).thenReturn(Optional.empty());
+
+            CourtLocation courtLocation = new CourtLocation();
+            courtLocation.setLocCode(LOC_CODE);
+            courtLocation.setOwner("415");
+
+            Trial trial = createTrial(TRIAL_NUMBER);
+            trial.setTrialNumber(TRIAL_NUMBER);
+            trial.setCourtLocation(courtLocation);
+
+            when(trialRepository.findByTrialNumberAndCourtLocationLocCode(
+                TRIAL_NUMBER, LOC_CODE)).thenReturn(Optional.of(trial));
+
+            List<Panel> panelList = new ArrayList<>();
+            Panel panel1 = new Panel();
+            panel1.setJuror(Juror.builder().jurorNumber("641684001").build());
+            panel1.setTrial(trial);
+            panelList.add(panel1);
+            // note juror 641674001 is not on the trial
+
+            when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumberIn(
+                TRIAL_NUMBER, LOC_CODE, jurors)).thenReturn(panelList);
+
+            MojException.NotFound notFoundException = Assertions.assertThrows(MojException.NotFound.class, () ->
+                                                                                  trialService.reinstateJurors(dto));
+            assertThat(notFoundException.getMessage()).isEqualTo("Juror 641674001 not found on the trial");
+
+            verify(jurorPoolRepository, times(1)).findByPoolCourtLocationLocCodeAndIsActiveAndJurorJurorNumberIn(
+                LOC_CODE, true, Arrays.asList("641684001", "641674001"));
+            verify(trialRepository, times(1)).findByTrialNumberAndCourtLocationLocCode(
+                TRIAL_NUMBER, LOC_CODE);
+
+            verify(panelRepository, times(1))
+                .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumberIn(
+                    TRIAL_NUMBER, LOC_CODE, jurors);
+
+            verifyNoMoreInteractions(trialRepository);
+            verifyNoInteractions(jurorHistoryService);
+            verifyNoMoreInteractions(jurorPoolRepository);
+        }
+
+        private JurorPool getJurorPool(JurorStatus status, String jurorNumber) {
+            JurorPool juror = new JurorPool();
+            juror.setJuror(Juror.builder().jurorNumber(jurorNumber).build());
+            juror.setStatus(status);
+            juror.setIsActive(true);
+            return juror;
+        }
 
     }
 

@@ -76,6 +76,8 @@ public interface JurorHistoryService {
 
     void createJuryEmpanelmentHistory(JurorPool jurorPool, Panel panelMember);
 
+    void createJuryReinstatementHistory(JurorPool jurorPool, Panel panelMember);
+
     void createPanelCreationHistory(JurorPool jurorPool, Panel panelMember);
 
     void createAddedToPanelHistory(JurorPool jurorPool, Panel panel);
@@ -111,4 +113,7 @@ public interface JurorHistoryService {
                                                   String jurorNumber,
                                                   String poolNumber,
                                                   String otherInfo);
+
+    void createResponseSubmittedHistory(JurorPool jurorPool, String otherInfo, String username);
+
 }
