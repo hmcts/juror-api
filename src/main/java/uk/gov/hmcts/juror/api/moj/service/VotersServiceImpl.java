@@ -80,10 +80,10 @@ public class VotersServiceImpl implements VotersService {
 
         // filter out excluded voters
         votersSelected.removeIf(voter -> excludedVoters.stream()
-            .anyMatch(excludedVoter -> excludedVoter.getFirstName().equalsIgnoreCase(voter.getFirstName())
-                && excludedVoter.getLastName().equalsIgnoreCase(voter.getLastName())
-                && excludedVoter.getAddress1().equalsIgnoreCase(voter.getAddress())
-                && excludedVoter.getPostcode().equalsIgnoreCase(voter.getPostcode())));
+            .anyMatch(excludedVoter -> excludedVoter.getAddress1().trim().equalsIgnoreCase(voter.getAddress().trim())
+                && excludedVoter.getFirstName().trim().equalsIgnoreCase(voter.getFirstName().trim())
+                && excludedVoter.getLastName().trim().equalsIgnoreCase(voter.getLastName().trim())
+                && excludedVoter.getPostcode().trim().equalsIgnoreCase(voter.getPostcode().trim())));
 
         return votersSelected;
     }
