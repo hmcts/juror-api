@@ -93,10 +93,10 @@ public class VotersServiceImpl implements VotersService {
         List<DeceasedJuror> deceasedJurors = jurorService.getDeceasedJurors(voterPostcodes);
 
         votersList.removeIf(voter -> deceasedJurors.stream()
-            .anyMatch(juror -> juror.getFirstName().equalsIgnoreCase(voter.getFirstName())
-                && juror.getLastName().equalsIgnoreCase(voter.getLastName())
-                && juror.getAddressLine1().equalsIgnoreCase(voter.getAddress())
-                && juror.getPostcode().equalsIgnoreCase(voter.getPostcode())));
+            .anyMatch(juror -> juror.getAddressLine1().trim().equalsIgnoreCase(voter.getAddress().trim())
+                && juror.getLastName().trim().equalsIgnoreCase(voter.getLastName().trim())
+                && juror.getFirstName().trim().equalsIgnoreCase(voter.getFirstName().trim())
+                && juror.getPostcode().trim().equalsIgnoreCase(voter.getPostcode().trim())));
 
         return votersList;
     }
