@@ -146,7 +146,7 @@ public class CourtLocationAuditServiceImpl implements CourtLocationAuditService{
 
         return TransportLimitAuditRecord.builder()
             .locCode(locCode)
-            .courtName(currentEntity.getName())
+            .courtName(currentEntity.getLocCourtName())
             .revisionNumber(currentRevision.longValue())
             .changedBy(revisionInfo.getChangedBy())
             .changeDateTime(revisionInfo.getRevisionDate())

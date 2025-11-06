@@ -62,7 +62,6 @@ public class CourtLocation implements Serializable, ICourtLocation {
 
 
     @Column(name = "loc_court_name")
-    @NotAudited
     private String locCourtName;
 
     @Column(name = "loc_attend_time")
