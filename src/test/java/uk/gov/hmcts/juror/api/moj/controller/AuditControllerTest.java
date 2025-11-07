@@ -51,7 +51,7 @@ public class AuditControllerTest {
     private JurorAuditService jurorAuditService;
 
     @MockBean
-    private CourtLocationAuditService courtLocationAuditService ;
+    private CourtLocationAuditService courtLocationAuditService;
 
     @InjectMocks
     private AuditController auditController;

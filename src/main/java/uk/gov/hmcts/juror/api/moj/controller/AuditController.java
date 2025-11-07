@@ -56,7 +56,7 @@ public class AuditController {
     @GetMapping("/court-location/{locCode}/transport-limits")
     @Operation(
         summary = "Get transport limit audit history",
-        description = "Retrieve complete audit history showing all changes to public transport and taxi soft limits for a court location"
+        description = "Retrieve audit history for changes to public transport and taxi soft limits "
     )
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<TransportLimitAuditListResponseDto> getTransportLimitAuditHistory(

@@ -9,16 +9,16 @@ import org.hibernate.envers.AuditReaderFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
-import uk.gov.hmcts.juror.api.moj.domain.RevisionInfo;
 import uk.gov.hmcts.juror.api.moj.audit.dto.TransportLimitAuditRecord;
-import uk.gov.hmcts.juror.api.moj.service.audit.CourtLocationAuditService;
+import uk.gov.hmcts.juror.api.moj.domain.RevisionInfo;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+
 @Service
 @Slf4j
-public class CourtLocationAuditServiceImpl implements CourtLocationAuditService{
+public class CourtLocationAuditServiceImpl implements CourtLocationAuditService {
 
     @PersistenceContext
     private EntityManager entityManager;
