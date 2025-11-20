@@ -261,6 +261,9 @@ public enum DataType implements IDataType {
     TRIAL_END_DATE("Trial end date", LocalDate.class, QTrial.trial.trialEndDate, QTrial.trial),
     ATTENDANCE_COUNT("Attendance count", Long.class, QAppearance.appearance.count(), QAppearance.appearance),
 
+    COURT_LOCATION_NAME_AND_CODE_EP("Court Location Name And Code", String.class,
+                                 QAppearance.appearance.courtLocation.name.concat(" (")
+                                     .concat(QAppearance.appearance.courtLocation.locCode).concat(")"), QAppearance.appearance),
     LOSS_OF_EARNINGS_TOTAL("Loss of earnings", BigDecimal.class,
                            QAppearance.appearance.lossOfEarningsPaid.sum().coalesce(BigDecimal.ZERO), QAppearance.appearance),
 

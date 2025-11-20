@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ExpensePaymentByTypeReport extends AbstractStandardReport {
     public ExpensePaymentByTypeReport(){
         super(QAppearance.appearance,
-                DataType.COURT_LOCATION_NAME_AND_CODE,
+                DataType.COURT_LOCATION_NAME_AND_CODE_EP,
                 DataType.LOSS_OF_EARNINGS_TOTAL,
                 DataType.CHILDCARE_TOTAL,
                 DataType.MISCELLANEOUS_TOTAL,
@@ -51,6 +51,7 @@ public class ExpensePaymentByTypeReport extends AbstractStandardReport {
         QAppearance.appearance.courtLocation.locCode.asc());
     query.groupBy(
         QAppearance.appearance.courtLocation.locCode, QAppearance.appearance.courtLocation.name);
+
 }
         @Override
         public Map<String, StandardReportResponse.DataTypeValue> getHeadings(
