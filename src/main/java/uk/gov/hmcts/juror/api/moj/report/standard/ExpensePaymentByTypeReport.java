@@ -44,7 +44,7 @@ public class ExpensePaymentByTypeReport extends AbstractStandardReport {
         QAppearance.appearance.attendanceDate.between(request.getFromDate(), request.getToDate()));
     query.where(QAppearance.appearance.locCode.in(request.getCourts()));
     query.where(QAppearance.appearance.isDraftExpense.isFalse());
-    query.where(QAppearance.appearance.appearanceStage.eq(AppearanceStage.EXPENSE_ENTERED));
+    query.where(QAppearance.appearance.appearanceStage.in(AppearanceStage.EXPENSE_ENTERED,AppearanceStage.EXPENSE_EDITED));
     query.where(QAppearance.appearance.hideOnUnpaidExpenseAndReports.isFalse());
     query.orderBy(
         QAppearance.appearance.courtLocation.name.asc(),
