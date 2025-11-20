@@ -14,6 +14,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QReasonableAdjustments;
+import uk.gov.hmcts.juror.api.moj.domain.messages.QMessage;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
@@ -293,6 +294,10 @@ public enum DataType implements IDataType {
 
     SUBSISTENCE_TOTAL("Food and drink", BigDecimal.class,
                       QAppearance.appearance.subsistencePaid.sum().coalesce(BigDecimal.ZERO), QAppearance.appearance),
+
+    COURT_LOCATION_NAME_AND_CODE_MP("Court Location",String.class,
+                                    QMessage.message.locationCode.name.concat(" (")
+                                        .concat(QMessage.message.locationCode.locCode).concat(")"), QMessage.message),
 
 
    POLICE_CHECK_RESPONDED("Responded jurors", Long.class,
