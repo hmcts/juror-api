@@ -20,7 +20,6 @@ import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -261,38 +260,8 @@ public enum DataType implements IDataType {
     TRIAL_END_DATE("Trial end date", LocalDate.class, QTrial.trial.trialEndDate, QTrial.trial),
     ATTENDANCE_COUNT("Attendance count", Long.class, QAppearance.appearance.count(), QAppearance.appearance),
 
-    LOSS_OF_EARNINGS_TOTAL("Loss of earnings", BigDecimal.class,
-                           QAppearance.appearance.lossOfEarningsPaid.sum().coalesce(BigDecimal.ZERO), QAppearance.appearance),
 
-    CHILDCARE_TOTAL("Extra care", BigDecimal.class,
-                    QAppearance.appearance.childcarePaid.sum().coalesce(BigDecimal.ZERO), QAppearance.appearance),
-
-    MISCELLANEOUS_TOTAL("Other", BigDecimal.class,
-                        QAppearance.appearance.miscAmountPaid.sum().coalesce(BigDecimal.ZERO), QAppearance.appearance),
-
-    PUBLIC_TRANSPORT_TOTAL("Public transport", BigDecimal.class,
-                           QAppearance.appearance.publicTransportPaid.sum().coalesce(BigDecimal.ZERO), QAppearance.appearance),
-
-    HIRED_VEHICLE_TOTAL("Taxi", BigDecimal.class,
-                        QAppearance.appearance.hiredVehiclePaid.sum().coalesce(BigDecimal.ZERO), QAppearance.appearance),
-
-    MOTORCYCLE_TOTAL("Motorcycle", BigDecimal.class,
-                     QAppearance.appearance.motorcyclePaid.sum().coalesce(BigDecimal.ZERO), QAppearance.appearance),
-
-    CAR_TOTAL("Car", BigDecimal.class,
-              QAppearance.appearance.carPaid.sum().coalesce(BigDecimal.ZERO), QAppearance.appearance),
-
-    PEDAL_CYCLE_TOTAL("Bicycle", BigDecimal.class,
-                      QAppearance.appearance.bicyclePaid.sum().coalesce(BigDecimal.ZERO), QAppearance.appearance),
-
-    PARKING_TOTAL("Parking", BigDecimal.class,
-                  QAppearance.appearance.parkingPaid.sum().coalesce(BigDecimal.ZERO), QAppearance.appearance),
-
-    SUBSISTENCE_TOTAL("Food and drink", BigDecimal.class,
-                      QAppearance.appearance.subsistencePaid.sum().coalesce(BigDecimal.ZERO), QAppearance.appearance),
-
-
-   POLICE_CHECK_RESPONDED("Responded jurors", Long.class,
+    POLICE_CHECK_RESPONDED("Responded jurors", Long.class,
         QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED).count()),
 
     POLICE_CHECK_SUBMITTED("Checks submitted", Long.class,
@@ -377,4 +346,3 @@ public enum DataType implements IDataType {
         return this.name().toLowerCase(Locale.ROOT);
     }
 }
-
