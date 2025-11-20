@@ -80,18 +80,6 @@ public class ExpensePaymentByTypeReport extends AbstractStandardReport {
                     .value(DateTimeFormatter.ISO_DATE.format(request.getToDate()))
                     .build());
 
-            map.put("report_created_on", StandardReportResponse.DataTypeValue.builder()
-                    .displayName("Report created on")
-                    .dataType(LocalDate.class.getSimpleName())
-                    .value(DateTimeFormatter.ISO_DATE.format(now.toLocalDate()))
-                    .build());
-
-            map.put("time_created", StandardReportResponse.DataTypeValue.builder()
-                    .displayName("Time created")
-                    .dataType(LocalTime.class.getSimpleName())
-                    .value(DateTimeFormatter.ISO_TIME.format(now.toLocalTime()))
-                    .build());
-
             return map;
         }
 
