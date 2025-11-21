@@ -32,10 +32,11 @@ public class ExpensePaymentByTypeReport extends AbstractStandardReport {
                 DataType.HIRED_VEHICLE_TOTAL,
                 DataType.MOTORCYCLE_TOTAL,
                 DataType.CAR_TOTAL,
+                DataType.PEDAL_CYCLE_TOTAL,
                 DataType.PARKING_TOTAL,
                 DataType.SUBSISTENCE_TOTAL
         );
-   //     isCourtUserOnly();
+   
     }
 
   @Override
