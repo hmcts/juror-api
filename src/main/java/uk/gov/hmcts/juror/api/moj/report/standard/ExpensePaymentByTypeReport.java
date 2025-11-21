@@ -36,7 +36,7 @@ public class ExpensePaymentByTypeReport extends AbstractStandardReport {
                 DataType.PARKING_TOTAL,
                 DataType.SUBSISTENCE_TOTAL
         );
-   
+
     }
 
   @Override
