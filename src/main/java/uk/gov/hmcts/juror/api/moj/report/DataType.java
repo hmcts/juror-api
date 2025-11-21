@@ -15,6 +15,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.domain.messages.QMessage;
+import uk.gov.hmcts.juror.api.moj.domain.messages.QMessageTemplate;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
@@ -299,17 +300,108 @@ public enum DataType implements IDataType {
                                     QMessage.message.locationCode.name.concat(" (")
                                         .concat(QMessage.message.locationCode.locCode).concat(")"), QMessage.message),
 
+    REMINDER("Reminder to attend", Long.class,
+             new CaseBuilder()
+                 .when(QMessageTemplate.messageTemplate.title.eq("Reminder to attend"))
+                 .then(1L).otherwise(0L).sum(),
+             QMessage.message,QMessageTemplate.messageTemplate),
 
-   POLICE_CHECK_RESPONDED("Responded jurors", Long.class,
+    FAILED_TO_ATTEND("Failed to attend", Long.class,
+                     new CaseBuilder()
+                         .when(QMessageTemplate.messageTemplate.title.eq("Failed to attend"))
+                             .then(1L).otherwise(0L).sum(),
+   QMessage.message,QMessageTemplate.messageTemplate),
+
+    DATE_AND_TIME_CHANGED("Attend date & time changed", Long.class,
+                          new CaseBuilder()
+                              .when(QMessageTemplate.messageTemplate.title.eq("Attend date & time changed"))
+                                  .then(1L).otherwise(0L).sum(),
+                          QMessage.message,QMessageTemplate.messageTemplate),
+
+    TIME_CHANGED("Attend time changed", Long.class,
+                new CaseBuilder()
+                    .when(QMessageTemplate.messageTemplate.title.eq("Attend time changed"))
+                    .then(1L).otherwise(0L).sum(),
+                 QMessage.message,QMessageTemplate.messageTemplate),
+
+    COMPLETE_ATTENDED("Complete (attended)",Long.class,
+            new CaseBuilder()
+                .when(QMessageTemplate.messageTemplate.title.eq("Complete (attended)"))
+                    .then(1L).otherwise(0L).sum(),
+                          QMessage.message,QMessageTemplate.messageTemplate),
+
+    COMPLETE_NOT_NEEDED("Complete (not needed)", Long.class,
+                        new CaseBuilder()
+                            .when(QMessageTemplate.messageTemplate.title.eq("Complete (not needed)"))
+                                      .then(1L).otherwise(0L).sum(),
+                          QMessage.message,QMessageTemplate.messageTemplate),
+
+    NEXT_DATE("Next date", Long.class,
+              new CaseBuilder()
+                  .when(QMessageTemplate.messageTemplate.title.eq("Next date"))
+                      .then(1L).otherwise(0L).sum(),
+              QMessage.message,QMessageTemplate.messageTemplate),
+
+    ON_CALL_OSR("On call", Long.class,
+            new CaseBuilder()
+                .when(QMessageTemplate.messageTemplate.title.eq("On call"))
+                    .then(1L).otherwise(0L).sum(),
+                QMessage.message,QMessageTemplate.messageTemplate),
+
+    PLEASE_CONTACT("Please contact", Long.class,
+                   new CaseBuilder()
+                       .when(QMessageTemplate.messageTemplate.title.eq("Please contact"))
+                       .then(1L).otherwise(0L).sum(),
+                   QMessage.message,QMessageTemplate.messageTemplate),
+
+    DELAYED_START("Delayed start",Long.class,
+                  new CaseBuilder()
+                      .when(QMessageTemplate.messageTemplate.title.eq("Delayed start"))
+                      .then(1L).otherwise(0L).sum(),
+                  QMessage.message,QMessageTemplate.messageTemplate),
+
+    SELECTION("Selection",Long.class,
+              new CaseBuilder()
+                  .when(QMessageTemplate.messageTemplate.title.eq("Selection"))
+                  .then(1L).otherwise(0L).sum(),
+              QMessage.message,QMessageTemplate.messageTemplate),
+
+
+    BAD_WEATHER("Bad weather",Long.class,
+              new CaseBuilder()
+                  .when(QMessageTemplate.messageTemplate.title.eq("Bad weather"))
+                  .then(1L).otherwise(0L).sum(),
+              QMessage.message,QMessageTemplate.messageTemplate),
+
+    BRING_LUNCH("Selection",Long.class,
+              new CaseBuilder()
+                  .when(QMessageTemplate.messageTemplate.title.eq("Bring lunch"))
+                  .then(1L).otherwise(0L).sum(),
+              QMessage.message,QMessageTemplate.messageTemplate),
+
+    CHECK_JUNK_EMAIL("Check Junk/Spam (TXT only)",Long.class,
+              new CaseBuilder()
+                  .when(QMessageTemplate.messageTemplate.title.eq("Check Junk/Spam (TXT only)"))
+                  .then(1L).otherwise(0L).sum(),
+              QMessage.message,QMessageTemplate.messageTemplate),
+
+    EXCUSED("Excusd",Long.class,
+              new CaseBuilder()
+                  .when(QMessageTemplate.messageTemplate.title.eq("Excused"))
+                  .then(1L).otherwise(0L).sum(),
+              QMessage.message,QMessageTemplate.messageTemplate),
+
+
+                          POLICE_CHECK_RESPONDED("Responded jurors", Long.class,
         QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED).count()),
 
-    POLICE_CHECK_SUBMITTED("Checks submitted", Long.class,
+                          POLICE_CHECK_SUBMITTED("Checks submitted", Long.class,
         new CaseBuilder()
             .when(QJuror.juror.policeCheck.notIn(PoliceCheck.NOT_CHECKED, PoliceCheck.INSUFFICIENT_INFORMATION))
             .then(1L)
             .otherwise(0L).sum()),
 
-    POLICE_CHECK_COMPLETE("Checks completed", Long.class,
+                          POLICE_CHECK_COMPLETE("Checks completed", Long.class,
         new CaseBuilder()
             .when(QJuror.juror.policeCheck.in(PoliceCheck.ELIGIBLE, PoliceCheck.INELIGIBLE,
                 PoliceCheck.UNCHECKED_MAX_RETRIES_EXCEEDED))
@@ -317,33 +409,33 @@ public enum DataType implements IDataType {
             .otherwise(0L).sum()),
 
 
-    POLICE_CHECK_TIMED_OUT("Checks timed out", Long.class,
+                          POLICE_CHECK_TIMED_OUT("Checks timed out", Long.class,
         new CaseBuilder()
             .when(QJuror.juror.policeCheck.in(PoliceCheck.UNCHECKED_MAX_RETRIES_EXCEEDED))
             .then(1L)
             .otherwise(0L).sum()),
 
-    POLICE_CHECK_DISQUALIFIED("Jurors disqualified", Long.class,
+                          POLICE_CHECK_DISQUALIFIED("Jurors disqualified", Long.class,
         new CaseBuilder()
             .when(QJuror.juror.policeCheck.in(PoliceCheck.INELIGIBLE))
             .then(1L)
             .otherwise(0L).sum()),
 
-    TOTAL_REQUESTED("Requested", Long.class,
+                          TOTAL_REQUESTED("Requested", Long.class,
         QJurorPool.jurorPool.pool.numberRequested
     ),
-    TOTAL_DEFERRED("Deferred", Long.class,
+                          TOTAL_DEFERRED("Deferred", Long.class,
         new CaseBuilder()
             .when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.DEFERRED))
             .then(1L)
             .otherwise(0L).sum(),
         QJurorPool.jurorPool
     ),
-    TOTAL_SUMMONED("Summoned", Long.class,
+                          TOTAL_SUMMONED("Summoned", Long.class,
         QJurorPool.jurorPool.count().subtract((NumberExpression<Long>) TOTAL_DEFERRED.getExpression()),
         QJurorPool.jurorPool
     ),
-    TOTAL_SUPPLIED("Supplied", Long.class,
+                          TOTAL_SUPPLIED("Supplied", Long.class,
         new CaseBuilder()
             .when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED))
             .then(1L)
@@ -351,8 +443,8 @@ public enum DataType implements IDataType {
         QJurorPool.jurorPool
     ),
 
-    //Due to new the updated system we no longer disqualify people on selection instead we simply do not select them
-    DISQUALIFIED_ON_SELECTION("Disqualified on selection", String.class,
+                          //Due to new the updated system we no longer disqualify people on selection instead we simply do not select them
+                          DISQUALIFIED_ON_SELECTION("Disqualified on selection", String.class,
         Expressions.nullExpression(), QJuror.juror),
     ;
 
