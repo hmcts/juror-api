@@ -296,101 +296,133 @@ public enum DataType implements IDataType {
     SUBSISTENCE_TOTAL("Food and drink", BigDecimal.class,
                       QAppearance.appearance.subsistencePaid.sum().coalesce(BigDecimal.ZERO), QAppearance.appearance),
 
-    COURT_LOCATION_NAME_AND_CODE_MP("Court Location",String.class,
-                                    QMessage.message.locationCode.name.concat(" (")
-                                        .concat(QMessage.message.locationCode.locCode).concat(")"), QMessage.message),
+    COURT_LOCATION_NAME_AND_CODE_MP("Court Location", String.class,
+                                    new CaseBuilder()
+                                        .when(QMessage.message.locationCode.isNotNull())
+                                        .then(QMessage.message.locationCode.name.concat(" (")
+                                                  .concat(QMessage.message.locationCode.locCode).concat(")"))
+                                        .otherwise(""),
+                                    QMessage.message),
 
     REMINDER("Reminder to attend", Long.class,
              new CaseBuilder()
-                 .when(QMessageTemplate.messageTemplate.title.eq("Reminder to attend"))
-                 .then(1L).otherwise(0L).sum(),
-             QMessage.message,QMessageTemplate.messageTemplate),
+                 .when(QMessage.message.messageId.eq(1))
+                 .then(1L)
+                 .otherwise(0L)
+                 .sum(),
+             QMessage.message ),
 
     FAILED_TO_ATTEND("Failed to attend", Long.class,
                      new CaseBuilder()
-                         .when(QMessageTemplate.messageTemplate.title.eq("Failed to attend"))
-                             .then(1L).otherwise(0L).sum(),
-   QMessage.message,QMessageTemplate.messageTemplate),
+                         .when(QMessage.message.messageId.eq(2))
+                         .then(1L)
+                         .otherwise(0L)
+                         .sum(),
+                     QMessage.message),
 
     DATE_AND_TIME_CHANGED("Attend date & time changed", Long.class,
                           new CaseBuilder()
-                              .when(QMessageTemplate.messageTemplate.title.eq("Attend date & time changed"))
-                                  .then(1L).otherwise(0L).sum(),
-                          QMessage.message,QMessageTemplate.messageTemplate),
+                              .when(QMessage.message.messageId.eq(3))
+                              .then(1L)
+                              .otherwise(0L)
+                              .sum(),
+                          QMessage.message),
 
     TIME_CHANGED("Attend time changed", Long.class,
-                new CaseBuilder()
-                    .when(QMessageTemplate.messageTemplate.title.eq("Attend time changed"))
-                    .then(1L).otherwise(0L).sum(),
-                 QMessage.message,QMessageTemplate.messageTemplate),
+                 new CaseBuilder()
+                     .when(QMessage.message.messageId.eq(4))
+                     .then(1L)
+                     .otherwise(0L)
+                     .sum(),
+                 QMessage.message),
 
-    COMPLETE_ATTENDED("Complete (attended)",Long.class,
-            new CaseBuilder()
-                .when(QMessageTemplate.messageTemplate.title.eq("Complete (attended)"))
-                    .then(1L).otherwise(0L).sum(),
-                          QMessage.message,QMessageTemplate.messageTemplate),
+    COMPLETE_ATTENDED("Complete (attended)", Long.class,
+                      new CaseBuilder()
+                          .when(QMessage.message.messageId.eq(5))
+                                    .then(1L)
+                          .otherwise(0L)
+                          .sum(),
+                      QMessage.message),
 
     COMPLETE_NOT_NEEDED("Complete (not needed)", Long.class,
                         new CaseBuilder()
-                            .when(QMessageTemplate.messageTemplate.title.eq("Complete (not needed)"))
-                                      .then(1L).otherwise(0L).sum(),
-                          QMessage.message,QMessageTemplate.messageTemplate),
+                            .when(QMessage.message.messageId.eq(6))
+                            .then(1L)
+                            .otherwise(0L)
+                            .sum(),
+                        QMessage.message),
 
     NEXT_DATE("Next date", Long.class,
               new CaseBuilder()
-                  .when(QMessageTemplate.messageTemplate.title.eq("Next date"))
-                      .then(1L).otherwise(0L).sum(),
-              QMessage.message,QMessageTemplate.messageTemplate),
+                  .when(QMessage.message.messageId.eq(7))
+                  .then(1L)
+                  .otherwise(0L)
+                  .sum(),
+              QMessage.message),
 
     ON_CALL_OSR("On call", Long.class,
-            new CaseBuilder()
-                .when(QMessageTemplate.messageTemplate.title.eq("On call"))
-                    .then(1L).otherwise(0L).sum(),
-                QMessage.message,QMessageTemplate.messageTemplate),
+                new CaseBuilder()
+                    .when(QMessage.message.messageId.eq(8))
+                    .then(1L)
+                    .otherwise(0L)
+                    .sum(),
+                QMessage.message),
 
     PLEASE_CONTACT("Please contact", Long.class,
                    new CaseBuilder()
-                       .when(QMessageTemplate.messageTemplate.title.eq("Please contact"))
-                       .then(1L).otherwise(0L).sum(),
-                   QMessage.message,QMessageTemplate.messageTemplate),
+                       .when(QMessage.message.messageId.eq(9))
+                       .then(1L)
+                       .otherwise(0L)
+                       .sum(),
+                   QMessage.message),
 
-    DELAYED_START("Delayed start",Long.class,
+    DELAYED_START("Delayed start", Long.class,
                   new CaseBuilder()
-                      .when(QMessageTemplate.messageTemplate.title.eq("Delayed start"))
-                      .then(1L).otherwise(0L).sum(),
-                  QMessage.message,QMessageTemplate.messageTemplate),
+                      .when(QMessage.message.messageId.eq(10))
+                                .then(1L)
+                      .otherwise(0L)
+                      .sum(),
+                  QMessage.message),
 
-    SELECTION("Selection",Long.class,
+    SELECTION("Selection", Long.class,
               new CaseBuilder()
-                  .when(QMessageTemplate.messageTemplate.title.eq("Selection"))
-                  .then(1L).otherwise(0L).sum(),
-              QMessage.message,QMessageTemplate.messageTemplate),
+                  .when(QMessage.message.messageId.eq(11))
+                            .then(1L)
+                  .otherwise(0L)
+                  .sum(),
+              QMessage.message),
 
+    BAD_WEATHER("Bad weather", Long.class,
+                new CaseBuilder()
+                    .when(QMessage.message.messageId.eq(12))
+                    .then(1L)
+                    .otherwise(0L)
+                    .sum(),
+                QMessage.message),
 
-    BAD_WEATHER("Bad weather",Long.class,
-              new CaseBuilder()
-                  .when(QMessageTemplate.messageTemplate.title.eq("Bad weather"))
-                  .then(1L).otherwise(0L).sum(),
-              QMessage.message,QMessageTemplate.messageTemplate),
+    BRING_LUNCH("Bring lunch", Long.class,
+                new CaseBuilder()
+                    .when(QMessage.message.messageId.eq(13))
+                    .then(1L)
+                    .otherwise(0L)
+                    .sum(),
+                QMessage.message),
 
-    BRING_LUNCH("Selection",Long.class,
-              new CaseBuilder()
-                  .when(QMessageTemplate.messageTemplate.title.eq("Bring lunch"))
-                  .then(1L).otherwise(0L).sum(),
-              QMessage.message,QMessageTemplate.messageTemplate),
+    CHECK_JUNK_EMAIL("Check Junk/Spam (TXT only)", Long.class,
+                     new CaseBuilder()
+                         .when(QMessage.message.messageId.eq(14))
+                         .then(1L)
+                         .otherwise(0L)
+                         .sum(),
+                     QMessage.message),
 
-    CHECK_JUNK_EMAIL("Check Junk/Spam (TXT only)",Long.class,
-              new CaseBuilder()
-                  .when(QMessageTemplate.messageTemplate.title.eq("Check Junk/Spam (TXT only)"))
-                  .then(1L).otherwise(0L).sum(),
-              QMessage.message,QMessageTemplate.messageTemplate),
-
-    EXCUSED("Excusd",Long.class,
-              new CaseBuilder()
-                  .when(QMessageTemplate.messageTemplate.title.eq("Excused"))
-                  .then(1L).otherwise(0L).sum(),
-              QMessage.message,QMessageTemplate.messageTemplate),
-
+    EXCUSED("Excused", Long.class,
+            new CaseBuilder()
+                .when(QMessage.message.messageId.eq(15))
+                .then(1L)
+                .otherwise(0L)
+                .sum(),
+            QMessage.message),
 
                           POLICE_CHECK_RESPONDED("Responded jurors", Long.class,
         QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED).count()),

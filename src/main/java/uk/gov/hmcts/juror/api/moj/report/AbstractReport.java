@@ -25,6 +25,8 @@ import uk.gov.hmcts.juror.api.moj.domain.QPendingJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QReasonableAdjustments;
+import uk.gov.hmcts.juror.api.moj.domain.messages.QMessage;
+import uk.gov.hmcts.juror.api.moj.domain.messages.QMessageTemplate;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -107,7 +109,22 @@ public abstract class AbstractReport<T> implements IReport {
             QJurorPool.jurorPool,
             new Predicate[]{QReasonableAdjustments.reasonableAdjustments.code.eq(
                 QJurorPool.jurorPool.juror.reasonableAdjustmentCode)}
-        ));
+                          ));
+
+       //     CLASS_TO_JOIN.put(
+         //       QMessage.message, Map.of(
+         //       QMessageTemplate.messageTemplate, new Predicate[]{
+         //           QMessageTemplate.messageTemplate.id.eq(QMessage.message.messageId)
+         //       }
+        //    ));
+
+      //  CLASS_TO_JOIN.put(
+      //      QMessageTemplate.messageTemplate, Map.of(
+      //      QMessage.message, new Predicate[]{
+      //              QMessage.message.messageId.isNotNull()
+       //                 .and(QMessageTemplate.messageTemplate.id.eq(QMessage.message.messageId))
+       //     }
+      //  ));
     }
 
     @PersistenceContext

@@ -2,8 +2,10 @@ package uk.gov.hmcts.juror.api.moj.report.standard;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.messages.QMessage;
@@ -18,7 +20,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
+@Component
 public class OutgoingSMSMessagesReport extends AbstractStandardReport {
     public OutgoingSMSMessagesReport(){
         super(QMessage.message,
@@ -39,41 +41,60 @@ public class OutgoingSMSMessagesReport extends AbstractStandardReport {
               DataType.CHECK_JUNK_EMAIL,
               DataType.EXCUSED);
 
+      //  addJoinOverride(JoinOverrideDetails.builder()
+              //  .from(QMessage.message)
+              //  .to(QMessageTemplate.messageTemplate)
+              //  .joinType(com.querydsl.core.JoinType.LEFTJOIN)
+              //  .predicatesToAdd(java.util.List.of(
+               //         QMessage.message.messageId.eq(QMessageTemplate.messageTemplate.id)
+               // ))
+              //  .build());
+
     }
 
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
-        query.leftJoin(QMessageTemplate.messageTemplate)
-                .on(QMessageTemplate.messageTemplate.id.eq(QMessage.message.messageId));
 
         query.where(QMessage.message.fileDatetime.between(
                 request.getFromDate().atStartOfDay(),
                 request.getToDate().atTime(LocalTime.MAX)
         ));
-        query.where(QMessage.message.locationCode.locCode.eq(request.getLocCode()));
+        query.where(QMessage.message.locationCode.locCode.in(request.getCourts()));
         query.where(QMessage.message.phone.isNotNull());
+
+        query.orderBy(
+                QMessage.message.locationCode.name.asc(),
+                QMessage.message.locationCode.locCode.asc()
+        );
+        query.groupBy(
+                QMessage.message.locationCode.locCode,
+                QMessage.message.locationCode.name
+        );
+
     }
 
     @Override
-    public Map<String, AbstractReportResponse.DataTypeValue> getHeadings(
+    public Map<String, StandardReportResponse.DataTypeValue> getHeadings(
             StandardReportRequest request,
             AbstractReportResponse.TableData<StandardTableData> tableData) {
 
 
         LocalDateTime now = LocalDateTime.now();
-        Map<String, AbstractReportResponse.DataTypeValue> map = new ConcurrentHashMap<>();
+        Map<String, StandardReportResponse.DataTypeValue> map = new ConcurrentHashMap<>();
 
-        map.put("report_title",AbstractReportResponse.DataTypeValue.builder()
-                .displayName("Report Title")
-                        .dataType(String.class.getSimpleName())
-                                .value("Outgoing SMS Report")
-                                        .build());
-        map.put("date_from", AbstractReportResponse.DataTypeValue.builder()
+        map.put("outgoing_sms_title",StandardReportResponse.DataTypeValue.builder()
+                .displayName("Outgoing SMS Messages")
+                .dataType(String.class.getSimpleName())
+                .value("Outgoing SMS Message Report")
+                .build());
+
+        map.put("date_from", StandardReportResponse.DataTypeValue.builder()
                 .displayName("Date from")
                 .dataType(LocalDate.class.getSimpleName())
                 .value(DateTimeFormatter.ISO_DATE.format(request.getFromDate()))
                 .build());
-        map.put("date_to", AbstractReportResponse.DataTypeValue.builder()
+        
+        map.put("date_to", StandardReportResponse.DataTypeValue.builder()
                 .displayName("Date to")
                 .dataType(LocalDate.class.getSimpleName())
                 .value(DateTimeFormatter.ISO_DATE.format(request.getToDate()))
