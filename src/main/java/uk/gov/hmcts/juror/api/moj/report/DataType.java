@@ -296,7 +296,7 @@ public enum DataType implements IDataType {
     SUBSISTENCE_TOTAL("Food and drink", BigDecimal.class,
                       QAppearance.appearance.subsistencePaid.sum().coalesce(BigDecimal.ZERO), QAppearance.appearance),
 
-    COURT_LOCATION_NAME_AND_CODE_MP("Court Location", String.class,
+    COURT_LOCATION_NAME_AND_CODE_MP("Court", String.class,
                                     new CaseBuilder()
                                         .when(QMessage.message.locationCode.isNotNull())
                                         .then(QMessage.message.locationCode.name.concat(" (")
@@ -304,7 +304,7 @@ public enum DataType implements IDataType {
                                         .otherwise(""),
                                     QMessage.message),
 
-    REMINDER("Reminder to attend", Long.class,
+    REMINDER("Reminder", Long.class,
              new CaseBuilder()
                  .when(QMessage.message.messageId.eq(1))
                  .then(1L)
@@ -320,7 +320,7 @@ public enum DataType implements IDataType {
                          .sum(),
                      QMessage.message),
 
-    DATE_AND_TIME_CHANGED("Attend date & time changed", Long.class,
+    DATE_AND_TIME_CHANGED("Date & time changed", Long.class,
                           new CaseBuilder()
                               .when(QMessage.message.messageId.eq(3))
                               .then(1L)
@@ -328,7 +328,7 @@ public enum DataType implements IDataType {
                               .sum(),
                           QMessage.message),
 
-    TIME_CHANGED("Attend time changed", Long.class,
+    TIME_CHANGED("Time changed", Long.class,
                  new CaseBuilder()
                      .when(QMessage.message.messageId.eq(4))
                      .then(1L)
@@ -408,7 +408,7 @@ public enum DataType implements IDataType {
                     .sum(),
                 QMessage.message),
 
-    CHECK_JUNK_EMAIL("Check Junk/Spam (TXT only)", Long.class,
+    CHECK_JUNK_EMAIL("Check junk mail", Long.class,
                      new CaseBuilder()
                          .when(QMessage.message.messageId.eq(14))
                          .then(1L)
@@ -423,6 +423,27 @@ public enum DataType implements IDataType {
                 .otherwise(0L)
                 .sum(),
             QMessage.message),
+
+    TOTAL_SMS_SENT("Total", Long.class,
+                   new CaseBuilder()
+                       .when(QMessage.message.messageId.eq(1)).then(1L)
+                       .when(QMessage.message.messageId.eq(2)).then(1L)
+                       .when(QMessage.message.messageId.eq(3)).then(1L)
+                       .when(QMessage.message.messageId.eq(4)).then(1L)
+                       .when(QMessage.message.messageId.eq(5)).then(1L)
+                       .when(QMessage.message.messageId.eq(6)).then(1L)
+                       .when(QMessage.message.messageId.eq(7)).then(1L)
+                       .when(QMessage.message.messageId.eq(8)).then(1L)
+                       .when(QMessage.message.messageId.eq(9)).then(1L)
+                       .when(QMessage.message.messageId.eq(10)).then(1L)
+                       .when(QMessage.message.messageId.eq(11)).then(1L)
+                       .when(QMessage.message.messageId.eq(12)).then(1L)
+                       .when(QMessage.message.messageId.eq(13)).then(1L)
+                       .when(QMessage.message.messageId.eq(14)).then(1L)
+                       .when(QMessage.message.messageId.eq(15)).then(1L)
+                       .otherwise(0L)
+                       .sum(),
+                   QMessage.message),
 
                           POLICE_CHECK_RESPONDED("Responded jurors", Long.class,
         QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED).count()),

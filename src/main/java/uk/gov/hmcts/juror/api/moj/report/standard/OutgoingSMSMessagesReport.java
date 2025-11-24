@@ -39,16 +39,8 @@ public class OutgoingSMSMessagesReport extends AbstractStandardReport {
               DataType.BAD_WEATHER,
               DataType.BRING_LUNCH,
               DataType.CHECK_JUNK_EMAIL,
-              DataType.EXCUSED);
-
-      //  addJoinOverride(JoinOverrideDetails.builder()
-              //  .from(QMessage.message)
-              //  .to(QMessageTemplate.messageTemplate)
-              //  .joinType(com.querydsl.core.JoinType.LEFTJOIN)
-              //  .predicatesToAdd(java.util.List.of(
-               //         QMessage.message.messageId.eq(QMessageTemplate.messageTemplate.id)
-               // ))
-              //  .build());
+              DataType.EXCUSED,
+              DataType.TOTAL_SMS_SENT);
 
     }
 
@@ -93,12 +85,30 @@ public class OutgoingSMSMessagesReport extends AbstractStandardReport {
                 .dataType(LocalDate.class.getSimpleName())
                 .value(DateTimeFormatter.ISO_DATE.format(request.getFromDate()))
                 .build());
-        
+
         map.put("date_to", StandardReportResponse.DataTypeValue.builder()
                 .displayName("Date to")
                 .dataType(LocalDate.class.getSimpleName())
                 .value(DateTimeFormatter.ISO_DATE.format(request.getToDate()))
                 .build());
+
+        long totalSmsSent = 0;
+        if (tableData != null && tableData.getData() != null) {
+            StandardTableData data = (StandardTableData) tableData.getData();
+            for (java.util.LinkedHashMap<String, Object> row : data) {
+                Object totalValue = row.get("total_sms_sent");
+                if (totalValue instanceof Number) {
+                    totalSmsSent += ((Number) totalValue).longValue();
+                }
+            }
+        }
+
+        map.put("total_sms_sent", StandardReportResponse.DataTypeValue.builder()
+                .displayName("Total SMS sent")
+                .dataType(Long.class.getSimpleName())
+                .value(String.valueOf(totalSmsSent))
+                .build());
+
         return map;
     }
 
