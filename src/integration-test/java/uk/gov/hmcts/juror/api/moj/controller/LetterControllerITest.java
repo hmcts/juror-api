@@ -4016,7 +4016,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             verifyResponse(data, 0, "569", EXCUSED_REASON_TRAVELLING_DIFFICULTIES,
                 "2024-01-22", "2024-02-01", false, FormCode.ENG_EXCUSALDENIED.getCode(),
-                "Responded");
+                "Summoned");
         }
 
         @SuppressWarnings("java:S107")

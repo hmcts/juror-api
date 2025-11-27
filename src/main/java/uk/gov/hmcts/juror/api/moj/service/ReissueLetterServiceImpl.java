@@ -61,10 +61,10 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
                                           FormCode formCode) {
         if (deletePendingLetter(jurorNumber, formCode.getCode())) {
             printLetterFromFormCode(ReissueLetterRequestDto.ReissueLetterRequestData.builder()
-                    .jurorNumber(jurorNumber)
-                    .formCode(formCode.getCode())
-                    .build(),
-                false);
+                                        .jurorNumber(jurorNumber)
+                                        .formCode(formCode.getCode())
+                                        .build(),
+                                    false);
         }
     }
 
@@ -79,7 +79,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
         List<Tuple> letters = bulkPrintDataRepository.findLetters(request, letterType.getLetterQueryConsumer());
         if (letters.isEmpty()) {
             throw new MojException.NotFound("No letters found for the given criteria",
-                null);
+                                            null);
         }
 
         List<List<Object>> data = letters.stream()
@@ -122,7 +122,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
                 // get the pool number for the juror
                 JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(letter.getJurorNumber());
                 poolLetterCount.merge(jurorPool.getPoolNumber(), 1, Integer::sum);
-            }
+                }
             );
         }
 
@@ -137,7 +137,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
             poolLetterCount.keySet().forEach(poolNumber -> {
                 // create pool history
                 poolHistoryService.createPoolHistory(poolNumber, HistoryCode.PHRS,
-                                                poolLetterCount.get(poolNumber) + " (Number of Reminder letters sent)");
+                         poolLetterCount.get(poolNumber) + " (Number of Reminder letters sent)");
             });
 
         }
@@ -152,7 +152,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
         log.debug("Printing letter for juror number {} with form code {}", jurorNumber, formCode);
 
         log.debug("Printing letter for juror number {} with form code {}", letter.getJurorNumber(),
-            letter.getFormCode());
+                  letter.getFormCode());
 
         JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(letter.getJurorNumber());
 
@@ -174,10 +174,15 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
 
             JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(letter.getJurorNumber());
 
-            JurorStatus jurorStatus = RepositoryUtils.retrieveFromDatabase(
-                formCode.getJurorStatus(), jurorStatusRepository);
+            List<JurorStatus> jurorStatusList = new ArrayList<>();
 
-            if (!jurorStatus.equals(jurorPool.getStatus())) {
+            formCode.getJurorStatus().forEach(statusCode -> {
+                JurorStatus jurorStatus = RepositoryUtils.retrieveFromDatabase(
+                    statusCode, jurorStatusRepository);
+                jurorStatusList.add(jurorStatus);
+            });
+
+            if (!jurorStatusList.contains(jurorPool.getStatus())) {
                 ReissueLetterReponseDto.ReissueLetterResponseData jurorData =
                     ReissueLetterReponseDto.ReissueLetterResponseData.builder()
                         .jurorNumber(letter.getJurorNumber())
@@ -199,7 +204,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
         BulkPrintData bulkPrintData = bulkPrintDataOpt.get();
         // TODO: history to show letter pending deleted by bureau user
         log.debug("Deleting pending letter for juror number {} with form code {}", jurorNumber,
-            formCode);
+                  formCode);
 
         bulkPrintDataRepository.delete(bulkPrintData);
 
@@ -311,7 +316,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
                 letter.getJurorNumber(), letter.getFormCode(), letter.getDatePrinted());
             if (printedLetter.isEmpty()) {
                 throw new MojException.NotFound(String.format("Bulk print data not found for juror %s ",
-                    letter.getJurorNumber()), null);
+                                                              letter.getJurorNumber()), null);
             }
         }
         // verify the same letter is not already pending a reprint
@@ -319,7 +324,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
                 letter.getJurorNumber(), letter.getFormCode())
             .ifPresent(bulkPrintData -> {
                 throw new MojException.BadRequest(String.format("Letter already pending reprint for juror %s",
-                    letter.getJurorNumber()), null);
+                                                                letter.getJurorNumber()), null);
             });
     }
 

@@ -448,7 +448,9 @@ public class BureauJurorDetailDto implements Serializable, IJurorResponse {
         this.cjsEmployments =
             jurorDetails.getCjsEmployments().stream().map(CjsEmploymentDto::new).collect(Collectors.toList());
         this.specialNeeds =
-            jurorDetails.getReasonableAdjustments().stream().map(ReasonableAdjustmentDto::new).collect(Collectors.toList());
+            jurorDetails.getReasonableAdjustments().stream()
+                .map(ReasonableAdjustmentDto::new)
+                .collect(Collectors.toList());
         this.urgent = jurorDetails.getUrgent();
         this.slaOverdue = jurorDetails.getSlaOverdue();
         this.welsh = jurorDetails.getWelsh();
