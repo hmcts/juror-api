@@ -74,7 +74,8 @@ public class ExpensePaymentByTypeReportTest extends AbstractStandardReportTestSu
             .where(QAppearance.appearance.isDraftExpense.isFalse());
 
         verify(query, times(1))
-            .where(QAppearance.appearance.appearanceStage.in(AppearanceStage.EXPENSE_ENTERED,AppearanceStage.EXPENSE_EDITED));
+            .where(QAppearance.appearance.appearanceStage.in(
+                AppearanceStage.EXPENSE_ENTERED,AppearanceStage.EXPENSE_EDITED));
 
         verify(query, times(1))
             .where(QAppearance.appearance.hideOnUnpaidExpenseAndReports.isFalse());
