@@ -262,25 +262,25 @@ public enum DataType implements IDataType {
     ATTENDANCE_COUNT("Attendance count", Long.class, QAppearance.appearance.count(), QAppearance.appearance),
 
     COURT_LOCATION_NAME_AND_CODE_EP("Court", String.class,
-                                 QAppearance.appearance.courtLocation.name.concat(" (")
-                                     .concat(QAppearance.appearance.courtLocation.locCode).concat(")"), QAppearance.appearance),
+                    QAppearance.appearance.courtLocation.name.concat(" (")
+                   .concat(QAppearance.appearance.courtLocation.locCode).concat(")"), QAppearance.appearance),
     LOSS_OF_EARNINGS_TOTAL("Loss of earnings", BigDecimal.class,
-                           QAppearance.appearance.lossOfEarningsPaid.sum().coalesce(BigDecimal.ZERO), QAppearance.appearance),
+                   QAppearance.appearance.lossOfEarningsPaid.sum().coalesce(BigDecimal.ZERO), QAppearance.appearance),
 
     CHILDCARE_TOTAL("Extra care", BigDecimal.class,
-                    QAppearance.appearance.childcarePaid.sum().coalesce(BigDecimal.ZERO), QAppearance.appearance),
+                QAppearance.appearance.childcarePaid.sum().coalesce(BigDecimal.ZERO), QAppearance.appearance),
 
     MISCELLANEOUS_TOTAL("Other", BigDecimal.class,
-                        QAppearance.appearance.miscAmountPaid.sum().coalesce(BigDecimal.ZERO), QAppearance.appearance),
+                QAppearance.appearance.miscAmountPaid.sum().coalesce(BigDecimal.ZERO), QAppearance.appearance),
 
     PUBLIC_TRANSPORT_TOTAL("Public transport", BigDecimal.class,
-                           QAppearance.appearance.publicTransportPaid.sum().coalesce(BigDecimal.ZERO), QAppearance.appearance),
+               QAppearance.appearance.publicTransportPaid.sum().coalesce(BigDecimal.ZERO), QAppearance.appearance),
 
     HIRED_VEHICLE_TOTAL("Taxi", BigDecimal.class,
-                        QAppearance.appearance.hiredVehiclePaid.sum().coalesce(BigDecimal.ZERO), QAppearance.appearance),
+                QAppearance.appearance.hiredVehiclePaid.sum().coalesce(BigDecimal.ZERO), QAppearance.appearance),
 
     MOTORCYCLE_TOTAL("Motorcycle", BigDecimal.class,
-                     QAppearance.appearance.motorcyclePaid.sum().coalesce(BigDecimal.ZERO), QAppearance.appearance),
+              QAppearance.appearance.motorcyclePaid.sum().coalesce(BigDecimal.ZERO), QAppearance.appearance),
 
     CAR_TOTAL("Car", BigDecimal.class,
               QAppearance.appearance.carPaid.sum().coalesce(BigDecimal.ZERO), QAppearance.appearance),

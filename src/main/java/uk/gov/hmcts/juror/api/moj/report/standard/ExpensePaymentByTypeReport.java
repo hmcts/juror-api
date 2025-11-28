@@ -15,14 +15,13 @@ import uk.gov.hmcts.juror.api.moj.report.DataType;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class ExpensePaymentByTypeReport extends AbstractStandardReport {
-    public ExpensePaymentByTypeReport(){
+    public ExpensePaymentByTypeReport() {
         super(QAppearance.appearance,
                 DataType.COURT_LOCATION_NAME_AND_CODE_EP,
                 DataType.LOSS_OF_EARNINGS_TOTAL,
@@ -39,53 +38,55 @@ public class ExpensePaymentByTypeReport extends AbstractStandardReport {
 
     }
 
-  @Override
-  protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
-    query.where(
-        QAppearance.appearance.attendanceDate.between(request.getFromDate(), request.getToDate()));
-    query.where(QAppearance.appearance.locCode.in(request.getCourts()));
-    query.where(QAppearance.appearance.isDraftExpense.isFalse());
-    query.where(QAppearance.appearance.appearanceStage.in(AppearanceStage.EXPENSE_ENTERED,AppearanceStage.EXPENSE_EDITED));
-    query.where(QAppearance.appearance.hideOnUnpaidExpenseAndReports.isFalse());
-    query.orderBy(
-        QAppearance.appearance.courtLocation.name.asc(),
-        QAppearance.appearance.courtLocation.locCode.asc());
-    query.groupBy(
-        QAppearance.appearance.courtLocation.locCode, QAppearance.appearance.courtLocation.name);
+    @Override
+    protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
+        query.where(
+            QAppearance.appearance.attendanceDate.between(request.getFromDate(), request.getToDate()));
+        query.where(QAppearance.appearance.locCode.in(request.getCourts()));
+        query.where(QAppearance.appearance.isDraftExpense.isFalse());
+        query.where(QAppearance.appearance.appearanceStage.in(
+             AppearanceStage.EXPENSE_ENTERED,AppearanceStage.EXPENSE_EDITED));
+        query.where(QAppearance.appearance.hideOnUnpaidExpenseAndReports.isFalse());
+        query.orderBy(
+            QAppearance.appearance.courtLocation.name.asc(),
+            QAppearance.appearance.courtLocation.locCode.asc());
+        query.groupBy(
+            QAppearance.appearance.courtLocation.locCode, QAppearance.appearance.courtLocation.name);
 
-}
-        @Override
+    }
+
+    @Override
         public Map<String, StandardReportResponse.DataTypeValue> getHeadings(
                 StandardReportRequest request,
                 AbstractReportResponse.TableData<StandardTableData> tableData) {
 
-            LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now();
 
-            Map<String, StandardReportResponse.DataTypeValue> map = new ConcurrentHashMap<>();
+        Map<String, StandardReportResponse.DataTypeValue> map = new ConcurrentHashMap<>();
 
-            map.put("expense_payment_title", StandardReportResponse.DataTypeValue.builder()
+        map.put("expense_payment_title", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Expense Payment")
                     .dataType(String.class.getSimpleName())
                     .value("Expense Payment By Type")
                     .build());
 
-            map.put("date_from", StandardReportResponse.DataTypeValue.builder()
+        map.put("date_from", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Date from")
                     .dataType(LocalDate.class.getSimpleName())
                     .value(DateTimeFormatter.ISO_DATE.format(request.getFromDate()))
                     .build());
 
-            map.put("date_to", StandardReportResponse.DataTypeValue.builder()
+        map.put("date_to", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Date to")
                     .dataType(LocalDate.class.getSimpleName())
                     .value(DateTimeFormatter.ISO_DATE.format(request.getToDate()))
                     .build());
 
-            return map;
-        }
+        return map;
+    }
 
 
-        @Override
+    @Override
     public Class<ExpensePaymentByTypeReport.RequestValidator> getRequestValidatorClass() {
         return ExpensePaymentByTypeReport.RequestValidator.class;
     }
