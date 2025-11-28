@@ -7,9 +7,7 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportReque
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
-import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.messages.QMessage;
-import uk.gov.hmcts.juror.api.moj.domain.messages.QMessageTemplate;
 import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
@@ -20,9 +18,10 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
 @Component
 public class OutgoingSMSMessagesReport extends AbstractStandardReport {
-    public OutgoingSMSMessagesReport(){
+    public OutgoingSMSMessagesReport() {
         super(QMessage.message,
               DataType.COURT_LOCATION_NAME_AND_CODE_MP,
               DataType.REMINDER,
@@ -115,7 +114,7 @@ public class OutgoingSMSMessagesReport extends AbstractStandardReport {
 
 
 
-        @Override
+    @Override
     public Class<OutgoingSMSMessagesReport.RequestValidator> getRequestValidatorClass() {
         return OutgoingSMSMessagesReport.RequestValidator.class;
     }
