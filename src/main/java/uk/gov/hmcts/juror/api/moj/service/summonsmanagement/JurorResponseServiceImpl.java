@@ -38,6 +38,7 @@ import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.hasValueChanged;
 @Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings("PMD")
 public class JurorResponseServiceImpl implements JurorResponseService {
 
     private final JurorPoolRepository jurorPoolRepository;
