@@ -59,6 +59,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import static java.lang.Boolean.TRUE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -347,12 +348,16 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         assertThat(disqCount).as("Expect there to be up to three disqualified jurors").isLessThanOrEqualTo(3);
 
         executeInTransaction(() -> {
-            // check that the jurors with overseas flags are included in the pool
-            Juror juror = jurorRepository.findByJurorNumber("641500004");
-            assertThat(juror).isNotNull();
-            assertThat(juror.getLivingOverseas()).isEqualTo(true);
 
-            List<JurorPool> jurorPool = jurorPoolRepository.findByJurorJurorNumberAndIsActive("641500004", true);
+            List<Juror> jurors = jurorRepository.findAll();
+            Juror juror = jurors.stream()
+                .filter(j -> TRUE.equals(j.getLivingOverseas()))
+                .findFirst()
+                .orElse(null);
+            // There should be at least one juror with overseas flag
+            assertThat(juror).isNotNull();
+
+            List<JurorPool> jurorPool = jurorPoolRepository.findByJurorJurorNumberAndIsActive(juror.getJurorNumber(), true);
             assertThat(jurorPool).isNotEmpty();
             assertThat(jurorPool.size()).isEqualTo(1);
             JurorStatus expectedJurorStatus = jurorPool.get(0).getStatus();

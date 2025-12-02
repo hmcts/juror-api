@@ -488,7 +488,10 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         jurorPool.setOwner(owner);
         jurorPool.setPool(poolRequest);
 
-        juror.setJurorNumber(voter.getJurorNumber());
+        // read the next juror sequence number and assign to the juror
+        Long jurorNumber = jurorRepository.getJurorSequenceNumber();
+        juror.setJurorNumber(String.format("%09d", jurorNumber));
+        
         juror.setPollNumber(voter.getPollNumber());
         juror.setTitle(voter.getTitle());
         juror.setFirstName(voter.getFirstName());

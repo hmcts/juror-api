@@ -38,4 +38,7 @@ public interface JurorRepository extends RevisionRepository<Juror, String, Long>
     @Query(value = "SELECT MAX(j.revision) FROM juror_mod.juror_audit j WHERE j.juror_number = ?1",
         nativeQuery = true)
     Long getLatestRevision(String jurorNumber);
+
+    @Query(value = "SELECT nextval('juror_mod.juror_number_seq')", nativeQuery = true)
+    Long getJurorSequenceNumber();
 }
