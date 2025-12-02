@@ -14,6 +14,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QReasonableAdjustments;
+import uk.gov.hmcts.juror.api.moj.domain.messages.QMessage;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
@@ -295,7 +296,158 @@ public enum DataType implements IDataType {
                       QAppearance.appearance.subsistencePaid.sum().coalesce(BigDecimal.ZERO), QAppearance.appearance),
 
 
-   POLICE_CHECK_RESPONDED("Responded jurors", Long.class,
+    COURT_LOCATION_NAME_AND_CODE_MP("Court", String.class,
+                                    new CaseBuilder()
+                                        .when(QMessage.message.locationCode.isNotNull())
+                                        .then(QMessage.message.locationCode.name.concat(" (")
+                                                  .concat(QMessage.message.locationCode.locCode).concat(")"))
+                                        .otherwise(""),
+                                    QMessage.message),
+
+    REMINDER("Reminder", Long.class,
+             new CaseBuilder()
+                 .when(QMessage.message.messageId.eq(1))
+                 .then(1L)
+                 .otherwise(0L)
+                 .sum(),
+             QMessage.message),
+
+    FAILED_TO_ATTEND("Failed to attend", Long.class,
+                     new CaseBuilder()
+                         .when(QMessage.message.messageId.eq(2))
+                         .then(1L)
+                         .otherwise(0L)
+                         .sum(),
+                     QMessage.message),
+
+    DATE_AND_TIME_CHANGED("Date & time changed", Long.class,
+                          new CaseBuilder()
+                              .when(QMessage.message.messageId.eq(3))
+                              .then(1L)
+                              .otherwise(0L)
+                              .sum(),
+                          QMessage.message),
+
+    TIME_CHANGED("Time changed", Long.class,
+                 new CaseBuilder()
+                     .when(QMessage.message.messageId.eq(4))
+                     .then(1L)
+                     .otherwise(0L)
+                     .sum(),
+                 QMessage.message),
+
+    COMPLETE_ATTENDED("Complete (attended)", Long.class,
+                      new CaseBuilder()
+                          .when(QMessage.message.messageId.eq(5))
+                          .then(1L)
+                          .otherwise(0L)
+                          .sum(),
+                      QMessage.message),
+
+    COMPLETE_NOT_NEEDED("Complete (not needed)", Long.class,
+                        new CaseBuilder()
+                            .when(QMessage.message.messageId.eq(6))
+                            .then(1L)
+                            .otherwise(0L)
+                            .sum(),
+                        QMessage.message),
+
+    NEXT_DATE("Next date", Long.class,
+              new CaseBuilder()
+                  .when(QMessage.message.messageId.eq(7))
+                  .then(1L)
+                  .otherwise(0L)
+                  .sum(),
+              QMessage.message),
+
+    ON_CALL_OSR("On call", Long.class,
+                new CaseBuilder()
+                    .when(QMessage.message.messageId.eq(8))
+                    .then(1L)
+                    .otherwise(0L)
+                    .sum(),
+                QMessage.message),
+
+    PLEASE_CONTACT("Please contact", Long.class,
+                   new CaseBuilder()
+                       .when(QMessage.message.messageId.eq(9))
+                       .then(1L)
+                       .otherwise(0L)
+                       .sum(),
+                   QMessage.message),
+
+    DELAYED_START("Delayed start", Long.class,
+                  new CaseBuilder()
+                      .when(QMessage.message.messageId.eq(10))
+                      .then(1L)
+                      .otherwise(0L)
+                      .sum(),
+                  QMessage.message),
+
+    SELECTION("Selection", Long.class,
+              new CaseBuilder()
+                  .when(QMessage.message.messageId.eq(11))
+                  .then(1L)
+                  .otherwise(0L)
+                  .sum(),
+              QMessage.message),
+
+    BAD_WEATHER("Bad weather", Long.class,
+                new CaseBuilder()
+                    .when(QMessage.message.messageId.eq(12))
+                    .then(1L)
+                    .otherwise(0L)
+                    .sum(),
+                QMessage.message),
+
+    BRING_LUNCH("Bring lunch", Long.class,
+                new CaseBuilder()
+                    .when(QMessage.message.messageId.eq(13))
+                    .then(1L)
+                    .otherwise(0L)
+                    .sum(),
+                QMessage.message),
+
+    CHECK_JUNK_EMAIL("Check junk mail", Long.class,
+                     new CaseBuilder()
+                         .when(QMessage.message.messageId.eq(14))
+                         .then(1L)
+                         .otherwise(0L)
+                         .sum(),
+                     QMessage.message),
+
+    EXCUSED("Excused", Long.class,
+            new CaseBuilder()
+                .when(QMessage.message.messageId.eq(15))
+                .then(1L)
+                .otherwise(0L)
+                .sum(),
+            QMessage.message),
+
+    TOTAL_SMS_SENT("Total", Long.class,
+                   new CaseBuilder()
+                       .when(QMessage.message.messageId.eq(1)).then(1L)
+                       .when(QMessage.message.messageId.eq(2)).then(1L)
+                       .when(QMessage.message.messageId.eq(3)).then(1L)
+                       .when(QMessage.message.messageId.eq(4)).then(1L)
+                       .when(QMessage.message.messageId.eq(5)).then(1L)
+                       .when(QMessage.message.messageId.eq(6)).then(1L)
+                       .when(QMessage.message.messageId.eq(7)).then(1L)
+                       .when(QMessage.message.messageId.eq(8)).then(1L)
+                       .when(QMessage.message.messageId.eq(9)).then(1L)
+                       .when(QMessage.message.messageId.eq(10)).then(1L)
+                       .when(QMessage.message.messageId.eq(11)).then(1L)
+                       .when(QMessage.message.messageId.eq(12)).then(1L)
+                       .when(QMessage.message.messageId.eq(13)).then(1L)
+                       .when(QMessage.message.messageId.eq(14)).then(1L)
+                       .when(QMessage.message.messageId.eq(15)).then(1L)
+                       .otherwise(0L)
+                       .sum(),
+                   QMessage.message),
+
+
+
+    POLICE_CHECK_RESPONDED("Responded jurors", Long.class,
         QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED).count()),
 
     POLICE_CHECK_SUBMITTED("Checks submitted", Long.class,
