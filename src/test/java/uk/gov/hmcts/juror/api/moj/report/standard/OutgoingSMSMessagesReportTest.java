@@ -44,8 +44,8 @@ public class OutgoingSMSMessagesReportTest extends AbstractStandardReportTestSup
                 DataType.DELAYED_START,
                 DataType.SELECTION,
                 DataType.BAD_WEATHER,
-                DataType.BRING_LUNCH,
                 DataType.CHECK_JUNK_EMAIL,
+                DataType.BRING_LUNCH,
                 DataType.EXCUSED,
                 DataType.TOTAL_SMS_SENT);
         setHasPoolRepository(false);
