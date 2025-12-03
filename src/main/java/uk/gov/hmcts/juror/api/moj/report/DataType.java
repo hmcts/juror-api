@@ -400,21 +400,24 @@ public enum DataType implements IDataType {
                     .sum(),
                 QMessage.message),
 
+    CHECK_JUNK_EMAIL("Check junk mail", Long.class,
+                     new CaseBuilder()
+                         .when(QMessage.message.messageId.eq(13))
+                         .then(1L)
+                         .otherwise(0L)
+                         .sum(),
+                     QMessage.message),
+
+
+
     BRING_LUNCH("Bring lunch", Long.class,
                 new CaseBuilder()
-                    .when(QMessage.message.messageId.eq(13))
+                    .when(QMessage.message.messageId.eq(14))
                     .then(1L)
                     .otherwise(0L)
                     .sum(),
                 QMessage.message),
 
-    CHECK_JUNK_EMAIL("Check junk mail", Long.class,
-                     new CaseBuilder()
-                         .when(QMessage.message.messageId.eq(14))
-                         .then(1L)
-                         .otherwise(0L)
-                         .sum(),
-                     QMessage.message),
 
     EXCUSED("Excused", Long.class,
             new CaseBuilder()
