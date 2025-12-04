@@ -6,6 +6,7 @@ import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import lombok.Getter;
+import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
@@ -23,6 +24,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Locale;
@@ -446,6 +448,46 @@ public enum DataType implements IDataType {
                    QMessage.message),
 
 
+
+    COURT_NAME("Court", String.class,
+               QCourtLocation.courtLocation.name,
+               QCourtLocation.courtLocation),
+
+    TRANSPORT_TYPE("Transport Type", String.class,
+                   (Expression<?>) null),
+
+    OLD_LIMIT("Old Limit", String.class,
+              (Expression<?>) null),
+
+    NEW_LIMIT("New Limit", String.class,
+              (Expression<?>) null),
+
+    CHANGED_BY("Changed By", String.class,
+               (Expression<?>) null),
+
+    CHANGE_DATE("Change Date", LocalDateTime.class,
+                (Expression<?>) null),
+
+  //  PAID_INDICATOR("Paid", String.class,
+  //                 new CaseBuilder()
+  //                     .when(QAppearance.appearance.
+  //                     .then("Yes")
+  //                     .when(QAppearance.appearance.payAttendanceType.eq(PayAttendanceType.HALF_DAY))
+  //                     .then("Yes")
+  //                     .otherwise("No"),
+  //                 QAppearance.appearance),
+
+    PUBLIC_TRANSPORT_TOTAL_DUE("Public Transport Total", BigDecimal.class,
+                               QAppearance.appearance.publicTransportPaid,
+                               QAppearance.appearance),
+
+    TAXI_TOTAL_DUE("Taxi Total", BigDecimal.class,
+                   QAppearance.appearance.hiredVehiclePaid,
+                   QAppearance.appearance),
+
+  //  ATTENDANCE_DATE("Attendance Date", LocalDate.class,
+  //                  QAppearance.appearance.attendanceDate,
+  //                  QAppearance.appearance),
 
     POLICE_CHECK_RESPONDED("Responded jurors", Long.class,
         QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED).count()),
