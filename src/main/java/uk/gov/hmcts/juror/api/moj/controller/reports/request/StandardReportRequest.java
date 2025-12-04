@@ -33,6 +33,8 @@ public class StandardReportRequest {
     @NotBlank
     @Schema(allowableValues = {
         //Standard
+        "ManualAdjustmentsToExpenseLimitsReport",
+        "ExpensePaymentUsingAdjustLimitsReport",
         "OutgoingSMSMessagesReport",
         "ExpensePaymentByTypeReport",
         "CurrentPoolStatusReport",

@@ -468,26 +468,23 @@ public enum DataType implements IDataType {
     CHANGE_DATE("Change Date", LocalDateTime.class,
                 (Expression<?>) null),
 
-  //  PAID_INDICATOR("Paid", String.class,
-  //                 new CaseBuilder()
-  //                     .when(QAppearance.appearance.
-  //                     .then("Yes")
-  //                     .when(QAppearance.appearance.payAttendanceType.eq(PayAttendanceType.HALF_DAY))
-  //                     .then("Yes")
-  //                     .otherwise("No"),
-  //                 QAppearance.appearance),
+
 
     PUBLIC_TRANSPORT_TOTAL_DUE("Public Transport Total", BigDecimal.class,
                                QAppearance.appearance.publicTransportPaid,
                                QAppearance.appearance),
 
+    PUBLIC_TRANSPORT_PAID_OVER_OLD_LIMIT("Public Transport Paid Over Old Limit", BigDecimal.class,
+                                         (Expression<?>) null),  // Calculated in report logic
+
     TAXI_TOTAL_DUE("Taxi Total", BigDecimal.class,
                    QAppearance.appearance.hiredVehiclePaid,
                    QAppearance.appearance),
 
-  //  ATTENDANCE_DATE("Attendance Date", LocalDate.class,
-  //                  QAppearance.appearance.attendanceDate,
-  //                  QAppearance.appearance),
+
+    TAXI_PAID_OVER_OLD_LIMIT("Taxi Paid Over Old Limit", BigDecimal.class,
+                             (Expression<?>) null),
+
 
     POLICE_CHECK_RESPONDED("Responded jurors", Long.class,
         QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED).count()),

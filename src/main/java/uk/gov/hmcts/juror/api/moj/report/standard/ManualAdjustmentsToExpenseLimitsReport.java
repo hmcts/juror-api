@@ -10,91 +10,74 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResp
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
 import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
+import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
-import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
-import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 import uk.gov.hmcts.juror.api.moj.service.audit.CourtLocationAuditService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Summary report showing all manual adjustments to transport expense limits across courts.
- * This is the top-level report that provides links to detailed court-specific reports.
- */
+
 @Component
-public class ManualAdjustmentsToExpenseLimitsReport extends AbstractReport {
+public class ManualAdjustmentsToExpenseLimitsReport extends AbstractStandardReport {
 
     private final CourtLocationAuditService courtLocationAuditService;
 
     @Autowired
     public ManualAdjustmentsToExpenseLimitsReport(CourtLocationAuditService courtLocationAuditService) {
         super(
-            QCourtLocation.courtLocation,
-            DataType.COURT_NAME,
-            DataType.TRANSPORT_TYPE,
-            DataType.OLD_LIMIT,
-            DataType.NEW_LIMIT,
-            DataType.CHANGED_BY,
-            DataType.CHANGE_DATE
+                QCourtLocation.courtLocation,
+                DataType.COURT_NAME,
+                DataType.TRANSPORT_TYPE,
+                DataType.OLD_LIMIT,
+                DataType.NEW_LIMIT,
+                DataType.CHANGED_BY,
+                DataType.CHANGE_DATE
         );
-    //    this.courtLocationAuditService = courtLocationAuditService;
-    //    isCourtUserOnly();
-    }
-
-    @Override
-    public Class<? extends Validators.AbstractRequestValidator> getRequestValidatorClass() {
-        return RequestValidator.class;
-    }
-
-    @Override
-    public Map<String, StandardReportResponse.DataTypeValue> getHeadings(
-        StandardReportRequest request,
-        StandardReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData) {
-
-        Map<String, StandardReportResponse.DataTypeValue> headings = new LinkedHashMap<>();
-
-        // Add report title
-        headings.put("report_title",
-                     StandardReportResponse.DataTypeValue.builder()
-                         .displayName("Report Title")
-                         .dataType("String")
-                         .value("Manual Adjustments to Expense Limits")
-                         .build());
-
-        // Add date range or generation date if needed
-        headings.put("report_generated",
-                     StandardReportResponse.DataTypeValue.builder()
-                         .displayName("Report Generated")
-                         .dataType("LocalDateTime")
-                         .value(java.time.LocalDateTime.now())
-                         .build());
-
-        return headings;
+        this.courtLocationAuditService = courtLocationAuditService;
+      //  isCourtUserOnly();
     }
 
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
-        // Get the user's court location
+        // This method won't be used since we override getTableData()
+        // But we need to implement it for the abstract class
         String locCode = SecurityUtil.getLocCode();
-
-        // Filter to only show audit records for the user's court
         query.where(QCourtLocation.courtLocation.locCode.eq(locCode));
     }
 
     @Override
-    public Map<String, AbstractReportResponse.DataTypeValue> getHeadings(
-        StandardReportRequest request,
-        AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData) {
+    public Map<String, StandardReportResponse.DataTypeValue> getHeadings(
+            StandardReportRequest request,
+            AbstractReportResponse.TableData<StandardTableData> tableData) {
 
-        return getHeadings(request, (StandardReportResponse.TableData<List<LinkedHashMap<String, Object>>>) tableData);
+        LocalDateTime now = LocalDateTime.now();
+
+        Map<String, StandardReportResponse.DataTypeValue> map = new ConcurrentHashMap<>();
+
+        map.put("manual_adjustments_title", StandardReportResponse.DataTypeValue.builder()
+                .displayName("Manual Adjustments to Expense Limits")
+                .dataType(String.class.getSimpleName())
+                .value("Manual Adjustments to Expense Limits")
+                .build());
+
+        map.put("report_generated", StandardReportResponse.DataTypeValue.builder()
+                .displayName("Report Generated")
+                .dataType(LocalDateTime.class.getSimpleName())
+                .value(DateTimeFormatter.ISO_DATE_TIME.format(now))
+                .build());
+
+        return map;
     }
 
     /**
-     * Custom data retrieval that gets audit data from CourtLocationAuditService
-     * instead of using standard QueryDSL queries.
+     * Override the standard table data retrieval to use audit service instead of QueryDSL.
      */
     @Override
     public StandardTableData getTableData(StandardReportRequest request) {
@@ -109,14 +92,9 @@ public class ManualAdjustmentsToExpenseLimitsReport extends AbstractReport {
         for (var record : auditRecords) {
             // Add public transport changes
             if (record.hasPublicTransportChanged()) {
-                ReportLinkedMap<String, Object> row = new ReportLinkedMap<>();
+                LinkedHashMap<String, Object> row = new LinkedHashMap<>();
 
-                row.put("court_name",
-                        ReportHashMap.builder()
-                            .add("court_name", record.getCourtName())
-                            .add("loc_code", record.getLocCode())
-                            .build());
-
+                row.put("court_name", record.getCourtName());
                 row.put("transport_type", "Public Transport");
                 row.put("old_limit", formatLimit(record.getPublicTransportPreviousValue()));
                 row.put("new_limit", formatLimit(record.getPublicTransportCurrentValue()));
@@ -128,14 +106,9 @@ public class ManualAdjustmentsToExpenseLimitsReport extends AbstractReport {
 
             // Add taxi changes
             if (record.hasTaxiChanged()) {
-                ReportLinkedMap<String, Object> row = new ReportLinkedMap<>();
+                LinkedHashMap<String, Object> row = new LinkedHashMap<>();
 
-                row.put("court_name",
-                        ReportHashMap.builder()
-                            .add("court_name", record.getCourtName())
-                            .add("loc_code", record.getLocCode())
-                            .build());
-
+                row.put("court_name", record.getCourtName());
                 row.put("transport_type", "Taxi");
                 row.put("old_limit", formatLimit(record.getTaxiPreviousValue()));
                 row.put("new_limit", formatLimit(record.getTaxiCurrentValue()));
@@ -156,11 +129,16 @@ public class ManualAdjustmentsToExpenseLimitsReport extends AbstractReport {
         return String.format("£%.2f", value);
     }
 
+    @Override
+    public Class<RequestValidator> getRequestValidatorClass() {
+        return RequestValidator.class;
+    }
+
     /**
      * Request validator for the manual adjustments report.
      */
     public interface RequestValidator extends
-        Validators.AbstractRequestValidator {
+            AbstractReport.Validators.AbstractRequestValidator {
         // No additional validation required for this report
     }
 }
