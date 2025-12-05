@@ -18,6 +18,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauBacklogCountData;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 
 import java.net.URI;
 import java.util.Collections;
@@ -37,6 +40,9 @@ public class BureauBacklogCountControllerTest extends AbstractIntegrationTest {
 
     @Autowired
     private TestRestTemplate template;
+
+    @Autowired
+    private JurorDigitalResponseRepositoryMod jurorDigitalResponseRepositoryMod;
 
     private HttpHeaders httpHeaders;
 
@@ -61,15 +67,31 @@ public class BureauBacklogCountControllerTest extends AbstractIntegrationTest {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
-        // assert db state before.
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE where "
-            + "PROCESSING_STATUS = 'TODO' and STAFF_LOGIN IS NULL ", Integer.class)).isEqualTo(7);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE where "
-                + "PROCESSING_STATUS = 'TODO' and STAFF_LOGIN IS NULL and URGENT = 'Y'",
-            Integer.class)).isEqualTo(3);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE where "
-            + "PROCESSING_STATUS != 'TODO' ", Integer.class)).isEqualTo(1);
+        // get the juror response and check the processing status
+        Iterable<DigitalResponse> responses = jurorDigitalResponseRepositoryMod.findAll();
 
+        int countUrgent = 0;
+        int countNotToDo = 0;
+        int countToDo = 0;
+        int responseCount = 0;
+        for (DigitalResponse response : responses) {
+            responseCount++;
+            if (response.getProcessingStatus() == ProcessingStatus.TODO
+                && response.getStaff() == null) {
+                countToDo++;
+            }
+            if (response.getProcessingStatus() == ProcessingStatus.TODO && response.isUrgent()
+                && response.getStaff() == null) {
+                countUrgent++;
+            }
+            if (response.getProcessingStatus() != ProcessingStatus.TODO) {
+                countNotToDo++;
+            }
+        }
+        assertThat(responseCount).isEqualTo(10);
+        assertThat(countToDo).isEqualTo(7);
+        assertThat(countUrgent).isEqualTo(3);
+        assertThat(countNotToDo).isEqualTo(1);
 
         URI uri = URI.create("/api/v1/bureau/backlog/count");
 
