@@ -1,6 +1,8 @@
 package uk.gov.hmcts.juror.api.moj.repository;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -560,6 +562,45 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .fetchOne();
 
         return count != null ? count.intValue() : 0;
+    }
+
+    @Override
+    public List<Tuple> getAllWeekendAttendances(List<LocalDate> saturdays, List<LocalDate> sundays,
+                                                List<LocalDate> bankHolidays, List<LocalDate> allDates) {
+
+        NumberExpression<Integer> saturdayExpr =
+            new CaseBuilder()
+                .when(APPEARANCE.attendanceDate.in(saturdays)).then(1)
+                .otherwise(0)
+                .sum();
+
+        NumberExpression<Integer> sundayExpr =
+            new CaseBuilder()
+                .when(APPEARANCE.attendanceDate.in(sundays)).then(1)
+                .otherwise(0)
+                .sum();
+
+        NumberExpression<Integer> holidayExpr =
+            new CaseBuilder()
+                .when(APPEARANCE.attendanceDate.in(bankHolidays)).then(1)
+                .otherwise(0)
+                .sum();
+
+        return getQueryFactory()
+            .select(COURT_LOCATION.locCourtName,
+                    COURT_LOCATION.locCode,
+                    saturdayExpr,
+                    sundayExpr,
+                    holidayExpr,
+                    APPEARANCE.totalPaid.sum()
+            )
+            .from(APPEARANCE)
+            .join(COURT_LOCATION).on(APPEARANCE.locCode.eq(COURT_LOCATION.locCode))
+            .where(APPEARANCE.attendanceDate.in(allDates))
+            .groupBy(COURT_LOCATION.locCourtName, COURT_LOCATION.locCode)
+            .orderBy(COURT_LOCATION.locCourtName.asc())
+            .fetch();
+
     }
 
     JPAQueryFactory getQueryFactory() {
