@@ -21,16 +21,9 @@ import java.util.Map;
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class AttendanceReportServiceImpl implements AttendanceReportService {
 
-    private AppearanceRepository appearanceRepository;
-    private AdministrationHolidaysService holidaysService;
-
-    public AttendanceReportServiceImpl(
-        AppearanceRepository appearanceRepository,
-        AdministrationHolidaysService holidaysService) {
-        this.appearanceRepository = appearanceRepository;
-        this.holidaysService = holidaysService;
-    }
-
+    private final AppearanceRepository appearanceRepository;
+    private final AdministrationHolidaysService holidaysService;
+    
     @Override
     @Transactional(readOnly = true)
     public WeekendAttendanceReportResponse getWeekendAttendanceReport() {
