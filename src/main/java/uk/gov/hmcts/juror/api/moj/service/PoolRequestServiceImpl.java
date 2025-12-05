@@ -216,7 +216,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
     private PoolRequest createPoolForCourtUse(PoolRequestDto poolRequestDto, BureauJwtPayload payload) {
         String owner = payload.getOwner();
 
-        if (owner.equalsIgnoreCase(JurorDigitalApplication.JUROR_OWNER)) {
+        if (JurorDigitalApplication.JUROR_OWNER.equals(owner)) {
             throw new MojException.Forbidden("Bureau users are not permitted to create new pools "
                 + "for court use only", null);
         }
@@ -349,7 +349,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
         poolsListing.forEach(pool -> {
             List<String> poolDetails = Arrays.asList(pool.split(","));
 
-            int jurorsInAttendance = poolDetails.get(2).equals("null") ? 0 : Integer.parseInt(poolDetails.get(2));
+            int jurorsInAttendance = "null".equals(poolDetails.get(2)) ? 0 : Integer.parseInt(poolDetails.get(2));
             int jurorsOnCall = Integer.parseInt(poolDetails.get(3));
 
             // total possible in attendance - in attendance
@@ -362,7 +362,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
                     .jurorsOnCall(jurorsOnCall)
                     .otherJurors(others)
                     .totalJurors(jurorsInAttendance + jurorsOnCall + others)
-                    .jurorsOnTrials(poolDetails.get(4).equals("null") ? 0 : Integer.parseInt(poolDetails.get(4)))
+                    .jurorsOnTrials("null".equals(poolDetails.get(4)) ? 0 : Integer.parseInt(poolDetails.get(4)))
                     .poolType(poolDetails.get(6))
                     .serviceStartDate(LocalDate.parse(poolDetails.get(7)))
                     .build();

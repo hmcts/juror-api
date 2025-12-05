@@ -13,13 +13,13 @@ managing jurors.
 ### Environment variables
 
 The following application settings are required to run the application. They can be set in the
-`application-local.yaml` file or as environment variables. The application will look for the environment variables first.
+`application-local.yaml`file or as environment variables.The application will look for the environment variables first.
 
 ```
 DB_PASSWORD=postgres
 DB_URL=jdbc:postgresql://localhost:5432/juror
 DB_USERNAME=juror
-JWT_SECRET_BUREAU= 
+JWT_SECRET_BUREAU=
 JWT_SECRET_HMAC=
 JWT_SECRET_PUBLIC=
 NOTIFY_KEY=

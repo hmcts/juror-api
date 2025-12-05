@@ -39,14 +39,14 @@ import static org.mockito.Mockito.when;
     "unchecked",
     "PMD.ExcessiveImports"
 })
-class ReasonableAdjustmentsReportTest extends AbstractGroupedReportTestSupport<ReasonableAdjustmentsReport> {
+class ReasonableAdjustmentAndCJEReportTest extends AbstractGroupedReportTestSupport<ReasonableAdjustmentAndCjeReport> {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
     private CourtLocationService courtLocationService;
 
-    public ReasonableAdjustmentsReportTest() {
+    public ReasonableAdjustmentAndCJEReportTest() {
         super(QJurorPool.jurorPool,
-            ReasonableAdjustmentsReport.RequestValidator.class,
+            ReasonableAdjustmentAndCjeReport.RequestValidator.class,
             ReportGroupBy.builder()
                 .dataType(DataType.COURT_LOCATION_NAME_AND_CODE)
                 .removeGroupByFromResponse(true)
@@ -77,8 +77,8 @@ class ReasonableAdjustmentsReportTest extends AbstractGroupedReportTestSupport<R
     }
 
     @Override
-    public ReasonableAdjustmentsReport createReport(PoolRequestRepository poolRequestRepository) {
-        return new ReasonableAdjustmentsReport(this.courtLocationService);
+    public ReasonableAdjustmentAndCjeReport createReport(PoolRequestRepository poolRequestRepository) {
+        return new ReasonableAdjustmentAndCjeReport(this.courtLocationService);
     }
 
     @Override
