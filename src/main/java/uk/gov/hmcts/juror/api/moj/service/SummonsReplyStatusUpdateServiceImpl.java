@@ -606,7 +606,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
     private void updateJurorFromSummonsReply(AbstractJurorResponse updatedDetails, Juror juror,
                                              String locCode) {
         log.trace("Juror: {}. Enter updateJurorPoolFromSummonsReply", juror.getJurorNumber());
-        
+
         if (!ObjectUtils.isEmpty(updatedDetails.getThirdPartyReason())) {
             log.debug(
                 "Juror: {}. Summons reply completed by a third-party, check to see what details to keep",
