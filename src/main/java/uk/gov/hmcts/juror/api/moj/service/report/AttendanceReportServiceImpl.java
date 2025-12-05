@@ -23,13 +23,14 @@ public class AttendanceReportServiceImpl implements AttendanceReportService {
 
     private final AppearanceRepository appearanceRepository;
     private final AdministrationHolidaysService holidaysService;
-    
+
     @Override
     @Transactional(readOnly = true)
     public WeekendAttendanceReportResponse getWeekendAttendanceReport() {
 
         // get first day of current month
         LocalDate fromDate = LocalDate.now().withDayOfMonth(1);
+
         // get current date (report won't be run for future dates)
         LocalDate toDate = LocalDate.now();
 

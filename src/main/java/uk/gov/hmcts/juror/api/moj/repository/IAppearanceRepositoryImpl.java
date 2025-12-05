@@ -587,7 +587,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
                 .sum();
 
         return getQueryFactory()
-            .select(COURT_LOCATION.locCourtName,
+            .select(COURT_LOCATION.name,
                     COURT_LOCATION.locCode,
                     saturdayExpr,
                     sundayExpr,
@@ -597,8 +597,8 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .from(APPEARANCE)
             .join(COURT_LOCATION).on(APPEARANCE.locCode.eq(COURT_LOCATION.locCode))
             .where(APPEARANCE.attendanceDate.in(allDates))
-            .groupBy(COURT_LOCATION.locCourtName, COURT_LOCATION.locCode)
-            .orderBy(COURT_LOCATION.locCourtName.asc())
+            .groupBy(COURT_LOCATION.name, COURT_LOCATION.locCode)
+            .orderBy(COURT_LOCATION.name.asc())
             .fetch();
 
     }
