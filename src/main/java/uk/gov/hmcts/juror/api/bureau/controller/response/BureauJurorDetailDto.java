@@ -330,7 +330,7 @@ public class BureauJurorDetailDto implements Serializable, IJurorResponse {
     private List<CjsEmploymentDto> cjsEmployments;
 
     @Schema(description = "List of Jurors special needs")
-    private List<SpecialNeedDto> specialNeeds;
+    private List<ReasonableAdjustmentDto> specialNeeds;
 
     /**
      * Flag that this response is urgent.
@@ -448,7 +448,9 @@ public class BureauJurorDetailDto implements Serializable, IJurorResponse {
         this.cjsEmployments =
             jurorDetails.getCjsEmployments().stream().map(CjsEmploymentDto::new).collect(Collectors.toList());
         this.specialNeeds =
-            jurorDetails.getReasonableAdjustments().stream().map(SpecialNeedDto::new).collect(Collectors.toList());
+            jurorDetails.getReasonableAdjustments().stream()
+                .map(ReasonableAdjustmentDto::new)
+                .collect(Collectors.toList());
         this.urgent = jurorDetails.getUrgent();
         this.slaOverdue = jurorDetails.getSlaOverdue();
         this.welsh = jurorDetails.getWelsh();

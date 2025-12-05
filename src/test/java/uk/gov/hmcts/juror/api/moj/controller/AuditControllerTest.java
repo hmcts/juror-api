@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
+import uk.gov.hmcts.juror.api.moj.service.audit.CourtLocationAuditService;
 import uk.gov.hmcts.juror.api.moj.service.audit.JurorAuditService;
 
 import java.time.LocalDate;
@@ -48,6 +49,10 @@ public class AuditControllerTest {
 
     @MockBean
     private JurorAuditService jurorAuditService;
+
+    @MockBean
+    private CourtLocationAuditService courtLocationAuditService;
+
     @InjectMocks
     private AuditController auditController;
 

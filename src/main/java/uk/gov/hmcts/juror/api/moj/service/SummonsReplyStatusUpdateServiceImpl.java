@@ -615,21 +615,28 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
                 "Juror: {}. Summons reply completed by a third-party, check to see what details to keep",
                 juror.getJurorNumber());
 
-            if (updatedDetails.getJurorEmailDetails() == null
-                || !updatedDetails.getJurorEmailDetails()) {
-                juror.setEmail(null);
+            // Copy the actual details to juror record except contact details unless allowed.
+            BeanUtils.copyProperties(updatedDetails, juror, TITLE, FIRST_NAME, LAST_NAME, PHONE_NO, ALT_PHONE_NO,
+                                     EMAIL, DATE_OF_BIRTH);
+
+            if (Boolean.TRUE.equals(updatedDetails.getJurorEmailDetails())
+                && (updatedDetails.getEmail() != null && !updatedDetails.getEmail().isEmpty())) {
+                juror.setEmail(updatedDetails.getEmail());
             }
 
-            if (updatedDetails.getJurorPhoneDetails() == null
-                || !updatedDetails.getJurorPhoneDetails()) {
-                juror.setPhoneNumber(null);
-                juror.setAltPhoneNumber(null);
-            } else {
+            if (Boolean.TRUE.equals(updatedDetails.getJurorPhoneDetails())
+                && (updatedDetails.getPhoneNumber() != null || updatedDetails.getAltPhoneNumber() != null)) {
+                juror.setPhoneNumber(updatedDetails.getPhoneNumber());
+                juror.setAltPhoneNumber(updatedDetails.getAltPhoneNumber());
                 applyPhoneNumberRules(juror, updatedDetails);
             }
+
         } else {
+            // Copy the actual details to juror record.
+            BeanUtils.copyProperties(updatedDetails, juror, TITLE, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH);
             applyPhoneNumberRules(juror, updatedDetails);
         }
+
 
         // Individually map the details where the property names/types are not an exact match
         juror.setAddressLine1(updatedDetails.getAddressLine1());
