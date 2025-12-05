@@ -58,7 +58,7 @@ public class AttendanceReportServiceImpl implements AttendanceReportService {
                 .toList();
 
         // combine all dates into a single list
-        var allRelevantDates = new java.util.ArrayList<LocalDate>();
+        var allRelevantDates = new ArrayList<LocalDate>();
         allRelevantDates.addAll(saturdayDates);
         allRelevantDates.addAll(sundayDates);
         allRelevantDates.addAll(bankHolidayDatesInMonth);

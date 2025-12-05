@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.service.report;
 
+import com.querydsl.core.Tuple;
 import lombok.SneakyThrows;
 import org.assertj.core.api.Assertions;
 
@@ -84,6 +85,77 @@ class AttendanceReportServiceImplTest {
             verify(appearanceRepository, times(1)).getAllWeekendAttendances(anyList(), anyList(),
                                                                             anyList(), anyList());
 
+        }
+
+        @Test
+        @SneakyThrows
+        void weekendAttendanceReportHappy() {
+
+            when(holidaysService.viewBankHolidays())
+                .thenReturn(Map.of());
+
+            List<Tuple> mockResults = getWeekendAttendanceReportMockData();
+
+            when(appearanceRepository.getAllWeekendAttendances(anyList(), anyList(),
+                                                               anyList(), anyList()))
+                .thenReturn(mockResults);
+
+            WeekendAttendanceReportResponse response =
+                attendanceReportService.getWeekendAttendanceReport();
+
+            assertThat(response.getHeadings()).isNotNull();
+            Map<String, AbstractReportResponse.DataTypeValue> headings = response.getHeadings();
+
+            validateReportHeadings(headings);
+
+            assertThat(response.getTableData()).isNotNull();
+            WeekendAttendanceReportResponse.TableData tableData = response.getTableData();
+            assertThat(tableData.getHeadings()).isNotNull();
+            Assertions.assertThat(tableData.getHeadings()).hasSize(5);
+
+            validateTableHeadings(tableData);
+
+            Assertions.assertThat(tableData.getData()).isNotEmpty();
+            Assertions.assertThat(tableData.getData()).hasSize(2);
+            WeekendAttendanceReportResponse.TableData.DataRow row1 = tableData.getData().get(0);
+            Assertions.assertThat(row1.getCourtLocationNameAndCode()).isEqualTo("BRIGHTON (777)");
+            Assertions.assertThat(row1.getSaturdayTotal()).isEqualTo(1);
+            Assertions.assertThat(row1.getSundayTotal()).isEqualTo(1);
+            Assertions.assertThat(row1.getHolidayTotal()).isEqualTo(1);
+            Assertions.assertThat(row1.getTotalPaid()).isEqualTo(100.00);
+
+            WeekendAttendanceReportResponse.TableData.DataRow row2 = tableData.getData().get(1);
+            Assertions.assertThat(row2.getCourtLocationNameAndCode()).isEqualTo("CAERNARFON (755)");
+            Assertions.assertThat(row2.getSaturdayTotal()).isEqualTo(2);
+            Assertions.assertThat(row2.getSundayTotal()).isEqualTo(2);
+            Assertions.assertThat(row2.getHolidayTotal()).isEqualTo(2);
+            Assertions.assertThat(row2.getTotalPaid()).isEqualTo(150.00);
+
+            verify(holidaysService, times(1)).viewBankHolidays();
+            verify(appearanceRepository, times(1)).getAllWeekendAttendances(anyList(), anyList(),
+                                                                            anyList(), anyList());
+
+        }
+
+        private List<Tuple> getWeekendAttendanceReportMockData() {
+            // Create and return mock Tuple data as per your requirements
+            Tuple tuple1 = mock(Tuple.class);
+            when(tuple1.get(0, String.class)).thenReturn("BRIGHTON");
+            when(tuple1.get(1, String.class)).thenReturn("777");
+            when(tuple1.get(2, Integer.class)).thenReturn(1);
+            when(tuple1.get(3, Integer.class)).thenReturn(1);
+            when(tuple1.get(4, Integer.class)).thenReturn(1);
+            when(tuple1.get(5, Double.class)).thenReturn(100.00);
+
+            Tuple tuple2 = mock(Tuple.class);
+            when(tuple2.get(0, String.class)).thenReturn("CAERNARFON");
+            when(tuple2.get(1, String.class)).thenReturn("755");
+            when(tuple2.get(2, Integer.class)).thenReturn(2);
+            when(tuple2.get(3, Integer.class)).thenReturn(2);
+            when(tuple2.get(4, Integer.class)).thenReturn(2);
+            when(tuple2.get(5, Double.class)).thenReturn(150.00);
+
+            return List.of(tuple1, tuple2);
         }
 
         private void validateTableHeadings(WeekendAttendanceReportResponse.TableData tableData) {
