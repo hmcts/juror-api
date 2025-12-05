@@ -2,8 +2,6 @@ package uk.gov.hmcts.juror.api.moj.service.report;
 
 import com.querydsl.core.Tuple;
 import lombok.SneakyThrows;
-import org.assertj.core.api.Assertions;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -76,11 +74,11 @@ class AttendanceReportServiceImplTest {
             assertThat(response.getTableData()).isNotNull();
             WeekendAttendanceReportResponse.TableData tableData = response.getTableData();
             assertThat(tableData.getHeadings()).isNotNull();
-            Assertions.assertThat(tableData.getHeadings()).hasSize(5);
+            assertThat(tableData.getHeadings()).hasSize(5);
 
             validateTableHeadings(tableData);
 
-            Assertions.assertThat(tableData.getData()).isEmpty();
+            assertThat(tableData.getData()).isEmpty();
             verify(holidaysService, times(1)).viewBankHolidays();
             verify(appearanceRepository, times(1)).getAllWeekendAttendances(anyList(), anyList(),
                                                                             anyList(), anyList());
@@ -111,25 +109,25 @@ class AttendanceReportServiceImplTest {
             assertThat(response.getTableData()).isNotNull();
             WeekendAttendanceReportResponse.TableData tableData = response.getTableData();
             assertThat(tableData.getHeadings()).isNotNull();
-            Assertions.assertThat(tableData.getHeadings()).hasSize(5);
+            assertThat(tableData.getHeadings()).hasSize(5);
 
             validateTableHeadings(tableData);
 
-            Assertions.assertThat(tableData.getData()).isNotEmpty();
-            Assertions.assertThat(tableData.getData()).hasSize(2);
+            assertThat(tableData.getData()).isNotEmpty();
+            assertThat(tableData.getData()).hasSize(2);
             WeekendAttendanceReportResponse.TableData.DataRow row1 = tableData.getData().get(0);
-            Assertions.assertThat(row1.getCourtLocationNameAndCode()).isEqualTo("BRIGHTON (777)");
-            Assertions.assertThat(row1.getSaturdayTotal()).isEqualTo(1);
-            Assertions.assertThat(row1.getSundayTotal()).isEqualTo(1);
-            Assertions.assertThat(row1.getHolidayTotal()).isEqualTo(1);
-            Assertions.assertThat(row1.getTotalPaid()).isEqualTo(100.00);
+            assertThat(row1.getCourtLocationNameAndCode()).isEqualTo("BRIGHTON (777)");
+            assertThat(row1.getSaturdayTotal()).isEqualTo(1);
+            assertThat(row1.getSundayTotal()).isEqualTo(1);
+            assertThat(row1.getHolidayTotal()).isEqualTo(1);
+            assertThat(row1.getTotalPaid()).isEqualTo(100.00);
 
             WeekendAttendanceReportResponse.TableData.DataRow row2 = tableData.getData().get(1);
-            Assertions.assertThat(row2.getCourtLocationNameAndCode()).isEqualTo("CAERNARFON (755)");
-            Assertions.assertThat(row2.getSaturdayTotal()).isEqualTo(2);
-            Assertions.assertThat(row2.getSundayTotal()).isEqualTo(2);
-            Assertions.assertThat(row2.getHolidayTotal()).isEqualTo(2);
-            Assertions.assertThat(row2.getTotalPaid()).isEqualTo(150.00);
+            assertThat(row2.getCourtLocationNameAndCode()).isEqualTo("CAERNARFON (755)");
+            assertThat(row2.getSaturdayTotal()).isEqualTo(2);
+            assertThat(row2.getSundayTotal()).isEqualTo(2);
+            assertThat(row2.getHolidayTotal()).isEqualTo(2);
+            assertThat(row2.getTotalPaid()).isEqualTo(150.00);
 
             verify(holidaysService, times(1)).viewBankHolidays();
             verify(appearanceRepository, times(1)).getAllWeekendAttendances(anyList(), anyList(),
