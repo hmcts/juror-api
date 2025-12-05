@@ -6,14 +6,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.WeekendAttendanceReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.administration.HolidayDate;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.service.administration.AdministrationHolidaysService;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -23,10 +21,15 @@ import java.util.Map;
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class AttendanceReportServiceImpl implements AttendanceReportService {
 
-    @Autowired
     private AppearanceRepository appearanceRepository;
-    @Autowired
     private AdministrationHolidaysService holidaysService;
+
+    public AttendanceReportServiceImpl(
+        AppearanceRepository appearanceRepository,
+        AdministrationHolidaysService holidaysService) {
+        this.appearanceRepository = appearanceRepository;
+        this.holidaysService = holidaysService;
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -86,40 +89,10 @@ public class AttendanceReportServiceImpl implements AttendanceReportService {
         }
 
         WeekendAttendanceReportResponse reportResponse =
-                new WeekendAttendanceReportResponse(getWeekendAttendanceReportHeaders());
+                new WeekendAttendanceReportResponse(Map.of());
 
         reportResponse.getTableData().setData(dataRows);
 
         return reportResponse;
-    }
-
-
-    private Map<String, AbstractReportResponse.DataTypeValue>
-        getWeekendAttendanceReportHeaders() {
-        return Map.of(); // empty as no dynamic headings needed
-    }
-
-
-    public enum ReportHeading {
-        REPORT_CREATED("Report created", LocalDate.class.getSimpleName()),
-        TIME_CREATED("Time created", LocalDateTime.class.getSimpleName()),
-        REPLY_COUNT("Total number of replies received", Integer.class.getSimpleName());
-
-        private final String displayName;
-
-        private final String dataType;
-
-        ReportHeading(String displayName, String dataType) {
-            this.displayName = displayName;
-            this.dataType = dataType;
-        }
-
-        public String getDisplayName() {
-            return displayName;
-        }
-
-        public String getDataType() {
-            return dataType;
-        }
     }
 }

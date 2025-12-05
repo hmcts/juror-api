@@ -69,7 +69,7 @@ class AttendanceReportsITest extends AbstractIntegrationTest {
     class WeekendAttendanceReportTests {
 
         @Test
-        void weekendAttendanceReportsHappy() {
+        void weekendAttendanceReportBureauUserHappy() {
 
             ResponseEntity<WeekendAttendanceReportResponse> responseEntity =
                 restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
@@ -80,44 +80,36 @@ class AttendanceReportsITest extends AbstractIntegrationTest {
             WeekendAttendanceReportResponse responseBody = responseEntity.getBody();
             assertThat(responseBody).isNotNull();
 
-
+            // the result of the report is tested in detail in WeekendAttendanceReportITest as it depends
+            // on the dates the report is run (number of weekends in the month etc)
         }
-
-
 
         @Test
-        void digitalSummonsRepliesReportsNoData() {
+        void weekendAttendanceReportCourtUserHappy() {
+            //update the headers to use court user
+            String courtJwt = createCourtJwt();
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
 
-            ResponseEntity<DigitalSummonsRepliesReportResponse> responseEntity =
-                    restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                                    URI.create(URL_BASE + "/digital-summons-replies-report/2025-10-01")),
-                            DigitalSummonsRepliesReportResponse.class);
+            ResponseEntity<WeekendAttendanceReportResponse> responseEntity =
+                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                                                              URI.create(URL_BASE + "/weekend-attendance")),
+                                      WeekendAttendanceReportResponse.class);
 
             assertThat(responseEntity.getStatusCode()).as("Expect HTTP OK response").isEqualTo(HttpStatus.OK);
-            DigitalSummonsRepliesReportResponse responseBody = responseEntity.getBody();
+            WeekendAttendanceReportResponse responseBody = responseEntity.getBody();
             assertThat(responseBody).isNotNull();
-
-            assertThat(responseBody.getHeadings()).isNotNull();
-            assertThat(responseBody.getHeadings().size()).isEqualTo(3);
-
-            assertThat(responseBody.getTableData()).isNotNull();
-            assertThat(responseBody.getTableData().getHeadings()).isNotNull();
-            assertThat(responseBody.getTableData().getHeadings().size()).isEqualTo(2);
-            assertThat(responseBody.getTableData().getData()).isNotNull();
-            assertThat(responseBody.getTableData().getData().size()).isEqualTo(0);
 
         }
 
-    }
-
-    private String createCourtJwt() {
-        return createJwt(
-            "test_court_standard",
-            "415",
-            UserType.COURT,
-            Set.of(),
-            "415"
-        );
+        private String createCourtJwt() {
+            return createJwt(
+                "test_court_standard",
+                "415",
+                UserType.COURT,
+                Set.of(),
+                "415"
+            );
+        }
     }
 
 }

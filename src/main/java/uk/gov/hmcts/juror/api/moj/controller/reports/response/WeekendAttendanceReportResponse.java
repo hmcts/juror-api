@@ -35,6 +35,9 @@ public class WeekendAttendanceReportResponse {
             TableData.Heading.builder().id(AttendanceReportService.TableHeading.SUNDAY_TOTAL)
                 .name(AttendanceReportService.TableHeading.SUNDAY_TOTAL.getDisplayName())
                 .dataType(AttendanceReportService.TableHeading.SUNDAY_TOTAL.getDataType()).build(),
+            TableData.Heading.builder().id(AttendanceReportService.TableHeading.HOLIDAY_TOTAL)
+                .name(AttendanceReportService.TableHeading.HOLIDAY_TOTAL.getDisplayName())
+                .dataType(AttendanceReportService.TableHeading.HOLIDAY_TOTAL.getDataType()).build(),
             TableData.Heading.builder().id(AttendanceReportService.TableHeading.TOTAL_PAID)
                 .name(AttendanceReportService.TableHeading.TOTAL_PAID.getDisplayName())
                 .dataType(AttendanceReportService.TableHeading.TOTAL_PAID.getDataType()).build()

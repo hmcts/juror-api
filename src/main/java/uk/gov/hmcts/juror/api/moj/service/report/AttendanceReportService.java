@@ -2,14 +2,12 @@ package uk.gov.hmcts.juror.api.moj.service.report;
 
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.WeekendAttendanceReportResponse;
 
-import java.time.LocalDate;
-
 public interface AttendanceReportService {
 
     WeekendAttendanceReportResponse getWeekendAttendanceReport();
 
     enum TableHeading {
-        COURT_LOCATION_NAME_AND_CODE("Court Location Name And Code", LocalDate.class.getSimpleName()),
+        COURT_LOCATION_NAME_AND_CODE("Court Location Name And Code", String.class.getSimpleName()),
         SATURDAY_TOTAL("Saturday",  Integer.class.getSimpleName()),
         SUNDAY_TOTAL("Sunday",  Integer.class.getSimpleName()),
         HOLIDAY_TOTAL("Bank holiday",  Integer.class.getSimpleName()),
