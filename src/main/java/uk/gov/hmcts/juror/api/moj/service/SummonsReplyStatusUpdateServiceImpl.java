@@ -606,10 +606,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
     private void updateJurorFromSummonsReply(AbstractJurorResponse updatedDetails, Juror juror,
                                              String locCode) {
         log.trace("Juror: {}. Enter updateJurorPoolFromSummonsReply", juror.getJurorNumber());
-
-        // Copy the actual details to juror record.
-        BeanUtils.copyProperties(updatedDetails, juror, TITLE, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH);
-
+        
         if (!ObjectUtils.isEmpty(updatedDetails.getThirdPartyReason())) {
             log.debug(
                 "Juror: {}. Summons reply completed by a third-party, check to see what details to keep",
