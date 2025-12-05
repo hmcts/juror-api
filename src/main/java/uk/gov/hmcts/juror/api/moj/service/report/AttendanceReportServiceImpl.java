@@ -75,8 +75,8 @@ public class AttendanceReportServiceImpl implements AttendanceReportService {
             for (Tuple result : results) {
                 WeekendAttendanceReportResponse.TableData.DataRow dataRow =
                     new WeekendAttendanceReportResponse.TableData.DataRow();
-                dataRow.setCourtLocationNameAndCode(result.get(0, String.class) + " (" +
-                        result.get(1, String.class) + ")");
+                dataRow.setCourtLocationNameAndCode(result.get(0, String.class) + " ("
+                        + result.get(1, String.class) + ")");
                 dataRow.setSaturdayTotal(result.get(2, Integer.class));
                 dataRow.setSundayTotal(result.get(3, Integer.class));
                 dataRow.setHolidayTotal(result.get(4, Integer.class));
