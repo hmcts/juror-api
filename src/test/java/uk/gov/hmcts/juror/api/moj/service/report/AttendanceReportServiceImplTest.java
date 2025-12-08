@@ -12,6 +12,7 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.WeekendAttendanceR
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.service.administration.AdministrationHolidaysService;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -120,14 +121,14 @@ class AttendanceReportServiceImplTest {
             assertThat(row1.getSaturdayTotal()).isEqualTo(1);
             assertThat(row1.getSundayTotal()).isEqualTo(1);
             assertThat(row1.getHolidayTotal()).isEqualTo(1);
-            assertThat(row1.getTotalPaid()).isEqualTo(100.00);
+            assertThat(row1.getTotalPaid()).isEqualTo(BigDecimal.valueOf(100.97));
 
             WeekendAttendanceReportResponse.TableData.DataRow row2 = tableData.getData().get(1);
             assertThat(row2.getCourtLocationNameAndCode()).isEqualTo("CAERNARFON (755)");
             assertThat(row2.getSaturdayTotal()).isEqualTo(2);
             assertThat(row2.getSundayTotal()).isEqualTo(2);
             assertThat(row2.getHolidayTotal()).isEqualTo(2);
-            assertThat(row2.getTotalPaid()).isEqualTo(150.00);
+            assertThat(row2.getTotalPaid()).isEqualTo(BigDecimal.valueOf(152.57));
 
             verify(holidaysService, times(1)).viewBankHolidays();
             verify(appearanceRepository, times(1)).getAllWeekendAttendances(anyList(), anyList(),
@@ -143,7 +144,7 @@ class AttendanceReportServiceImplTest {
             when(tuple1.get(2, Integer.class)).thenReturn(1);
             when(tuple1.get(3, Integer.class)).thenReturn(1);
             when(tuple1.get(4, Integer.class)).thenReturn(1);
-            when(tuple1.get(5, Double.class)).thenReturn(100.00);
+            when(tuple1.get(5, BigDecimal.class)).thenReturn(new BigDecimal("100.97"));
 
             Tuple tuple2 = mock(Tuple.class);
             when(tuple2.get(0, String.class)).thenReturn("CAERNARFON");
@@ -151,7 +152,7 @@ class AttendanceReportServiceImplTest {
             when(tuple2.get(2, Integer.class)).thenReturn(2);
             when(tuple2.get(3, Integer.class)).thenReturn(2);
             when(tuple2.get(4, Integer.class)).thenReturn(2);
-            when(tuple2.get(5, Double.class)).thenReturn(150.00);
+            when(tuple2.get(5, BigDecimal.class)).thenReturn(new BigDecimal("152.57"));
 
             return List.of(tuple1, tuple2);
         }

@@ -10,6 +10,7 @@ import lombok.ToString;
 import uk.gov.hmcts.juror.api.moj.service.report.AttendanceReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.AttendanceReportServiceImpl;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -76,7 +77,7 @@ public class WeekendAttendanceReportResponse {
             private Integer saturdayTotal;
             private Integer sundayTotal;
             private Integer holidayTotal;
-            private Double totalPaid;
+            private BigDecimal totalPaid;
         }
     }
 

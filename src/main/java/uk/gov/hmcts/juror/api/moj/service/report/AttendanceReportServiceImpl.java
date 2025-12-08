@@ -11,6 +11,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.administration.HolidayDate
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.service.administration.AdministrationHolidaysService;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -77,7 +78,7 @@ public class AttendanceReportServiceImpl implements AttendanceReportService {
                 dataRow.setSaturdayTotal(result.get(2, Integer.class));
                 dataRow.setSundayTotal(result.get(3, Integer.class));
                 dataRow.setHolidayTotal(result.get(4, Integer.class));
-                dataRow.setTotalPaid(result.get(5, Double.class));
+                dataRow.setTotalPaid(result.get(5, BigDecimal.class));
                 dataRows.add(dataRow);
             }
         }
