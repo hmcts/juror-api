@@ -10,22 +10,27 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResp
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
 import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
-import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.service.audit.CourtLocationAuditService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
-
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-
+/**
+ * Summary report showing all manual adjustments to transport expense limits across courts
+ * for the previous 12 months.
+ * This report uses the CourtLocationAuditService instead of standard QueryDSL queries.
+ */
 @Component
-public class ManualAdjustmentsToExpenseLimitsReport extends AbstractStandardReport {
+public class ManualAdjustmentsToExpenseLimitsReport extends AbstractReport<StandardTableData> {
 
     private final CourtLocationAuditService courtLocationAuditService;
 
@@ -41,55 +46,47 @@ public class ManualAdjustmentsToExpenseLimitsReport extends AbstractStandardRepo
                 DataType.CHANGE_DATE
         );
         this.courtLocationAuditService = courtLocationAuditService;
-      //  isCourtUserOnly();
+        isCourtUserOnly();
     }
 
     @Override
-    protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
-        // This method won't be used since we override getTableData()
-        // But we need to implement it for the abstract class
+    public Class<? extends Validators.AbstractRequestValidator> getRequestValidatorClass() {
+        return RequestValidator.class;
+    }
+
+    @Override
+    protected StandardReportResponse createBlankResponse() {
+        return new StandardReportResponse();
+    }
+
+    @Override
+    protected StandardTableData getTableData(List<Tuple> data) {
+        // This method is called by the parent but we override the entire flow
+        // So we return empty data here and populate it in getStandardReportResponse
+        return new StandardTableData();
+    }
+
+    @Override
+    public StandardReportResponse getStandardReportResponse(StandardReportRequest request) {
+        // Override to use audit service instead of QueryDSL
+  //      authenticationConsumers.forEach(consumer -> consumer.accept(request));
+
         String locCode = SecurityUtil.getLocCode();
-        query.where(QCourtLocation.courtLocation.locCode.eq(locCode));
-    }
-
-    @Override
-    public Map<String, StandardReportResponse.DataTypeValue> getHeadings(
-            StandardReportRequest request,
-            AbstractReportResponse.TableData<StandardTableData> tableData) {
-
-        LocalDateTime now = LocalDateTime.now();
-
-        Map<String, StandardReportResponse.DataTypeValue> map = new ConcurrentHashMap<>();
-
-        map.put("manual_adjustments_title", StandardReportResponse.DataTypeValue.builder()
-                .displayName("Manual Adjustments to Expense Limits")
-                .dataType(String.class.getSimpleName())
-                .value("Manual Adjustments to Expense Limits")
-                .build());
-
-        map.put("report_generated", StandardReportResponse.DataTypeValue.builder()
-                .displayName("Report Generated")
-                .dataType(LocalDateTime.class.getSimpleName())
-                .value(DateTimeFormatter.ISO_DATE_TIME.format(now))
-                .build());
-
-        return map;
-    }
-
-    /**
-     * Override the standard table data retrieval to use audit service instead of QueryDSL.
-     */
-    @Override
-    public StandardTableData getTableData(StandardReportRequest request) {
-        String locCode = SecurityUtil.getLocCode();
+        LocalDateTime toDateTime = LocalDateTime.now();
+        LocalDateTime fromDateTime = toDateTime.minusMonths(12);
 
         // Get audit records from the service
         var auditRecords = courtLocationAuditService.getTransportLimitAuditHistory(locCode);
 
         StandardTableData tableData = new StandardTableData();
 
-        // Convert audit records to report rows
+        // Filter and convert audit records to report rows (only last 12 months)
         for (var record : auditRecords) {
+            // Filter by date range - only include changes from last 12 months
+            if (record.getChangeDateTime().isBefore(fromDateTime)) {
+                continue;
+            }
+
             // Add public transport changes
             if (record.hasPublicTransportChanged()) {
                 LinkedHashMap<String, Object> row = new LinkedHashMap<>();
@@ -119,7 +116,110 @@ public class ManualAdjustmentsToExpenseLimitsReport extends AbstractStandardRepo
             }
         }
 
-        return tableData;
+        // Build the table data structure
+        StandardReportResponse.TableData<StandardTableData> responseTableData =
+                StandardReportResponse.TableData.<StandardTableData>builder()
+                        .headings(getColumnHeadings())
+                        .data(tableData)
+                        .build();
+
+        // Build the complete response
+        StandardReportResponse report = new StandardReportResponse();
+
+        Map<String, StandardReportResponse.DataTypeValue> headings =
+                new ConcurrentHashMap<>(getHeadings(request, responseTableData));
+
+        headings.put("report_created", StandardReportResponse.DataTypeValue.builder()
+                .value(DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now()))
+                .dataType(LocalDateTime.class.getSimpleName())
+                .build());
+
+        report.setHeadings(headings);
+        report.setTableData(responseTableData);
+
+        return report;
+    }
+
+    @Override
+    protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
+        // Not used since we override getStandardReportResponse
+        // But required by abstract class
+    }
+
+    @Override
+    public Map<String, StandardReportResponse.DataTypeValue> getHeadings(
+            StandardReportRequest request,
+            AbstractReportResponse.TableData<StandardTableData> tableData) {
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDate toDate = LocalDate.now();
+        LocalDate fromDate = toDate.minusMonths(12);
+
+        Map<String, StandardReportResponse.DataTypeValue> map = new ConcurrentHashMap<>();
+
+        map.put("manual_adjustments_title", StandardReportResponse.DataTypeValue.builder()
+                .displayName("Manual Adjustments to Expense Limits")
+                .dataType(String.class.getSimpleName())
+                .value("Manual Adjustments to Expense Limits")
+                .build());
+
+        map.put("date_from", StandardReportResponse.DataTypeValue.builder()
+                .displayName("Date from")
+                .dataType(LocalDate.class.getSimpleName())
+                .value(DateTimeFormatter.ISO_DATE.format(fromDate))
+                .build());
+
+        map.put("date_to", StandardReportResponse.DataTypeValue.builder()
+                .displayName("Date to")
+                .dataType(LocalDate.class.getSimpleName())
+                .value(DateTimeFormatter.ISO_DATE.format(toDate))
+                .build());
+
+        map.put("report_generated", StandardReportResponse.DataTypeValue.builder()
+                .displayName("Report Generated")
+                .dataType(LocalDateTime.class.getSimpleName())
+                .value(DateTimeFormatter.ISO_DATE_TIME.format(now))
+                .build());
+
+        return map;
+    }
+
+    /**
+     * Build the column headings for the table.
+     */
+    private List<StandardReportResponse.TableData.Heading> getColumnHeadings() {
+        return Arrays.asList(
+                StandardReportResponse.TableData.Heading.builder()
+                        .id("court_name")
+                        .name("Court")
+                        .dataType(String.class.getSimpleName())
+                        .build(),
+                StandardReportResponse.TableData.Heading.builder()
+                        .id("transport_type")
+                        .name("Type")
+                        .dataType(String.class.getSimpleName())
+                        .build(),
+                StandardReportResponse.TableData.Heading.builder()
+                        .id("old_limit")
+                        .name("Old Limit")
+                        .dataType(String.class.getSimpleName())
+                        .build(),
+                StandardReportResponse.TableData.Heading.builder()
+                        .id("new_limit")
+                        .name("New Limit")
+                        .dataType(String.class.getSimpleName())
+                        .build(),
+                StandardReportResponse.TableData.Heading.builder()
+                        .id("changed_by")
+                        .name("Changed By")
+                        .dataType(String.class.getSimpleName())
+                        .build(),
+                StandardReportResponse.TableData.Heading.builder()
+                        .id("change_date")
+                        .name("Change Date")
+                        .dataType(LocalDateTime.class.getSimpleName())
+                        .build()
+        );
     }
 
     private String formatLimit(java.math.BigDecimal value) {
@@ -129,13 +229,9 @@ public class ManualAdjustmentsToExpenseLimitsReport extends AbstractStandardRepo
         return String.format("£%.2f", value);
     }
 
-    @Override
-    public Class<RequestValidator> getRequestValidatorClass() {
-        return RequestValidator.class;
-    }
-
     /**
      * Request validator for the manual adjustments report.
+     * No date range required - automatically uses previous 12 months.
      */
     public interface RequestValidator extends
             AbstractReport.Validators.AbstractRequestValidator {
