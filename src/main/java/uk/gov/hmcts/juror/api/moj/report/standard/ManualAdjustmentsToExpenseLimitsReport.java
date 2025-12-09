@@ -46,7 +46,7 @@ public class ManualAdjustmentsToExpenseLimitsReport extends AbstractReport<Stand
                 DataType.CHANGE_DATE
         );
         this.courtLocationAuditService = courtLocationAuditService;
-        isCourtUserOnly();
+       // isCourtUserOnly();
     }
 
     @Override
@@ -71,12 +71,12 @@ public class ManualAdjustmentsToExpenseLimitsReport extends AbstractReport<Stand
         // Override to use audit service instead of QueryDSL
   //      authenticationConsumers.forEach(consumer -> consumer.accept(request));
 
-        String locCode = SecurityUtil.getLocCode();
+     //   String locCode = SecurityUtil.getLocCode();
         LocalDateTime toDateTime = LocalDateTime.now();
         LocalDateTime fromDateTime = toDateTime.minusMonths(12);
 
         // Get audit records from the service
-        var auditRecords = courtLocationAuditService.getTransportLimitAuditHistory(locCode);
+        var auditRecords = courtLocationAuditService.getAllTransportLimitAuditHistory();
 
         StandardTableData tableData = new StandardTableData();
 
@@ -91,7 +91,13 @@ public class ManualAdjustmentsToExpenseLimitsReport extends AbstractReport<Stand
             if (record.hasPublicTransportChanged()) {
                 LinkedHashMap<String, Object> row = new LinkedHashMap<>();
 
-                row.put("court_name", record.getCourtName());
+                // Structure court_name as a complex object with name and locCode for hyperlinking
+                Map<String, String> courtData = new LinkedHashMap<>();
+                courtData.put("court_name", record.getCourtName());
+                courtData.put("loc_code", record.getLocCode());
+                row.put("court_name", courtData);
+
+              //  row.put("court_name", record.getCourtName());
                 row.put("transport_type", "Public Transport");
                 row.put("old_limit", formatLimit(record.getPublicTransportPreviousValue()));
                 row.put("new_limit", formatLimit(record.getPublicTransportCurrentValue()));
@@ -105,7 +111,13 @@ public class ManualAdjustmentsToExpenseLimitsReport extends AbstractReport<Stand
             if (record.hasTaxiChanged()) {
                 LinkedHashMap<String, Object> row = new LinkedHashMap<>();
 
-                row.put("court_name", record.getCourtName());
+              //  row.put("court_name", record.getCourtName());
+                // Structure court_name as a complex object with name and locCode for hyperlinking
+                Map<String, String> courtData = new LinkedHashMap<>();
+                courtData.put("court_name", record.getCourtName());
+                courtData.put("loc_code", record.getLocCode());
+                row.put("court_name", courtData);
+
                 row.put("transport_type", "Taxi");
                 row.put("old_limit", formatLimit(record.getTaxiPreviousValue()));
                 row.put("new_limit", formatLimit(record.getTaxiCurrentValue()));
