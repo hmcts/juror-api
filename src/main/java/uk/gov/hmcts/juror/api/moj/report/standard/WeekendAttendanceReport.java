@@ -14,7 +14,6 @@ import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.service.CourtLocationService;
 import uk.gov.hmcts.juror.api.moj.service.administration.AdministrationHolidaysService;
-import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

@@ -44,11 +44,20 @@ class WeekendAttendanceReportITest extends AbstractStandardReportControllerITest
     }
 
     @Test
-    void positiveTypical() {
+    void positiveTypicalCourt() {
         testBuilder()
             .triggerValid()
             .responseConsumer(this::verifyReportResponse);
     }
+
+    @Test
+    void positiveTypicalBureau() {
+        testBuilder()
+            .jwt(getBureauJwt())
+            .triggerValid()
+            .responseConsumer(this::verifyReportResponse);
+    }
+
 
     @Test
     void negativeInvalidCourtLocCode() {
