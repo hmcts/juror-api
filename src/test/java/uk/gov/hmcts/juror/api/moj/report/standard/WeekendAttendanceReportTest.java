@@ -79,13 +79,10 @@ class WeekendAttendanceReportTest extends AbstractStandardReportTestSupport<Week
 
     @Override
     public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
-        List<String> courts = List.of("123", "456");
-        securityUtilMockedStatic.when(SecurityUtil::getCourts).thenReturn(courts);
-
         report.preProcessQuery(query, request);
 
         verify(query, times(1))
-            .where(QAppearance.appearance.locCode.in(courts));
+            .where(QAppearance.appearance.locCode.eq("123"));
         verify(query, times(1))
             .where(QAppearance.appearance.attendanceDate.in(List.of()));
     }
@@ -95,8 +92,6 @@ class WeekendAttendanceReportTest extends AbstractStandardReportTestSupport<Week
         StandardReportRequest request,
         AbstractReportResponse.TableData<StandardTableData> tableData,
         StandardTableData data) {
-        List<String> courts = List.of("123", "456");
-        securityUtilMockedStatic.when(SecurityUtil::getCourts).thenReturn(courts);
 
         CourtLocation courtLocation = CourtLocation.builder()
             .locCode("123")
