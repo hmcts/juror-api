@@ -50,7 +50,7 @@ public class WeekendAttendanceReport extends AbstractStandardReport {
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
 
-        query.where(QAppearance.appearance.locCode.in(SecurityUtil.getCourts()));
+        query.where(QAppearance.appearance.locCode.in(request.getLocCode()));
 
         // need to work out the weekend and bank holiday dates in the range
         // get first day of current month
