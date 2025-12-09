@@ -42,7 +42,6 @@ public class WeekendAttendanceReport extends AbstractStandardReport {
             DataType.APPEARANCE_POOL_NUMBER,
             DataType.APPEARANCE_TRIAL_NUMBER
         );
-        isCourtUserOnly();
         this.holidaysService = holidaysService;
         this.courtLocationService = courtLocationService;
     }
