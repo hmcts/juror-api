@@ -69,6 +69,19 @@ public class AdministrationHolidaysServiceImpl implements AdministrationHolidays
             .build());
     }
 
+    @Override
+    public List<LocalDate> getSundayDates(LocalDate fromDate, LocalDate toDate) {
+        return fromDate.datesUntil(toDate.plusDays(1))
+            .filter(date -> date.getDayOfWeek().getValue() == 7)
+            .toList();
+    }
+
+    public List<LocalDate> getSaturdayDates(LocalDate fromDate, LocalDate toDate) {
+        return fromDate.datesUntil(toDate.plusDays(1))
+            .filter(date -> date.getDayOfWeek().getValue() == 6)
+            .toList();
+    }
+
     List<Holidays> findAllPublicHolidays() {
         return holidaysRepository.findAllByPublicHolidayAndHolidayIsGreaterThanEqual(
             true, LocalDate.now().with(TemporalAdjusters.firstDayOfYear()));

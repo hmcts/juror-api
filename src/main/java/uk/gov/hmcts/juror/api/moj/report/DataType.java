@@ -20,6 +20,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -201,6 +202,8 @@ public enum DataType implements IDataType {
 
     ATTENDANCE_DATE("Attendance Date", LocalDate.class, QAppearance.appearance.attendanceDate, QAppearance.appearance),
     ATTENDANCE_TYPE("Attendance Type", String.class, QAppearance.appearance.attendanceType, QAppearance.appearance),
+    DAY("Day", String.class),
+    ATTENDANCE_TOTAL_PAID("Paid", BigDecimal.class, QAppearance.appearance.totalPaid, QAppearance.appearance),
 
     EXPENSE_STATUS("Expense Status", String.class,
         new CaseBuilder()

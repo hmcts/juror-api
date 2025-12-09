@@ -36,17 +36,13 @@ public class AttendanceReportServiceImpl implements AttendanceReportService {
         LocalDate toDate = LocalDate.now();
 
         // build list of saturday dates
-        var saturdayDates = fromDate.datesUntil(toDate.plusDays(1))
-                .filter(date -> date.getDayOfWeek().getValue() == 6)
-                .toList();
+        List<LocalDate> saturdayDates = holidaysService.getSaturdayDates(fromDate, toDate);
 
         // build list of sunday dates
-        var sundayDates = fromDate.datesUntil(toDate.plusDays(1))
-                .filter(date -> date.getDayOfWeek().getValue() == 7)
-                .toList();
+        List<LocalDate> sundayDates = holidaysService.getSundayDates(fromDate, toDate);
 
         // bank holidays fetched from a service
-        var bankHolidayDates = holidaysService.viewBankHolidays();
+        Map<Integer, List<HolidayDate>> bankHolidayDates = holidaysService.viewBankHolidays();
 
         List<HolidayDate> bankHolidaysThisMonth = bankHolidayDates.get(LocalDate.now().getYear());
 
@@ -83,11 +79,11 @@ public class AttendanceReportServiceImpl implements AttendanceReportService {
             }
         }
 
-        WeekendAttendanceReportResponse reportResponse =
-                new WeekendAttendanceReportResponse(Map.of());
+        WeekendAttendanceReportResponse reportResponse = new WeekendAttendanceReportResponse(Map.of());
 
         reportResponse.getTableData().setData(dataRows);
 
         return reportResponse;
     }
+
 }
