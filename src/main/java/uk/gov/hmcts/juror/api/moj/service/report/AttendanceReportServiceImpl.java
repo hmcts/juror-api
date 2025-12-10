@@ -8,8 +8,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.WeekendAttendanceReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.administration.HolidayDate;
+import uk.gov.hmcts.juror.api.moj.domain.Permission;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.service.administration.AdministrationHolidaysService;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -28,6 +31,10 @@ public class AttendanceReportServiceImpl implements AttendanceReportService {
     @Override
     @Transactional(readOnly = true)
     public WeekendAttendanceReportResponse getWeekendAttendanceReport() {
+
+        if (!SecurityUtil.hasPermission(Permission.SUPER_USER)) {
+            throw new MojException.Forbidden("User not allowed to access this report", null);
+        }
 
         // get first day of current month
         LocalDate fromDate = LocalDate.now().withDayOfMonth(1);
