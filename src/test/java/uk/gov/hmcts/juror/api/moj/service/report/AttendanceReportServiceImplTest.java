@@ -6,15 +6,25 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import uk.gov.hmcts.juror.api.TestUtils;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.WeekendAttendanceReportResponse;
+import uk.gov.hmcts.juror.api.moj.domain.Permission;
+import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.service.administration.AdministrationHolidaysService;
 
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -45,7 +55,26 @@ class AttendanceReportServiceImplTest {
 
     @BeforeEach
     void beforeEach() {
-        TestUtils.setUpMockAuthentication("400", "TEST_USER", "1", List.of("400"));
+
+        Set<Permission> permissions = new HashSet<>();
+        permissions.add(Permission.SUPER_USER);
+        User user = User.builder()
+            .username("Administrator")
+            .permissions(permissions)
+            .build();
+        final BureauJwtPayload bureauJwtPayload = new BureauJwtPayload(user, UserType.ADMINISTRATOR, "415",
+                                                                   Collections.singletonList(CourtLocation.builder()
+                                                                                                 .locCode("415")
+                                                                                                 .name("Chester")
+                                                                                                 .owner("415")
+                                                                                                 .build()));
+
+        BureauJwtAuthentication auth = mock(BureauJwtAuthentication.class);
+        when(auth.getPrincipal()).thenReturn(bureauJwtPayload);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+
+        SecurityContextHolder.setContext(securityContext);
     }
 
 
