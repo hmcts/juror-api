@@ -43,6 +43,7 @@ public class WeekendAttendanceReport extends AbstractStandardReport {
         );
         this.holidaysService = holidaysService;
         this.courtLocationService = courtLocationService;
+        isSuperUserOnly();
     }
 
 

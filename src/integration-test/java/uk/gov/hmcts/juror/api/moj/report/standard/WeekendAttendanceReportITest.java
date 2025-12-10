@@ -5,16 +5,24 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.test.context.jdbc.Sql;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
+import uk.gov.hmcts.juror.api.moj.domain.Permission;
+import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportControllerITest;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.BDDAssertions.within;
@@ -33,7 +41,22 @@ class WeekendAttendanceReportITest extends AbstractStandardReportControllerITest
 
     @Override
     protected String getValidJwt() {
-        return getCourtJwt("415");
+
+        Set<Permission> permissions = new HashSet<>();
+        permissions.add(Permission.SUPER_USER);
+        User user = User.builder()
+            .username("Administrator")
+            .permissions(permissions)
+            .build();
+
+        final BureauJwtPayload bureauJwtPayload = new BureauJwtPayload(user, UserType.ADMINISTRATOR, "415",
+                                                   Collections.singletonList(CourtLocation.builder()
+                                                                                 .locCode("415")
+                                                                                 .name("Chester")
+                                                                                 .owner("415")
+                                                                                 .build()));
+
+        return mintBureauJwt(bureauJwtPayload);
     }
 
     @Override
@@ -53,11 +76,10 @@ class WeekendAttendanceReportITest extends AbstractStandardReportControllerITest
     @Test
     void positiveTypicalBureau() {
         testBuilder()
-            .jwt(getBureauJwt())
+            .jwt(getValidBureauJwt())
             .triggerValid()
             .responseConsumer(this::verifyReportResponse);
     }
-
 
     @Test
     void negativeInvalidCourtLocCode() {
@@ -70,6 +92,26 @@ class WeekendAttendanceReportITest extends AbstractStandardReportControllerITest
         assertThat(res.body().toString()).contains("\"status\":400,\"error\":\"Bad Request\"");
         assertThat(res.body().toString()).contains("Invalid loc code: 999");
     }
+
+    protected String getValidBureauJwt() {
+
+        Set<Permission> permissions = new HashSet<>();
+        permissions.add(Permission.SUPER_USER);
+        User user = User.builder()
+            .username("Administrator")
+            .permissions(permissions)
+            .build();
+
+        final BureauJwtPayload bureauJwtPayload = new BureauJwtPayload(user, UserType.ADMINISTRATOR, "400",
+                                                               Collections.singletonList(CourtLocation.builder()
+                                                                                             .locCode("400")
+                                                                                             .name("Bureau")
+                                                                                             .owner("400")
+                                                                                             .build()));
+
+        return mintBureauJwt(bureauJwtPayload);
+    }
+
 
     private void verifyReportResponse(StandardReportResponse response) {
         assertThat(response).isNotNull();
