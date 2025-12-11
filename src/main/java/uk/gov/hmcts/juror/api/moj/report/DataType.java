@@ -203,7 +203,7 @@ public enum DataType implements IDataType {
     ATTENDANCE_DATE("Attendance Date", LocalDate.class, QAppearance.appearance.attendanceDate, QAppearance.appearance),
     ATTENDANCE_TYPE("Attendance Type", String.class, QAppearance.appearance.attendanceType, QAppearance.appearance),
     DAY("Day", String.class),
-    ATTENDANCE_TOTAL_PAID("Paid", BigDecimal.class, QAppearance.appearance.totalPaid, QAppearance.appearance),
+    TOTAL_PAID("Paid", BigDecimal.class, QAppearance.appearance.totalPaid, QAppearance.appearance),
 
     EXPENSE_STATUS("Expense Status", String.class,
         new CaseBuilder()

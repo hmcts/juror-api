@@ -99,7 +99,7 @@ class WeekendAttendanceReportITest extends AbstractStandardReportControllerITest
         assertThat(response.getTableData()).isNotNull();
         AbstractReportResponse.TableData<StandardTableData> tableData = response.getTableData();
         assertThat(tableData.getHeadings()).isNotNull();
-        assertThat(tableData.getHeadings()).hasSize(7);
+        assertThat(tableData.getHeadings()).hasSize(8);
 
         // validate all the headings are present
         AbstractReportResponse.TableData.Heading tableHeading = tableData.getHeadings().get(0);
@@ -123,10 +123,14 @@ class WeekendAttendanceReportITest extends AbstractStandardReportControllerITest
         assertThat(tableHeading.getName()).isEqualTo("Day");
         assertThat(tableHeading.getDataType()).isEqualTo("String");
         tableHeading = tableData.getHeadings().get(5);
+        assertThat(tableHeading.getId()).isEqualTo("total_paid");
+        assertThat(tableHeading.getName()).isEqualTo("Paid");
+        assertThat(tableHeading.getDataType()).isEqualTo("BigDecimal");
+        tableHeading = tableData.getHeadings().get(6);
         assertThat(tableHeading.getId()).isEqualTo("appearance_pool_number");
         assertThat(tableHeading.getName()).isEqualTo("Pool Number");
         assertThat(tableHeading.getDataType()).isEqualTo("String");
-        tableHeading = tableData.getHeadings().get(6);
+        tableHeading = tableData.getHeadings().get(7);
         assertThat(tableHeading.getId()).isEqualTo("appearance_trial_number");
         assertThat(tableHeading.getName()).isEqualTo("Trial Number");
         assertThat(tableHeading.getDataType()).isEqualTo("String");

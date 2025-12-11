@@ -38,6 +38,7 @@ public class WeekendAttendanceReport extends AbstractStandardReport {
             DataType.LAST_NAME,
             DataType.ATTENDANCE_DATE,
             DataType.DAY,
+            DataType.TOTAL_PAID,
             DataType.APPEARANCE_POOL_NUMBER,
             DataType.APPEARANCE_TRIAL_NUMBER
         );
