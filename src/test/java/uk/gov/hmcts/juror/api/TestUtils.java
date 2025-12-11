@@ -3,20 +3,26 @@ package uk.gov.hmcts.juror.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import org.assertj.core.api.Assertions;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterAll;
 import org.mockito.MockedStatic;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.moj.domain.Permission;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
+import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -156,6 +162,24 @@ public final class TestUtils {
 
         SecurityContextHolder.setContext(securityContext);
     }
+
+
+    public static @NotNull BureauJwtPayload getJwtPayloadSuperUser(String locCode, String courtName) {
+        Set<Permission> permissions = new HashSet<>();
+        permissions.add(Permission.SUPER_USER);
+        User user = User.builder()
+            .username("Username")
+            .permissions(permissions)
+            .build();
+
+        return new BureauJwtPayload(user, UserType.ADMINISTRATOR, locCode,
+                                                       Collections.singletonList(CourtLocation.builder()
+                                                                                     .locCode(locCode)
+                                                                                     .name(courtName)
+                                                                                     .owner(locCode)
+                                                                                     .build()));
+    }
+
 
     @AfterAll
     public static void afterAll() {
