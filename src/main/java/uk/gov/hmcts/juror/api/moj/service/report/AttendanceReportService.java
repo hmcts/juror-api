@@ -7,7 +7,7 @@ public interface AttendanceReportService {
     WeekendAttendanceReportResponse getWeekendAttendanceReport();
 
     enum TableHeading {
-        COURT_LOCATION_NAME_AND_CODE("Court Location Name And Code", String.class.getSimpleName()),
+        COURT_LOCATION_NAME_AND_CODE("Court", String.class.getSimpleName()),
         SATURDAY_TOTAL("Saturday",  Integer.class.getSimpleName()),
         SUNDAY_TOTAL("Sunday",  Integer.class.getSimpleName()),
         HOLIDAY_TOTAL("Bank holiday",  Integer.class.getSimpleName()),

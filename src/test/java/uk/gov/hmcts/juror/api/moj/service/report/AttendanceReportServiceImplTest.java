@@ -189,7 +189,7 @@ class AttendanceReportServiceImplTest {
         private void validateTableHeadings(WeekendAttendanceReportResponse.TableData tableData) {
             WeekendAttendanceReportResponse.TableData.Heading tablHeading = tableData.getHeadings().get(0);
             assertThat(tablHeading.getId()).isEqualTo(COURT_LOCATION_NAME_AND_CODE);
-            assertThat(tablHeading.getName()).isEqualTo("Court Location Name And Code");
+            assertThat(tablHeading.getName()).isEqualTo("Court");
             assertThat(tablHeading.getDataType()).isEqualTo("String");
 
             tablHeading = tableData.getHeadings().get(1);
