@@ -38,7 +38,7 @@ public class ManualAdjustmentsToExpenseLimitsReport extends AbstractReport<Stand
     public ManualAdjustmentsToExpenseLimitsReport(CourtLocationAuditService courtLocationAuditService) {
         super(
                 QCourtLocation.courtLocation,
-                DataType.COURT_NAME,
+                DataType.COURT_LOCATION_NAME_AND_CODE_EP,
                 DataType.TRANSPORT_TYPE,
                 DataType.OLD_LIMIT,
                 DataType.NEW_LIMIT,
@@ -91,13 +91,12 @@ public class ManualAdjustmentsToExpenseLimitsReport extends AbstractReport<Stand
             if (record.hasPublicTransportChanged()) {
                 LinkedHashMap<String, Object> row = new LinkedHashMap<>();
 
-                // Structure court_name as a complex object with name and locCode for hyperlinking
-                Map<String, String> courtData = new LinkedHashMap<>();
-                courtData.put("court_name", record.getCourtName());
-                courtData.put("loc_code", record.getLocCode());
-                row.put("court_name", courtData);
+                // Format court name as "Court Name (LocCode)" to match COURT_LOCATION_NAME_AND_CODE_EP format
+                String courtNameWithCode = String.format("%s (%s)",
+                                                         record.getCourtName(),
+                                                         record.getLocCode());
 
-              //  row.put("court_name", record.getCourtName());
+                row.put("court_name", courtNameWithCode);
                 row.put("transport_type", "Public Transport");
                 row.put("old_limit", formatLimit(record.getPublicTransportPreviousValue()));
                 row.put("new_limit", formatLimit(record.getPublicTransportCurrentValue()));
@@ -113,11 +112,12 @@ public class ManualAdjustmentsToExpenseLimitsReport extends AbstractReport<Stand
 
               //  row.put("court_name", record.getCourtName());
                 // Structure court_name as a complex object with name and locCode for hyperlinking
-                Map<String, String> courtData = new LinkedHashMap<>();
-                courtData.put("court_name", record.getCourtName());
-                courtData.put("loc_code", record.getLocCode());
-                row.put("court_name", courtData);
+                // Format court name as "Court Name (LocCode)" to match COURT_LOCATION_NAME_AND_CODE_EP format
+                String courtNameWithCode = String.format("%s (%s)",
+                                                         record.getCourtName(),
+                                                         record.getLocCode());
 
+                row.put("court_name", courtNameWithCode);
                 row.put("transport_type", "Taxi");
                 row.put("old_limit", formatLimit(record.getTaxiPreviousValue()));
                 row.put("new_limit", formatLimit(record.getTaxiCurrentValue()));
