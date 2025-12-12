@@ -75,7 +75,7 @@ public class ExpensePaymentByTypeReportTest extends AbstractStandardReportTestSu
 
         verify(query, times(1))
             .where(QAppearance.appearance.appearanceStage.in(
-                AppearanceStage.EXPENSE_ENTERED,AppearanceStage.EXPENSE_EDITED));
+                AppearanceStage.EXPENSE_ENTERED,AppearanceStage.EXPENSE_EDITED,AppearanceStage.EXPENSE_AUTHORISED));
 
         verify(query, times(1))
             .where(QAppearance.appearance.hideOnUnpaidExpenseAndReports.isFalse());
