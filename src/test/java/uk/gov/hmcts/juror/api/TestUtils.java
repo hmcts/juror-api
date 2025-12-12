@@ -1,9 +1,9 @@
 package uk.gov.hmcts.juror.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.validation.constraints.NotNull;
 import lombok.SneakyThrows;
 import org.assertj.core.api.Assertions;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterAll;
 import org.mockito.MockedStatic;
 import org.springframework.security.core.context.SecurityContext;
