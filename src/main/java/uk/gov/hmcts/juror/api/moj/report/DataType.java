@@ -448,7 +448,13 @@ public enum DataType implements IDataType {
                        .sum(),
                    QMessage.message),
 
-
+    INCOMPLETE_JURORS_COUNT(
+        "Incomplete Jurors",
+        Long.class,
+        QJuror.juror.jurorNumber.countDistinct(),
+        QJurorPool.jurorPool,
+        QJuror.juror
+    ),
 
     POLICE_CHECK_RESPONDED("Responded jurors", Long.class,
         QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED).count()),
