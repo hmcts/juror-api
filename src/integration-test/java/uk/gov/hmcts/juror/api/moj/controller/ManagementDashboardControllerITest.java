@@ -14,6 +14,7 @@ import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.courtdashboard.CourtNotificationInfoDto;
+import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.OverdueUtilisationReportResponseDto;
 
 import java.net.URI;
 
@@ -37,15 +38,15 @@ public class ManagementDashboardControllerITest extends AbstractIntegrationTest 
 
         getHeader();
 
-        ResponseEntity<CourtNotificationInfoDto> response = restTemplate.exchange(
+        ResponseEntity<OverdueUtilisationReportResponseDto> response = restTemplate.exchange(
             new RequestEntity<>(httpHeaders, GET,
                                 URI.create("/api/v1/moj/management-dashboard/overdue-utilisation")),
-                                CourtNotificationInfoDto.class);
+                OverdueUtilisationReportResponseDto.class);
 
         assertThat(response.getStatusCode()).as("Expect the status to be OK").isEqualTo(HttpStatus.OK);
 
-        CourtNotificationInfoDto responseBody = response.getBody();
-        assertThat(responseBody).isNull(); // no actual data to test against
+        OverdueUtilisationReportResponseDto responseBody = response.getBody();
+        assertThat(responseBody).isNotNull(); // no actual data to test against
 
     }
 
