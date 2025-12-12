@@ -161,7 +161,7 @@ public class ExpensePaymentsUsingAdjustedLimitsReport extends AbstractReport<Sta
                 && !app.getAttendanceDate().isAfter(toDate))
             .filter(app -> !app.isDraftExpense())
             .filter(app -> app.getAppearanceStage() == AppearanceStage.EXPENSE_ENTERED
-                || app.getAppearanceStage() == AppearanceStage.EXPENSE_EDITED)
+                || app.getAppearanceStage() == AppearanceStage.EXPENSE_EDITED || app.getAppearanceStage() == AppearanceStage.EXPENSE_AUTHORISED)
             .toList();
 
         log.info("Found {} appearances matching initial criteria", filteredAppearances.size());
