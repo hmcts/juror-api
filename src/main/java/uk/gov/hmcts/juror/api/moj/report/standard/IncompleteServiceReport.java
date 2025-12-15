@@ -43,7 +43,7 @@ public class IncompleteServiceReport extends AbstractStandardReport {
             DataType.LAST_ATTENDANCE_DATE,
             DataType.NEXT_ATTENDANCE_DATE);
         this.courtLocationRepository = courtLocationRepository;
-        addAuthenticationConsumer(request -> checkOwnership(request.getLocCode(), false));
+
         addJoinOverride(JoinOverrideDetails.builder()
             .from(QJuror.juror)
             .joinType(JoinType.LEFTJOIN)
@@ -62,7 +62,6 @@ public class IncompleteServiceReport extends AbstractStandardReport {
         query
             .where(QJurorPool.jurorPool.pool.returnDate.loe(request.getDate()))
             .where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(request.getLocCode()))
-            .where(QJurorPool.jurorPool.pool.owner.eq(SecurityUtil.getActiveOwner()))
             .where(QJurorPool.jurorPool.isActive.eq(true))
             .where(QJurorPool.jurorPool.status.status.in(List.of(IJurorStatus.RESPONDED, IJurorStatus.PANEL,
                 IJurorStatus.JUROR)))
