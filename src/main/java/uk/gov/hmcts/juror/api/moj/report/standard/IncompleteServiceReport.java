@@ -43,7 +43,6 @@ public class IncompleteServiceReport extends AbstractStandardReport {
             DataType.LAST_ATTENDANCE_DATE,
             DataType.NEXT_ATTENDANCE_DATE);
         this.courtLocationRepository = courtLocationRepository;
-        isCourtUserOnly();
         addAuthenticationConsumer(request -> checkOwnership(request.getLocCode(), false));
         addJoinOverride(JoinOverrideDetails.builder()
             .from(QJuror.juror)
