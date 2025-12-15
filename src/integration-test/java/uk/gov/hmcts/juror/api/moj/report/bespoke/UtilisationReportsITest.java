@@ -586,7 +586,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
             assertThat(stats.getDateLastRun()).isEqualTo(LocalDateTime.parse("2024-06-18T17:22:05",
                                                                              DateTimeFormatter.ISO_LOCAL_DATE_TIME));
             stats = tableData.getData().get(1);
-            assertThat(stats.getCourtName()).isEqualTo("LEWES SITTING AT CHICHESTER (416)");
+            assertThat(stats.getCourtName()).isEqualTo("GUILDFORD SITTING AT CHICHESTER (416)");
             assertThat(Math.round(stats.getUtilisation())).isEqualTo(Math.round(11.89));
             assertThat(stats.getMonth()).isEqualTo("April 2024");
             assertThat(stats.getDateLastRun()).isEqualTo(LocalDateTime.parse("2024-04-18T17:22:05",
