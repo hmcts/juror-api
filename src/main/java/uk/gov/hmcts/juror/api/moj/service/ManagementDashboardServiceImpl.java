@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.OverdueUtilisationReportResponseDto;
-import uk.gov.hmcts.juror.api.moj.controller.reports.response.CourtUtilisationStatsReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.Permission;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.UtilisationStatsRepository;
@@ -14,10 +13,8 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 @Service
 @Slf4j
@@ -28,6 +25,8 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
 
     @Override
     public OverdueUtilisationReportResponseDto getOverdueUtilisationReport() {
+        log.info("Generating overdue utilisation table for user {}", SecurityUtil.getActiveLogin());
+
         // check user has superuser permissions
         if (!SecurityUtil.hasPermission(Permission.SUPER_USER)) {
             log.info("User {} attempted to access overdue utilisation report without sufficient permissions",
@@ -41,10 +40,9 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
     }
 
     private OverdueUtilisationReportResponseDto getCourtUtilisationStats(List<String> utilisationStats) {
-        OverdueUtilisationReportResponseDto responseDto = new OverdueUtilisationReportResponseDto();
 
-        List<String> skippedLocCodes = List.of("127", "428", "462", "750", "751", "768", "795");
-
+        List<String> skippedLocCodes = List.of("127", "428", "462", "750", "751", "768", "795"); // To be confirmed
+        List<OverdueUtilisationReportResponseDto.OverdueUtilisationRecord> records = new ArrayList<>();
         for (String line : utilisationStats) {
 
             List<String> stats = List.of(line.split(","));
@@ -64,15 +62,20 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
                 }
 
                 String locName = stats.get(1);
-
                 int availableDays = Integer.parseInt(stats.get(3));
                 int sittingDays = Integer.parseInt(stats.get(4));
-                LocalDateTime lastUpdateTime = LocalDateTime.parse(
-                        stats.get(5).substring(0, 19),
+                LocalDateTime lastUpdateTime = LocalDateTime.parse(stats.get(5).substring(0, 19),
                         DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
                 );
+
                 LocalDate lastUpdateDate = lastUpdateTime.toLocalDate();
                 int daysElapsed = (int) java.time.Duration.between(lastUpdateTime, LocalDateTime.now()).toDays();
+
+                if (daysElapsed <= 30) {
+                    // only include courts with overdue utilisation (last updated more than 30 days ago)
+                    continue;
+                }
+
                 double utilisation = availableDays == 0 ? 0.0 : (double) sittingDays / availableDays * 100;
 
                 OverdueUtilisationReportResponseDto.OverdueUtilisationRecord overdueUtilisationRecord =
@@ -83,15 +86,20 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
                                 .reportLastRun(lastUpdateDate)
                                 .build();
 
-                responseDto.getRecords().add(overdueUtilisationRecord);
+                records.add(overdueUtilisationRecord);
             } catch (Exception e) {
                 log.warn("Error parsing overdue utilisation stats line: {}", line, e);
             }
 
         }
+        OverdueUtilisationReportResponseDto responseDto = new OverdueUtilisationReportResponseDto();
 
-        // Sort records by daysElapsed descending
-        responseDto.getRecords().sort((r1, r2) -> r2.getDaysElapsed().compareTo(r1.getDaysElapsed()));
+        // Sort records by daysElapsed descending and get only 10 records
+        List<OverdueUtilisationReportResponseDto.OverdueUtilisationRecord> top10Records = records.stream()
+            .sorted((r1, r2) -> r2.getDaysElapsed().compareTo(r1.getDaysElapsed()))
+            .limit(10)
+            .toList();
+        responseDto.setRecords(top10Records);
 
         return responseDto;
     }
