@@ -17,6 +17,7 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportReque
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
+import uk.gov.hmcts.juror.api.moj.domain.Permission;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
@@ -174,6 +175,14 @@ public abstract class AbstractReport<T> implements IReport {
     public void isBureauUserOnly() {
         addAuthenticationConsumer(request -> {
             if (!SecurityUtil.isBureau()) {
+                throw new MojException.Forbidden("User not allowed to access this report", null);
+            }
+        });
+    }
+
+    public void isSuperUserOnly() {
+        addAuthenticationConsumer(request -> {
+            if (!SecurityUtil.hasPermission(Permission.SUPER_USER)) {
                 throw new MojException.Forbidden("User not allowed to access this report", null);
             }
         });

@@ -15,4 +15,9 @@ public interface AdministrationHolidaysService {
     void deleteNonSittingDays(String locCode, LocalDate date);
 
     void addNonSittingDays(String locCode, HolidayDate holidays);
+
+    List<LocalDate> getSundayDates(LocalDate fromDate, LocalDate toDate);
+
+    List<LocalDate> getSaturdayDates(LocalDate fromDate, LocalDate toDate);
+
 }

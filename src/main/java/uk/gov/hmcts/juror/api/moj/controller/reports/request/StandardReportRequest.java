@@ -61,6 +61,7 @@ public class StandardReportRequest {
         "AvailableListByPoolReport",
         "PoolSelectionListReport",
         "PoolAnalysisReport",
+        "WeekendAttendanceReport",
         //Grouped
         "AbsencesReport",
         "PostponedListByDateReport",
