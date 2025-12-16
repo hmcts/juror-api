@@ -244,6 +244,29 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             HttpMethod.POST, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+
+        executeInTransaction(() -> {
+            List<Juror> jurors = jurorRepository.findAll();
+            // should be 8 jurors in the database
+            assertThat(jurors).isNotEmpty();
+            assertThat(jurors.size()).isEqualTo(8);
+
+            // check the address details have been saved correctly, not shuffled
+            Juror juror = jurors.get(0);
+            assertThat(juror.getAddressLine2()).isEqualTo("2nd ADDRESS LINE");
+            assertThat(juror.getAddressLine3()).isEqualTo("ADDRESS LINE 3");
+            assertThat(juror.getAddressLine4()).isEqualTo("ANYTOWN");
+
+            List<JurorPool> jurorPools = jurorPoolRepository.findAll();
+            assertThat(jurorPools).isNotEmpty();
+            assertThat(jurorPools.size()).isEqualTo(8);
+
+            for (JurorPool jurorPool : jurorPools) {
+                JurorStatus expectedJurorStatus = jurorPool.getStatus();
+                assertThat(expectedJurorStatus.getStatus()).isEqualTo(IJurorStatus.SUMMONED);
+                assertThat(jurorPool.getIsActive()).isTrue();
+            }
+        });
     }
 
     @Test
@@ -389,6 +412,116 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         assertThat(deferredJurorLetters).isEqualTo(1);
         long letterCount = bulkPrintDataRepository.count();
         assertThat(letterCount).isEqualTo(9); // 8 summons and 1 confirmation letter
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql",
+        "/db/pool-management/CreatePoolController_loadVotersNoAddress4withAddress3.sql",
+        "/db/CreatePoolController_createPool.sql"})
+    public void createPool_replaceAddress4withAddress3() {
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
+                                       .userType(UserType.BUREAU)
+                                       .roles(Set.of(Role.MANAGER))
+                                       .login("BUREAU_USER")
+                                       .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).build())
+                                       .owner("400")
+                                       .build());
+
+        PoolCreateRequestDto poolCreateRequest = setUpPoolCreateRequestDto();
+
+        final URI uri = URI.create("/api/v1/moj/pool-create/create-pool");
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        RequestEntity<PoolCreateRequestDto> requestEntity = new RequestEntity<>(poolCreateRequest, httpHeaders,
+                                                                                HttpMethod.POST, uri);
+        ResponseEntity<String> response = template.exchange(requestEntity, String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+
+        // verify that address line 4 has been replaced with address line 3 for all jurors
+        executeInTransaction(() -> {
+            List<Juror> jurors = jurorRepository.findAll();
+            // should be 8 jurors in the database
+            assertThat(jurors).isNotEmpty();
+            assertThat(jurors.size()).isEqualTo(8);
+            for (Juror juror : jurors) {
+                assertThat(juror.getAddressLine2()).isEqualTo("ADDRESS LINE 2");
+                assertThat(juror.getAddressLine3()).isNull(); // address line 3 was not null previously
+                assertThat(juror.getAddressLine4()).isEqualTo("ANYTOWN");
+            }
+        });
+    }
+
+
+    @Test
+    @Sql({"/db/mod/truncate.sql",
+        "/db/pool-management/CreatePoolController_loadVotersNoAddress4NoValidAddress3Or2.sql",
+        "/db/CreatePoolController_createPool.sql"})
+    public void createPool_cannotReplaceAddress4withAddress3or2() {
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
+                                       .userType(UserType.BUREAU)
+                                       .roles(Set.of(Role.MANAGER))
+                                       .login("BUREAU_USER")
+                                       .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).build())
+                                       .owner("400")
+                                       .build());
+
+        PoolCreateRequestDto poolCreateRequest = setUpPoolCreateRequestDto();
+
+        final URI uri = URI.create("/api/v1/moj/pool-create/create-pool");
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        RequestEntity<PoolCreateRequestDto> requestEntity = new RequestEntity<>(poolCreateRequest, httpHeaders,
+                                                                                HttpMethod.POST, uri);
+        ResponseEntity<String> response = template.exchange(requestEntity, String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+
+        // verify that address line 4 has not been replaced with address line 2 or 3 for all jurors
+        // as they both start with a number
+        executeInTransaction(() -> {
+            List<Juror> jurors = jurorRepository.findAll();
+            // should be 8 jurors in the database
+            assertThat(jurors).isNotEmpty();
+            assertThat(jurors.size()).isEqualTo(8);
+            for (Juror juror : jurors) {
+                assertThat(juror.getAddressLine2()).isEqualTo("2nd ADDRESS LINE");
+                assertThat(juror.getAddressLine3()).isEqualTo("3rd ADDRESS LINE");
+                assertThat(juror.getAddressLine4()).isNull();
+            }
+        });
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql",
+        "/db/pool-management/CreatePoolController_loadVotersNoAddress4Address3withAddress2.sql",
+        "/db/CreatePoolController_createPool.sql"})
+    public void createPool_replaceAddress4withAddress2() {
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
+                                       .userType(UserType.BUREAU)
+                                       .roles(Set.of(Role.MANAGER))
+                                       .login("BUREAU_USER")
+                                       .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).build())
+                                       .owner("400")
+                                       .build());
+
+        PoolCreateRequestDto poolCreateRequest = setUpPoolCreateRequestDto();
+
+        final URI uri = URI.create("/api/v1/moj/pool-create/create-pool");
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        RequestEntity<PoolCreateRequestDto> requestEntity = new RequestEntity<>(poolCreateRequest, httpHeaders,
+                                                                                HttpMethod.POST, uri);
+        ResponseEntity<String> response = template.exchange(requestEntity, String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+
+        // verify that address line 4 has been replaced with address line 2 for all jurors
+        executeInTransaction(() -> {
+            List<Juror> jurors = jurorRepository.findAll();
+            for (Juror juror : jurors) {
+                assertThat(juror.getAddressLine2()).isNull(); // address line 2 was not null previously
+                assertThat(juror.getAddressLine3()).isNull();
+                assertThat(juror.getAddressLine4()).isEqualTo("ADDRESS LINE 2");
+            }
+        });
     }
 
     @Test
@@ -803,8 +936,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         assertThat(response.getBody()).isNotNull();
         List<FilterPoolMember> poolMembers = response.getBody().getData();
         assertThat(poolMembers.size()).isEqualTo(2);
-
-
 
         FilterPoolMember responseData1 = poolMembers.get(0);
         assertThat(responseData1.getJurorNumber()).isEqualToIgnoringCase("111111111");
