@@ -718,25 +718,7 @@ class UtilisationReportServiceImplTest {
         @SneakyThrows
         void overdueUtilisationStatsNoData() {
 
-            Set<Permission> permissions = new HashSet<>();
-            permissions.add(Permission.SUPER_USER);
-            User user = User.builder()
-                .username("Administrator")
-                .permissions(permissions)
-                .build();
-            final BureauJwtPayload bureauJwtPayload = new BureauJwtPayload(user, UserType.ADMINISTRATOR, "415",
-                                                                           Collections.singletonList(CourtLocation.builder()
-                                                                                                         .locCode("415")
-                                                                                                         .name("Chester")
-                                                                                                         .owner("415")
-                                                                                                         .build()));
-
-            BureauJwtAuthentication auth = mock(BureauJwtAuthentication.class);
-            when(auth.getPrincipal()).thenReturn(bureauJwtPayload);
-            SecurityContext securityContext = mock(SecurityContext.class);
-            when(securityContext.getAuthentication()).thenReturn(auth);
-
-            SecurityContextHolder.setContext(securityContext);
+            setSecurityContext();
 
             OverdueUtilisationReportResponseDto responseDto = new OverdueUtilisationReportResponseDto();
             responseDto.setRecords(List.of()); // empty list
@@ -757,6 +739,20 @@ class UtilisationReportServiceImplTest {
             OverdueUtilisationReportResponse.TableData tableData = response.getTableData();
             checkTableHeadings(tableData);
 
+            assertThat(response.getTableData().getData().size()).isEqualTo(0);
+
+        }
+
+        private void setSecurityContext() {
+
+            final BureauJwtPayload bureauJwtPayload = TestUtils.getJwtPayloadSuperUser("415", "Chester");
+
+            BureauJwtAuthentication auth = mock(BureauJwtAuthentication.class);
+            when(auth.getPrincipal()).thenReturn(bureauJwtPayload);
+            SecurityContext securityContext = mock(SecurityContext.class);
+            when(securityContext.getAuthentication()).thenReturn(auth);
+
+            SecurityContextHolder.setContext(securityContext);
         }
 
         private void checkTableHeadings(OverdueUtilisationReportResponse.TableData tableData) {

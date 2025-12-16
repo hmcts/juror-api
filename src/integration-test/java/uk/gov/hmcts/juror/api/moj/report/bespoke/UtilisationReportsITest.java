@@ -41,6 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Utilisation Reports Integration Tests at " + UtilisationReportsITest.URL_BASE)
+@SuppressWarnings("PMD.HighNumberOfImports")
 class UtilisationReportsITest extends AbstractIntegrationTest {
 
     @Autowired
@@ -738,15 +739,11 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
-            CourtUtilisationStatsReportRequest request = CourtUtilisationStatsReportRequest.builder()
-                .allCourts(true)
-                .build();
-
-            ResponseEntity<CourtUtilisationStatsReportResponse> responseEntity =
-                restTemplate.exchange(new RequestEntity<>(request,
-                                                          httpHeaders, HttpMethod.POST,
-                                                          URI.create(COURT_UTILISATION_STATS_REPORT_URL)),
-                                      CourtUtilisationStatsReportResponse.class);
+            ResponseEntity<OverdueUtilisationReportResponse> responseEntity =
+                restTemplate.exchange(new RequestEntity<>(null,
+                                                          httpHeaders, HttpMethod.GET,
+                                                          URI.create(OVERDUE_UTILISATION_REPORT_URL)),
+                                      OverdueUtilisationReportResponse.class);
 
             assertThat(responseEntity.getStatusCode()).as("Expect HTTP FORBIDDEN response")
                 .isEqualTo(HttpStatus.FORBIDDEN);
