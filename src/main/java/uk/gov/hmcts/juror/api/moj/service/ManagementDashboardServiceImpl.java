@@ -24,7 +24,7 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
     private final UtilisationStatsRepository utilisationStatsRepository;
 
     @Override
-    public OverdueUtilisationReportResponseDto getOverdueUtilisationReport() {
+    public OverdueUtilisationReportResponseDto getOverdueUtilisationReport(boolean top10) {
         log.info("Generating overdue utilisation table for user {}", SecurityUtil.getActiveLogin());
 
         // check user has superuser permissions
@@ -36,10 +36,11 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
 
         List<String> utilisationStats = utilisationStatsRepository.getCourtUtilisationStats();
 
-        return getCourtUtilisationStats(utilisationStats);
+        return getCourtUtilisationStats(utilisationStats, top10);
     }
 
-    private OverdueUtilisationReportResponseDto getCourtUtilisationStats(List<String> utilisationStats) {
+    private OverdueUtilisationReportResponseDto getCourtUtilisationStats(List<String> utilisationStats, boolean top10) {
+
 
         List<String> skippedLocCodes = List.of("127", "428", "462", "750", "751", "768", "795"); // To be confirmed
         List<OverdueUtilisationReportResponseDto.OverdueUtilisationRecord> records = new ArrayList<>();
@@ -94,12 +95,19 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
         }
         OverdueUtilisationReportResponseDto responseDto = new OverdueUtilisationReportResponseDto();
 
-        // Sort records by daysElapsed descending and get only 10 records
-        List<OverdueUtilisationReportResponseDto.OverdueUtilisationRecord> top10Records = records.stream()
-            .sorted((r1, r2) -> r2.getDaysElapsed().compareTo(r1.getDaysElapsed()))
-            .limit(10)
-            .toList();
-        responseDto.setRecords(top10Records);
+        if (!top10) {
+            // sort the records by daysElapsed descending
+            records.sort((r1, r2) -> r2.getDaysElapsed().compareTo(r1.getDaysElapsed()));
+            responseDto.setRecords(records);
+        } else {
+            // Sort records by daysElapsed descending and get only 10 records
+            List<OverdueUtilisationReportResponseDto.OverdueUtilisationRecord> top10Records = records.stream()
+                .sorted((r1, r2) -> r2.getDaysElapsed().compareTo(r1.getDaysElapsed()))
+                .limit(10)
+                .toList();
+
+            responseDto.setRecords(top10Records);
+        }
 
         return responseDto;
     }

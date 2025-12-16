@@ -34,6 +34,7 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.DigitalSummonsRepl
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.FinancialAuditReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.JurySummoningMonitorReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.MonthlyUtilisationReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.OverdueUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.YieldPerformanceReportResponse;
 import uk.gov.hmcts.juror.api.moj.service.report.FinancialAuditReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.JurySummoningMonitorReportService;
@@ -152,7 +153,7 @@ public class ReportController {
     ) {
         return ResponseEntity.ok(summonsRepliesReportService.getDigitalSummonsRepliesReport(month));
     }
-    
+
     @PostMapping("/court-utilisation-stats-report")
     @Operation(summary = "GET With Body", description = "View court utilisation stats report for "
         + "a number of courts")
@@ -162,6 +163,13 @@ public class ReportController {
         @RequestBody CourtUtilisationStatsReportRequest request
     ) {
         return ResponseEntity.ok(utilisationReportService.courtUtilisationStatsReport(request));
+    }
+
+    @GetMapping("/overdue-utilisation-report")
+    @Operation(summary = "View overdue utilisation stats report for a number of courts")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<OverdueUtilisationReportResponse> getOverdueUtilisationReport() {
+        return ResponseEntity.ok(utilisationReportService.overdueUtilisationReport());
     }
 
     @PostMapping("/jury-summoning-monitor")

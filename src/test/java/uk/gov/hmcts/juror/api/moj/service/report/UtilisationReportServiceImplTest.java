@@ -9,27 +9,40 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import uk.gov.hmcts.juror.api.TestUtils;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.OverdueUtilisationReportResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.CourtUtilisationStatsReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.CourtUtilisationStatsReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportJurorsResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.MonthlyUtilisationReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.OverdueUtilisationReportResponse;
+import uk.gov.hmcts.juror.api.moj.domain.Permission;
+import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UtilisationStatsRepository;
+import uk.gov.hmcts.juror.api.moj.service.ManagementDashboardService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -57,14 +70,16 @@ class UtilisationReportServiceImplTest {
     private final JurorRepository jurorRepository;
     private final UtilisationStatsRepository utilisationStatsRepository;
     private final UtilisationReportService utilisationReportService;
+    private final ManagementDashboardService managementDashboardService;
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
     public UtilisationReportServiceImplTest() {
         this.courtLocationRepository = mock(CourtLocationRepository.class);
         this.jurorRepository = mock(JurorRepository.class);
         this.utilisationStatsRepository = mock(UtilisationStatsRepository.class);
+        this.managementDashboardService = mock(ManagementDashboardService.class);
         this.utilisationReportService = new UtilisationReportServiceImpl(courtLocationRepository, jurorRepository,
-            utilisationStatsRepository);
+            managementDashboardService, utilisationStatsRepository);
     }
 
     @BeforeEach
@@ -691,6 +706,80 @@ class UtilisationReportServiceImplTest {
             assertThat(tableHeading.getId()).isEqualTo(UtilisationReportService.TableHeading.DATE_LAST_RUN);
             assertThat(tableHeading.getName()).isEqualTo("Date Last Run");
             assertThat(tableHeading.getDataType()).isEqualTo("LocalDate");
+        }
+    }
+
+
+    @Nested
+    @DisplayName("Overdue Utilisation Stats tests")
+    class OverdueUtilisationStatsTests {
+
+        @Test
+        @SneakyThrows
+        void overdueUtilisationStatsNoData() {
+
+            Set<Permission> permissions = new HashSet<>();
+            permissions.add(Permission.SUPER_USER);
+            User user = User.builder()
+                .username("Administrator")
+                .permissions(permissions)
+                .build();
+            final BureauJwtPayload bureauJwtPayload = new BureauJwtPayload(user, UserType.ADMINISTRATOR, "415",
+                                                                           Collections.singletonList(CourtLocation.builder()
+                                                                                                         .locCode("415")
+                                                                                                         .name("Chester")
+                                                                                                         .owner("415")
+                                                                                                         .build()));
+
+            BureauJwtAuthentication auth = mock(BureauJwtAuthentication.class);
+            when(auth.getPrincipal()).thenReturn(bureauJwtPayload);
+            SecurityContext securityContext = mock(SecurityContext.class);
+            when(securityContext.getAuthentication()).thenReturn(auth);
+
+            SecurityContextHolder.setContext(securityContext);
+
+            OverdueUtilisationReportResponseDto responseDto = new OverdueUtilisationReportResponseDto();
+            responseDto.setRecords(List.of()); // empty list
+
+            when(managementDashboardService.getOverdueUtilisationReport(false)).thenReturn(responseDto);
+
+            OverdueUtilisationReportResponse response = utilisationReportService
+                .overdueUtilisationReport();
+
+            assertThat(response).isNotNull();
+
+            assertThat(response.getHeadings()).isNotNull();
+            // assert headings is empty
+            Map<String, AbstractReportResponse.DataTypeValue> headings = response.getHeadings();
+            assertThat(headings.isEmpty()).isTrue();
+
+            assertThat(response.getTableData()).isNotNull();
+            OverdueUtilisationReportResponse.TableData tableData = response.getTableData();
+            checkTableHeadings(tableData);
+
+        }
+
+        private void checkTableHeadings(OverdueUtilisationReportResponse.TableData tableData) {
+            OverdueUtilisationReportResponse.TableData.Heading tableHeading = tableData.getHeadings().get(0);
+            assertThat(tableHeading.getId()).isEqualTo(UtilisationReportService.TableHeading.COURT_NAME);
+            assertThat(tableHeading.getName()).isEqualTo("Court Name");
+            assertThat(tableHeading.getDataType()).isEqualTo("String");
+
+            tableHeading = tableData.getHeadings().get(1);
+            assertThat(tableHeading.getId()).isEqualTo(UtilisationReportService.TableHeading.DATE_LAST_RUN);
+            assertThat(tableHeading.getName()).isEqualTo("Date Last Run");
+            assertThat(tableHeading.getDataType()).isEqualTo("LocalDate");
+
+            tableHeading = tableData.getHeadings().get(2);
+            assertThat(tableHeading.getId()).isEqualTo(UtilisationReportService.TableHeading.DAYS_ELAPSED);
+            assertThat(tableHeading.getName()).isEqualTo("Days Elapsed");
+            assertThat(tableHeading.getDataType()).isEqualTo("Integer");
+
+            tableHeading = tableData.getHeadings().get(3);
+            assertThat(tableHeading.getId()).isEqualTo(UtilisationReportService.TableHeading.UTILISATION);
+            assertThat(tableHeading.getName()).isEqualTo("Utilisation");
+            assertThat(tableHeading.getDataType()).isEqualTo("Double");
+
         }
     }
 

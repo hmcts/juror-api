@@ -4,6 +4,6 @@ import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.OverdueUtilisat
 
 public interface ManagementDashboardService {
 
-    OverdueUtilisationReportResponseDto getOverdueUtilisationReport();
+    OverdueUtilisationReportResponseDto getOverdueUtilisationReport(boolean top10);
 
 }

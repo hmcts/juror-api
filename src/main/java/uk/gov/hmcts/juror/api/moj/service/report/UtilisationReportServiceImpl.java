@@ -6,17 +6,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.OverdueUtilisationReportResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.CourtUtilisationStatsReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.CourtUtilisationStatsReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportJurorsResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.MonthlyUtilisationReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.OverdueUtilisationReportResponse;
+import uk.gov.hmcts.juror.api.moj.domain.Permission;
 import uk.gov.hmcts.juror.api.moj.domain.UtilisationStats;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UtilisationStatsRepository;
+import uk.gov.hmcts.juror.api.moj.service.ManagementDashboardService;
 import uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -37,8 +41,10 @@ import java.util.Map;
 public class UtilisationReportServiceImpl implements UtilisationReportService {
     private final CourtLocationRepository courtLocationRepository;
     private final JurorRepository jurorRepository;
+    private final ManagementDashboardService managementDashboardService;
 
     private final UtilisationStatsRepository utilisationStatsRepository;
+
 
     @Override
     @Transactional(readOnly = true)
@@ -409,6 +415,35 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
 
         if (utilisationStats != null && !utilisationStats.isEmpty()) {
             getCourtUtilisationStats(utilisationStats, response.getTableData(), request.getCourtLocCodes());
+        }
+
+        return response;
+    }
+
+    @Override
+    public OverdueUtilisationReportResponse overdueUtilisationReport() {
+        // check this is a superuser
+        if (!SecurityUtil.hasPermission(Permission.SUPER_USER)) {
+            throw new MojException.Forbidden("User is not authorized to view overdue utilisation report", null);
+        }
+
+        OverdueUtilisationReportResponseDto utilResponse =
+            managementDashboardService.getOverdueUtilisationReport(false);
+
+        // convert the DTO to the report response
+        OverdueUtilisationReportResponse response = new OverdueUtilisationReportResponse(Map.of());
+
+        // for every item in the DTO, create a report response item
+        for (OverdueUtilisationReportResponseDto.OverdueUtilisationRecord utilisationRecord :
+            utilResponse.getRecords()) {
+            OverdueUtilisationReportResponse.UtilisationStats reportRecord =
+                OverdueUtilisationReportResponse.UtilisationStats.builder()
+                    .courtName(utilisationRecord.getCourt())
+                    .utilisation(utilisationRecord.getUtilisation())
+                    .daysElapsed(utilisationRecord.getDaysElapsed())
+                    .dateLastRun(utilisationRecord.getReportLastRun())
+                    .build();
+            response.getTableData().getData().add(reportRecord);
         }
 
         return response;

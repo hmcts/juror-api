@@ -24,7 +24,7 @@ public class ManagementDashboardController {
     @GetMapping("/overdue-utilisation")
     @Operation(summary = "Get the overdue utilisation report for all courts")
     public ResponseEntity<OverdueUtilisationReportResponseDto> getOverdueUtilisationReport() {
-        OverdueUtilisationReportResponseDto dto = managementDashboardService.getOverdueUtilisationReport();
+        OverdueUtilisationReportResponseDto dto = managementDashboardService.getOverdueUtilisationReport(true);
         return ResponseEntity.ok().body(dto);
     }
 
