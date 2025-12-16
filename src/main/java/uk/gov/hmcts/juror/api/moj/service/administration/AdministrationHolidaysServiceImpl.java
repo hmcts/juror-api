@@ -76,6 +76,7 @@ public class AdministrationHolidaysServiceImpl implements AdministrationHolidays
             .toList();
     }
 
+    @Override
     public List<LocalDate> getSaturdayDates(LocalDate fromDate, LocalDate toDate) {
         return fromDate.datesUntil(toDate.plusDays(1))
             .filter(date -> date.getDayOfWeek().getValue() == 6)
