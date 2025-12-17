@@ -4,20 +4,18 @@ import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
-import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
 import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.service.audit.CourtLocationAuditService;
-import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -46,7 +44,7 @@ public class ManualAdjustmentsToExpenseLimitsReport extends AbstractReport<Stand
                 DataType.CHANGE_DATE
         );
         this.courtLocationAuditService = courtLocationAuditService;
-       // isCourtUserOnly();
+        isSuperUserOnly();
     }
 
     @Override
@@ -68,10 +66,8 @@ public class ManualAdjustmentsToExpenseLimitsReport extends AbstractReport<Stand
 
     @Override
     public StandardReportResponse getStandardReportResponse(StandardReportRequest request) {
-        // Override to use audit service instead of QueryDSL
-  //      authenticationConsumers.forEach(consumer -> consumer.accept(request));
 
-     //   String locCode = SecurityUtil.getLocCode();
+
         LocalDateTime toDateTime = LocalDateTime.now();
         LocalDateTime fromDateTime = toDateTime.minusMonths(12);
 
@@ -86,12 +82,11 @@ public class ManualAdjustmentsToExpenseLimitsReport extends AbstractReport<Stand
             if (record.getChangeDateTime().isBefore(fromDateTime)) {
                 continue;
             }
-
             // Add public transport changes
             if (record.hasPublicTransportChanged()) {
                 LinkedHashMap<String, Object> row = new LinkedHashMap<>();
 
-                // Format court name as "Court Name (LocCode)" to match COURT_LOCATION_NAME_AND_CODE_EP format
+
                 String courtNameWithCode = String.format("%s (%s)",
                                                          record.getCourtName(),
                                                          record.getLocCode());
@@ -106,13 +101,11 @@ public class ManualAdjustmentsToExpenseLimitsReport extends AbstractReport<Stand
                 tableData.add(row);
             }
 
-            // Add taxi changes
+
             if (record.hasTaxiChanged()) {
                 LinkedHashMap<String, Object> row = new LinkedHashMap<>();
 
-              //  row.put("court_name", record.getCourtName());
-                // Structure court_name as a complex object with name and locCode for hyperlinking
-                // Format court name as "Court Name (LocCode)" to match COURT_LOCATION_NAME_AND_CODE_EP format
+
                 String courtNameWithCode = String.format("%s (%s)",
                                                          record.getCourtName(),
                                                          record.getLocCode());
@@ -128,7 +121,7 @@ public class ManualAdjustmentsToExpenseLimitsReport extends AbstractReport<Stand
             }
         }
 
-        // Build the table data structure
+
         StandardReportResponse.TableData<StandardTableData> responseTableData =
                 StandardReportResponse.TableData.<StandardTableData>builder()
                         .headings(getColumnHeadings())
@@ -154,8 +147,7 @@ public class ManualAdjustmentsToExpenseLimitsReport extends AbstractReport<Stand
 
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
-        // Not used since we override getStandardReportResponse
-        // But required by abstract class
+
     }
 
     @Override
@@ -241,12 +233,9 @@ public class ManualAdjustmentsToExpenseLimitsReport extends AbstractReport<Stand
         return String.format("£%.2f", value);
     }
 
-    /**
-     * Request validator for the manual adjustments report.
-     * No date range required - automatically uses previous 12 months.
-     */
+
     public interface RequestValidator extends
             AbstractReport.Validators.AbstractRequestValidator {
-        // No additional validation required for this report
+
     }
 }

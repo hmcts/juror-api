@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.history.RevisionRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.AppearanceId;
@@ -106,4 +107,27 @@ public interface AppearanceRepository extends IAppearanceRepository, JpaReposito
     List<Appearance> findAllByJurorNumberAndAttendanceDateGreaterThanEqualAndLocCodeOrderByAttendanceDateDesc(String jurorNumber,
                                                                                               LocalDate date,
                                                                                               String locCodes);
+
+    /**
+     * Find expense payment appearances for the adjusted limits report.
+     *
+     * @param locCode Court location code
+     * @param fromDate Start date (inclusive)
+     * @param toDate End date (inclusive)
+     * @param stages Set of appearance stages to filter by (EXPENSE_ENTERED, EXPENSE_EDITED, EXPENSE_AUTHORISED)
+     * @return List of appearances matching the criteria
+     */
+    @Query("SELECT a FROM Appearance a WHERE a.locCode = :locCode "
+        + "AND a.attendanceDate BETWEEN :fromDate AND :toDate "
+        + "AND a.isDraftExpense = false "
+        + "AND a.appearanceStage IN :stages "
+        + "ORDER BY a.attendanceDate DESC")
+    List<Appearance> findExpensePaymentsForReport(
+        @Param("locCode") String locCode,
+        @Param("fromDate") LocalDate fromDate,
+        @Param("toDate") LocalDate toDate,
+        @Param("stages") Set<AppearanceStage> stages
+    );
+
+
 }

@@ -30,19 +30,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Detail report showing individual juror expense payments for a specific court
- * where transport limits were changed.
- * Shows the PAID amounts for public transport or taxi expenses within the last 12 months.
- * Displays all expenses of the specified transport type, regardless of amount.
- * Access control is handled by the frontend application.
- *
- * Parameters:
- * - courts: Optional court location code (drill-down from summary)
- * - transport_type: Required transport type filter ("Public Transport" or "Taxi")
- */
+
 @Slf4j
 @Component
 public class ExpensePaymentsUsingAdjustedLimitsReport extends AbstractReport<StandardTableData> {
@@ -73,6 +64,7 @@ public class ExpensePaymentsUsingAdjustedLimitsReport extends AbstractReport<Sta
         this.courtLocationAuditService = courtLocationAuditService;
         this.appearanceRepository = appearanceRepository;
         this.jurorRepository = jurorRepository;
+        isSuperUserOnly();
     }
 
     @Override
@@ -105,7 +97,7 @@ public class ExpensePaymentsUsingAdjustedLimitsReport extends AbstractReport<Sta
             log.info("Using locCode from security context: {}", locCode);
         }
 
-        // Get transport type from request (passed from frontend drill-down)
+
         String transportType = request.getTransportType();
         if (transportType == null || transportType.isEmpty()) {
             log.error("Transport type parameter is required but not provided");
@@ -114,9 +106,9 @@ public class ExpensePaymentsUsingAdjustedLimitsReport extends AbstractReport<Sta
         log.info("Transport type filter: {}", transportType);
 
         LocalDate toDate = LocalDate.now();
-        LocalDate fromDate = toDate.minusMonths(12);
+        final LocalDate fromDate = toDate.minusMonths(12);
 
-        // Get the audit records to determine old and new limits
+
         var auditRecords = courtLocationAuditService.getTransportLimitAuditHistory(locCode);
 
         if (auditRecords.isEmpty()) {
@@ -127,7 +119,7 @@ public class ExpensePaymentsUsingAdjustedLimitsReport extends AbstractReport<Sta
         var latestAudit = auditRecords.get(auditRecords.size() - 1);
         log.info("Found {} audit records, using latest", auditRecords.size());
 
-        // Determine which limits to use based on transport type
+
         BigDecimal oldLimit = null;
         BigDecimal newLimit = null;
         boolean isPublicTransport = "Public Transport".equalsIgnoreCase(transportType);
@@ -154,26 +146,29 @@ public class ExpensePaymentsUsingAdjustedLimitsReport extends AbstractReport<Sta
 
         // Query for appearances matching the criteria
         log.info("Querying appearances for locCode: {} between {} and {}", locCode, fromDate, toDate);
-        List<Appearance> filteredAppearances = appearanceRepository.findAll().stream()
-            .filter(app -> locCode.equals(app.getLocCode()))
-            .filter(app -> app.getAttendanceDate() != null
-                && !app.getAttendanceDate().isBefore(fromDate)
-                && !app.getAttendanceDate().isAfter(toDate))
-            .filter(app -> !app.isDraftExpense())
-            .filter(app -> app.getAppearanceStage() == AppearanceStage.EXPENSE_ENTERED
-                || app.getAppearanceStage() == AppearanceStage.EXPENSE_EDITED || app.getAppearanceStage() == AppearanceStage.EXPENSE_AUTHORISED)
-            .toList();
+        Set<AppearanceStage> expenseStages = Set.of(
+            AppearanceStage.EXPENSE_ENTERED,
+            AppearanceStage.EXPENSE_EDITED,
+            AppearanceStage.EXPENSE_AUTHORISED
+        );
+
+        List<Appearance> filteredAppearances = appearanceRepository.findExpensePaymentsForReport(
+            locCode,
+            fromDate,
+            toDate,
+            expenseStages
+        );
 
         log.info("Found {} appearances matching initial criteria", filteredAppearances.size());
 
         StandardTableData tableData = new StandardTableData();
 
-        // Process each appearance based on transport type
+
         for (Appearance appearance : filteredAppearances) {
             log.debug("Processing appearance for juror: {}, date: {}",
                       appearance.getJurorNumber(), appearance.getAttendanceDate());
 
-            // Get juror details from Juror table using jurorNumber
+
             Optional<Juror> jurorOpt = jurorRepository.findById(appearance.getJurorNumber());
             String firstName = "";
             String lastName = "";
@@ -186,7 +181,7 @@ public class ExpensePaymentsUsingAdjustedLimitsReport extends AbstractReport<Sta
                 log.warn("Juror not found for jurorNumber: {}", appearance.getJurorNumber());
             }
 
-            // Check based on transport type filter - show ALL expenses of this type with paid amount > 0
+
             if (isPublicTransport) {
                 // Show public transport expenses that have a paid amount
                 BigDecimal paidAmount = appearance.getPublicTransportPaid();
@@ -240,14 +235,14 @@ public class ExpensePaymentsUsingAdjustedLimitsReport extends AbstractReport<Sta
 
         log.info("Found {} expense payment records for {}", tableData.size(), transportType);
 
-        // Build the table data structure
+
         StandardReportResponse.TableData<StandardTableData> responseTableData =
             StandardReportResponse.TableData.<StandardTableData>builder()
                 .headings(getColumnHeadings())
                 .data(tableData)
                 .build();
 
-        // Build the complete response
+
         StandardReportResponse report = new StandardReportResponse();
 
         Map<String, StandardReportResponse.DataTypeValue> headings =
@@ -311,9 +306,9 @@ public class ExpensePaymentsUsingAdjustedLimitsReport extends AbstractReport<Sta
 
         var courtLocation = courtLocationRepository.findById(locCode).orElse(null);
         LocalDate toDate = LocalDate.now();
-        LocalDate fromDate = toDate.minusMonths(12);
+        final LocalDate fromDate = toDate.minusMonths(12);
 
-        // Add court name with loc code - format: "CHESTER (415)"
+
         String courtNameWithCode;
         if (courtLocation != null) {
             String courtName = courtLocation.getLocCourtName() != null
@@ -330,14 +325,14 @@ public class ExpensePaymentsUsingAdjustedLimitsReport extends AbstractReport<Sta
             .value(courtNameWithCode)
             .build());
 
-        // Add transport type from parameter
+
         map.put("transport_type", StandardReportResponse.DataTypeValue.builder()
             .displayName("Type")
             .dataType(String.class.getSimpleName())
             .value(transportType != null ? transportType : "")
             .build());
 
-        // Add old and new limits
+
         map.put("old_limit", StandardReportResponse.DataTypeValue.builder()
             .displayName("Old Limit")
             .dataType(String.class.getSimpleName())
@@ -350,7 +345,7 @@ public class ExpensePaymentsUsingAdjustedLimitsReport extends AbstractReport<Sta
             .value(formatLimit(newLimit))
             .build());
 
-        // Add date range (previous 12 months)
+
         map.put("date_from", StandardReportResponse.DataTypeValue.builder()
             .displayName("Date from")
             .dataType(LocalDate.class.getSimpleName())
