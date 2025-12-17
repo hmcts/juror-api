@@ -15,6 +15,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.IncompleteServiceReportResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.OverdueUtilisationReportResponseDto;
 
 import java.net.URI;
@@ -58,6 +59,33 @@ class ManagementDashboardControllerITest extends AbstractIntegrationTest {
         OverdueUtilisationReportResponseDto responseBody = response.getBody();
         assertThat(responseBody).isNotNull(); // no actual data to test against
 
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/mod/ManagementDashboardIncompleteServiceReportITest_typical.sql"})
+    void incompleteServiceReportHappy() {
+
+        ResponseEntity<IncompleteServiceReportResponseDto> response = restTemplate.exchange(
+            new RequestEntity<>(httpHeaders, GET,
+                                URI.create("/api/v1/moj/management-dashboard/incomplete-service")),
+            IncompleteServiceReportResponseDto.class);
+
+        assertThat(response.getStatusCode()).as("Expect the status to be OK").isEqualTo(HttpStatus.OK);
+
+        IncompleteServiceReportResponseDto responseBody = response.getBody();
+        assertThat(responseBody).isNotNull();
+        assertThat(responseBody.getRecords()).isNotNull();
+        assertThat(responseBody.getRecords().size()).isEqualTo(2);
+
+        IncompleteServiceReportResponseDto.IncompleteServiceRecord incompleteServiceRecord =
+                                                                                responseBody.getRecords().get(0);
+        assertThat(incompleteServiceRecord.getCourt()).isEqualTo("CHESTER (415)");
+        assertThat(incompleteServiceRecord.getNumberOfIncompleteServices()).isEqualTo(11);
+
+        incompleteServiceRecord =
+                responseBody.getRecords().get(1);
+        assertThat(incompleteServiceRecord.getCourt()).isEqualTo("IPSWICH (426)");
+        assertThat(incompleteServiceRecord.getNumberOfIncompleteServices()).isEqualTo(10);
     }
 
 }

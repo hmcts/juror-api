@@ -23,9 +23,6 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationRe
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.MonthlyUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.OverdueUtilisationReportResponse;
-import uk.gov.hmcts.juror.api.moj.domain.Permission;
-import uk.gov.hmcts.juror.api.moj.domain.User;
-import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
@@ -37,12 +34,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;

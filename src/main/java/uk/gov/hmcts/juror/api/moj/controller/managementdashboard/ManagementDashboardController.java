@@ -28,4 +28,11 @@ public class ManagementDashboardController {
         return ResponseEntity.ok().body(dto);
     }
 
+    @GetMapping("/incomplete-service")
+    @Operation(summary = "Get the overdue utilisation report for all courts")
+    public ResponseEntity<IncompleteServiceReportResponseDto> getIncompleteServiceReport() {
+        IncompleteServiceReportResponseDto dto = managementDashboardService.getIncompleteServiceReport();
+        return ResponseEntity.ok().body(dto);
+    }
+
 }

@@ -1,12 +1,15 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
+import com.querydsl.core.Tuple;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.IncompleteServiceReportResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.OverdueUtilisationReportResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Permission;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UtilisationStatsRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -22,6 +25,7 @@ import java.util.List;
 public class ManagementDashboardServiceImpl implements ManagementDashboardService {
 
     private final UtilisationStatsRepository utilisationStatsRepository;
+    private final JurorPoolRepository jurorPoolRepository;
 
     @Override
     public OverdueUtilisationReportResponseDto getOverdueUtilisationReport(boolean top10) {
@@ -37,6 +41,28 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
         List<String> utilisationStats = utilisationStatsRepository.getCourtUtilisationStats();
 
         return getCourtUtilisationStats(utilisationStats, top10);
+    }
+
+    @Override
+    public IncompleteServiceReportResponseDto getIncompleteServiceReport() {
+        List<Tuple> incompleteServiceStats =
+                jurorPoolRepository.getIncompleteServiceCountsByCourt();
+
+        List<IncompleteServiceReportResponseDto.IncompleteServiceRecord> records = new ArrayList<>();
+
+        for (Tuple tuple : incompleteServiceStats) {
+           // populate the response DTO
+            IncompleteServiceReportResponseDto.IncompleteServiceRecord record =
+                    IncompleteServiceReportResponseDto.IncompleteServiceRecord.builder()
+                            .court(tuple.get(0, String.class) + " (" + tuple.get(1, String.class) + ")")
+                            .numberOfIncompleteServices(tuple.get(2, Long.class).intValue())
+                            .build();
+            records.add(record);
+        }
+
+        IncompleteServiceReportResponseDto responseDto = new IncompleteServiceReportResponseDto();
+        responseDto.setRecords(records);
+        return responseDto;
     }
 
     private OverdueUtilisationReportResponseDto getCourtUtilisationStats(List<String> utilisationStats, boolean top10) {
@@ -112,7 +138,8 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
         return responseDto;
     }
 
-    private List<String> adjustedStatsForCommas(List<String> stats) {
+    @Override
+    public List<String> adjustedStatsForCommas(List<String> stats) {
         if (stats.size() > 6) {
             String locName = String.join(",", stats.subList(1, stats.size() - 4));
             List<String> adjustedStats = new ArrayList<>();
@@ -123,4 +150,5 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
         }
         return stats;
     }
+
 }

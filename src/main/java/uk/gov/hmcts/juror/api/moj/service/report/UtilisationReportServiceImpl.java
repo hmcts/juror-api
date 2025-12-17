@@ -42,7 +42,6 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
     private final CourtLocationRepository courtLocationRepository;
     private final JurorRepository jurorRepository;
     private final ManagementDashboardService managementDashboardService;
-
     private final UtilisationStatsRepository utilisationStatsRepository;
 
 
@@ -461,7 +460,7 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
                 throw new MojException.InternalServerError("Invalid utilisation stats line: " + line, null);
             }
 
-            stats = adjustedStatsForCommas(stats);
+            stats = managementDashboardService.adjustedStatsForCommas(stats);
 
             try {
                 String locCode = stats.get(0);
@@ -497,18 +496,6 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
             }
 
         }
-    }
-
-    private List<String> adjustedStatsForCommas(List<String> stats) {
-        if (stats.size() > 6) {
-            String locName = String.join(",", stats.subList(1, stats.size() - 4));
-            List<String> adjustedStats = new ArrayList<>();
-            adjustedStats.add(stats.get(0)); // locCode
-            adjustedStats.add(locName); // locName
-            adjustedStats.addAll(stats.subList(stats.size() - 4, stats.size())); // Remaining stats
-            return adjustedStats;
-        }
-        return stats;
     }
 
     private void updateTotalStats(MonthlyUtilisationReportResponse.TableData tableData, UtilisationStats stats) {
