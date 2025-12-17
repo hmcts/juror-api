@@ -22,7 +22,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SuppressWarnings("Duplicates")
+@SuppressWarnings({"Duplicates", "PMD"})
 @RunWith(MockitoJUnitRunner.class)
 public class JurorDashboardCalculateServiceImplTest {
 

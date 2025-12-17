@@ -15,6 +15,13 @@ public interface CourtLocationAuditService {
 
     List<TransportLimitAuditRecord> getTransportLimitAuditHistory(String locCode);
 
+    /**
+     * Get transport limit audit history for all court locations.
+     * users to see all court limit changes.
+     *
+     * @return List of audit records showing transport limit changes across all courts
+     */
+    List<TransportLimitAuditRecord> getAllTransportLimitAuditHistory();
 
     /**
      * Get the most recent audit record for transport limits.
@@ -23,5 +30,6 @@ public interface CourtLocationAuditService {
      * @return The most recent audit record, or null if none exists
      */
     TransportLimitAuditRecord getLatestTransportLimitChange(String locCode);
+
 
 }
