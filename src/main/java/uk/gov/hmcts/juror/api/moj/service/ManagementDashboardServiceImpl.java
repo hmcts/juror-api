@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.IncompleteServiceReportResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.OverdueUtilisationReportResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.WeekendAttendanceReportResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Permission;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -64,6 +65,12 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
         responseDto.setRecords(records);
         return responseDto;
     }
+
+    @Override
+    public WeekendAttendanceReportResponseDto getWeekendAttendanceReport() {
+        return null;
+    }
+
 
     private OverdueUtilisationReportResponseDto getCourtUtilisationStats(List<String> utilisationStats, boolean top10) {
 

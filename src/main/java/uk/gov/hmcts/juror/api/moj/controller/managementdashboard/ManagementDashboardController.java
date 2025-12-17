@@ -35,4 +35,11 @@ public class ManagementDashboardController {
         return ResponseEntity.ok().body(dto);
     }
 
+    @GetMapping("/weekend-attendance")
+    @Operation(summary = "Get the weekend attendance report for all courts")
+    public ResponseEntity<WeekendAttendanceReportResponseDto> getWeekendAttendanceReport() {
+        WeekendAttendanceReportResponseDto dto = managementDashboardService.getWeekendAttendanceReport();
+        return ResponseEntity.ok().body(dto);
+    }
+
 }

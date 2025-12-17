@@ -17,6 +17,7 @@ import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.IncompleteServiceReportResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.OverdueUtilisationReportResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.WeekendAttendanceReportResponseDto;
 
 import java.net.URI;
 
@@ -86,6 +87,22 @@ class ManagementDashboardControllerITest extends AbstractIntegrationTest {
                 responseBody.getRecords().get(1);
         assertThat(incompleteServiceRecord.getCourt()).isEqualTo("IPSWICH (426)");
         assertThat(incompleteServiceRecord.getNumberOfIncompleteServices()).isEqualTo(10);
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/mod/reports/WeekendAttendanceReportITest_typical.sql"})
+    void weekendAttendanceReportHappy() {
+
+        ResponseEntity<WeekendAttendanceReportResponseDto> response = restTemplate.exchange(
+                new RequestEntity<>(httpHeaders, GET,
+                        URI.create("/api/v1/moj/management-dashboard/weekend-attendance")),
+                WeekendAttendanceReportResponseDto.class);
+
+        assertThat(response.getStatusCode()).as("Expect the status to be OK").isEqualTo(HttpStatus.OK);
+
+        WeekendAttendanceReportResponseDto responseBody = response.getBody();
+        assertThat(responseBody).isNull();
+
     }
 
 }
