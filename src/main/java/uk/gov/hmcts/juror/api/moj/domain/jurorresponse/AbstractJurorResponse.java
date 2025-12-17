@@ -48,6 +48,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REG
 @Setter
 @ToString(exclude = {"reasonableAdjustments", "cjsEmployments", "juror"})// lazy init fields
 @EqualsAndHashCode(callSuper = true, exclude = {"cjsEmployments", "reasonableAdjustments", "staff", "juror"})
+@SuppressWarnings("PMD.TooManyFields")
 public class AbstractJurorResponse extends Address implements Serializable {
 
     @Id

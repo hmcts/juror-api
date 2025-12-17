@@ -35,7 +35,9 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.FinancialAuditRepo
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.JurySummoningMonitorReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.MonthlyUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.OverdueUtilisationReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.WeekendAttendanceReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.YieldPerformanceReportResponse;
+import uk.gov.hmcts.juror.api.moj.service.report.AttendanceReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.FinancialAuditReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.JurySummoningMonitorReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.ReportService;
@@ -61,6 +63,7 @@ public class ReportController {
     private final JurySummoningMonitorReportService jurySummoningMonitorReportService;
     private final YieldPerformanceReportService yieldPerformanceReportService;
     private final SummonsRepliesReportService summonsRepliesReportService;
+    private final AttendanceReportService attendanceReportService;
 
     @PostMapping("/standard")
     @Operation(summary = "View a given report")
@@ -194,6 +197,13 @@ public class ReportController {
     ) {
         return ResponseEntity.ok(yieldPerformanceReportService
             .viewYieldPerformanceReport(yieldPerformanceReportRequest));
+    }
+
+    @GetMapping("/weekend-attendance")
+    @Operation(summary = "Get a list of attendance on weekends and bank holidays for the current month")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<WeekendAttendanceReportResponse> getWeekendAttendanceReport() {
+        return ResponseEntity.ok(attendanceReportService.getWeekendAttendanceReport());
     }
 
 }
