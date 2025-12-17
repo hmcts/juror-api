@@ -600,5 +600,8 @@ public abstract class AbstractReport<T> implements IReport {
 
         public interface RequireFilterOwnedDeferrals {
         }
+
+        public interface RequireTransportType {
+        }
     }
 }
