@@ -1526,8 +1526,8 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .as("Expect the number to be equal to 416221203")
             .isEqualTo("416221203");
         assertThat(poolRequestActiveDataDto.getCourtName())
-            .as("Expect the court name to be equal to LEWES SITTING AT CHICHESTER")
-            .isEqualTo("LEWES SITTING AT CHICHESTER");
+            .as("Expect the court name to be equal to GUILDFORD SITTING AT CHICHESTER")
+            .isEqualTo("GUILDFORD SITTING AT CHICHESTER");
         assertThat(poolRequestActiveDataDto.getConfirmedFromBureau())
             .as("Expect the confirmed jurors to be equal to 1")
             .isEqualTo(1);
@@ -2073,8 +2073,8 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .as("Expect the number to be equal to 416221336")
             .isEqualTo("416221336");
         assertThat(poolRequestActiveDataDto.getCourtName())
-            .as("Expect the court name to be equal to LEWES SITTING AT CHICHESTER")
-            .isEqualTo("LEWES SITTING AT CHICHESTER");
+            .as("Expect the court name to be equal to GUILDFORD SITTING AT CHICHESTER")
+            .isEqualTo("GUILDFORD SITTING AT CHICHESTER");
         assertThat(poolRequestActiveDataDto.getPoolCapacity())
             .as("Expect the pool capacity to be equal to 60")
             .isEqualTo(50);

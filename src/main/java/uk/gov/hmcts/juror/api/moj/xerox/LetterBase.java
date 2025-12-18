@@ -240,7 +240,7 @@ public class LetterBase {
         COURT_NAME(context -> {
             String locCode = context.getCourtLocation().getLocCode();
             if (locCode != null && List.of("000","127","413","414","416","436","463","478").contains(locCode)) {
-                return "THE CROWN COURT AT" + context.getCourtLocation().getLocCourtName();
+                return "THE CROWN COURT AT " + context.getCourtLocation().getLocCourtName();
             }
             return context.getCourtLocation().getLocCourtName();
         }, ContextType.COURT_LOCATION),
