@@ -38,6 +38,7 @@ import static uk.gov.hmcts.juror.api.moj.domain.JurorHistory.RESPONDED;
 /**
  * Implementation of Straight through processing flows.
  */
+@SuppressWarnings("PMD")
 @Component
 @Slf4j
 @AllArgsConstructor(onConstructor = @__(@Autowired))

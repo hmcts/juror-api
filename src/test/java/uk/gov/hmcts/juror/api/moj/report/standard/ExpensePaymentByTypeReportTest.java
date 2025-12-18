@@ -22,7 +22,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class ExpensePaymentByTypeReportTest extends AbstractStandardReportTestSupport<ExpensePaymentByTypeReport> {
+class ExpensePaymentByTypeReportTest extends AbstractStandardReportTestSupport<ExpensePaymentByTypeReport> {
 
     private static final LocalDate FROM_DATE = LocalDate.of(2024, 1, 1);
     private static final LocalDate TO_DATE = LocalDate.of(2024, 1, 31);
