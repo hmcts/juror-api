@@ -480,6 +480,13 @@ public enum DataType implements IDataType {
     PUBLIC_TRANSPORT_PAID_OVER_OLD_LIMIT("Public Transport Paid Over Old Limit", BigDecimal.class,
                                          (Expression<?>) null),  // Calculated in report logic
 
+    INCOMPLETE_JURORS_COUNT(
+        "Incomplete Jurors",
+        Long.class,
+        QJuror.juror.jurorNumber.countDistinct(),
+        QJurorPool.jurorPool,
+        QJuror.juror
+    ),
 
     POLICE_CHECK_RESPONDED("Responded jurors", Long.class,
         QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED).count()),
