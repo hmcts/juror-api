@@ -18,6 +18,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
 @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
 @Component
 public class OutgoingSMSMessagesReport extends AbstractStandardReport {
