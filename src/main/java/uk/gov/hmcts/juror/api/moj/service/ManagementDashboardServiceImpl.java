@@ -8,10 +8,12 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.IncompleteServiceReportResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.OverdueUtilisationReportResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.WeekendAttendanceReportResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.WeekendAttendanceReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.Permission;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UtilisationStatsRepository;
+import uk.gov.hmcts.juror.api.moj.service.report.AttendanceReportService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
@@ -27,17 +29,13 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
 
     private final UtilisationStatsRepository utilisationStatsRepository;
     private final JurorPoolRepository jurorPoolRepository;
+    private final AttendanceReportService attendanceReportService;
 
     @Override
     public OverdueUtilisationReportResponseDto getOverdueUtilisationReport(boolean top10) {
         log.info("Generating overdue utilisation table for user {}", SecurityUtil.getActiveLogin());
 
-        // check user has superuser permissions
-        if (!SecurityUtil.hasPermission(Permission.SUPER_USER)) {
-            log.info("User {} attempted to access overdue utilisation report without sufficient permissions",
-                SecurityUtil.getActiveLogin());
-            throw new MojException.Forbidden("Insufficient permissions to access overdue utilisation report", null);
-        }
+        checkSuperUserPermission();
 
         List<String> utilisationStats = utilisationStatsRepository.getCourtUtilisationStats();
 
@@ -46,13 +44,16 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
 
     @Override
     public IncompleteServiceReportResponseDto getIncompleteServiceReport() {
+
+        checkSuperUserPermission();
+
         List<Tuple> incompleteServiceStats =
                 jurorPoolRepository.getIncompleteServiceCountsByCourt();
 
         List<IncompleteServiceReportResponseDto.IncompleteServiceRecord> records = new ArrayList<>();
 
         for (Tuple tuple : incompleteServiceStats) {
-           // populate the response DTO
+            // populate the response DTO
             IncompleteServiceReportResponseDto.IncompleteServiceRecord record =
                     IncompleteServiceReportResponseDto.IncompleteServiceRecord.builder()
                             .court(tuple.get(0, String.class) + " (" + tuple.get(1, String.class) + ")")
@@ -68,12 +69,54 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
 
     @Override
     public WeekendAttendanceReportResponseDto getWeekendAttendanceReport() {
-        return null;
+
+        checkSuperUserPermission();
+
+        // use the weekend attendance stats repository method to get the data
+        WeekendAttendanceReportResponse attendanceReportResponse = attendanceReportService.getWeekendAttendanceReport();
+
+        if (attendanceReportResponse == null) {
+            log.info("Weekend attendance report data is null or empty");
+            return new WeekendAttendanceReportResponseDto();
+        }
+
+        // need to sort the data by total attendances descending
+        List<WeekendAttendanceReportResponse.TableData.DataRow> top10records =
+                attendanceReportResponse.getTableData().getData().stream()
+                        .sorted((r1, r2) -> r2.getTotalWeekendDays().compareTo(r1.getTotalWeekendDays()))
+                .limit(10)
+                .toList();
+
+        // build the response DTO
+        WeekendAttendanceReportResponseDto responseDto = new WeekendAttendanceReportResponseDto();
+
+        // iterate through the top 10 records and map them to the DTO
+        top10records.forEach(dataRow -> {
+            WeekendAttendanceReportResponseDto.WeekendAttendanceRecord attendanceRecord =
+                    WeekendAttendanceReportResponseDto.WeekendAttendanceRecord.builder()
+                            .courtLocationNameAndCode(dataRow.getCourtLocationNameAndCode())
+                            .saturdayTotal(dataRow.getSaturdayTotal())
+                            .sundayTotal(dataRow.getSundayTotal())
+                            .holidayTotal(dataRow.getHolidayTotal())
+                            .totalPaid(dataRow.getTotalPaid())
+                            .build();
+            responseDto.getRecords().add(attendanceRecord);
+        });
+
+        return responseDto;
+    }
+
+    private void checkSuperUserPermission() {
+        // check user has superuser permissions
+        if (!SecurityUtil.hasPermission(Permission.SUPER_USER)) {
+            log.info("User {} attempted to access overdue utilisation report without sufficient permissions",
+                    SecurityUtil.getActiveLogin());
+            throw new MojException.Forbidden("Insufficient permissions to access overdue utilisation report", null);
+        }
     }
 
 
     private OverdueUtilisationReportResponseDto getCourtUtilisationStats(List<String> utilisationStats, boolean top10) {
-
 
         List<String> skippedLocCodes = List.of("127", "428", "462", "750", "751", "768", "795"); // To be confirmed
         List<OverdueUtilisationReportResponseDto.OverdueUtilisationRecord> records = new ArrayList<>();

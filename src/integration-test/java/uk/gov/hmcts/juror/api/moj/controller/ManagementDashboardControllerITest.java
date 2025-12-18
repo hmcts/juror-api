@@ -101,7 +101,7 @@ class ManagementDashboardControllerITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode()).as("Expect the status to be OK").isEqualTo(HttpStatus.OK);
 
         WeekendAttendanceReportResponseDto responseBody = response.getBody();
-        assertThat(responseBody).isNull();
+        assertThat(responseBody).isNotNull();
 
     }
 

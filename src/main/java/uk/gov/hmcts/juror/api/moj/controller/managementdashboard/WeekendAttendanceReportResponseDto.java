@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,10 +24,11 @@ public class WeekendAttendanceReportResponseDto {
     @AllArgsConstructor
     @Getter
     public static class WeekendAttendanceRecord {
-        private String court;
-        private Integer daysElapsed;
-        private LocalDate reportLastRun;
-        private Double utilisation;
+        private String courtLocationNameAndCode;
+        private Integer saturdayTotal;
+        private Integer sundayTotal;
+        private Integer holidayTotal;
+        private BigDecimal totalPaid;
     }
 
 }

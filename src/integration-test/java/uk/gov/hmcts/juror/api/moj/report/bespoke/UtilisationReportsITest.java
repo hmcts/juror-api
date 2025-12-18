@@ -32,6 +32,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -41,7 +42,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Utilisation Reports Integration Tests at " + UtilisationReportsITest.URL_BASE)
-@SuppressWarnings("PMD.HighNumberOfImports")
+@SuppressWarnings("PMD.ExcessiveImports")
 class UtilisationReportsITest extends AbstractIntegrationTest {
 
     @Autowired
@@ -711,24 +712,37 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
             OverdueUtilisationReportResponse.UtilisationStats stats = tableData.getData().get(0);
             assertThat(stats.getCourtName()).isEqualTo("EXETER (423)");
             assertThat(Math.round(stats.getUtilisation())).isEqualTo(Math.round(11.50));
-            assertThat(stats.getDaysElapsed()).isEqualTo(607);
             assertThat(stats.getDateLastRun()).isEqualTo(LocalDate.parse("2024-04-18",
                                                                          DateTimeFormatter.ISO_DATE));
+
+            int daysSinceLastRun = (int) ChronoUnit.DAYS.between(
+                LocalDate.parse("2024-04-18", DateTimeFormatter.ISO_DATE),
+                LocalDate.now()
+            );
+            assertThat(stats.getDaysElapsed()).isEqualTo(daysSinceLastRun-1);
 
 
             stats = tableData.getData().get(5);
             assertThat(stats.getCourtName()).isEqualTo("LEEDS (429)");
             assertThat(Math.round(stats.getUtilisation())).isEqualTo(Math.round(11.50));
-            assertThat(stats.getDaysElapsed()).isEqualTo(424);
             assertThat(stats.getDateLastRun()).isEqualTo(LocalDate.parse("2024-10-18",
                                                                          DateTimeFormatter.ISO_DATE));
+            daysSinceLastRun = (int) ChronoUnit.DAYS.between(
+                LocalDate.parse("2024-10-18", DateTimeFormatter.ISO_DATE),
+                LocalDate.now()
+            );
+            assertThat(stats.getDaysElapsed()).isEqualTo(daysSinceLastRun-1);
 
             stats = tableData.getData().get(11);
             assertThat(stats.getCourtName()).isEqualTo("MANCHESTER, MINSHULL STREET (436)");
             assertThat(Math.round(stats.getUtilisation())).isEqualTo(Math.round(24.48));
-            assertThat(stats.getDaysElapsed()).isEqualTo(168);
             assertThat(stats.getDateLastRun()).isEqualTo(LocalDate.parse("2025-07-01",
                                                                          DateTimeFormatter.ISO_DATE));
+            daysSinceLastRun = (int) ChronoUnit.DAYS.between(
+                LocalDate.parse("2025-07-01", DateTimeFormatter.ISO_DATE),
+                LocalDate.now()
+            );
+            assertThat(stats.getDaysElapsed()).isEqualTo(daysSinceLastRun-1);
         }
 
 
