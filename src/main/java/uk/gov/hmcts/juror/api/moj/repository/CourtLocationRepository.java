@@ -32,4 +32,22 @@ public interface CourtLocationRepository extends CrudRepository<CourtLocation, S
     @Query(value = "SELECT MAX(clu.revision) FROM juror_mod.court_location_audit clu WHERE clu.loc_code = ?1",
         nativeQuery = true)
     Long getLatestRevision(String locCode);
+
+    @Query(value = "select * from ( "
+        + "  select cla.loc_code, cla.public_transport_soft_limit, cla.taxi_soft_limit,"
+        + "  ri.changed_by, ri.revision_number, cl.loc_name, "
+        + "  row_number() over (partition by cla.loc_code order by ri.revision_number desc) as rn "
+        + "  from juror_mod.court_location_audit cla "
+        + "  join juror_mod.rev_info ri on cla.revision = ri.revision_number "
+        + "  join juror_mod.court_location cl on cla.loc_code = cl.loc_code "
+        + "  where cla.loc_code in (:codes) "
+        + ") t where rn <= 2 order by loc_code, revision_number desc",  nativeQuery = true)
+    List<String> getCourtRevisionsByLocCodes(List<String> codes);
+
+    @Query(value = "select *  from juror_mod.court_location_audit cla "
+        + "where rev_type = 1 "
+        + "order by revision desc "
+        + "limit 50", nativeQuery = true)
+    List<String> getRecentlyUpdatedRecords();
+
 }

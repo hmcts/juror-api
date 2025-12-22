@@ -15,11 +15,13 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.ExpenseLimitsReportResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.IncompleteServiceReportResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.OverdueUtilisationReportResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.WeekendAttendanceReportResponseDto;
 
 import java.net.URI;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpMethod.GET;
@@ -103,6 +105,46 @@ class ManagementDashboardControllerITest extends AbstractIntegrationTest {
         WeekendAttendanceReportResponseDto responseBody = response.getBody();
         assertThat(responseBody).isNotNull();
 
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/mod/ExpenseLimitsReportITest_typical.sql"})
+    void expenseLimitsReportHappy() {
+
+        ResponseEntity<ExpenseLimitsReportResponseDto> response = restTemplate.exchange(
+            new RequestEntity<>(httpHeaders, GET,
+                                URI.create("/api/v1/moj/management-dashboard/expense-limits")),
+            ExpenseLimitsReportResponseDto.class);
+
+        assertThat(response.getStatusCode()).as("Expect the status to be OK").isEqualTo(HttpStatus.OK);
+
+        ExpenseLimitsReportResponseDto responseBody = response.getBody();
+        assertThat(responseBody).isNotNull();
+
+        List<ExpenseLimitsReportResponseDto.ExpenseLimitsRecord> records = responseBody.getRecords();
+        assertThat(records).isNotNull();
+        assertThat(records.size()).isEqualTo(10);
+
+        ExpenseLimitsReportResponseDto.ExpenseLimitsRecord expenseLimitsRecord = records.get(0);
+        assertThat(expenseLimitsRecord.getCourtLocationNameAndCode()).isEqualTo("BOURNEMOUTH (406)");
+        assertThat(expenseLimitsRecord.getType()).isEqualTo("Public Transport");
+        assertThat(expenseLimitsRecord.getOldLimit()).isEqualTo(10.0);
+        assertThat(expenseLimitsRecord.getNewLimit()).isEqualTo(5.0);
+        assertThat(expenseLimitsRecord.getChangedBy()).isEqualTo("kggf.kggfww");
+
+        expenseLimitsRecord = records.get(1);
+        assertThat(expenseLimitsRecord.getCourtLocationNameAndCode()).isEqualTo("Chelmsford  (414)");
+        assertThat(expenseLimitsRecord.getType()).isEqualTo("Taxi");
+        assertThat(expenseLimitsRecord.getOldLimit()).isEqualTo(40.0);
+        assertThat(expenseLimitsRecord.getNewLimit()).isEqualTo(75.0);
+        assertThat(expenseLimitsRecord.getChangedBy()).isEqualTo("test.sur");
+
+        expenseLimitsRecord = records.get(9);
+        assertThat(expenseLimitsRecord.getCourtLocationNameAndCode()).isEqualTo("SALISBURY (480)");
+        assertThat(expenseLimitsRecord.getType()).isEqualTo("Taxi");
+        assertThat(expenseLimitsRecord.getOldLimit()).isEqualTo(0.0);
+        assertThat(expenseLimitsRecord.getNewLimit()).isEqualTo(10.0);
+        assertThat(expenseLimitsRecord.getChangedBy()).isEqualTo("dsfedf.test");
     }
 
 }

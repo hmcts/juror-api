@@ -719,7 +719,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
                 LocalDate.parse("2024-04-18", DateTimeFormatter.ISO_DATE),
                 LocalDate.now()
             );
-            assertThat(stats.getDaysElapsed()).isEqualTo(daysSinceLastRun-1);
+            assertThat(stats.getDaysElapsed()).isEqualTo(daysSinceLastRun - 1);
 
 
             stats = tableData.getData().get(5);
@@ -731,7 +731,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
                 LocalDate.parse("2024-10-18", DateTimeFormatter.ISO_DATE),
                 LocalDate.now()
             );
-            assertThat(stats.getDaysElapsed()).isEqualTo(daysSinceLastRun-1);
+            assertThat(stats.getDaysElapsed()).isEqualTo(daysSinceLastRun - 1);
 
             stats = tableData.getData().get(11);
             assertThat(stats.getCourtName()).isEqualTo("MANCHESTER, MINSHULL STREET (436)");
@@ -742,7 +742,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
                 LocalDate.parse("2025-07-01", DateTimeFormatter.ISO_DATE),
                 LocalDate.now()
             );
-            assertThat(stats.getDaysElapsed()).isEqualTo(daysSinceLastRun-1);
+            assertThat(stats.getDaysElapsed()).isEqualTo(daysSinceLastRun - 1);
         }
 
 

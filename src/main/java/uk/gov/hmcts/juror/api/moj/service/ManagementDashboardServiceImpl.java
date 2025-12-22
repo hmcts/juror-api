@@ -1,16 +1,22 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
 import com.querydsl.core.Tuple;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.ExpenseLimitsReportResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.IncompleteServiceReportResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.OverdueUtilisationReportResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.WeekendAttendanceReportResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.WeekendAttendanceReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.Permission;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UtilisationStatsRepository;
 import uk.gov.hmcts.juror.api.moj.service.report.AttendanceReportService;
@@ -30,6 +36,7 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
     private final UtilisationStatsRepository utilisationStatsRepository;
     private final JurorPoolRepository jurorPoolRepository;
     private final AttendanceReportService attendanceReportService;
+    private final CourtLocationRepository courtLocationRepository;
 
     @Override
     public OverdueUtilisationReportResponseDto getOverdueUtilisationReport(boolean top10) {
@@ -106,6 +113,95 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
         return responseDto;
     }
 
+    @Override
+    public ExpenseLimitsReportResponseDto getExpenseLimitsReport() {
+        checkSuperUserPermission();
+
+        List<String> recentlyUpdatedCourts = courtLocationRepository.getRecentlyUpdatedRecords();
+
+        if (recentlyUpdatedCourts.isEmpty()) {
+            log.info("No recently updated court location records found for expense limits report");
+            return new ExpenseLimitsReportResponseDto();
+        }
+
+        List<String> codes = new ArrayList<>();
+        for (String line : recentlyUpdatedCourts) {
+            List<String> stats = List.of(line.split(","));
+            String locCode = stats.get(2);
+            codes.add(locCode);
+        }
+
+        // get distinct loc codes and limit to 10
+        codes = codes.stream().distinct().limit(10).toList();
+
+        List<String> courtRevisions = courtLocationRepository.getCourtRevisionsByLocCodes(codes);
+
+        List<CourtLocationAuditRecord> auditRecords = new ArrayList<>();
+        for (String line : courtRevisions) {
+            List<String> stats = List.of(line.split(","));
+            try {
+                final String locCode = stats.get(0);
+                final Double publicTransportSoftLimit = Double.parseDouble(stats.get(1));
+                final Double taxiSoftLimit = Double.parseDouble(stats.get(2));
+                final String changedBy = stats.get(3);
+                String courtName = stats.get(5);
+                if (stats.size() > 6) {
+                    // court name has comma(s)
+                    courtName = String.join(",", stats.subList(5, stats.size() - 1));
+                }
+                CourtLocationAuditRecord courtLocationAuditRecord = new CourtLocationAuditRecord();
+                courtLocationAuditRecord.setLocCode(locCode);
+                courtLocationAuditRecord.setCourtName(courtName);
+                courtLocationAuditRecord.setPublicTransportSoftLimit(publicTransportSoftLimit);
+                courtLocationAuditRecord.setTaxiSoftLimit(taxiSoftLimit);
+                courtLocationAuditRecord.setChangedBy(changedBy);
+                auditRecords.add(courtLocationAuditRecord);
+            } catch (Exception e) {
+                log.warn("Error parsing court location audit record line: {}", line, e);
+            }
+        }
+
+        List<ExpenseLimitsReportResponseDto.ExpenseLimitsRecord> expenseLimitsRecords = new ArrayList<>();
+
+        // use court revisions to build the expense limits report response DTO
+        // the revision contains data in pairs - the latest change and the previous value
+        for (int i = 0; i < auditRecords.size(); i += 2) {
+            final CourtLocationAuditRecord latestRecord = auditRecords.get(i);
+            final CourtLocationAuditRecord previousRecord = auditRecords.get(i + 1);
+
+            double oldValue;
+            double newValue;
+            String expenseTypeChanged;
+
+            double publicTransportDifference = Math.abs(latestRecord.getPublicTransportSoftLimit()
+                                                     - previousRecord.getPublicTransportSoftLimit());
+            double taxiDifference = Math.abs(latestRecord.getTaxiSoftLimit() - previousRecord.getTaxiSoftLimit());
+
+            if (publicTransportDifference > taxiDifference) {
+                oldValue = previousRecord.getPublicTransportSoftLimit();
+                newValue = latestRecord.getPublicTransportSoftLimit();
+                expenseTypeChanged = "Public Transport";
+            } else {
+                oldValue = previousRecord.getTaxiSoftLimit();
+                newValue = latestRecord.getTaxiSoftLimit();
+                expenseTypeChanged = "Taxi";
+            }
+
+            // put the largestRecord and differences into the response DTO as needed
+            ExpenseLimitsReportResponseDto.ExpenseLimitsRecord expenseLimitsRecord =
+                    ExpenseLimitsReportResponseDto.ExpenseLimitsRecord.builder()
+                        .courtLocationNameAndCode(latestRecord.getCourtName() + " (" + latestRecord.getLocCode() + ")")
+                        .type(expenseTypeChanged)
+                        .oldLimit(oldValue)
+                        .newLimit(newValue)
+                        .changedBy(latestRecord.getChangedBy())
+                        .build();
+            expenseLimitsRecords.add(expenseLimitsRecord);
+        }
+
+        return new ExpenseLimitsReportResponseDto(expenseLimitsRecords);
+    }
+
     private void checkSuperUserPermission() {
         // check user has superuser permissions
         if (!SecurityUtil.hasPermission(Permission.SUPER_USER)) {
@@ -116,9 +212,11 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
     }
 
 
-    private OverdueUtilisationReportResponseDto getCourtUtilisationStats(List<String> utilisationStats, boolean top10) {
+    private OverdueUtilisationReportResponseDto getCourtUtilisationStats(List<String> utilisationStats,
+                                                                         boolean top10) {
 
-        List<String> skippedLocCodes = List.of("127", "428", "462", "750", "751", "768", "795"); // To be confirmed
+        // List of courts to be confirmed
+        List<String> skippedLocCodes = List.of("000", "127", "428", "462", "750", "751", "768", "795");
         List<OverdueUtilisationReportResponseDto.OverdueUtilisationRecord> records = new ArrayList<>();
         for (String line : utilisationStats) {
 
@@ -199,6 +297,19 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
             return adjustedStats;
         }
         return stats;
+    }
+
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
+    @Setter
+    class CourtLocationAuditRecord {
+        String locCode;
+        String courtName;
+        Double publicTransportSoftLimit;
+        Double taxiSoftLimit;
+        String changedBy;
     }
 
 }

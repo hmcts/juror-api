@@ -14,6 +14,7 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.IncompleteServiceReportResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.OverdueUtilisationReportResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.WeekendAttendanceReportResponseDto;
+import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UtilisationStatsRepository;
 import uk.gov.hmcts.juror.api.moj.service.report.AttendanceReportService;
@@ -23,6 +24,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
+@SuppressWarnings("PMD.SingularField") // will be fixed when tests are updated
 class ManagementDashboardServiceImplTest {
 
     @Mock
@@ -34,6 +36,9 @@ class ManagementDashboardServiceImplTest {
     @Mock
     private AttendanceReportService attendanceReportService;
 
+    @Mock
+    private CourtLocationRepository courtLocationRepository;
+
 
     @InjectMocks
     private ManagementDashboardServiceImpl managementDashboardService;
@@ -43,17 +48,18 @@ class ManagementDashboardServiceImplTest {
         utilisationStatsRepository = mock(UtilisationStatsRepository.class);
         jurorPoolRepository = mock(JurorPoolRepository.class);
         attendanceReportService = mock(AttendanceReportService.class);
+        courtLocationRepository = mock(CourtLocationRepository.class);
 
         this.managementDashboardService =
-            new ManagementDashboardServiceImpl( utilisationStatsRepository,
-            jurorPoolRepository, attendanceReportService);
+            new ManagementDashboardServiceImpl(utilisationStatsRepository,
+            jurorPoolRepository, attendanceReportService, courtLocationRepository);
 
         setSecurityContext();
     }
 
 
     @Test
-    void getOverdueUtilisationReportNoData() {
+    void overdueUtilisationReportNoData() {
 
         OverdueUtilisationReportResponseDto overdueUtilisationReportResponseDto =
             managementDashboardService.getOverdueUtilisationReport(false);
@@ -62,7 +68,7 @@ class ManagementDashboardServiceImplTest {
     }
 
     @Test
-    void getIncompleteServiceReportNoData() {
+    void incompleteServiceReportNoData() {
 
         IncompleteServiceReportResponseDto incompleteServiceReportResponseDto =
             managementDashboardService.getIncompleteServiceReport();
@@ -71,7 +77,7 @@ class ManagementDashboardServiceImplTest {
     }
 
     @Test
-    void getWeekendAttendanceReportNoData() {
+    void weekendAttendanceReportNoData() {
 
         WeekendAttendanceReportResponseDto attendanceReportResponse =
             managementDashboardService.getWeekendAttendanceReport();

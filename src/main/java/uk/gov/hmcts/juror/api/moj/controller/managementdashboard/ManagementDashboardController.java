@@ -29,7 +29,7 @@ public class ManagementDashboardController {
     }
 
     @GetMapping("/incomplete-service")
-    @Operation(summary = "Get the overdue utilisation report for all courts")
+    @Operation(summary = "Get the incomplete service report for all courts")
     public ResponseEntity<IncompleteServiceReportResponseDto> getIncompleteServiceReport() {
         IncompleteServiceReportResponseDto dto = managementDashboardService.getIncompleteServiceReport();
         return ResponseEntity.ok().body(dto);
@@ -39,6 +39,13 @@ public class ManagementDashboardController {
     @Operation(summary = "Get the weekend attendance report for all courts")
     public ResponseEntity<WeekendAttendanceReportResponseDto> getWeekendAttendanceReport() {
         WeekendAttendanceReportResponseDto dto = managementDashboardService.getWeekendAttendanceReport();
+        return ResponseEntity.ok().body(dto);
+    }
+
+    @GetMapping("/expense-limits")
+    @Operation(summary = "Get the expense limits report for all courts")
+    public ResponseEntity<ExpenseLimitsReportResponseDto> getExpenseLimitsReport() {
+        ExpenseLimitsReportResponseDto dto = managementDashboardService.getExpenseLimitsReport();
         return ResponseEntity.ok().body(dto);
     }
 
