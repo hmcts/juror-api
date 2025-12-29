@@ -18,6 +18,7 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.ExpenseLimitsReportResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.IncompleteServiceReportResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.OverdueUtilisationReportResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.SmsMessagesReportResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.WeekendAttendanceReportResponseDto;
 
 import java.net.URI;
@@ -146,5 +147,22 @@ class ManagementDashboardControllerITest extends AbstractIntegrationTest {
         assertThat(expenseLimitsRecord.getNewLimit()).isEqualTo(10.0);
         assertThat(expenseLimitsRecord.getChangedBy()).isEqualTo("dsfedf.test");
     }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql",  "/db/mod/ManagementDashboardSmsMessages_typical.sql"})
+    void smsMessagesReportHappy() {
+
+        ResponseEntity<SmsMessagesReportResponseDto> response = restTemplate.exchange(
+            new RequestEntity<>(httpHeaders, GET,
+                                URI.create("/api/v1/moj/management-dashboard/sms-messages")),
+            SmsMessagesReportResponseDto.class);
+
+        assertThat(response.getStatusCode()).as("Expect the status to be OK").isEqualTo(HttpStatus.OK);
+
+        SmsMessagesReportResponseDto responseBody = response.getBody();
+        assertThat(responseBody).isNotNull();
+
+    }
+
 
 }

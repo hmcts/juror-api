@@ -12,12 +12,14 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.ExpenseLimitsReportResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.IncompleteServiceReportResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.OverdueUtilisationReportResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.SmsMessagesReportResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.WeekendAttendanceReportResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.WeekendAttendanceReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.Permission;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.MessageRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UtilisationStatsRepository;
 import uk.gov.hmcts.juror.api.moj.service.report.AttendanceReportService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
@@ -37,6 +39,7 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
     private final JurorPoolRepository jurorPoolRepository;
     private final AttendanceReportService attendanceReportService;
     private final CourtLocationRepository courtLocationRepository;
+    private final MessageRepository messageRepository;
 
     @Override
     public OverdueUtilisationReportResponseDto getOverdueUtilisationReport(boolean top10) {
@@ -200,6 +203,27 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
         }
 
         return new ExpenseLimitsReportResponseDto(expenseLimitsRecords);
+    }
+
+    @Override
+    public SmsMessagesReportResponseDto getSmsMessagesReport() {
+
+        checkSuperUserPermission();
+
+        SmsMessagesReportResponseDto returnDto = new SmsMessagesReportResponseDto();
+
+        List<SmsMessagesReportResponseDto.SmsMessagesRecord> records = messageRepository.getSmsMessageCounts();
+
+        // limit to top 10 records
+        returnDto.setRecords(records.stream().limit(10).toList());
+
+        long totalMessages = records.stream()
+            .mapToLong(SmsMessagesReportResponseDto.SmsMessagesRecord::getMessagesSent)
+            .sum();
+
+        returnDto.setTotalMessagesSent(totalMessages);
+
+        return returnDto;
     }
 
     private void checkSuperUserPermission() {

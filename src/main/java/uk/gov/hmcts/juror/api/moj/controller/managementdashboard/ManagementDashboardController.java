@@ -49,4 +49,11 @@ public class ManagementDashboardController {
         return ResponseEntity.ok().body(dto);
     }
 
+    @GetMapping("/sms-messages")
+    @Operation(summary = "Get the outgoing SMS messages report for top 10 courts")
+    public ResponseEntity<SmsMessagesReportResponseDto> getSmsMessagesReport() {
+        SmsMessagesReportResponseDto dto = managementDashboardService.getSmsMessagesReport();
+        return ResponseEntity.ok().body(dto);
+    }
+
 }

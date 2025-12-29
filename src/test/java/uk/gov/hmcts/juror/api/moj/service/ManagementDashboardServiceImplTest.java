@@ -16,6 +16,7 @@ import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.OverdueUtilisat
 import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.WeekendAttendanceReportResponseDto;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.MessageRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UtilisationStatsRepository;
 import uk.gov.hmcts.juror.api.moj.service.report.AttendanceReportService;
 
@@ -39,6 +40,9 @@ class ManagementDashboardServiceImplTest {
     @Mock
     private CourtLocationRepository courtLocationRepository;
 
+    @Mock
+    private MessageRepository messageRepository;
+
 
     @InjectMocks
     private ManagementDashboardServiceImpl managementDashboardService;
@@ -49,10 +53,11 @@ class ManagementDashboardServiceImplTest {
         jurorPoolRepository = mock(JurorPoolRepository.class);
         attendanceReportService = mock(AttendanceReportService.class);
         courtLocationRepository = mock(CourtLocationRepository.class);
+        messageRepository = mock(MessageRepository.class);
 
         this.managementDashboardService =
             new ManagementDashboardServiceImpl(utilisationStatsRepository,
-            jurorPoolRepository, attendanceReportService, courtLocationRepository);
+            jurorPoolRepository, attendanceReportService, courtLocationRepository, messageRepository);
 
         setSecurityContext();
     }
