@@ -43,6 +43,7 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
 
     @Override
     public OverdueUtilisationReportResponseDto getOverdueUtilisationReport(boolean top10) {
+
         log.info("Generating overdue utilisation table for user {}", SecurityUtil.getActiveLogin());
 
         checkSuperUserPermission();
@@ -55,10 +56,17 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
     @Override
     public IncompleteServiceReportResponseDto getIncompleteServiceReport() {
 
+        log.info("Generating incomplete service report for user {}", SecurityUtil.getActiveLogin());
+
         checkSuperUserPermission();
 
         List<Tuple> incompleteServiceStats =
                 jurorPoolRepository.getIncompleteServiceCountsByCourt();
+
+        if (incompleteServiceStats.isEmpty()) {
+            log.info("No incomplete service records found");
+            return new IncompleteServiceReportResponseDto();
+        }
 
         List<IncompleteServiceReportResponseDto.IncompleteServiceRecord> records = new ArrayList<>();
 
@@ -80,13 +88,16 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
     @Override
     public WeekendAttendanceReportResponseDto getWeekendAttendanceReport() {
 
+        log.info("Generating summary weekend attendance report for user {}", SecurityUtil.getActiveLogin());
+
         checkSuperUserPermission();
 
         // use the weekend attendance stats repository method to get the data
-        WeekendAttendanceReportResponse attendanceReportResponse = attendanceReportService.getWeekendAttendanceReport();
+        WeekendAttendanceReportResponse attendanceReportResponse = attendanceReportService
+                                                                        .getWeekendAttendanceReport();
 
         if (attendanceReportResponse == null) {
-            log.info("Weekend attendance report data is null or empty");
+            log.info("Weekend summary attendance report data is null or empty");
             return new WeekendAttendanceReportResponseDto();
         }
 
@@ -118,6 +129,9 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
 
     @Override
     public ExpenseLimitsReportResponseDto getExpenseLimitsReport() {
+
+        log.info("Generating summary expense limits report for user {}", SecurityUtil.getActiveLogin());
+
         checkSuperUserPermission();
 
         List<String> recentlyUpdatedCourts = courtLocationRepository.getRecentlyUpdatedRecords();
@@ -210,15 +224,19 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
 
         checkSuperUserPermission();
 
-        SmsMessagesReportResponseDto returnDto = new SmsMessagesReportResponseDto();
-
         List<SmsMessagesReportResponseDto.SmsMessagesRecord> records = messageRepository.getSmsMessageCounts();
+
+        if (records.isEmpty()) {
+            return new SmsMessagesReportResponseDto();
+        }
+
+        SmsMessagesReportResponseDto returnDto = new SmsMessagesReportResponseDto();
 
         // limit to top 10 records
         returnDto.setRecords(records.stream().limit(10).toList());
 
-        long totalMessages = records.stream()
-            .mapToLong(SmsMessagesReportResponseDto.SmsMessagesRecord::getMessagesSent)
+        int totalMessages = records.stream()
+            .mapToInt(SmsMessagesReportResponseDto.SmsMessagesRecord::getMessagesSent)
             .sum();
 
         returnDto.setTotalMessagesSent(totalMessages);
@@ -229,9 +247,9 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
     private void checkSuperUserPermission() {
         // check user has superuser permissions
         if (!SecurityUtil.hasPermission(Permission.SUPER_USER)) {
-            log.info("User {} attempted to access overdue utilisation report without sufficient permissions",
+            log.info("User {} attempted to access management dashboard report without sufficient permissions",
                     SecurityUtil.getActiveLogin());
-            throw new MojException.Forbidden("Insufficient permissions to access overdue utilisation report", null);
+            throw new MojException.Forbidden("Insufficient permissions to access management report", null);
         }
     }
 
@@ -239,8 +257,10 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
     private OverdueUtilisationReportResponseDto getCourtUtilisationStats(List<String> utilisationStats,
                                                                          boolean top10) {
 
-        // List of courts to be confirmed
+        // TODO: List of courts to be confirmed or if we can ignore some very old dates,
+        //  might be based on month start (which is currently not being used in the data)
         List<String> skippedLocCodes = List.of("000", "127", "428", "462", "750", "751", "768", "795");
+
         List<OverdueUtilisationReportResponseDto.OverdueUtilisationRecord> records = new ArrayList<>();
         for (String line : utilisationStats) {
 

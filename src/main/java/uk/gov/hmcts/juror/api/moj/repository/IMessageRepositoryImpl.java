@@ -12,7 +12,6 @@ import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.SmsMessagesRepo
 import uk.gov.hmcts.juror.api.moj.domain.messages.QMessage;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
@@ -28,14 +27,18 @@ public class IMessageRepositoryImpl implements IMessageRepository {
     @Override
     public List<SmsMessagesReportResponseDto.SmsMessagesRecord> getSmsMessageCounts() {
 
-        // get the start date of the current month
-        // TODO: this needs to be confirmed to be the start date required
-        LocalDate startOfCurrentMonth = LocalDate.now().withDayOfMonth(1);
-        // get the localDateTime for the start of the current month at midnight
-        LocalDateTime startOfCurrentMonthAtMidnight  = startOfCurrentMonth.atStartOfDay();
+        final LocalDate currentDate = LocalDate.now();
+
+        // determine the year of the start of the financial year
+        final int financialYearStartYear = currentDate.getMonthValue() >= 4
+                                            ? currentDate.getYear() : currentDate.getYear() - 1;
+
+        // create the LocalDate for 1st April of that year
+        final LocalDate financialYearStartDate = LocalDate.of(financialYearStartYear, 4, 1);
+        // create the LocalDate for 31st March of the next year
+        final LocalDate financialYearEndDate = financialYearStartDate.plusYears(1).minusDays(1);
 
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-
 
         JPAQuery<Tuple> query = queryFactory.select(
                 MESSAGE.locationCode.locCode,
@@ -48,8 +51,8 @@ public class IMessageRepositoryImpl implements IMessageRepository {
                 MESSAGE.phone.isNotNull()
                     .and(MESSAGE.email.isNull())
                     .and(MESSAGE.fileDatetime.between(
-                        startOfCurrentMonthAtMidnight,
-                        LocalDateTime.now()
+                        financialYearStartDate.atStartOfDay(),
+                        financialYearEndDate.atStartOfDay()
                     ))
             )
             .groupBy(MESSAGE.locationCode.locCode, MESSAGE.locationCode.name)
@@ -59,8 +62,8 @@ public class IMessageRepositoryImpl implements IMessageRepository {
         log.info("Fetched {} SMS message count records", results.size());
         return results.stream()
             .map(tuple -> new SmsMessagesReportResponseDto.SmsMessagesRecord(
-                tuple.get(MESSAGE.locationCode.locCode) + " (" + tuple.get(MESSAGE.locationCode.name) + ")",
-                tuple.get(2, Long.class)
+                tuple.get(MESSAGE.locationCode.name) + " (" + tuple.get(MESSAGE.locationCode.locCode) + ")",
+                tuple.get(2, Long.class).intValue() // should be a value if tuple exists
             ))
             .toList();
 

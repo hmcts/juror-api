@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,8 +21,12 @@ import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.IncompleteServi
 import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.OverdueUtilisationReportResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.SmsMessagesReportResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.WeekendAttendanceReportResponseDto;
+import uk.gov.hmcts.juror.api.moj.domain.messages.Message;
+import uk.gov.hmcts.juror.api.moj.repository.MessageRepository;
 
 import java.net.URI;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,6 +41,9 @@ class ManagementDashboardControllerITest extends AbstractIntegrationTest {
 
     @Autowired
     private TestRestTemplate restTemplate;
+
+    @Autowired
+    private MessageRepository messageRepository;
 
     private HttpHeaders httpHeaders;
 
@@ -152,6 +160,8 @@ class ManagementDashboardControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql",  "/db/mod/ManagementDashboardSmsMessages_typical.sql"})
     void smsMessagesReportHappy() {
 
+        setupMessageData();
+
         ResponseEntity<SmsMessagesReportResponseDto> response = restTemplate.exchange(
             new RequestEntity<>(httpHeaders, GET,
                                 URI.create("/api/v1/moj/management-dashboard/sms-messages")),
@@ -162,7 +172,45 @@ class ManagementDashboardControllerITest extends AbstractIntegrationTest {
         SmsMessagesReportResponseDto responseBody = response.getBody();
         assertThat(responseBody).isNotNull();
 
+        List<SmsMessagesReportResponseDto.SmsMessagesRecord> records = responseBody.getRecords();
+        assertThat(records).isNotNull();
+        assertThat(records.size()).isEqualTo(3);
+
+        assertThat(responseBody.getTotalMessagesSent()).isEqualTo(71);
+
+        SmsMessagesReportResponseDto.SmsMessagesRecord smsMessagesRecord = records.get(0);
+        assertThat(smsMessagesRecord.getCourtLocationNameAndCode()).isEqualTo("CHESTER (415)");
+        assertThat(smsMessagesRecord.getMessagesSent()).isEqualTo(55);
+        smsMessagesRecord = records.get(1);
+        assertThat(smsMessagesRecord.getCourtLocationNameAndCode()).isEqualTo("COVENTRY (417)");
+        assertThat(smsMessagesRecord.getMessagesSent()).isEqualTo(9);
+        smsMessagesRecord = records.get(2);
+        assertThat(smsMessagesRecord.getCourtLocationNameAndCode()).isEqualTo("AYLESBURY (401)");
+        assertThat(smsMessagesRecord.getMessagesSent()).isEqualTo(7);
+
     }
 
+    private void setupMessageData() {
+        Iterable<Message> messages = messageRepository.findAll();
+        messageRepository.deleteAll();
+
+        // determine the date to set the message file datetime to be within the financial year
+        if (LocalDate.now().getMonth().getValue() >= 4) {
+            // current date is after 1st April, so set to 1st April this year
+            for (Message message : messages) {
+                message.setFileDatetime(LocalDate.now().withMonth(4).withDayOfMonth(1)
+                                            .atTime(LocalTime.of(9,0)));
+            }
+        } else {
+            // current date is before 1st April, so set to 1st April last year
+            for (Message message : messages) {
+                message.setFileDatetime(LocalDate.now().minusYears(1).withMonth(4).withDayOfMonth(1)
+                                            .atTime(LocalTime.of(9,0)));
+            }
+        }
+
+        messageRepository.saveAll(messages);
+
+    }
 
 }
