@@ -41,13 +41,13 @@ public interface CourtLocationRepository extends CrudRepository<CourtLocation, S
         + "  join juror_mod.rev_info ri on cla.revision = ri.revision_number "
         + "  join juror_mod.court_location cl on cla.loc_code = cl.loc_code "
         + "  where cla.loc_code in (:codes) "
-        + ") t where rn <= 2 order by loc_code, revision_number desc",  nativeQuery = true)
+        + ") t where rn <= 10 order by loc_code, revision_number desc",  nativeQuery = true)
     List<String> getCourtRevisionsByLocCodes(List<String> codes);
 
-    @Query(value = "select *  from juror_mod.court_location_audit cla "
+    @Query(value = "select loc_code from juror_mod.court_location_audit cla "
         + "where rev_type = 1 "
         + "order by revision desc "
-        + "limit 50", nativeQuery = true)
+        + "limit 10", nativeQuery = true)
     List<String> getRecentlyUpdatedRecords();
 
 }

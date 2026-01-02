@@ -141,15 +141,7 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
             return new ExpenseLimitsReportResponseDto();
         }
 
-        List<String> codes = new ArrayList<>();
-        for (String line : recentlyUpdatedCourts) {
-            List<String> stats = List.of(line.split(","));
-            String locCode = stats.get(2);
-            codes.add(locCode);
-        }
-
-        // get distinct loc codes and limit to 10
-        codes = codes.stream().distinct().limit(10).toList();
+        List<String> codes = recentlyUpdatedCourts.stream().distinct().toList();
 
         List<String> courtRevisions = courtLocationRepository.getCourtRevisionsByLocCodes(codes);
 
@@ -161,17 +153,20 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
                 final Double publicTransportSoftLimit = Double.parseDouble(stats.get(1));
                 final Double taxiSoftLimit = Double.parseDouble(stats.get(2));
                 final String changedBy = stats.get(3);
+                final long revisionNumber = Long.parseLong(stats.get(4));
                 String courtName = stats.get(5);
                 if (stats.size() > 6) {
                     // court name has comma(s)
                     courtName = String.join(",", stats.subList(5, stats.size() - 1));
                 }
+
                 CourtLocationAuditRecord courtLocationAuditRecord = new CourtLocationAuditRecord();
                 courtLocationAuditRecord.setLocCode(locCode);
                 courtLocationAuditRecord.setCourtName(courtName);
                 courtLocationAuditRecord.setPublicTransportSoftLimit(publicTransportSoftLimit);
                 courtLocationAuditRecord.setTaxiSoftLimit(taxiSoftLimit);
                 courtLocationAuditRecord.setChangedBy(changedBy);
+                courtLocationAuditRecord.setRevisionNumber(revisionNumber);
                 auditRecords.add(courtLocationAuditRecord);
             } catch (Exception e) {
                 log.warn("Error parsing court location audit record line: {}", line, e);
@@ -180,11 +175,17 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
 
         List<ExpenseLimitsReportResponseDto.ExpenseLimitsRecord> expenseLimitsRecords = new ArrayList<>();
 
-        // use court revisions to build the expense limits report response DTO
-        // the revision contains data in pairs - the latest change and the previous value
-        for (int i = 0; i < auditRecords.size(); i += 2) {
-            final CourtLocationAuditRecord latestRecord = auditRecords.get(i);
-            final CourtLocationAuditRecord previousRecord = auditRecords.get(i + 1);
+        CourtLocationAuditRecord latestRecord = auditRecords.get(0);
+
+        for (int i = 1; i < auditRecords.size(); i += 1) {
+
+            CourtLocationAuditRecord previousRecord = auditRecords.get(i);
+
+            if (!latestRecord.getLocCode().equals(previousRecord.getLocCode())) {
+                // moved to next court location
+                latestRecord = previousRecord;
+                continue;
+            }
 
             double oldValue;
             double newValue;
@@ -194,29 +195,46 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
                                                      - previousRecord.getPublicTransportSoftLimit());
             double taxiDifference = Math.abs(latestRecord.getTaxiSoftLimit() - previousRecord.getTaxiSoftLimit());
 
-            if (publicTransportDifference > taxiDifference) {
+            if (publicTransportDifference > 0) {
                 oldValue = previousRecord.getPublicTransportSoftLimit();
                 newValue = latestRecord.getPublicTransportSoftLimit();
                 expenseTypeChanged = "Public Transport";
-            } else {
+                createExpenseRecord(latestRecord, expenseTypeChanged, oldValue, newValue, expenseLimitsRecords);
+
+            }
+
+            if (taxiDifference > 0) {
                 oldValue = previousRecord.getTaxiSoftLimit();
                 newValue = latestRecord.getTaxiSoftLimit();
                 expenseTypeChanged = "Taxi";
+                createExpenseRecord(latestRecord, expenseTypeChanged, oldValue, newValue, expenseLimitsRecords);
             }
 
-            // put the largestRecord and differences into the response DTO as needed
-            ExpenseLimitsReportResponseDto.ExpenseLimitsRecord expenseLimitsRecord =
-                    ExpenseLimitsReportResponseDto.ExpenseLimitsRecord.builder()
-                        .courtLocationNameAndCode(latestRecord.getCourtName() + " (" + latestRecord.getLocCode() + ")")
-                        .type(expenseTypeChanged)
-                        .oldLimit(oldValue)
-                        .newLimit(newValue)
-                        .changedBy(latestRecord.getChangedBy())
-                        .build();
-            expenseLimitsRecords.add(expenseLimitsRecord);
+            latestRecord = previousRecord;
         }
 
+        // need to sort the records by revision number descending and limit to 10 records
+        expenseLimitsRecords = expenseLimitsRecords.stream()
+            .sorted((r1, r2) -> Long.compare(r2.getRevisionNumber(), r1.getRevisionNumber()))
+            .limit(10)
+            .toList();
+
         return new ExpenseLimitsReportResponseDto(expenseLimitsRecords);
+    }
+
+    private void createExpenseRecord(CourtLocationAuditRecord latestRecord,
+                                     String expenseTypeChanged, double oldValue, double newValue,
+                                     List<ExpenseLimitsReportResponseDto.ExpenseLimitsRecord> expenseLimitsRecords) {
+        ExpenseLimitsReportResponseDto.ExpenseLimitsRecord expenseLimitsRecord =
+            ExpenseLimitsReportResponseDto.ExpenseLimitsRecord.builder()
+                .courtLocationNameAndCode(latestRecord.getCourtName() + " (" + latestRecord.getLocCode() + ")")
+                .type(expenseTypeChanged)
+                .oldLimit(oldValue)
+                .newLimit(newValue)
+                .changedBy(latestRecord.getChangedBy())
+                .revisionNumber(latestRecord.revisionNumber)
+                .build();
+        expenseLimitsRecords.add(expenseLimitsRecord);
     }
 
     @Override
@@ -354,6 +372,7 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
         Double publicTransportSoftLimit;
         Double taxiSoftLimit;
         String changedBy;
+        Long revisionNumber;
     }
 
 }

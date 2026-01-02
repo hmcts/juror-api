@@ -140,20 +140,24 @@ class ManagementDashboardControllerITest extends AbstractIntegrationTest {
         assertThat(expenseLimitsRecord.getOldLimit()).isEqualTo(10.0);
         assertThat(expenseLimitsRecord.getNewLimit()).isEqualTo(5.0);
         assertThat(expenseLimitsRecord.getChangedBy()).isEqualTo("kggf.kggfww");
+        assertThat(expenseLimitsRecord.getRevisionNumber()).isEqualTo(27_831_324);
 
-        expenseLimitsRecord = records.get(1);
-        assertThat(expenseLimitsRecord.getCourtLocationNameAndCode()).isEqualTo("Chelmsford  (414)");
-        assertThat(expenseLimitsRecord.getType()).isEqualTo("Taxi");
-        assertThat(expenseLimitsRecord.getOldLimit()).isEqualTo(40.0);
-        assertThat(expenseLimitsRecord.getNewLimit()).isEqualTo(75.0);
-        assertThat(expenseLimitsRecord.getChangedBy()).isEqualTo("test.sur");
-
-        expenseLimitsRecord = records.get(9);
+        expenseLimitsRecord = records.get(6);
         assertThat(expenseLimitsRecord.getCourtLocationNameAndCode()).isEqualTo("SALISBURY (480)");
         assertThat(expenseLimitsRecord.getType()).isEqualTo("Taxi");
         assertThat(expenseLimitsRecord.getOldLimit()).isEqualTo(0.0);
         assertThat(expenseLimitsRecord.getNewLimit()).isEqualTo(10.0);
         assertThat(expenseLimitsRecord.getChangedBy()).isEqualTo("dsfedf.test");
+        assertThat(expenseLimitsRecord.getRevisionNumber()).isEqualTo(26_111_289);
+
+        expenseLimitsRecord = records.get(8);
+        assertThat(expenseLimitsRecord.getCourtLocationNameAndCode()).isEqualTo("Chelmsford  (414)");
+        assertThat(expenseLimitsRecord.getType()).isEqualTo("Taxi");
+        assertThat(expenseLimitsRecord.getOldLimit()).isEqualTo(40.0);
+        assertThat(expenseLimitsRecord.getNewLimit()).isEqualTo(75.0);
+        assertThat(expenseLimitsRecord.getChangedBy()).isEqualTo("test.sur");
+        assertThat(expenseLimitsRecord.getRevisionNumber()).isEqualTo(25_441_983);
+
     }
 
     @Test

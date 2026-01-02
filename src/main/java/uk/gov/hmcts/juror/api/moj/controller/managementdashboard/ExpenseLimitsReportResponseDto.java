@@ -29,9 +29,10 @@ public class ExpenseLimitsReportResponseDto {
     public static class ExpenseLimitsRecord {
         private String courtLocationNameAndCode;
         private String type;
-        private Double oldLimit;
-        private Double newLimit;
+        private double oldLimit;
+        private double newLimit;
         private String changedBy;
+        private long revisionNumber;
     }
 
 }
