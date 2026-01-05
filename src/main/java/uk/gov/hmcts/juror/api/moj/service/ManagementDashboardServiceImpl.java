@@ -275,10 +275,6 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
     private OverdueUtilisationReportResponseDto getCourtUtilisationStats(List<String> utilisationStats,
                                                                          boolean top10) {
 
-        // TODO: List of courts to be confirmed or if we can ignore some very old dates,
-        //  might be based on month start (which is currently not being used in the data)
-        List<String> skippedLocCodes = List.of("000", "127", "428", "462", "750", "751", "768", "795");
-
         List<OverdueUtilisationReportResponseDto.OverdueUtilisationRecord> records = new ArrayList<>();
         for (String line : utilisationStats) {
 
@@ -293,23 +289,19 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
 
             try {
                 String locCode = stats.get(0);
-                // some courts don't have any recent utilisation stats so skip them
-                if (skippedLocCodes.contains(locCode)) {
-                    continue;
-                }
 
                 String locName = stats.get(1);
                 int availableDays = Integer.parseInt(stats.get(3));
                 int sittingDays = Integer.parseInt(stats.get(4));
                 LocalDateTime lastUpdateTime = LocalDateTime.parse(stats.get(5).substring(0, 19),
-                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-                );
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
                 LocalDate lastUpdateDate = lastUpdateTime.toLocalDate();
                 int daysElapsed = (int) java.time.Duration.between(lastUpdateTime, LocalDateTime.now()).toDays();
 
-                if (daysElapsed <= 30) {
-                    // only include courts with overdue utilisation (last updated more than 30 days ago)
+                if (daysElapsed < 30 || daysElapsed > 90) {
+                    // only include courts with overdue utilisation
+                    // (last updated more than 30 days ago but less than 90 days)
                     continue;
                 }
 
@@ -366,7 +358,7 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
     @NoArgsConstructor
     @Getter
     @Setter
-    class CourtLocationAuditRecord {
+    static class CourtLocationAuditRecord {
         String locCode;
         String courtName;
         Double publicTransportSoftLimit;

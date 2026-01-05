@@ -32,7 +32,6 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -708,41 +707,25 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
             assertThat(tableData.getHeadings()).hasSize(4); // headings validated in unit test
 
             assertThat(tableData.getData()).isNotNull();
-            assertThat(tableData.getData()).hasSize(12);
+            assertThat(tableData.getData()).hasSize(11);
+
             OverdueUtilisationReportResponse.UtilisationStats stats = tableData.getData().get(0);
-            assertThat(stats.getCourtName()).isEqualTo("EXETER (423)");
+            assertThat(stats.getCourtName()).isEqualTo("KINGSTON UPON THAMES (427)");
             assertThat(Math.round(stats.getUtilisation())).isEqualTo(Math.round(11.50));
-            assertThat(stats.getDateLastRun()).isEqualTo(LocalDate.parse("2024-04-18",
-                                                                         DateTimeFormatter.ISO_DATE));
+            assertThat(stats.getDateLastRun()).isEqualTo(LocalDate.now().minusDays(90));
+            assertThat(stats.getDaysElapsed()).isEqualTo(90);
 
-            int daysSinceLastRun = (int) ChronoUnit.DAYS.between(
-                LocalDate.parse("2024-04-18", DateTimeFormatter.ISO_DATE),
-                LocalDate.now()
-            );
-            assertThat(stats.getDaysElapsed()).isEqualTo(daysSinceLastRun - 1);
-
-
-            stats = tableData.getData().get(5);
+            stats = tableData.getData().get(4);
             assertThat(stats.getCourtName()).isEqualTo("LEEDS (429)");
             assertThat(Math.round(stats.getUtilisation())).isEqualTo(Math.round(11.50));
-            assertThat(stats.getDateLastRun()).isEqualTo(LocalDate.parse("2024-10-18",
-                                                                         DateTimeFormatter.ISO_DATE));
-            daysSinceLastRun = (int) ChronoUnit.DAYS.between(
-                LocalDate.parse("2024-10-18", DateTimeFormatter.ISO_DATE),
-                LocalDate.now()
-            );
-            assertThat(stats.getDaysElapsed()).isEqualTo(daysSinceLastRun - 1);
+            assertThat(stats.getDateLastRun()).isEqualTo(LocalDate.now().minusDays(63));
+            assertThat(stats.getDaysElapsed()).isEqualTo(63);
 
-            stats = tableData.getData().get(11);
+            stats = tableData.getData().get(9);
             assertThat(stats.getCourtName()).isEqualTo("MANCHESTER, MINSHULL STREET (436)");
             assertThat(Math.round(stats.getUtilisation())).isEqualTo(Math.round(24.48));
-            assertThat(stats.getDateLastRun()).isEqualTo(LocalDate.parse("2025-07-01",
-                                                                         DateTimeFormatter.ISO_DATE));
-            daysSinceLastRun = (int) ChronoUnit.DAYS.between(
-                LocalDate.parse("2025-07-01", DateTimeFormatter.ISO_DATE),
-                LocalDate.now()
-            );
-            assertThat(stats.getDaysElapsed()).isEqualTo(daysSinceLastRun - 1);
+            assertThat(stats.getDateLastRun()).isEqualTo(LocalDate.now().minusDays(39));
+            assertThat(stats.getDaysElapsed()).isEqualTo(39);
         }
 
 

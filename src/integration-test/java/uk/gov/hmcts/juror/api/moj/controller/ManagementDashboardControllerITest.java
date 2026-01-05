@@ -39,6 +39,8 @@ import static org.springframework.http.HttpMethod.GET;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ManagementDashboardControllerITest extends AbstractIntegrationTest {
 
+    public static final String EXPECT_THE_STATUS_TO_BE_OK = "Expect the status to be OK";
+
     @Autowired
     private TestRestTemplate restTemplate;
 
@@ -66,11 +68,39 @@ class ManagementDashboardControllerITest extends AbstractIntegrationTest {
                                 URI.create("/api/v1/moj/management-dashboard/overdue-utilisation")),
                 OverdueUtilisationReportResponseDto.class);
 
-        assertThat(response.getStatusCode()).as("Expect the status to be OK").isEqualTo(HttpStatus.OK);
+        assertThat(response.getStatusCode()).as(EXPECT_THE_STATUS_TO_BE_OK).isEqualTo(HttpStatus.OK);
 
         OverdueUtilisationReportResponseDto responseBody = response.getBody();
-        assertThat(responseBody).isNotNull(); // no actual data to test against
+        assertThat(responseBody).isNotNull();
 
+        // There are some records
+        assertThat(responseBody.getRecords()).isNotEmpty();
+
+        // validate the table data
+        List<OverdueUtilisationReportResponseDto.OverdueUtilisationRecord>  tableData = responseBody.getRecords();
+
+        assertThat(tableData).isNotNull();
+
+        assertThat(tableData).hasSize(10); // headings validated in unit test
+
+        OverdueUtilisationReportResponseDto.OverdueUtilisationRecord stats = tableData.get(0);
+
+        assertThat(stats.getCourt()).isEqualTo("KINGSTON UPON THAMES (427)");
+        assertThat(Math.round(stats.getUtilisation())).isEqualTo(Math.round(11.50));
+        assertThat(stats.getReportLastRun()).isEqualTo(LocalDate.now().minusDays(90));
+        assertThat(stats.getDaysElapsed()).isEqualTo(90);
+
+        stats = tableData.get(5);
+        assertThat(stats.getCourt()).isEqualTo("GREAT GRIMSBY (425)");
+        assertThat(Math.round(stats.getUtilisation())).isEqualTo(Math.round(11.50));
+        assertThat(stats.getReportLastRun()).isEqualTo(LocalDate.now().minusDays(60));
+        assertThat(stats.getDaysElapsed()).isEqualTo(60);
+
+        stats = tableData.get(9);
+        assertThat(stats.getCourt()).isEqualTo("MANCHESTER, MINSHULL STREET (436)");
+        assertThat(Math.round(stats.getUtilisation())).isEqualTo(Math.round(24.48));
+        assertThat(stats.getReportLastRun()).isEqualTo(LocalDate.now().minusDays(39));
+        assertThat(stats.getDaysElapsed()).isEqualTo(39);
     }
 
     @Test
@@ -82,7 +112,7 @@ class ManagementDashboardControllerITest extends AbstractIntegrationTest {
                                 URI.create("/api/v1/moj/management-dashboard/incomplete-service")),
             IncompleteServiceReportResponseDto.class);
 
-        assertThat(response.getStatusCode()).as("Expect the status to be OK").isEqualTo(HttpStatus.OK);
+        assertThat(response.getStatusCode()).as(EXPECT_THE_STATUS_TO_BE_OK).isEqualTo(HttpStatus.OK);
 
         IncompleteServiceReportResponseDto responseBody = response.getBody();
         assertThat(responseBody).isNotNull();
@@ -109,7 +139,7 @@ class ManagementDashboardControllerITest extends AbstractIntegrationTest {
                         URI.create("/api/v1/moj/management-dashboard/weekend-attendance")),
                 WeekendAttendanceReportResponseDto.class);
 
-        assertThat(response.getStatusCode()).as("Expect the status to be OK").isEqualTo(HttpStatus.OK);
+        assertThat(response.getStatusCode()).as(EXPECT_THE_STATUS_TO_BE_OK).isEqualTo(HttpStatus.OK);
 
         WeekendAttendanceReportResponseDto responseBody = response.getBody();
         assertThat(responseBody).isNotNull();
@@ -125,7 +155,7 @@ class ManagementDashboardControllerITest extends AbstractIntegrationTest {
                                 URI.create("/api/v1/moj/management-dashboard/expense-limits")),
             ExpenseLimitsReportResponseDto.class);
 
-        assertThat(response.getStatusCode()).as("Expect the status to be OK").isEqualTo(HttpStatus.OK);
+        assertThat(response.getStatusCode()).as(EXPECT_THE_STATUS_TO_BE_OK).isEqualTo(HttpStatus.OK);
 
         ExpenseLimitsReportResponseDto responseBody = response.getBody();
         assertThat(responseBody).isNotNull();
@@ -171,7 +201,7 @@ class ManagementDashboardControllerITest extends AbstractIntegrationTest {
                                 URI.create("/api/v1/moj/management-dashboard/sms-messages")),
             SmsMessagesReportResponseDto.class);
 
-        assertThat(response.getStatusCode()).as("Expect the status to be OK").isEqualTo(HttpStatus.OK);
+        assertThat(response.getStatusCode()).as(EXPECT_THE_STATUS_TO_BE_OK).isEqualTo(HttpStatus.OK);
 
         SmsMessagesReportResponseDto responseBody = response.getBody();
         assertThat(responseBody).isNotNull();
