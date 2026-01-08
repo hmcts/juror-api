@@ -134,7 +134,7 @@ class CourtLetterPrintServiceTest {
             when(welshCourtLocationRepository.findById("415")).thenReturn(Optional.empty());
             doReturn(createSystemParam(ENGLISH_URL_PARAM, "ENGLISH_URL"))
                 .when(systemParameterRepositoryMod).findById(102); // English URL param
-            doReturn(createDeferralDataEnglish(LocalDate.of(2024, 1, 1), "435")).when(
+            doReturn(createDeferralDataEnglish(LocalDate.of(2024, 1, 1), "435", "A")).when(
                     courtPrintLetterRepository)
                 .retrievePrintInformation(jurorNumber, CourtLetterType.DEFERRAL_GRANTED, false, courtOwner);
 
@@ -166,7 +166,7 @@ class CourtLetterPrintServiceTest {
             doReturn(createSystemParam(WELSH_URL_PARAM, "WELSH_URL"))
                 .when(systemParameterRepositoryMod).findById(anyInt());
 
-            doReturn(createDeferralDataWelsh(LocalDate.of(2024, 1, 1), jurorNumber, "ABERTAWE"))
+            doReturn(createDeferralDataWelsh(LocalDate.of(2024, 1, 1), jurorNumber, "ABERTAWE", "A"))
                 .when(courtPrintLetterRepository)
                 .retrievePrintInformation(jurorNumber, CourtLetterType.DEFERRAL_GRANTED, true, courtOwner);
 
@@ -272,7 +272,7 @@ class CourtLetterPrintServiceTest {
             when(welshCourtLocationRepository.findById(anyString())).thenReturn(Optional.empty());
             doReturn(createSystemParam(ENGLISH_URL_PARAM, "ENGLISH_URL"))
                 .when(systemParameterRepositoryMod).findById(102);
-            doReturn(createDeferralDataEnglish(LocalDate.of(2024, 1, 1), "435"))
+            doReturn(createDeferralDataEnglish(LocalDate.of(2024, 1, 1), "435", "A"))
                 .when(courtPrintLetterRepository)
                 .retrievePrintInformation(jurorNumber, CourtLetterType.DEFERRAL_GRANTED, false, courtOwner);
 
@@ -389,7 +389,7 @@ class CourtLetterPrintServiceTest {
                 String jurorNumber = String.format("1111111%02d", i + 1);
                 when(jurorRepository.findByJurorNumber(anyString())).thenReturn(createJuror(jurorNumber,
                     true, courtOwner));
-                doReturn(createDeferralDataWelsh(LocalDate.of(2024, i + 1, 1), jurorNumber, "ABERTAWE")).when(
+                doReturn(createDeferralDataWelsh(LocalDate.of(2024, i + 1, 1), jurorNumber, "ABERTAWE", "A")).when(
                         courtPrintLetterRepository)
                     .retrievePrintInformation(jurorNumber, CourtLetterType.DEFERRAL_GRANTED, true, courtOwner);
                 jurorNumbers.add(jurorNumber);
@@ -462,7 +462,7 @@ class CourtLetterPrintServiceTest {
             when(welshCourtLocationRepository.findById(anyString())).thenReturn(Optional.empty());
             doReturn(createSystemParam(ENGLISH_URL_PARAM, "ENGLISH_URL"))
                 .when(systemParameterRepositoryMod).findById(anyInt());
-            doReturn(createDeferralDataEnglish(LocalDate.of(2024, 1, 1), "435")).when(courtPrintLetterRepository)
+            doReturn(createDeferralDataEnglish(LocalDate.of(2024, 1, 1), "435", "A")).when(courtPrintLetterRepository)
                 .retrievePrintInformation(jurorNumber, CourtLetterType.DEFERRAL_GRANTED, false, courtOwner);
 
             List<PrintLetterDataResponseDto> response = courtLetterPrintServiceImpl
@@ -487,7 +487,7 @@ class CourtLetterPrintServiceTest {
             when(welshCourtLocationRepository.findById(anyString())).thenReturn(Optional.empty());
             doReturn(createSystemParam(ENGLISH_URL_PARAM, "ENGLISH_URL"))
                 .when(systemParameterRepositoryMod).findById(anyInt());
-            doReturn(createDeferralDataEnglish(LocalDate.of(2024, 1, 1), "626")).when(courtPrintLetterRepository)
+            doReturn(createDeferralDataEnglish(LocalDate.of(2024, 1, 1), "626", "A")).when(courtPrintLetterRepository)
                 .retrievePrintInformation(jurorNumber, CourtLetterType.DEFERRAL_GRANTED, false, courtOwner);
 
             List<PrintLetterDataResponseDto> response = courtLetterPrintServiceImpl
@@ -524,7 +524,7 @@ class CourtLetterPrintServiceTest {
                 when(jurorRepository.findByJurorNumber(anyString())).thenReturn(createJuror(jurorNumber,
                     true, courtOwner));
                 doReturn(createDeferralDataWelsh(
-                    LocalDate.of(2024, 1, 1), jurorNumber, courtNames.get(i)))
+                    LocalDate.of(2024, 1, 1), jurorNumber, courtNames.get(i), "A"))
                     .when(courtPrintLetterRepository)
                     .retrievePrintInformation(jurorNumber, CourtLetterType.DEFERRAL_GRANTED, true, courtOwner);
 
@@ -1029,6 +1029,340 @@ class CourtLetterPrintServiceTest {
         }
     }
 
+
+    @Nested
+    @DisplayName("Postponement letter - Postponement")
+    class PostponementGranted {
+        @Test
+        @DisplayName("Reissue postponement letter happy - English")
+        void reissuePostponementLetterEnglishHappy() {
+            final String jurorNumber = "111111111";
+            final String courtOwner = "415";
+            mockCurrentUser(courtOwner);
+
+            when(jurorRepository.findByJurorNumber(jurorNumber)).thenReturn(createJuror(jurorNumber,
+                                                                                        false, courtOwner));
+            when(welshCourtLocationRepository.findById("415")).thenReturn(Optional.empty());
+            doReturn(createSystemParam(ENGLISH_URL_PARAM, "ENGLISH_URL"))
+                .when(systemParameterRepositoryMod).findById(102); // English URL param
+            doReturn(createDeferralDataEnglish(LocalDate.of(2024, 1, 1), "435", "P")).when(
+                    courtPrintLetterRepository)
+                .retrievePrintInformation(jurorNumber, CourtLetterType.POSTPONED, false, courtOwner);
+
+            List<PrintLetterDataResponseDto> response = courtLetterPrintServiceImpl
+                .getPrintLettersData(createPrintLetterRequest(Collections.singletonList(jurorNumber),
+                                                              CourtLetterType.POSTPONED), "TEST_COURTUSER");
+
+            assertThat(response).as("Expect size to be 1").hasSize(1);
+            verifyResponseDto(response);
+
+            verify(systemParameterRepositoryMod, times(1)).findById(102); // English URL param
+            verify(jurorRepository, times(1)).findByJurorNumber(jurorNumber);
+            verify(welshCourtLocationRepository, times(0)).findById("415");
+            verify(jurorHistoryRepository, times(1)).save(any());
+            verify(courtPrintLetterRepository, times(1))
+                .retrievePrintInformation(jurorNumber, CourtLetterType.POSTPONED, false, courtOwner);
+        }
+
+        @Test
+        @DisplayName("Reissue Postponement letter happy - Welsh")
+        void reissuePostponementLetterWelshHappy() {
+            final String jurorNumber = "111111112";
+            final String courtOwner = "457";
+            mockCurrentUser(courtOwner);
+
+            when(jurorRepository.findByJurorNumber(jurorNumber)).thenReturn(createJuror(jurorNumber, true, courtOwner));
+            WelshCourtLocation welshCourtLocation = WelshCourtLocation.builder().locCode(courtOwner).build();
+            when(welshCourtLocationRepository.findById(anyString())).thenReturn(Optional.of(welshCourtLocation));
+            doReturn(createSystemParam(WELSH_URL_PARAM, "WELSH_URL"))
+                .when(systemParameterRepositoryMod).findById(anyInt());
+
+            doReturn(createDeferralDataWelsh(LocalDate.of(2024, 1, 1), jurorNumber, "ABERTAWE", "P"))
+                .when(courtPrintLetterRepository)
+                .retrievePrintInformation(jurorNumber, CourtLetterType.POSTPONED, true, courtOwner);
+
+            List<PrintLetterDataResponseDto> response = courtLetterPrintServiceImpl
+                .getPrintLettersData(createPrintLetterRequest(Collections.singletonList(jurorNumber),
+                                                              CourtLetterType.POSTPONED), "TEST_COURTUSER");
+
+            assertThat(response).as("Expect size to be 1").hasSize(1);
+            verifyWelshResponseDto(response);
+
+            verify(systemParameterRepositoryMod, times(1)).findById(anyInt());
+            verify(jurorRepository, times(1)).findByJurorNumber(anyString());
+            verify(welshCourtLocationRepository, times(1)).findById(anyString());
+            verify(jurorHistoryRepository, times(1)).save(any());
+            verify(courtPrintLetterRepository, times(1))
+                .retrievePrintInformation(anyString(), any(), anyBoolean(), anyString());
+        }
+
+        private static void verifyWelshResponseDto(List<PrintLetterDataResponseDto> response) {
+            for (PrintLetterDataResponseDto dto : response) {
+                assertThat(dto.getCourtName()).as("Expect court name to be Llys y Goron\nynAbertawe")
+                    .isEqualTo("Llys y Goron\nynAbertawe");
+                assertThat(dto.getCourtAddressLine1())
+                    .as("Expect address line 1 to be 'WELSH ADDRESS 1'")
+                    .isEqualTo("WELSH ADDRESS 1");
+                assertThat(dto.getCourtAddressLine2())
+                    .as("Expect address line 2 to be 'WELSH ADDRESS 2'")
+                    .isEqualTo("WELSH ADDRESS 2");
+                assertThat(dto.getCourtAddressLine3())
+                    .as("Expect address line 3 to be 'WELSH ADDRESS 3'")
+                    .isEqualTo("WELSH ADDRESS 3");
+                assertThat(dto.getCourtAddressLine4())
+                    .as("Expect address line 4 to be 'WELSH ADDRESS 4'")
+                    .isEqualTo("WELSH ADDRESS 4");
+                assertThat(dto.getCourtAddressLine5())
+                    .as("Expect address line 5 to be 'WELSH ADDRESS 5'")
+                    .isEqualTo("WELSH ADDRESS 5");
+                assertThat(dto.getCourtAddressLine6())
+                    .as("Expect address line 6 to be 'WELSH ADDRESS 6'")
+                    .isEqualTo("WELSH ADDRESS 6");
+                assertThat(dto.getCourtPostCode())
+                    .as("Expect post code to be 'PST CODE'")
+                    .isEqualTo("PST CODE");
+                assertThat(dto.getCourtPhoneNumber())
+                    .as("Expect court number to be 0123456789")
+                    .isEqualTo("0123456789");
+                assertThat(dto.getSignature())
+                    .as("Expect signatory to be ")
+                    .isEqualTo("TEST SIGNATURE\n\nSwyddog Llys");
+
+                assertThat(dto.getUrl())
+                    .as("Expect URL to be WELSH_URL")
+                    .isEqualTo("WELSH_URL");
+
+                assertThat(dto.getJurorFirstName())
+                    .as("Expect first name to be FNAME")
+                    .isEqualTo("FNAME");
+                assertThat(dto.getJurorLastName())
+                    .as("Expect last name to be LNAME")
+                    .isEqualTo("LNAME");
+                assertThat(dto.getJurorAddressLine1())
+                    .as("Expect address line 1 to be ADDRESS LINE 1")
+                    .isEqualTo("ADDRESS LINE 1");
+                assertThat(dto.getJurorAddressLine2())
+                    .as("Expect address line 2 to be ADDRESS LINE 2")
+                    .isEqualTo("ADDRESS LINE 2");
+                assertThat(dto.getJurorAddressLine3())
+                    .as("Expect address line 3 to be ADDRESS LINE 3")
+                    .isEqualTo("ADDRESS LINE 3");
+                assertThat(dto.getJurorAddressLine4())
+                    .as("Expect address line 4 to be ADDRESS LINE 4")
+                    .isEqualTo("ADDRESS LINE 4");
+                assertThat(dto.getJurorAddressLine5())
+                    .as("Expect address line 5 to be ADDRESS LINE 5")
+                    .isEqualTo("ADDRESS LINE 5");
+                assertThat(dto.getJurorPostcode())
+                    .as("Expect post code to be JUROR POST CODE")
+                    .isEqualTo("JUROR POST CODE");
+                assertThat(dto.getJurorNumber())
+                    .as("Expect juror number to be " + "111111112")
+                    .isEqualTo("111111112");
+                assertThat(dto.getPostponedToDate())
+                    .as("Expect date to be 01 Ionawr 2024")
+                    .isEqualTo("01 Ionawr 2024");
+                assertThat(dto.getAttendTime())
+                    .as("Expect attend time to be 09:30")
+                    .isEqualTo(LocalTime.of(9, 30));
+                assertThat(dto.getWelsh())
+                    .as("Expect welsh to be true")
+                    .isTrue();
+            }
+        }
+
+        @Test
+        @DisplayName("Reissue postponement letter - Duplicate request English")
+        void reissuePostponementLetterDuplicateRequest() {
+            final String jurorNumber = "111111111";
+            final String courtOwner = "415";
+            mockCurrentUser(courtOwner);
+
+            when(jurorRepository.findByJurorNumber(anyString())).thenReturn(createJuror(jurorNumber,
+                                                                                        false, courtOwner));
+            when(welshCourtLocationRepository.findById(anyString())).thenReturn(Optional.empty());
+            doReturn(createSystemParam(ENGLISH_URL_PARAM, "ENGLISH_URL"))
+                .when(systemParameterRepositoryMod).findById(102);
+            doReturn(createDeferralDataEnglish(LocalDate.of(2024, 1, 1), "435", "P"))
+                .when(courtPrintLetterRepository)
+                .retrievePrintInformation(jurorNumber, CourtLetterType.POSTPONED, false, courtOwner);
+
+            //requested three letters for juror number - 111111111
+            List<String> jurorNumbers = new ArrayList<>();
+            jurorNumbers.add(jurorNumber);
+            jurorNumbers.add(jurorNumber);
+            jurorNumbers.add(jurorNumber);
+            PrintLettersRequestDto requestDto = createPrintLetterRequest(jurorNumbers,
+                                                                         CourtLetterType.POSTPONED);
+
+            List<PrintLetterDataResponseDto> response = courtLetterPrintServiceImpl
+                .getPrintLettersData(requestDto, "TEST_COURTUSER");
+
+            assertThat(response).as("Expect size to be 1").hasSize(1);
+            verifyResponseDto(response);
+
+            verify(systemParameterRepositoryMod, times(1)).findById(102);
+            verify(jurorRepository, times(1)).findByJurorNumber(jurorNumber);
+            verify(welshCourtLocationRepository, times(0)).findById(any());
+            verify(jurorHistoryRepository, times(1)).save(any());
+            verify(courtPrintLetterRepository, times(1))
+                .retrievePrintInformation(jurorNumber, CourtLetterType.POSTPONED, false, courtOwner);
+        }
+
+        private static void verifyResponseDto(List<PrintLetterDataResponseDto> response) {
+            for (PrintLetterDataResponseDto dto : response) {
+                assertThat(dto.getCourtName())
+                    .as("Expect court name to be " + "The Crown Court\n"
+                            + "at COURT NAME")
+                    .isEqualTo("The Crown Court\n"
+                                   + "at COURT NAME");
+                assertThat(dto.getCourtAddressLine1())
+                    .as("Expect address line 1 to be 'ADDRESS 1'")
+                    .isEqualTo("ADDRESS 1");
+                assertThat(dto.getCourtAddressLine2())
+                    .as("Expect address line 2 to be 'ADDRESS 2'")
+                    .isEqualTo("ADDRESS 2");
+                assertThat(dto.getCourtAddressLine3())
+                    .as("Expect address line 3 to be 'ADDRESS 3'")
+                    .isEqualTo("ADDRESS 3");
+                assertThat(dto.getCourtAddressLine4())
+                    .as("Expect address line 4 to be 'ADDRESS 4'")
+                    .isEqualTo("ADDRESS 4");
+                assertThat(dto.getCourtAddressLine5())
+                    .as("Expect address line 5 to be 'ADDRESS 5'")
+                    .isEqualTo("ADDRESS 5");
+                assertThat(dto.getCourtAddressLine6())
+                    .as("Expect address line 6 to be 'ADDRESS 6'")
+                    .isEqualTo("ADDRESS 6");
+                assertThat(dto.getCourtPostCode())
+                    .as("Expect post code to be 'PST CODE'")
+                    .isEqualTo("PST CODE");
+                assertThat(dto.getCourtPhoneNumber())
+                    .as("Expect court number to be 0123456789")
+                    .isEqualTo("0123456789");
+
+                assertThat(dto.getUrl())
+                    .as("Expect URL to be ENGLISH_URL")
+                    .isEqualTo("ENGLISH_URL");
+                assertThat(dto.getSignature())
+                    .as("Expect signatory to be ")
+                    .isEqualTo("TEST SIGNATURE\n\nAn Officer of the Crown Court");
+
+                assertThat(dto.getJurorFirstName())
+                    .as("Expect first name to be FNAME")
+                    .isEqualTo("FNAME");
+                assertThat(dto.getJurorLastName())
+                    .as("Expect last name to be LNAME")
+                    .isEqualTo("LNAME");
+                assertThat(dto.getJurorAddressLine1())
+                    .as("Expect address line 1 to be ADDRESS LINE 1")
+                    .isEqualTo("ADDRESS LINE 1");
+                assertThat(dto.getJurorAddressLine2())
+                    .as("Expect address line 2 to be ADDRESS LINE 2")
+                    .isEqualTo("ADDRESS LINE 2");
+                assertThat(dto.getJurorAddressLine3())
+                    .as("Expect address line 3 to be ADDRESS LINE 3")
+                    .isEqualTo("ADDRESS LINE 3");
+                assertThat(dto.getJurorAddressLine4())
+                    .as("Expect address line 4 to be ADDRESS LINE 4")
+                    .isEqualTo("ADDRESS LINE 4");
+                assertThat(dto.getJurorAddressLine5())
+                    .as("Expect address line 5 to be ADDRESS LINE 5")
+                    .isEqualTo("ADDRESS LINE 5");
+                assertThat(dto.getJurorPostcode())
+                    .as("Expect post code to be JUROR POST CODE")
+                    .isEqualTo("JUROR POST CODE");
+                assertThat(dto.getJurorNumber())
+                    .as("Expect juror number to be " + "111111111")
+                    .isEqualTo("111111111");
+                assertThat(dto.getPostponedToDate())
+                    .as("Expect Date to be 01 January 2024")
+                    .isEqualTo("01 January 2024");
+                assertThat(dto.getAttendTime())
+                    .as("Expect attend time to be 09:00")
+                    .isEqualTo(LocalTime.of(9, 0));
+                assertThat(dto.getWelsh())
+                    .as("Expect welsh to be false")
+                    .isFalse();
+            }
+        }
+
+        @Test
+        @DisplayName("Reissue postponement letter - Date formatting Welsh")
+        @SuppressWarnings("checkstyle:MissingSwitchDefaultCheck")
+        void reissuePostponementLetterFormatDateWelsh() {
+            final String courtOwner = "457";
+            mockCurrentUser(courtOwner);
+
+            List<String> jurorNumbers = new ArrayList<>();
+            final int totalMonths = 12;
+            for (int i = 0; i < totalMonths; i++) {
+                String jurorNumber = String.format("1111111%02d", i + 1);
+                when(jurorRepository.findByJurorNumber(anyString())).thenReturn(createJuror(jurorNumber,
+                                                                                            true, courtOwner));
+                doReturn(createDeferralDataWelsh(LocalDate.of(2024, i + 1, 1), jurorNumber, "ABERTAWE", "P")).when(
+                        courtPrintLetterRepository)
+                    .retrievePrintInformation(jurorNumber, CourtLetterType.POSTPONED, true, courtOwner);
+                jurorNumbers.add(jurorNumber);
+            }
+
+            WelshCourtLocation welshCourtLocation = WelshCourtLocation.builder().locCode(courtOwner).build();
+            when(welshCourtLocationRepository.findById(anyString())).thenReturn(Optional.of(welshCourtLocation));
+            doReturn(createSystemParam(WELSH_URL_PARAM, "WELSH_URL"))
+                .when(systemParameterRepositoryMod).findById(anyInt());
+
+
+            List<PrintLetterDataResponseDto> response = courtLetterPrintServiceImpl
+                .getPrintLettersData(createPrintLetterRequest(jurorNumbers, CourtLetterType.POSTPONED),
+                                     "TEST_COURTUSER");
+
+            assertThat(response).as("Expect size to be 12").hasSize(12);
+
+            for (int i = 0; i < 12; i++) {
+                PrintLetterDataResponseDto dto = response.get(i);
+                switch (LocalDate.of(2024, i + 1, 1).getMonth()) {
+                    case JANUARY -> assertThat(dto.getPostponedToDate())
+                        .as("Expect date to contain Ionawr")
+                        .contains("Ionawr");
+                    case FEBRUARY -> assertThat(dto.getPostponedToDate())
+                        .as("Expect date to contain Chwefror")
+                        .contains("Chwefror");
+                    case MARCH -> assertThat(dto.getPostponedToDate())
+                        .as("Expect date to contain Mawrth")
+                        .contains("Mawrth");
+                    case APRIL -> assertThat(dto.getPostponedToDate())
+                        .as("Expect date to contain Ebrill")
+                        .contains("Ebrill");
+                    case MAY -> assertThat(dto.getPostponedToDate())
+                        .as("Expect date to contain Mai")
+                        .contains("Mai");
+                    case JUNE -> assertThat(dto.getPostponedToDate())
+                        .as("Expect date to contain Mehefin")
+                        .contains("Mehefin");
+                    case JULY -> assertThat(dto.getPostponedToDate())
+                        .as("Expect date to contain Gorffennaf")
+                        .contains("Gorffennaf");
+                    case AUGUST -> assertThat(dto.getPostponedToDate())
+                        .as("Expect date to contain Awst")
+                        .contains("Awst");
+                    case SEPTEMBER -> assertThat(dto.getPostponedToDate())
+                        .as("Expect date to contain Medi")
+                        .contains("Medi");
+                    case OCTOBER -> assertThat(dto.getPostponedToDate())
+                        .as("Expect date to contain Hydref")
+                        .contains("Hydref");
+                    case NOVEMBER -> assertThat(dto.getPostponedToDate())
+                        .as("Expect date to contain Tachwedd")
+                        .contains("Tachwedd");
+                    case DECEMBER -> assertThat(dto.getPostponedToDate())
+                        .as("Expect date to contain Rhagfyr")
+                        .contains("Rhagfyr");
+                }
+            }
+        }
+
+    }
+
     @Nested
     @DisplayName("Certificate of exemption")
     class CertificateOfExemption {
@@ -1471,10 +1805,10 @@ class CourtLetterPrintServiceTest {
         return data;
     }
 
-    Tuple createDeferralDataEnglish(LocalDate deferralDate, String courtLocation) {
+    Tuple createDeferralDataEnglish(LocalDate deferralDate, String courtLocation, String code) {
         Tuple data = createPrintLetterTupleEnglish(courtLocation);
         when(data.get(JUROR_POOL.deferralDate)).thenReturn(deferralDate);
-        when(data.get(JUROR_POOL.deferralCode)).thenReturn("A");
+        when(data.get(JUROR_POOL.deferralCode)).thenReturn(code);
         return data;
     }
 
@@ -1510,10 +1844,10 @@ class CourtLetterPrintServiceTest {
         return data;
     }
 
-    Tuple createDeferralDataWelsh(LocalDate deferralDate, String jurorNumber, String courtName) {
+    Tuple createDeferralDataWelsh(LocalDate deferralDate, String jurorNumber, String courtName, String code) {
         Tuple data = createPrintLetterTupleWelsh(jurorNumber, courtName);
         when(data.get(JUROR_POOL.deferralDate)).thenReturn(deferralDate);
-        when(data.get(JUROR_POOL.deferralCode)).thenReturn("A");
+        when(data.get(JUROR_POOL.deferralCode)).thenReturn(code);
         return data;
     }
 
