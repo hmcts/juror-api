@@ -22,7 +22,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 @SuppressWarnings("checkstyle:all")
-public class OutgoingSMSMessagesReportTest extends AbstractStandardReportTestSupport<OutgoingSMSMessagesReport> {
+class OutgoingSMSMessagesReportTest extends AbstractStandardReportTestSupport<OutgoingSMSMessagesReport> {
 
     private static final LocalDate FROM_DATE = LocalDate.of(2024, 1, 1);
     private static final LocalDate TO_DATE = LocalDate.of(2024, 1, 31);
