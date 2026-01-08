@@ -52,7 +52,6 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
@@ -177,12 +176,12 @@ class CourtLetterPrintServiceTest {
             assertThat(response).as("Expect size to be 1").hasSize(1);
             verifyWelshResponseDto(response);
 
-            verify(systemParameterRepositoryMod, times(1)).findById(anyInt());
-            verify(jurorRepository, times(1)).findByJurorNumber(anyString());
-            verify(welshCourtLocationRepository, times(1)).findById(anyString());
+            verify(systemParameterRepositoryMod, times(1)).findById(103);
+            verify(jurorRepository, times(1)).findByJurorNumber("111111112");
+            verify(welshCourtLocationRepository, times(1)).findById("457");
             verify(jurorHistoryRepository, times(1)).save(any());
             verify(courtPrintLetterRepository, times(1))
-                .retrievePrintInformation(anyString(), any(), anyBoolean(), anyString());
+                .retrievePrintInformation(jurorNumber, CourtLetterType.DEFERRAL_GRANTED, true, courtOwner);
         }
 
         private static void verifyWelshResponseDto(List<PrintLetterDataResponseDto> response) {
@@ -1075,7 +1074,7 @@ class CourtLetterPrintServiceTest {
             WelshCourtLocation welshCourtLocation = WelshCourtLocation.builder().locCode(courtOwner).build();
             when(welshCourtLocationRepository.findById(anyString())).thenReturn(Optional.of(welshCourtLocation));
             doReturn(createSystemParam(WELSH_URL_PARAM, "WELSH_URL"))
-                .when(systemParameterRepositoryMod).findById(anyInt());
+                .when(systemParameterRepositoryMod).findById(103);
 
             doReturn(createDeferralDataWelsh(LocalDate.of(2024, 1, 1), jurorNumber, "ABERTAWE", "P"))
                 .when(courtPrintLetterRepository)
@@ -1088,12 +1087,12 @@ class CourtLetterPrintServiceTest {
             assertThat(response).as("Expect size to be 1").hasSize(1);
             verifyWelshResponseDto(response);
 
-            verify(systemParameterRepositoryMod, times(1)).findById(anyInt());
-            verify(jurorRepository, times(1)).findByJurorNumber(anyString());
-            verify(welshCourtLocationRepository, times(1)).findById(anyString());
+            verify(systemParameterRepositoryMod, times(1)).findById(103);
+            verify(jurorRepository, times(1)).findByJurorNumber("111111112");
+            verify(welshCourtLocationRepository, times(1)).findById("457");
             verify(jurorHistoryRepository, times(1)).save(any());
             verify(courtPrintLetterRepository, times(1))
-                .retrievePrintInformation(anyString(), any(), anyBoolean(), anyString());
+                .retrievePrintInformation(jurorNumber, CourtLetterType.POSTPONED, true, courtOwner);
         }
 
         private static void verifyWelshResponseDto(List<PrintLetterDataResponseDto> response) {
@@ -1203,7 +1202,7 @@ class CourtLetterPrintServiceTest {
 
             verify(systemParameterRepositoryMod, times(1)).findById(102);
             verify(jurorRepository, times(1)).findByJurorNumber(jurorNumber);
-            verify(welshCourtLocationRepository, times(0)).findById(any());
+            verify(welshCourtLocationRepository, times(0)).findById("415");
             verify(jurorHistoryRepository, times(1)).save(any());
             verify(courtPrintLetterRepository, times(1))
                 .retrievePrintInformation(jurorNumber, CourtLetterType.POSTPONED, false, courtOwner);
