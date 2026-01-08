@@ -62,7 +62,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.CyclomaticComplexity", "PMD.TooManyMethods"})
-public class CourtLetterPrintServiceTest {
+class CourtLetterPrintServiceTest {
 
     private JurorRepository jurorRepository;
     private CourtLetterPrintServiceImpl courtLetterPrintServiceImpl;
@@ -70,7 +70,6 @@ public class CourtLetterPrintServiceTest {
     private WelshCourtLocationRepository welshCourtLocationRepository;
     private SystemParameterRepositoryMod systemParameterRepositoryMod;
     private CourtPrintLetterRepository courtPrintLetterRepository;
-    private CertificateOfAttendanceListRepository certificateOfAttendanceListRepository;
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
@@ -91,10 +90,12 @@ public class CourtLetterPrintServiceTest {
         this.systemParameterRepositoryMod = mock(SystemParameterRepositoryMod.class);
         this.jurorHistoryRepository = mock(JurorHistoryRepository.class);
         this.courtPrintLetterRepository = mock(CourtPrintLetterRepository.class);
-        this.certificateOfAttendanceListRepository = mock(CertificateOfAttendanceListRepository.class);
+        CertificateOfAttendanceListRepository certificateOfAttendanceListRepository = mock(
+            CertificateOfAttendanceListRepository.class);
         this.courtLetterPrintServiceImpl = new CourtLetterPrintServiceImpl(
             systemParameterRepositoryMod, jurorRepository, welshCourtLocationRepository, jurorHistoryRepository,
-            courtPrintLetterRepository, certificateOfAttendanceListRepository);
+            courtPrintLetterRepository, certificateOfAttendanceListRepository
+        );
 
         Authentication auth = mock(Authentication.class);
         SecurityContext securityContext = mock(SecurityContext.class);
@@ -128,11 +129,11 @@ public class CourtLetterPrintServiceTest {
             final String courtOwner = "415";
             mockCurrentUser(courtOwner);
 
-            when(jurorRepository.findByJurorNumber(anyString())).thenReturn(createJuror(jurorNumber,
+            when(jurorRepository.findByJurorNumber(jurorNumber)).thenReturn(createJuror(jurorNumber,
                 false, courtOwner));
-            when(welshCourtLocationRepository.findById(anyString())).thenReturn(Optional.empty());
+            when(welshCourtLocationRepository.findById("415")).thenReturn(Optional.empty());
             doReturn(createSystemParam(ENGLISH_URL_PARAM, "ENGLISH_URL"))
-                .when(systemParameterRepositoryMod).findById(anyInt());
+                .when(systemParameterRepositoryMod).findById(102); // English URL param
             doReturn(createDeferralDataEnglish(LocalDate.of(2024, 1, 1), "435")).when(
                     courtPrintLetterRepository)
                 .retrievePrintInformation(jurorNumber, CourtLetterType.DEFERRAL_GRANTED, false, courtOwner);
@@ -141,89 +142,15 @@ public class CourtLetterPrintServiceTest {
                 .getPrintLettersData(createPrintLetterRequest(Collections.singletonList(jurorNumber),
                     CourtLetterType.DEFERRAL_GRANTED), "TEST_COURTUSER");
 
-            assertThat(response.size()).as("Expect size to be 1").isEqualTo(1);
-            for (PrintLetterDataResponseDto dto : response) {
-                assertThat(dto.getCourtName())
-                    .as("Expect court name to be " + "The Crown Court\n"
-                        + "at COURT NAME")
-                    .isEqualTo("The Crown Court\n"
-                        + "at COURT NAME");
-                assertThat(dto.getCourtAddressLine1())
-                    .as("Expect address line 1 to be 'ADDRESS 1'")
-                    .isEqualTo("ADDRESS 1");
-                assertThat(dto.getCourtAddressLine2())
-                    .as("Expect address line 2 to be 'ADDRESS 2'")
-                    .isEqualTo("ADDRESS 2");
-                assertThat(dto.getCourtAddressLine3())
-                    .as("Expect address line 3 to be 'ADDRESS 3'")
-                    .isEqualTo("ADDRESS 3");
-                assertThat(dto.getCourtAddressLine4())
-                    .as("Expect address line 4 to be 'ADDRESS 4'")
-                    .isEqualTo("ADDRESS 4");
-                assertThat(dto.getCourtAddressLine5())
-                    .as("Expect address line 5 to be 'ADDRESS 5'")
-                    .isEqualTo("ADDRESS 5");
-                assertThat(dto.getCourtAddressLine6())
-                    .as("Expect address line 6 to be 'ADDRESS 6'")
-                    .isEqualTo("ADDRESS 6");
-                assertThat(dto.getCourtPostCode())
-                    .as("Expect post code to be 'PST CODE'")
-                    .isEqualTo("PST CODE");
-                assertThat(dto.getCourtPhoneNumber())
-                    .as("Expect court number to be 0123456789")
-                    .isEqualTo("0123456789");
+            assertThat(response).as("Expect size to be 1").hasSize(1);
+            verifyResponseDto(response);
 
-                assertThat(dto.getUrl())
-                    .as("Expect URL to be ENGLISH_URL")
-                    .isEqualTo("ENGLISH_URL");
-                assertThat(dto.getSignature())
-                    .as("Expect signatory to be ")
-                    .isEqualTo("TEST SIGNATURE\n\nAn Officer of the Crown Court");
-
-                assertThat(dto.getJurorFirstName())
-                    .as("Expect first name to be FNAME")
-                    .isEqualTo("FNAME");
-                assertThat(dto.getJurorLastName())
-                    .as("Expect last name to be LNAME")
-                    .isEqualTo("LNAME");
-                assertThat(dto.getJurorAddressLine1())
-                    .as("Expect address line 1 to be ADDRESS LINE 1")
-                    .isEqualTo("ADDRESS LINE 1");
-                assertThat(dto.getJurorAddressLine2())
-                    .as("Expect address line 2 to be ADDRESS LINE 2")
-                    .isEqualTo("ADDRESS LINE 2");
-                assertThat(dto.getJurorAddressLine3())
-                    .as("Expect address line 3 to be ADDRESS LINE 3")
-                    .isEqualTo("ADDRESS LINE 3");
-                assertThat(dto.getJurorAddressLine4())
-                    .as("Expect address line 4 to be ADDRESS LINE 4")
-                    .isEqualTo("ADDRESS LINE 4");
-                assertThat(dto.getJurorAddressLine5())
-                    .as("Expect address line 5 to be ADDRESS LINE 5")
-                    .isEqualTo("ADDRESS LINE 5");
-                assertThat(dto.getJurorPostcode())
-                    .as("Expect post code to be JUROR POST CODE")
-                    .isEqualTo("JUROR POST CODE");
-                assertThat(dto.getJurorNumber())
-                    .as("Expect juror number to be " + jurorNumber)
-                    .isEqualTo(jurorNumber);
-                assertThat(dto.getDeferredToDate())
-                    .as("Expect Date to be 01 January 2024")
-                    .isEqualTo("01 January 2024");
-                assertThat(dto.getAttendTime())
-                    .as("Expect attend time to be 09:00")
-                    .isEqualTo(LocalTime.of(9, 0));
-                assertThat(dto.getWelsh())
-                    .as("Expect welsh to be false")
-                    .isFalse();
-            }
-
-            verify(systemParameterRepositoryMod, times(1)).findById(anyInt());
-            verify(jurorRepository, times(1)).findByJurorNumber(anyString());
-            verify(welshCourtLocationRepository, times(0)).findById(anyString());
+            verify(systemParameterRepositoryMod, times(1)).findById(102); // English URL param
+            verify(jurorRepository, times(1)).findByJurorNumber(jurorNumber);
+            verify(welshCourtLocationRepository, times(0)).findById("415");
             verify(jurorHistoryRepository, times(1)).save(any());
             verify(courtPrintLetterRepository, times(1))
-                .retrievePrintInformation(anyString(), any(), anyBoolean(), anyString());
+                .retrievePrintInformation(jurorNumber, CourtLetterType.DEFERRAL_GRANTED, false, courtOwner);
         }
 
         @Test
@@ -233,7 +160,7 @@ public class CourtLetterPrintServiceTest {
             final String courtOwner = "457";
             mockCurrentUser(courtOwner);
 
-            when(jurorRepository.findByJurorNumber(anyString())).thenReturn(createJuror(jurorNumber, true, courtOwner));
+            when(jurorRepository.findByJurorNumber(jurorNumber)).thenReturn(createJuror(jurorNumber, true, courtOwner));
             WelshCourtLocation welshCourtLocation = WelshCourtLocation.builder().locCode(courtOwner).build();
             when(welshCourtLocationRepository.findById(anyString())).thenReturn(Optional.of(welshCourtLocation));
             doReturn(createSystemParam(WELSH_URL_PARAM, "WELSH_URL"))
@@ -247,7 +174,18 @@ public class CourtLetterPrintServiceTest {
                 .getPrintLettersData(createPrintLetterRequest(Collections.singletonList(jurorNumber),
                     CourtLetterType.DEFERRAL_GRANTED), "TEST_COURTUSER");
 
-            assertThat(response.size()).as("Expect size to be 1").isEqualTo(1);
+            assertThat(response).as("Expect size to be 1").hasSize(1);
+            verifyWelshResponseDto(response);
+
+            verify(systemParameterRepositoryMod, times(1)).findById(anyInt());
+            verify(jurorRepository, times(1)).findByJurorNumber(anyString());
+            verify(welshCourtLocationRepository, times(1)).findById(anyString());
+            verify(jurorHistoryRepository, times(1)).save(any());
+            verify(courtPrintLetterRepository, times(1))
+                .retrievePrintInformation(anyString(), any(), anyBoolean(), anyString());
+        }
+
+        private static void verifyWelshResponseDto(List<PrintLetterDataResponseDto> response) {
             for (PrintLetterDataResponseDto dto : response) {
                 assertThat(dto.getCourtName()).as("Expect court name to be Llys y Goron\nynAbertawe")
                     .isEqualTo("Llys y Goron\nynAbertawe");
@@ -308,8 +246,8 @@ public class CourtLetterPrintServiceTest {
                     .as("Expect post code to be JUROR POST CODE")
                     .isEqualTo("JUROR POST CODE");
                 assertThat(dto.getJurorNumber())
-                    .as("Expect juror number to be " + jurorNumber)
-                    .isEqualTo(jurorNumber);
+                    .as("Expect juror number to be " + "111111112")
+                    .isEqualTo("111111112");
                 assertThat(dto.getDeferredToDate())
                     .as("Expect date to be 01 Ionawr 2024")
                     .isEqualTo("01 Ionawr 2024");
@@ -320,13 +258,6 @@ public class CourtLetterPrintServiceTest {
                     .as("Expect welsh to be true")
                     .isTrue();
             }
-
-            verify(systemParameterRepositoryMod, times(1)).findById(anyInt());
-            verify(jurorRepository, times(1)).findByJurorNumber(anyString());
-            verify(welshCourtLocationRepository, times(1)).findById(anyString());
-            verify(jurorHistoryRepository, times(1)).save(any());
-            verify(courtPrintLetterRepository, times(1))
-                .retrievePrintInformation(anyString(), any(), anyBoolean(), anyString());
         }
 
         @Test
@@ -340,7 +271,7 @@ public class CourtLetterPrintServiceTest {
                 false, courtOwner));
             when(welshCourtLocationRepository.findById(anyString())).thenReturn(Optional.empty());
             doReturn(createSystemParam(ENGLISH_URL_PARAM, "ENGLISH_URL"))
-                .when(systemParameterRepositoryMod).findById(anyInt());
+                .when(systemParameterRepositoryMod).findById(102);
             doReturn(createDeferralDataEnglish(LocalDate.of(2024, 1, 1), "435"))
                 .when(courtPrintLetterRepository)
                 .retrievePrintInformation(jurorNumber, CourtLetterType.DEFERRAL_GRANTED, false, courtOwner);
@@ -356,7 +287,18 @@ public class CourtLetterPrintServiceTest {
             List<PrintLetterDataResponseDto> response = courtLetterPrintServiceImpl
                 .getPrintLettersData(requestDto, "TEST_COURTUSER");
 
-            assertThat(response.size()).as("Expect size to be 1").isEqualTo(1);
+            assertThat(response).as("Expect size to be 1").hasSize(1);
+            verifyResponseDto(response);
+
+            verify(systemParameterRepositoryMod, times(1)).findById(102);
+            verify(jurorRepository, times(1)).findByJurorNumber(jurorNumber);
+            verify(welshCourtLocationRepository, times(0)).findById(any());
+            verify(jurorHistoryRepository, times(1)).save(any());
+            verify(courtPrintLetterRepository, times(1))
+                .retrievePrintInformation(jurorNumber, CourtLetterType.DEFERRAL_GRANTED, false, courtOwner);
+        }
+
+        private static void verifyResponseDto(List<PrintLetterDataResponseDto> response) {
             for (PrintLetterDataResponseDto dto : response) {
                 assertThat(dto.getCourtName())
                     .as("Expect court name to be " + "The Crown Court\n"
@@ -420,8 +362,8 @@ public class CourtLetterPrintServiceTest {
                     .as("Expect post code to be JUROR POST CODE")
                     .isEqualTo("JUROR POST CODE");
                 assertThat(dto.getJurorNumber())
-                    .as("Expect juror number to be " + jurorNumber)
-                    .isEqualTo(jurorNumber);
+                    .as("Expect juror number to be " + "111111111")
+                    .isEqualTo("111111111");
                 assertThat(dto.getDeferredToDate())
                     .as("Expect Date to be 01 January 2024")
                     .isEqualTo("01 January 2024");
@@ -432,13 +374,6 @@ public class CourtLetterPrintServiceTest {
                     .as("Expect welsh to be false")
                     .isFalse();
             }
-
-            verify(systemParameterRepositoryMod, times(1)).findById(anyInt());
-            verify(jurorRepository, times(1)).findByJurorNumber(anyString());
-            verify(welshCourtLocationRepository, times(0)).findById(anyString());
-            verify(jurorHistoryRepository, times(1)).save(any());
-            verify(courtPrintLetterRepository, times(1))
-                .retrievePrintInformation(anyString(), any(), anyBoolean(), anyString());
         }
 
         @Test
@@ -450,9 +385,7 @@ public class CourtLetterPrintServiceTest {
 
             List<String> jurorNumbers = new ArrayList<>();
             final int totalMonths = 12;
-            for (int i = 0;
-                 i < totalMonths;
-                 i++) {
+            for (int i = 0; i < totalMonths; i++) {
                 String jurorNumber = String.format("1111111%02d", i + 1);
                 when(jurorRepository.findByJurorNumber(anyString())).thenReturn(createJuror(jurorNumber,
                     true, courtOwner));
@@ -472,11 +405,9 @@ public class CourtLetterPrintServiceTest {
                 .getPrintLettersData(createPrintLetterRequest(jurorNumbers, CourtLetterType.DEFERRAL_GRANTED),
                     "TEST_COURTUSER");
 
-            assertThat(response.size()).as("Expect size to be 12").isEqualTo(12);
+            assertThat(response).as("Expect size to be 12").hasSize(12);
 
-            for (int i = 0;
-                 i < 12;
-                 i++) {
+            for (int i = 0; i < 12; i++) {
                 PrintLetterDataResponseDto dto = response.get(i);
                 switch (LocalDate.of(2024, i + 1, 1).getMonth()) {
                     case JANUARY -> assertThat(dto.getDeferredToDate())
@@ -538,7 +469,7 @@ public class CourtLetterPrintServiceTest {
                 .getPrintLettersData(createPrintLetterRequest(Collections.singletonList(jurorNumber),
                     CourtLetterType.DEFERRAL_GRANTED), "TEST_COURTUSER");
 
-            assertThat(response.size()).as("Expect size to be 1").isEqualTo(1);
+            assertThat(response).as("Expect size to be 1").hasSize(1);
             assertThat(response.get(0).getCourtName())
                 .as("Expect court name to be The Royal Court\n of Justice")
                 .isEqualTo("The Crown Court\nat " + "COURT NAME");
@@ -563,7 +494,7 @@ public class CourtLetterPrintServiceTest {
                 .getPrintLettersData(createPrintLetterRequest(Collections.singletonList(jurorNumber),
                     CourtLetterType.DEFERRAL_GRANTED), "TEST_COURTUSER");
 
-            assertThat(response.size()).as("Expect size to be 1").isEqualTo(1);
+            assertThat(response).as("Expect size to be 1").hasSize(1);
             assertThat(response.get(0).getCourtName())
                 .as("Expect court name to be The Royal Court\nof Justice")
                 .isEqualTo("The Royal Court\nof Justice");
@@ -587,9 +518,7 @@ public class CourtLetterPrintServiceTest {
             courtNames.add("TOURT NAME");
             courtNames.add("OOURT NAME");
 
-            for (int i = 0;
-                 i < courtNames.size();
-                 i++) {
+            for (int i = 0; i < courtNames.size(); i++) {
                 String jurorNumber = String.format("1111111%02d", i + 1);
 
                 when(jurorRepository.findByJurorNumber(anyString())).thenReturn(createJuror(jurorNumber,
@@ -611,12 +540,10 @@ public class CourtLetterPrintServiceTest {
                 .getPrintLettersData(createPrintLetterRequest(jurorNumbers, CourtLetterType.DEFERRAL_GRANTED),
                     "TEST_COURTUSER");
 
-            assertThat(response.size()).as(
-                "Expect size to be " + courtNames.size()).isEqualTo(courtNames.size());
+            assertThat(response).as(
+                "Expect size to be 8").hasSize(courtNames.size());
 
-            for (int i = 0;
-                 i < courtNames.size();
-                 i++) {
+            for (int i = 0; i < courtNames.size(); i++) {
                 final String formattedCourtName = response.get(i).getCourtName();
                 switch (courtNames.get(i).toLowerCase().charAt(0)) {
                     case 'b', 'm' -> assertThat(formattedCourtName).as("Expect name to be Llys y Goron\nym Mourt name")
@@ -661,7 +588,18 @@ public class CourtLetterPrintServiceTest {
                 .getPrintLettersData(createPrintLetterRequest(Collections.singletonList(jurorNumber),
                     CourtLetterType.DEFERRAL_REFUSED), "TEST_USER");
 
-            assertThat(response.size()).as("Expect size to be 1").isEqualTo(1);
+            assertThat(response).as("Expect size to be 1").hasSize(1);
+            verifyResponseDto(response);
+
+            verify(systemParameterRepositoryMod, times(1)).findById(ENGLISH_URL_PARAM);
+            verify(jurorRepository, times(1)).findByJurorNumber(jurorNumber);
+            verify(welshCourtLocationRepository, times(0)).findById("ENGLISH_URL");
+            verify(jurorHistoryRepository, times(1)).save(any());
+            verify(courtPrintLetterRepository, times(1))
+                .retrievePrintInformation(jurorNumber, CourtLetterType.DEFERRAL_REFUSED, false, courtOwner);
+        }
+
+        private void verifyResponseDto(List<PrintLetterDataResponseDto> response) {
             for (PrintLetterDataResponseDto dto : response) {
                 assertThat(dto.getCourtName())
                     .as("Expect court name to be " + "The Crown Court\n"
@@ -725,19 +663,12 @@ public class CourtLetterPrintServiceTest {
                     .as("Expect post code to be JUROR POST CODE")
                     .isEqualTo("JUROR POST CODE");
                 assertThat(dto.getJurorNumber())
-                    .as("Expect juror number to be " + jurorNumber)
-                    .isEqualTo(jurorNumber);
+                    .as("Expect juror number to be " + "111111111")
+                    .isEqualTo("111111111");
                 assertThat(dto.getAttendTime())
                     .as("Expect attendance time to be 09:30")
                     .isEqualTo(LocalTime.of(9, 0));
             }
-
-            verify(systemParameterRepositoryMod, times(1)).findById(ENGLISH_URL_PARAM);
-            verify(jurorRepository, times(1)).findByJurorNumber(jurorNumber);
-            verify(welshCourtLocationRepository, times(0)).findById(anyString());
-            verify(jurorHistoryRepository, times(1)).save(any());
-            verify(courtPrintLetterRepository, times(1))
-                .retrievePrintInformation(anyString(), any(), anyBoolean(), anyString());
         }
 
         @Test
@@ -747,11 +678,12 @@ public class CourtLetterPrintServiceTest {
             final String courtOwner = "457";
             mockCurrentUser(courtOwner);
 
-            when(jurorRepository.findByJurorNumber(anyString())).thenReturn(createJuror(jurorNumber, true, courtOwner));
+            when(jurorRepository.findByJurorNumber(jurorNumber)).thenReturn(createJuror(jurorNumber,
+                                                                                        true, courtOwner));
             WelshCourtLocation welshCourtLocation = WelshCourtLocation.builder().locCode(courtOwner).build();
-            when(welshCourtLocationRepository.findById(anyString())).thenReturn(Optional.of(welshCourtLocation));
+            when(welshCourtLocationRepository.findById("457")).thenReturn(Optional.of(welshCourtLocation));
             doReturn(createSystemParam(WELSH_URL_PARAM, "WELSH_URL"))
-                .when(systemParameterRepositoryMod).findById(anyInt());
+                .when(systemParameterRepositoryMod).findById(103);
 
             doReturn(createPrintLetterTupleWelsh(jurorNumber, "ABERTAWE"))
                 .when(courtPrintLetterRepository)
@@ -761,7 +693,18 @@ public class CourtLetterPrintServiceTest {
                 .getPrintLettersData(createPrintLetterRequest(Collections.singletonList(jurorNumber),
                     CourtLetterType.DEFERRAL_REFUSED), "TEST_COURTUSER");
 
-            assertThat(response.size()).as("Expect size to be 1").isEqualTo(1);
+            assertThat(response).as("Expect size to be 1").hasSize(1);
+            verifyWelshResponseDto(response);
+
+            verify(systemParameterRepositoryMod, times(1)).findById(103);
+            verify(jurorRepository, times(1)).findByJurorNumber("111111112");
+            verify(welshCourtLocationRepository, times(1)).findById("457");
+            verify(jurorHistoryRepository, times(1)).save(any());
+            verify(courtPrintLetterRepository, times(1))
+                .retrievePrintInformation(jurorNumber, CourtLetterType.DEFERRAL_REFUSED, true, courtOwner);
+        }
+
+        private void verifyWelshResponseDto(List<PrintLetterDataResponseDto> response) {
             for (PrintLetterDataResponseDto dto : response) {
                 assertThat(dto.getCourtName()).as("Expect court name to be Llys y Goron\nynAbertawe")
                     .isEqualTo("Llys y Goron\nynAbertawe");
@@ -823,19 +766,12 @@ public class CourtLetterPrintServiceTest {
                     .as("Expect post code to be JUROR POST CODE")
                     .isEqualTo("JUROR POST CODE");
                 assertThat(dto.getJurorNumber())
-                    .as("Expect juror number to be " + jurorNumber)
-                    .isEqualTo(jurorNumber);
+                    .as("Expect juror number to be " + "111111112")
+                    .isEqualTo("111111112");
                 assertThat(dto.getAttendTime())
                     .as("Expect attendance time to be 09:30")
                     .isEqualTo(LocalTime.of(9, 30));
             }
-
-            verify(systemParameterRepositoryMod, times(1)).findById(anyInt());
-            verify(jurorRepository, times(1)).findByJurorNumber(anyString());
-            verify(welshCourtLocationRepository, times(1)).findById(anyString());
-            verify(jurorHistoryRepository, times(1)).save(any());
-            verify(courtPrintLetterRepository, times(1))
-                .retrievePrintInformation(anyString(), any(), anyBoolean(), anyString());
         }
 
         @Test
@@ -847,9 +783,9 @@ public class CourtLetterPrintServiceTest {
 
             when(jurorRepository.findByJurorNumber(anyString())).thenReturn(createJuror(jurorNumber,
                 false, courtOwner));
-            when(welshCourtLocationRepository.findById(anyString())).thenReturn(Optional.empty());
+            when(welshCourtLocationRepository.findById("415")).thenReturn(Optional.empty());
             doReturn(createSystemParam(ENGLISH_URL_PARAM, "ENGLISH_URL"))
-                .when(systemParameterRepositoryMod).findById(anyInt());
+                .when(systemParameterRepositoryMod).findById(102);
             doReturn(createPrintLetterTupleEnglish(courtOwner))
                 .when(courtPrintLetterRepository)
                 .retrievePrintInformation(jurorNumber, CourtLetterType.DEFERRAL_REFUSED, false, courtOwner);
@@ -865,83 +801,15 @@ public class CourtLetterPrintServiceTest {
             List<PrintLetterDataResponseDto> response = courtLetterPrintServiceImpl
                 .getPrintLettersData(requestDto, "TEST_COURTUSER");
 
-            assertThat(response.size()).as("Expect size to be 1").isEqualTo(1);
-            for (PrintLetterDataResponseDto dto : response) {
-                assertThat(dto.getCourtName())
-                    .as("Expect court name to be " + "The Crown Court\n"
-                        + "at COURT NAME")
-                    .isEqualTo("The Crown Court\n"
-                        + "at COURT NAME");
-                assertThat(dto.getCourtAddressLine1())
-                    .as("Expect address line 1 to be 'ADDRESS 1'")
-                    .isEqualTo("ADDRESS 1");
-                assertThat(dto.getCourtAddressLine2())
-                    .as("Expect address line 2 to be 'ADDRESS 2'")
-                    .isEqualTo("ADDRESS 2");
-                assertThat(dto.getCourtAddressLine3())
-                    .as("Expect address line 3 to be 'ADDRESS 3'")
-                    .isEqualTo("ADDRESS 3");
-                assertThat(dto.getCourtAddressLine4())
-                    .as("Expect address line 4 to be 'ADDRESS 4'")
-                    .isEqualTo("ADDRESS 4");
-                assertThat(dto.getCourtAddressLine5())
-                    .as("Expect address line 5 to be 'ADDRESS 5'")
-                    .isEqualTo("ADDRESS 5");
-                assertThat(dto.getCourtAddressLine6())
-                    .as("Expect address line 6 to be 'ADDRESS 6'")
-                    .isEqualTo("ADDRESS 6");
-                assertThat(dto.getCourtPostCode())
-                    .as("Expect post code to be 'PST CODE'")
-                    .isEqualTo("PST CODE");
-                assertThat(dto.getCourtPhoneNumber())
-                    .as("Expect court number to be 0123456789")
-                    .isEqualTo("0123456789");
+            assertThat(response).as("Expect size to be 1").hasSize(1);
+            verifyResponseDto(response);
 
-                assertThat(dto.getUrl())
-                    .as("Expect URL to be ENGLISH_URL")
-                    .isEqualTo("ENGLISH_URL");
-                assertThat(dto.getSignature())
-                    .as("Expect signatory to be ")
-                    .isEqualTo("TEST SIGNATURE\n\nAn Officer of the Crown Court");
-
-                assertThat(dto.getJurorFirstName())
-                    .as("Expect first name to be FNAME")
-                    .isEqualTo("FNAME");
-                assertThat(dto.getJurorLastName())
-                    .as("Expect last name to be LNAME")
-                    .isEqualTo("LNAME");
-                assertThat(dto.getJurorAddressLine1())
-                    .as("Expect address line 1 to be ADDRESS LINE 1")
-                    .isEqualTo("ADDRESS LINE 1");
-                assertThat(dto.getJurorAddressLine2())
-                    .as("Expect address line 2 to be ADDRESS LINE 2")
-                    .isEqualTo("ADDRESS LINE 2");
-                assertThat(dto.getJurorAddressLine3())
-                    .as("Expect address line 3 to be ADDRESS LINE 3")
-                    .isEqualTo("ADDRESS LINE 3");
-                assertThat(dto.getJurorAddressLine4())
-                    .as("Expect address line 4 to be ADDRESS LINE 4")
-                    .isEqualTo("ADDRESS LINE 4");
-                assertThat(dto.getJurorAddressLine5())
-                    .as("Expect address line 5 to be ADDRESS LINE 5")
-                    .isEqualTo("ADDRESS LINE 5");
-                assertThat(dto.getJurorPostcode())
-                    .as("Expect post code to be JUROR POST CODE")
-                    .isEqualTo("JUROR POST CODE");
-                assertThat(dto.getJurorNumber())
-                    .as("Expect juror number to be " + jurorNumber)
-                    .isEqualTo(jurorNumber);
-                assertThat(dto.getAttendTime())
-                    .as("Expect attendance time to be 09:30")
-                    .isEqualTo(LocalTime.of(9, 0));
-            }
-
-            verify(systemParameterRepositoryMod, times(1)).findById(anyInt());
-            verify(jurorRepository, times(1)).findByJurorNumber(anyString());
-            verify(welshCourtLocationRepository, times(0)).findById(anyString());
+            verify(systemParameterRepositoryMod, times(1)).findById(102);
+            verify(jurorRepository, times(1)).findByJurorNumber("111111111");
+            verify(welshCourtLocationRepository, times(0)).findById("415");
             verify(jurorHistoryRepository, times(1)).save(any());
             verify(courtPrintLetterRepository, times(1))
-                .retrievePrintInformation(anyString(), any(), anyBoolean(), anyString());
+                .retrievePrintInformation(jurorNumber, CourtLetterType.DEFERRAL_REFUSED, false, courtOwner);
         }
     }
 
@@ -960,7 +828,7 @@ public class CourtLetterPrintServiceTest {
             when(welshCourtLocationRepository.findById(anyString())).thenReturn(Optional.empty());
             doReturn(createSystemParam(ENGLISH_URL_PARAM, "ENGLISH_URL"))
                 .when(systemParameterRepositoryMod).findById(anyInt());
-            doReturn(createExcusalRefusedDataEnglish(LocalDate.of(2024, 1, 1), "415")).when(
+            doReturn(createExcusalRefusedDataEnglish(LocalDate.of(2024, 1, 1))).when(
                     courtPrintLetterRepository)
                 .retrievePrintInformation(jurorNumber, CourtLetterType.EXCUSAL_REFUSED, false, courtOwner);
 
@@ -968,7 +836,18 @@ public class CourtLetterPrintServiceTest {
                 .getPrintLettersData(createPrintLetterRequest(Collections.singletonList(jurorNumber),
                     CourtLetterType.EXCUSAL_REFUSED), "TEST_COURTUSER");
 
-            assertThat(response.size()).as("Expect size to be 1").isEqualTo(1);
+            assertThat(response).as("Expect size to be 1").hasSize(1);
+            validateResponseDto(response);
+
+            verify(systemParameterRepositoryMod, times(1)).findById(102);
+            verify(jurorRepository, times(1)).findByJurorNumber(jurorNumber);
+            verify(welshCourtLocationRepository, times(0)).findById("415");
+            verify(jurorHistoryRepository, times(1)).save(any());
+            verify(courtPrintLetterRepository, times(1))
+                .retrievePrintInformation(jurorNumber, CourtLetterType.EXCUSAL_REFUSED, false, courtOwner);
+        }
+
+        private void validateResponseDto(List<PrintLetterDataResponseDto> response) {
             for (PrintLetterDataResponseDto dto : response) {
                 assertThat(dto.getCourtName())
                     .as("Expect court name to be " + "The Crown Court\n"
@@ -1032,21 +911,14 @@ public class CourtLetterPrintServiceTest {
                     .as("Expect post code to be JUROR POST CODE")
                     .isEqualTo("JUROR POST CODE");
                 assertThat(dto.getJurorNumber())
-                    .as("Expect juror number to be " + jurorNumber)
-                    .isEqualTo(jurorNumber);
+                    .as("Expect juror number to be " + "111111111")
+                    .isEqualTo("111111111");
                 assertThat(dto.getWelsh())
                     .as("Expect welsh to be false")
                     .isFalse();
                 assertThat(dto.getCourtManager()).as("Expect court manager to be: The Court Manager").isEqualTo("The "
                     + "Court Manager");
             }
-
-            verify(systemParameterRepositoryMod, times(1)).findById(anyInt());
-            verify(jurorRepository, times(1)).findByJurorNumber(anyString());
-            verify(welshCourtLocationRepository, times(0)).findById(anyString());
-            verify(jurorHistoryRepository, times(1)).save(any());
-            verify(courtPrintLetterRepository, times(1))
-                .retrievePrintInformation(anyString(), any(), anyBoolean(), anyString());
         }
 
         @Test
@@ -1058,10 +930,10 @@ public class CourtLetterPrintServiceTest {
 
             when(jurorRepository.findByJurorNumber(anyString())).thenReturn(createJuror(jurorNumber, true, courtOwner));
             WelshCourtLocation welshCourtLocation = WelshCourtLocation.builder().locCode(courtOwner).build();
-            when(welshCourtLocationRepository.findById(anyString()))
+            when(welshCourtLocationRepository.findById("457"))
                 .thenReturn(Optional.of(welshCourtLocation));
             doReturn(createSystemParam(WELSH_URL_PARAM, "WELSH_URL"))
-                .when(systemParameterRepositoryMod).findById(anyInt());
+                .when(systemParameterRepositoryMod).findById(103);
             doReturn(createExcusalRefusedDataWelsh(LocalDate.of(2024, 1, 1))).when(
                     courtPrintLetterRepository)
                 .retrievePrintInformation(jurorNumber, CourtLetterType.EXCUSAL_REFUSED, true, courtOwner);
@@ -1070,7 +942,18 @@ public class CourtLetterPrintServiceTest {
                 .getPrintLettersData(createPrintLetterRequest(Collections.singletonList(jurorNumber),
                     CourtLetterType.EXCUSAL_REFUSED), "TEST_COURTUSER");
 
-            assertThat(response.size()).as("Expect size to be 1").isEqualTo(1);
+            assertThat(response).as("Expect size to be 1").hasSize(1);
+            validateWelshResponseDto(response);
+
+            verify(systemParameterRepositoryMod, times(1)).findById(103);
+            verify(jurorRepository, times(1)).findByJurorNumber(jurorNumber);
+            verify(welshCourtLocationRepository, times(1)).findById("457");
+            verify(jurorHistoryRepository, times(1)).save(any());
+            verify(courtPrintLetterRepository, times(1))
+                .retrievePrintInformation(jurorNumber, CourtLetterType.EXCUSAL_REFUSED, true, courtOwner);
+        }
+
+        private static void validateWelshResponseDto(List<PrintLetterDataResponseDto> response) {
             for (PrintLetterDataResponseDto dto : response) {
                 assertThat(dto.getCourtName()).as("Expect court name to be Llys y Goron\nynAbertawe")
                     .isEqualTo("Llys y Goron\nynAbertawe");
@@ -1134,8 +1017,8 @@ public class CourtLetterPrintServiceTest {
                     .as("Expect post code to be JUROR POST CODE")
                     .isEqualTo("JUROR POST CODE");
                 assertThat(dto.getJurorNumber())
-                    .as("Expect juror number to be " + jurorNumber)
-                    .isEqualTo(jurorNumber);
+                    .as("Expect juror number to be " + "999999999")
+                    .isEqualTo("999999999");
                 assertThat(dto.getWelsh())
                     .as("Expect welsh to be true")
                     .isTrue();
@@ -1143,13 +1026,6 @@ public class CourtLetterPrintServiceTest {
                     .as("Expect court manager to be Y Rheolwr Llys")
                     .isEqualTo("Y Rheolwr Llys");
             }
-
-            verify(systemParameterRepositoryMod, times(1)).findById(anyInt());
-            verify(jurorRepository, times(1)).findByJurorNumber(anyString());
-            verify(welshCourtLocationRepository, times(1)).findById(anyString());
-            verify(jurorHistoryRepository, times(1)).save(any());
-            verify(courtPrintLetterRepository, times(1))
-                .retrievePrintInformation(anyString(), any(), anyBoolean(), anyString());
         }
     }
 
@@ -1162,7 +1038,6 @@ public class CourtLetterPrintServiceTest {
             final String jurorNumber = "111111111";
             final String courtOwner = "435";
             final ArgumentCaptor<JurorHistory> jurorHistoryArgumentCaptor = ArgumentCaptor.forClass(JurorHistory.class);
-
 
             mockCurrentUser(courtOwner);
 
@@ -1180,85 +1055,8 @@ public class CourtLetterPrintServiceTest {
                 .getPrintLettersData(createCertificateOfExemptionRequest(Collections.singletonList(jurorNumber), null),
                     "TEST_COURTUSER");
 
-            assertThat(response.size()).as("Expect size to be 1").isEqualTo(1);
-            for (PrintLetterDataResponseDto dto : response) {
-                assertThat(dto.getCourtName())
-                    .as("Expect court name to be " + "The Crown Court\n"
-                        + "at COURT NAME")
-                    .isEqualTo("The Crown Court\n"
-                        + "at COURT NAME");
-                assertThat(dto.getCourtAddressLine1())
-                    .as("Expect address line 1 to be 'ADDRESS 1'")
-                    .isEqualTo("ADDRESS 1");
-                assertThat(dto.getCourtAddressLine2())
-                    .as("Expect address line 2 to be 'ADDRESS 2'")
-                    .isEqualTo("ADDRESS 2");
-                assertThat(dto.getCourtAddressLine3())
-                    .as("Expect address line 3 to be 'ADDRESS 3'")
-                    .isEqualTo("ADDRESS 3");
-                assertThat(dto.getCourtAddressLine4())
-                    .as("Expect address line 4 to be 'ADDRESS 4'")
-                    .isEqualTo("ADDRESS 4");
-                assertThat(dto.getCourtAddressLine5())
-                    .as("Expect address line 5 to be 'ADDRESS 5'")
-                    .isEqualTo("ADDRESS 5");
-                assertThat(dto.getCourtAddressLine6())
-                    .as("Expect address line 6 to be 'ADDRESS 6'")
-                    .isEqualTo("ADDRESS 6");
-                assertThat(dto.getCourtPostCode())
-                    .as("Expect post code to be 'PST CODE'")
-                    .isEqualTo("PST CODE");
-                assertThat(dto.getCourtPhoneNumber())
-                    .as("Expect court number to be 0123456789")
-                    .isEqualTo("0123456789");
-
-                assertThat(dto.getUrl())
-                    .as("Expect URL to be ENGLISH_URL")
-                    .isEqualTo("ENGLISH_URL");
-                assertThat(dto.getSignature())
-                    .as("Expect signatory to be ")
-                    .isEqualTo("TEST SIGNATURE\n\nAn Officer of the Crown Court");
-
-                assertThat(dto.getJurorFirstName())
-                    .as("Expect first name to be FNAME")
-                    .isEqualTo("FNAME");
-                assertThat(dto.getJurorLastName())
-                    .as("Expect last name to be LNAME")
-                    .isEqualTo("LNAME");
-                assertThat(dto.getJurorAddressLine1())
-                    .as("Expect address line 1 to be ADDRESS LINE 1")
-                    .isEqualTo("ADDRESS LINE 1");
-                assertThat(dto.getJurorAddressLine2())
-                    .as("Expect address line 2 to be ADDRESS LINE 2")
-                    .isEqualTo("ADDRESS LINE 2");
-                assertThat(dto.getJurorAddressLine3())
-                    .as("Expect address line 3 to be ADDRESS LINE 3")
-                    .isEqualTo("ADDRESS LINE 3");
-                assertThat(dto.getJurorAddressLine4())
-                    .as("Expect address line 4 to be ADDRESS LINE 4")
-                    .isEqualTo("ADDRESS LINE 4");
-                assertThat(dto.getJurorAddressLine5())
-                    .as("Expect address line 5 to be ADDRESS LINE 5")
-                    .isEqualTo("ADDRESS LINE 5");
-                assertThat(dto.getJurorPostcode())
-                    .as("Expect post code to be JUROR POST CODE")
-                    .isEqualTo("JUROR POST CODE");
-                assertThat(dto.getJurorNumber())
-                    .as("Expect juror number to be " + jurorNumber)
-                    .isEqualTo(jurorNumber);
-                assertThat(dto.getWelsh())
-                    .as("Expect welsh to be false")
-                    .isFalse();
-                assertThat(dto.getJudgeName())
-                    .as("Expect judge name to be SIR DREDD")
-                    .isEqualTo("SIR DREDD");
-                assertThat(dto.getPeriodOfExemption())
-                    .as("Expect the period of exemption to be indefinite")
-                    .isEqualTo("indefinite");
-                assertThat(dto.getDefendant())
-                    .as("Expect the defendant to be TEST DEFENDANT")
-                    .isEqualTo("TEST DEFENDANT");
-            }
+            assertThat(response).as("Expect size to be 1").hasSize(1);
+            verifyResponseDto(response, "SIR DREDD");
 
             verify(systemParameterRepositoryMod, times(1)).findById(ENGLISH_URL_PARAM);
             verify(jurorRepository, times(1)).findByJurorNumber(jurorNumber);
@@ -1298,30 +1096,7 @@ public class CourtLetterPrintServiceTest {
                     "TEST TRIAL");
         }
 
-        @Test
-        @DisplayName("Issue certificate of exemption- override judge's name - English")
-        void issueCertificateOfExemptionEnglishOverrideJudgeName() {
-            final String jurorNumber = "111111111";
-            final String courtOwner = "435";
-            final ArgumentCaptor<JurorHistory> jurorHistoryArgumentCaptor = ArgumentCaptor.forClass(JurorHistory.class);
-            mockCurrentUser(courtOwner);
-
-            when(jurorRepository.findByJurorNumber(anyString())).thenReturn(createJuror(jurorNumber,
-                false, courtOwner));
-            when(welshCourtLocationRepository.findById(anyString())).thenReturn(Optional.empty());
-            doReturn(createSystemParam(ENGLISH_URL_PARAM, "ENGLISH_URL"))
-                .when(systemParameterRepositoryMod).findById(anyInt());
-            doReturn(createCertificateOfExemptionData(false)).when(
-                    courtPrintLetterRepository)
-                .retrievePrintInformation(jurorNumber, CourtLetterType.CERTIFICATE_OF_EXEMPTION, false, courtOwner,
-                    "TEST TRIAL");
-
-            List<PrintLetterDataResponseDto> response = courtLetterPrintServiceImpl
-                .getPrintLettersData(createCertificateOfExemptionRequest(Collections.singletonList(jurorNumber),
-                        "MR DREDD"),
-                    "TEST_COURTUSER");
-
-            assertThat(response.size()).as("Expect size to be 1").isEqualTo(1);
+        private void verifyResponseDto(List<PrintLetterDataResponseDto> response, String judge) {
             for (PrintLetterDataResponseDto dto : response) {
                 assertThat(dto.getCourtName())
                     .as("Expect court name to be " + "The Crown Court\n"
@@ -1385,14 +1160,14 @@ public class CourtLetterPrintServiceTest {
                     .as("Expect post code to be JUROR POST CODE")
                     .isEqualTo("JUROR POST CODE");
                 assertThat(dto.getJurorNumber())
-                    .as("Expect juror number to be " + jurorNumber)
-                    .isEqualTo(jurorNumber);
+                    .as("Expect juror number to be " + "111111111")
+                    .isEqualTo("111111111");
                 assertThat(dto.getWelsh())
                     .as("Expect welsh to be false")
                     .isFalse();
                 assertThat(dto.getJudgeName())
                     .as("Expect judge name to be SIR DREDD")
-                    .isEqualTo("MR DREDD");
+                    .isEqualTo(judge);
                 assertThat(dto.getPeriodOfExemption())
                     .as("Expect the period of exemption to be indefinite")
                     .isEqualTo("indefinite");
@@ -1400,6 +1175,33 @@ public class CourtLetterPrintServiceTest {
                     .as("Expect the defendant to be TEST DEFENDANT")
                     .isEqualTo("TEST DEFENDANT");
             }
+        }
+
+        @Test
+        @DisplayName("Issue certificate of exemption- override judge's name - English")
+        void issueCertificateOfExemptionEnglishOverrideJudgeName() {
+            final String jurorNumber = "111111111";
+            final String courtOwner = "435";
+            final ArgumentCaptor<JurorHistory> jurorHistoryArgumentCaptor = ArgumentCaptor.forClass(JurorHistory.class);
+            mockCurrentUser(courtOwner);
+
+            when(jurorRepository.findByJurorNumber(anyString())).thenReturn(createJuror(jurorNumber,
+                false, courtOwner));
+            when(welshCourtLocationRepository.findById(anyString())).thenReturn(Optional.empty());
+            doReturn(createSystemParam(ENGLISH_URL_PARAM, "ENGLISH_URL"))
+                .when(systemParameterRepositoryMod).findById(anyInt());
+            doReturn(createCertificateOfExemptionData(false)).when(
+                    courtPrintLetterRepository)
+                .retrievePrintInformation(jurorNumber, CourtLetterType.CERTIFICATE_OF_EXEMPTION, false, courtOwner,
+                    "TEST TRIAL");
+
+            List<PrintLetterDataResponseDto> response = courtLetterPrintServiceImpl
+                .getPrintLettersData(createCertificateOfExemptionRequest(Collections.singletonList(jurorNumber),
+                        "MR DREDD"),
+                    "TEST_COURTUSER");
+
+            assertThat(response).as("Expect size to be 1").hasSize(1);
+            verifyResponseDto(response, "MR DREDD");
 
             verify(systemParameterRepositoryMod, times(1)).findById(ENGLISH_URL_PARAM);
             verify(jurorRepository, times(1)).findByJurorNumber(jurorNumber);
@@ -1460,7 +1262,48 @@ public class CourtLetterPrintServiceTest {
                 .getPrintLettersData(createCertificateOfExemptionRequest(Collections.singletonList(jurorNumber), null),
                     "TEST_COURT");
 
-            assertThat(response.size()).as("Expect size to be 1").isEqualTo(1);
+            assertThat(response).as("Expect size to be 1").hasSize(1);
+            verifyWelshResponseDto(response);
+
+            verify(systemParameterRepositoryMod, times(1)).findById(WELSH_URL_PARAM);
+            verify(jurorRepository, times(1)).findByJurorNumber(jurorNumber);
+            verify(welshCourtLocationRepository, times(1)).findById(courtOwner);
+            verify(jurorHistoryRepository, times(1)).save(jurorHistoryArgumentCaptor.capture());
+            JurorHistory history = jurorHistoryArgumentCaptor.getValue();
+
+            assertThat(history.getHistoryCode())
+                .as("History Code")
+                .isEqualTo(HistoryCodeMod.CERTIFICATE_OF_EXEMPTION);
+            assertThat(history.getJurorNumber())
+                .as("Juror number")
+                .isEqualTo(jurorNumber);
+            assertThat(history.getCreatedBy())
+                .as("Username")
+                .isEqualTo("TEST_COURT");
+            assertThat(
+                history.getDateCreated())//NOPMD - suppressed JUnitAssertionsShouldIncludeMessage - false positive see https://github.com/pmd/pmd/issues/1565
+                .as("Created date")
+                .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.SECONDS));
+            assertThat(history.getOtherInformation())
+                .as("Other information")
+                .isEqualTo("Print Certificate of Exemption");
+            assertThat(history.getOtherInformationDate())
+                .as("Other information date")
+                .isEqualTo(LocalDate.now());
+            assertThat(history.getOtherInformationRef())
+                .as("Other information Ref")
+                .isEqualTo("indefinite");
+            assertThat(history.getPoolNumber())
+                .as("Pool number")
+                .isEqualTo("222222223");
+
+            verify(courtPrintLetterRepository, times(1))
+                .retrievePrintInformation(jurorNumber, CourtLetterType.CERTIFICATE_OF_EXEMPTION, true, courtOwner,
+                    "TEST TRIAL");
+
+        }
+
+        private void verifyWelshResponseDto(List<PrintLetterDataResponseDto> response) {
             for (PrintLetterDataResponseDto dto : response) {
                 assertThat(dto.getCourtName()).as("Expect court name to be Llys y Goron\nynAbertawe")
                     .isEqualTo("Llys y Goron\nynAbertawe");
@@ -1524,8 +1367,8 @@ public class CourtLetterPrintServiceTest {
                     .as("Expect post code to be JUROR POST CODE")
                     .isEqualTo("JUROR POST CODE");
                 assertThat(dto.getJurorNumber())
-                    .as("Expect juror number to be " + jurorNumber)
-                    .isEqualTo(jurorNumber);
+                    .as("Expect juror number to be " + "999999999")
+                    .isEqualTo("999999999");
                 assertThat(dto.getWelsh())
                     .as("Expect welsh to be true")
                     .isTrue();
@@ -1539,43 +1382,6 @@ public class CourtLetterPrintServiceTest {
                     .as("Expect the defendant to be TEST DEFENDANT")
                     .isEqualTo("TEST DEFENDANT");
             }
-
-            verify(systemParameterRepositoryMod, times(1)).findById(WELSH_URL_PARAM);
-            verify(jurorRepository, times(1)).findByJurorNumber(jurorNumber);
-            verify(welshCourtLocationRepository, times(1)).findById(courtOwner);
-            verify(jurorHistoryRepository, times(1)).save(jurorHistoryArgumentCaptor.capture());
-            JurorHistory history = jurorHistoryArgumentCaptor.getValue();
-
-            assertThat(history.getHistoryCode())
-                .as("History Code")
-                .isEqualTo(HistoryCodeMod.CERTIFICATE_OF_EXEMPTION);
-            assertThat(history.getJurorNumber())
-                .as("Juror number")
-                .isEqualTo(jurorNumber);
-            assertThat(history.getCreatedBy())
-                .as("Username")
-                .isEqualTo("TEST_COURT");
-            assertThat(
-                history.getDateCreated())//NOPMD - suppressed JUnitAssertionsShouldIncludeMessage - false positive see https://github.com/pmd/pmd/issues/1565
-                .as("Created date")
-                .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.SECONDS));
-            assertThat(history.getOtherInformation())
-                .as("Other information")
-                .isEqualTo("Print Certificate of Exemption");
-            assertThat(history.getOtherInformationDate())
-                .as("Other information date")
-                .isEqualTo(LocalDate.now());
-            assertThat(history.getOtherInformationRef())
-                .as("Other information Ref")
-                .isEqualTo("indefinite");
-            assertThat(history.getPoolNumber())
-                .as("Pool number")
-                .isEqualTo("222222223");
-
-            verify(courtPrintLetterRepository, times(1))
-                .retrievePrintInformation(jurorNumber, CourtLetterType.CERTIFICATE_OF_EXEMPTION, true, courtOwner,
-                    "TEST TRIAL");
-
         }
 
     }
@@ -1711,8 +1517,8 @@ public class CourtLetterPrintServiceTest {
         return data;
     }
 
-    Tuple createExcusalRefusedDataEnglish(LocalDate excusalDate, String courtLocation) {
-        Tuple data = createPrintLetterTupleEnglish(courtLocation);
+    Tuple createExcusalRefusedDataEnglish(LocalDate excusalDate) {
+        Tuple data = createPrintLetterTupleEnglish("415");
         when(data.get(JUROR_POOL.juror.excusalDate)).thenReturn(excusalDate);
         when(data.get(JUROR_POOL.juror.excusalCode)).thenReturn("C");
         return data;
@@ -1753,7 +1559,7 @@ public class CourtLetterPrintServiceTest {
             doReturn(createSystemParam(ENGLISH_URL_PARAM, "ENGLISH_URL"))
                 .when(systemParameterRepositoryMod).findById(102);
             doReturn(createCertificateOfAttendanceDataEnglish(BigDecimal.valueOf(40), BigDecimal.valueOf(10),
-                BigDecimal.valueOf(10), false, "435")).when(
+                                                              BigDecimal.valueOf(10), "435")).when(
                     courtPrintLetterRepository)
                 .retrievePrintInformation(jurorNumber, CourtLetterType.CERTIFICATE_OF_ATTENDANCE, false, courtOwner);
 
@@ -1761,7 +1567,28 @@ public class CourtLetterPrintServiceTest {
                 .getPrintLettersData(createPrintLetterRequest(Collections.singletonList(jurorNumber),
                     CourtLetterType.CERTIFICATE_OF_ATTENDANCE), "TEST_COURTUSER");
 
-            assertThat(response.size()).as("Expect size to be 1").isEqualTo(1);
+            assertThat(response).as("Expect size to be 1").hasSize(1);
+            verifyResponseDto(response);
+
+            ArgumentCaptor<JurorHistory> jurorHistoryArgumentCaptor = ArgumentCaptor.forClass(JurorHistory.class);
+
+            verify(systemParameterRepositoryMod, times(1)).findById(102);
+            verify(jurorRepository, times(1)).findByJurorNumber(jurorNumber);
+            verify(welshCourtLocationRepository, times(0)).findById(anyString());
+            verify(jurorHistoryRepository, times(1)).save(jurorHistoryArgumentCaptor.capture());
+            verify(courtPrintLetterRepository, times(1))
+                .retrievePrintInformation(jurorNumber, CourtLetterType.CERTIFICATE_OF_ATTENDANCE, false,
+                    courtOwner);
+
+            JurorHistory jurorHistory = jurorHistoryArgumentCaptor.getValue();
+            assertThat(jurorHistory.getJurorNumber()).isEqualTo(jurorNumber);
+            assertThat(jurorHistory.getDateCreated()).isNotNull();
+            assertThat(jurorHistory.getHistoryCode()).isEqualTo(HistoryCodeMod.CERTIFICATE_OF_RECOGNITION);
+            assertThat(jurorHistory.getOtherInformation()).isEqualTo("Certificate of Attendance");
+            assertThat(jurorHistory.getCreatedBy()).isEqualTo("TEST_COURTUSER");
+        }
+
+        private static void verifyResponseDto(List<PrintLetterDataResponseDto> response) {
             PrintLetterDataResponseDto dto = response.get(0);
             assertThat(dto.getCourtName())
                 .as("Expect court name to be " + "The Crown Court\n"
@@ -1825,8 +1652,8 @@ public class CourtLetterPrintServiceTest {
                 .as("Expect post code to be JUROR POST CODE")
                 .isEqualTo("JUROR POST CODE");
             assertThat(dto.getJurorNumber())
-                .as("Expect juror number to be " + jurorNumber)
-                .isEqualTo(jurorNumber);
+                .as("Expect juror number to be " + "111111111")
+                .isEqualTo("111111111");
             assertThat(dto.getAttendTime())
                 .as("Expect attend time to be 09:00")
                 .isEqualTo(LocalTime.of(9, 0));
@@ -1834,23 +1661,6 @@ public class CourtLetterPrintServiceTest {
                 .as("Expect welsh to be false")
                 .isFalse();
             assertThat(dto.getAttendanceDataList()).isNotNull();
-
-            ArgumentCaptor<JurorHistory> jurorHistoryArgumentCaptor = ArgumentCaptor.forClass(JurorHistory.class);
-
-            verify(systemParameterRepositoryMod, times(1)).findById(102);
-            verify(jurorRepository, times(1)).findByJurorNumber(jurorNumber);
-            verify(welshCourtLocationRepository, times(0)).findById(anyString());
-            verify(jurorHistoryRepository, times(1)).save(jurorHistoryArgumentCaptor.capture());
-            verify(courtPrintLetterRepository, times(1))
-                .retrievePrintInformation(jurorNumber, CourtLetterType.CERTIFICATE_OF_ATTENDANCE, false,
-                    courtOwner);
-
-            JurorHistory jurorHistory = jurorHistoryArgumentCaptor.getValue();
-            assertThat(jurorHistory.getJurorNumber()).isEqualTo(jurorNumber);
-            assertThat(jurorHistory.getDateCreated()).isNotNull();
-            assertThat(jurorHistory.getHistoryCode()).isEqualTo(HistoryCodeMod.CERTIFICATE_OF_RECOGNITION);
-            assertThat(jurorHistory.getOtherInformation()).isEqualTo("Certificate of Attendance");
-            assertThat(jurorHistory.getCreatedBy()).isEqualTo("TEST_COURTUSER");
         }
 
         @Test
@@ -1867,7 +1677,7 @@ public class CourtLetterPrintServiceTest {
                 .when(systemParameterRepositoryMod).findById(103);
 
             doReturn(createCertificateOfAttendanceDataWelsh(jurorNumber, BigDecimal.valueOf(40), BigDecimal.valueOf(10),
-                BigDecimal.valueOf(10), false, "ABERTAWE"))
+                                                            BigDecimal.valueOf(10), "ABERTAWE"))
                 .when(courtPrintLetterRepository)
                 .retrievePrintInformation(jurorNumber, CourtLetterType.CERTIFICATE_OF_ATTENDANCE, true, courtOwner);
 
@@ -1875,7 +1685,29 @@ public class CourtLetterPrintServiceTest {
                 .getPrintLettersData(createPrintLetterRequest(Collections.singletonList(jurorNumber),
                     CourtLetterType.CERTIFICATE_OF_ATTENDANCE), "TEST_COURTUSER");
 
-            assertThat(response.size()).as("Expect size to be 1").isEqualTo(1);
+            assertThat(response).as("Expect size to be 1").hasSize(1);
+            verifyWelshResponseDto(response, jurorNumber);
+
+
+            ArgumentCaptor<JurorHistory> jurorHistoryArgumentCaptor = ArgumentCaptor.forClass(JurorHistory.class);
+
+            verify(systemParameterRepositoryMod, times(1)).findById(103);
+            verify(jurorRepository, times(1)).findByJurorNumber(jurorNumber);
+            verify(welshCourtLocationRepository, times(1)).findById(courtOwner);
+            verify(jurorHistoryRepository, times(1)).save(jurorHistoryArgumentCaptor.capture());
+            verify(courtPrintLetterRepository, times(1))
+                .retrievePrintInformation(jurorNumber, CourtLetterType.CERTIFICATE_OF_ATTENDANCE, true,
+                    courtOwner);
+
+            JurorHistory jurorHistory = jurorHistoryArgumentCaptor.getValue();
+            assertThat(jurorHistory.getJurorNumber()).isEqualTo(jurorNumber);
+            assertThat(jurorHistory.getDateCreated()).isNotNull();
+            assertThat(jurorHistory.getHistoryCode()).isEqualTo(HistoryCodeMod.CERTIFICATE_OF_RECOGNITION);
+            assertThat(jurorHistory.getOtherInformation()).isEqualTo("Certificate of Attendance");
+            assertThat(jurorHistory.getCreatedBy()).isEqualTo("TEST_COURTUSER");
+        }
+
+        private static void verifyWelshResponseDto(List<PrintLetterDataResponseDto> response, String jurorNumber) {
             PrintLetterDataResponseDto dto = response.get(0);
             assertThat(dto.getCourtName()).as("Expect court name to be Llys y Goron\nynAbertawe")
                 .isEqualTo("Llys y Goron\nynAbertawe");
@@ -1945,24 +1777,6 @@ public class CourtLetterPrintServiceTest {
                 .as("Expect welsh to be true")
                 .isTrue();
             assertThat(dto.getAttendanceDataList()).isNotNull();
-
-
-            ArgumentCaptor<JurorHistory> jurorHistoryArgumentCaptor = ArgumentCaptor.forClass(JurorHistory.class);
-
-            verify(systemParameterRepositoryMod, times(1)).findById(103);
-            verify(jurorRepository, times(1)).findByJurorNumber(jurorNumber);
-            verify(welshCourtLocationRepository, times(1)).findById(courtOwner);
-            verify(jurorHistoryRepository, times(1)).save(jurorHistoryArgumentCaptor.capture());
-            verify(courtPrintLetterRepository, times(1))
-                .retrievePrintInformation(jurorNumber, CourtLetterType.CERTIFICATE_OF_ATTENDANCE, true,
-                    courtOwner);
-
-            JurorHistory jurorHistory = jurorHistoryArgumentCaptor.getValue();
-            assertThat(jurorHistory.getJurorNumber()).isEqualTo(jurorNumber);
-            assertThat(jurorHistory.getDateCreated()).isNotNull();
-            assertThat(jurorHistory.getHistoryCode()).isEqualTo(HistoryCodeMod.CERTIFICATE_OF_RECOGNITION);
-            assertThat(jurorHistory.getOtherInformation()).isEqualTo("Certificate of Attendance");
-            assertThat(jurorHistory.getCreatedBy()).isEqualTo("TEST_COURTUSER");
         }
 
         @Test
@@ -1978,14 +1792,15 @@ public class CourtLetterPrintServiceTest {
             doReturn(createSystemParam(ENGLISH_URL_PARAM, "ENGLISH_URL"))
                 .when(systemParameterRepositoryMod).findById(102);
             doReturn(createCertificateOfAttendanceDataEnglish(BigDecimal.valueOf(40), BigDecimal.valueOf(10),
-                BigDecimal.valueOf(10), false, "435")).when(courtPrintLetterRepository)
+                                                              BigDecimal.valueOf(10),
+                                                              "435")).when(courtPrintLetterRepository)
                 .retrievePrintInformation(jurorNumber, CourtLetterType.CERTIFICATE_OF_ATTENDANCE, false, courtOwner);
 
             List<PrintLetterDataResponseDto> response = courtLetterPrintServiceImpl
                 .getPrintLettersData(createPrintLetterRequest(Collections.singletonList(jurorNumber),
                     CourtLetterType.CERTIFICATE_OF_ATTENDANCE), "TEST_COURTUSER");
 
-            assertThat(response.size()).as("Expect size to be 1").isEqualTo(1);
+            assertThat(response).as("Expect size to be 1").hasSize(1);
             assertThat(response.get(0).getCourtName())
                 .as("Expect court name to be The Royal Court\n of Justice")
                 .isEqualTo("The Crown Court\nat " + "COURT NAME");
@@ -2021,14 +1836,15 @@ public class CourtLetterPrintServiceTest {
             doReturn(createSystemParam(ENGLISH_URL_PARAM, "ENGLISH_URL"))
                 .when(systemParameterRepositoryMod).findById(102);
             doReturn(createCertificateOfAttendanceDataEnglish(BigDecimal.valueOf(40), BigDecimal.valueOf(10),
-                BigDecimal.valueOf(10), false, "626")).when(courtPrintLetterRepository)
+                                                              BigDecimal.valueOf(10),
+                                                              "626")).when(courtPrintLetterRepository)
                 .retrievePrintInformation(jurorNumber, CourtLetterType.CERTIFICATE_OF_ATTENDANCE, false, courtOwner);
 
             List<PrintLetterDataResponseDto> response = courtLetterPrintServiceImpl
                 .getPrintLettersData(createPrintLetterRequest(Collections.singletonList(jurorNumber),
                     CourtLetterType.CERTIFICATE_OF_ATTENDANCE), "TEST_COURTUSER");
 
-            assertThat(response.size()).as("Expect size to be 1").isEqualTo(1);
+            assertThat(response).as("Expect size to be 1").hasSize(1);
             assertThat(response.get(0).getCourtName())
                 .as("Expect court name to be The Royal Court\nof Justice")
                 .isEqualTo("The Royal Court\nof Justice");
@@ -2078,8 +1894,8 @@ public class CourtLetterPrintServiceTest {
                 when(jurorRepository.findByJurorNumber(jurorNumber)).thenReturn(
                     createJuror(jurorNumber, true, courtOwner));
                 doReturn(createCertificateOfAttendanceDataWelsh(jurorNumber, BigDecimal.valueOf(40),
-                    BigDecimal.valueOf(10),
-                    BigDecimal.valueOf(10), false, courtNames.get(i)))
+                                                                BigDecimal.valueOf(10),
+                                                                BigDecimal.valueOf(10), courtNames.get(i)))
                     .when(courtPrintLetterRepository)
                     .retrievePrintInformation(jurorNumber, CourtLetterType.CERTIFICATE_OF_ATTENDANCE, true, courtOwner);
 
@@ -2095,8 +1911,8 @@ public class CourtLetterPrintServiceTest {
                 .getPrintLettersData(createPrintLetterRequest(jurorNumbers, CourtLetterType.CERTIFICATE_OF_ATTENDANCE),
                     "TEST_COURTUSER");
 
-            assertThat(response.size()).as(
-                "Expect size to be " + courtNames.size()).isEqualTo(courtNames.size());
+            assertThat(response).as(
+                "Expect size to be " + courtNames.size()).hasSize(courtNames.size());
 
             for (int i = 0;
                  i < courtNames.size();
@@ -2123,24 +1939,24 @@ public class CourtLetterPrintServiceTest {
 
 
         Tuple createCertificateOfAttendanceDataEnglish(BigDecimal lossOfEarnings, BigDecimal childCare,
-                                                       BigDecimal miscAmount, Boolean nonAttendance,
+                                                       BigDecimal miscAmount,
                                                        String courtLocation) {
             Tuple data = createPrintLetterTupleEnglish(courtLocation);
             when(data.get(APPEARANCE.lossOfEarningsDue)).thenReturn(lossOfEarnings);
             when(data.get(APPEARANCE.childcareDue)).thenReturn(childCare);
             when(data.get(APPEARANCE.miscAmountDue)).thenReturn(miscAmount);
-            when(data.get(APPEARANCE.nonAttendanceDay)).thenReturn(nonAttendance);
+            when(data.get(APPEARANCE.nonAttendanceDay)).thenReturn(false);
             return data;
         }
 
         Tuple createCertificateOfAttendanceDataWelsh(String jurorNumber, BigDecimal lossOfEarnings,
                                                      BigDecimal childCare, BigDecimal miscAmount,
-                                                     Boolean nonAttendance, String courtName) {
+                                                     String courtName) {
             Tuple data = createPrintLetterTupleWelsh(jurorNumber, courtName);
             when(data.get(APPEARANCE.lossOfEarningsDue)).thenReturn(lossOfEarnings);
             when(data.get(APPEARANCE.childcareDue)).thenReturn(childCare);
             when(data.get(APPEARANCE.miscAmountDue)).thenReturn(miscAmount);
-            when(data.get(APPEARANCE.nonAttendanceDay)).thenReturn(nonAttendance);
+            when(data.get(APPEARANCE.nonAttendanceDay)).thenReturn(false);
             return data;
         }
 
