@@ -17,6 +17,7 @@ import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.JurySummoningMonitorReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.JurySummoningMonitorReportResponse;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
+import uk.gov.hmcts.juror.api.moj.service.report.AttendanceReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.FinancialAuditReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.JurySummoningMonitorReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.ReportService;
@@ -68,6 +69,9 @@ class JurySummoningMonitorReportControllerTest {
 
     @MockBean
     private SummonsRepliesReportService summonsRepliesReportService;
+
+    @MockBean
+    private AttendanceReportService attendanceReportService;
 
     @Nested
     @DisplayName("POST (GET) " + ViewReportStandard.URL)

@@ -10,10 +10,12 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResp
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.Permission;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
@@ -43,8 +45,23 @@ public class IncompleteServiceReport extends AbstractStandardReport {
             DataType.LAST_ATTENDANCE_DATE,
             DataType.NEXT_ATTENDANCE_DATE);
         this.courtLocationRepository = courtLocationRepository;
-        isCourtUserOnly();
-        addAuthenticationConsumer(request -> checkOwnership(request.getLocCode(), false));
+
+        addAuthenticationConsumer(request -> {
+            boolean isCourt = SecurityUtil.isCourt();
+            boolean isSuperUser = SecurityUtil.hasPermission(Permission.SUPER_USER);
+
+            // Allow access if user is a court user OR a super user
+            if (!isCourt && !isSuperUser) {
+                throw new MojException.Forbidden("User not allowed to access this report", null);
+            }
+
+            // If court user (and not super user), check ownership
+            if (isCourt && !isSuperUser) {
+                checkOwnership(request.getLocCode(), false);
+            }
+
+        });
+
         addJoinOverride(JoinOverrideDetails.builder()
             .from(QJuror.juror)
             .joinType(JoinType.LEFTJOIN)
@@ -62,8 +79,11 @@ public class IncompleteServiceReport extends AbstractStandardReport {
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query
             .where(QJurorPool.jurorPool.pool.returnDate.loe(request.getDate()))
-            .where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(request.getLocCode()))
-            .where(QJurorPool.jurorPool.pool.owner.eq(SecurityUtil.getActiveOwner()))
+            .where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(request.getLocCode()));
+        if (!SecurityUtil.hasPermission(Permission.SUPER_USER)) {
+            query.where(QJurorPool.jurorPool.pool.owner.eq(SecurityUtil.getActiveOwner()));
+        }
+        query
             .where(QJurorPool.jurorPool.isActive.eq(true))
             .where(QJurorPool.jurorPool.status.status.in(List.of(IJurorStatus.RESPONDED, IJurorStatus.PANEL,
                 IJurorStatus.JUROR)))
