@@ -37,14 +37,15 @@ import static org.mockito.Mockito.when;
 
 @SuppressWarnings({
     "unchecked",
-    "PMD.ExcessiveImports"
+    "PMD.ExcessiveImports",
+    "checkstyle:AbbreviationAsWordInName"
 })
-class ReasonableAdjustmentAndCJEReportTest extends AbstractGroupedReportTestSupport<ReasonableAdjustmentAndCjeReport> {
+class ReasonableAdjustmentAndCjeReportTest extends AbstractGroupedReportTestSupport<ReasonableAdjustmentAndCjeReport> {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
     private CourtLocationService courtLocationService;
 
-    public ReasonableAdjustmentAndCJEReportTest() {
+    public ReasonableAdjustmentAndCjeReportTest() {
         super(QJurorPool.jurorPool,
             ReasonableAdjustmentAndCjeReport.RequestValidator.class,
             ReportGroupBy.builder()

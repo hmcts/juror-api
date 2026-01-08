@@ -6,6 +6,7 @@ import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import lombok.Getter;
+import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
@@ -23,6 +24,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Locale;
@@ -203,6 +205,8 @@ public enum DataType implements IDataType {
 
     ATTENDANCE_DATE("Attendance Date", LocalDate.class, QAppearance.appearance.attendanceDate, QAppearance.appearance),
     ATTENDANCE_TYPE("Attendance Type", String.class, QAppearance.appearance.attendanceType, QAppearance.appearance),
+    DAY("Day", String.class),
+    TOTAL_PAID("Paid", BigDecimal.class, QAppearance.appearance.totalPaid, QAppearance.appearance),
 
     EXPENSE_STATUS("Expense Status", String.class,
         new CaseBuilder()
@@ -448,6 +452,33 @@ public enum DataType implements IDataType {
                        .sum(),
                    QMessage.message),
 
+    COURT_NAME("Court", String.class,
+               QCourtLocation.courtLocation.name,
+               QCourtLocation.courtLocation),
+
+    TRANSPORT_TYPE("Transport Type", String.class,
+                   (Expression<?>) null),
+
+    OLD_LIMIT("Old Limit", String.class,
+              (Expression<?>) null),
+
+    NEW_LIMIT("New Limit", String.class,
+              (Expression<?>) null),
+
+    CHANGED_BY("Changed By", String.class,
+               (Expression<?>) null),
+
+    CHANGE_DATE("Change Date", LocalDateTime.class,
+                (Expression<?>) null),
+
+
+
+    PUBLIC_TRANSPORT_TOTAL_DUE("Public Transport Total", BigDecimal.class,
+                               QAppearance.appearance.publicTransportPaid,
+                               QAppearance.appearance),
+
+    PUBLIC_TRANSPORT_PAID_OVER_OLD_LIMIT("Public Transport Paid Over Old Limit", BigDecimal.class,
+                                         (Expression<?>) null),  // Calculated in report logic
 
 
     POLICE_CHECK_RESPONDED("Responded jurors", Long.class,
