@@ -163,7 +163,6 @@ public final class TestUtils {
         SecurityContextHolder.setContext(securityContext);
     }
 
-
     public static @NotNull BureauJwtPayload getJwtPayloadSuperUser(String locCode, String courtName) {
         Set<Permission> permissions = new HashSet<>();
         permissions.add(Permission.SUPER_USER);
@@ -173,11 +172,11 @@ public final class TestUtils {
             .build();
 
         return new BureauJwtPayload(user, UserType.ADMINISTRATOR, locCode,
-                                                       Collections.singletonList(CourtLocation.builder()
-                                                                                     .locCode(locCode)
-                                                                                     .name(courtName)
-                                                                                     .owner(locCode)
-                                                                                     .build()));
+                                    Collections.singletonList(CourtLocation.builder()
+                                                                  .locCode(locCode)
+                                                                  .name(courtName)
+                                                                  .owner(locCode)
+                                                                  .build()));
     }
 
 

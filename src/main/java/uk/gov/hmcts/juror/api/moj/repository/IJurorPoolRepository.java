@@ -61,5 +61,6 @@ public interface IJurorPoolRepository {
     int getCountJurorsDueToAttendCourt(String locCode, LocalDate startDate, LocalDate endDate,
                                        boolean reasonableAdjustmentRequired);
 
+    List<Tuple> getIncompleteServiceCountsByCourt();
 
 }
