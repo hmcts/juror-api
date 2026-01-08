@@ -1030,6 +1030,218 @@ class CourtLetterPrintServiceTest {
 
 
     @Nested
+    @DisplayName("(Re)-Issue Letter - Excusal Granted")
+    class ExcusalGranted {
+        @Test
+        @DisplayName("Reissue excused granted letter happy - English")
+        void reissueExcusedGrantedLetterHappyEnglish() {
+            final String jurorNumber = "111111111";
+            final String courtOwner = "415";
+            mockCurrentUser(courtOwner);
+
+            when(jurorRepository.findByJurorNumber(anyString())).thenReturn(createJuror(jurorNumber,
+                                                                                        false, courtOwner));
+            when(welshCourtLocationRepository.findById(anyString())).thenReturn(Optional.empty());
+            doReturn(createSystemParam(ENGLISH_URL_PARAM, "ENGLISH_URL"))
+                .when(systemParameterRepositoryMod).findById(anyInt());
+            doReturn(createExcusalRefusedDataEnglish(LocalDate.of(2024, 1, 1))).when(
+                    courtPrintLetterRepository) // same data structure for refused and granted
+                .retrievePrintInformation(jurorNumber, CourtLetterType.EXCUSAL_GRANTED, false, courtOwner);
+
+            List<PrintLetterDataResponseDto> response = courtLetterPrintServiceImpl
+                .getPrintLettersData(createPrintLetterRequest(Collections.singletonList(jurorNumber),
+                                                              CourtLetterType.EXCUSAL_GRANTED), "TEST_COURTUSER");
+
+            assertThat(response).as("Expect size to be 1").hasSize(1);
+            validateResponseDto(response);
+
+            verify(systemParameterRepositoryMod, times(1)).findById(102);
+            verify(jurorRepository, times(1)).findByJurorNumber(jurorNumber);
+            verify(welshCourtLocationRepository, times(0)).findById("415");
+            verify(jurorHistoryRepository, times(1)).save(any());
+            verify(courtPrintLetterRepository, times(1))
+                .retrievePrintInformation(jurorNumber, CourtLetterType.EXCUSAL_GRANTED, false, courtOwner);
+        }
+
+        private void validateResponseDto(List<PrintLetterDataResponseDto> response) {
+            for (PrintLetterDataResponseDto dto : response) {
+                assertThat(dto.getCourtName())
+                    .as("Expect court name to be " + "The Crown Court\n"
+                            + "at COURT NAME")
+                    .isEqualTo("The Crown Court\n"
+                                   + "at COURT NAME");
+                assertThat(dto.getCourtAddressLine1())
+                    .as("Expect address line 1 to be 'ADDRESS 1'")
+                    .isEqualTo("ADDRESS 1");
+                assertThat(dto.getCourtAddressLine2())
+                    .as("Expect address line 2 to be 'ADDRESS 2'")
+                    .isEqualTo("ADDRESS 2");
+                assertThat(dto.getCourtAddressLine3())
+                    .as("Expect address line 3 to be 'ADDRESS 3'")
+                    .isEqualTo("ADDRESS 3");
+                assertThat(dto.getCourtAddressLine4())
+                    .as("Expect address line 4 to be 'ADDRESS 4'")
+                    .isEqualTo("ADDRESS 4");
+                assertThat(dto.getCourtAddressLine5())
+                    .as("Expect address line 5 to be 'ADDRESS 5'")
+                    .isEqualTo("ADDRESS 5");
+                assertThat(dto.getCourtAddressLine6())
+                    .as("Expect address line 6 to be 'ADDRESS 6'")
+                    .isEqualTo("ADDRESS 6");
+                assertThat(dto.getCourtPostCode())
+                    .as("Expect post code to be 'PST CODE'")
+                    .isEqualTo("PST CODE");
+                assertThat(dto.getCourtPhoneNumber())
+                    .as("Expect court number to be 0123456789")
+                    .isEqualTo("0123456789");
+
+                assertThat(dto.getUrl())
+                    .as("Expect URL to be ENGLISH_URL")
+                    .isEqualTo("ENGLISH_URL");
+                assertThat(dto.getSignature())
+                    .as("Expect signatory to be ")
+                    .isEqualTo("TEST SIGNATURE\n\nAn Officer of the Crown Court");
+
+                assertThat(dto.getJurorFirstName())
+                    .as("Expect first name to be FNAME")
+                    .isEqualTo("FNAME");
+                assertThat(dto.getJurorLastName())
+                    .as("Expect last name to be LNAME")
+                    .isEqualTo("LNAME");
+                assertThat(dto.getJurorAddressLine1())
+                    .as("Expect address line 1 to be ADDRESS LINE 1")
+                    .isEqualTo("ADDRESS LINE 1");
+                assertThat(dto.getJurorAddressLine2())
+                    .as("Expect address line 2 to be ADDRESS LINE 2")
+                    .isEqualTo("ADDRESS LINE 2");
+                assertThat(dto.getJurorAddressLine3())
+                    .as("Expect address line 3 to be ADDRESS LINE 3")
+                    .isEqualTo("ADDRESS LINE 3");
+                assertThat(dto.getJurorAddressLine4())
+                    .as("Expect address line 4 to be ADDRESS LINE 4")
+                    .isEqualTo("ADDRESS LINE 4");
+                assertThat(dto.getJurorAddressLine5())
+                    .as("Expect address line 5 to be ADDRESS LINE 5")
+                    .isEqualTo("ADDRESS LINE 5");
+                assertThat(dto.getJurorPostcode())
+                    .as("Expect post code to be JUROR POST CODE")
+                    .isEqualTo("JUROR POST CODE");
+                assertThat(dto.getJurorNumber())
+                    .as("Expect juror number to be " + "111111111")
+                    .isEqualTo("111111111");
+                assertThat(dto.getWelsh())
+                    .as("Expect welsh to be false")
+                    .isFalse();
+            }
+        }
+
+        @Test
+        @DisplayName("Reissue excused granted letter happy - Welsh")
+        void reissueExcusedGrantedLetterHappyWelsh() {
+            final String jurorNumber = "999999999";
+            final String courtOwner = "457";
+            mockCurrentUser(courtOwner);
+
+            when(jurorRepository.findByJurorNumber(anyString())).thenReturn(createJuror(jurorNumber, true, courtOwner));
+            WelshCourtLocation welshCourtLocation = WelshCourtLocation.builder().locCode(courtOwner).build();
+            when(welshCourtLocationRepository.findById("457"))
+                .thenReturn(Optional.of(welshCourtLocation));
+            doReturn(createSystemParam(WELSH_URL_PARAM, "WELSH_URL"))
+                .when(systemParameterRepositoryMod).findById(103);
+            doReturn(createExcusalRefusedDataWelsh(LocalDate.of(2024, 1, 1))).when(
+                    courtPrintLetterRepository) // same data structure for refused and granted
+                .retrievePrintInformation(jurorNumber, CourtLetterType.EXCUSAL_GRANTED, true, courtOwner);
+
+            List<PrintLetterDataResponseDto> response = courtLetterPrintServiceImpl
+                .getPrintLettersData(createPrintLetterRequest(Collections.singletonList(jurorNumber),
+                                                              CourtLetterType.EXCUSAL_GRANTED), "TEST_COURTUSER");
+
+            assertThat(response).as("Expect size to be 1").hasSize(1);
+            validateWelshResponseDto(response);
+
+            verify(systemParameterRepositoryMod, times(1)).findById(103);
+            verify(jurorRepository, times(1)).findByJurorNumber(jurorNumber);
+            verify(welshCourtLocationRepository, times(1)).findById("457");
+            verify(jurorHistoryRepository, times(1)).save(any());
+            verify(courtPrintLetterRepository, times(1))
+                .retrievePrintInformation(jurorNumber, CourtLetterType.EXCUSAL_GRANTED, true, courtOwner);
+        }
+
+        private static void validateWelshResponseDto(List<PrintLetterDataResponseDto> response) {
+            for (PrintLetterDataResponseDto dto : response) {
+                assertThat(dto.getCourtName()).as("Expect court name to be Llys y Goron\nynAbertawe")
+                    .isEqualTo("Llys y Goron\nynAbertawe");
+                assertThat(dto.getCourtAddressLine1())
+                    .as("Expect address line 1 to be 'WELSH ADDRESS 1'")
+                    .isEqualTo("WELSH ADDRESS 1");
+                assertThat(dto.getCourtAddressLine2())
+                    .as("Expect address line 2 to be 'WELSH ADDRESS 2'")
+                    .isEqualTo("WELSH ADDRESS 2");
+                assertThat(dto.getCourtAddressLine3())
+                    .as("Expect address line 3 to be 'WELSH ADDRESS 3'")
+                    .isEqualTo("WELSH ADDRESS 3");
+                assertThat(dto.getCourtAddressLine4())
+                    .as("Expect address line 4 to be 'WELSH ADDRESS 4'")
+                    .isEqualTo("WELSH ADDRESS 4");
+                assertThat(dto.getCourtAddressLine5())
+                    .as("Expect address line 5 to be 'WELSH ADDRESS 5'")
+                    .isEqualTo("WELSH ADDRESS 5");
+                assertThat(dto.getCourtAddressLine6())
+                    .as("Expect address line 6 to be 'WELSH ADDRESS 6'")
+                    .isEqualTo("WELSH ADDRESS 6");
+                assertThat(dto.getCourtPostCode())
+                    .as("Expect post code to be 'PST CODE'")
+                    .isEqualTo("PST CODE");
+                assertThat(dto.getCourtPhoneNumber())
+                    .as("Expect court number to be 0123456789")
+                    .isEqualTo("0123456789");
+                assertThat(dto.getSignature())
+                    .as("Expect signatory to be ")
+                    .isEqualTo("TEST SIGNATURE\n\nSwyddog Llys");
+
+                assertThat(dto.getUrl())
+                    .as("Expect URL to be WELSH_URL")
+                    .isEqualTo("WELSH_URL");
+                assertThat(dto.getSignature())
+                    .as("Expect signatory to be ")
+                    .isEqualTo("TEST SIGNATURE\n\nSwyddog Llys");
+
+                assertThat(dto.getJurorFirstName())
+                    .as("Expect first name to be FNAME")
+                    .isEqualTo("FNAME");
+                assertThat(dto.getJurorLastName())
+                    .as("Expect last name to be LNAME")
+                    .isEqualTo("LNAME");
+                assertThat(dto.getJurorAddressLine1())
+                    .as("Expect address line 1 to be ADDRESS LINE 1")
+                    .isEqualTo("ADDRESS LINE 1");
+                assertThat(dto.getJurorAddressLine2())
+                    .as("Expect address line 2 to be ADDRESS LINE 2")
+                    .isEqualTo("ADDRESS LINE 2");
+                assertThat(dto.getJurorAddressLine3())
+                    .as("Expect address line 3 to be ADDRESS LINE 3")
+                    .isEqualTo("ADDRESS LINE 3");
+                assertThat(dto.getJurorAddressLine4())
+                    .as("Expect address line 4 to be ADDRESS LINE 4")
+                    .isEqualTo("ADDRESS LINE 4");
+                assertThat(dto.getJurorAddressLine5())
+                    .as("Expect address line 5 to be ADDRESS LINE 5")
+                    .isEqualTo("ADDRESS LINE 5");
+                assertThat(dto.getJurorPostcode())
+                    .as("Expect post code to be JUROR POST CODE")
+                    .isEqualTo("JUROR POST CODE");
+                assertThat(dto.getJurorNumber())
+                    .as("Expect juror number to be " + "999999999")
+                    .isEqualTo("999999999");
+                assertThat(dto.getWelsh())
+                    .as("Expect welsh to be true")
+                    .isTrue();
+            }
+        }
+    }
+
+
+    @Nested
     @DisplayName("Postponement letter - Postponement")
     class PostponementGranted {
         @Test
