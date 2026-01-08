@@ -50,4 +50,39 @@ public interface CourtLocationRepository extends CrudRepository<CourtLocation, S
         + "limit 10", nativeQuery = true)
     List<String> getRecentlyUpdatedRecords();
 
+    /**
+     * Get court location codes that have been updated in the last 12 months
+     * (for full report - not limited to 10)
+     */
+    @Query(value = "SELECT DISTINCT cla.loc_code "
+        + "FROM juror_mod.court_location_audit cla "
+        + "JOIN juror_mod.rev_info ri ON cla.revision = ri.revision_number "
+        + "WHERE cla.rev_type = 1 "  // 1 = MOD (modification)
+        + "AND ri.revision_timestamp >= EXTRACT(EPOCH FROM (CURRENT_DATE - INTERVAL '12 months')) * 1000 "
+        + "ORDER BY cla.loc_code",
+        nativeQuery = true)
+    List<String> getRecentlyUpdatedRecordsLastYear();
+
+    /**
+     * Get court audit revisions for specific courts in the last 12 months
+     * Returns all revisions (not limited to 10 per court)
+     */
+    @Query(value = "SELECT cla.loc_code, "
+        + "cla.public_transport_soft_limit, "
+        + "cla.taxi_soft_limit, "
+        + "ri.changed_by, "
+        + "ri.revision_number, "
+        + "ri.revision_timestamp, "  // Added to get actual change date
+        + "cl.loc_court_name "
+        + "FROM juror_mod.court_location_audit cla "
+        + "JOIN juror_mod.rev_info ri ON cla.revision = ri.revision_number "
+        + "JOIN juror_mod.court_location cl ON cla.loc_code = cl.loc_code "
+        + "WHERE cla.loc_code IN (:codes) "
+        + "AND ri.revision_timestamp >= EXTRACT(EPOCH FROM (CURRENT_DATE - INTERVAL '12 months')) * 1000 "
+        + "ORDER BY cla.loc_code, ri.revision_number DESC",
+        nativeQuery = true)
+    List<String> getCourtRevisionsByLocCodesLastYear(List<String> codes);
+
+
+
 }
