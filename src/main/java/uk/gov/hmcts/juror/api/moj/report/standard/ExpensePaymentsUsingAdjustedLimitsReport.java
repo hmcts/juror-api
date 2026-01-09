@@ -19,9 +19,11 @@ import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -247,6 +249,12 @@ public class ExpensePaymentsUsingAdjustedLimitsReport extends AbstractStandardRe
                 .orElse(request.getLocCode());
 
         String transportType = request.getTransportType();
+        Long revisionNumber = request.getRevisionNumber();
+
+        // Get old and new limits from court_location_audit
+        Map<String, BigDecimal> limits = getOldAndNewLimits(request.getLocCode(),
+                revisionNumber,
+                transportType);
 
         Map<String, AbstractReportResponse.DataTypeValue> map = new ConcurrentHashMap<>();
 
@@ -268,10 +276,26 @@ public class ExpensePaymentsUsingAdjustedLimitsReport extends AbstractStandardRe
                 .value(transportType)
                 .build());
 
+        map.put("old_limit", AbstractReportResponse.DataTypeValue.builder()
+                .displayName("Old Limit")
+                .dataType(String.class.getSimpleName())
+                .value(limits.get("old_limit") != null
+                        ? String.format("£%.2f", limits.get("old_limit"))
+                        : "N/A")
+                .build());
+
+        map.put("new_limit", AbstractReportResponse.DataTypeValue.builder()
+                .displayName("New Limit")
+                .dataType(String.class.getSimpleName())
+                .value(limits.get("new_limit") != null
+                        ? String.format("£%.2f", limits.get("new_limit"))
+                        : "N/A")
+                .build());
+
         map.put("revision_number", AbstractReportResponse.DataTypeValue.builder()
                 .displayName("Revision Number")
                 .dataType(Long.class.getSimpleName())
-                .value(request.getRevisionNumber())
+                .value(revisionNumber)
                 .build());
 
         map.put("total_records", AbstractReportResponse.DataTypeValue.builder()
@@ -280,13 +304,57 @@ public class ExpensePaymentsUsingAdjustedLimitsReport extends AbstractStandardRe
                 .value(tableData.getData().size())
                 .build());
 
-        map.put("report_generated", AbstractReportResponse.DataTypeValue.builder()
-                .displayName("Report Generated")
-                .dataType(LocalDate.class.getSimpleName())
-                .value(DateTimeFormatter.ISO_DATE.format(LocalDate.now()))
+        map.put("report_created", AbstractReportResponse.DataTypeValue.builder()
+                .displayName("Report Created")
+                .dataType(LocalDateTime.class.getSimpleName())
+                .value(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss").format(LocalDateTime.now()))
                 .build());
 
         return map;
+    }
+
+    /**
+     * Get old and new limits for the specified revision and transport type
+     */
+    private Map<String, BigDecimal> getOldAndNewLimits(String locCode,
+                                                       Long revisionNumber,
+                                                       String transportType) {
+        Map<String, BigDecimal> limits = new HashMap<>();
+
+        try {
+            // Query to get old and new limits from court_location_audit
+            List<String> auditData = courtLocationRepository.getRevisionLimits(locCode, revisionNumber);
+
+            if (!auditData.isEmpty()) {
+                // Parse the result: loc_code,public_transport_soft_limit,taxi_soft_limit,
+                //                   previous_public_transport,previous_taxi
+                String[] parts = auditData.get(0).split(",");
+
+                boolean isPublicTransport = "Public Transport".equalsIgnoreCase(transportType);
+
+                if (isPublicTransport) {
+                    // Current value is in index 1, previous value in index 3
+                    if (parts.length > 1 && !parts[1].isEmpty()) {
+                        limits.put("new_limit", new BigDecimal(parts[1]));
+                    }
+                    if (parts.length > 3 && !parts[3].isEmpty()) {
+                        limits.put("old_limit", new BigDecimal(parts[3]));
+                    }
+                } else {
+                    // Taxi: Current value is in index 2, previous value in index 4
+                    if (parts.length > 2 && !parts[2].isEmpty()) {
+                        limits.put("new_limit", new BigDecimal(parts[2]));
+                    }
+                    if (parts.length > 4 && !parts[4].isEmpty()) {
+                        limits.put("old_limit", new BigDecimal(parts[4]));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Error getting old and new limits: {}", e.getMessage());
+        }
+
+        return limits;
     }
 
     /**

@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.history.RevisionRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 
@@ -83,6 +84,36 @@ public interface CourtLocationRepository extends CrudRepository<CourtLocation, S
         nativeQuery = true)
     List<String> getCourtRevisionsByLocCodesLastYear(List<String> codes);
 
-
+    /**
+     * Get old and new limits for a specific revision.
+     * Uses LAG window function to get previous values for comparison.
+     */
+    @Query(value = "WITH revision_data AS ( "
+        + "    SELECT "
+        + "        cla.loc_code, "
+        + "        cla.public_transport_soft_limit, "
+        + "        cla.taxi_soft_limit, "
+        + "        cla.revision, "
+        + "        LAG(cla.public_transport_soft_limit) OVER ( "
+        + "            PARTITION BY cla.loc_code ORDER BY cla.revision "
+        + "        ) AS previous_public_transport, "
+        + "        LAG(cla.taxi_soft_limit) OVER ( "
+        + "            PARTITION BY cla.loc_code ORDER BY cla.revision "
+        + "        ) AS previous_taxi "
+        + "    FROM juror_mod.court_location_audit cla "
+        + "    WHERE cla.loc_code = :locCode "
+        + ") "
+        + "SELECT "
+        + "    loc_code || ',' || "
+        + "    COALESCE(public_transport_soft_limit::TEXT, '') || ',' || "
+        + "    COALESCE(taxi_soft_limit::TEXT, '') || ',' || "
+        + "    COALESCE(previous_public_transport::TEXT, '') || ',' || "
+        + "    COALESCE(previous_taxi::TEXT, '') "
+        + "FROM revision_data "
+        + "WHERE revision = :revisionNumber",
+        nativeQuery = true)
+    List<String> getRevisionLimits(
+        @Param("locCode") String locCode,
+        @Param("revisionNumber") Long revisionNumber);
 
 }
