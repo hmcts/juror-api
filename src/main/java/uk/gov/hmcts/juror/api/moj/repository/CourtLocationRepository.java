@@ -1,10 +1,10 @@
 package uk.gov.hmcts.juror.api.moj.repository;
 
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.history.RevisionRepository;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 
@@ -87,6 +87,14 @@ public interface CourtLocationRepository extends CrudRepository<CourtLocation, S
     /**
      * Get old and new limits for a specific revision.
      * Uses LAG window function to get previous values for comparison.
+     *
+     * NOTE: The :: (double colon) for PostgreSQL type casting must be escaped
+     * in the Java string or Hibernate will interpret it as a named parameter.
+     *
+     * @param locCode The court location code (e.g., "415")
+     * @param revisionNumber The revision number from rev_info table
+     * @return CSV string: loc_code,public_transport_soft_limit,taxi_soft_limit,
+     *                     previous_public_transport,previous_taxi
      */
     @Query(value = "WITH revision_data AS ( "
         + "    SELECT "
@@ -104,16 +112,15 @@ public interface CourtLocationRepository extends CrudRepository<CourtLocation, S
         + "    WHERE cla.loc_code = :locCode "
         + ") "
         + "SELECT "
-        + "    loc_code || ',' || "
-        + "    COALESCE(public_transport_soft_limit::TEXT, '') || ',' || "
-        + "    COALESCE(taxi_soft_limit::TEXT, '') || ',' || "
-        + "    COALESCE(previous_public_transport::TEXT, '') || ',' || "
-        + "    COALESCE(previous_taxi::TEXT, '') "
+        + "    CONCAT(loc_code, ',', "  // Use CONCAT instead of ||
+        + "        COALESCE(CAST(public_transport_soft_limit AS VARCHAR), ''), ',', "
+        + "        COALESCE(CAST(taxi_soft_limit AS VARCHAR), ''), ',', "
+        + "        COALESCE(CAST(previous_public_transport AS VARCHAR), ''), ',', "
+        + "        COALESCE(CAST(previous_taxi AS VARCHAR), '')) "
         + "FROM revision_data "
         + "WHERE revision = :revisionNumber",
         nativeQuery = true)
     List<String> getRevisionLimits(
         @Param("locCode") String locCode,
         @Param("revisionNumber") Long revisionNumber);
-
 }
