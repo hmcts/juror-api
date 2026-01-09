@@ -9,62 +9,69 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportReque
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
-import uk.gov.hmcts.juror.api.moj.domain.Appearance;
-import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
-import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
-import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
-import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
-import uk.gov.hmcts.juror.api.moj.service.audit.CourtLocationAuditService;
-import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
+import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-
+/**
+ * Drill-down report showing individual jurors who received expense payments
+ * using adjusted transport limits at a specific court.
+ *
+ * This report is accessed from ManualAdjustmentsToExpenseLimitsReport by clicking
+ * on a specific limit change record.
+ *
+ * Parameters:
+ * - revisionNumber: The court_location_revision from financial_audit_details
+ * - locCode: The court location code
+ * - transportType: "Public Transport" or "Taxi"
+ *
+ * Uses financial_audit_details table to find jurors affected by the limit change.
+ */
 @Slf4j
 @Component
-public class ExpensePaymentsUsingAdjustedLimitsReport extends AbstractReport<StandardTableData> {
+public class ExpensePaymentsUsingAdjustedLimitsReport extends AbstractStandardReport {
 
-    private final CourtLocationRepository courtLocationRepository;
-    private final CourtLocationAuditService courtLocationAuditService;
     private final AppearanceRepository appearanceRepository;
-    private final JurorRepository jurorRepository;
+    private final CourtLocationRepository courtLocationRepository;
 
     @Autowired
-    public ExpensePaymentsUsingAdjustedLimitsReport(
-            CourtLocationRepository courtLocationRepository,
-            CourtLocationAuditService courtLocationAuditService,
-            AppearanceRepository appearanceRepository,
-            JurorRepository jurorRepository) {
-        super(
+    public ExpensePaymentsUsingAdjustedLimitsReport(PoolRequestRepository poolRequestRepository,
+                                                    AppearanceRepository appearanceRepository,
+                                                    CourtLocationRepository courtLocationRepository) {
+        super(poolRequestRepository,
                 QAppearance.appearance,
                 DataType.JUROR_NUMBER,
                 DataType.FIRST_NAME,
                 DataType.LAST_NAME,
-                DataType.APPEARANCE_POOL_NUMBER,
-                DataType.APPEARANCE_TRIAL_NUMBER,
-                DataType.ATTENDANCE_DATE,
-                DataType.OLD_LIMIT,
-                DataType.NEW_LIMIT
-        );
-        this.courtLocationRepository = courtLocationRepository;
-        this.courtLocationAuditService = courtLocationAuditService;
+                DataType.POOL_NUMBER_BY_JP,
+                DataType.TRIAL_NUMBER,
+                DataType.TOTAL_PAID);
+
         this.appearanceRepository = appearanceRepository;
-        this.jurorRepository = jurorRepository;
-        isSuperUserOnly();
+        this.courtLocationRepository = courtLocationRepository;
+
+        // Court users can access this report for their own court
+        isCourtUserOnly();
+    }
+
+    @Override
+    protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
+        // This report doesn't use QueryDSL - it overrides getStandardReportResponse instead
     }
 
     @Override
@@ -73,337 +80,126 @@ public class ExpensePaymentsUsingAdjustedLimitsReport extends AbstractReport<Sta
     }
 
     @Override
-    protected StandardReportResponse createBlankResponse() {
-        return new StandardReportResponse();
-    }
-
-    @Override
-    protected StandardTableData getTableData(List<Tuple> data) {
-        // This method is called by the parent but we override the entire flow
-        return new StandardTableData();
-    }
-
-    @Override
     public StandardReportResponse getStandardReportResponse(StandardReportRequest request) {
-        log.info("Starting ExpensePaymentsUsingAdjustedLimitsReport");
+        log.info("Generating Expense Payments Using Adjusted Limits Report");
 
-        // Determine which court to report on
-        String locCode;
-        if (request.getCourts() != null && !request.getCourts().isEmpty()) {
-            locCode = request.getCourts().get(0);
-            log.info("Using locCode from request: {}", locCode);
-        } else {
-            locCode = SecurityUtil.getLocCode();
-            log.info("Using locCode from security context: {}", locCode);
-        }
-
-
+        // Validate required parameters
+        Long revisionNumber = request.getRevisionNumber();
+        String locCode = request.getLocCode();
         String transportType = request.getTransportType();
+
+        if (revisionNumber == null) {
+            throw new MojException.BadRequest("Revision number is required", null);
+        }
+        if (locCode == null || locCode.isEmpty()) {
+            throw new MojException.BadRequest("Location code is required", null);
+        }
         if (transportType == null || transportType.isEmpty()) {
-            log.error("Transport type parameter is required but not provided");
-            throw new IllegalArgumentException("Transport type parameter is required");
-        }
-        log.info("Transport type filter: {}", transportType);
-
-        LocalDate toDate = LocalDate.now();
-        final LocalDate fromDate = toDate.minusMonths(12);
-
-
-        var auditRecords = courtLocationAuditService.getTransportLimitAuditHistory(locCode);
-
-        if (auditRecords.isEmpty()) {
-            log.warn("No audit records found for locCode: {}", locCode);
-            return createEmptyResponse(request, locCode, null, null, transportType);
+            throw new MojException.BadRequest("Transport type is required", null);
         }
 
-        var latestAudit = auditRecords.get(auditRecords.size() - 1);
-        log.info("Found {} audit records, using latest", auditRecords.size());
+        log.info("Parameters - Revision: {}, LocCode: {}, Transport Type: {}",
+                revisionNumber, locCode, transportType);
 
-
-        BigDecimal oldLimit = null;
-        BigDecimal newLimit = null;
+        // Query for expense payments based on transport type
+        List<String> expensePayments;
         boolean isPublicTransport = "Public Transport".equalsIgnoreCase(transportType);
-        boolean isTaxi = "Taxi".equalsIgnoreCase(transportType);
 
         if (isPublicTransport) {
-            oldLimit = latestAudit.getPublicTransportPreviousValue();
-            newLimit = latestAudit.getPublicTransportCurrentValue();
-            log.info("Using Public Transport limits: old={}, new={}", oldLimit, newLimit);
-        } else if (isTaxi) {
-            oldLimit = latestAudit.getTaxiPreviousValue();
-            newLimit = latestAudit.getTaxiCurrentValue();
-            log.info("Using Taxi limits: old={}, new={}", oldLimit, newLimit);
+            expensePayments = appearanceRepository.findPublicTransportExpensesByRevision(revisionNumber, locCode);
         } else {
-            log.error("Invalid transport type: {}", transportType);
-            throw new IllegalArgumentException("Invalid transport type. Must be 'Public Transport' or 'Taxi'");
+            expensePayments = appearanceRepository.findTaxiExpensesByRevision(revisionNumber, locCode);
         }
 
-        // Validate that a limit change occurred (new limit must be different from old)
-        if (oldLimit == null || newLimit == null || newLimit.compareTo(oldLimit) == 0) {
-            log.warn("No limit change found for transport type: {}", transportType);
-            return createEmptyResponse(request, locCode, oldLimit, newLimit, transportType);
-        }
+        log.info("Found {} expense payment records", expensePayments.size());
 
-        // Query for appearances matching the criteria
-        log.info("Querying appearances for locCode: {} between {} and {}", locCode, fromDate, toDate);
-        Set<AppearanceStage> expenseStages = Set.of(
-                AppearanceStage.EXPENSE_ENTERED,
-                AppearanceStage.EXPENSE_EDITED,
-                AppearanceStage.EXPENSE_AUTHORISED
-        );
+        // Parse results
+        List<ExpensePaymentRecord> records = parseExpensePayments(expensePayments);
 
-        List<Appearance> filteredAppearances = appearanceRepository.findExpensePaymentsForReport(
-                locCode,
-                fromDate,
-                toDate,
-                expenseStages
-        );
+        // Build table data
+        StandardTableData tableData = buildTableData(records);
 
-        log.info("Found {} appearances matching initial criteria", filteredAppearances.size());
-
-        StandardTableData tableData = new StandardTableData();
-
-
-        for (Appearance appearance : filteredAppearances) {
-            log.debug("Processing appearance for juror: {}, date: {}",
-                    appearance.getJurorNumber(), appearance.getAttendanceDate());
-
-
-            Optional<Juror> jurorOpt = jurorRepository.findById(appearance.getJurorNumber());
-            String firstName = "";
-            String lastName = "";
-
-            if (jurorOpt.isPresent()) {
-                Juror juror = jurorOpt.get();
-                firstName = juror.getFirstName() != null ? juror.getFirstName() : "";
-                lastName = juror.getLastName() != null ? juror.getLastName() : "";
-            } else {
-                log.warn("Juror not found for jurorNumber: {}", appearance.getJurorNumber());
-            }
-
-
-            if (isPublicTransport) {
-                // Show public transport expenses that have a paid amount
-                BigDecimal paidAmount = appearance.getPublicTransportPaid();
-                log.debug("Public Transport check - juror: {}, paid: {}",
-                        appearance.getJurorNumber(), paidAmount);
-
-                if (paidAmount != null && paidAmount.compareTo(BigDecimal.ZERO) > 0) {
-                    log.info("✓ Including Public Transport for juror {}: paid=£{}",
-                            appearance.getJurorNumber(), paidAmount);
-
-                    LinkedHashMap<String, Object> row = new LinkedHashMap<>();
-                    row.put("juror_number", appearance.getJurorNumber());
-                    row.put("first_name", firstName);
-                    row.put("last_name", lastName);
-                    row.put("paid", formatAmount(paidAmount));
-                    row.put("pool_number", appearance.getPoolNumber());
-                    row.put("trial_number", appearance.getTrialNumber());
-                    row.put("attendance_date", appearance.getAttendanceDate());
-
-                    tableData.add(row);
-                } else {
-                    log.debug("Skipping Public Transport for juror {} - no paid amount",
-                            appearance.getJurorNumber());
-                }
-            } else if (isTaxi) {
-                // Show taxi expenses that have a paid amount
-                BigDecimal paidAmount = appearance.getHiredVehiclePaid();
-                log.debug("Taxi check - juror: {}, paid: {}",
-                        appearance.getJurorNumber(), paidAmount);
-
-                if (paidAmount != null && paidAmount.compareTo(BigDecimal.ZERO) > 0) {
-                    log.info("✓ Including Taxi for juror {}: paid=£{}",
-                            appearance.getJurorNumber(), paidAmount);
-
-                    LinkedHashMap<String, Object> row = new LinkedHashMap<>();
-                    row.put("juror_number", appearance.getJurorNumber());
-                    row.put("first_name", firstName);
-                    row.put("last_name", lastName);
-                    row.put("paid", formatAmount(paidAmount));
-                    row.put("pool_number", appearance.getPoolNumber());
-                    row.put("trial_number", appearance.getTrialNumber());
-                    row.put("attendance_date", appearance.getAttendanceDate());
-
-                    tableData.add(row);
-                } else {
-                    log.debug("Skipping Taxi for juror {} - no paid amount",
-                            appearance.getJurorNumber());
-                }
-            }
-        }
-
-        log.info("Found {} expense payment records for {}", tableData.size(), transportType);
-
-
-        StandardReportResponse.TableData<StandardTableData> responseTableData =
-                StandardReportResponse.TableData.<StandardTableData>builder()
+        // Build table data wrapper
+        AbstractReportResponse.TableData<StandardTableData> tableDataWrapper =
+                AbstractReportResponse.TableData.<StandardTableData>builder()
                         .headings(getColumnHeadings())
                         .data(tableData)
                         .build();
 
-
-        StandardReportResponse report = new StandardReportResponse();
-
+        // Build response with headings (using override method)
         Map<String, StandardReportResponse.DataTypeValue> headings =
-                new ConcurrentHashMap<>(getHeadings(
-                        request, responseTableData, locCode, oldLimit, newLimit, transportType));
+                getHeadings(request, tableDataWrapper);
 
-        headings.put("report_created", StandardReportResponse.DataTypeValue.builder()
-                .value(DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now()))
-                .dataType(LocalDateTime.class.getSimpleName())
-                .build());
-
-        report.setHeadings(headings);
-        report.setTableData(responseTableData);
-
-        return report;
-    }
-
-    private StandardReportResponse createEmptyResponse(StandardReportRequest request, String locCode,
-                                                       BigDecimal oldLimit,
-                                                       BigDecimal newLimit,
-                                                       String transportType) {
-        StandardTableData tableData = new StandardTableData();
-
-        StandardReportResponse.TableData<StandardTableData> responseTableData =
-                StandardReportResponse.TableData.<StandardTableData>builder()
-                        .headings(getColumnHeadings())
-                        .data(tableData)
-                        .build();
-
-        StandardReportResponse report = new StandardReportResponse();
-
-        Map<String, StandardReportResponse.DataTypeValue> headings =
-                new ConcurrentHashMap<>(getHeadings(
-                        request, responseTableData, locCode, oldLimit, newLimit, transportType));
-
-        headings.put("report_created", StandardReportResponse.DataTypeValue.builder()
-                .value(DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now()))
-                .dataType(LocalDateTime.class.getSimpleName())
-                .build());
-
-        report.setHeadings(headings);
-        report.setTableData(responseTableData);
-
-        return report;
-    }
-
-    @Override
-    protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
-        // Not used since we override getStandardReportResponse
-    }
-
-    private Map<String, StandardReportResponse.DataTypeValue> getHeadings(
-            StandardReportRequest request,
-            AbstractReportResponse.TableData<StandardTableData> tableData,
-            String locCode,
-            BigDecimal oldLimit,
-            BigDecimal newLimit,
-            String transportType) {
-
-        Map<String, StandardReportResponse.DataTypeValue> map = new ConcurrentHashMap<>();
-
-        var courtLocation = courtLocationRepository.findById(locCode).orElse(null);
-        LocalDate toDate = LocalDate.now();
-        final LocalDate fromDate = toDate.minusMonths(12);
-
-
-        String courtNameWithCode;
-        if (courtLocation != null) {
-            String courtName = courtLocation.getLocCourtName() != null
-                    ? courtLocation.getLocCourtName()
-                    : (courtLocation.getName() != null ? courtLocation.getName() : locCode);
-            courtNameWithCode = String.format("%s (%s)", courtName, locCode);
-        } else {
-            courtNameWithCode = String.format("Unknown (%s)", locCode);
-        }
-
-        map.put("court_name", StandardReportResponse.DataTypeValue.builder()
-                .displayName("Court Name")
-                .dataType(String.class.getSimpleName())
-                .value(courtNameWithCode)
-                .build());
-
-
-        map.put("transport_type", StandardReportResponse.DataTypeValue.builder()
-                .displayName("Type")
-                .dataType(String.class.getSimpleName())
-                .value(transportType != null ? transportType : "")
-                .build());
-
-
-        map.put("old_limit", StandardReportResponse.DataTypeValue.builder()
-                .displayName("Old Limit")
-                .dataType(String.class.getSimpleName())
-                .value(formatLimit(oldLimit))
-                .build());
-
-        map.put("new_limit", StandardReportResponse.DataTypeValue.builder()
-                .displayName("New Limit")
-                .dataType(String.class.getSimpleName())
-                .value(formatLimit(newLimit))
-                .build());
-
-
-        map.put("date_from", StandardReportResponse.DataTypeValue.builder()
-                .displayName("Date from")
-                .dataType(LocalDate.class.getSimpleName())
-                .value(DateTimeFormatter.ISO_DATE.format(fromDate))
-                .build());
-
-        map.put("date_to", StandardReportResponse.DataTypeValue.builder()
-                .displayName("Date to")
-                .dataType(LocalDate.class.getSimpleName())
-                .value(DateTimeFormatter.ISO_DATE.format(toDate))
-                .build());
-
-        return map;
-    }
-
-    @Override
-    public Map<String, StandardReportResponse.DataTypeValue> getHeadings(
-            StandardReportRequest request,
-            AbstractReportResponse.TableData<StandardTableData> tableData) {
-
-        // Determine which court to report on
-        String locCode;
-        if (request.getCourts() != null && !request.getCourts().isEmpty()) {
-            locCode = request.getCourts().get(0);
-        } else {
-            locCode = SecurityUtil.getLocCode();
-        }
-
-        // Get transport type from request
-        String transportType = request.getTransportType();
-        if (transportType == null || transportType.isEmpty()) {
-            transportType = "Unknown";
-        }
-
-        var auditRecords = courtLocationAuditService.getTransportLimitAuditHistory(locCode);
-
-        if (auditRecords.isEmpty()) {
-            return getHeadings(request, tableData, locCode, null, null, transportType);
-        }
-
-        var latestAudit = auditRecords.get(auditRecords.size() - 1);
-
-        BigDecimal oldLimit = null;
-        BigDecimal newLimit = null;
-
-        if ("Public Transport".equalsIgnoreCase(transportType)) {
-            oldLimit = latestAudit.getPublicTransportPreviousValue();
-            newLimit = latestAudit.getPublicTransportCurrentValue();
-        } else if ("Taxi".equalsIgnoreCase(transportType)) {
-            oldLimit = latestAudit.getTaxiPreviousValue();
-            newLimit = latestAudit.getTaxiCurrentValue();
-        }
-
-        return getHeadings(request, tableData, locCode, oldLimit, newLimit, transportType);
+        return StandardReportResponse.builder()
+                .headings(headings)
+                .tableData(tableDataWrapper)
+                .build();
     }
 
     /**
-     * Build the column headings for the table.
+     * Parse raw expense payment strings into structured objects
+     */
+    private List<ExpensePaymentRecord> parseExpensePayments(List<String> expensePayments) {
+        List<ExpensePaymentRecord> records = new ArrayList<>();
+
+        for (String line : expensePayments) {
+            try {
+                List<String> parts = List.of(line.split(","));
+
+                if (parts.size() < 6) {
+                    log.warn("Invalid expense payment line (too few fields): {}", line);
+                    continue;
+                }
+
+                String jurorNumber = parts.get(0);
+                String firstName = parts.get(1);
+                String lastName = parts.get(2);
+                String poolNumber = parts.get(3);
+                String trialNumber = parts.get(4);
+                BigDecimal totalPaid = new BigDecimal(parts.get(5));
+
+                ExpensePaymentRecord record = ExpensePaymentRecord.builder()
+                        .jurorNumber(jurorNumber)
+                        .firstName(firstName)
+                        .lastName(lastName)
+                        .poolNumber(poolNumber)
+                        .trialNumber(trialNumber)
+                        .totalPaid(totalPaid)
+                        .build();
+
+                records.add(record);
+
+            } catch (Exception e) {
+                log.warn("Error parsing expense payment line: {}", line, e);
+            }
+        }
+
+        return records;
+    }
+
+    /**
+     * Build table data from expense payment records
+     */
+    private StandardTableData buildTableData(List<ExpensePaymentRecord> records) {
+        StandardTableData tableData = new StandardTableData();
+
+        for (ExpensePaymentRecord record : records) {
+            LinkedHashMap<String, Object> row = new LinkedHashMap<>();
+            row.put("juror_number", record.getJurorNumber());
+            row.put("first_name", record.getFirstName());
+            row.put("last_name", record.getLastName());
+            row.put("pool_number", record.getPoolNumber());
+            row.put("trial_number", record.getTrialNumber());
+            row.put("total_paid", String.format("£%.2f", record.getTotalPaid()));
+
+            tableData.add(row);
+        }
+
+        return tableData;
+    }
+
+    /**
+     * Get column headings for the table
      */
     private List<StandardReportResponse.TableData.Heading> getColumnHeadings() {
         return Arrays.asList(
@@ -423,11 +219,6 @@ public class ExpensePaymentsUsingAdjustedLimitsReport extends AbstractReport<Sta
                         .dataType(String.class.getSimpleName())
                         .build(),
                 StandardReportResponse.TableData.Heading.builder()
-                        .id("paid")
-                        .name("Paid")
-                        .dataType(String.class.getSimpleName())
-                        .build(),
-                StandardReportResponse.TableData.Heading.builder()
                         .id("pool_number")
                         .name("Pool Number")
                         .dataType(String.class.getSimpleName())
@@ -438,33 +229,87 @@ public class ExpensePaymentsUsingAdjustedLimitsReport extends AbstractReport<Sta
                         .dataType(String.class.getSimpleName())
                         .build(),
                 StandardReportResponse.TableData.Heading.builder()
-                        .id("attendance_date")
-                        .name("Attendance Date")
-                        .dataType(LocalDate.class.getSimpleName())
+                        .id("total_paid")
+                        .name("Total Paid")
+                        .dataType(String.class.getSimpleName())
                         .build()
         );
     }
 
-    private String formatLimit(BigDecimal value) {
-        if (value == null) {
-            return "Not Set";
-        }
-        return String.format("£%.2f", value);
-    }
+    @Override
+    public Map<String, AbstractReportResponse.DataTypeValue> getHeadings(
+            StandardReportRequest request,
+            AbstractReportResponse.TableData<StandardTableData> tableData) {
 
-    private String formatAmount(BigDecimal value) {
-        if (value == null) {
-            return "£0.00";
-        }
-        return String.format("£%.2f", value);
+        // Extract parameters from request
+        String courtName = courtLocationRepository.findByLocCode(request.getLocCode())
+                .map(court -> court.getName() + " (" + request.getLocCode() + ")")
+                .orElse(request.getLocCode());
+
+        String transportType = request.getTransportType();
+
+        Map<String, AbstractReportResponse.DataTypeValue> map = new ConcurrentHashMap<>();
+
+        map.put("report_title", AbstractReportResponse.DataTypeValue.builder()
+                .displayName("Expense Payments Using Adjusted Limits")
+                .dataType(String.class.getSimpleName())
+                .value("Expense Payments Using Adjusted Limits")
+                .build());
+
+        map.put("court_name", AbstractReportResponse.DataTypeValue.builder()
+                .displayName("Court")
+                .dataType(String.class.getSimpleName())
+                .value(courtName)
+                .build());
+
+        map.put("transport_type", AbstractReportResponse.DataTypeValue.builder()
+                .displayName("Transport Type")
+                .dataType(String.class.getSimpleName())
+                .value(transportType)
+                .build());
+
+        map.put("revision_number", AbstractReportResponse.DataTypeValue.builder()
+                .displayName("Revision Number")
+                .dataType(Long.class.getSimpleName())
+                .value(request.getRevisionNumber())
+                .build());
+
+        map.put("total_records", AbstractReportResponse.DataTypeValue.builder()
+                .displayName("Total Records")
+                .dataType(Integer.class.getSimpleName())
+                .value(tableData.getData().size())
+                .build());
+
+        map.put("report_generated", AbstractReportResponse.DataTypeValue.builder()
+                .displayName("Report Generated")
+                .dataType(LocalDate.class.getSimpleName())
+                .value(DateTimeFormatter.ISO_DATE.format(LocalDate.now()))
+                .build());
+
+        return map;
     }
 
     /**
-     * Request validator for the expense payments using adjusted limits report.
-     * Requires transport_type parameter.
+     * Inner class to represent an expense payment record
+     */
+    @lombok.Builder
+    @lombok.Getter
+    private static class ExpensePaymentRecord {
+        private String jurorNumber;
+        private String firstName;
+        private String lastName;
+        private String poolNumber;
+        private String trialNumber;
+        private BigDecimal totalPaid;
+    }
+
+    /**
+     * Validator for request parameters
      */
     public interface RequestValidator extends
-            AbstractReport.Validators.AbstractRequestValidator,
-            AbstractReport.Validators.RequireTransportType {
+            Validators.AbstractRequestValidator,
+            Validators.RequireRevisionNumber,
+            Validators.RequireLocCode,
+            Validators.RequireTransportType {
     }
 }
