@@ -6,6 +6,7 @@ import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import lombok.Getter;
+import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
@@ -23,6 +24,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Locale;
@@ -450,7 +452,41 @@ public enum DataType implements IDataType {
                        .sum(),
                    QMessage.message),
 
+    COURT_NAME("Court", String.class,
+               QCourtLocation.courtLocation.name,
+               QCourtLocation.courtLocation),
 
+    TRANSPORT_TYPE("Transport Type", String.class,
+                   (Expression<?>) null),
+
+    OLD_LIMIT("Old Limit", String.class,
+              (Expression<?>) null),
+
+    NEW_LIMIT("New Limit", String.class,
+              (Expression<?>) null),
+
+    CHANGED_BY("Changed By", String.class,
+               (Expression<?>) null),
+
+    CHANGE_DATE("Change Date", LocalDateTime.class,
+                (Expression<?>) null),
+
+
+
+    PUBLIC_TRANSPORT_TOTAL_DUE("Public Transport Total", BigDecimal.class,
+                               QAppearance.appearance.publicTransportPaid,
+                               QAppearance.appearance),
+
+    PUBLIC_TRANSPORT_PAID_OVER_OLD_LIMIT("Public Transport Paid Over Old Limit", BigDecimal.class,
+                                         (Expression<?>) null),  // Calculated in report logic
+
+    INCOMPLETE_JURORS_COUNT(
+        "Incomplete Jurors",
+        Long.class,
+        QJuror.juror.jurorNumber.countDistinct(),
+        QJurorPool.jurorPool,
+        QJuror.juror
+    ),
 
     POLICE_CHECK_RESPONDED("Responded jurors", Long.class,
         QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED).count()),

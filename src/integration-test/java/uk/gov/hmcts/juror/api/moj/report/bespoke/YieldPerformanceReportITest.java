@@ -330,7 +330,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
 
         data = response.getTableData().getData().get(1);
         Assertions.assertThat(data).isNotNull();
-        Assertions.assertThat(data.getCourt()).isEqualTo("LEWES SITTING AT CHICHESTER (416)");
+        Assertions.assertThat(data.getCourt()).isEqualTo("GUILDFORD SITTING AT CHICHESTER (416)");
         Assertions.assertThat(data.getRequested()).isEqualTo(10);
         Assertions.assertThat(data.getConfirmed()).isEqualTo(3);
         Assertions.assertThat(data.getBalance()).isEqualTo(-7);

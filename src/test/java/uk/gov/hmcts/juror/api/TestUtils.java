@@ -163,6 +163,7 @@ public final class TestUtils {
         SecurityContextHolder.setContext(securityContext);
     }
 
+
     public static @NotNull BureauJwtPayload getJwtPayloadSuperUser(String locCode, String courtName) {
         Set<Permission> permissions = new HashSet<>();
         permissions.add(Permission.SUPER_USER);
