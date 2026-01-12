@@ -129,4 +129,105 @@ public interface AppearanceRepository extends IAppearanceRepository, JpaReposito
         @Param("toDate") LocalDate toDate,
         @Param("stages") Set<AppearanceStage> stages
     );
+    /**
+     * Find public transport expense payments for jurors affected by a specific court location revision.
+     * Returns jurors who have public transport expenses in the last 360 days.
+     *
+     * @param courtLocationRevision The revision number from financial_audit_details
+     * @param locCode The court location code
+     * @return List of CSV strings: juror_number,first_name,last_name,pool_number,trial_number,total_paid
+     */
+
+    @Query(value = "SELECT a.juror_number, "
+        +
+        "j.first_name, "
+        +
+        "j.last_name, "
+        +
+        "a.pool_number, "
+        +
+        "a.trial_number, "
+        +
+        "SUM(a.total_paid) "
+        +
+        "FROM juror_mod.appearance a "
+        +
+        "JOIN juror_mod.juror j ON a.juror_number = j.juror_number "
+        +
+        "WHERE a.juror_number IN ( "
+        +
+        "    SELECT DISTINCT fad.juror_number "
+        +
+        "    FROM juror_mod.financial_audit_details fad "
+        +
+        "    WHERE fad.court_location_revision = :courtLocationRevision "
+        +
+        "    AND fad.loc_code = :locCode "
+        +
+        ") "
+        +
+        "AND a.public_transport_total_due IS NOT NULL "
+        +
+        "AND a.public_transport_total_due > 0 "
+        +
+        "AND a.attendance_date > CURRENT_DATE - 360 "
+        +
+        "GROUP BY a.juror_number, j.first_name, j.last_name, a.pool_number, a.trial_number "
+        +
+        "ORDER BY a.juror_number, a.pool_number",
+        nativeQuery = true)
+    List<String> findPublicTransportExpensesByRevision(
+        @Param("courtLocationRevision") Long courtLocationRevision,
+        @Param("locCode") String locCode);
+
+    /**
+     * Find taxi/hired vehicle expense payments for jurors affected by a specific court location revision.
+     * Returns jurors who have taxi expenses in the last 360 days.
+     *
+     * @param courtLocationRevision The revision number from financial_audit_details
+     * @param locCode The court location code
+     * @return List of CSV strings: juror_number,first_name,last_name,pool_number,trial_number,total_paid
+     */
+    @Query(value = "SELECT a.juror_number, "
+        +
+        "j.first_name, "
+        +
+        "j.last_name, "
+        +
+        "a.pool_number, "
+        +
+        "a.trial_number, "
+        +
+        "SUM(a.total_paid) "
+        +
+        "FROM juror_mod.appearance a "
+        +
+        "JOIN juror_mod.juror j ON a.juror_number = j.juror_number "
+        +
+        "WHERE a.juror_number IN ( "
+        +
+        "    SELECT DISTINCT fad.juror_number "
+        +
+        "    FROM juror_mod.financial_audit_details fad "
+        +
+        "    WHERE fad.court_location_revision = :courtLocationRevision "
+        +
+        "    AND fad.loc_code = :locCode "
+        +
+        ") "
+        +
+        "AND a.hired_vehicle_total_due IS NOT NULL "
+        +
+        "AND a.hired_vehicle_total_due > 0 "
+        +
+        "AND a.attendance_date > CURRENT_DATE - 360 "
+        +
+        "GROUP BY a.juror_number, j.first_name, j.last_name, a.pool_number, a.trial_number "
+        +
+        "ORDER BY a.juror_number, a.pool_number",
+        nativeQuery = true)
+    List<String> findTaxiExpensesByRevision(
+        @Param("courtLocationRevision") Long courtLocationRevision,
+        @Param("locCode") String locCode);
 }
+
