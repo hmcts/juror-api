@@ -78,6 +78,12 @@ public class WeekendAttendanceReportResponse {
             private Integer sundayTotal;
             private Integer holidayTotal;
             private BigDecimal totalPaid;
+
+            public Integer getTotalWeekendDays() {
+                return (saturdayTotal != null ? saturdayTotal : 0)
+                    + (sundayTotal != null ? sundayTotal : 0)
+                    + (holidayTotal != null ? holidayTotal : 0);
+            }
         }
     }
 
