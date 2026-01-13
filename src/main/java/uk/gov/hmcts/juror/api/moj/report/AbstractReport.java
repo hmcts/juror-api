@@ -603,5 +603,8 @@ public abstract class AbstractReport<T> implements IReport {
 
         public interface RequireTransportType {
         }
+
+        public interface RequireRevisionNumber {
+        }
     }
 }

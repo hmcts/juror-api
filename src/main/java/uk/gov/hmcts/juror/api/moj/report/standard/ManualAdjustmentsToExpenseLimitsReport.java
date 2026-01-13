@@ -2,147 +2,50 @@ package uk.gov.hmcts.juror.api.moj.report.standard;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
-import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
+import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
+import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
-import uk.gov.hmcts.juror.api.moj.service.audit.CourtLocationAuditService;
+import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
+import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Summary report showing all manual adjustments to transport expense limits across courts
- * for the previous 12 months.
- * This report uses the CourtLocationAuditService instead of standard QueryDSL queries.
- */
-@Component
-public class ManualAdjustmentsToExpenseLimitsReport extends AbstractReport<StandardTableData> {
 
-    private final CourtLocationAuditService courtLocationAuditService;
+@Slf4j
+@Component
+public class ManualAdjustmentsToExpenseLimitsReport extends AbstractStandardReport {
+
+    private final CourtLocationRepository courtLocationRepository;
 
     @Autowired
-    public ManualAdjustmentsToExpenseLimitsReport(CourtLocationAuditService courtLocationAuditService) {
-        super(
-                QCourtLocation.courtLocation,
+    public ManualAdjustmentsToExpenseLimitsReport(PoolRequestRepository poolRequestRepository,
+                                                  CourtLocationRepository courtLocationRepository) {
+        super(poolRequestRepository,
+                QAppearance.appearance,
                 DataType.COURT_LOCATION_NAME_AND_CODE_EP,
                 DataType.TRANSPORT_TYPE,
                 DataType.OLD_LIMIT,
                 DataType.NEW_LIMIT,
                 DataType.CHANGED_BY,
-                DataType.CHANGE_DATE
-        );
-        this.courtLocationAuditService = courtLocationAuditService;
+                DataType.CHANGE_DATE);
+        this.courtLocationRepository = courtLocationRepository;
+
+
         isSuperUserOnly();
-    }
-
-    @Override
-    public Class<? extends Validators.AbstractRequestValidator> getRequestValidatorClass() {
-        return RequestValidator.class;
-    }
-
-    @Override
-    protected StandardReportResponse createBlankResponse() {
-        return new StandardReportResponse();
-    }
-
-    @Override
-    protected StandardTableData getTableData(List<Tuple> data) {
-        // This method is called by the parent but we override the entire flow
-        // So we return empty data here and populate it in getStandardReportResponse
-        return new StandardTableData();
-    }
-
-    @Override
-    public StandardReportResponse getStandardReportResponse(StandardReportRequest request) {
-
-
-        LocalDateTime toDateTime = LocalDateTime.now();
-        LocalDateTime fromDateTime = toDateTime.minusMonths(12);
-
-        // Get audit records from the service
-        var auditRecords = courtLocationAuditService.getAllTransportLimitAuditHistory();
-
-        StandardTableData tableData = new StandardTableData();
-
-        // Filter and convert audit records to report rows (only last 12 months)
-        for (var record : auditRecords) {
-            // Filter by date range - only include changes from last 12 months
-            if (record.getChangeDateTime().isBefore(fromDateTime)) {
-                continue;
-            }
-            // Add public transport changes
-            if (record.hasPublicTransportChanged()) {
-                LinkedHashMap<String, Object> row = new LinkedHashMap<>();
-
-
-                String courtNameWithCode = String.format("%s (%s)",
-                        record.getCourtName(),
-                        record.getLocCode());
-
-                row.put("court_name", courtNameWithCode);
-                row.put("transport_type", "Public Transport");
-                row.put("old_limit", formatLimit(record.getPublicTransportPreviousValue()));
-                row.put("new_limit", formatLimit(record.getPublicTransportCurrentValue()));
-                row.put("changed_by", record.getChangedBy());
-                row.put("change_date", record.getChangeDateTime());
-
-                tableData.add(row);
-            }
-
-
-            if (record.hasTaxiChanged()) {
-                LinkedHashMap<String, Object> row = new LinkedHashMap<>();
-
-
-                String courtNameWithCode = String.format("%s (%s)",
-                        record.getCourtName(),
-                        record.getLocCode());
-
-                row.put("court_name", courtNameWithCode);
-                row.put("transport_type", "Taxi");
-                row.put("old_limit", formatLimit(record.getTaxiPreviousValue()));
-                row.put("new_limit", formatLimit(record.getTaxiCurrentValue()));
-                row.put("changed_by", record.getChangedBy());
-                row.put("change_date", record.getChangeDateTime());
-
-                tableData.add(row);
-            }
-        }
-
-
-        StandardReportResponse.TableData<StandardTableData> responseTableData =
-                StandardReportResponse.TableData.<StandardTableData>builder()
-                        .headings(getColumnHeadings())
-                        .data(tableData)
-                        .build();
-
-        // Build the complete response
-        StandardReportResponse report = new StandardReportResponse();
-
-        Map<String, StandardReportResponse.DataTypeValue> headings =
-                new ConcurrentHashMap<>(getHeadings(request, responseTableData));
-
-        headings.put("report_created", StandardReportResponse.DataTypeValue.builder()
-                .value(DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now()))
-                .dataType(LocalDateTime.class.getSimpleName())
-                .build());
-
-        report.setHeadings(headings);
-        report.setTableData(responseTableData);
-
-        return report;
     }
 
     @Override
@@ -151,56 +54,69 @@ public class ManualAdjustmentsToExpenseLimitsReport extends AbstractReport<Stand
     }
 
     @Override
-    public Map<String, StandardReportResponse.DataTypeValue> getHeadings(
-            StandardReportRequest request,
-            AbstractReportResponse.TableData<StandardTableData> tableData) {
+    public Class<? extends Validators.AbstractRequestValidator> getRequestValidatorClass() {
+        return RequestValidator.class;
+    }
 
-        LocalDateTime now = LocalDateTime.now();
-        LocalDate toDate = LocalDate.now();
-        LocalDate fromDate = toDate.minusMonths(12);
+    @Override
+    public StandardReportResponse getStandardReportResponse(StandardReportRequest request) {
+        log.info("Generating Manual Adjustments to Expense Limits Report");
 
-        Map<String, StandardReportResponse.DataTypeValue> map = new ConcurrentHashMap<>();
+        // Get recently updated court location codes (last 12 months)
+        List<String> recentlyUpdatedCourts = courtLocationRepository.getRecentlyUpdatedRecordsLastYear();
 
-        map.put("manual_adjustments_title", StandardReportResponse.DataTypeValue.builder()
-                .displayName("Manual Adjustments to Expense Limits")
-                .dataType(String.class.getSimpleName())
-                .value("Manual Adjustments to Expense Limits")
-                .build());
+        if (recentlyUpdatedCourts.isEmpty()) {
+            log.info("No recently updated court location records found in the last 12 months");
+            return createEmptyResponse(request);
+        }
 
-        map.put("date_from", StandardReportResponse.DataTypeValue.builder()
-                .displayName("Date from")
-                .dataType(LocalDate.class.getSimpleName())
-                .value(DateTimeFormatter.ISO_DATE.format(fromDate))
-                .build());
 
-        map.put("date_to", StandardReportResponse.DataTypeValue.builder()
-                .displayName("Date to")
-                .dataType(LocalDate.class.getSimpleName())
-                .value(DateTimeFormatter.ISO_DATE.format(toDate))
-                .build());
+        List<String> codes = recentlyUpdatedCourts.stream().distinct().toList();
 
-        map.put("report_generated", StandardReportResponse.DataTypeValue.builder()
-                .displayName("Report Generated")
-                .dataType(LocalDateTime.class.getSimpleName())
-                .value(DateTimeFormatter.ISO_DATE_TIME.format(now))
-                .build());
 
-        return map;
+        List<String> courtRevisions = courtLocationRepository.getCourtRevisionsByLocCodesLastYear(codes);
+
+
+        List<CourtLocationAuditRecord> auditRecords = parseAuditRecords(courtRevisions);
+
+
+        List<ExpenseLimitChange> expenseLimitChanges = buildExpenseLimitChanges(auditRecords);
+
+        // Sort by change date descending (most recent first)
+        expenseLimitChanges.sort((r1, r2) -> r2.getRevisionNumber().compareTo(r1.getRevisionNumber()));
+
+
+        StandardTableData tableData = buildTableData(expenseLimitChanges);
+
+
+        AbstractReportResponse.TableData<StandardTableData> tableDataWrapper =
+                AbstractReportResponse.TableData.<StandardTableData>builder()
+                        .headings(getColumnHeadings())
+                        .data(tableData)
+                        .build();
+
+        // Build response with headings
+        Map<String, StandardReportResponse.DataTypeValue> headings = getHeadings(request, tableDataWrapper);
+
+        return StandardReportResponse.builder()
+                .headings(headings)
+                .tableData(tableDataWrapper)
+                .build();
     }
 
     /**
-     * Build the column headings for the table.
+     * Get column headings for the table.
      */
     private List<StandardReportResponse.TableData.Heading> getColumnHeadings() {
         return Arrays.asList(
                 StandardReportResponse.TableData.Heading.builder()
-                        .id("court_name")
+                        .id("court_location_name_and_code")
                         .name("Court")
                         .dataType(String.class.getSimpleName())
                         .build(),
                 StandardReportResponse.TableData.Heading.builder()
                         .id("transport_type")
-                        .name("Type")
+                        .name("Transport Type")
                         .dataType(String.class.getSimpleName())
                         .build(),
                 StandardReportResponse.TableData.Heading.builder()
@@ -221,21 +137,280 @@ public class ManualAdjustmentsToExpenseLimitsReport extends AbstractReport<Stand
                 StandardReportResponse.TableData.Heading.builder()
                         .id("change_date")
                         .name("Change Date")
-                        .dataType(LocalDateTime.class.getSimpleName())
+                        .dataType(LocalDate.class.getSimpleName())
                         .build()
         );
     }
 
-    private String formatLimit(java.math.BigDecimal value) {
-        if (value == null) {
-            return "Not Set";
-        }
-        return String.format("£%.2f", value);
+    @Override
+    public Map<String, StandardReportResponse.DataTypeValue> getHeadings(
+            StandardReportRequest request,
+            AbstractReportResponse.TableData<StandardTableData> tableData) {
+
+        Map<String, StandardReportResponse.DataTypeValue> map = new ConcurrentHashMap<>();
+
+        // Date range: last 12 months
+        LocalDate dateFrom = LocalDate.now().minusMonths(12);
+        LocalDate dateTo = LocalDate.now();
+
+        map.put("manual_adjustments_title", StandardReportResponse.DataTypeValue.builder()
+                .displayName("Manual Adjustments to Expense Limits")
+                .dataType(String.class.getSimpleName())
+                .value("Manual Adjustments to Expense Limits")
+                .build());
+
+        map.put("date_from", StandardReportResponse.DataTypeValue.builder()
+                .displayName("Date from")
+                .dataType(LocalDate.class.getSimpleName())
+                .value(DateTimeFormatter.ISO_DATE.format(dateFrom))
+                .build());
+
+        map.put("date_to", StandardReportResponse.DataTypeValue.builder()
+                .displayName("Date to")
+                .dataType(LocalDate.class.getSimpleName())
+                .value(DateTimeFormatter.ISO_DATE.format(dateTo))
+                .build());
+
+        map.put("report_created", StandardReportResponse.DataTypeValue.builder()
+                .dataType(LocalDate.class.getSimpleName())
+                .value(DateTimeFormatter.ISO_DATE.format(LocalDate.now()))
+                .build());
+
+        map.put("report_generated", StandardReportResponse.DataTypeValue.builder()
+                .displayName("Report Generated")
+                .dataType(LocalDate.class.getSimpleName())
+                .value(DateTimeFormatter.ISO_DATE.format(LocalDate.now()))
+                .build());
+
+        return map;
+    }
+
+    /**
+     * Create empty response when no data found.
+     */
+    private StandardReportResponse createEmptyResponse(StandardReportRequest request) {
+        StandardTableData emptyData = new StandardTableData();
+
+        AbstractReportResponse.TableData<StandardTableData> tableDataWrapper =
+                AbstractReportResponse.TableData.<StandardTableData>builder()
+                        .headings(getColumnHeadings())
+                        .data(emptyData)
+                        .build();
+
+        Map<String, StandardReportResponse.DataTypeValue> headings = getHeadings(request, tableDataWrapper);
+
+        return StandardReportResponse.builder()
+                .headings(headings)
+                .tableData(tableDataWrapper)
+                .build();
     }
 
 
-    public interface RequestValidator extends
-            AbstractReport.Validators.AbstractRequestValidator {
+    private List<CourtLocationAuditRecord> parseAuditRecords(List<String> courtRevisions) {
+        List<CourtLocationAuditRecord> auditRecords = new ArrayList<>();
 
+        for (String line : courtRevisions) {
+            try {
+                List<String> stats = List.of(line.split(","));
+
+                if (stats.size() < 7) {
+                    log.warn("Invalid audit record line (too few fields): {}", line);
+                    continue;
+                }
+
+                final String locCode = stats.get(0);
+                final Double publicTransportSoftLimit = parseDoubleOrNull(stats.get(1));
+                final Double taxiSoftLimit = parseDoubleOrNull(stats.get(2));
+                final String changedBy = stats.get(3);
+                final Long revisionNumber = parseLongOrNull(stats.get(4));
+                final Long revisionTimestamp = parseLongOrNull(stats.get(5));
+
+
+                String courtName = stats.get(6);
+                if (stats.size() > 7) {
+                    courtName = String.join(",", stats.subList(6, stats.size()));
+                }
+
+                if (revisionNumber == null) {
+                    log.warn("Invalid revision number in line: {}", line);
+                    continue;
+                }
+
+                if (revisionTimestamp == null) {
+                    log.warn("Invalid revision timestamp in line: {}", line);
+                    continue;
+                }
+
+                CourtLocationAuditRecord record = CourtLocationAuditRecord.builder()
+                        .locCode(locCode)
+                        .courtName(courtName)
+                        .publicTransportSoftLimit(publicTransportSoftLimit)
+                        .taxiSoftLimit(taxiSoftLimit)
+                        .changedBy(changedBy)
+                        .revisionNumber(revisionNumber)
+                        .revisionTimestamp(revisionTimestamp)
+                        .build();
+
+                auditRecords.add(record);
+
+            } catch (Exception e) {
+                log.warn("Error parsing court location audit record line: {}", line, e);
+            }
+        }
+
+        return auditRecords;
+    }
+
+    /**
+     * Build expense limit changes by comparing consecutive audit records.
+     */
+    private List<ExpenseLimitChange> buildExpenseLimitChanges(List<CourtLocationAuditRecord> auditRecords) {
+        List<ExpenseLimitChange> expenseLimitChanges = new ArrayList<>();
+
+        if (auditRecords.isEmpty()) {
+            return expenseLimitChanges;
+        }
+
+        CourtLocationAuditRecord latestRecord = auditRecords.get(0);
+
+        for (int i = 1; i < auditRecords.size(); i++) {
+            CourtLocationAuditRecord previousRecord = auditRecords.get(i);
+
+            if (!latestRecord.getLocCode().equals(previousRecord.getLocCode())) {
+                latestRecord = previousRecord;
+                continue;
+            }
+
+            // Convert revisionTimestamp (milliseconds) to LocalDate
+            LocalDate changeDate = convertTimestampToLocalDate(latestRecord.getRevisionTimestamp());
+
+            // Check for Public Transport changes
+            if (latestRecord.getPublicTransportSoftLimit() != null
+                    && previousRecord.getPublicTransportSoftLimit() != null) {
+
+                double difference = Math.abs(latestRecord.getPublicTransportSoftLimit()
+                        - previousRecord.getPublicTransportSoftLimit());
+
+                if (difference > 0.001) {
+                    ExpenseLimitChange change = ExpenseLimitChange.builder()
+                            .courtLocationNameAndCode(latestRecord.getCourtName()
+                                    + " (" + latestRecord.getLocCode() + ")")
+                            .transportType("Public Transport")
+                            .oldLimit(previousRecord.getPublicTransportSoftLimit())
+                            .newLimit(latestRecord.getPublicTransportSoftLimit())
+                            .changedBy(latestRecord.getChangedBy())
+                            .revisionNumber(latestRecord.getRevisionNumber())
+                            .changeDate(changeDate)
+                            .build();
+                    expenseLimitChanges.add(change);
+                }
+            }
+
+            // Check for Taxi changes
+            if (latestRecord.getTaxiSoftLimit() != null
+                    && previousRecord.getTaxiSoftLimit() != null) {
+
+                double difference = Math.abs(latestRecord.getTaxiSoftLimit()
+                        - previousRecord.getTaxiSoftLimit());
+
+                if (difference > 0.001) {
+                    ExpenseLimitChange change = ExpenseLimitChange.builder()
+                            .courtLocationNameAndCode(latestRecord.getCourtName()
+                                    + " (" + latestRecord.getLocCode() + ")")
+                            .transportType("Taxi")
+                            .oldLimit(previousRecord.getTaxiSoftLimit())
+                            .newLimit(latestRecord.getTaxiSoftLimit())
+                            .changedBy(latestRecord.getChangedBy())
+                            .revisionNumber(latestRecord.getRevisionNumber())
+                            .changeDate(changeDate)
+                            .build();
+                    expenseLimitChanges.add(change);
+                }
+            }
+
+            latestRecord = previousRecord;
+        }
+
+        return expenseLimitChanges;
+    }
+
+
+    private LocalDate convertTimestampToLocalDate(Long timestampMillis) {
+        if (timestampMillis == null) {
+            return LocalDate.now();
+        }
+        return java.time.Instant.ofEpochMilli(timestampMillis)
+                .atZone(java.time.ZoneId.systemDefault())
+                .toLocalDate();
+    }
+
+    /**
+     * Build table data from expense limit changes.
+     */
+    private StandardTableData buildTableData(List<ExpenseLimitChange> changes) {
+        StandardTableData tableData = new StandardTableData();
+
+        for (ExpenseLimitChange change : changes) {
+            LinkedHashMap<String, Object> row = new LinkedHashMap<>();
+            row.put("court_location_name_and_code", change.getCourtLocationNameAndCode());
+            row.put("transport_type", change.getTransportType());
+            row.put("old_limit", String.format("£%.2f", change.getOldLimit()));
+            row.put("new_limit", String.format("£%.2f", change.getNewLimit()));
+            row.put("changed_by", change.getChangedBy());
+            row.put("change_date", change.getChangeDate());  // Actual date from revision_timestamp
+            row.put("revision_number", change.getRevisionNumber());  // Hidden field for drill-down
+
+            tableData.add(row);
+        }
+
+        return tableData;
+    }
+
+
+    private Double parseDoubleOrNull(String value) {
+        try {
+            return Double.parseDouble(value);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private Long parseLongOrNull(String value) {
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+
+    @lombok.Builder
+    @lombok.Getter
+    private static class CourtLocationAuditRecord {
+        private String locCode;
+        private String courtName;
+        private Double publicTransportSoftLimit;
+        private Double taxiSoftLimit;
+        private String changedBy;
+        private Long revisionNumber;
+        private Long revisionTimestamp;
+    }
+
+
+    @lombok.Builder
+    @lombok.Getter
+    private static class ExpenseLimitChange {
+        private String courtLocationNameAndCode;
+        private String transportType;
+        private Double oldLimit;
+        private Double newLimit;
+        private String changedBy;
+        private Long revisionNumber;
+        private LocalDate changeDate;
+    }
+
+
+    public interface RequestValidator extends Validators.AbstractRequestValidator {
+        // No additional validation required
     }
 }
