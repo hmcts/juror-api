@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DigitalSummonsRepliesReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.ResponsesCompletedReportResponse;
+import uk.gov.hmcts.juror.api.moj.domain.CsvBuilder;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryModImpl;
 import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseService;
@@ -171,16 +172,27 @@ public class SummonsRepliesReportServiceImpl implements SummonsRepliesReportServ
     @Override
     public String getResponsesCompletedReportCsv(LocalDate monthStartDate) {
 
-        // need the table headers and data rows from the report service then populate the CSV builder
-        //        CsvBuilder csvBuilder =
-        //            new CsvBuilder(
-        //                exportContactDetailsRequest.getExportItems()
-        //                    .stream()
-        //                    .map(ExportContactDetailsRequest.ExportItems::getTitle)
-        //                    .toList());
-        //        exportItems.forEach(csvBuilder::addRow);
+        // run the report to get the data
+        ResponsesCompletedReportResponse reportResponse = getResponsesCompletedReport(monthStartDate);
 
-        return "";
+        CsvBuilder csvBuilder =
+            new CsvBuilder(
+                reportResponse.getTableData().getHeadings().stream()
+                    .map(ResponsesCompletedReportResponse.TableData.Heading::getName)
+                    .toList());
+        // add each data row to the CSV
+        for (ResponsesCompletedReportResponse.TableData.DataRow dataRow :
+            reportResponse.getTableData().getData()) {
+            List<String> rowValues = new ArrayList<>();
+            rowValues.add(dataRow.getStaffName());
+            for (Integer dailyTotal : dataRow.getDailyTotals()) {
+                rowValues.add(dailyTotal.toString());
+            }
+            rowValues.add(dataRow.getStaffTotal().toString());
+            csvBuilder.addRow(rowValues);
+        }
+
+        return csvBuilder.build();
     }
 
     private Map<String, AbstractReportResponse.DataTypeValue>

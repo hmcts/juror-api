@@ -218,8 +218,8 @@ class SummonsRepliesReportsITest extends AbstractIntegrationTest {
         @Test
         void responsesCompletedReportsHappy() {
 
-            final String courtJwt = createBureauManagerJwt();
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
+            final String bureauManagerJwt = createBureauManagerJwt();
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauManagerJwt);
 
             ResponseEntity<ResponsesCompletedReportResponse> responseEntity =
                 restTemplate.exchange(
@@ -234,16 +234,64 @@ class SummonsRepliesReportsITest extends AbstractIntegrationTest {
             ResponsesCompletedReportResponse responseBody = responseEntity.getBody();
             assertThat(responseBody).isNotNull();
 
-            //            assertThat(responseBody.getHeadings()).isNotNull();
-            //            assertThat(responseBody.getHeadings().size()).isEqualTo(3);
-            //
-            //            assertThat(responseBody.getTableData()).isNotNull();
-            //            assertThat(responseBody.getTableData().getHeadings()).isNotNull();
-            //            assertThat(responseBody.getTableData().getHeadings().size()).isEqualTo(2);
-            //            assertThat(responseBody.getTableData().getData()).isNotNull();
-            //            assertThat(responseBody.getTableData().getData().size()).isEqualTo(7);
+            assertThat(responseBody.getHeadings()).isNotNull();
+            assertThat(responseBody.getHeadings().size()).isEqualTo(3);
+
+            assertThat(responseBody.getTableData()).isNotNull();
+            assertThat(responseBody.getTableData().getHeadings()).isNotNull();
+            assertThat(responseBody.getTableData().getHeadings().size()).isEqualTo(33);
+            assertThat(responseBody.getTableData().getData()).isNotNull();
+            assertThat(responseBody.getTableData().getData().size()).isEqualTo(4);
+
+            // add more verifications of data rows
 
         }
+
+        @Test
+        void responsesCompletedReportsForbiddenForBureauUserWithoutManagerRole() {
+            final String bureauJwt = createJwt(
+                "test_Bureau_standard",
+                "400",
+                UserType.BUREAU,
+                Set.of(),
+                "400"
+            );
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            ResponseEntity<ResponsesCompletedReportResponse> responseEntity =
+                restTemplate.exchange(
+                    new RequestEntity<Void>(
+                        httpHeaders, HttpMethod.GET,
+                        URI.create(URL_BASE + "/responses-completed/2025-08-01")
+                    ),
+                    ResponsesCompletedReportResponse.class
+                );
+
+            assertThat(responseEntity.getStatusCode()).as("Expect HTTP FORBIDDEN response")
+                .isEqualTo(HttpStatus.FORBIDDEN);
+        }
+
+
+        @Test
+        void responsesCompletedReportsCsvHappy() {
+
+            final String bureauManagerJwt = createBureauManagerJwt();
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauManagerJwt);
+
+            ResponseEntity<String> responseEntity =
+                restTemplate.exchange(
+                    new RequestEntity<Void>(
+                        httpHeaders, HttpMethod.GET,
+                        URI.create(URL_BASE + "/responses-completed/csv/2025-08-01")
+                    ),
+                    String.class
+                );
+
+            assertThat(responseEntity.getStatusCode()).as("Expect HTTP OK response").isEqualTo(HttpStatus.OK);
+            // add more verifications of data rows
+
+        }
+
 
         private String createBureauManagerJwt() {
             return createJwt(
