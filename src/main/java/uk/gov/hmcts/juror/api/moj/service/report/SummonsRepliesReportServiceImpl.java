@@ -8,7 +8,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DigitalSummonsRepliesReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.ResponsesCompletedReportResponse;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryModImpl;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.sql.Date;
 import java.time.LocalDate;
@@ -53,6 +56,35 @@ public class SummonsRepliesReportServiceImpl implements SummonsRepliesReportServ
         return reportResponse;
     }
 
+    @Override
+    public ResponsesCompletedReportResponse getResponsesCompletedReport(LocalDate monthStartDate) {
+        // log the method entry
+        log.info("Generating Responses Completed Report for month starting: {}", monthStartDate);
+
+        //check user is a bureau manager
+        if (!SecurityUtil.isBureauManager()) {
+            throw new MojException.Forbidden("User is not a bureau manager", null);
+        }
+
+
+
+        return new ResponsesCompletedReportResponse();
+    }
+
+    @Override
+    public String getResponsesCompletedReportCsv(LocalDate monthStartDate) {
+
+        // need the table headers and data rows from the report service then populate the CSV builder
+        //        CsvBuilder csvBuilder =
+        //            new CsvBuilder(
+        //                exportContactDetailsRequest.getExportItems()
+        //                    .stream()
+        //                    .map(ExportContactDetailsRequest.ExportItems::getTitle)
+        //                    .toList());
+        //        exportItems.forEach(csvBuilder::addRow);
+
+        return "";
+    }
 
     private Map<String, AbstractReportResponse.DataTypeValue>
         getDigitalSummonsRepliesReportHeaders(int replyCount) {

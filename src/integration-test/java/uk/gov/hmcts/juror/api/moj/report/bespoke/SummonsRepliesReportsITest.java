@@ -18,6 +18,8 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DigitalSummonsRepliesReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.ResponsesCompletedReportResponse;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 
 import java.net.URI;
@@ -192,16 +194,66 @@ class SummonsRepliesReportsITest extends AbstractIntegrationTest {
                 .isEqualTo(HttpStatus.FORBIDDEN);
         }
 
+        private String createCourtJwt() {
+            return createJwt(
+                "test_court_standard",
+                "415",
+                UserType.COURT,
+                Set.of(),
+                "415"
+            );
+        }
+
     }
 
-    private String createCourtJwt() {
-        return createJwt(
-            "test_court_standard",
-            "415",
-            UserType.COURT,
-            Set.of(),
-            "415"
-        );
+    @Nested
+    @DisplayName("Get responses completed for month Report Integration Tests")
+    @Sql({
+        "/db/truncate.sql",
+        "/db/mod/truncate.sql",
+        "/db/mod/reports/DigitalSummonsRepliesReportsITest_typical.sql"
+    })
+    class GetResponsesCompletedReportTests {
+
+        @Test
+        void responsesCompletedReportsHappy() {
+
+            final String courtJwt = createBureauManagerJwt();
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
+
+            ResponseEntity<ResponsesCompletedReportResponse> responseEntity =
+                restTemplate.exchange(
+                    new RequestEntity<Void>(
+                        httpHeaders, HttpMethod.GET,
+                        URI.create(URL_BASE + "/responses-completed/2025-08-01")
+                    ),
+                    ResponsesCompletedReportResponse.class
+                );
+
+            assertThat(responseEntity.getStatusCode()).as("Expect HTTP OK response").isEqualTo(HttpStatus.OK);
+            ResponsesCompletedReportResponse responseBody = responseEntity.getBody();
+            assertThat(responseBody).isNotNull();
+
+            //            assertThat(responseBody.getHeadings()).isNotNull();
+            //            assertThat(responseBody.getHeadings().size()).isEqualTo(3);
+            //
+            //            assertThat(responseBody.getTableData()).isNotNull();
+            //            assertThat(responseBody.getTableData().getHeadings()).isNotNull();
+            //            assertThat(responseBody.getTableData().getHeadings().size()).isEqualTo(2);
+            //            assertThat(responseBody.getTableData().getData()).isNotNull();
+            //            assertThat(responseBody.getTableData().getData().size()).isEqualTo(7);
+
+        }
+
+        private String createBureauManagerJwt() {
+            return createJwt(
+                "bureau_manager",
+                "400",
+                UserType.BUREAU,
+                Set.of(Role.MANAGER),
+                "400"
+            );
+        }
     }
 
 }

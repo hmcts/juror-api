@@ -1,12 +1,17 @@
 package uk.gov.hmcts.juror.api.moj.service.report;
 
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DigitalSummonsRepliesReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.ResponsesCompletedReportResponse;
 
 import java.time.LocalDate;
 
 public interface SummonsRepliesReportService {
 
     DigitalSummonsRepliesReportResponse getDigitalSummonsRepliesReport(LocalDate month);
+
+    ResponsesCompletedReportResponse getResponsesCompletedReport(LocalDate monthStartDate);
+
+    String getResponsesCompletedReportCsv(LocalDate monthStartDate);
 
     enum TableHeading {
         DATE("Date", LocalDate.class.getSimpleName()),

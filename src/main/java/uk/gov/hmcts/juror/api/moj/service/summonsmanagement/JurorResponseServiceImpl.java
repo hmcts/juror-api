@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.ResponsesCompletedReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPaperResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPersonalDetailsDto;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
@@ -29,6 +30,7 @@ import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.getJurorDigitalResponse;
@@ -136,7 +138,18 @@ public class JurorResponseServiceImpl implements JurorResponseService {
         return jurorCommonResponseRepository.getPoolsTransferringNextWeekCount(locCode);
     }
 
+    @Override
+    public ResponsesCompletedReportResponse getResponsesCompletedReport(LocalDate monthStartDate) {
+        log.info("Retrieving responses completed report for month starting: {}", monthStartDate);
 
+
+        List<String> responseData = jurorCommonResponseRepository.getResponsesCompletedReportData(
+                                                    monthStartDate, monthStartDate.plusMonths(1));
+
+
+
+        return new ResponsesCompletedReportResponse();
+    }
 
     private boolean hasSummonsReplyDataChanged(AbstractJurorResponse jurorResponse,
                                                JurorPersonalDetailsDto jurorPersonalDetailsDto) {

@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +35,7 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.DigitalSummonsRepl
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.FinancialAuditReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.JurySummoningMonitorReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.MonthlyUtilisationReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.ResponsesCompletedReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.WeekendAttendanceReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.YieldPerformanceReportResponse;
 import uk.gov.hmcts.juror.api.moj.service.report.AttendanceReportService;
@@ -196,6 +198,33 @@ public class ReportController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<WeekendAttendanceReportResponse> getWeekendAttendanceReport() {
         return ResponseEntity.ok(attendanceReportService.getWeekendAttendanceReport());
+    }
+
+    @GetMapping("/responses-completed/{month}")
+    @Operation(summary = "Get a table of number of digital responses completed by staff for a month"
+        + ", provide the start date of month, e.g. 2025-10-01 (for bureau users only)")
+    @IsBureauUser
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<ResponsesCompletedReportResponse> getResponsesCompletedReport(
+        @P("month") @PathVariable("month") LocalDate monthStartDate) {
+        return ResponseEntity.ok(summonsRepliesReportService.getResponsesCompletedReport(monthStartDate));
+    }
+
+    @GetMapping(value = "/responses-completed/csv/{month}",
+        produces = {"text/csv;", MediaType.APPLICATION_JSON_VALUE})
+    @Operation(summary = "Get a table of number of digital responses completed by staff for a month in CSV format"
+        + ", provide the start date of month, e.g. 2025-10-01 (for bureau users only)")
+    @ResponseStatus(HttpStatus.OK)
+    @IsBureauUser
+    public ResponseEntity<String> getResponsesCompletedReportCSV(
+        @P("month") @PathVariable("month") LocalDate monthStartDate) {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=responses_completed.csv");
+        return new ResponseEntity<>(
+            summonsRepliesReportService.getResponsesCompletedReportCsv(monthStartDate),
+            httpHeaders,
+            HttpStatus.OK
+        );
     }
 
 }

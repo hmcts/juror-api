@@ -6,10 +6,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DigitalSummonsRepliesReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.ResponsesCompletedReportResponse;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryModImpl;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -20,10 +23,13 @@ import java.util.Map;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.BDDAssertions.within;
+import static org.mockito.Mockito.RETURNS_DEFAULTS;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 import static uk.gov.hmcts.juror.api.moj.service.report.SummonsRepliesReportService.TableHeading.DATE;
 import static uk.gov.hmcts.juror.api.moj.service.report.SummonsRepliesReportService.TableHeading.NO_OF_REPLIES;
 
@@ -109,6 +115,31 @@ class SummonsRepliesReportServiceImplTest {
                                                             DateTimeFormatter.ISO_LOCAL_DATE_TIME);
             assertThat(createdTime).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS))
                 .as("Creation time should be correct");
+        }
+    }
+
+    @Nested
+    @DisplayName("Responses completed report tests")
+    class ResponsesCompletedReportTests {
+
+        @Test
+        @SneakyThrows
+        void responsesCompletedReportNoData() {
+            MockedStatic<SecurityUtil> mockSecurityUtil = mockStatic(SecurityUtil.class,
+                                                                     withSettings().defaultAnswer(RETURNS_DEFAULTS));
+
+            mockSecurityUtil.when(SecurityUtil::isBureauManager).thenReturn(true);
+
+            final LocalDate month = LocalDate.parse("2025-06-01");
+
+            // add more mocks when implemented
+
+            ResponsesCompletedReportResponse response =
+                summonsRepliesReportService.getResponsesCompletedReport(month);
+
+            assertThat(response).isNotNull();
+            // add more verifications when implemented
+            mockSecurityUtil.close();
         }
     }
 

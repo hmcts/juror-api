@@ -1,9 +1,11 @@
 package uk.gov.hmcts.juror.api.moj.service.summonsmanagement;
 
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.ResponsesCompletedReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPersonalDetailsDto;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorCommonResponseRepositoryMod;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 public interface JurorResponseService {
@@ -62,8 +64,7 @@ public interface JurorResponseService {
 
     int getPoolsTransferringNextWeekCount(String locCode);
 
-
-
+    ResponsesCompletedReportResponse getResponsesCompletedReport(LocalDate monthStartDate);
 
 }
 
