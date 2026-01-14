@@ -216,7 +216,7 @@ public class ReportController {
         + ", provide the start date of month, e.g. 2025-10-01 (for bureau users only)")
     @ResponseStatus(HttpStatus.OK)
     @IsBureauUser
-    public ResponseEntity<String> getResponsesCompletedReportCSV(
+    public ResponseEntity<String> getResponsesCompletedReportCsv(
         @P("month") @PathVariable("month") LocalDate monthStartDate) {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=responses_completed.csv");

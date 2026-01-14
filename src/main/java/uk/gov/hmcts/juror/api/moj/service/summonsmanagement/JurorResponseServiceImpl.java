@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
-import uk.gov.hmcts.juror.api.moj.controller.reports.response.ResponsesCompletedReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPaperResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPersonalDetailsDto;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
@@ -26,10 +25,12 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRep
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.StraightThroughProcessorService;
 import uk.gov.hmcts.juror.api.moj.service.SummonsReplyMergeService;
+import uk.gov.hmcts.juror.api.moj.service.report.SummonsRepliesReportService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -139,16 +140,25 @@ public class JurorResponseServiceImpl implements JurorResponseService {
     }
 
     @Override
-    public ResponsesCompletedReportResponse getResponsesCompletedReport(LocalDate monthStartDate) {
-        log.info("Retrieving responses completed report for month starting: {}", monthStartDate);
-
-
-        List<String> responseData = jurorCommonResponseRepository.getResponsesCompletedReportData(
+    public List<SummonsRepliesReportService.CompletedResponseRecord> getResponsesCompletedReport(
+                                                                                    LocalDate monthStartDate) {
+        log.info("Retrieving responses completed report data for month starting: {}", monthStartDate);
+        List<String> result = jurorCommonResponseRepository.getResponsesCompletedReportData(
                                                     monthStartDate, monthStartDate.plusMonths(1));
 
+        return mapToCompletedResponseRecords(result);
+    }
 
-
-        return new ResponsesCompletedReportResponse();
+    private List<SummonsRepliesReportService.CompletedResponseRecord> mapToCompletedResponseRecords(
+        List<String> result) {
+        return result.stream().map(row -> {
+            String[] fields = row.split(",");
+            return SummonsRepliesReportService.CompletedResponseRecord.builder()
+                .staffName(fields[0])
+                .date(LocalDate.parse(fields[1], DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                .completedResponses(Integer.parseInt(fields[2]))
+                .build();
+        }).toList();
     }
 
     private boolean hasSummonsReplyDataChanged(AbstractJurorResponse jurorResponse,

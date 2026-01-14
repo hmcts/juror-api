@@ -12,6 +12,7 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResp
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DigitalSummonsRepliesReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.ResponsesCompletedReportResponse;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryModImpl;
+import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
@@ -37,10 +38,13 @@ class SummonsRepliesReportServiceImplTest {
 
     private final JurorDigitalResponseRepositoryModImpl jurorDigitalResponseRepositoryMod;
     private final SummonsRepliesReportService summonsRepliesReportService;
+    private final JurorResponseService jurorResponseService;
 
     public SummonsRepliesReportServiceImplTest() {
         this.jurorDigitalResponseRepositoryMod = mock(JurorDigitalResponseRepositoryModImpl.class);
-        this.summonsRepliesReportService = new SummonsRepliesReportServiceImpl(jurorDigitalResponseRepositoryMod);
+        this.jurorResponseService = mock(JurorResponseService.class);
+        this.summonsRepliesReportService = new SummonsRepliesReportServiceImpl(jurorDigitalResponseRepositoryMod
+                                                                                , jurorResponseService);
     }
 
     @BeforeEach
@@ -138,8 +142,43 @@ class SummonsRepliesReportServiceImplTest {
                 summonsRepliesReportService.getResponsesCompletedReport(month);
 
             assertThat(response).isNotNull();
-            // add more verifications when implemented
+
+            assertThat(response.getHeadings()).isNotNull();
+            Map<String, AbstractReportResponse.DataTypeValue> headings = response.getHeadings();
+
+            validateReportHeadings(headings);
+
+            // validate table data
+            assertThat(response.getTableData()).isNotNull();
+            ResponsesCompletedReportResponse.TableData tableData = response.getTableData();
+            assertThat(tableData.getHeadings()).isNotNull();
+            Assertions.assertThat(tableData.getHeadings()).hasSize(32); // 1 for name + 30 for days in June + 1 total
+
+
             mockSecurityUtil.close();
+        }
+
+        private void validateReportHeadings(Map<String, AbstractReportResponse.DataTypeValue> headings) {
+            assertThat(headings.get("report_created")).isEqualTo(AbstractReportResponse.DataTypeValue.builder()
+                .displayName("Report created")
+                .dataType("LocalDate")
+                .value(LocalDate.now().toString())
+                .build());
+
+            AbstractReportResponse.DataTypeValue timeCreated = headings.get("time_created");
+            assertThat(timeCreated.getDisplayName()).isEqualTo("Time created");
+            assertThat(timeCreated.getDataType()).isEqualTo("LocalDateTime");
+            LocalDateTime createdTime = LocalDateTime.parse((String) timeCreated.getValue(),
+                                                            DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            assertThat(createdTime).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS))
+                .as("Creation time should be correct");
+
+            assertThat(headings.get("responses_processed")).isEqualTo(AbstractReportResponse.DataTypeValue.builder()
+                                                                     .displayName("Number of responses processed")
+                                                                     .dataType("Integer")
+                                                                     .value(0)
+                                                                     .build());
+
         }
     }
 

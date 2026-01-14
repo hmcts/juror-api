@@ -23,6 +23,7 @@ public class ResponsesCompletedReportResponse {
     public ResponsesCompletedReportResponse(Map<String, AbstractReportResponse.DataTypeValue> reportHeadings) {
         this.headings = reportHeadings;
         // will need to dynamically build table headings based on the month selected
+        this.tableData = new TableData();
     }
 
     @Data

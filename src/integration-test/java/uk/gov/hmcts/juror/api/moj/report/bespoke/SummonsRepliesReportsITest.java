@@ -211,7 +211,7 @@ class SummonsRepliesReportsITest extends AbstractIntegrationTest {
     @Sql({
         "/db/truncate.sql",
         "/db/mod/truncate.sql",
-        "/db/mod/reports/DigitalSummonsRepliesReportsITest_typical.sql"
+        "/db/mod/reports/ResponsesCompletedReportsITest_typical.sql"
     })
     class GetResponsesCompletedReportTests {
 

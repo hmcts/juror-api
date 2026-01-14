@@ -1,5 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.service.report;
 
+import lombok.Builder;
+import lombok.Getter;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DigitalSummonsRepliesReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.ResponsesCompletedReportResponse;
 
@@ -31,6 +33,20 @@ public interface SummonsRepliesReportService {
 
         public String getDataType() {
             return dataType;
+        }
+    }
+
+    @Builder
+    @Getter
+    public static class CompletedResponseRecord {
+        private String staffName;
+        private LocalDate date;
+        private Integer completedResponses;
+
+        public CompletedResponseRecord(String staffName, LocalDate dayOfMonth, Integer completedResponses) {
+            this.staffName = staffName;
+            this.date = dayOfMonth;
+            this.completedResponses = completedResponses;
         }
     }
 }
