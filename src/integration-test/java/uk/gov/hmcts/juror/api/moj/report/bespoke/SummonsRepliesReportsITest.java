@@ -271,28 +271,6 @@ class SummonsRepliesReportsITest extends AbstractIntegrationTest {
                 .isEqualTo(HttpStatus.FORBIDDEN);
         }
 
-
-        @Test
-        void responsesCompletedReportsCsvHappy() {
-
-            final String bureauManagerJwt = createBureauManagerJwt();
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauManagerJwt);
-
-            ResponseEntity<String> responseEntity =
-                restTemplate.exchange(
-                    new RequestEntity<Void>(
-                        httpHeaders, HttpMethod.GET,
-                        URI.create(URL_BASE + "/responses-completed/csv/2025-08-01")
-                    ),
-                    String.class
-                );
-
-            assertThat(responseEntity.getStatusCode()).as("Expect HTTP OK response").isEqualTo(HttpStatus.OK);
-            // add more verifications of data rows
-
-        }
-
-
         private String createBureauManagerJwt() {
             return createJwt(
                 "bureau_manager",

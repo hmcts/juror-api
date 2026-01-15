@@ -99,11 +99,6 @@ public class SummonsRepliesReportServiceImpl implements SummonsRepliesReportServ
         totalHeading.setDataType(Integer.class.getSimpleName());
         tableHeadings.add(totalHeading);
 
-        // Todo: update totalProcessed count
-        ResponsesCompletedReportResponse reportResponse = new ResponsesCompletedReportResponse(
-            getResponsesCompletedReportHeaders(0));
-
-        reportResponse.getTableData().setHeadings(tableHeadings);
 
         // need a count of the total responses completed on each day
         Map<LocalDate, Integer> totalResponsesByDate = new ConcurrentHashMap<>();
@@ -163,37 +158,17 @@ public class SummonsRepliesReportServiceImpl implements SummonsRepliesReportServ
         totalRow.setStaffTotal(grandTotal);
         dataRows.add(totalRow);
 
+        ResponsesCompletedReportResponse reportResponse = new ResponsesCompletedReportResponse(
+            getResponsesCompletedReportHeaders(grandTotal));
+
+        reportResponse.getTableData().setHeadings(tableHeadings);
+
         reportResponse.getTableData().setData(dataRows);
         log.info("Completed Responses Completed Report generation for month starting: {}", monthStartDate);
         return reportResponse;
 
     }
 
-    @Override
-    public String getResponsesCompletedReportCsv(LocalDate monthStartDate) {
-
-        // run the report to get the data
-        ResponsesCompletedReportResponse reportResponse = getResponsesCompletedReport(monthStartDate);
-
-        CsvBuilder csvBuilder =
-            new CsvBuilder(
-                reportResponse.getTableData().getHeadings().stream()
-                    .map(ResponsesCompletedReportResponse.TableData.Heading::getName)
-                    .toList());
-        // add each data row to the CSV
-        for (ResponsesCompletedReportResponse.TableData.DataRow dataRow :
-            reportResponse.getTableData().getData()) {
-            List<String> rowValues = new ArrayList<>();
-            rowValues.add(dataRow.getStaffName());
-            for (Integer dailyTotal : dataRow.getDailyTotals()) {
-                rowValues.add(dailyTotal.toString());
-            }
-            rowValues.add(dataRow.getStaffTotal().toString());
-            csvBuilder.addRow(rowValues);
-        }
-
-        return csvBuilder.build();
-    }
 
     private Map<String, AbstractReportResponse.DataTypeValue>
         getDigitalSummonsRepliesReportHeaders(int replyCount) {

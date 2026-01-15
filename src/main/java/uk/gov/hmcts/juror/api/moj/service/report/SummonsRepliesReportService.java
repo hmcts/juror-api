@@ -13,8 +13,6 @@ public interface SummonsRepliesReportService {
 
     ResponsesCompletedReportResponse getResponsesCompletedReport(LocalDate monthStartDate);
 
-    String getResponsesCompletedReportCsv(LocalDate monthStartDate);
-
     enum TableHeading {
         DATE("Date", LocalDate.class.getSimpleName()),
         NO_OF_REPLIES("No of replies received",  Integer.class.getSimpleName());

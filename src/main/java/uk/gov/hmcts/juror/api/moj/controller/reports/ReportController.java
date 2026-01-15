@@ -210,21 +210,4 @@ public class ReportController {
         return ResponseEntity.ok(summonsRepliesReportService.getResponsesCompletedReport(monthStartDate));
     }
 
-    @GetMapping(value = "/responses-completed/csv/{month}",
-        produces = {"text/csv;", MediaType.APPLICATION_JSON_VALUE})
-    @Operation(summary = "Get a table of number of digital responses completed by staff for a month in CSV format"
-        + ", provide the start date of month, e.g. 2025-10-01 (for bureau users only)")
-    @ResponseStatus(HttpStatus.OK)
-    @IsBureauUser
-    public ResponseEntity<String> getResponsesCompletedReportCsv(
-        @P("month") @PathVariable("month") LocalDate monthStartDate) {
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=responses_completed.csv");
-        return new ResponseEntity<>(
-            summonsRepliesReportService.getResponsesCompletedReportCsv(monthStartDate),
-            httpHeaders,
-            HttpStatus.OK
-        );
-    }
-
 }
