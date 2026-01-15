@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.report.bespoke;
 
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -17,16 +18,24 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DigitalSummonsRepliesReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.ResponsesCompletedReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 
 import java.net.URI;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.BDDAssertions.within;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -240,10 +249,45 @@ class SummonsRepliesReportsITest extends AbstractIntegrationTest {
             assertThat(responseBody.getTableData()).isNotNull();
             assertThat(responseBody.getTableData().getHeadings()).isNotNull();
             assertThat(responseBody.getTableData().getHeadings().size()).isEqualTo(33);
+
+            Map<String, AbstractReportResponse.DataTypeValue> headings = responseBody.getHeadings();
+            // validate the totals heading
+            AssertionsForClassTypes.assertThat(headings.get("responses_processed"))
+                                                            .isEqualTo(AbstractReportResponse.DataTypeValue.builder()
+                                                                      .displayName("Number of responses processed")
+                                                                      .dataType("Integer")
+                                                                      .value(21)
+                                                                      .build());
+            // validate table data
             assertThat(responseBody.getTableData().getData()).isNotNull();
             assertThat(responseBody.getTableData().getData().size()).isEqualTo(4);
 
-            // add more verifications of data rows
+            List<ResponsesCompletedReportResponse.TableData.DataRow> dataRows = responseBody.getTableData().getData();
+
+            // first row should be for Auto
+            ResponsesCompletedReportResponse.TableData.DataRow row = dataRows.get(0);
+            AssertionsForClassTypes.assertThat(row.getStaffName()).isEqualTo("AUTO");
+            AssertionsForClassTypes.assertThat(row.getDailyTotals()).isEqualTo(List.of(0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                           2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+            AssertionsForClassTypes.assertThat(row.getStaffTotal()).isEqualTo(2);
+            // second row should be for MOD Test Bureau
+            row = dataRows.get(1);
+            AssertionsForClassTypes.assertThat(row.getStaffName()).isEqualTo("MODTESTBUREAU");
+            AssertionsForClassTypes.assertThat(row.getDailyTotals()).isEqualTo(List.of(0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                           4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0));
+            AssertionsForClassTypes.assertThat(row.getStaffTotal()).isEqualTo(18);
+            // third row should be for MOD Test Court
+            row = dataRows.get(2);
+            AssertionsForClassTypes.assertThat(row.getStaffName()).isEqualTo("MODTESTCOURT");
+            AssertionsForClassTypes.assertThat(row.getDailyTotals()).isEqualTo(List.of(0, 0, 0, 0, 0, 0, 0, 0, 1,
+                                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+            AssertionsForClassTypes.assertThat(row.getStaffTotal()).isEqualTo(1);
+            // fourth row should be for Totals
+            row = dataRows.get(3);
+            AssertionsForClassTypes.assertThat(row.getStaffName()).isEqualTo("Total Responses");
+            AssertionsForClassTypes.assertThat(row.getDailyTotals()).isEqualTo(List.of(0, 0, 0, 0, 0, 0, 0, 0, 1,
+                                                           6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0));
+            AssertionsForClassTypes.assertThat(row.getStaffTotal()).isEqualTo(21);
 
         }
 

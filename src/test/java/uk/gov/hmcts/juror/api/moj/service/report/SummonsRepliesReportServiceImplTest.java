@@ -136,8 +136,6 @@ class SummonsRepliesReportServiceImplTest {
 
             final LocalDate month = LocalDate.parse("2025-06-01");
 
-            // add more mocks when implemented
-
             ResponsesCompletedReportResponse response =
                 summonsRepliesReportService.getResponsesCompletedReport(month);
 
@@ -153,7 +151,6 @@ class SummonsRepliesReportServiceImplTest {
             ResponsesCompletedReportResponse.TableData tableData = response.getTableData();
             assertThat(tableData.getHeadings()).isNotNull();
             Assertions.assertThat(tableData.getHeadings()).hasSize(32); // 1 for name + 30 for days in June + 1 total
-
 
             mockSecurityUtil.close();
         }
