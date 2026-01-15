@@ -149,4 +149,7 @@ public class StandardReportRequest {
         regexp = "^(Public Transport|Taxi)$",
         message = "Transport type must be either 'Public Transport' or 'Taxi'")
     private String transportType;
+
+    @NotNull(groups = AbstractReport.Validators.RequireRevisionNumber.class)
+    private Long revisionNumber;
 }

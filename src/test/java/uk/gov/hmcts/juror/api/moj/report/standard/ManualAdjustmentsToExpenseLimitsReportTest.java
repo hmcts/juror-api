@@ -7,22 +7,21 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.juror.api.moj.audit.dto.TransportLimitAuditRecord;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
-import uk.gov.hmcts.juror.api.moj.service.audit.CourtLocationAuditService;
+import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,28 +32,39 @@ class ManualAdjustmentsToExpenseLimitsReportTest {
     private CourtLocationRepository courtLocationRepository;
 
     @Mock
-    private CourtLocationAuditService courtLocationAuditService;
+    private PoolRequestRepository poolRequestRepository;
 
     @InjectMocks
     private ManualAdjustmentsToExpenseLimitsReport report;
 
-    private LocalDate testDate;
-
     @BeforeEach
     void setUp() {
-        testDate = LocalDate.now();
+
     }
 
     @Test
     @DisplayName("Should return report with public transport and taxi changes")
     void positiveTypicalWithBothTransportTypes() {
-        // Given - Multiple audit records with both public transport and taxi changes
-        List<TransportLimitAuditRecord> auditRecords = createMockAuditRecords();
-        when(courtLocationAuditService.getAllTransportLimitAuditHistory()).thenReturn(auditRecords);
+        // Given - Mock repository responses
+        List<String> courtCodes = List.of("415", "416");
+        when(courtLocationRepository.getRecentlyUpdatedRecordsLastYear()).thenReturn(courtCodes);
+
+        List<String> auditRecords = List.of(
+                // Chester - recent revision
+                "415,7.50,15.00,admin-user,12345,1704067200000,CHESTER",
+                // Chester - previous revision
+                "415,5.00,12.00,admin-user,12344,1701475200000,CHESTER",
+                // Liverpool - recent revision
+                "416,8.00,18.00,admin-user2,12347,1704067200000,LIVERPOOL",
+                // Liverpool - previous revision
+                "416,6.00,15.00,admin-user2,12346,1701475200000,LIVERPOOL"
+        );
+        when(courtLocationRepository.getCourtRevisionsByLocCodesLastYear(courtCodes))
+                .thenReturn(auditRecords);
 
         StandardReportRequest request = StandardReportRequest.builder()
-            .reportType("ManualAdjustmentsToExpenseLimitsReport")
-            .build();
+                .reportType("ManualAdjustmentsToExpenseLimitsReport")
+                .build();
 
         // When
         StandardReportResponse response = report.getStandardReportResponse(request);
@@ -65,148 +75,97 @@ class ManualAdjustmentsToExpenseLimitsReportTest {
         assertThat(response.getTableData()).isNotNull();
         assertThat(response.getTableData().getData()).isNotNull();
 
-        // Verify actual headings that the report produces
+        // Verify headings
         Map<String, StandardReportResponse.DataTypeValue> headings = response.getHeadings();
-        assertThat(headings).containsKey("report_created");
-        assertThat(headings).containsKey("date_from");
-        assertThat(headings).containsKey("date_to");
-        assertThat(headings).containsKey("manual_adjustments_title");
-        assertThat(headings).containsKey("report_generated");
+        assertThat(headings).containsKeys(
+                "report_created",
+                "date_from",
+                "date_to",
+                "manual_adjustments_title",
+                "report_generated"
+        );
 
-        // Verify data - should have rows for both public transport and taxi
+
         StandardTableData data = response.getTableData().getData();
         assertThat(data).isNotEmpty();
 
-        // Should have at least 2 rows per audit record (1 for public transport, 1 for taxi)
-        // if both limits changed for each court
-        assertThat(data.size()).isGreaterThanOrEqualTo(2);
+
+        assertThat(data.size()).isEqualTo(4);
+
+        // Verify repository methods were called
+        verify(courtLocationRepository, times(1)).getRecentlyUpdatedRecordsLastYear();
+        verify(courtLocationRepository, times(1)).getCourtRevisionsByLocCodesLastYear(courtCodes);
     }
 
     @Test
     @DisplayName("Should return empty report when no audit records exist")
     void positiveNoAuditRecords() {
-        // Given - No audit records
-        when(courtLocationAuditService.getAllTransportLimitAuditHistory()).thenReturn(new ArrayList<>());
+
+        when(courtLocationRepository.getRecentlyUpdatedRecordsLastYear()).thenReturn(new ArrayList<>());
 
         StandardReportRequest request = StandardReportRequest.builder()
-            .reportType("ManualAdjustmentsToExpenseLimitsReport")
-            .build();
+                .reportType("ManualAdjustmentsToExpenseLimitsReport")
+                .build();
 
-        // When
+
         StandardReportResponse response = report.getStandardReportResponse(request);
 
         // Then
         assertThat(response).isNotNull();
         assertThat(response.getTableData()).isNotNull();
         assertThat(response.getTableData().getData()).isEmpty();
+
+        // Should not call second query if no courts found
+        verify(courtLocationRepository, times(1)).getRecentlyUpdatedRecordsLastYear();
+        verify(courtLocationRepository, times(0)).getCourtRevisionsByLocCodesLastYear(List.of());
     }
 
     @Test
-    @DisplayName("Should filter out records older than 12 months")
-    void positiveFiltersOldRecords() {
-        // Given - Mix of recent and old audit records
-        List<TransportLimitAuditRecord> auditRecords = new ArrayList<>();
+    @DisplayName("Should only include records from last 12 months")
+    void positiveOnlyLast12Months() {
+        // Given - Repository already filters by 12 months in SQL
+        List<String> courtCodes = List.of("415");
+        when(courtLocationRepository.getRecentlyUpdatedRecordsLastYear()).thenReturn(courtCodes);
 
-        // Recent record (within 12 months)
-        auditRecords.add(createAuditRecord(
-            "415", "CHESTER", LocalDateTime.now().minusMonths(6),
-            new BigDecimal("5.00"), new BigDecimal("7.50"),
-            new BigDecimal("10.00"), new BigDecimal("15.00"),
-            "user1"
-        ));
-
-        // Old record (more than 12 months ago) - should be filtered out
-        auditRecords.add(createAuditRecord(
-            "416", "LIVERPOOL", LocalDateTime.now().minusMonths(13),
-            new BigDecimal("4.00"), new BigDecimal("6.00"),
-            new BigDecimal("9.00"), new BigDecimal("12.00"),
-            "user2"
-        ));
-
-        when(courtLocationAuditService.getAllTransportLimitAuditHistory()).thenReturn(auditRecords);
+        List<String> auditRecords = List.of(
+                "415,7.50,15.00,admin-user,12345,1704067200000,CHESTER",
+                "415,5.00,12.00,admin-user,12344,1701475200000,CHESTER"
+        );
+        when(courtLocationRepository.getCourtRevisionsByLocCodesLastYear(courtCodes))
+                .thenReturn(auditRecords);
 
         StandardReportRequest request = StandardReportRequest.builder()
-            .reportType("ManualAdjustmentsToExpenseLimitsReport")
-            .build();
+                .reportType("ManualAdjustmentsToExpenseLimitsReport")
+                .build();
 
         // When
         StandardReportResponse response = report.getStandardReportResponse(request);
 
-        // Then
+        // Then - Data should be present (repository filters by 12 months in SQL)
         StandardTableData data = response.getTableData().getData();
-
-        // Debug: Print actual keys if test fails
-        if (!data.isEmpty()) {
-            LinkedHashMap<String, Object> sampleRow = data.get(0);
-            System.out.println("Available keys in row: " + sampleRow.keySet());
-        }
-
-        // Should have data (from CHESTER)
         assertThat(data).isNotEmpty();
 
-        // Should have 4 rows from CHESTER (2 types × 2 records if both limits changed)
-        // and 0 rows from LIVERPOOL (too old)
-        // The exact count depends on whether both public transport and taxi limits changed
-        int chesterRows = 0;
-        int liverpoolRows = 0;
-
-        for (LinkedHashMap<String, Object> row : data) {
-            // Try different possible key names
-            String courtValue = getCourtValue(row);
-
-            if (courtValue != null) {
-                if (courtValue.contains("CHESTER") || courtValue.contains("415")) {
-                    chesterRows++;
-                } else if (courtValue.contains("LIVERPOOL") || courtValue.contains("416")) {
-                    liverpoolRows++;
-                }
-            }
-        }
-
-        assertThat(chesterRows).as("Should include CHESTER records (within 12 months)").isGreaterThan(0);
-        assertThat(liverpoolRows).as("Should NOT include LIVERPOOL records (older than 12 months)").isEqualTo(0);
-    }
-
-
-    private String getCourtValue(LinkedHashMap<String, Object> row) {
-        // Try different possible key names
-        Object value = row.get("court_location_name_and_code");
-        if (value != null) {
-            return value.toString();
-        }
-
-        value = row.get("court");
-        if (value != null) {
-            return value.toString();
-        }
-
-        value = row.get("court_name");
-        if (value != null) {
-            return value.toString();
-        }
-
-        // If we can't find the court value, return null
-        return null;
+        // All data returned from repository is within 12 months
+        assertThat(data.size()).isEqualTo(2); // Public Transport + Taxi
     }
 
     @Test
     @DisplayName("Should format court names as 'NAME (CODE)'")
     void positiveCourtNameFormatting() {
         // Given
-        List<TransportLimitAuditRecord> auditRecords = List.of(
-            createAuditRecord(
-                "415", "CHESTER", LocalDateTime.now().minusMonths(1),
-                new BigDecimal("5.00"), new BigDecimal("7.50"),
-                new BigDecimal("10.00"), new BigDecimal("15.00"),
-                "admin-user"
-            )
-        );
+        List<String> courtCodes = List.of("415");
+        when(courtLocationRepository.getRecentlyUpdatedRecordsLastYear()).thenReturn(courtCodes);
 
-        when(courtLocationAuditService.getAllTransportLimitAuditHistory()).thenReturn(auditRecords);
+        List<String> auditRecords = List.of(
+                "415,7.50,15.00,admin-user,12345,1704067200000,CHESTER",
+                "415,5.00,12.00,admin-user,12344,1701475200000,CHESTER"
+        );
+        when(courtLocationRepository.getCourtRevisionsByLocCodesLastYear(courtCodes))
+                .thenReturn(auditRecords);
 
         StandardReportRequest request = StandardReportRequest.builder()
-            .reportType("ManualAdjustmentsToExpenseLimitsReport")
-            .build();
+                .reportType("ManualAdjustmentsToExpenseLimitsReport")
+                .build();
 
         // When
         StandardReportResponse response = report.getStandardReportResponse(request);
@@ -216,13 +175,8 @@ class ManualAdjustmentsToExpenseLimitsReportTest {
         assertThat(data).isNotEmpty();
 
         LinkedHashMap<String, Object> firstRow = data.get(0);
+        String courtName = (String) firstRow.get("court_location_name_and_code");
 
-        // Debug: print available keys
-        System.out.println("Available keys: " + firstRow.keySet());
-        System.out.println("Row contents: " + firstRow);
-
-        // Get court name using helper method
-        String courtName = getCourtValue(firstRow);
         assertThat(courtName).isNotNull();
         assertThat(courtName).isEqualTo("CHESTER (415)");
     }
@@ -232,20 +186,19 @@ class ManualAdjustmentsToExpenseLimitsReportTest {
     void positiveIncludesChangedByUsername() {
         // Given
         String expectedUsername = "audit-admin";
-        List<TransportLimitAuditRecord> auditRecords = List.of(
-            createAuditRecord(
-                "415", "CHESTER", LocalDateTime.now().minusMonths(1),
-                new BigDecimal("5.00"), new BigDecimal("7.50"),
-                new BigDecimal("10.00"), new BigDecimal("15.00"),
-                expectedUsername
-            )
-        );
+        List<String> courtCodes = List.of("415");
+        when(courtLocationRepository.getRecentlyUpdatedRecordsLastYear()).thenReturn(courtCodes);
 
-        when(courtLocationAuditService.getAllTransportLimitAuditHistory()).thenReturn(auditRecords);
+        List<String> auditRecords = List.of(
+                "415,7.50,15.00," + expectedUsername + ",12345,1704067200000,CHESTER",
+                "415,5.00,12.00," + expectedUsername + ",12344,1701475200000,CHESTER"
+        );
+        when(courtLocationRepository.getCourtRevisionsByLocCodesLastYear(courtCodes))
+                .thenReturn(auditRecords);
 
         StandardReportRequest request = StandardReportRequest.builder()
-            .reportType("ManualAdjustmentsToExpenseLimitsReport")
-            .build();
+                .reportType("ManualAdjustmentsToExpenseLimitsReport")
+                .build();
 
         // When
         StandardReportResponse response = report.getStandardReportResponse(request);
@@ -263,20 +216,19 @@ class ManualAdjustmentsToExpenseLimitsReportTest {
     @DisplayName("Should format limits as currency with £ symbol")
     void positiveCurrencyFormatting() {
         // Given
-        List<TransportLimitAuditRecord> auditRecords = List.of(
-            createAuditRecord(
-                "415", "CHESTER", LocalDateTime.now().minusMonths(1),
-                new BigDecimal("5.50"), new BigDecimal("7.75"),
-                new BigDecimal("10.25"), new BigDecimal("15.99"),
-                "user1"
-            )
-        );
+        List<String> courtCodes = List.of("415");
+        when(courtLocationRepository.getRecentlyUpdatedRecordsLastYear()).thenReturn(courtCodes);
 
-        when(courtLocationAuditService.getAllTransportLimitAuditHistory()).thenReturn(auditRecords);
+        List<String> auditRecords = List.of(
+                "415,7.75,15.99,user1,12345,1704067200000,CHESTER",
+                "415,5.50,10.25,user1,12344,1701475200000,CHESTER"
+        );
+        when(courtLocationRepository.getCourtRevisionsByLocCodesLastYear(courtCodes))
+                .thenReturn(auditRecords);
 
         StandardReportRequest request = StandardReportRequest.builder()
-            .reportType("ManualAdjustmentsToExpenseLimitsReport")
-            .build();
+                .reportType("ManualAdjustmentsToExpenseLimitsReport")
+                .build();
 
         // When
         StandardReportResponse response = report.getStandardReportResponse(request);
@@ -294,61 +246,143 @@ class ManualAdjustmentsToExpenseLimitsReportTest {
     }
 
     @Test
+    @DisplayName("Should include change date from revision_timestamp")
+    void positiveIncludesChangeDate() {
+        // Given
+        List<String> courtCodes = List.of("415");
+        when(courtLocationRepository.getRecentlyUpdatedRecordsLastYear()).thenReturn(courtCodes);
+
+        // Timestamp: 1704067200000 = 2024-01-01 00:00:00 UTC
+        List<String> auditRecords = List.of(
+                "415,7.50,15.00,user1,12345,1704067200000,CHESTER",
+                "415,5.00,12.00,user1,12344,1701475200000,CHESTER"
+        );
+        when(courtLocationRepository.getCourtRevisionsByLocCodesLastYear(courtCodes))
+                .thenReturn(auditRecords);
+
+        StandardReportRequest request = StandardReportRequest.builder()
+                .reportType("ManualAdjustmentsToExpenseLimitsReport")
+                .build();
+
+        // When
+        StandardReportResponse response = report.getStandardReportResponse(request);
+
+        // Then
+        StandardTableData data = response.getTableData().getData();
+        assertThat(data).isNotEmpty();
+
+        LinkedHashMap<String, Object> firstRow = data.get(0);
+        LocalDate changeDate = (LocalDate) firstRow.get("change_date");
+
+        assertThat(changeDate).isNotNull();
+        assertThat(changeDate).isEqualTo(LocalDate.of(2024, 1, 1));
+    }
+
+    @Test
+    @DisplayName("Should include revision_number in data rows")
+    void positiveIncludesRevisionNumber() {
+        // Given
+        List<String> courtCodes = List.of("415");
+        when(courtLocationRepository.getRecentlyUpdatedRecordsLastYear()).thenReturn(courtCodes);
+
+        List<String> auditRecords = List.of(
+                "415,7.50,15.00,user1,12345,1704067200000,CHESTER",
+                "415,5.00,12.00,user1,12344,1701475200000,CHESTER"
+        );
+        when(courtLocationRepository.getCourtRevisionsByLocCodesLastYear(courtCodes))
+                .thenReturn(auditRecords);
+
+        StandardReportRequest request = StandardReportRequest.builder()
+                .reportType("ManualAdjustmentsToExpenseLimitsReport")
+                .build();
+
+
+        StandardReportResponse response = report.getStandardReportResponse(request);
+
+
+        StandardTableData data = response.getTableData().getData();
+        assertThat(data).isNotEmpty();
+
+        LinkedHashMap<String, Object> firstRow = data.get(0);
+        Long revisionNumber = (Long) firstRow.get("revision_number");
+
+        assertThat(revisionNumber).isNotNull();
+        assertThat(revisionNumber).isEqualTo(12345L);
+    }
+
+    @Test
+    @DisplayName("Should handle court names with commas")
+    void positiveHandlesCourtNamesWithCommas() {
+
+        List<String> courtCodes = List.of("415");
+        when(courtLocationRepository.getRecentlyUpdatedRecordsLastYear()).thenReturn(courtCodes);
+
+        // Court name with comma: "CHESTER, CROWN COURT"
+        List<String> auditRecords = List.of(
+                "415,7.50,15.00,user1,12345,1704067200000,CHESTER, CROWN COURT",
+                "415,5.00,12.00,user1,12344,1701475200000,CHESTER, CROWN COURT"
+        );
+        when(courtLocationRepository.getCourtRevisionsByLocCodesLastYear(courtCodes))
+                .thenReturn(auditRecords);
+
+        StandardReportRequest request = StandardReportRequest.builder()
+                .reportType("ManualAdjustmentsToExpenseLimitsReport")
+                .build();
+
+
+        StandardReportResponse response = report.getStandardReportResponse(request);
+
+
+        StandardTableData data = response.getTableData().getData();
+        assertThat(data).isNotEmpty();
+
+        LinkedHashMap<String, Object> firstRow = data.get(0);
+        String courtName = (String) firstRow.get("court_location_name_and_code");
+
+        assertThat(courtName).isEqualTo("CHESTER, CROWN COURT (415)");
+    }
+
+    @Test
     @DisplayName("Should validate request properly")
     void positiveRequestValidation() {
-        // Given - Valid request with no parameters (report doesn't require any)
-        StandardReportRequest request = StandardReportRequest.builder()
-            .reportType("ManualAdjustmentsToExpenseLimitsReport")
-            .build();
 
-        // When/Then - Should not throw validation exception
+        StandardReportRequest request = StandardReportRequest.builder()
+                .reportType("ManualAdjustmentsToExpenseLimitsReport")
+                .build();
+
+
         assertThat(report.getRequestValidatorClass()).isNotNull();
     }
 
-    // Helper methods
+    @Test
+    @DisplayName("Should sort by revision number descending (most recent first)")
+    void positiveSortsByRevisionDescending() {
 
-    private List<TransportLimitAuditRecord> createMockAuditRecords() {
-        List<TransportLimitAuditRecord> records = new ArrayList<>();
+        List<String> courtCodes = List.of("415");
+        when(courtLocationRepository.getRecentlyUpdatedRecordsLastYear()).thenReturn(courtCodes);
 
-        // Chester - Public Transport and Taxi changes
-        records.add(createAuditRecord(
-            "415", "CHESTER", LocalDateTime.now().minusMonths(2),
-            new BigDecimal("5.00"), new BigDecimal("7.50"),
-            new BigDecimal("10.00"), new BigDecimal("15.00"),
-            "admin-user1"
-        ));
+        List<String> auditRecords = List.of(
+                "415,9.00,20.00,user1,12347,1706659200000,CHESTER", // Latest
+                "415,7.50,15.00,user1,12345,1704067200000,CHESTER", // Middle
+                "415,5.00,12.00,user1,12344,1701475200000,CHESTER"  // Oldest
+        );
+        when(courtLocationRepository.getCourtRevisionsByLocCodesLastYear(courtCodes))
+                .thenReturn(auditRecords);
 
-        // Liverpool - Public Transport and Taxi changes
-        records.add(createAuditRecord(
-            "416", "LIVERPOOL", LocalDateTime.now().minusMonths(3),
-            new BigDecimal("6.00"), new BigDecimal("8.00"),
-            new BigDecimal("12.00"), new BigDecimal("18.00"),
-            "admin-user2"
-        ));
+        StandardReportRequest request = StandardReportRequest.builder()
+                .reportType("ManualAdjustmentsToExpenseLimitsReport")
+                .build();
 
-        return records;
-    }
 
-    private TransportLimitAuditRecord createAuditRecord(
-        String locCode,
-        String courtName,
-        LocalDateTime changeDateTime,
-        BigDecimal publicTransportOld,
-        BigDecimal publicTransportNew,
-        BigDecimal taxiOld,
-        BigDecimal taxiNew,
-        String changedBy) {
+        StandardReportResponse response = report.getStandardReportResponse(request);
 
-        return TransportLimitAuditRecord.builder()
-            .locCode(locCode)
-            .courtName(courtName)
-            .changeDateTime(changeDateTime)
-            .publicTransportPreviousValue(publicTransportOld)
-            .publicTransportCurrentValue(publicTransportNew)
-            .taxiPreviousValue(taxiOld)
-            .taxiCurrentValue(taxiNew)
-            .changedBy(changedBy)
-            .revisionNumber(1L)
-            .build();
+
+        StandardTableData data = response.getTableData().getData();
+        assertThat(data).isNotEmpty();
+
+
+        LinkedHashMap<String, Object> firstRow = data.get(0);
+        Long firstRevision = (Long) firstRow.get("revision_number");
+        assertThat(firstRevision).isEqualTo(12347L);
     }
 }
