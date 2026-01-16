@@ -46,6 +46,14 @@ public class ResponsesCompletedReportResponse {
             private int id;
             private String name;
             private String dataType;
+
+            public static Heading of(int id, String name, String dataType) {
+                Heading heading = new Heading();
+                heading.setId(id);
+                heading.setName(name);
+                heading.setDataType(dataType);
+                return heading;
+            }
         }
 
         @Data
@@ -56,6 +64,14 @@ public class ResponsesCompletedReportResponse {
             private String staffName;
             private List<Integer> dailyTotals; // list of totals for each day in the month
             private Integer staffTotal;
+
+            public static DataRow of(String staffName, List<Integer> dailyTotals, int staffTotal) {
+                DataRow row = new DataRow();
+                row.setStaffName(staffName);
+                row.setDailyTotals(dailyTotals);
+                row.setStaffTotal(staffTotal);
+                return row;
+            }
         }
     }
 

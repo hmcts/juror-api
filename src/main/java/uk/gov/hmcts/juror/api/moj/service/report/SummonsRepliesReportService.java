@@ -36,7 +36,7 @@ public interface SummonsRepliesReportService {
 
     @Builder
     @Getter
-    public static class CompletedResponseRecord {
+    class CompletedResponseRecord {
         private String staffName;
         private LocalDate date;
         private Integer completedResponses;

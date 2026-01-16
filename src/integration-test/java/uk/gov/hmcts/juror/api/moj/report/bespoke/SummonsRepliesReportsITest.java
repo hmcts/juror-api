@@ -25,17 +25,12 @@ import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 
 import java.net.URI;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.BDDAssertions.within;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -268,25 +263,25 @@ class SummonsRepliesReportsITest extends AbstractIntegrationTest {
             ResponsesCompletedReportResponse.TableData.DataRow row = dataRows.get(0);
             AssertionsForClassTypes.assertThat(row.getStaffName()).isEqualTo("AUTO");
             AssertionsForClassTypes.assertThat(row.getDailyTotals()).isEqualTo(List.of(0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                           2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+                                                   2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
             AssertionsForClassTypes.assertThat(row.getStaffTotal()).isEqualTo(2);
             // second row should be for MOD Test Bureau
             row = dataRows.get(1);
             AssertionsForClassTypes.assertThat(row.getStaffName()).isEqualTo("MODTESTBUREAU");
             AssertionsForClassTypes.assertThat(row.getDailyTotals()).isEqualTo(List.of(0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                           4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0));
+                                                   4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0));
             AssertionsForClassTypes.assertThat(row.getStaffTotal()).isEqualTo(18);
             // third row should be for MOD Test Court
             row = dataRows.get(2);
             AssertionsForClassTypes.assertThat(row.getStaffName()).isEqualTo("MODTESTCOURT");
             AssertionsForClassTypes.assertThat(row.getDailyTotals()).isEqualTo(List.of(0, 0, 0, 0, 0, 0, 0, 0, 1,
-                                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+                                                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
             AssertionsForClassTypes.assertThat(row.getStaffTotal()).isEqualTo(1);
             // fourth row should be for Totals
             row = dataRows.get(3);
             AssertionsForClassTypes.assertThat(row.getStaffName()).isEqualTo("Total Responses");
             AssertionsForClassTypes.assertThat(row.getDailyTotals()).isEqualTo(List.of(0, 0, 0, 0, 0, 0, 0, 0, 1,
-                                                           6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0));
+                                                   6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0));
             AssertionsForClassTypes.assertThat(row.getStaffTotal()).isEqualTo(21);
 
         }
@@ -313,6 +308,25 @@ class SummonsRepliesReportsITest extends AbstractIntegrationTest {
 
             assertThat(responseEntity.getStatusCode()).as("Expect HTTP FORBIDDEN response")
                 .isEqualTo(HttpStatus.FORBIDDEN);
+        }
+
+        @Test
+        void responsesCompletedReportsBadDate() {
+
+            final String bureauManagerJwt = createBureauManagerJwt();
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauManagerJwt);
+
+            ResponseEntity<ResponsesCompletedReportResponse> responseEntity =
+                restTemplate.exchange(
+                    new RequestEntity<Void>(
+                        httpHeaders, HttpMethod.GET,
+                        URI.create(URL_BASE + "/responses-completed/20dr-08-t1")
+                    ),
+                    ResponsesCompletedReportResponse.class
+                );
+
+            assertThat(responseEntity.getStatusCode()).as("Expect HTTP Bad request response")
+                .isEqualTo(HttpStatus.BAD_REQUEST);
         }
 
         private String createBureauManagerJwt() {
