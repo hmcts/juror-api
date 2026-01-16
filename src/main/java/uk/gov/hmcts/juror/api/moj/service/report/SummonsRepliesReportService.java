@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.service.report;
 
-import lombok.Builder;
 import lombok.Getter;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DigitalSummonsRepliesReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.ResponsesCompletedReportResponse;
@@ -13,6 +12,7 @@ public interface SummonsRepliesReportService {
 
     ResponsesCompletedReportResponse getResponsesCompletedReport(LocalDate monthStartDate);
 
+    @Getter
     enum TableHeading {
         DATE("Date", LocalDate.class.getSimpleName()),
         NO_OF_REPLIES("No of replies received",  Integer.class.getSimpleName());
@@ -25,26 +25,7 @@ public interface SummonsRepliesReportService {
             this.dataType = dataType;
         }
 
-        public String getDisplayName() {
-            return displayName;
-        }
-
-        public String getDataType() {
-            return dataType;
-        }
     }
 
-    @Builder
-    @Getter
-    class CompletedResponseRecord {
-        private String staffName;
-        private LocalDate date;
-        private Integer completedResponses;
-
-        public CompletedResponseRecord(String staffName, LocalDate dayOfMonth, Integer completedResponses) {
-            this.staffName = staffName;
-            this.date = dayOfMonth;
-            this.completedResponses = completedResponses;
-        }
-    }
+    record CompletedResponseRecord(String staffName, LocalDate date, Integer completedResponses) {}
 }

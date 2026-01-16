@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.service.report;
 
 import com.querydsl.core.Tuple;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -43,8 +45,8 @@ public class SummonsRepliesReportServiceImpl implements SummonsRepliesReportServ
             for (Tuple result : results) {
                 DigitalSummonsRepliesReportResponse.TableData.DataRow dataRow =
                     new DigitalSummonsRepliesReportResponse.TableData.DataRow();
-                dataRow.setDate(result.get(0, Date.class).toLocalDate());
-                final int total = result.get(1, Long.class).intValue();
+                dataRow.setDate(Objects.requireNonNull(result.get(0, Date.class)).toLocalDate());
+                final int total = Objects.requireNonNull(result.get(1, Long.class)).intValue();
                 dataRow.setNoOfReplies(total);
                 totalReplies += total;
                 dataRows.add(dataRow);
@@ -77,11 +79,11 @@ public class SummonsRepliesReportServiceImpl implements SummonsRepliesReportServ
 
         // need a count of the total responses completed on each day
         Map<LocalDate, Integer> totalResponsesByDate = new ConcurrentHashMap<>();
-        List<SummonsRepliesReportService.CompletedResponseRecord> completedResponses =
+        final List<SummonsRepliesReportService.CompletedResponseRecord> completedResponses =
             jurorResponseService.getResponsesCompletedReport(monthStartDate);
 
         // for each staff member, build a data row
-        List<ResponsesCompletedReportResponse.TableData.DataRow> dataRows = getDataRows(
+        final List<ResponsesCompletedReportResponse.TableData.DataRow> dataRows = getDataRows(
             monthStartDate,
             completedResponses,
             totalResponsesByDate
@@ -128,7 +130,7 @@ public class SummonsRepliesReportServiceImpl implements SummonsRepliesReportServ
 
             // the same staff member may have multiple records for different days, so check if we already have a row
             ResponsesCompletedReportResponse.TableData.DataRow dataRow = dataRows.stream()
-                .filter(row -> row.getStaffName().equals(completedResponseRecord.getStaffName()))
+                .filter(row -> row.getStaffName().equals(completedResponseRecord.staffName()))
                 .findFirst()
                 .orElse(null);
             if (dataRow == null) {
@@ -141,20 +143,20 @@ public class SummonsRepliesReportServiceImpl implements SummonsRepliesReportServ
 
                 }
                 dataRow = ResponsesCompletedReportResponse.TableData.DataRow.of(
-                    completedResponseRecord.getStaffName(),
+                    completedResponseRecord.staffName(),
                     dailyTotals,
                     0
                 );
                 dataRows.add(dataRow);
             }
             // set the completed responses for the appropriate day
-            int dayOfMonth = completedResponseRecord.getDate().getDayOfMonth();
-            dataRow.getDailyTotals().set(dayOfMonth - 1, completedResponseRecord.getCompletedResponses());
+            int dayOfMonth = completedResponseRecord.date().getDayOfMonth();
+            dataRow.getDailyTotals().set(dayOfMonth - 1, completedResponseRecord.completedResponses());
             // update the staff total
-            dataRow.setStaffTotal(dataRow.getStaffTotal() + completedResponseRecord.getCompletedResponses());
+            dataRow.setStaffTotal(dataRow.getStaffTotal() + completedResponseRecord.completedResponses());
             // update the total responses by date
-            totalResponsesByDate.merge(completedResponseRecord.getDate(),
-                                       completedResponseRecord.getCompletedResponses(),
+            totalResponsesByDate.merge(completedResponseRecord.date(),
+                                       completedResponseRecord.completedResponses(),
                                        Integer::sum);
         }
         return dataRows;
@@ -232,6 +234,7 @@ public class SummonsRepliesReportServiceImpl implements SummonsRepliesReportServ
     }
 
 
+    @Getter
     public enum ReportHeading {
         REPORT_CREATED("Report created", LocalDate.class.getSimpleName()),
         TIME_CREATED("Time created", LocalDateTime.class.getSimpleName()),
@@ -247,12 +250,5 @@ public class SummonsRepliesReportServiceImpl implements SummonsRepliesReportServ
             this.dataType = dataType;
         }
 
-        public String getDisplayName() {
-            return displayName;
-        }
-
-        public String getDataType() {
-            return dataType;
-        }
     }
 }

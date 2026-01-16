@@ -153,11 +153,11 @@ public class JurorResponseServiceImpl implements JurorResponseService {
         List<String> result) {
         return result.stream().map(row -> {
             String[] fields = row.split(",");
-            return SummonsRepliesReportService.CompletedResponseRecord.builder()
-                .staffName(fields[0])
-                .date(LocalDate.parse(fields[1], DateTimeFormatter.ofPattern("yyyy-MM-dd")))
-                .completedResponses(Integer.parseInt(fields[2]))
-                .build();
+            return new SummonsRepliesReportService.CompletedResponseRecord(
+                fields[0],
+                LocalDate.parse(fields[1], DateTimeFormatter.ofPattern("yyyy-MM-dd")),
+                Integer.parseInt(fields[2])
+            );
         }).toList();
     }
 
@@ -220,7 +220,6 @@ public class JurorResponseServiceImpl implements JurorResponseService {
                                             JurorPersonalDetailsDto jurorPersonalDetailsDto, String jurorNumber) {
         String replyMethod = jurorResponse.getReplyType().getDescription();
 
-        //TODO: ADDRESS UPDATES FOR DIGITAL
         if (jurorResponse.getReplyType().getType().equals(ReplyMethod.PAPER.getDescription())) {
             if (hasValueChanged(jurorResponse.getAddressLine1(), jurorPersonalDetailsDto.getAddressLineOne(),
                 ADDRESS_LINE1, jurorNumber, replyMethod)) {
@@ -364,7 +363,7 @@ public class JurorResponseServiceImpl implements JurorResponseService {
     }
 
     @Transactional
-    private void setResponseProcessingStatusToClosed(AbstractJurorResponse jurorResponse) {
+    public void setResponseProcessingStatusToClosed(AbstractJurorResponse jurorResponse) {
         if (jurorResponse.isClosed()) {
             return; //Closed records are static as such we should not update
         }
@@ -383,6 +382,7 @@ public class JurorResponseServiceImpl implements JurorResponseService {
     }
 
     @Override
+    @Transactional
     public void setResponseProcessingStatusToClosed(String jurorNumber) {
         AbstractJurorResponse jurorResponse = jurorDigitalResponseRepository.findByJurorNumber(jurorNumber);
         if (jurorResponse == null) {
