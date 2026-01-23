@@ -48,13 +48,15 @@ public class AdministrationJudgeServiceImpl implements AdministrationJudgeServic
 
     @Override
     public void createJudge(JudgeCreateDto judgeCreateDto) {
+        verifyCodeDoesNotExist(SecurityUtil.getActiveOwner(), judgeCreateDto.getJudgeCode());
+
         Judge judge = Judge.builder()
             .owner(SecurityUtil.getActiveOwner())
             .code(judgeCreateDto.getJudgeCode())
             .name(judgeCreateDto.getJudgeName())
             .isActive(true)
             .build();
-        verifyCodeDoesNotExist(judge.getOwner(), judge.getCode());
+
         judgeRepository.save(judge);
     }
 
