@@ -29,12 +29,9 @@ public class LaAuthenticationController {
 
     LaUserService userService;
 
-
-    @PostMapping("/jwt/{la_code}")
+    @PostMapping("/jwt")
     @Operation(summary = "Creates a jwt for a given user at local authority")
     public ResponseEntity<LaJwtDto> createJwt(
-        @P("la_code") @PathVariable("la_code") @Valid @NotBlank
-        @Pattern(regexp = "^\\d{3}$") String laCode,
         @RequestBody @Valid LaEmailDto emailDto
     ) {
         return ResponseEntity.ok(userService.createJwt(emailDto.toString()));
