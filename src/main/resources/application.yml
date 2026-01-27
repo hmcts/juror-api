@@ -16,6 +16,7 @@ jwt:
     hmac: ${JWT_SECRET_HMAC:}
     public: ${JWT_SECRET_PUBLIC:}
     bureau: ${JWT_SECRET_BUREAU:}
+    er-portal: ${JWT_SECRET_ER_PORTAL:}
 notify:
   disabled: true
   proxy:
