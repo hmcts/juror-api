@@ -63,6 +63,9 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
     @Value("${jwt.secret.hmac}")
     protected String hmacSecret;
 
+    @Value("${jwt.secret.er-portal}")
+    protected String jurorErSecret;
+
 
     protected void executeInTransaction(Runnable supplier) {
         executeInTransaction(() -> {
@@ -108,7 +111,7 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
     }
 
     protected String mintJurorErJwt(final JurorErJwtPayload payload) {
-        return TestUtil.mintJurorErJwt(payload, SignatureAlgorithm.HS256, bureauSecret,
+        return TestUtil.mintJurorErJwt(payload, SignatureAlgorithm.HS256, jurorErSecret,
                                       Instant.now().plus(100L * 365L, ChronoUnit.DAYS));
     }
 

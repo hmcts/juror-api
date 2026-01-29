@@ -14,6 +14,7 @@ import uk.gov.hmcts.juror.api.jurorer.repository.LaUserRepository;
 import uk.gov.hmcts.juror.api.jurorer.repository.LocalAuthorityRepository;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.JwtService;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -84,14 +85,28 @@ public class LaUserServiceImpl implements LaUserService {
     @Override
     @Transactional(readOnly = true)
     public LaUserDetailsDto getLaUserDetails(String laCode) {
+
+        // check that the laCode matches the regex  "^\d{3}$"
+        if (!laCode.matches("^\\d{3}$")) {
+            throw new MojException.BadRequest("Invalid laCode format", null);
+        }
+
+        // check if user making request is authorised to view users for the laCode
+        if (!laCode.equals(SecurityUtil.getActiveLaCode())) {
+            throw new MojException.Forbidden("User does not have access", null);
+        }
+
         LocalAuthority localAuthority = localAuthorityRepository.findByLaCode(laCode).orElseThrow(
             () -> new MojException.NotFound("Local Authority not found", null)
         );
 
+        if(Boolean.FALSE == localAuthority.getActive()) {
+            throw new MojException.Forbidden("Local Authority not active", null);
+        }
+
         List<LaUser> users = userRepository.findByLocalAuthority(localAuthority);
 
         // build the user details dto using the list of users
-
         List<LaUserDetailsDto.LaUserDetails> userDetailsList = users.stream().map(user ->
             LaUserDetailsDto.LaUserDetails.builder()
                 .username(user.getUsername())

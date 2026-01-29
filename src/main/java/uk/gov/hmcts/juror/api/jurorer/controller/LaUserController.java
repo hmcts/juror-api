@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.LaUserDetailsDto;
 import uk.gov.hmcts.juror.api.jurorer.service.LaUserService;
+import uk.gov.hmcts.juror.api.validation.CourtLocationCode;
 
 @RestController
-@Validated
-@RequestMapping(value = "/api/v1/auth/juror-er/users", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1/juror-er/users", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Users")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class LaUserController {
@@ -28,7 +28,7 @@ public class LaUserController {
     @GetMapping("/{lacode}")
     @Operation(summary = "Get a list of users at local authority")
     public ResponseEntity<LaUserDetailsDto> getUserDetails(
-        @PathVariable(name = "laCode") @Size(min = 3, max = 3) @Valid String laCode
+        @PathVariable(name = "lacode") String laCode
     ) {
         return ResponseEntity.ok(userService.getLaUserDetails(laCode));
     }

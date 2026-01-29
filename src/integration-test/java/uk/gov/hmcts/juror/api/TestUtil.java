@@ -147,7 +147,10 @@ public final class TestUtil {
         final Map<String, Object> claimsMap = new HashMap<>();
         claimsMap.put(Claims.EXPIRATION, Date.from(expires));
         claimsMap.put(Claims.ISSUED_AT, Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
-        claimsMap.put("data", dataPayload);
+        claimsMap.put("username", dataPayload.getUsername());
+        claimsMap.put("laCode", dataPayload.getLaCode());
+        claimsMap.put("laName", dataPayload.getLaName());
+        claimsMap.put("role", dataPayload.getRoles());
 
         return Jwts.builder()
             .setClaims(claimsMap)

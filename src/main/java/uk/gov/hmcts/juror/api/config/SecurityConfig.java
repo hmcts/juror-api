@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthenticationProvider;
 import uk.gov.hmcts.juror.api.config.hmac.HmacJwtAuthenticationProvider;
+import uk.gov.hmcts.juror.api.config.jurorer.JurorErJwtAuthenticationProvider;
 import uk.gov.hmcts.juror.api.config.public1.PublicJwtAuthenticationProvider;
 
 /**
@@ -27,8 +28,9 @@ public class SecurityConfig {
 
     private final BureauJwtAuthenticationProvider bureauJwtAuthenticationProvider;
 
-
     private final HmacJwtAuthenticationProvider hmacJwtAuthenticationProvider;
+
+    private final JurorErJwtAuthenticationProvider jurorErJwtAuthenticationProvider;
 
     @Bean
     public ErrorAttributes errorAttributes() {
@@ -43,6 +45,7 @@ public class SecurityConfig {
         authenticationManagerBuilder.authenticationProvider(publicJwtAuthenticationProvider);
         authenticationManagerBuilder.authenticationProvider(bureauJwtAuthenticationProvider);
         authenticationManagerBuilder.authenticationProvider(hmacJwtAuthenticationProvider);
+        authenticationManagerBuilder.authenticationProvider(jurorErJwtAuthenticationProvider);
         return authenticationManagerBuilder.build();
     }
 }

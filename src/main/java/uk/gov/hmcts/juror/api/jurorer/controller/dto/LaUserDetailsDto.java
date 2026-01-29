@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
@@ -27,6 +28,7 @@ public class LaUserDetailsDto {
 
 
     @Builder
+    @Getter
     public static class LaUserDetails {
 
         @NotBlank
