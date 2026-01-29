@@ -19,6 +19,7 @@ import org.springframework.security.web.authentication.preauth.AbstractPreAuthen
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import uk.gov.hmcts.juror.api.config.bureau.BureauPreAuthenticationTokenFilter;
 import uk.gov.hmcts.juror.api.config.hmac.HmacPreAuthenticationTokenFilter;
+import uk.gov.hmcts.juror.api.config.jurorer.JurorErPreAuthenticationTokenFilter;
 import uk.gov.hmcts.juror.api.config.public1.PublicPreAuthenticationTokenFilter;
 
 @Configuration
@@ -61,6 +62,20 @@ public class SecurityConfigEndpoints {
             ).build();
     }
 
+    /**
+     * juror er security.
+     */
+    @Bean
+    @Order(1)
+    public SecurityFilterChain jurorErJwtSecurityConfigurationFilterChain(HttpSecurity http) throws Exception {
+        return buildSecurityFilterChainBase(
+            http,
+            new JurorErPreAuthenticationTokenFilter(HttpHeaders.AUTHORIZATION, authenticationManager))
+            .securityMatcher("/api/v1/juror-er/**")
+            .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
+            .build();
+    }
+
 
     /**
      * hmac security.
@@ -78,6 +93,7 @@ public class SecurityConfigEndpoints {
                 "/api/v1/auth/bureau/**",
                 "/api/v1/auth/moj/**",
                 "/api/v1/auth/public/**",
+                "/api/v1/auth/juror-er/**",
                 "/api/v1/auth/settings/**"
             ).authenticated())
             .build();

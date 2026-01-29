@@ -9,8 +9,8 @@ public interface LaUserService {
 
     LaJwtDto createJwt(String email);
 
-    LaUserDetailsDto getUser(String username);
-
     LaUser findUserByUsername(String username);
+
+    LaUserDetailsDto getLaUserDetails(String laCode);
 
 }

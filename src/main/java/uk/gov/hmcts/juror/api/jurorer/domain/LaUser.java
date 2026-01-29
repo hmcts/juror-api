@@ -13,6 +13,7 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.envers.NotAudited;
 
 import java.io.Serializable;
@@ -23,6 +24,7 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 @AllArgsConstructor
+@NoArgsConstructor
 public class LaUser implements Serializable {
 
     @Id
@@ -34,7 +36,7 @@ public class LaUser implements Serializable {
     @JoinColumn(name = "la_code", nullable = false)
     @ManyToOne
     @NotEmpty
-    private LocalAuthority laCode;
+    private LocalAuthority localAuthority;
 
     @NotNull
     @Column(name = "active", nullable = false)

@@ -9,6 +9,7 @@ import lombok.SneakyThrows;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.config.jurorer.JurorErJwtPayload;
 import uk.gov.hmcts.juror.api.config.public1.PublicJwtPayload;
 
 import java.time.Instant;
@@ -123,6 +124,30 @@ public final class TestUtil {
         final Map<String, Object> claimsMap = new HashMap<>();
         claimsMap.put(Claims.EXPIRATION, Date.from(expires));
         claimsMap.put(Claims.ISSUED_AT, Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
+
+        return Jwts.builder()
+            .setClaims(claimsMap)
+            .signWith(algorithm, base64Key)
+            .compact();
+    }
+
+    /**
+     * Mint a fresh JWT token for the Juror ER portal endpoints for use in tests.
+     *
+     * @param dataPayload Payload content under the "data" claim
+     * @param algorithm   Encryption algorithm
+     * @param base64Key   Secret key
+     * @param expires     Expiry date
+     * @return Json Web Token
+     */
+    public static String mintJurorErJwt(final JurorErJwtPayload dataPayload,
+                                       final SignatureAlgorithm algorithm, final String base64Key,
+                                       final Instant expires) {
+
+        final Map<String, Object> claimsMap = new HashMap<>();
+        claimsMap.put(Claims.EXPIRATION, Date.from(expires));
+        claimsMap.put(Claims.ISSUED_AT, Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
+        claimsMap.put("data", dataPayload);
 
         return Jwts.builder()
             .setClaims(claimsMap)
