@@ -173,11 +173,11 @@ public final class TestUtils {
             .build();
 
         return new BureauJwtPayload(user, UserType.ADMINISTRATOR, locCode,
-                                                       Collections.singletonList(CourtLocation.builder()
-                                                                                     .locCode(locCode)
-                                                                                     .name(courtName)
-                                                                                     .owner(locCode)
-                                                                                     .build()));
+                                    Collections.singletonList(CourtLocation.builder()
+                                                                  .locCode(locCode)
+                                                                  .name(courtName)
+                                                                  .owner(locCode)
+                                                                  .build()));
     }
 
 

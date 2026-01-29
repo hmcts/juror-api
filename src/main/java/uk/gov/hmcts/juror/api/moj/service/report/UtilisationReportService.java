@@ -5,6 +5,7 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.CourtUtilisationSt
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportJurorsResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.MonthlyUtilisationReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.OverdueUtilisationReportResponse;
 
 import java.time.LocalDate;
 
@@ -23,6 +24,7 @@ public interface UtilisationReportService {
 
     CourtUtilisationStatsReportResponse courtUtilisationStatsReport(CourtUtilisationStatsReportRequest request);
 
+    OverdueUtilisationReportResponse overdueUtilisationReport();
 
     enum TableHeading {
         DATE("Date", LocalDate.class.getSimpleName()),
@@ -34,7 +36,8 @@ public interface UtilisationReportService {
         NON_ATTENDANCE_DAYS("Non-attendance days",  Integer.class.getSimpleName()),
         UTILISATION("Utilisation", Double.class.getSimpleName()),
         COURT_NAME("Court Name", String.class.getSimpleName()),
-        DATE_LAST_RUN("Date Last Run", LocalDate.class.getSimpleName());
+        DATE_LAST_RUN("Date Last Run", LocalDate.class.getSimpleName()),
+        DAYS_ELAPSED("Days Elapsed", Integer.class.getSimpleName());
 
         private String displayName;
         private String dataType;
