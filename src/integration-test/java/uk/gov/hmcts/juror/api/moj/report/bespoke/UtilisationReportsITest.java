@@ -17,11 +17,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
+import uk.gov.hmcts.juror.api.TestUtils;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.CourtUtilisationStatsReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.CourtUtilisationStatsReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportJurorsResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.MonthlyUtilisationReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.OverdueUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.repository.UtilisationStatsRepository;
 
@@ -38,6 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Utilisation Reports Integration Tests at " + UtilisationReportsITest.URL_BASE)
+@SuppressWarnings("PMD.ExcessiveImports")
 class UtilisationReportsITest extends AbstractIntegrationTest {
 
     @Autowired
@@ -51,6 +55,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
     public static final String VIEW_MONTHLY_UTILISATION_REPORT_URL = URL_BASE + "/view-monthly-utilisation";
     public static final String GET_MONTHLY_UTILISATION_REPORT_URL = URL_BASE + "/monthly-utilisation-reports";
     public static final String COURT_UTILISATION_STATS_REPORT_URL = URL_BASE + "/court-utilisation-stats-report";
+    public static final String OVERDUE_UTILISATION_REPORT_URL = URL_BASE + "/overdue-utilisation-report";
 
     private HttpHeaders httpHeaders;
 
@@ -654,6 +659,88 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
                                                 httpHeaders, HttpMethod.POST,
                                                 URI.create(COURT_UTILISATION_STATS_REPORT_URL)),
                                                 CourtUtilisationStatsReportResponse.class);
+
+            assertThat(responseEntity.getStatusCode()).as("Expect HTTP FORBIDDEN response")
+                .isEqualTo(HttpStatus.FORBIDDEN);
+        }
+
+    }
+
+
+    @Nested
+    @DisplayName("Overdue Utilisation Stats Report Integration Tests")
+    @Sql({
+        "/db/truncate.sql",
+        "/db/mod/truncate.sql",
+        "/db/mod/ManagementDashboardOverdueUtilITest_typical.sql"
+    })
+    class OverdueUtilisationStatsReportTests {
+
+        @Test
+        void overdueUtilisationStatsReportAllCourtsHappy() {
+
+            httpHeaders = new HttpHeaders();
+            final BureauJwtPayload bureauJwtPayload = TestUtils.getJwtPayloadSuperUser("415", "Chester");
+
+            final String bureauJwt = mintBureauJwt(bureauJwtPayload);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            ResponseEntity<OverdueUtilisationReportResponse> responseEntity =
+                restTemplate.exchange(new RequestEntity<>(null,
+                                                          httpHeaders, HttpMethod.GET,
+                                                          URI.create(OVERDUE_UTILISATION_REPORT_URL)),
+                                      OverdueUtilisationReportResponse.class);
+
+            assertThat(responseEntity.getStatusCode()).as("Expect HTTP OK response").isEqualTo(HttpStatus.OK);
+
+            OverdueUtilisationReportResponse responseBody = responseEntity.getBody();
+            assertThat(responseBody).isNotNull();
+
+            // There are no headings for this report
+            assertThat(responseBody.getHeadings().isEmpty()).isTrue();
+
+            // validate the table data
+            OverdueUtilisationReportResponse.TableData tableData = responseBody.getTableData();
+            assertThat(tableData).isNotNull();
+            assertThat(tableData.getHeadings()).isNotNull();
+            assertThat(tableData.getHeadings()).hasSize(4); // headings validated in unit test
+
+            assertThat(tableData.getData()).isNotNull();
+            assertThat(tableData.getData()).hasSize(11);
+
+            OverdueUtilisationReportResponse.UtilisationStats stats = tableData.getData().get(0);
+            assertThat(stats.getCourtName()).isEqualTo("KINGSTON UPON THAMES (427)");
+            assertThat(Math.round(stats.getUtilisation())).isEqualTo(Math.round(11.50));
+            assertThat(stats.getDateLastRun()).isEqualTo(LocalDate.now().minusDays(90));
+            assertThat(stats.getDaysElapsed()).isEqualTo(90);
+
+            stats = tableData.getData().get(4);
+            assertThat(stats.getCourtName()).isEqualTo("LEEDS (429)");
+            assertThat(Math.round(stats.getUtilisation())).isEqualTo(Math.round(11.50));
+            assertThat(stats.getDateLastRun()).isEqualTo(LocalDate.now().minusDays(63));
+            assertThat(stats.getDaysElapsed()).isEqualTo(63);
+
+            stats = tableData.getData().get(9);
+            assertThat(stats.getCourtName()).isEqualTo("MANCHESTER, MINSHULL STREET (436)");
+            assertThat(Math.round(stats.getUtilisation())).isEqualTo(Math.round(24.48));
+            assertThat(stats.getDateLastRun()).isEqualTo(LocalDate.now().minusDays(39));
+            assertThat(stats.getDaysElapsed()).isEqualTo(39);
+        }
+
+
+        @Test
+        void overdueUtilisationStatsReportsInvalidUserType() {
+
+            final String bureauJwt = createBureauJwt();
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            ResponseEntity<OverdueUtilisationReportResponse> responseEntity =
+                restTemplate.exchange(new RequestEntity<>(null,
+                                                          httpHeaders, HttpMethod.GET,
+                                                          URI.create(OVERDUE_UTILISATION_REPORT_URL)),
+                                      OverdueUtilisationReportResponse.class);
 
             assertThat(responseEntity.getStatusCode()).as("Expect HTTP FORBIDDEN response")
                 .isEqualTo(HttpStatus.FORBIDDEN);
