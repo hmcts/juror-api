@@ -7,11 +7,15 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 @Repository
@@ -47,4 +51,17 @@ public interface JurorCommonResponseRepositoryMod
     long countByProcessingStatusIn(Set<ProcessingStatus> status);
 
     AbstractResponse findByJurorNumber(String jurorNumber);
+
+    @Query(nativeQuery = true, value = "SELECT u.name AS staff, DATE(jr.completed_at) AS day, COUNT(*) AS work_count "
+        + "FROM juror_mod.juror_response jr "
+        + "JOIN juror_mod.users u ON jr.staff_login = u.username "
+        + "WHERE jr.processing_status = 'CLOSED' "
+        + "  AND jr.reply_type = 'Digital' "
+        + "  AND jr.completed_at >= :start "
+        + "  AND jr.completed_at <  :end "
+        + "GROUP BY u.name, DATE(jr.completed_at) "
+        + "ORDER BY u.name, DATE(jr.completed_at)")
+    List<String> getResponsesCompletedReportData(@Param("start") LocalDate startDate,
+                                                    @Param("end") LocalDate endDate);
+
 }
