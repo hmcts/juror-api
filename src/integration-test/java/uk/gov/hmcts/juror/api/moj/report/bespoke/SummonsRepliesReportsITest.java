@@ -28,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@DisplayName("Utilisation Reports Integration Tests at " + SummonsRepliesReportsITest.URL_BASE)
+@DisplayName("Summons replies Reports Integration Tests at " + SummonsRepliesReportsITest.URL_BASE)
 class SummonsRepliesReportsITest extends AbstractIntegrationTest {
 
     @Autowired

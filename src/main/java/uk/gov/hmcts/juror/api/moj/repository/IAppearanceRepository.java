@@ -67,4 +67,7 @@ public interface IAppearanceRepository {
 
     int getAbsentCountAtCourt(String locationCode, LocalDate attendanceDateFrom,
                               LocalDate attendanceDateTo);
+
+    List<Tuple> getAllWeekendAttendances(List<LocalDate> saturdays, List<LocalDate> sundays,
+                                         List<LocalDate> bankHolidays, List<LocalDate> allDates);
 }

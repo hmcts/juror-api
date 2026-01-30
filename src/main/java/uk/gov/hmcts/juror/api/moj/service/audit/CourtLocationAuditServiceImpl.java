@@ -6,15 +6,18 @@ import jakarta.persistence.PersistenceContext;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.audit.dto.TransportLimitAuditRecord;
 import uk.gov.hmcts.juror.api.moj.domain.RevisionInfo;
+import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -22,6 +25,9 @@ public class CourtLocationAuditServiceImpl implements CourtLocationAuditService 
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    @Autowired
+    private CourtLocationRepository courtLocationRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -37,6 +43,9 @@ public class CourtLocationAuditServiceImpl implements CourtLocationAuditService 
             log.info("No audit history found for court location: {}", locCode);
             return new ArrayList<>();
         }
+
+        // Get the current court name from the main table
+        String currentCourtName = getCurrentCourtName(locCode);
 
         List<TransportLimitAuditRecord> auditRecords = new ArrayList<>();
 
@@ -82,7 +91,8 @@ public class CourtLocationAuditServiceImpl implements CourtLocationAuditService 
                     currentEntity,
                     previousEntity,
                     revisionInfo,
-                    currentRevision
+                    currentRevision,
+                    currentCourtName
                 );
                 auditRecords.add(record);
             }
@@ -93,6 +103,32 @@ public class CourtLocationAuditServiceImpl implements CourtLocationAuditService 
 
         return auditRecords;
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TransportLimitAuditRecord> getAllTransportLimitAuditHistory() {
+        log.debug("Retrieving transport limit audit history for all court locations");
+
+        // Get all court locations
+        List<CourtLocation> allCourts = courtLocationRepository.findAll();
+
+        log.debug("Found {} court locations to check for audit history", allCourts.size());
+
+        List<TransportLimitAuditRecord> allAuditRecords = new ArrayList<>();
+
+        // Get audit history for each court
+        for (CourtLocation court : allCourts) {
+            List<TransportLimitAuditRecord> courtRecords =
+                getTransportLimitAuditHistory(court.getLocCode());
+            allAuditRecords.addAll(courtRecords);
+        }
+
+        log.info("Found {} total audit records with transport limit changes across all courts",
+                 allAuditRecords.size());
+
+        return allAuditRecords;
+    }
+
 
     @Override
     @Transactional(readOnly = true)
@@ -108,6 +144,28 @@ public class CourtLocationAuditServiceImpl implements CourtLocationAuditService 
 
         // Return the last record (most recent)
         return history.get(history.size() - 1);
+    }
+
+    /**
+     * Get the current court name from the main court_location table.
+     * This is needed because the audit table might not have the name fields.
+     *
+     * @param locCode Court location code
+     * @return Court name, or loc_code if not found
+     */
+    private String getCurrentCourtName(String locCode) {
+        Optional<CourtLocation> courtLocation = courtLocationRepository.findById(locCode);
+        if (courtLocation.isPresent()) {
+            CourtLocation court = courtLocation.get();
+            // Priority: loc_court_name > name > loc_code
+            if (court.getLocCourtName() != null && !court.getLocCourtName().trim().isEmpty()) {
+                return court.getLocCourtName();
+            }
+            if (court.getName() != null && !court.getName().trim().isEmpty()) {
+                return court.getName();
+            }
+        }
+        return locCode;
     }
 
     /**
@@ -135,6 +193,7 @@ public class CourtLocationAuditServiceImpl implements CourtLocationAuditService 
      * @param previousEntity Previous entity state (can be null)
      * @param revisionInfo Revision metadata
      * @param currentRevision Current revision number
+     * @param courtName Court name from current table
      * @return Populated TransportLimitAuditRecord
      */
     private TransportLimitAuditRecord buildAuditRecord(
@@ -142,11 +201,12 @@ public class CourtLocationAuditServiceImpl implements CourtLocationAuditService 
         CourtLocation currentEntity,
         CourtLocation previousEntity,
         RevisionInfo revisionInfo,
-        Number currentRevision) {
+        Number currentRevision,
+        String courtName) {
 
         return TransportLimitAuditRecord.builder()
             .locCode(locCode)
-            .courtName(currentEntity.getLocCourtName())
+            .courtName(courtName)
             .revisionNumber(currentRevision.longValue())
             .changedBy(revisionInfo.getChangedBy())
             .changeDateTime(revisionInfo.getRevisionDate())
