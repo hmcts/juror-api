@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static uk.gov.hmcts.juror.api.moj.service.JwtServiceImpl.getSigningKey;
 import static uk.gov.hmcts.juror.api.moj.service.JwtServiceImpl.timeUnitToMilliseconds;
 
 @Service
@@ -67,7 +66,7 @@ public class LaUserServiceImpl implements LaUserService {
             "juror-api",
             null,
             timeUnitToMilliseconds(erPortalExpiry),
-            getSigningKey(erPortalSecret),
+                jwtService.getSigningKey(erPortalSecret),
             claims);
 
         return new LaJwtDto(jwt);

@@ -67,7 +67,8 @@ public class JwtServiceImpl implements JwtService {
         return extractExpiration(jwt, secret).before(new Date(clock.millis()));
     }
 
-    public static SecretKey getSigningKey(String jwtSecret) {
+    @Override
+    public SecretKey getSigningKey(String jwtSecret) {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
     }
 
