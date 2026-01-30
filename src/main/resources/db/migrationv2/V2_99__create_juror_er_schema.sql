@@ -33,6 +33,7 @@ CREATE TABLE juror_er.user (
 CREATE TABLE juror_er.deadline (
     id smallint PRIMARY KEY CHECK (id = 1),
    	deadline_date date NULL,
+   	upload_start_date date NULL,
    	updated_by varchar(30) NULL,
    	last_updated timestamp(3) NULL
 );

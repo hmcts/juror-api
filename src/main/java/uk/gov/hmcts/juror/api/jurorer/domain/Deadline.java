@@ -14,10 +14,13 @@ public class Deadline {
 
     @Id
     @Column(name = "id", nullable = false)
-    private static final Short ID = 1;   // fixed single-row identifier
+    private int id;   // fixed single-row identifier
 
     @Column(name = "deadline_date")
     private LocalDate deadlineDate;
+
+    @Column(name = "upload_start_date")
+    private LocalDate uploadStartDate;
 
     @Column(name = "updated_by", length = 30)
     private String updatedBy;
