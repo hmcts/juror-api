@@ -31,12 +31,8 @@ import static org.springframework.http.HttpMethod.GET;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + LaUserControllerITest.BASE_URL)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@Sql(value = {"/db/jurorer/teardownUsers.sql", "/db/jurorer/createUsers.sql"})
-@SuppressWarnings({
-    "PMD.JUnitTestsShouldIncludeAssert",
-    "PMD.ExcessiveImports",
-    "PMD.JUnitAssertionsShouldIncludeMessage"//False positive
-})
+@SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
+@Sql({"/db/jurorer/teardownUsers.sql", "/db/jurorer/createUsers.sql"})
 public class LaUserControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/juror-er/users";
 
@@ -59,7 +55,7 @@ public class LaUserControllerITest extends AbstractIntegrationTest {
         class Positive {
 
             @Test
-            void getLaUsersHappyPath() {
+            void laUsersHappyPath() {
 
                 ResponseEntity<LaUserDetailsDto> response =
                     restTemplate.exchange(new RequestEntity<>(httpHeaders, GET, URI.create(URL)),
@@ -83,16 +79,17 @@ public class LaUserControllerITest extends AbstractIntegrationTest {
         class Negative {
 
             @Test
-            void getLaUsersInvalidLaAndTooLong() {
+            void laUsersInvalidLaAndTooLong() {
                 ResponseEntity<LaUserDetailsDto> response =
-                        restTemplate.exchange(new RequestEntity<>(httpHeaders, GET, URI.create(BASE_URL + "/13323456789")),
+                        restTemplate.exchange(new RequestEntity<>(httpHeaders, GET,
+                                        URI.create(BASE_URL + "/13323456789")),
                                 LaUserDetailsDto.class);
                 assertThat(response.getStatusCode()).as("Expect the status to be bad request")
                         .isEqualTo(HttpStatus.BAD_REQUEST);
             }
 
             @Test
-            void getLaUsersInvalidLaAndWrongType() {
+            void laUsersInvalidLaAndWrongType() {
                 ResponseEntity<LaUserDetailsDto> response =
                         restTemplate.exchange(new RequestEntity<>(httpHeaders, GET, URI.create(BASE_URL + "/bad")),
                                 LaUserDetailsDto.class);

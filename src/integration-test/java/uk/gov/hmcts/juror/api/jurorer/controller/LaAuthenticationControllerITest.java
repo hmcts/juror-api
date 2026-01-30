@@ -40,12 +40,8 @@ import static org.springframework.http.HttpMethod.POST;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + LaAuthenticationControllerITest.BASE_URL)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@Sql(value = {"/db/jurorer/teardownUsers.sql", "/db/jurorer/createUsers.sql"})
-@SuppressWarnings({
-    "PMD.JUnitTestsShouldIncludeAssert",
-    "PMD.ExcessiveImports",
-    "PMD.JUnitAssertionsShouldIncludeMessage"//False positive
-})
+@SuppressWarnings({"PMD.JUnitAssertionsShouldIncludeMessage", "PMD.JUnitTestsShouldIncludeAssert"}) // false positive
+@Sql({"/db/jurorer/teardownUsers.sql", "/db/jurorer/createUsers.sql"})
 public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/auth/juror-er";
     private static final String EMAIL_SUFFIX = "@localauthority1.council.uk";
@@ -171,7 +167,7 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
             @Test
             void userNotActive() {
                 testBuilder()
-                    .payload(new EmailDto("test_court_inactive" + EMAIL_SUFFIX))
+                    .payload(new EmailDto("test_user1@localauthority4.council.uk"))
                     .triggerInvalid()
                     .assertMojForbiddenResponse("User is not active");
             }

@@ -35,7 +35,7 @@ public class LaUser implements Serializable {
 
     @JoinColumn(name = "la_code", nullable = false)
     @ManyToOne
-    @NotEmpty
+    @NotNull
     private LocalAuthority localAuthority;
 
     @NotNull

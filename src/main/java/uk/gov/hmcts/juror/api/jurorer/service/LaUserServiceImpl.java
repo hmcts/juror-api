@@ -100,7 +100,7 @@ public class LaUserServiceImpl implements LaUserService {
             () -> new MojException.NotFound("Local Authority not found", null)
         );
 
-        if(Boolean.FALSE == localAuthority.getActive()) {
+        if (Boolean.FALSE == localAuthority.getActive()) {
             throw new MojException.Forbidden("Local Authority not active", null);
         }
 

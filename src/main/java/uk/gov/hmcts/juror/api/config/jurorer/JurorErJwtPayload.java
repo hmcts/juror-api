@@ -11,9 +11,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import uk.gov.hmcts.juror.api.jurorer.domain.LaRoles;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Juror ER authentication Json Web Token payload.
@@ -36,7 +36,7 @@ public class JurorErJwtPayload {
     }
 
     public Map<String, Object> toClaims() {
-        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> data = new ConcurrentHashMap<>();
         data.put("username", username);
         data.put("loCode", laCode);
         data.put("laName", laName);

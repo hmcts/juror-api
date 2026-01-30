@@ -14,7 +14,7 @@ public class Deadline {
 
     @Id
     @Column(name = "id", nullable = false)
-    private Short id = 1;   // fixed single-row identifier
+    private static final Short ID = 1;   // fixed single-row identifier
 
     @Column(name = "deadline_date")
     private LocalDate deadlineDate;
