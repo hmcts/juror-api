@@ -251,38 +251,33 @@ class SummonsRepliesReportsITest extends AbstractIntegrationTest {
                                                             .isEqualTo(AbstractReportResponse.DataTypeValue.builder()
                                                                       .displayName("Number of responses processed")
                                                                       .dataType("Integer")
-                                                                      .value(21)
+                                                                      .value(23)
                                                                       .build());
             // validate table data
             assertThat(responseBody.getTableData().getData()).isNotNull();
-            assertThat(responseBody.getTableData().getData().size()).isEqualTo(4);
+            assertThat(responseBody.getTableData().getData().size()).isEqualTo(3);
 
             List<ResponsesCompletedReportResponse.TableData.DataRow> dataRows = responseBody.getTableData().getData();
 
-            // first row should be for Auto
+            // Only Bureau users will be listed, so 3 rows expected
+            // first row should be for MOD Test Bureau
             ResponsesCompletedReportResponse.TableData.DataRow row = dataRows.get(0);
-            AssertionsForClassTypes.assertThat(row.getStaffName()).isEqualTo("AUTO");
-            AssertionsForClassTypes.assertThat(row.getDailyTotals()).isEqualTo(List.of(0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                   2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
-            AssertionsForClassTypes.assertThat(row.getStaffTotal()).isEqualTo(2);
-            // second row should be for MOD Test Bureau
-            row = dataRows.get(1);
             AssertionsForClassTypes.assertThat(row.getStaffName()).isEqualTo("MODTESTBUREAU");
             AssertionsForClassTypes.assertThat(row.getDailyTotals()).isEqualTo(List.of(0, 0, 0, 0, 0, 0, 0, 0, 0,
                                                    4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0));
             AssertionsForClassTypes.assertThat(row.getStaffTotal()).isEqualTo(18);
-            // third row should be for MOD Test Court
+            // second row should be for MOD Test Bureau2
+            row = dataRows.get(1);
+            AssertionsForClassTypes.assertThat(row.getStaffName()).isEqualTo("MODTESTBUREAU2");
+            AssertionsForClassTypes.assertThat(row.getDailyTotals()).isEqualTo(List.of(0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                   0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+            AssertionsForClassTypes.assertThat(row.getStaffTotal()).isEqualTo(5);
+            // third row should be for Totals
             row = dataRows.get(2);
-            AssertionsForClassTypes.assertThat(row.getStaffName()).isEqualTo("MODTESTCOURT");
-            AssertionsForClassTypes.assertThat(row.getDailyTotals()).isEqualTo(List.of(0, 0, 0, 0, 0, 0, 0, 0, 1,
-                                                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
-            AssertionsForClassTypes.assertThat(row.getStaffTotal()).isEqualTo(1);
-            // fourth row should be for Totals
-            row = dataRows.get(3);
             AssertionsForClassTypes.assertThat(row.getStaffName()).isEqualTo("Total Responses");
-            AssertionsForClassTypes.assertThat(row.getDailyTotals()).isEqualTo(List.of(0, 0, 0, 0, 0, 0, 0, 0, 1,
-                                                   6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0));
-            AssertionsForClassTypes.assertThat(row.getStaffTotal()).isEqualTo(21);
+            AssertionsForClassTypes.assertThat(row.getDailyTotals()).isEqualTo(List.of(0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                   4, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 2, 2, 0, 0, 0, 1, 0, 0, 0, 0, 0));
+            AssertionsForClassTypes.assertThat(row.getStaffTotal()).isEqualTo(23);
 
         }
 

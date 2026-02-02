@@ -59,6 +59,7 @@ public interface JurorCommonResponseRepositoryMod
         + "  AND jr.reply_type = 'Digital' "
         + "  AND jr.completed_at >= :start "
         + "  AND jr.completed_at <  :end "
+        + "  AND u.user_type = 'BUREAU'"
         + "GROUP BY u.name, DATE(jr.completed_at) "
         + "ORDER BY u.name, DATE(jr.completed_at)")
     List<String> getResponsesCompletedReportData(@Param("start") LocalDate startDate,
