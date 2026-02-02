@@ -15,7 +15,8 @@ def secrets = [
     secret('app-insights-connection-string', 'app-insights-connection-string'),
     secret('AppInsightsInstrumentationKey', 'azure.application-insights.instrumentation-key'),
     secret('api-JWT-SECRET-BUREAU', 'JWT_SECRET_BUREAU'),
-    secret('api-JWT-SECRET-PUBLIC', 'JWT-SECRET_PUBLIC'),
+    secret('api-JWT-SECRET-PUBLIC', 'JWT_SECRET_PUBLIC'),
+    secret('api-JWT-SECRET-ER-PORTAL', 'JWT_SECRET_ER_PORTAL'),
     secret('api-JWT-SECRET-HMAC', 'JWT_SECRET_HMAC'),
     secret('api-NOTIFY-KEY', 'NOTIFY_KEY'),
     secret('api-NOTIFY-REGION-KEY-1', 'NOTIFY_REGION_KEY_1'),
@@ -51,6 +52,7 @@ withPipeline(type, product, component) {
 
   env.JWT_SECRET_BUREAU = 'W3N1cGVyLXNlY3JldC1rZXktYnVyZWF1XVtzdXBlci1zZWNyZXQta2V5LWJ1cmVhdV1bc3VwZXItc2VjcmV0LWtleS1idXJlYXVd'
   env.JWT_SECRET_PUBLIC = 'W3N1cGVyLXNlY3JldC1rZXldW3N1cGVyLXNlY3JldC1rZXldW3N1cGVyLXNlY3JldC1rZXld'
+  env.JWT_SECRET_ER_PORTAL = 'W3N1cGVyLXNlY3JldC1rZXktZXItcG9ydGFsXVtzdXBlci1zZWNyZXQta2V5LWVyLXBvcnRhbF1bc3VwZXItc2VjcmV0LWtleS1lci1wb3J0YWxd'
   env.JWT_SECRET_HMAC = 'W3N1cGVyLXNlY3JldC1rZXktbG9naW5dW3N1cGVyLXNlY3JldC1rZXktbG9naW5dW3N1cGVyLXNlY3JldC1rZXktbG9naW5d'
   env.SCHEDULER_SERVICE_SECRET = 'WW91clZlcnlWZXJ5VmVyeVNlY3JldEtleVRoYXRJc1NvU2VjcmV0SURvbnRFdmVuS25vd0l0'
   env.PNC_CHECK_SERVICE_SECRET = 'WW91clZlcnlWZXJ5VmVyeVNlY3JldEtleVRoYXRJc1NvU2VjcmV0SURvbnRFdmVuS25vd0l0'
