@@ -57,7 +57,7 @@ public class LaUserServiceImpl implements LaUserService {
         claims.put("username", user.getUsername());
         claims.put("laCode", localAuthority.getLaCode());
         claims.put("laName", localAuthority.getLaName());
-        claims.put("role", LaRoles.LA_USER.toString());
+        claims.put("role", List.of(LaRoles.LA_USER.toString()));
 
         user.setLastLoggedIn(LocalDateTime.now());
         userRepository.save(user);
