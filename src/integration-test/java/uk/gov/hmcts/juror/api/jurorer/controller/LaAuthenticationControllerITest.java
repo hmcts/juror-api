@@ -121,7 +121,7 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
                     .containsEntry("username", expectedJwtClaims.getUsername())
                     .containsEntry("laCode", expectedJwtClaims.getLaCode())
                     .containsEntry("laName", expectedJwtClaims.getLaName())
-                    .containsEntry("role", LaRoles.LA_USER.toString());
+                    .containsEntry("role", List.of(LaRoles.LA_USER.toString()));
             }
 
             @Test
