@@ -83,7 +83,7 @@ class ErDashboardControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<LocalAuthoritiesResponseDto> responseEntity =
             restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                                              URI.create("/api/v1/moj/er-dashboard/local-authorities?is_active=true")),
+                                          URI.create("/api/v1/moj/er-dashboard/local-authorities?active_only=true")),
                                   LocalAuthoritiesResponseDto.class);
 
         assertThat(responseEntity.getStatusCode())

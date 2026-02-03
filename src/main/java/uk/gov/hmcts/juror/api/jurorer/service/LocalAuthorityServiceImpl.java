@@ -17,9 +17,9 @@ public class LocalAuthorityServiceImpl implements LocalAuthorityService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<LocalAuthority> getAllLocalAuthorities(boolean isActive) {
+    public List<LocalAuthority> getAllLocalAuthorities(boolean activeOnly) {
 
-        if (isActive) {
+        if (activeOnly) {
             return localAuthorityRepository.findByActiveTrueOrderByLaCode();
         } else {
             return localAuthorityRepository.findAllByOrderByLaCode();

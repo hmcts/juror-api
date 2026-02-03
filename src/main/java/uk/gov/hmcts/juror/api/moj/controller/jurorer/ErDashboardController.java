@@ -45,13 +45,13 @@ public class ErDashboardController {
 
     @IsBureauUser
     @GetMapping("/local-authorities")
-    @Operation(summary = "Retrieves a list of all local authorities for bureau")
+    @Operation(summary = "Retrieves a list of all local authorities for bureau, can be filtered by active only")
     public ResponseEntity<LocalAuthoritiesResponseDto> getLocalAuthorities(
-        @RequestParam(value = "is_active", required = false, defaultValue = "false")
-        @Parameter(description = "is_active")
-        @Valid Boolean isActive
+        @RequestParam(value = "active_only", required = false, defaultValue = "false")
+        @Parameter(description = "active_only")
+        @Valid Boolean activeOnly
     ) {
-        LocalAuthoritiesResponseDto dto = erDashboardService.getLocalAuthorities(isActive);
+        LocalAuthoritiesResponseDto dto = erDashboardService.getLocalAuthorities(activeOnly);
         return ResponseEntity.ok().body(dto);
     }
 

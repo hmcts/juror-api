@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface LocalAuthorityService {
 
-    List<LocalAuthority> getAllLocalAuthorities(boolean isActive);
+    List<LocalAuthority> getAllLocalAuthorities(boolean activeOnly);
 
 }

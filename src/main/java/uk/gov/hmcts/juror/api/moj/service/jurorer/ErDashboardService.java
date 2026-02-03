@@ -11,5 +11,5 @@ public interface ErDashboardService {
 
     ErLocalAuthorityStatusResponseDto getLocalAuthorityStatus(ErLocalAuthorityStatusRequestDto requestDto);
 
-    LocalAuthoritiesResponseDto getLocalAuthorities(boolean isActive);
+    LocalAuthoritiesResponseDto getLocalAuthorities(boolean activeOnly);
 }

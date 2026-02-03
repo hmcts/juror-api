@@ -34,9 +34,9 @@ public class ErDashboardServiceImpl implements ErDashboardService {
     }
 
     @Override
-    public LocalAuthoritiesResponseDto getLocalAuthorities(boolean isActive) {
+    public LocalAuthoritiesResponseDto getLocalAuthorities(boolean activeOnly) {
 
-        List<LocalAuthority> localAuthorities = localAuthorityService.getAllLocalAuthorities(isActive);
+        List<LocalAuthority> localAuthorities = localAuthorityService.getAllLocalAuthorities(activeOnly);
 
         // we need to build list of LocalAuthorityDto from LocalAuthority
         List<LocalAuthoritiesResponseDto.LocalAuthorityData> localAuthorityDtos = localAuthorities.stream()
