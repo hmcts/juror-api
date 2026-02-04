@@ -2,20 +2,15 @@ package uk.gov.hmcts.juror.api.jurorer.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.Builder;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.*;
@@ -35,10 +30,9 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 @RestController
 @Validated
 @RequestMapping(value = "/api/v1/juror-er/upload", produces = MediaType.APPLICATION_JSON_VALUE)
-@Tag(name = "Upload Management", description = "Endpoints for managing file upload deadlines and status")
-@RequiredArgsConstructor
+@Tag(name = "Upload Management")
+@RequiredArgsConstructor(onConstructor_ = {@Autowired})
 @Slf4j
-@SecurityRequirement(name = "bearerAuth")
 public class UploadController {
 
     private final UploadService uploadService;
@@ -52,35 +46,11 @@ public class UploadController {
      * - Upload history (recent uploads)
      */
     @GetMapping("/page-data")
-    @Operation(
-            summary = "Get complete upload page data",
-            description = "Returns all information needed for the upload page including dashboard, " +
-                    "account details, and upload history"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully retrieved page data",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = UploadPageDataDto.class)
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "Unauthorized - Invalid or missing JWT token",
-                    content = @Content
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "User or Local Authority not found",
-                    content = @Content
-            )
-    })
+    @Operation(summary = "Get complete upload page data")
+    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<UploadPageDataDto> getUploadPageData() {
         log.info("GET /api/v1/juror-er/upload/page-data - Get complete page data");
 
-        // Extract username from LA JWT using SecurityUtil
         String username = SecurityUtil.getLaUsername();
         log.debug("Authenticated LA user from JWT: {}", username);
 
@@ -94,38 +64,10 @@ public class UploadController {
      * POST FILE UPLOAD
      *
      * Handles file upload and updates LA upload status.
-     * Creates a file upload record and sets LA status to UPLOADED.
      */
     @PostMapping(value = "/file", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(
-            summary = "Upload file and update status",
-            description = "Processes file upload, creates upload record, and updates LA status to UPLOADED"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "201",
-                    description = "File uploaded successfully",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = FileUploadsResponseDto.class)
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Bad request - Invalid file metadata",
-                    content = @Content
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "Unauthorized - Invalid or missing JWT token",
-                    content = @Content
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "User or Local Authority not found",
-                    content = @Content
-            )
-    })
+    @Operation(summary = "Upload file and update status")
+    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<FileUploadsResponseDto> uploadFile(
             @Valid @RequestBody FileUploadRequestDto request) {
 
@@ -133,7 +75,6 @@ public class UploadController {
         log.debug("File upload request: filename={}, format={}, size={}",
                 request.getFilename(), request.getFileFormat(), request.getFileSizeBytes());
 
-        // Extract username from LA JWT
         String username = SecurityUtil.getLaUsername();
 
         FileUploadsResponseDto response = uploadService.processFileUpload(username, request);
@@ -155,30 +96,8 @@ public class UploadController {
      * Returns dashboard information with deadline and upload status.
      */
     @GetMapping("/dashboard")
-    @Operation(
-            summary = "Get dashboard information",
-            description = "Returns deadline and upload status information for the authenticated user's Local Authority"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully retrieved dashboard information",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = DashboardInfoDto.class)
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "Unauthorized - Invalid or missing JWT token",
-                    content = @Content
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "User or Local Authority not found",
-                    content = @Content
-            )
-    })
+    @Operation(summary = "Get dashboard information")
+    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<DashboardInfoDto> getDashboardInfo() {
         log.info("GET /api/v1/juror-er/upload/dashboard - Get dashboard info");
 
@@ -194,25 +113,8 @@ public class UploadController {
      * Returns current system deadline information.
      */
     @GetMapping("/deadline")
-    @Operation(
-            summary = "Get deadline information",
-            description = "Returns the current system-wide deadline for file uploads"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully retrieved deadline information",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = DeadlineDto.class)
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "Unauthorized - Invalid or missing JWT token",
-                    content = @Content
-            )
-    })
+    @Operation(summary = "Get deadline information")
+    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<DeadlineDto> getDeadlineInfo() {
         log.info("GET /api/v1/juror-er/upload/deadline - Get deadline info");
 
@@ -226,30 +128,8 @@ public class UploadController {
      * Returns upload status for authenticated user's LA.
      */
     @GetMapping("/status")
-    @Operation(
-            summary = "Get upload status for user's Local Authority",
-            description = "Returns detailed upload status for the authenticated user's Local Authority"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully retrieved upload status",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = UploadStatusDto.class)
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "Unauthorized - Invalid or missing JWT token",
-                    content = @Content
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "User or Local Authority not found",
-                    content = @Content
-            )
-    })
+    @Operation(summary = "Get upload status for user's Local Authority")
+    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<UploadStatusDto> getUploadStatus() {
         log.info("GET /api/v1/juror-er/upload/status - Get upload status");
 
@@ -262,42 +142,16 @@ public class UploadController {
     /**
      * GET UPLOAD STATUS BY LA CODE
      *
-     * Admin endpoint to get upload status for any LA.
-     * Validates that user has access to the requested LA code.
+     * Get upload status for a specific LA (validates user has access).
      */
-    @GetMapping("/status/{laCode}")
-    @Operation(
-            summary = "Get upload status by LA code",
-            description = "Returns detailed upload status for a specific Local Authority (requires matching LA code)"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully retrieved upload status",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = UploadStatusDto.class)
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "Unauthorized - Invalid or missing JWT token",
-                    content = @Content
-            ),
-            @ApiResponse(
-                    responseCode = "403",
-                    description = "Forbidden - User does not have access to this LA code",
-                    content = @Content
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Local Authority not found",
-                    content = @Content
-            )
-    })
+    @GetMapping("/status/{la_code}")
+    @Operation(summary = "Get upload status by LA code")
+    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<UploadStatusDto> getUploadStatusByLaCode(
-            @Parameter(description = "Local Authority code", example = "314", required = true)
-            @PathVariable String laCode) {
+            @P("la_code")
+            @PathVariable("la_code")
+            @Parameter(description = "Local Authority code", required = true)
+            @Valid String laCode) {
 
         log.info("GET /api/v1/juror-er/upload/status/{} - Get upload status by LA code", laCode);
 
@@ -306,51 +160,5 @@ public class UploadController {
 
         UploadStatusDto status = uploadService.getUploadStatus(laCode);
         return ResponseEntity.ok(status);
-    }
-
-    /**
-     * Exception handler for UserNotFoundException.
-     */
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex) {
-        log.error("User not found: {}", ex.getMessage());
-
-        ErrorResponse error = ErrorResponse.builder()
-                .status(HttpStatus.NOT_FOUND.value())
-                .error("Not Found")
-                .message(ex.getMessage())
-                .build();
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
-    }
-
-    /**
-     * Exception handler for LaNotFoundException.
-     */
-    @ExceptionHandler(LaNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleLaNotFound(LaNotFoundException ex) {
-        log.error("Local Authority not found: {}", ex.getMessage());
-
-        ErrorResponse error = ErrorResponse.builder()
-                .status(HttpStatus.NOT_FOUND.value())
-                .error("Not Found")
-                .message(ex.getMessage())
-                .build();
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
-    }
-
-    @Data
-    @Builder
-    @Schema(description = "Error response")
-    static class ErrorResponse {
-        @Schema(description = "HTTP status code", example = "404")
-        private int status;
-
-        @Schema(description = "Error type", example = "Not Found")
-        private String error;
-
-        @Schema(description = "Error message", example = "User not found: user@example.com")
-        private String message;
     }
 }
