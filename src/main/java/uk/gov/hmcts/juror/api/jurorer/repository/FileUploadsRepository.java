@@ -18,6 +18,10 @@ public interface FileUploadsRepository extends JpaRepository<FileUploads, Long> 
 
     /**
      * Find all uploads for a specific LA code, ordered by upload date descending.
+     *
+     * @param laCode LA code
+     * @param pageable Pagination parameters
+     * @return List of file uploads
      */
     @Query("SELECT f FROM FileUploads f " +
         "WHERE f.localAuthority.laCode = :laCode " +
@@ -29,6 +33,9 @@ public interface FileUploadsRepository extends JpaRepository<FileUploads, Long> 
 
     /**
      * Count total uploads for a specific LA.
+     *
+     * @param laCode LA code
+     * @return Total count of uploads
      */
     @Query("SELECT COUNT(f) FROM FileUploads f " +
         "WHERE f.localAuthority.laCode = :laCode")
@@ -36,6 +43,9 @@ public interface FileUploadsRepository extends JpaRepository<FileUploads, Long> 
 
     /**
      * Find all uploads by a specific user.
+     *
+     * @param username User's username
+     * @return List of file uploads by this user
      */
     @Query("SELECT f FROM FileUploads f " +
         "WHERE f.user.username = :username " +
@@ -44,6 +54,11 @@ public interface FileUploadsRepository extends JpaRepository<FileUploads, Long> 
 
     /**
      * Find uploads within a date range for a specific LA.
+     *
+     * @param laCode LA code
+     * @param startDate Start of date range
+     * @param endDate End of date range
+     * @return List of file uploads in range
      */
     @Query("SELECT f FROM FileUploads f " +
         "WHERE f.localAuthority.laCode = :laCode " +
@@ -57,6 +72,10 @@ public interface FileUploadsRepository extends JpaRepository<FileUploads, Long> 
 
     /**
      * Get the most recent upload for a specific LA.
+     *
+     * @param laCode LA code
+     * @param pageable Pagination (use PageRequest.of(0, 1) for single result)
+     * @return List containing most recent upload
      */
     @Query("SELECT f FROM FileUploads f " +
         "WHERE f.localAuthority.laCode = :laCode " +
@@ -65,6 +84,9 @@ public interface FileUploadsRepository extends JpaRepository<FileUploads, Long> 
 
     /**
      * Check if LA has any uploads.
+     *
+     * @param laCode LA code
+     * @return true if LA has at least one upload
      */
     @Query("SELECT CASE WHEN COUNT(f) > 0 THEN true ELSE false END " +
         "FROM FileUploads f " +

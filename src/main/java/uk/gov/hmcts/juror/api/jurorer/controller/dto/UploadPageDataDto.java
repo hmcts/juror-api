@@ -1,6 +1,8 @@
 package uk.gov.hmcts.juror.api.jurorer.controller.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,16 +16,13 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Complete upload page data including dashboard, guidance, and account details")
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@Schema(description = "Complete upload page data including dashboard and account details")
 public class UploadPageDataDto {
 
     @JsonProperty("dashboard")
     @Schema(description = "Dashboard information with deadline and upload status")
     private DashboardInfoDto dashboard;
-
-    @JsonProperty("upload_guidance")
-    @Schema(description = "Guidance and instructions for file upload")
-    private UploadGuidanceDto uploadGuidance;
 
     @JsonProperty("account_details")
     @Schema(description = "User account details")

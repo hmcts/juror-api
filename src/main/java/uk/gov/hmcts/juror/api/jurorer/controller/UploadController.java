@@ -16,12 +16,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.*;
 import uk.gov.hmcts.juror.api.jurorer.service.UploadService;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 /**
  * REST Controller for upload-related operations.
@@ -49,7 +48,6 @@ public class UploadController {
      *
      * Returns all data needed for the upload page:
      * - Dashboard (deadline, days remaining, upload status)
-     * - Upload guidance (instructions, requirements, support contact)
      * - Account details (user info, LA info)
      * - Upload history (recent uploads)
      */
@@ -57,7 +55,7 @@ public class UploadController {
     @Operation(
         summary = "Get complete upload page data",
         description = "Returns all information needed for the upload page including dashboard, " +
-            "guidance, account details, and upload history"
+            "account details, and upload history"
     )
     @ApiResponses(value = {
         @ApiResponse(
@@ -82,8 +80,9 @@ public class UploadController {
     public ResponseEntity<UploadPageDataDto> getUploadPageData() {
         log.info("GET /api/v1/juror-er/upload/page-data - Get complete page data");
 
-        String username = getAuthenticatedUsername();
-        log.debug("Authenticated user: {}", username);
+        // Extract username from JWT using SecurityUtil (same pattern as LaUserServiceImpl)
+        String username = SecurityUtil.getUsername();
+        log.debug("Authenticated user from JWT: {}", username);
 
         UploadPageDataDto pageData = uploadService.getUploadPageData(username);
 
@@ -132,19 +131,20 @@ public class UploadController {
 
         log.info("POST /api/v1/juror-er/upload/file - Upload file");
         log.debug("File upload request: filename={}, format={}, size={}",
-                  request.getFilename(), request.getFileFormat(), request.getFileSizeBytes());
+            request.getFilename(), request.getFileFormat(), request.getFileSizeBytes());
 
-        String username = getAuthenticatedUsername();
+        // Extract username from JWT
+        String username = SecurityUtil.getUsername();
 
         FileUploadsResponseDto response = uploadService.processFileUpload(username, request);
 
         if (Boolean.TRUE.equals(response.getSuccess())) {
             log.info("File uploaded successfully by user: {}, upload ID: {}",
-                     username, response.getUploadId());
+                username, response.getUploadId());
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } else {
             log.warn("File upload failed for user: {}, reason: {}",
-                     username, response.getMessage());
+                username, response.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
@@ -182,7 +182,7 @@ public class UploadController {
     public ResponseEntity<DashboardInfoDto> getDashboardInfo() {
         log.info("GET /api/v1/juror-er/upload/dashboard - Get dashboard info");
 
-        String username = getAuthenticatedUsername();
+        String username = SecurityUtil.getUsername();
         DashboardInfoDto dashboard = uploadService.getDashboardInfo(username);
 
         return ResponseEntity.ok(dashboard);
@@ -253,7 +253,7 @@ public class UploadController {
     public ResponseEntity<UploadStatusDto> getUploadStatus() {
         log.info("GET /api/v1/juror-er/upload/status - Get upload status");
 
-        String username = getAuthenticatedUsername();
+        String username = SecurityUtil.getUsername();
         UploadStatusDto status = uploadService.getUploadStatusForUser(username);
 
         return ResponseEntity.ok(status);
@@ -299,21 +299,9 @@ public class UploadController {
         return ResponseEntity.ok(status);
     }
 
-    // Helper methods
-
-    private String getAuthenticatedUsername() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            log.error("No authentication found in security context");
-            throw new RuntimeException("User not authenticated");
-        }
-
-        return authentication.getName();
-    }
-
-    // Exception handlers
-
+    /**
+     * Exception handler for UserNotFoundException.
+     */
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex) {
         log.error("User not found: {}", ex.getMessage());
@@ -327,6 +315,9 @@ public class UploadController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
+    /**
+     * Exception handler for LaNotFoundException.
+     */
     @ExceptionHandler(LaNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleLaNotFound(LaNotFoundException ex) {
         log.error("Local Authority not found: {}", ex.getMessage());

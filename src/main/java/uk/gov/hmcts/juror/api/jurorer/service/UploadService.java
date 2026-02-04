@@ -36,11 +36,6 @@ public interface UploadService {
     UploadStatusDto getUploadStatusForUser(String username);
 
     /**
-     * Get upload guidance information.
-     */
-    UploadGuidanceDto getUploadGuidance();
-
-    /**
      * Get account details for a user.
      */
     AccountDetailsDto getAccountDetails(String username);

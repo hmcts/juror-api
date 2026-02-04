@@ -11,6 +11,10 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -21,6 +25,9 @@ import java.util.Objects;
  */
 @Entity
 @Table(name = "file_uploads", schema = "juror_er")
+@Data
+@Builder
+@AllArgsConstructor
 public class FileUploads implements Serializable {
 
     @Id
@@ -77,6 +84,24 @@ public class FileUploads implements Serializable {
     protected void onCreate() {
         if (this.uploadDate == null) {
             this.uploadDate = LocalDateTime.now();
+        }
+    }
+    /**
+     * Get file size in human-readable format.
+     */
+    public String getFileSizeFormatted() {
+        if (fileSizeBytes == null) {
+            return "Unknown";
+        }
+
+        if (fileSizeBytes < 1024) {
+            return fileSizeBytes + " B";
+        } else if (fileSizeBytes < 1024 * 1024) {
+            return String.format("%.2f KB", fileSizeBytes / 1024.0);
+        } else if (fileSizeBytes < 1024 * 1024 * 1024) {
+            return String.format("%.2f MB", fileSizeBytes / (1024.0 * 1024.0));
+        } else {
+            return String.format("%.2f GB", fileSizeBytes / (1024.0 * 1024.0 * 1024.0));
         }
     }
 }
