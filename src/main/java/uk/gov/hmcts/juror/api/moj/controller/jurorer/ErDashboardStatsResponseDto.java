@@ -17,12 +17,15 @@ public class ErDashboardStatsResponseDto {
     private LocalDate deadlineDate;
 
     @Schema(description = "Number of days remaining to the deadline")
-    private int daysRemaining;
+    private long daysRemaining;
+
+    @Schema(description = "Total Number of local authorities must upload ER data")
+    private long totalNumberOfLocalAuthorities;
 
     @Schema(description = "Number of local authorities that have not yet uploaded their ER data")
-    private int notUploadedCount;
+    private long notUploadedCount;
 
-    @Schema(description = "Total number of local authorities that have uploaded ER data")
-    private int totalUploadedCount;
+    @Schema(description = "Number of local authorities that have uploaded ER data")
+    private long uploadedCount;
 
 }

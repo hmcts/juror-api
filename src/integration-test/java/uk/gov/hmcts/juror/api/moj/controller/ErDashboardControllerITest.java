@@ -43,6 +43,7 @@ class ErDashboardControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
+    @Sql({"/db/jurorer/createLocalAuthorities.sql"})
     void testGetLocalAuthoritiesAll() {
 
         ResponseEntity<LocalAuthoritiesResponseDto> responseEntity =
@@ -79,6 +80,7 @@ class ErDashboardControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
+    @Sql({"/db/jurorer/createLocalAuthorities.sql"})
     void testGetLocalAuthoritiesActiveOnly() {
 
         ResponseEntity<LocalAuthoritiesResponseDto> responseEntity =
@@ -102,7 +104,7 @@ class ErDashboardControllerITest extends AbstractIntegrationTest {
 
         List<LocalAuthoritiesResponseDto.LocalAuthorityData> localAuthorities = body.getLocalAuthorities();
 
-        assertThat(localAuthorities).hasSize(334); // Assuming there are 350 local authorities in total
+        assertThat(localAuthorities).hasSize(317); // Assuming there are 350 local authorities in total
 
         LocalAuthoritiesResponseDto.LocalAuthorityData firstLa = localAuthorities.get(0);
         assertThat(firstLa.getLocalAuthorityCode()).isEqualTo("001");
@@ -117,6 +119,7 @@ class ErDashboardControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
+    @Sql({"/db/jurorer/ErDashboardData.sql"})
     void testGetDashboardStatsHappy() {
 
         ResponseEntity<ErDashboardStatsResponseDto> responseEntity =
@@ -135,7 +138,6 @@ class ErDashboardControllerITest extends AbstractIntegrationTest {
         ResponseEntity<ErDashboardStatsResponseDto> responseEntity =
             restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                  URI.create("/api/v1/moj/er-dashboard/upload-stats")), ErDashboardStatsResponseDto.class);
-
 
         assertThat(responseEntity.getStatusCode())
             .as("Expect the status to be forbidden.")
