@@ -24,6 +24,6 @@ public interface DeadlineRepository extends JpaRepository<Deadline, Short> {
      * @return Optional containing the deadline if exists
      */
     default Optional<Deadline> getCurrentDeadline() {
-        return findById((short) 1);
+        return findById((short)1);
     }
 }

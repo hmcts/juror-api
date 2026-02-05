@@ -51,28 +51,17 @@ public class UploadController {
     }
 
     @PostMapping(value = "/file", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Upload file and update status")
-    @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<FileUploadsResponseDto> uploadFile(
+    @Operation(summary = "Save uploaded file information")
+    public ResponseEntity<String> uploadFile(
             @Valid @RequestBody FileUploadRequestDto request) {
 
-        log.info("POST /api/v1/juror-er/upload/file - Upload file");
         log.debug("File upload request: filename={}, format={}, size={}",
                 request.getFilename(), request.getFileFormat(), request.getFileSizeBytes());
 
         String username = SecurityUtil.getLaUsername();
 
-        FileUploadsResponseDto response = uploadService.processFileUpload(username, request);
-
-        if (Boolean.TRUE.equals(response.getSuccess())) {
-            log.info("File uploaded successfully by user: {}, upload ID: {}",
-                    username, response.getUploadId());
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } else {
-            log.warn("File upload failed for user: {}, reason: {}",
-                    username, response.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-        }
+        uploadService.processFileUpload(username, request);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @GetMapping("/upload-history")
@@ -94,7 +83,6 @@ public class UploadController {
     @Operation(summary = "Get deadline information")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<DeadlineDto> getDeadlineInfo() {
-        log.info("GET /api/v1/juror-er/upload/deadline - Get deadline info");
 
         DeadlineDto deadline = uploadService.getDeadlineInfo();
         return ResponseEntity.ok(deadline);

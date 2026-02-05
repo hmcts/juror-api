@@ -157,7 +157,7 @@ public class UploadServiceImpl implements UploadService {
 
     @Override
     @Transactional
-    public FileUploadsResponseDto processFileUpload(
+    public void processFileUpload(
         String username,
         FileUploadRequestDto request) {
 
@@ -169,21 +169,6 @@ public class UploadServiceImpl implements UploadService {
         LocalAuthority localAuthority = user.getLaCode();
         if (localAuthority == null) {
             throw new LaNotFoundException("Local Authority not found for user: " + username);
-        }
-
-        // Validate user can upload
-        if (!user.isActive()) {
-            return FileUploadsResponseDto.builder()
-                .success(false)
-                .message("User account is inactive. Cannot upload file.")
-                .build();
-        }
-
-        if (!Boolean.TRUE.equals(localAuthority.getActive())) {
-            return FileUploadsResponseDto.builder()
-                .success(false)
-                .message("Local Authority is inactive. Cannot upload file.")
-                .build();
         }
 
         // Create file upload record
@@ -204,20 +189,9 @@ public class UploadServiceImpl implements UploadService {
         localAuthority.setUploadStatus(UploadStatus.UPLOADED);
         localAuthority.setUpdatedBy(username);
         localAuthority.setLastUpdated(LocalDateTime.now());
-        LocalAuthority updatedLA = localAuthorityRepository.save(localAuthority);
+        localAuthorityRepository.save(localAuthority);
+
         log.info("Updated LA {} status to UPLOADED", localAuthority.getLaCode());
-
-        // Build response
-        FileUploadDto uploadDto = convertToFileUploadDto(savedUpload);
-        UploadStatusDto statusDto = buildUploadStatusDto(updatedLA);
-
-        return FileUploadsResponseDto.builder()
-            .success(true)
-            .uploadId(savedUpload.getId())
-            .message("File uploaded successfully")
-            .uploadDetails(uploadDto)
-            .updatedStatus(statusDto)
-            .build();
     }
 
     // Helper methods
