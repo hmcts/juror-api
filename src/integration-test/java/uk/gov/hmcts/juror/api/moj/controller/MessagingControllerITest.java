@@ -969,7 +969,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         + " as you will not be able to leave the deliberation room to get refreshments. Please do not"
                         + " bring metal cutlery or glass. If you have any questions, please contact the jury office "
                         + "on <court_phone>.",
-                    "Mae eich panel rheithgor yn debygol o gychwyn y broses trafod ar <attend_date>.Dewch â "
+                    "Mae eich panel rheithgor yn debygol o gychwyn y broses trafod ar <attend_date>. Dewch â "
                         + "phecyn bwyd gyda chi i'r llys oherwydd ni chaniateir i chi adael yr ystafell ymneilltuo i "
                         + "nôl bwyd. Peidiwch â dod â chyllell a fforc metel nac unrhyw eitemau gwydr gyda chi. Os "
                         + "oes gennych unrhyw gwestiynau, cysylltwch â'r swyddfa rheithgor drwy ffonio <court_phone>.",
@@ -2131,7 +2131,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         + " as you will not be able to leave the deliberation room to get refreshments. Please do not "
                         + "bring metal cutlery or glass. If you have any questions, please contact the jury office on "
                         + "01792 637000.",
-                    "Mae eich panel rheithgor yn debygol o gychwyn y broses trafod ar 02/01/2023.Dewch â "
+                    "Mae eich panel rheithgor yn debygol o gychwyn y broses trafod ar 02/01/2023. Dewch â "
                         + "phecyn bwyd gyda chi i'r llys oherwydd ni chaniateir i chi adael yr ystafell ymneilltuo i "
                         + "nôl bwyd. Peidiwch â dod â chyllell a fforc metel nac unrhyw eitemau gwydr gyda chi. Os oes "
                         + "gennych unrhyw gwestiynau, cysylltwch â'r swyddfa rheithgor drwy ffonio 01792 637000.",
@@ -3253,7 +3253,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         + " as you will not be able to leave the deliberation room to get refreshments. Please do not "
                         + "bring metal cutlery or glass. If you have any questions, please contact the jury office on "
                         + "01792 637000.",
-                    "Mae eich panel rheithgor yn debygol o gychwyn y broses trafod ar 02/01/2023.Dewch â "
+                    "Mae eich panel rheithgor yn debygol o gychwyn y broses trafod ar 02/01/2023. Dewch â "
                         + "phecyn bwyd gyda chi i'r llys oherwydd ni chaniateir i chi adael yr ystafell ymneilltuo i "
                         + "nôl bwyd. Peidiwch â dod â chyllell a fforc metel nac unrhyw eitemau gwydr gyda chi. Os oes "
                         + "gennych unrhyw gwestiynau, cysylltwch â'r swyddfa rheithgor drwy ffonio 01792 637000.",
