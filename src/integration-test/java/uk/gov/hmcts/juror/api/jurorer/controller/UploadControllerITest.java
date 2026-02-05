@@ -131,7 +131,7 @@ public class UploadControllerITest extends AbstractIntegrationTest {
     private void initHeadersLaUsers(String laCode) {
 
         JurorErJwtPayload payload = JurorErJwtPayload.builder()
-            .username("la_user_1")
+            .username("test_user1@localauthority1.council.uk")
             .laCode(laCode)
             .laName("Local Authority X")
             .roles(Collections.singletonList("LA_USER"))
