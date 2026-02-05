@@ -5,9 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.jurorer.domain.Deadline;
+import uk.gov.hmcts.juror.api.jurorer.domain.FileUploads;
 import uk.gov.hmcts.juror.api.jurorer.domain.LocalAuthority;
 import uk.gov.hmcts.juror.api.jurorer.domain.UploadStatus;
 import uk.gov.hmcts.juror.api.jurorer.repository.DeadlineRepository;
+import uk.gov.hmcts.juror.api.jurorer.service.FileUploadsService;
 import uk.gov.hmcts.juror.api.jurorer.service.LocalAuthorityService;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.ErDashboardStatsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.ErLocalAuthorityStatusRequestDto;
@@ -15,6 +17,8 @@ import uk.gov.hmcts.juror.api.moj.controller.jurorer.ErLocalAuthorityStatusRespo
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.LocalAuthoritiesResponseDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,9 +30,12 @@ public class ErDashboardServiceImpl implements ErDashboardService {
 
     private final LocalAuthorityService localAuthorityService;
     private final DeadlineRepository deadlineRepository;
+    private final FileUploadsService fileUploadsService;
 
     @Override
     public ErDashboardStatsResponseDto getErDashboardStats() {
+
+        log.info("Getting ER dashboard stats");
 
         Optional<Deadline> deadlineOpt = deadlineRepository.getCurrentDeadline();
 
@@ -50,7 +57,7 @@ public class ErDashboardServiceImpl implements ErDashboardService {
         long notUploadedCount = localAuthorities.stream()
             .filter(la -> la.getUploadStatus().equals(UploadStatus.NOT_UPLOADED))
             .count();
-        
+
         return ErDashboardStatsResponseDto.builder()
             .deadlineDate(deadline.getDeadlineDate())
             .daysRemaining(deadline.getDaysRemaining())
@@ -62,12 +69,40 @@ public class ErDashboardServiceImpl implements ErDashboardService {
 
     @Override
     public ErLocalAuthorityStatusResponseDto getLocalAuthorityStatus(ErLocalAuthorityStatusRequestDto requestDto) {
-        // Dummy implementation for illustration
-        return ErLocalAuthorityStatusResponseDto.builder().build();
+
+        log.info("Getting local authority status for ER dashboard, activeOnly");
+
+        List<FileUploadsService.FileUploadStatus> fileUploadsList = fileUploadsService.getLatestUploadForEachLa();
+
+        List<LocalAuthority> localAuthorities = localAuthorityService.getAllLocalAuthorities(true);
+
+        List<ErLocalAuthorityStatusResponseDto.ErLocalAuthorityStatus> localAuthorityStatuses = new ArrayList<>();
+
+        localAuthorities.forEach(la -> {
+            FileUploadsService.FileUploadStatus fileUpload = fileUploadsList.stream()
+                .filter(fu -> fu.getLocalAuthorityCode().equals(la.getLaCode()))
+                .findFirst()
+                .orElse(null);
+
+            LocalDateTime lastUploadDate = fileUpload != null ? fileUpload.getLastUploadDate() : null;
+
+            localAuthorityStatuses.add(ErLocalAuthorityStatusResponseDto.ErLocalAuthorityStatus.builder()
+                .localAuthorityCode(la.getLaCode())
+                .localAuthorityName(la.getLaName())
+                .uploadStatus(la.getUploadStatus())
+                .lastUploadDate(lastUploadDate)
+                .build());
+        });
+
+        return ErLocalAuthorityStatusResponseDto.builder()
+            .localAuthorityStatuses(localAuthorityStatuses)
+            .build();
     }
 
     @Override
     public LocalAuthoritiesResponseDto getLocalAuthorities(boolean activeOnly) {
+
+        log.info("Getting local authorities for ER dashboard, activeOnly: {}", activeOnly);
 
         List<LocalAuthority> localAuthorities = localAuthorityService.getAllLocalAuthorities(activeOnly);
 

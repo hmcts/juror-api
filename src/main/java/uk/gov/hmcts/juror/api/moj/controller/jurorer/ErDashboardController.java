@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -23,7 +22,6 @@ import uk.gov.hmcts.juror.api.moj.service.jurorer.ErDashboardService;
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class ErDashboardController {
 
-    @NonNull
     private final ErDashboardService erDashboardService;
 
     @IsBureauUser

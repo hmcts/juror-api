@@ -16,6 +16,8 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.ErDashboardStatsResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.jurorer.ErLocalAuthorityStatusRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.jurorer.ErLocalAuthorityStatusResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.LocalAuthoritiesResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 
@@ -142,6 +144,23 @@ class ErDashboardControllerITest extends AbstractIntegrationTest {
         assertThat(responseEntity.getStatusCode())
             .as("Expect the status to be forbidden.")
             .isEqualTo(HttpStatus.FORBIDDEN);
+
+    }
+
+    @Test
+    @Sql({"/db/jurorer/ErDashboardData.sql"})
+    void testGetUploadStatusNoFiltersHappy() {
+
+        ErLocalAuthorityStatusRequestDto requestDto = ErLocalAuthorityStatusRequestDto.builder().build();
+
+        ResponseEntity<ErLocalAuthorityStatusResponseDto> responseEntity =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.POST,
+                                    URI.create("/api/v1/moj/er-dashboard/local-authority-status")),
+                                  ErLocalAuthorityStatusResponseDto.class);
+
+        assertThat(responseEntity.getStatusCode())
+            .as("Expect the status to be OK.")
+            .isEqualTo(HttpStatus.OK);
 
     }
 

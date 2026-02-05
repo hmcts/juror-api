@@ -7,6 +7,7 @@ import lombok.Setter;
 import uk.gov.hmcts.juror.api.jurorer.domain.UploadStatus;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -22,13 +23,13 @@ public class ErLocalAuthorityStatusResponseDto {
     @Getter
     public static class ErLocalAuthorityStatus {
 
+        private String localAuthorityCode;
+
         private String localAuthorityName;
 
         private UploadStatus uploadStatus;
 
-        private LocalDate lastUploadDate;
+        private LocalDateTime lastUploadDate;
     }
-
-
 
 }
