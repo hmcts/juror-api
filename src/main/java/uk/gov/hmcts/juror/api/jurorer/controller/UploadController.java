@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -107,6 +108,7 @@ public class UploadController {
             @P("la_code")
             @PathVariable("la_code")
             @Parameter(description = "Local Authority code", required = true)
+            @Pattern(regexp = "^\\d{3}$", message = "LA code must be exactly 3 digits")
             @Valid String laCode) {
 
         log.info("GET /api/v1/juror-er/upload/status/{} - Get upload status by LA code", laCode);
