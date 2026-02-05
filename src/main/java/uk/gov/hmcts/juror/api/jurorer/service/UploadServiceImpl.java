@@ -30,22 +30,11 @@ public class UploadServiceImpl implements UploadService {
     private final LaUserRepository laUserRepository;
     private final FileUploadsRepository fileUploadsRepository;
 
-    @Override
-    @Transactional(readOnly = true)
-    public UploadPageDataDto getUploadPageData(String username) {
-        log.debug("Getting complete upload page data for user: {}", username);
-
-        return UploadPageDataDto.builder()
-            .dashboard(getDashboardInfo(username))
-            .accountDetails(getAccountDetails(username))
-            .uploadHistory(getUploadHistory(username, 10))
-            .build();
-    }
 
     @Override
     @Transactional(readOnly = true)
     public DashboardInfoDto getDashboardInfo(String username) {
-        log.debug("Getting dashboard info for user: {}", username);
+        log.info("Getting dashboard info for user: {}", username);
 
         LaUser user = laUserRepository.findByUsername(username)
             .orElseThrow(() -> {
@@ -61,33 +50,22 @@ public class UploadServiceImpl implements UploadService {
         }
 
         Long daysRemaining = null;
-        Boolean isOverdue = false;
-
-        if (deadline != null && deadline.getDeadlineDate() != null) {
-            daysRemaining = ChronoUnit.DAYS.between(
-                LocalDate.now(),
-                deadline.getDeadlineDate()
-            );
-            isOverdue = daysRemaining < 0;
-        }
-
-        String statusMessage = buildStatusMessage(
-            deadline,
-            daysRemaining,
-            isOverdue,
-            localAuthority.getUploadStatusString()
-        );
 
         return DashboardInfoDto.builder()
             .deadlineDate(deadline != null ? deadline.getDeadlineDate() : null)
             .daysRemaining(daysRemaining)
             .uploadStatus(localAuthority.getUploadStatusString())
-            .laCode(localAuthority.getLaCode())
-            .laName(localAuthority.getLaName())
-            .isOverdue(isOverdue)
-            .statusMessage(statusMessage)
             .build();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UploadHistoryDto getUploadHistory(String username) {
+        log.debug("Getting complete upload page data for user: {}", username);
+
+        return getUploadHistory(username, 10);
+    }
+
 
     @Override
     @Transactional(readOnly = true)
@@ -114,9 +92,7 @@ public class UploadServiceImpl implements UploadService {
         return DeadlineDto.builder()
             .deadlineDate(deadline.getDeadlineDate())
             .daysRemaining(daysRemaining)
-            .isOverdue(isOverdue)
-            .updatedBy(deadline.getUpdatedBy())
-            .lastUpdated(deadline.getLastUpdated())
+            .isDeadlinePassed(isOverdue)
             .build();
     }
 
@@ -151,26 +127,6 @@ public class UploadServiceImpl implements UploadService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public AccountDetailsDto getAccountDetails(String username) {
-        log.debug("Getting account details for user: {}", username);
-
-        LaUser user = laUserRepository.findByUsername(username)
-            .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
-
-        LocalAuthority la = user.getLaCode();
-
-        return AccountDetailsDto.builder()
-            .username(user.getUsername())
-            .laCode(la != null ? la.getLaCode() : null)
-            .laName(la != null ? la.getLaName() : null)
-            .active(user.isActive())
-            .lastLoggedIn(user.getLastLoggedIn())
-            .build();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public UploadHistoryDto getUploadHistory(String username, int limit) {
         log.debug("Getting upload history for user: {} (limit: {})", username, limit);
 
@@ -292,47 +248,4 @@ public class UploadServiceImpl implements UploadService {
             .build();
     }
 
-    private String buildStatusMessage(
-        Deadline deadline,
-        Long daysRemaining,
-        Boolean isOverdue,
-        String uploadStatus) {
-
-        if (deadline == null || deadline.getDeadlineDate() == null) {
-            return "No deadline has been set yet";
-        }
-
-        if ("UPLOADED".equalsIgnoreCase(uploadStatus)) {
-            return "Your file has been uploaded successfully";
-        }
-
-        if (Boolean.TRUE.equals(isOverdue)) {
-            long daysOverdue = Math.abs(daysRemaining);
-            return String.format(
-                "Deadline has passed (%d %s overdue). Please upload your file as soon as possible",
-                daysOverdue,
-                daysOverdue == 1 ? "day" : "days"
-            );
-        }
-
-        if (daysRemaining != null) {
-            if (daysRemaining == 0) {
-                return "Deadline is today. Please upload your file";
-            } else if (daysRemaining == 1) {
-                return "You have 1 day remaining to upload your file";
-            } else if (daysRemaining <= 7) {
-                return String.format(
-                    "Urgent: You have only %d days remaining to upload your file",
-                    daysRemaining
-                );
-            } else {
-                return String.format(
-                    "You have %d days remaining to upload your file",
-                    daysRemaining
-                );
-            }
-        }
-
-        return "Please upload your file before the deadline";
-    }
 }

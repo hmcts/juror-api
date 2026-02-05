@@ -39,20 +39,9 @@ public class DashboardInfoDto {
         allowableValues = {"NOT_UPLOADED", "UPLOADED"})
     private String uploadStatus;
 
-    @JsonProperty("la_code")
-    @Schema(description = "Local Authority code", example = "314")
-    private String laCode;
+    @JsonProperty("last_upload_date")
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    @Schema(description = "The last upload date for file LA", example = "2026-03-31")
+    private LocalDate lastUploadDate;
 
-    @JsonProperty("la_name")
-    @Schema(description = "Local Authority name", example = "Birmingham")
-    private String laName;
-
-    @JsonProperty("is_overdue")
-    @Schema(description = "Flag indicating if deadline has passed", example = "false")
-    private Boolean isOverdue;
-
-    @JsonProperty("status_message")
-    @Schema(description = "User-friendly status message",
-        example = "You have 45 days remaining to upload your file")
-    private String statusMessage;
 }

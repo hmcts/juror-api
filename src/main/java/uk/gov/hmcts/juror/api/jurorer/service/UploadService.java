@@ -7,18 +7,20 @@ import uk.gov.hmcts.juror.api.jurorer.controller.dto.*;
  */
 public interface UploadService {
 
-    /**
-     * Get complete page data for upload page.
-     *
-     * @param username User's email (username)
-     * @return Complete page data DTO
-     */
-    UploadPageDataDto getUploadPageData(String username);
 
     /**
      * Get dashboard information for a user.
      */
     DashboardInfoDto getDashboardInfo(String username);
+
+    /**
+     * Get upload history for a user's LA, including recent uploads and their statuses.
+     *
+     * @param username User's email (username)
+     * @return Complete page data DTO
+     */
+    UploadHistoryDto getUploadHistory(String username);
+
 
     /**
      * Get current system deadline information.
@@ -34,11 +36,6 @@ public interface UploadService {
      * Get upload status for the authenticated user's LA.
      */
     UploadStatusDto getUploadStatusForUser(String username);
-
-    /**
-     * Get account details for a user.
-     */
-    AccountDetailsDto getAccountDetails(String username);
 
     /**
      * Get upload history for a user's LA.

@@ -10,7 +10,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 
 @Entity
@@ -35,7 +34,8 @@ public class Deadline {
     private String updatedBy;
 
     @Column(name = "last_updated")
-    private OffsetDateTime lastUpdated;
+    private LocalDate lastUpdated;
+
     /**
       * Calculate days remaining until deadline from current date.
             *

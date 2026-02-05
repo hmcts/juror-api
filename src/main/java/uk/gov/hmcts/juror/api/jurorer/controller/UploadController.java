@@ -23,21 +23,12 @@ import uk.gov.hmcts.juror.api.jurorer.controller.dto.DashboardInfoDto;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.DeadlineDto;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.FileUploadRequestDto;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.FileUploadsResponseDto;
-import uk.gov.hmcts.juror.api.jurorer.controller.dto.UploadPageDataDto;
+import uk.gov.hmcts.juror.api.jurorer.controller.dto.UploadHistoryDto;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.UploadStatusDto;
 import uk.gov.hmcts.juror.api.jurorer.service.UploadService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
-/**
- * REST Controller for upload-related operations.
- *
- * Provides endpoints for:
- * - Complete upload page data
- * - File upload processing
- * - Dashboard information
- * - Deadline information
- * - Upload status
- */
+
 @RestController
 @Validated
 @RequestMapping(value = "/api/v1/juror-er/upload", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -48,34 +39,17 @@ public class UploadController {
 
     private final UploadService uploadService;
 
-    /**
-     * GET COMPLETE PAGE DATA
-     *
-     * Returns all data needed for the upload page:
-     * - Dashboard (deadline, days remaining, upload status)
-     * - Account details (user info, LA info)
-     * - Upload history (recent uploads)
-     */
-    @GetMapping("/page-data")
-    @Operation(summary = "Get complete upload page data")
+    @GetMapping("/dashboard")
+    @Operation(summary = "Get dashboard information on file upload page")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<UploadPageDataDto> getUploadPageData() {
-        log.info("GET /api/v1/juror-er/upload/page-data - Get complete page data");
+    public ResponseEntity<DashboardInfoDto> getDashboardInfo() {
 
         String username = SecurityUtil.getLaUsername();
-        log.debug("Authenticated LA user from JWT: {}", username);
+        DashboardInfoDto dashboard = uploadService.getDashboardInfo(username);
 
-        UploadPageDataDto pageData = uploadService.getUploadPageData(username);
-
-        log.info("Successfully retrieved page data for user: {}", username);
-        return ResponseEntity.ok(pageData);
+        return ResponseEntity.ok(dashboard);
     }
 
-    /**
-     * POST FILE UPLOAD
-     *
-     * Handles file upload and updates LA upload status.
-     */
     @PostMapping(value = "/file", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Upload file and update status")
     @ResponseStatus(HttpStatus.CREATED)
@@ -101,28 +75,21 @@ public class UploadController {
         }
     }
 
-    /**
-     * GET DASHBOARD INFO
-     *
-     * Returns dashboard information with deadline and upload status.
-     */
-    @GetMapping("/dashboard")
-    @Operation(summary = "Get dashboard information")
+    @GetMapping("/upload-history")
+    @Operation(summary = "Get file upload history for user's Local Authority")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<DashboardInfoDto> getDashboardInfo() {
-        log.info("GET /api/v1/juror-er/upload/dashboard - Get dashboard info");
+    public ResponseEntity<UploadHistoryDto> getUploadPageData() {
+        log.info("GET /api/v1/juror-er/upload/page-data - Get complete page data");
 
         String username = SecurityUtil.getLaUsername();
-        DashboardInfoDto dashboard = uploadService.getDashboardInfo(username);
+        log.debug("Authenticated LA user from JWT: {}", username);
 
-        return ResponseEntity.ok(dashboard);
+        UploadHistoryDto pageData = uploadService.getUploadHistory(username);
+
+        log.info("Successfully retrieved page data for user: {}", username);
+        return ResponseEntity.ok(pageData);
     }
 
-    /**
-     * GET DEADLINE INFO
-     *
-     * Returns current system deadline information.
-     */
     @GetMapping("/deadline")
     @Operation(summary = "Get deadline information")
     @ResponseStatus(HttpStatus.OK)
@@ -133,11 +100,6 @@ public class UploadController {
         return ResponseEntity.ok(deadline);
     }
 
-    /**
-     * GET UPLOAD STATUS
-     *
-     * Returns upload status for authenticated user's LA.
-     */
     @GetMapping("/status")
     @Operation(summary = "Get upload status for user's Local Authority")
     @ResponseStatus(HttpStatus.OK)
@@ -150,11 +112,6 @@ public class UploadController {
         return ResponseEntity.ok(status);
     }
 
-    /**
-     * GET UPLOAD STATUS BY LA CODE
-     *
-     * Get upload status for a specific LA (validates user has access).
-     */
     @GetMapping("/status/{la_code}")
     @Operation(summary = "Get upload status by LA code")
     @ResponseStatus(HttpStatus.OK)
