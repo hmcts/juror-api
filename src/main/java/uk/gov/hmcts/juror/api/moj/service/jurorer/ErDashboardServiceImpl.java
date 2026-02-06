@@ -39,7 +39,7 @@ public class ErDashboardServiceImpl implements ErDashboardService {
         Optional<Deadline> deadlineOpt = deadlineRepository.getCurrentDeadline();
 
         if (deadlineOpt.isEmpty()) {
-            throw new MojException.InternalServerError("Upload deadline not found - it should always exist", null);
+            throw new MojException.InternalServerError("Upload deadline data not found - it should always exist", null);
         }
 
         Deadline deadline = deadlineOpt.get();
