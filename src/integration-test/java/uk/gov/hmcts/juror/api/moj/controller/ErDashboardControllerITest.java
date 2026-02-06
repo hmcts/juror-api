@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
+import uk.gov.hmcts.juror.api.jurorer.domain.UploadStatus;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.ErDashboardStatsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.ErLocalAuthorityStatusRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.ErLocalAuthorityStatusResponseDto;
@@ -156,6 +157,82 @@ class ErDashboardControllerITest extends AbstractIntegrationTest {
         ResponseEntity<ErLocalAuthorityStatusResponseDto> responseEntity =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.POST,
                                     URI.create("/api/v1/moj/er-dashboard/local-authority-status")),
+                                  ErLocalAuthorityStatusResponseDto.class);
+
+        assertThat(responseEntity.getStatusCode())
+            .as("Expect the status to be OK.")
+            .isEqualTo(HttpStatus.OK);
+
+    }
+
+    @Test
+    @Sql({"/db/jurorer/ErDashboardData.sql"})
+    void testGetUploadStatusStatusFilterNotUploaded() {
+
+        ErLocalAuthorityStatusRequestDto requestDto = ErLocalAuthorityStatusRequestDto.builder()
+            .uploadStatus(List.of(UploadStatus.NOT_UPLOADED))
+            .build();
+
+        ResponseEntity<ErLocalAuthorityStatusResponseDto> responseEntity =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.POST,
+                                                      URI.create("/api/v1/moj/er-dashboard/local-authority-status")),
+                                  ErLocalAuthorityStatusResponseDto.class);
+
+        assertThat(responseEntity.getStatusCode())
+            .as("Expect the status to be OK.")
+            .isEqualTo(HttpStatus.OK);
+
+    }
+
+    @Test
+    @Sql({"/db/jurorer/ErDashboardData.sql"})
+    void testGetUploadStatusStatusFilterUploaded() {
+
+        ErLocalAuthorityStatusRequestDto requestDto = ErLocalAuthorityStatusRequestDto.builder()
+            .uploadStatus(List.of(UploadStatus.UPLOADED))
+            .build();
+
+        ResponseEntity<ErLocalAuthorityStatusResponseDto> responseEntity =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.POST,
+                                                      URI.create("/api/v1/moj/er-dashboard/local-authority-status")),
+                                  ErLocalAuthorityStatusResponseDto.class);
+
+        assertThat(responseEntity.getStatusCode())
+            .as("Expect the status to be OK.")
+            .isEqualTo(HttpStatus.OK);
+
+    }
+
+    @Test
+    @Sql({"/db/jurorer/ErDashboardData.sql"})
+    void testGetUploadStatusStatusFilterLocalAuthority() {
+
+        ErLocalAuthorityStatusRequestDto requestDto = ErLocalAuthorityStatusRequestDto.builder()
+            .localAuthorityCode("003")
+            .build();
+
+        ResponseEntity<ErLocalAuthorityStatusResponseDto> responseEntity =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.POST,
+                                                      URI.create("/api/v1/moj/er-dashboard/local-authority-status")),
+                                  ErLocalAuthorityStatusResponseDto.class);
+
+        assertThat(responseEntity.getStatusCode())
+            .as("Expect the status to be OK.")
+            .isEqualTo(HttpStatus.OK);
+
+    }
+
+    @Test
+    @Sql({"/db/jurorer/ErDashboardData.sql"})
+    void testGetUploadStatusStatusFilterAllUploadStatuses() {
+
+        ErLocalAuthorityStatusRequestDto requestDto = ErLocalAuthorityStatusRequestDto.builder()
+            .uploadStatus(List.of(UploadStatus.UPLOADED, UploadStatus.NOT_UPLOADED))
+            .build();
+
+        ResponseEntity<ErLocalAuthorityStatusResponseDto> responseEntity =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.POST,
+                                                      URI.create("/api/v1/moj/er-dashboard/local-authority-status")),
                                   ErLocalAuthorityStatusResponseDto.class);
 
         assertThat(responseEntity.getStatusCode())

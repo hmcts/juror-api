@@ -23,9 +23,9 @@ public interface FileUploadsRepository extends JpaRepository<FileUploads, Long> 
      * @param pageable Pagination parameters
      * @return List of file uploads
      */
-    @Query("SELECT f FROM FileUploads f " +
-        "WHERE f.localAuthority.laCode = :laCode " +
-        "ORDER BY f.uploadDate DESC")
+    @Query("SELECT f FROM FileUploads f "
+        + "WHERE f.localAuthority.laCode = :laCode "
+        + "ORDER BY f.uploadDate DESC")
     List<FileUploads> findByLaCodeOrderByUploadDateDesc(
         @Param("laCode") String laCode,
         Pageable pageable
@@ -37,8 +37,8 @@ public interface FileUploadsRepository extends JpaRepository<FileUploads, Long> 
      * @param laCode LA code
      * @return Total count of uploads
      */
-    @Query("SELECT COUNT(f) FROM FileUploads f " +
-        "WHERE f.localAuthority.laCode = :laCode")
+    @Query("SELECT COUNT(f) FROM FileUploads f "
+        + "WHERE f.localAuthority.laCode = :laCode")
     Long countByLaCode(@Param("laCode") String laCode);
 
     /**
@@ -47,9 +47,9 @@ public interface FileUploadsRepository extends JpaRepository<FileUploads, Long> 
      * @param username User's username
      * @return List of file uploads by this user
      */
-    @Query("SELECT f FROM FileUploads f " +
-        "WHERE f.user.username = :username " +
-        "ORDER BY f.uploadDate DESC")
+    @Query("SELECT f FROM FileUploads f "
+        + "WHERE f.user.username = :username "
+        + "ORDER BY f.uploadDate DESC")
     List<FileUploads> findByUsernameOrderByUploadDateDesc(@Param("username") String username);
 
     /**
@@ -60,10 +60,10 @@ public interface FileUploadsRepository extends JpaRepository<FileUploads, Long> 
      * @param endDate End of date range
      * @return List of file uploads in range
      */
-    @Query("SELECT f FROM FileUploads f " +
-        "WHERE f.localAuthority.laCode = :laCode " +
-        "AND f.uploadDate BETWEEN :startDate AND :endDate " +
-        "ORDER BY f.uploadDate DESC")
+    @Query("SELECT f FROM FileUploads f "
+        + "WHERE f.localAuthority.laCode = :laCode "
+        + "AND f.uploadDate BETWEEN :startDate AND :endDate "
+        + "ORDER BY f.uploadDate DESC")
     List<FileUploads> findByLaCodeAndDateRange(
         @Param("laCode") String laCode,
         @Param("startDate") LocalDateTime startDate,
@@ -77,9 +77,9 @@ public interface FileUploadsRepository extends JpaRepository<FileUploads, Long> 
      * @param pageable Pagination (use PageRequest.of(0, 1) for single result)
      * @return List containing most recent upload
      */
-    @Query("SELECT f FROM FileUploads f " +
-        "WHERE f.localAuthority.laCode = :laCode " +
-        "ORDER BY f.uploadDate DESC")
+    @Query("SELECT f FROM FileUploads f "
+        + "WHERE f.localAuthority.laCode = :laCode "
+        + "ORDER BY f.uploadDate DESC")
     List<FileUploads> findMostRecentByLaCode(@Param("laCode") String laCode, Pageable pageable);
 
     /**
@@ -94,12 +94,12 @@ public interface FileUploadsRepository extends JpaRepository<FileUploads, Long> 
     boolean existsByLaCode(@Param("laCode") String laCode);
 
     // get the latest upload for each LA (one per LA)
-    @Query(value = "SELECT la_code, la_username, upload_date  " +
-        "        FROM ( " +
-        "          SELECT la_code, la_username, upload_date,  " +
-        "                 ROW_NUMBER() OVER (PARTITION BY la_code ORDER BY upload_date DESC, id DESC) AS rownum  " +
-        "          FROM juror_er.file_uploads  " +
-        "        ) t " +
-        "        WHERE rownum = 1", nativeQuery = true)
+    @Query(value = "SELECT la_code, la_username, upload_date  "
+        + "        FROM ( "
+        + "          SELECT la_code, la_username, upload_date,  "
+        + "                 ROW_NUMBER() OVER (PARTITION BY la_code ORDER BY upload_date DESC, id DESC) AS rownum  "
+        + "          FROM juror_er.file_uploads  "
+        + "        ) t "
+        + "        WHERE rownum = 1", nativeQuery = true)
     List<String> getLatestUploadForEachLa();
 }

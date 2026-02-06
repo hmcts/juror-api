@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.jurorer.domain.Deadline;
-import uk.gov.hmcts.juror.api.jurorer.domain.FileUploads;
 import uk.gov.hmcts.juror.api.jurorer.domain.LocalAuthority;
 import uk.gov.hmcts.juror.api.jurorer.domain.UploadStatus;
 import uk.gov.hmcts.juror.api.jurorer.repository.DeadlineRepository;
@@ -75,6 +74,20 @@ public class ErDashboardServiceImpl implements ErDashboardService {
         List<FileUploadsService.FileUploadStatus> fileUploadsList = fileUploadsService.getLatestUploadForEachLa();
 
         List<LocalAuthority> localAuthorities = localAuthorityService.getAllLocalAuthorities(true);
+
+        //need to filter out the local authorities based on la code if provided in the request
+        if (requestDto.getLocalAuthorityCode() != null && !requestDto.getLocalAuthorityCode().isEmpty()) {
+            localAuthorities = localAuthorities.stream()
+                .filter(la -> requestDto.getLocalAuthorityCode().contains(la.getLaCode()))
+                .toList();
+        }
+
+        // need to filter out the local authorities based on upload status if provided in the request
+        if (requestDto.getUploadStatus() != null && !requestDto.getUploadStatus().isEmpty()) {
+            localAuthorities = localAuthorities.stream()
+                .filter(la -> requestDto.getUploadStatus().contains(la.getUploadStatus()))
+                .toList();
+        }
 
         List<ErLocalAuthorityStatusResponseDto.ErLocalAuthorityStatus> localAuthorityStatuses = new ArrayList<>();
 

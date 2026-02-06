@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 import uk.gov.hmcts.juror.api.jurorer.domain.UploadStatus;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
