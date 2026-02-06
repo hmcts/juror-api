@@ -255,10 +255,10 @@ public class UploadControllerITest extends AbstractIntegrationTest {
             UploadHistoryDto historyDto = response.getBody();
             assertThat(historyDto).isNotNull();
 
-            // LA 001 has 4 uploads in the setup SQL
+            // LA 001 has 5 uploads in the setup SQL
             assertThat(historyDto.getTotalUploads())
                 .as("Total uploads for LA 001 should be 4")
-                .isEqualTo(4L);
+                .isEqualTo(5L);
 
             assertThat(historyDto.getRecentUploads())
                 .as("Recent uploads list should not be empty")
@@ -273,7 +273,7 @@ public class UploadControllerITest extends AbstractIntegrationTest {
             // Verify upload details
             assertThat(historyDto.getRecentUploads().get(0).getUploadedBy())
                 .as("Uploaded by should match test user")
-                .isEqualTo("test_user1@localauthority1.council.uk");
+                .isEqualTo("test_user1@la1.uk");
         }
 
         @Test

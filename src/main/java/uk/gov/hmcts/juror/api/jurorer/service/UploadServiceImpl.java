@@ -5,11 +5,23 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.juror.api.jurorer.controller.dto.*;
-import uk.gov.hmcts.juror.api.jurorer.domain.*;
 import uk.gov.hmcts.juror.api.jurorer.controller.LaNotFoundException;
 import uk.gov.hmcts.juror.api.jurorer.controller.UserNotFoundException;
-import uk.gov.hmcts.juror.api.jurorer.repository.*;
+import uk.gov.hmcts.juror.api.jurorer.controller.dto.DashboardInfoDto;
+import uk.gov.hmcts.juror.api.jurorer.controller.dto.DeadlineDto;
+import uk.gov.hmcts.juror.api.jurorer.controller.dto.FileUploadDto;
+import uk.gov.hmcts.juror.api.jurorer.controller.dto.FileUploadRequestDto;
+import uk.gov.hmcts.juror.api.jurorer.controller.dto.UploadHistoryDto;
+import uk.gov.hmcts.juror.api.jurorer.controller.dto.UploadStatusDto;
+import uk.gov.hmcts.juror.api.jurorer.domain.Deadline;
+import uk.gov.hmcts.juror.api.jurorer.domain.FileUploads;
+import uk.gov.hmcts.juror.api.jurorer.domain.LaUser;
+import uk.gov.hmcts.juror.api.jurorer.domain.LocalAuthority;
+import uk.gov.hmcts.juror.api.jurorer.domain.UploadStatus;
+import uk.gov.hmcts.juror.api.jurorer.repository.DeadlineRepository;
+import uk.gov.hmcts.juror.api.jurorer.repository.FileUploadsRepository;
+import uk.gov.hmcts.juror.api.jurorer.repository.LaUserRepository;
+import uk.gov.hmcts.juror.api.jurorer.repository.LocalAuthorityRepository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -37,10 +49,10 @@ public class UploadServiceImpl implements UploadService {
         log.info("Getting dashboard info for user: {}", username);
 
         LaUser user = laUserRepository.findByUsername(username)
-            .orElseThrow(() -> {
-                log.error("User not found: {}", username);
-                return new UserNotFoundException("User not found: " + username);
-            });
+                .orElseThrow(() -> {
+                    log.error("User not found: {}", username);
+                    return new UserNotFoundException("User not found: " + username);
+                });
 
         Deadline deadline = deadlineRepository.getCurrentDeadline().orElse(null);
         LocalAuthority localAuthority = user.getLaCode();
@@ -49,13 +61,24 @@ public class UploadServiceImpl implements UploadService {
             throw new LaNotFoundException("Local Authority not found for user: " + username);
         }
 
+        // Calculate days remaining
         Long daysRemaining = null;
+        if (deadline != null && deadline.getDeadlineDate() != null) {
+            daysRemaining = ChronoUnit.DAYS.between(LocalDate.now(), deadline.getDeadlineDate());
+        }
+
+        // Get last upload date for this LA
+        LocalDate lastUploadDate = fileUploadsRepository
+                .findFirstByLaCodeOrderByUploadDateDesc(localAuthority.getLaCode())
+                .map(upload -> upload.getUploadDate().toLocalDate())
+                .orElse(null);
 
         return DashboardInfoDto.builder()
-            .deadlineDate(deadline != null ? deadline.getDeadlineDate() : null)
-            .daysRemaining(daysRemaining)
-            .uploadStatus(localAuthority.getUploadStatusString())
-            .build();
+                .deadlineDate(deadline != null ? deadline.getDeadlineDate() : null)
+                .daysRemaining(daysRemaining)
+                .uploadStatus(localAuthority.getUploadStatusString())
+                .lastUploadDate(lastUploadDate)
+                .build();
     }
 
     @Override
@@ -73,27 +96,28 @@ public class UploadServiceImpl implements UploadService {
         log.debug("Getting deadline information");
 
         Deadline deadline = deadlineRepository.getCurrentDeadline()
-            .orElse(Deadline.builder()
-                .id((short) 1)
-                .deadlineDate(null)
-                .build());
+                .orElse(Deadline.builder()
+                        .id(1)
+                        .deadlineDate(null)
+                        .build());
 
         Long daysRemaining = null;
         Boolean isOverdue = false;
 
         if (deadline.getDeadlineDate() != null) {
             daysRemaining = ChronoUnit.DAYS.between(
-                LocalDate.now(),
-                deadline.getDeadlineDate()
+                    LocalDate.now(),
+                    deadline.getDeadlineDate()
             );
             isOverdue = daysRemaining < 0;
         }
 
         return DeadlineDto.builder()
-            .deadlineDate(deadline.getDeadlineDate())
-            .daysRemaining(daysRemaining)
-            .isDeadlinePassed(isOverdue)
-            .build();
+                .deadlineDate(deadline.getDeadlineDate())
+                .uploadStartDate(deadline.getUploadStartDate())
+                .daysRemaining(daysRemaining)
+                .isDeadlinePassed(isOverdue)
+                .build();
     }
 
     @Override
@@ -102,10 +126,10 @@ public class UploadServiceImpl implements UploadService {
         log.debug("Getting upload status for LA: {}", laCode);
 
         LocalAuthority localAuthority = localAuthorityRepository
-            .findByLaCode(laCode)
-            .orElseThrow(() -> new LaNotFoundException(
-                "Local Authority not found: " + laCode
-            ));
+                .findByLaCode(laCode)
+                .orElseThrow(() -> new LaNotFoundException(
+                        "Local Authority not found: " + laCode
+                ));
 
         return buildUploadStatusDto(localAuthority);
     }
@@ -116,7 +140,7 @@ public class UploadServiceImpl implements UploadService {
         log.debug("Getting upload status for user: {}", username);
 
         LaUser user = laUserRepository.findByUsername(username)
-            .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
 
         LocalAuthority localAuthority = user.getLaCode();
         if (localAuthority == null) {
@@ -131,7 +155,7 @@ public class UploadServiceImpl implements UploadService {
         log.debug("Getting upload history for user: {} (limit: {})", username, limit);
 
         LaUser user = laUserRepository.findByUsername(username)
-            .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
 
         LocalAuthority la = user.getLaCode();
         if (la == null) {
@@ -143,28 +167,28 @@ public class UploadServiceImpl implements UploadService {
         Long totalUploads = fileUploadsRepository.countByLaCode(laCode);
 
         List<FileUploads> recentUploads = fileUploadsRepository
-            .findByLaCodeOrderByUploadDateDesc(laCode, PageRequest.of(0, limit));
+                .findByLaCodeOrderByUploadDateDesc(laCode, PageRequest.of(0, limit));
 
         List<FileUploadDto> uploadDtos = recentUploads.stream()
-            .map(this::convertToFileUploadDto)
-            .collect(Collectors.toList());
+                .map(this::convertToFileUploadDto)
+                .collect(Collectors.toList());
 
         return UploadHistoryDto.builder()
-            .totalUploads(totalUploads)
-            .recentUploads(uploadDtos)
-            .build();
+                .totalUploads(totalUploads)
+                .recentUploads(uploadDtos)
+                .build();
     }
 
     @Override
     @Transactional
     public void processFileUpload(
-        String username,
-        FileUploadRequestDto request) {
+            String username,
+            FileUploadRequestDto request) {
 
         log.info("Processing file upload for user: {}", username);
 
         LaUser user = laUserRepository.findByUsername(username)
-            .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
 
         LocalAuthority localAuthority = user.getLaCode();
         if (localAuthority == null) {
@@ -173,14 +197,14 @@ public class UploadServiceImpl implements UploadService {
 
         // Create file upload record
         FileUploads fileUpload = FileUploads.builder()
-            .localAuthority(localAuthority)
-            .user(user)
-            .filename(request.getFilename())
-            .fileFormat(request.getFileFormat())
-            .fileSizeBytes(request.getFileSizeBytes())
-            .otherInformation(request.getOtherInformation())
-            .uploadDate(LocalDateTime.now())
-            .build();
+                .localAuthority(localAuthority)
+                .user(user)
+                .filename(request.getFilename())
+                .fileFormat(request.getFileFormat())
+                .fileSizeBytes(request.getFileSizeBytes())
+                .otherInformation(request.getOtherInformation())
+                .uploadDate(LocalDateTime.now())
+                .build();
 
         FileUploads savedUpload = fileUploadsRepository.save(fileUpload);
         log.info("File upload record created with ID: {}", savedUpload.getId());
@@ -198,28 +222,27 @@ public class UploadServiceImpl implements UploadService {
 
     private UploadStatusDto buildUploadStatusDto(LocalAuthority la) {
         return UploadStatusDto.builder()
-            .laCode(la.getLaCode())
-            .laName(la.getLaName())
-            .isActive(la.getActive())
-            .uploadStatus(la.getUploadStatusString())
-            .notes(la.getNotes())
-            .inactiveReason(la.getInactiveReason())
-            .updatedBy(la.getUpdatedBy())
-            .lastUpdated(la.getLastUpdated())
-            .build();
+                .laCode(la.getLaCode())
+                .laName(la.getLaName())
+                .isActive(la.getActive())
+                .uploadStatus(la.getUploadStatusString())
+                .notes(la.getNotes())
+                .inactiveReason(la.getInactiveReason())
+                .updatedBy(la.getUpdatedBy())
+                .lastUpdated(la.getLastUpdated())
+                .build();
     }
 
     private FileUploadDto convertToFileUploadDto(FileUploads upload) {
         return FileUploadDto.builder()
-            .id(upload.getId())
-            .filename(upload.getFilename())
-            .fileFormat(upload.getFileFormat())
-            .fileSizeBytes(upload.getFileSizeBytes())
-            .fileSizeFormatted(upload.getFileSizeFormatted())
-            .uploadedBy(upload.getUser().getUsername())
-            .uploadDate(upload.getUploadDate())
-            .otherInformation(upload.getOtherInformation())
-            .build();
+                .id(upload.getId())
+                .filename(upload.getFilename())
+                .fileFormat(upload.getFileFormat())
+                .fileSizeBytes(upload.getFileSizeBytes())
+                .fileSizeFormatted(upload.getFileSizeFormatted())
+                .uploadedBy(upload.getUser().getUsername())
+                .uploadDate(upload.getUploadDate())
+                .otherInformation(upload.getOtherInformation())
+                .build();
     }
-
 }
