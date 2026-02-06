@@ -88,9 +88,9 @@ public interface FileUploadsRepository extends JpaRepository<FileUploads, Long> 
      * @param laCode LA code
      * @return true if LA has at least one upload
      */
-    @Query("SELECT CASE WHEN COUNT(f) > 0 THEN true ELSE false END " +
-        "FROM FileUploads f " +
-        "WHERE f.localAuthority.laCode = :laCode")
+    @Query("SELECT CASE WHEN COUNT(f) > 0 THEN true ELSE false END "
+        + "FROM FileUploads f "
+        + "WHERE f.localAuthority.laCode = :laCode")
     boolean existsByLaCode(@Param("laCode") String laCode);
 
     // get the latest upload for each LA (one per LA)

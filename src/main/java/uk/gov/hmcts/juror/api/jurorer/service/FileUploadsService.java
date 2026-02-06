@@ -6,6 +6,7 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@SuppressWarnings("PMD.ShortMethodName")
 public interface FileUploadsService {
 
     List<FileUploadStatus> getLatestUploadForEachLa();

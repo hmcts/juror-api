@@ -11,7 +11,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
-import lombok.Builder;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -63,9 +62,6 @@ public class FileUploads implements Serializable {
 
     @Column(name = "upload_date", nullable = false)
     private LocalDateTime uploadDate;
-
-    public FileUploads() {
-    }
 
     // Convenience constructor for required fields
     public FileUploads(LocalAuthority localAuthority, LaUser user, String filename, String fileFormat,
