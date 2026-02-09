@@ -37,7 +37,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@Sql({"/db/mod/truncate.sql","/db/jurorer/ErDashboardData.sql"})
 class ErDashboardControllerITest extends AbstractIntegrationTest {
 
     private final TestRestTemplate restTemplate;
@@ -132,6 +131,7 @@ class ErDashboardControllerITest extends AbstractIntegrationTest {
 
     @Nested
     @DisplayName("GET /api/v1/moj/er-dashboard/upload-stats")
+    @Sql({"/db/mod/truncate.sql","/db/jurorer/ErDashboardData.sql"})
     class DashboardStatsTests {
 
         @Test
@@ -174,6 +174,7 @@ class ErDashboardControllerITest extends AbstractIntegrationTest {
 
     @Nested
     @DisplayName("GET with body /api/v1/moj/er-dashboard/local-authority-status")
+    @Sql({"/db/mod/truncate.sql","/db/jurorer/ErDashboardData.sql"})
     class UploadStatusTests {
 
         @Test
@@ -285,13 +286,15 @@ class ErDashboardControllerITest extends AbstractIntegrationTest {
             assertThat(authority.getLocalAuthorityCode()).isEqualTo("001");
             assertThat(authority.getLocalAuthorityName()).isEqualTo("West Oxfordshire");
             assertThat(authority.getUploadStatus()).isEqualTo(UploadStatus.UPLOADED);
-            assertThat(authority.getLastUploadDate()).isEqualTo(LocalDateTime.of(2026, 2, 1, 0, 0));
+            assertThat(authority.getLastUploadDate()).isEqualTo(LocalDateTime.now()
+                                                    .minusDays(5).withHour(0).withMinute(0).withSecond(0).withNano(0));
 
             authority = localAuthorities.get(1);
             assertThat(authority.getLocalAuthorityCode()).isEqualTo("002");
             assertThat(authority.getLocalAuthorityName()).isEqualTo("Broxtowe");
             assertThat(authority.getUploadStatus()).isEqualTo(UploadStatus.UPLOADED);
-            assertThat(authority.getLastUploadDate()).isEqualTo(LocalDateTime.of(2026, 2, 4, 0, 0));
+            assertThat(authority.getLastUploadDate()).isEqualTo(LocalDateTime.now()
+                                                    .minusDays(2).withHour(0).withMinute(0).withSecond(0).withNano(0));
 
         }
 
@@ -389,7 +392,8 @@ class ErDashboardControllerITest extends AbstractIntegrationTest {
             assertThat(authority.getLocalAuthorityCode()).isEqualTo("001");
             assertThat(authority.getLocalAuthorityName()).isEqualTo("West Oxfordshire");
             assertThat(authority.getUploadStatus()).isEqualTo(UploadStatus.UPLOADED);
-            assertThat(authority.getLastUploadDate()).isEqualTo(LocalDateTime.of(2026, 2, 1, 0, 0));
+            assertThat(authority.getLastUploadDate()).isEqualTo(LocalDateTime.now()
+                                                    .minusDays(5).withHour(0).withMinute(0).withSecond(0).withNano(0));
 
         }
 
@@ -427,13 +431,15 @@ class ErDashboardControllerITest extends AbstractIntegrationTest {
             assertThat(authority.getLocalAuthorityCode()).isEqualTo("001");
             assertThat(authority.getLocalAuthorityName()).isEqualTo("West Oxfordshire");
             assertThat(authority.getUploadStatus()).isEqualTo(UploadStatus.UPLOADED);
-            assertThat(authority.getLastUploadDate()).isEqualTo(LocalDateTime.of(2026, 2, 1, 0, 0));
+            assertThat(authority.getLastUploadDate()).isEqualTo(LocalDateTime.now()
+                                                    .minusDays(5).withHour(0).withMinute(0).withSecond(0).withNano(0));
 
             authority = localAuthorities.get(1);
             assertThat(authority.getLocalAuthorityCode()).isEqualTo("002");
             assertThat(authority.getLocalAuthorityName()).isEqualTo("Broxtowe");
             assertThat(authority.getUploadStatus()).isEqualTo(UploadStatus.UPLOADED);
-            assertThat(authority.getLastUploadDate()).isEqualTo(LocalDateTime.of(2026, 2, 4, 0, 0));
+            assertThat(authority.getLastUploadDate()).isEqualTo(LocalDateTime.now()
+                                                    .minusDays(2).withHour(0).withMinute(0).withSecond(0).withNano(0));
 
             authority = localAuthorities.get(2);
             assertThat(authority.getLocalAuthorityCode()).isEqualTo("003");
