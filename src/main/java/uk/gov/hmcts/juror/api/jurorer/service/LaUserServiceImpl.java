@@ -119,5 +119,18 @@ public class LaUserServiceImpl implements LaUserService {
 
     }
 
+    @Override
+    public List<LaUser> findUsersByLaCode(String laCode) {
+        LocalAuthority localAuthority = localAuthorityRepository.findByLaCode(laCode).orElseThrow(
+            () -> new MojException.NotFound("Local Authority not found", null)
+        );
+
+        return userRepository.findByLocalAuthority(localAuthority);
+    }
+
+    @Override
+    public void saveLaUser(LaUser laUser) {
+        userRepository.save(laUser);
+    }
 
 }
