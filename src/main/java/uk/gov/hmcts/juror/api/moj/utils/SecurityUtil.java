@@ -5,6 +5,8 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.config.jurorer.JurorErJwtAuthentication;
+import uk.gov.hmcts.juror.api.config.jurorer.JurorErJwtPayload;
 import uk.gov.hmcts.juror.api.config.public1.PublicJwtAuthentication;
 import uk.gov.hmcts.juror.api.moj.domain.Permission;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
@@ -70,11 +72,29 @@ public final class SecurityUtil {
         throw new MojException.Forbidden("User must be authorised with BureauJwtAuthentication", null);
     }
 
+    public static JurorErJwtAuthentication getActiveLaUsersJwtAuthentication() {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        Authentication authentication = securityContext.getAuthentication();
+        if (authentication instanceof JurorErJwtAuthentication jurorErJwtAuthentication) {
+            return jurorErJwtAuthentication;
+        }
+        throw new MojException.Forbidden("User must be authorised with JurorErJwtAuthentication", null);
+    }
+
     public static BureauJwtPayload getActiveUsersBureauPayload() {
         Object principal = getActiveUsersBureauJwtAuthentication().getPrincipal();
 
         if (principal instanceof BureauJwtPayload bureauPayload) {
             return bureauPayload;
+        }
+        throw new MojException.InternalServerError("Unexpected principal object type", null);
+    }
+
+    public static JurorErJwtPayload getActiveLaUsersPayload() {
+        Object principal = getActiveLaUsersJwtAuthentication().getPrincipal();
+
+        if (principal instanceof JurorErJwtPayload jurorErJwtPayload) {
+            return jurorErJwtPayload;
         }
         throw new MojException.InternalServerError("Unexpected principal object type", null);
     }
@@ -85,6 +105,10 @@ public final class SecurityUtil {
 
     public static String getActiveOwner() {
         return getActiveUsersBureauPayload().getOwner();
+    }
+
+    public static String getActiveLaCode() {
+        return getActiveLaUsersPayload().getLaCode();
     }
 
     /**
