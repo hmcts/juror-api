@@ -6,13 +6,21 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import org.hibernate.envers.AuditTable;
+import org.hibernate.envers.Audited;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "local_authority", schema = "juror_er")
 @Data
+@Builder
+@AllArgsConstructor
+@Audited
+@AuditTable(value = "local_authority_audit", schema = "juror_er")
 public class LocalAuthority {
 
     @Id
@@ -26,7 +34,6 @@ public class LocalAuthority {
     private Boolean active;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "upload_status", length = 40)
     private UploadStatus uploadStatus;
 
     @Column(name = "notes", length = 2000)

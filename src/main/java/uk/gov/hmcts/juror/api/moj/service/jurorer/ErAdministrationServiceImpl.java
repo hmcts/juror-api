@@ -12,7 +12,9 @@ import uk.gov.hmcts.juror.api.jurorer.repository.LocalAuthorityRepository;
 import uk.gov.hmcts.juror.api.jurorer.service.LaUserService;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.DeactiveLaRequestDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -38,6 +40,8 @@ public class ErAdministrationServiceImpl implements ErAdministrationService {
 
         localAuthority.setActive(false);
         localAuthority.setInactiveReason(requestDto.getReason());
+        localAuthority.setUpdatedBy(SecurityUtil.getUsername());
+        localAuthority.setLastUpdated(LocalDateTime.now());
         localAuthorityRepository.save(localAuthority);
         log.info("LA with code {} has been deactivated", requestDto.getLaCode());
 
