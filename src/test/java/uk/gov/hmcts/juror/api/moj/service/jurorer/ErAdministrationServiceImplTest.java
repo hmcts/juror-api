@@ -41,7 +41,9 @@ class ErAdministrationServiceImplTest {
     @Test
     void deactivateLaLaCodeHappy() {
 
-        TestUtils.mockBureauUser();
+        TestUtils.setUpMockAuthentication("400", "Bureau", "1", List.of("400"));
+
+
         DeactiveLaRequestDto requestDto = new DeactiveLaRequestDto();
         requestDto.setLaCode("002");
         requestDto.setReason("This is a test reason for deactivating LA2");

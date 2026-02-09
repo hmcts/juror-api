@@ -31,11 +31,13 @@ public class ErAdministrationServiceImpl implements ErAdministrationService {
         log.info("Deactivating LA with code {}", requestDto.getLaCode());
 
         LocalAuthority localAuthority = localAuthorityRepository.findByLaCode(requestDto.getLaCode())
-            .orElseThrow(() -> new MojException.BadRequest("LA with code " + requestDto.getLaCode() + " not found", null));
+            .orElseThrow(() -> new MojException.BadRequest("LA with code " + requestDto.getLaCode()
+                                                               + " not found", null));
 
         if (!localAuthority.getActive()) {
             log.warn("LA with code {} is already deactivated", requestDto.getLaCode());
-            throw new MojException.BadRequest("LA with code " + requestDto.getLaCode() + " is already deactivated", null);
+            throw new MojException.BadRequest("LA with code " + requestDto.getLaCode()
+                                                  + " is already deactivated", null);
         }
 
         localAuthority.setActive(false);

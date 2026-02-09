@@ -9,6 +9,7 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
 
@@ -19,6 +20,7 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 @AllArgsConstructor
+@NoArgsConstructor
 @Audited
 @AuditTable(value = "local_authority_audit", schema = "juror_er")
 public class LocalAuthority {

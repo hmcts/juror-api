@@ -14,24 +14,9 @@ CREATE TABLE juror_er.local_authority (
       CONSTRAINT local_authority_pkey PRIMARY KEY (la_code)
 );
 
-
 ALTER TABLE juror_er.local_authority
     ADD CONSTRAINT upload_status_value_check CHECK (((upload_status)::text = ANY (
         (ARRAY ['UPLOADED'::character varying, 'NOT_UPLOADED'::character varying]))));
-
-
-CREATE TABLE juror_er.local_authority_audit (
-      revision int8 NOT NULL,
-      rev_type int4 NULL,
-      la_code varchar(3) NOT NULL,
-      la_name varchar(100) NULL,
-      is_active boolean,
-      upload_status varchar(40) NULL,
-      notes varchar(2000) NULL,
-      inactive_reason varchar(2000) NULL,
-      updated_by varchar(30) NULL,
-      last_updated timestamp(3) NULL
-);
 
 
 CREATE TABLE juror_er.user (
