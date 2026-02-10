@@ -11,6 +11,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -21,8 +23,10 @@ import java.util.Objects;
  * Entity mapping for juror_er.file_uploads
  */
 @Entity
-@Data
 @Table(name = "file_uploads", schema = "juror_er")
+@Data
+@Builder
+@AllArgsConstructor
 public class FileUploads implements Serializable {
 
     @Id
@@ -63,9 +67,12 @@ public class FileUploads implements Serializable {
     @Column(name = "upload_date", nullable = false)
     private LocalDateTime uploadDate;
 
+    public FileUploads() {
+    }
+
     // Convenience constructor for required fields
-    public FileUploads(LocalAuthority localAuthority, LaUser user, String filename, String fileFormat,
-                       LocalDateTime uploadDate) {
+    public FileUploads(LocalAuthority localAuthority, LaUser user, String filename,
+                       String fileFormat, LocalDateTime uploadDate) {
         this.localAuthority = Objects.requireNonNull(localAuthority, "localAuthority");
         this.user = Objects.requireNonNull(user, "user");
         this.filename = Objects.requireNonNull(filename, "filename");
@@ -79,4 +86,24 @@ public class FileUploads implements Serializable {
             this.uploadDate = LocalDateTime.now();
         }
     }
+    /**
+     * Get file size in human-readable format.
+     */
+
+    public String getFileSizeFormatted() {
+        if (fileSizeBytes == null) {
+            return "Unknown";
+        }
+
+        if (fileSizeBytes < 1024) {
+            return fileSizeBytes + " B";
+        } else if (fileSizeBytes < 1024 * 1024) {
+            return String.format("%.2f KB", fileSizeBytes / 1024.0);
+        } else if (fileSizeBytes < 1024 * 1024 * 1024) {
+            return String.format("%.2f MB", fileSizeBytes / (1024.0 * 1024.0));
+        } else {
+            return String.format("%.2f GB", fileSizeBytes / (1024.0 * 1024.0 * 1024.0));
+        }
+    }
 }
+

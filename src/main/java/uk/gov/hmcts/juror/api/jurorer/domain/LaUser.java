@@ -47,4 +47,44 @@ public class LaUser implements Serializable {
     @JsonProperty("last_logged_in")
     private LocalDateTime lastLoggedIn;
 
+    /**
+     * Helper method to get LocalAuthority object.
+     * This provides compatibility with code expecting getLaCode() method.
+     *
+     * @return LocalAuthority object
+     */
+    public LocalAuthority getLaCode() {
+        return this.localAuthority;
+    }
+
+    /**
+     * Helper method to set LocalAuthority object.
+     *
+     * @param localAuthority LocalAuthority to set
+     */
+    public void setLaCode(LocalAuthority localAuthority) {
+        this.localAuthority = localAuthority;
+    }
+
+    /**
+     * Helper method to get LA code string from relationship.
+     *
+     * @return LA code string
+     */
+    public String getLaCodeString() {
+        return localAuthority != null ? localAuthority.getLaCode() : null;
+    }
+
+    /**
+     * Check if user can authenticate.
+     *
+     * @return true if user is active and LA is active
+     */
+    public boolean canAuthenticate() {
+        return this.active
+                &&
+                this.localAuthority != null
+                &&
+                Boolean.TRUE.equals(this.localAuthority.getActive());
+    }
 }

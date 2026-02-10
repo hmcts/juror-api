@@ -10,6 +10,7 @@ INSERT INTO juror_er.local_authority (la_code,la_name,is_active,upload_status,no
 
 INSERT INTO juror_er."user" (username,la_code,active,last_logged_in) VALUES
 	 ('test_user1@localauthority1.council.uk','001',true,NULL),
+	-- ('test_user1@la1.council.uk','001',true,NULL),
 	 ('test_user2@localauthority1.council.uk','001',true,NULL),
 	 ('test_user1@localauthority2.council.uk','002',true,NULL),
 	 ('test_user2@localauthority2.council.uk','002',true,NULL),

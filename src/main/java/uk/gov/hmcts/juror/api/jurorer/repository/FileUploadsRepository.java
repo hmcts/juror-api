@@ -7,14 +7,24 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.juror.api.jurorer.domain.FileUploads;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+
+import java.time.LocalDateTime;
+
 
 /**
  * Repository for FileUploads entity.
  */
 @Repository
 public interface FileUploadsRepository extends JpaRepository<FileUploads, Long> {
+
+    /**
+     * Get the most recent upload for an LA.
+     * Uses Spring Data's Top/First keyword to limit results to 1.
+     */
+    Optional<FileUploads> findTopByLocalAuthority_LaCodeOrderByUploadDateDesc(String laCode);
+
 
     /**
      * Find all uploads for a specific LA code, ordered by upload date descending.

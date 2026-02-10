@@ -46,4 +46,34 @@ public class LocalAuthority {
 
     @Column(name = "last_updated")
     private LocalDateTime lastUpdated;
+
+
+    /**
+     * Check if LA has uploaded file for current period.
+     *
+     * @return true if upload_status is UPLOADED
+     */
+    public boolean hasUploaded() {
+        return uploadStatus == UploadStatus.UPLOADED;
+    }
+
+    /**
+     * Check if LA can upload (active and not already uploaded).
+     *
+     * @return true if LA is active and status is NOT_UPLOADED
+     */
+    public boolean canUpload() {
+        return Boolean.TRUE.equals(active)
+                &&
+            uploadStatus == UploadStatus.NOT_UPLOADED;
+    }
+
+    /**
+     * Get upload status as string for compatibility.
+     *
+     * @return Upload status string value
+     */
+    public String getUploadStatusString() {
+        return uploadStatus != null ? uploadStatus.name() : null;
+    }
 }

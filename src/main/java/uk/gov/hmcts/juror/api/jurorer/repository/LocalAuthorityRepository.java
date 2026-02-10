@@ -18,5 +18,4 @@ public interface LocalAuthorityRepository extends CrudRepository<LocalAuthority,
 
     List<LocalAuthority> findAllByOrderByLaCode();
 
-
 }
