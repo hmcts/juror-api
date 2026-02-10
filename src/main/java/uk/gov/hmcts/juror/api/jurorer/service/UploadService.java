@@ -56,7 +56,6 @@ public interface UploadService {
      *
      * @param username User uploading the file
      * @param request File upload metadata
-     * @return Upload response with details and updated status.
      */
     void processFileUpload(String username, FileUploadRequestDto request);
 }

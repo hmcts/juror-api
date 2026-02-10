@@ -201,8 +201,8 @@ class ErDashboardServiceImplTest {
         assertEquals(UploadStatus.UPLOADED, laStatus.getUploadStatus(),
                         "Expected first local authority upload status in response to be UPLOADED");
         assertEquals(fileUploadStatuses.get(0).getLastUploadDate(), laStatus.getLastUploadDate(),
-                        "Expected first local authority last upload date in response to match the last upload" +
-                            " date from the file upload status");
+                        "Expected first local authority last upload date in response to match the last upload"
+                            + " date from the file upload status");
 
         laStatus = responseDto.getLocalAuthorityStatuses().get(1);
         assertEquals("LA2", laStatus.getLocalAuthorityCode(),
