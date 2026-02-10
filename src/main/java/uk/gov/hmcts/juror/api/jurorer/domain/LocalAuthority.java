@@ -63,7 +63,8 @@ public class LocalAuthority {
      * @return true if LA is active and status is NOT_UPLOADED
      */
     public boolean canUpload() {
-        return Boolean.TRUE.equals(active) &&
+        return Boolean.TRUE.equals(active)
+                &&
             uploadStatus == UploadStatus.NOT_UPLOADED;
     }
 

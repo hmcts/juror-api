@@ -71,7 +71,8 @@ public class FileUploads implements Serializable {
     }
 
     // Convenience constructor for required fields
-    public FileUploads(LocalAuthority localAuthority, LaUser user, String filename, String fileFormat, LocalDateTime uploadDate) {
+    public FileUploads(LocalAuthority localAuthority, LaUser user, String filename,
+                       String fileFormat, LocalDateTime uploadDate) {
         this.localAuthority = Objects.requireNonNull(localAuthority, "localAuthority");
         this.user = Objects.requireNonNull(user, "user");
         this.filename = Objects.requireNonNull(filename, "filename");
@@ -88,6 +89,7 @@ public class FileUploads implements Serializable {
     /**
      * Get file size in human-readable format.
      */
+
     public String getFileSizeFormatted() {
         if (fileSizeBytes == null) {
             return "Unknown";

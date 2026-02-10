@@ -38,6 +38,7 @@ import static uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController.
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/bureau/juror/excuse", produces = MediaType.APPLICATION_JSON_VALUE)
+@SuppressWarnings("PMD")
 @Tag(name = "Bureau Juror-Excusal API", description = "Bureau operations relating to manually excusing a juror.")
 public class ResponseExcusalController {
     private final ResponseExcusalService responseExcusalService;

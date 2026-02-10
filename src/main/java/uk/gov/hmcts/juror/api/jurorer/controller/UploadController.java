@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.DashboardInfoDto;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.DeadlineDto;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.FileUploadRequestDto;
-import uk.gov.hmcts.juror.api.jurorer.controller.dto.FileUploadsResponseDto;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.UploadHistoryDto;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.UploadStatusDto;
 import uk.gov.hmcts.juror.api.jurorer.service.UploadService;

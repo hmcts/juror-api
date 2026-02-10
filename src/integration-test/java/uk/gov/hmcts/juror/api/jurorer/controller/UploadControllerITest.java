@@ -3,8 +3,8 @@ package uk.gov.hmcts.juror.api.jurorer.controller;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,6 +13,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
@@ -32,12 +33,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 
+@SuppressWarnings({"checkstyle:AbbreviationAsWordInName","PMD"})
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + UploadControllerITest.BASE_URL)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
-@Sql({"/db/jurorer/teardownUsers.sql", "/db/jurorer/setupUploadControllerITest.sql"})
+@Sql({"/db/jurorer/teardownUploadTests.sql", "/db/jurorer/setupUploadControllerITest.sql"})
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class UploadControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/juror-er/upload";
 
@@ -273,7 +275,7 @@ public class UploadControllerITest extends AbstractIntegrationTest {
             // Verify upload details
             assertThat(historyDto.getRecentUploads().get(0).getUploadedBy())
                 .as("Uploaded by should match test user")
-                .isEqualTo("test_user1@la1.uk");
+                .isEqualTo("test_user1@la1.council.uk");
         }
 
         @Test

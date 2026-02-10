@@ -69,7 +69,7 @@ public class UploadServiceImpl implements UploadService {
 
         // Get last upload date for this LA
         LocalDate lastUploadDate = fileUploadsRepository
-                .findFirstByLaCodeOrderByUploadDateDesc(localAuthority.getLaCode())
+                .findTopByLocalAuthority_LaCodeOrderByUploadDateDesc(localAuthority.getLaCode())
                 .map(upload -> upload.getUploadDate().toLocalDate())
                 .orElse(null);
 
@@ -87,6 +87,35 @@ public class UploadServiceImpl implements UploadService {
         log.debug("Getting complete upload page data for user: {}", username);
 
         return getUploadHistory(username, 10);
+    }
+
+    @Override
+    public UploadHistoryDto getUploadHistory(String username, int limit) {
+        log.debug("Getting upload history for user: {} (limit: {})", username, limit);
+
+        LaUser user = laUserRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
+
+        LocalAuthority la = user.getLaCode();
+        if (la == null) {
+            throw new LaNotFoundException("Local Authority not found for user: " + username);
+        }
+
+        String laCode = la.getLaCode();
+
+        Long totalUploads = fileUploadsRepository.countByLaCode(laCode);
+
+        List<FileUploads> recentUploads = fileUploadsRepository
+                .findByLaCodeOrderByUploadDateDesc(laCode, PageRequest.of(0, limit));
+
+        List<FileUploadDto> uploadDtos = recentUploads.stream()
+                .map(this::convertToFileUploadDto)
+                .collect(Collectors.toList());
+
+        return UploadHistoryDto.builder()
+                .totalUploads(totalUploads)
+                .recentUploads(uploadDtos)
+                .build();
     }
 
 
@@ -150,34 +179,7 @@ public class UploadServiceImpl implements UploadService {
         return buildUploadStatusDto(localAuthority);
     }
 
-    @Override
-    public UploadHistoryDto getUploadHistory(String username, int limit) {
-        log.debug("Getting upload history for user: {} (limit: {})", username, limit);
 
-        LaUser user = laUserRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
-
-        LocalAuthority la = user.getLaCode();
-        if (la == null) {
-            throw new LaNotFoundException("Local Authority not found for user: " + username);
-        }
-
-        String laCode = la.getLaCode();
-
-        Long totalUploads = fileUploadsRepository.countByLaCode(laCode);
-
-        List<FileUploads> recentUploads = fileUploadsRepository
-                .findByLaCodeOrderByUploadDateDesc(laCode, PageRequest.of(0, limit));
-
-        List<FileUploadDto> uploadDtos = recentUploads.stream()
-                .map(this::convertToFileUploadDto)
-                .collect(Collectors.toList());
-
-        return UploadHistoryDto.builder()
-                .totalUploads(totalUploads)
-                .recentUploads(uploadDtos)
-                .build();
-    }
 
     @Override
     @Transactional

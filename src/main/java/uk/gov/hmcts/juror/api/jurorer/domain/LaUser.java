@@ -81,8 +81,10 @@ public class LaUser implements Serializable {
      * @return true if user is active and LA is active
      */
     public boolean canAuthenticate() {
-        return this.active &&
-                this.localAuthority != null &&
+        return this.active
+                &&
+                this.localAuthority != null
+                &&
                 Boolean.TRUE.equals(this.localAuthority.getActive());
     }
 }

@@ -27,7 +27,8 @@ public interface FileUploadsRepository extends JpaRepository<FileUploads, Long> 
 
     /**
      * Get the most recent upload for an LA.
+     * Uses Spring Data's Top/First keyword to limit results to 1.
      */
-    @Query("SELECT f FROM FileUploads f WHERE f.localAuthority.laCode = :laCode ORDER BY f.uploadDate DESC")
-    Optional<FileUploads> findFirstByLaCodeOrderByUploadDateDesc(@Param("laCode") String laCode);
+    Optional<FileUploads> findTopByLocalAuthority_LaCodeOrderByUploadDateDesc(String laCode);
 }
+
