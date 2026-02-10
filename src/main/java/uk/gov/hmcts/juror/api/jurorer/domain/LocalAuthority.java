@@ -10,6 +10,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.envers.AuditTable;
+import org.hibernate.envers.Audited;
 
 import java.time.LocalDateTime;
 
@@ -17,8 +19,10 @@ import java.time.LocalDateTime;
 @Table(name = "local_authority", schema = "juror_er")
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
+@Audited
+@AuditTable(value = "local_authority_audit", schema = "juror_er")
 public class LocalAuthority {
 
     @Id

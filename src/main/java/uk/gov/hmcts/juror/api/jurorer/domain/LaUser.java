@@ -14,7 +14,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.envers.NotAudited;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -43,7 +42,6 @@ public class LaUser implements Serializable {
     @Builder.Default
     private boolean active = true;
 
-    @NotAudited
     @JsonProperty("last_logged_in")
     private LocalDateTime lastLoggedIn;
 
@@ -82,9 +80,10 @@ public class LaUser implements Serializable {
      */
     public boolean canAuthenticate() {
         return this.active
-                &&
-                this.localAuthority != null
-                &&
-                Boolean.TRUE.equals(this.localAuthority.getActive());
+            &&
+            this.localAuthority != null
+            &&
+            Boolean.TRUE.equals(this.localAuthority.getActive());
     }
+
 }

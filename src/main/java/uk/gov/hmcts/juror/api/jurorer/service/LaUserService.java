@@ -4,6 +4,8 @@ import uk.gov.hmcts.juror.api.jurorer.controller.dto.LaJwtDto;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.LaUserDetailsDto;
 import uk.gov.hmcts.juror.api.jurorer.domain.LaUser;
 
+import java.util.List;
+
 
 public interface LaUserService {
 
@@ -12,5 +14,9 @@ public interface LaUserService {
     LaUser findUserByUsername(String username);
 
     LaUserDetailsDto getLaUserDetails(String laCode);
+
+    List<LaUser> findUsersByLaCode(String laCode);
+
+    void saveLaUser(LaUser laUser);
 
 }
