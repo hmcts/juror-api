@@ -105,6 +105,10 @@ public final class SecurityUtil {
         return getActiveUsersBureauPayload().getOwner();
     }
 
+    public static String getActiveLaCode() {
+        return getActiveLaUsersPayload().getLaCode();
+    }
+
     /**
      * Get LA code for the current LA user from JWT.
      *

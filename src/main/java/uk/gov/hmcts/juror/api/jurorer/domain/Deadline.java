@@ -37,9 +37,9 @@ public class Deadline {
     private LocalDate lastUpdated;
 
     /**
-      * Calculate days remaining until deadline from current date.
-            *
-            * @return Days remaining (negative if overdue, null if no deadline set)
+     * Calculate days remaining until deadline from current date.
+     *
+     * @return Days remaining (negative if overdue, null if no deadline set)
      */
     public Long getDaysRemaining() {
         if (deadlineDate == null) {
