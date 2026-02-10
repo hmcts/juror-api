@@ -48,12 +48,12 @@ class ErAdministrationControllerITest extends AbstractIntegrationTest {
 
 
     @Nested
-    @DisplayName("GET /api/v1/moj/er-dashboard/upload-stats")
+    @DisplayName("GET /api/v1/moj/er-administration/deactivate-la")
     @Sql({"/db/mod/truncate.sql","/db/jurorer/ErDashboardData.sql"})
-    class DashboardStatsTests {
+    class DeactivateLaTest {
 
         @Test
-        void testDeactiveLocalAuthority() {
+        void testDeactivateLocalAuthority() {
 
             DeactiveLaRequestDto requestDto = new DeactiveLaRequestDto();
             requestDto.setLaCode("002");
@@ -86,7 +86,7 @@ class ErAdministrationControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        void testGetErDashboardStatsExceptionForCourtUser() {
+        void testDeactivateLaForCourtUserShouldBeForbidden() {
             initHeadersCourt();
             DeactiveLaRequestDto requestDto = new DeactiveLaRequestDto();
             requestDto.setLaCode("LA2");
@@ -101,12 +101,11 @@ class ErAdministrationControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(HttpStatus.FORBIDDEN);
 
         }
-    }
 
-
-    private void initHeadersCourt() {
-        httpHeaders =
-            initialiseHeaders("COURT_USER", UserType.COURT,null,"435");
+        private void initHeadersCourt() {
+            httpHeaders =
+                initialiseHeaders("COURT_USER", UserType.COURT,null,"435");
+        }
     }
 
     private void initHeadersBureau() {
