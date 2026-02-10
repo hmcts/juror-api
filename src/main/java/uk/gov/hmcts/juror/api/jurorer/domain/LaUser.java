@@ -43,7 +43,6 @@ public class LaUser implements Serializable {
     @Builder.Default
     private boolean active = true;
 
-    @NotAudited
     @JsonProperty("last_logged_in")
     private LocalDateTime lastLoggedIn;
 

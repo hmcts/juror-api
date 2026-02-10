@@ -1,4 +1,7 @@
 
+delete from juror_er.file_uploads
+where la_username like 'test_%';
+
 delete from juror_er."user"
 where username like 'test_%';
 

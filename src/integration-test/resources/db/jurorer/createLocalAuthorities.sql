@@ -1,60 +1,6 @@
-
-CREATE SCHEMA IF NOT EXISTS juror_er;
-
-
-CREATE TABLE juror_er.local_authority (
-      la_code varchar(3) NOT NULL,
-      la_name varchar(100) NULL,
-      is_active boolean,
-      upload_status varchar(40) NULL,  -- NOT_UPLOADED, UPLOADED
-      notes varchar(2000) NULL,
-      inactive_reason varchar(2000) NULL,
-      updated_by varchar(30) NULL,
-      last_updated timestamp(3) NULL,
-      CONSTRAINT local_authority_pkey PRIMARY KEY (la_code)
-);
-
-
-ALTER TABLE juror_er.local_authority
-    ADD CONSTRAINT upload_status_value_check CHECK (((upload_status)::text = ANY (
-        (ARRAY ['UPLOADED'::character varying, 'NOT_UPLOADED'::character varying]))));
-
-
-CREATE TABLE juror_er.user (
-     username varchar(200) NOT NULL, -- this is the email address of the user
-     la_code  varchar(3) NOT NULL,
-     active bool NOT NULL DEFAULT true, -- depends on state of the local authority
-     last_logged_in timestamp(3) NULL,
-   	 CONSTRAINT local_authority_fk FOREIGN KEY (la_code) REFERENCES juror_er.local_authority (la_code),
-     CONSTRAINT user_pkey PRIMARY KEY (username)
-);
-
-
-CREATE TABLE juror_er.deadline (
-    id smallint PRIMARY KEY CHECK (id = 1),
-   	deadline_date date NULL,
-   	upload_start_date date NULL,
-   	updated_by varchar(30) NULL,
-   	last_updated timestamp(3) NULL
-);
-
-
-CREATE TABLE juror_er.file_uploads (
-    id bigserial NOT NULL,
-    la_code varchar(3) NOT NULL,
-	  la_username varchar(200) NOT NULL,
-   	filename varchar(200) NOT NULL,
-   	file_format varchar(20) NOT NULL,
-   	file_size_bytes bigint NULL,
-   	other_information varchar(1000) NULL, -- need to confirm how big this should be
-   	upload_date timestamp NOT null,
-   	CONSTRAINT file_uploads_pkey PRIMARY KEY (id),
-   	CONSTRAINT file_uploads_la_fk FOREIGN KEY (la_code) REFERENCES juror_er.local_authority (la_code),
-   	CONSTRAINT file_uploads_username_fk FOREIGN KEY (la_username) REFERENCES juror_er.user (username)
-);
-
-
--- local authorities data insertions
+delete from juror_er.file_uploads;
+delete from juror_er.user;
+delete from juror_er.local_authority;
 
 INSERT INTO juror_er.local_authority (la_code,la_name,is_active,upload_status,notes,inactive_reason,updated_by,last_updated) VALUES
    ('001','West Oxfordshire',true,'NOT_UPLOADED',NULL,NULL,NULL,NULL),
