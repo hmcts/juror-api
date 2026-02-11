@@ -16,4 +16,6 @@ public interface LaUserRepository extends CrudRepository<LaUser, String>, Queryd
 
     List<LaUser> findByLocalAuthority(LocalAuthority localAuthority);
 
+    Optional<LaUser> findFirstByLocalAuthorityOrderByLastLoggedInDesc(LocalAuthority localAuthority);
+
 }

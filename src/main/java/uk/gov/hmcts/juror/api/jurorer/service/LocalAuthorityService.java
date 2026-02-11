@@ -9,4 +9,6 @@ public interface LocalAuthorityService {
 
     List<LocalAuthority> getAllLocalAuthorities(boolean activeOnly);
 
+    LocalAuthority getLocalAuthorityByCode(String localAuthorityCode);
+
 }

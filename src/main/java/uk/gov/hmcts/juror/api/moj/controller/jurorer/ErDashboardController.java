@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -51,6 +52,16 @@ public class ErDashboardController {
         @Valid Boolean activeOnly
     ) {
         LocalAuthoritiesResponseDto dto = erDashboardService.getLocalAuthorities(activeOnly);
+        return ResponseEntity.ok().body(dto);
+    }
+
+    @IsBureauUser
+    @GetMapping("/local-authority-info/{laCode}")
+    @Operation(summary = "Retrieves detailed info on a local authority for bureau")
+    public ResponseEntity<LocalAuthorityInfoResponseDto> getLocalAuthorityInfo(
+        @Parameter(description = "laCode", required = true) @PathVariable("laCode") String laCode
+    ) {
+        LocalAuthorityInfoResponseDto dto = erDashboardService.getLocalAuthorityInfo(laCode);
         return ResponseEntity.ok().body(dto);
     }
 

@@ -22,6 +22,7 @@ import uk.gov.hmcts.juror.api.moj.controller.jurorer.ErDashboardStatsResponseDto
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.ErLocalAuthorityStatusRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.ErLocalAuthorityStatusResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.LocalAuthoritiesResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.jurorer.LocalAuthorityInfoResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 
 import java.net.URI;
@@ -465,6 +466,27 @@ class ErDashboardControllerITest extends AbstractIntegrationTest {
             assertThat(authority.getUploadStatus()).isEqualTo(UploadStatus.NOT_UPLOADED);
             assertThat(authority.getLastUploadDate()).isNull();
         }
+    }
+
+
+    @Nested
+    @DisplayName("GET with body /api/v1/moj/er-dashboard/local-authority-info")
+    @Sql({"/db/mod/truncate.sql","/db/jurorer/ErDashboardData.sql"})
+    class LocalAuthorityInfoTests {
+
+        @Test
+        void testGetLocalAuthorityInfoHappy() {
+
+            ResponseEntity<LocalAuthorityInfoResponseDto> responseEntity =
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                        URI.create("/api/v1/moj/er-dashboard/local-authority-info/003")),
+                    LocalAuthorityInfoResponseDto.class);
+
+            assertThat(responseEntity.getStatusCode())
+                .as("Expect the status to be OK.")
+                .isEqualTo(HttpStatus.OK);
+        }
+
     }
 
     private void initHeadersCourt() {

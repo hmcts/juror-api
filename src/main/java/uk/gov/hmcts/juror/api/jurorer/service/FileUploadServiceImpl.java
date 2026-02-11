@@ -3,12 +3,14 @@ package uk.gov.hmcts.juror.api.jurorer.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.juror.api.jurorer.domain.FileUploads;
 import uk.gov.hmcts.juror.api.jurorer.repository.FileUploadsRepository;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
@@ -42,6 +44,14 @@ public class FileUploadServiceImpl implements FileUploadsService {
 
         return fileUploadStatuses;
 
+    }
+
+    @Override
+    public FileUploads getLatestUploadForLa(String localAuthorityCode) {
+        Optional<FileUploads> fileUploadsOptional = fileUploadsRepository
+                                .findTopByLocalAuthority_LaCodeOrderByUploadDateDesc(localAuthorityCode);
+
+        return fileUploadsOptional.orElse(null);
     }
 
 }

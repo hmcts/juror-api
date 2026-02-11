@@ -5,21 +5,26 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.jurorer.domain.Deadline;
+import uk.gov.hmcts.juror.api.jurorer.domain.FileUploads;
 import uk.gov.hmcts.juror.api.jurorer.domain.LocalAuthority;
 import uk.gov.hmcts.juror.api.jurorer.domain.UploadStatus;
 import uk.gov.hmcts.juror.api.jurorer.repository.DeadlineRepository;
 import uk.gov.hmcts.juror.api.jurorer.service.FileUploadsService;
+import uk.gov.hmcts.juror.api.jurorer.service.LaUserService;
 import uk.gov.hmcts.juror.api.jurorer.service.LocalAuthorityService;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.ErDashboardStatsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.ErLocalAuthorityStatusRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.ErLocalAuthorityStatusResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.LocalAuthoritiesResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.jurorer.LocalAuthorityInfoResponseDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static uk.gov.hmcts.juror.api.validation.LaCodeValidator.isValidLaCode;
 
 
 @Service
@@ -30,6 +35,7 @@ public class ErDashboardServiceImpl implements ErDashboardService {
     private final LocalAuthorityService localAuthorityService;
     private final DeadlineRepository deadlineRepository;
     private final FileUploadsService fileUploadsService;
+    private final LaUserService laUserService;
 
     @Override
     public ErDashboardStatsResponseDto getErDashboardStats() {
@@ -131,6 +137,43 @@ public class ErDashboardServiceImpl implements ErDashboardService {
             .localAuthorities(localAuthorityDtos)
             .build();
 
+    }
+
+    @Override
+    public LocalAuthorityInfoResponseDto getLocalAuthorityInfo(String laCode) {
+
+        log.info("Getting local authority info for ER dashboard, laCode: {}", laCode);
+        // validate the laCode format
+        isValidLaCode(laCode);
+
+        LocalAuthority localAuthority = localAuthorityService.getLocalAuthorityByCode(laCode);
+
+        if (localAuthority == null) {
+            throw new MojException.NotFound("Local authority not found for code: " + laCode, null);
+        }
+
+        LocalAuthorityInfoResponseDto localAuthorityInfoResponseDto = LocalAuthorityInfoResponseDto.builder()
+            .localAuthorityCode(localAuthority.getLaCode())
+            .uploadStatus(localAuthority.getUploadStatus())
+            .emailRequestStatus(localAuthority.getEmailRequestStatus())
+            .build();
+
+        if (localAuthority.getEmailRequestSent() != null) {
+            localAuthorityInfoResponseDto.setDateEmailRequestSent(localAuthority.getEmailRequestSent().toLocalDate());
+        }
+
+        FileUploads fileUploads = fileUploadsService.getLatestUploadForLa(laCode);
+
+        if (fileUploads != null) {
+            localAuthorityInfoResponseDto.setLastUploadDate(fileUploads.getUploadDate().toLocalDate());
+        }
+
+        laUserService.findLastLoggedInUserByLaCode(laCode).ifPresent(lastLoggedInUser ->
+            localAuthorityInfoResponseDto.setLastLoggedInDate(lastLoggedInUser.getLastLoggedIn().toLocalDate())
+        );
+
+
+        return localAuthorityInfoResponseDto;
     }
 
 }
