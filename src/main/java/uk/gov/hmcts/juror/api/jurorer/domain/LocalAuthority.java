@@ -51,6 +51,9 @@ public class LocalAuthority {
     @Column(name = "last_updated")
     private LocalDateTime lastUpdated;
 
+    @Column(name = "email")
+    private String email;
+
 
     /**
      * Check if LA has uploaded file for current period.
