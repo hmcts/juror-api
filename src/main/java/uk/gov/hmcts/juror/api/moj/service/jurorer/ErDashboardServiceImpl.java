@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.jurorer.domain.Deadline;
 import uk.gov.hmcts.juror.api.jurorer.domain.FileUploads;
+import uk.gov.hmcts.juror.api.jurorer.domain.LaUser;
 import uk.gov.hmcts.juror.api.jurorer.domain.LocalAuthority;
 import uk.gov.hmcts.juror.api.jurorer.domain.UploadStatus;
 import uk.gov.hmcts.juror.api.jurorer.repository.DeadlineRepository;
@@ -156,6 +157,7 @@ public class ErDashboardServiceImpl implements ErDashboardService {
             .localAuthorityCode(localAuthority.getLaCode())
             .uploadStatus(localAuthority.getUploadStatus())
             .emailRequestStatus(localAuthority.getEmailRequestStatus())
+            .notes(localAuthority.getNotes())
             .build();
 
         if (localAuthority.getEmailRequestSent() != null) {
@@ -171,6 +173,9 @@ public class ErDashboardServiceImpl implements ErDashboardService {
         laUserService.findLastLoggedInUserByLaCode(laCode).ifPresent(lastLoggedInUser ->
             localAuthorityInfoResponseDto.setLastLoggedInDate(lastLoggedInUser.getLastLoggedIn().toLocalDate())
         );
+
+        List<LaUser> laUsers = laUserService.findUsersByLaCode(laCode);
+        localAuthorityInfoResponseDto.setEmailAddresses(laUsers.stream().map(LaUser::getUsername).toList());
 
 
         return localAuthorityInfoResponseDto;
