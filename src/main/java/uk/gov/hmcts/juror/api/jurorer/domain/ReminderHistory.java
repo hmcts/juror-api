@@ -44,6 +44,9 @@ public class ReminderHistory implements Serializable {
     @Column(name = "sent_by", nullable = false, length = 30)
     private String sentBy;
 
+    @Column(name = "sent_to", nullable = false, length = 200)
+    private String sentTo;
+
     @Column(name = "time_sent", nullable = false)
     private LocalDateTime timeSent;
 
