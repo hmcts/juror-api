@@ -28,9 +28,7 @@ INSERT INTO juror_er.file_uploads (la_code,la_username,filename,file_format,file
 	 ('001','test_user1@localauthority1.council.uk','001_er_data.txt','TXT',10040000,'this is the nth file to be uploaded',current_date - interval '25 weeks'),
 	 ('001','test_user1@localauthority1.council.uk','001_er_data2.xls','XLS',10000000,'this is the second file to be uploaded',current_date - interval '1 week');
 
-INSERT INTO juror_er.reminder_history (id,la_code,sent_by,time_sent) VALUES
-	 (1,'001', 'bureau_user', current_timestamp - interval '2 days'),
-	 (2,'002', 'bureau_user', current_timestamp - interval '1 day'),
-	 (3,'003', 'bureau_user', current_timestamp - interval '3 days'),
-	 (4,'004', 'bureau_user', current_timestamp - interval '4 days'),
-	 (5,'005', 'bureau_user', current_timestamp - interval '5 days');
+INSERT INTO juror_er.reminder_history (id,la_code,sent_by,sent_to,time_sent) VALUES
+	 (1,'001', 'bureau_user', 'test_user1@localauthority1.council.uk', current_timestamp - interval '2 days'),
+	 (2,'002', 'bureau_user', 'test_user1@localauthority2.council.uk', current_timestamp - interval '1 day'),
+	 (4,'004', 'bureau_user', 'test_user1@localauthority4.council.uk', current_timestamp - interval '4 days');
