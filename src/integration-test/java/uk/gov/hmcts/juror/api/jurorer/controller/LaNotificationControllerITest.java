@@ -19,6 +19,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.LaNotificationRequestDto;
+import uk.gov.hmcts.juror.api.jurorer.domain.ReminderHistory;
 import uk.gov.hmcts.juror.api.jurorer.repository.ReminderHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 
@@ -33,7 +34,6 @@ import static org.springframework.http.HttpMethod.POST;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + LaNotificationControllerITest.BASE_URL)
-@SuppressWarnings("PMD")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Sql(
     scripts = {"/db/jurorer/teardownLaNotificationControllerITest.sql"},
@@ -45,7 +45,7 @@ import static org.springframework.http.HttpMethod.POST;
 )
 @Sql(
     scripts = {"/db/jurorer/teardownLaNotificationControllerITest.sql"},
-    executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD  // Clean up after each test
+    executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
 )
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class LaNotificationControllerITest extends AbstractIntegrationTest {
@@ -69,10 +69,10 @@ public class LaNotificationControllerITest extends AbstractIntegrationTest {
         private static final String URL = BASE_URL + "/send-la-reminder";
 
         @Test
-        @DisplayName("Should successfully send notification to single LA")
+        @DisplayName("Should successfully send notification to single LA with single user")
         void sendNotificationToSingleLaHappy() {
             LaNotificationRequestDto request = LaNotificationRequestDto.builder()
-                .laCodes(List.of("001"))
+                .laCodes(List.of("002"))  // LA 002 has 1 user
                 .build();
 
             ResponseEntity<Void> response = restTemplate.exchange(
@@ -84,15 +84,47 @@ public class LaNotificationControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(HttpStatus.NO_CONTENT);
 
             // Verify reminder history was created
-            assertThat(reminderHistoryRepository.findByLaCodeOrderByTimeSentDesc("001"))
-                .as("Reminder history should be created for LA 001")
-                .hasSize(1)
-                .first()
-                .satisfies(history -> {
-                    assertThat(history.getLaCode()).isEqualTo("001");
-                    assertThat(history.getSentBy()).isEqualTo(BUREAU_USER);
-                    assertThat(history.getTimeSent()).isNotNull();
-                });
+            List<ReminderHistory> histories = reminderHistoryRepository.findByLaCodeOrderByTimeSentDesc("002");
+            assertThat(histories)
+                .as("Reminder history should be created for LA 002")
+                .hasSize(1);
+
+            ReminderHistory history = histories.get(0);
+            assertThat(history.getLaCode()).isEqualTo("002");
+            assertThat(history.getSentBy()).isEqualTo(BUREAU_USER);
+            assertThat(history.getSentTo()).isEqualTo("user1@la002.gov.uk");
+            assertThat(history.getTimeSent()).isNotNull();
+        }
+
+        @Test
+        @DisplayName("Should successfully send notifications to LA with multiple users")
+        void sendNotificationToLaWithMultipleUsers() {
+            LaNotificationRequestDto request = LaNotificationRequestDto.builder()
+                .laCodes(List.of("001"))  // LA 001 has 2 users
+                .build();
+
+            ResponseEntity<Void> response = restTemplate.exchange(
+                new RequestEntity<>(request, httpHeaders, POST, URI.create(URL)),
+                Void.class);
+
+            assertThat(response.getStatusCode())
+                .as("HTTP status should be NO_CONTENT")
+                .isEqualTo(HttpStatus.NO_CONTENT);
+
+            // Verify reminder history was created for both users
+            List<ReminderHistory> histories = reminderHistoryRepository.findByLaCodeOrderByTimeSentDesc("001");
+            assertThat(histories)
+                .as("Two reminder history entries should be created for LA 001")
+                .hasSize(2);
+
+            // Verify both email addresses are recorded
+            assertThat(histories)
+                .extracting(ReminderHistory::getSentTo)
+                .containsExactlyInAnyOrder("user1@la001.gov.uk", "user2@la001.gov.uk");
+
+            // Verify all have same sent_by
+            assertThat(histories)
+                .allMatch(h -> BUREAU_USER.equals(h.getSentBy()));
         }
 
         @Test
@@ -111,24 +143,25 @@ public class LaNotificationControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(HttpStatus.NO_CONTENT);
 
             // Verify reminder history was created for all LAs
+            // LA 001 has 2 users, LA 002 has 1 user, LA 003 has 1 user = 4 total
             assertThat(reminderHistoryRepository.findByLaCodeOrderByTimeSentDesc("001"))
-                .as("Reminder history should be created for LA 001")
-                .hasSize(1);
+                .as("Two reminder history entries for LA 001")
+                .hasSize(2);
 
             assertThat(reminderHistoryRepository.findByLaCodeOrderByTimeSentDesc("002"))
-                .as("Reminder history should be created for LA 002")
+                .as("One reminder history entry for LA 002")
                 .hasSize(1);
 
             assertThat(reminderHistoryRepository.findByLaCodeOrderByTimeSentDesc("003"))
-                .as("Reminder history should be created for LA 003")
+                .as("One reminder history entry for LA 003")
                 .hasSize(1);
         }
 
         @Test
-        @DisplayName("Should skip LA with no email address")
-        void sendNotificationSkipsLaWithNoEmail() {
+        @DisplayName("Should skip LA with no active users")
+        void sendNotificationSkipsLaWithNoActiveUsers() {
             LaNotificationRequestDto request = LaNotificationRequestDto.builder()
-                .laCodes(List.of("001", "004")) // 004 has no email
+                .laCodes(List.of("001", "004")) // 004 has only inactive user
                 .build();
 
             ResponseEntity<Void> response = restTemplate.exchange(
@@ -142,15 +175,15 @@ public class LaNotificationControllerITest extends AbstractIntegrationTest {
             // Verify only LA 001 has reminder history
             assertThat(reminderHistoryRepository.findByLaCodeOrderByTimeSentDesc("001"))
                 .as("Reminder history should be created for LA 001")
-                .hasSize(1);
+                .hasSize(2);  // LA 001 has 2 active users
 
             assertThat(reminderHistoryRepository.findByLaCodeOrderByTimeSentDesc("004"))
-                .as("No reminder history should be created for LA 004 (no email)")
+                .as("No reminder history should be created for LA 004 (no active users)")
                 .isEmpty();
         }
 
         @Test
-        @DisplayName("Should return NOT_FOUND when LA code does not exist")
+        @DisplayName("Should return NO_CONTENT when LA code does not exist")
         void sendNotificationLaNotFound() {
             LaNotificationRequestDto request = LaNotificationRequestDto.builder()
                 .laCodes(List.of("999"))
@@ -235,7 +268,7 @@ public class LaNotificationControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("Should return UNAUTHORIZED when no JWT provided")
+        @DisplayName("Should return INTERNAL_SERVER_ERROR when no JWT provided")
         void sendNotificationNoJwt() {
             httpHeaders.remove(HttpHeaders.AUTHORIZATION);
 
@@ -263,17 +296,26 @@ public class LaNotificationControllerITest extends AbstractIntegrationTest {
                 new RequestEntity<>(request, httpHeaders, POST, URI.create(URL)),
                 String.class);
 
-            // Should fail on the first invalid LA code
+            // Should continue processing valid LAs even when invalid ones exist
             assertThat(response.getStatusCode())
-                .as("HTTP status should be NO Content")
+                .as("HTTP status should be NO_CONTENT")
                 .isEqualTo(HttpStatus.NO_CONTENT);
+
+            // Verify valid LAs still got emails
+            assertThat(reminderHistoryRepository.findByLaCodeOrderByTimeSentDesc("001"))
+                .as("LA 001 should have received emails")
+                .hasSize(2);
+
+            assertThat(reminderHistoryRepository.findByLaCodeOrderByTimeSentDesc("002"))
+                .as("LA 002 should have received email")
+                .hasSize(1);
         }
 
         @Test
         @DisplayName("Should create multiple reminder history entries when called multiple times")
         void sendNotificationMultipleTimes() {
             LaNotificationRequestDto request = LaNotificationRequestDto.builder()
-                .laCodes(List.of("001"))
+                .laCodes(List.of("002"))  // LA 002 has 1 user
                 .build();
 
             // Send first notification
@@ -291,9 +333,10 @@ public class LaNotificationControllerITest extends AbstractIntegrationTest {
             assertThat(response2.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 
             // Verify two reminder history entries exist
-            assertThat(reminderHistoryRepository.findByLaCodeOrderByTimeSentDesc("001"))
-                .as("Two reminder history entries should exist for LA 001")
-                .hasSize(2);
+            assertThat(reminderHistoryRepository.findByLaCodeOrderByTimeSentDesc("002"))
+                .as("Two reminder history entries should exist for LA 002")
+                .hasSize(2)
+                .allMatch(h -> "user1@la002.gov.uk".equals(h.getSentTo()));
         }
     }
 

@@ -109,8 +109,8 @@ public class LaNotificationServiceImpl implements LaNotificationService {
                         log.info("Successfully sent notification to user: {} for LA: {} ({})",
                                  user.getUsername(), localAuthority.getLaName(), laCode);
 
-                        // Record the sent notification in reminder_history
-                        recordReminderHistory(laCode, currentUser);
+                        // Record the sent notification in reminder_history with recipient email
+                        recordReminderHistory(laCode, currentUser, user.getUsername());
 
                     } catch (NotifyApiException e) {
                         log.error("Failed to send notification to user: {} for LA code: {}",
@@ -140,20 +140,23 @@ public class LaNotificationServiceImpl implements LaNotificationService {
      *
      * @param laCode the Local Authority code
      * @param sentBy the username of who sent the reminder
+     * @param sentTo the email address (username) of the recipient
      */
-    private void recordReminderHistory(String laCode, String sentBy) {
+    private void recordReminderHistory(String laCode, String sentBy, String sentTo) {
         try {
             ReminderHistory reminderHistory = ReminderHistory.builder()
                 .laCode(laCode)
                 .sentBy(sentBy)
+                .sentTo(sentTo)
                 .timeSent(LocalDateTime.now())
                 .build();
 
             reminderHistoryRepository.save(reminderHistory);
-            log.debug("Recorded reminder history for LA code: {} sent by: {}", laCode, sentBy);
+            log.debug("Recorded reminder history for LA code: {} sent by: {} to: {}",
+                      laCode, sentBy, sentTo);
 
         } catch (Exception e) {
-            log.error("Failed to record reminder history for LA code: {}", laCode, e);
+            log.error("Failed to record reminder history for LA code: {} to: {}", laCode, sentTo, e);
             // Don't throw - we don't want history recording failure to break the notification
         }
     }
