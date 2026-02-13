@@ -18,6 +18,7 @@ import uk.gov.hmcts.juror.api.moj.controller.jurorer.ErDashboardStatsResponseDto
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.ErLocalAuthorityStatusRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.ErLocalAuthorityStatusResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.LocalAuthoritiesResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.jurorer.LocalAuthorityInfoResponseDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 
 import java.time.LocalDate;
@@ -29,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
@@ -318,4 +320,65 @@ class ErDashboardServiceImplTest {
 
         verify(localAuthorityService).getAllLocalAuthorities(false);
     }
+
+    @Test
+    void getLocalAuthorityInfoHappy() {
+
+        String laCode = "123";
+
+        LocalAuthority localAuthority = LocalAuthority.builder()
+            .laCode(laCode)
+            .laName("Local Authority 123")
+            .active(true)
+            .uploadStatus(UploadStatus.UPLOADED)
+            .build();
+
+        when(localAuthorityService.getLocalAuthorityByCode(laCode))
+            .thenReturn(localAuthority);
+
+        LocalAuthorityInfoResponseDto responseDto = erDashboardService.getLocalAuthorityInfo(laCode);
+
+        assertThat(responseDto).isNotNull();
+        assertEquals(laCode, responseDto.getLocalAuthorityCode(),
+                     "Expected local authority code in response to match the LA code from the repository");
+
+        verify(localAuthorityService).getLocalAuthorityByCode(laCode);
+
+    }
+
+
+    @Test
+    void getLocalAuthorityInfoInvalidLaCode() {
+
+        String laCode = "A23";
+
+        MojException.BadRequest exception = assertThrows(MojException.BadRequest.class,
+                          () -> erDashboardService.getLocalAuthorityInfo(laCode),
+                          "Expected exception to be thrown when invalid LA code format is provided");
+
+        assertEquals("Invalid LA code format: A23", exception.getMessage(),
+                     "Expected exception message to be Invalid LA code format: A23");
+
+        verifyNoInteractions(localAuthorityService);
+
+    }
+
+    @Test
+    void getLocalAuthorityInfoNoLaData() {
+        String laCode = "123";
+
+        when(localAuthorityService.getLocalAuthorityByCode(laCode))
+            .thenReturn(null);
+
+        MojException.NotFound exception = assertThrows(MojException.NotFound.class,
+                                                 () -> erDashboardService.getLocalAuthorityInfo(laCode),
+                                                 "Expected exception to be thrown when LA not found");
+
+        assertEquals("Local authority not found for code: 123", exception.getMessage(),
+                     "Expected exception message to be Local authority not found for code: 123");
+
+        verify(localAuthorityService).getLocalAuthorityByCode(laCode);
+
+    }
+
 }

@@ -1,3 +1,4 @@
+delete from juror_er.reminder_history;
 delete from juror_er.file_uploads;
 delete from juror_er.user;
 delete from juror_er.local_authority;

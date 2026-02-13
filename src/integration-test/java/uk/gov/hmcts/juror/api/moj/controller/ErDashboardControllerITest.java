@@ -472,6 +472,7 @@ class ErDashboardControllerITest extends AbstractIntegrationTest {
     @Nested
     @DisplayName("GET with body /api/v1/moj/er-dashboard/local-authority-info")
     @Sql({"/db/mod/truncate.sql","/db/jurorer/ErDashboardLocalAuthorityInfo.sql"})
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     class LocalAuthorityInfoTests {
 
         @Test

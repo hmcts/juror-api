@@ -174,7 +174,7 @@ public class ErDashboardServiceImpl implements ErDashboardService {
         }
 
         laUserService.findLastLoggedInUserByLaCode(laCode).ifPresent(lastLoggedInUser -> {
-            if(lastLoggedInUser.getLastLoggedIn() != null) {
+            if (lastLoggedInUser.getLastLoggedIn() != null) {
                 localAuthorityInfoResponseDto.setLastLoggedInDate(lastLoggedInUser.getLastLoggedIn().toLocalDate());
             }
         });
