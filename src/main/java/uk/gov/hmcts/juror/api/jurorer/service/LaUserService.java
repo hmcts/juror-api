@@ -5,6 +5,7 @@ import uk.gov.hmcts.juror.api.jurorer.controller.dto.LaUserDetailsDto;
 import uk.gov.hmcts.juror.api.jurorer.domain.LaUser;
 
 import java.util.List;
+import java.util.Optional;
 
 
 public interface LaUserService {
@@ -18,5 +19,7 @@ public interface LaUserService {
     List<LaUser> findUsersByLaCode(String laCode);
 
     void saveLaUser(LaUser laUser);
+
+    Optional<LaUser> findLastLoggedInUserByLaCode(String laCode);
 
 }

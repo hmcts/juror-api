@@ -51,6 +51,12 @@ public class LocalAuthority {
     @Column(name = "last_updated")
     private LocalDateTime lastUpdated;
 
+    @Column(name = "email_request_status")
+    @Enumerated(EnumType.STRING)
+    private EmailRequestStatus emailRequestStatus;
+
+    @Column(name = "email_request_sent")
+    private LocalDateTime emailRequestSent;
 
     /**
      * Check if LA has uploaded file for current period.

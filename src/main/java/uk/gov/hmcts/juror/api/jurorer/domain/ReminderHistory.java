@@ -28,6 +28,7 @@ public class ReminderHistory implements Serializable {
 
     private static final String GENERATOR_NAME = "reminder_history_sequence_gen";
 
+
     @Id
     @NotNull
     @Column(name = "id")

@@ -25,4 +25,10 @@ public class LocalAuthorityServiceImpl implements LocalAuthorityService {
             return localAuthorityRepository.findAllByOrderByLaCode();
         }
     }
+
+    @Override
+    public LocalAuthority getLocalAuthorityByCode(String localAuthorityCode) {
+        return localAuthorityRepository.findByLaCode(localAuthorityCode)
+            .orElseThrow(() -> new RuntimeException("Local authority not found for code: " + localAuthorityCode));
+    }
 }

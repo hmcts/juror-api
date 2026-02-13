@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.jurorer.service;
 
 import lombok.Builder;
 import lombok.Getter;
+import uk.gov.hmcts.juror.api.jurorer.domain.FileUploads;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -10,6 +11,8 @@ import java.util.List;
 public interface FileUploadsService {
 
     List<FileUploadStatus> getLatestUploadForEachLa();
+
+    FileUploads getLatestUploadForLa(String localAuthorityCode);
 
     @Builder
     @Getter

@@ -19,9 +19,11 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static uk.gov.hmcts.juror.api.moj.service.JwtServiceImpl.timeUnitToMilliseconds;
+import static uk.gov.hmcts.juror.api.validation.LaCodeValidator.isValidLaCode;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
@@ -86,9 +88,7 @@ public class LaUserServiceImpl implements LaUserService {
     public LaUserDetailsDto getLaUserDetails(String laCode) {
 
         // check that the laCode matches the regex  "^\d{3}$"
-        if (!laCode.matches("^\\d{3}$")) {
-            throw new MojException.BadRequest("Invalid laCode format", null);
-        }
+        isValidLaCode(laCode);
 
         // check if user making request is authorised to view users for the laCode
         if (!laCode.equals(SecurityUtil.getActiveLaCode())) {
@@ -131,6 +131,15 @@ public class LaUserServiceImpl implements LaUserService {
     @Override
     public void saveLaUser(LaUser laUser) {
         userRepository.save(laUser);
+    }
+
+    @Override
+    public Optional<LaUser> findLastLoggedInUserByLaCode(String laCode) {
+        LocalAuthority localAuthority = localAuthorityRepository.findByLaCode(laCode).orElseThrow(
+            () -> new MojException.NotFound("Local Authority not found", null)
+        );
+
+        return userRepository.findFirstByLocalAuthorityAndLastLoggedInNotNullOrderByLastLoggedInDesc(localAuthority);
     }
 
 }
