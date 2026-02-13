@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,6 +18,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
+@Builder
 @AllArgsConstructor
 @Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
@@ -24,6 +26,6 @@ import java.util.List;
 public class LaNotificationRequestDto {
     @JsonProperty("la_codes")
     @NotEmpty(message = "At least one LA code must be provided")
-@Schema(description = "List of Local Authority codes to send notifications to", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "List of LA codes to send notifications to", requiredMode = Schema.RequiredMode.REQUIRED)
 private List<@Size(min = 3, max = 3, message = "LA code must be 3 characters") String> laCodes;
 }

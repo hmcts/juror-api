@@ -35,6 +35,7 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 public class LaNotificationController {
 
     private final LaNotificationService laNotificationService;
+
     @PostMapping("/send-la-reminder")
     @Operation(summary = "Send reminder notifications to selected Local Authorities")
     @ResponseStatus(HttpStatus.NO_CONTENT)

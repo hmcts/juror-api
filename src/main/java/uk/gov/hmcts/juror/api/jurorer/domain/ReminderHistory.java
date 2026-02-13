@@ -10,7 +10,6 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -36,7 +35,7 @@ public class ReminderHistory implements Serializable {
     @NotNull
     @Column(name = "id")
     @SequenceGenerator(name = GENERATOR_NAME, schema = "juror_er", sequenceName = "reminder_history_id_seq",
-    allocationSize = 1)
+        allocationSize = 1)
 
     @GeneratedValue(generator = GENERATOR_NAME, strategy = GenerationType.SEQUENCE)
     public long id;
