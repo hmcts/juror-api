@@ -59,6 +59,8 @@ public class LocalAuthorityInfoResponseDto {
 
         private String sentBy;
 
+        private String sentTo;
+
         private LocalDateTime timeSent;
     }
 

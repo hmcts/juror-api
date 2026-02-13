@@ -188,6 +188,7 @@ public class ErDashboardServiceImpl implements ErDashboardService {
             List<LocalAuthorityInfoResponseDto.ReminderHistoryInfo> reminderHistoryInfoList
                 = reminderHistory.stream().map(rh -> LocalAuthorityInfoResponseDto
                     .ReminderHistoryInfo.builder().sentBy(rh.getSentBy()).timeSent(rh.getTimeSent())
+                    .sentTo(rh.getSentTo())
                     .build()).toList();
             localAuthorityInfoResponseDto.setReminderHistory(reminderHistoryInfoList);
         }

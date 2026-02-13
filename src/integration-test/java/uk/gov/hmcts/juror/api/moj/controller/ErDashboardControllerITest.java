@@ -506,6 +506,7 @@ class ErDashboardControllerITest extends AbstractIntegrationTest {
             assertThat(infoResponseDto.getReminderHistory()).hasSize(1);
             LocalAuthorityInfoResponseDto.ReminderHistoryInfo reminder1 = infoResponseDto.getReminderHistory().get(0);
             assertThat(reminder1.getSentBy()).isEqualTo("bureau_user");
+            assertThat(reminder1.getSentTo()).isEqualTo("test_user1@localauthority1.council.uk");
             // needs to be a range rather than exact time as it will be set to now() in test data
             // and there may be a delay between that and when the data is retrieved here
             assertThat(reminder1.getTimeSent()).isBetween(LocalDateTime.now().minusDays(2).minusSeconds(5),
