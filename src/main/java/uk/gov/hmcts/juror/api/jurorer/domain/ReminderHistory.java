@@ -17,8 +17,6 @@ import lombok.Setter;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-import static org.hibernate.id.IdentifierGenerator.GENERATOR_NAME;
-
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -29,7 +27,6 @@ import static org.hibernate.id.IdentifierGenerator.GENERATOR_NAME;
 public class ReminderHistory implements Serializable {
 
     private static final String GENERATOR_NAME = "reminder_history_sequence_gen";
-
 
     @Id
     @NotNull
@@ -46,7 +43,7 @@ public class ReminderHistory implements Serializable {
     @Column(name = "sent_by", nullable = false, length = 30)
     private String sentBy;
 
-    @Column(name = "sent_to", nullable = false, length = 30)
+    @Column(name = "sent_to", nullable = false, length = 200)
     private String sentTo;
 
     @Column(name = "time_sent", nullable = false)
