@@ -8,8 +8,10 @@ import uk.gov.hmcts.juror.api.jurorer.domain.Deadline;
 import uk.gov.hmcts.juror.api.jurorer.domain.FileUploads;
 import uk.gov.hmcts.juror.api.jurorer.domain.LaUser;
 import uk.gov.hmcts.juror.api.jurorer.domain.LocalAuthority;
+import uk.gov.hmcts.juror.api.jurorer.domain.ReminderHistory;
 import uk.gov.hmcts.juror.api.jurorer.domain.UploadStatus;
 import uk.gov.hmcts.juror.api.jurorer.repository.DeadlineRepository;
+import uk.gov.hmcts.juror.api.jurorer.repository.ReminderHistoryRepository;
 import uk.gov.hmcts.juror.api.jurorer.service.FileUploadsService;
 import uk.gov.hmcts.juror.api.jurorer.service.LaUserService;
 import uk.gov.hmcts.juror.api.jurorer.service.LocalAuthorityService;
@@ -37,6 +39,7 @@ public class ErDashboardServiceImpl implements ErDashboardService {
     private final DeadlineRepository deadlineRepository;
     private final FileUploadsService fileUploadsService;
     private final LaUserService laUserService;
+    private final ReminderHistoryRepository reminderHistoryRepository;
 
     @Override
     public ErDashboardStatsResponseDto getErDashboardStats() {
@@ -170,13 +173,24 @@ public class ErDashboardServiceImpl implements ErDashboardService {
             localAuthorityInfoResponseDto.setLastUploadDate(fileUploads.getUploadDate().toLocalDate());
         }
 
-        laUserService.findLastLoggedInUserByLaCode(laCode).ifPresent(lastLoggedInUser ->
-            localAuthorityInfoResponseDto.setLastLoggedInDate(lastLoggedInUser.getLastLoggedIn().toLocalDate())
-        );
+        laUserService.findLastLoggedInUserByLaCode(laCode).ifPresent(lastLoggedInUser -> {
+            if(lastLoggedInUser.getLastLoggedIn() != null) {
+                localAuthorityInfoResponseDto.setLastLoggedInDate(lastLoggedInUser.getLastLoggedIn().toLocalDate());
+            }
+        });
 
         List<LaUser> laUsers = laUserService.findUsersByLaCode(laCode);
         localAuthorityInfoResponseDto.setEmailAddresses(laUsers.stream().map(LaUser::getUsername).toList());
 
+        List<ReminderHistory> reminderHistory = reminderHistoryRepository.findByLaCodeOrderByTimeSentDesc(laCode);
+
+        if (reminderHistory != null && !reminderHistory.isEmpty()) {
+            List<LocalAuthorityInfoResponseDto.ReminderHistoryInfo> reminderHistoryInfoList
+                = reminderHistory.stream().map(rh -> LocalAuthorityInfoResponseDto
+                    .ReminderHistoryInfo.builder().sentBy(rh.getSentBy()).timeSent(rh.getTimeSent())
+                    .build()).toList();
+            localAuthorityInfoResponseDto.setReminderHistory(reminderHistoryInfoList);
+        }
 
         return localAuthorityInfoResponseDto;
     }

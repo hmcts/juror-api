@@ -10,6 +10,7 @@ import uk.gov.hmcts.juror.api.jurorer.domain.Deadline;
 import uk.gov.hmcts.juror.api.jurorer.domain.LocalAuthority;
 import uk.gov.hmcts.juror.api.jurorer.domain.UploadStatus;
 import uk.gov.hmcts.juror.api.jurorer.repository.DeadlineRepository;
+import uk.gov.hmcts.juror.api.jurorer.repository.ReminderHistoryRepository;
 import uk.gov.hmcts.juror.api.jurorer.service.FileUploadsService;
 import uk.gov.hmcts.juror.api.jurorer.service.LaUserService;
 import uk.gov.hmcts.juror.api.jurorer.service.LocalAuthorityService;
@@ -41,6 +42,8 @@ class ErDashboardServiceImplTest {
     private FileUploadsService fileUploadsService;
     @Mock
     private LaUserService laUserService;
+    @Mock
+    private ReminderHistoryRepository reminderHistoryRepository;
 
     @InjectMocks
     private ErDashboardServiceImpl erDashboardService;
@@ -52,9 +55,11 @@ class ErDashboardServiceImplTest {
         this.deadlineRepository = mock(DeadlineRepository.class);
         this.fileUploadsService = mock(FileUploadsService.class);
         this.laUserService = mock(LaUserService.class);
+        this.reminderHistoryRepository = mock(ReminderHistoryRepository.class);
 
         this.erDashboardService = new ErDashboardServiceImpl(
-            localAuthorityService, deadlineRepository, fileUploadsService, laUserService);
+            localAuthorityService, deadlineRepository, fileUploadsService, laUserService,
+            reminderHistoryRepository);
     }
 
     @Test

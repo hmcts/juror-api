@@ -471,7 +471,7 @@ class ErDashboardControllerITest extends AbstractIntegrationTest {
 
     @Nested
     @DisplayName("GET with body /api/v1/moj/er-dashboard/local-authority-info")
-    @Sql({"/db/mod/truncate.sql","/db/jurorer/ErDashboardData.sql"})
+    @Sql({"/db/mod/truncate.sql","/db/jurorer/ErDashboardLocalAuthorityInfo.sql"})
     class LocalAuthorityInfoTests {
 
         @Test
@@ -479,12 +479,37 @@ class ErDashboardControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<LocalAuthorityInfoResponseDto> responseEntity =
                 restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/er-dashboard/local-authority-info/003")),
+                        URI.create("/api/v1/moj/er-dashboard/local-authority-info/001")),
                     LocalAuthorityInfoResponseDto.class);
 
             assertThat(responseEntity.getStatusCode())
                 .as("Expect the status to be OK.")
                 .isEqualTo(HttpStatus.OK);
+
+            assertThat(responseEntity.getBody())
+                .as("Expect the body to not be null.")
+                .isNotNull();
+
+            LocalAuthorityInfoResponseDto infoResponseDto = responseEntity.getBody();
+            assertThat(infoResponseDto.getLocalAuthorityCode()).isEqualTo("001");
+            assertThat(infoResponseDto.getUploadStatus()).isEqualTo(UploadStatus.UPLOADED);
+            assertThat(infoResponseDto.getLastUploadDate()).isEqualTo(LocalDate.now().minusDays(5));
+            assertThat(infoResponseDto.getLastLoggedInDate()).isEqualTo(LocalDate.now().minusDays(1));
+            assertThat(infoResponseDto.getEmailRequestStatus())
+                .isEqualTo(uk.gov.hmcts.juror.api.jurorer.domain.EmailRequestStatus.SENT);
+            assertThat(infoResponseDto.getDateEmailRequestSent()).isEqualTo(LocalDate.now().minusDays(10));
+            assertThat(infoResponseDto.getEmailAddresses())
+                .containsExactlyInAnyOrder("test_user1@localauthority1.council.uk",
+                                           "test_user2@localauthority1.council.uk");
+            assertThat(infoResponseDto.getNotes()).isEqualTo("some test notes");
+            assertThat(infoResponseDto.getReminderHistory()).hasSize(1);
+            LocalAuthorityInfoResponseDto.ReminderHistoryInfo reminder1 = infoResponseDto.getReminderHistory().get(0);
+            assertThat(reminder1.getSentBy()).isEqualTo("bureau_user");
+            // needs to be a range rather than exact time as it will be set to now() in test data
+            // and there may be a delay between that and when the data is retrieved here
+            assertThat(reminder1.getTimeSent()).isBetween(LocalDateTime.now().minusDays(2).minusSeconds(5),
+                                                          LocalDateTime.now().minusDays(2).plusSeconds(5));
+
         }
 
     }

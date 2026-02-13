@@ -139,7 +139,7 @@ public class LaUserServiceImpl implements LaUserService {
             () -> new MojException.NotFound("Local Authority not found", null)
         );
 
-        return userRepository.findFirstByLocalAuthorityOrderByLastLoggedInDesc(localAuthority);
+        return userRepository.findFirstByLocalAuthorityAndLastLoggedInNotNullOrderByLastLoggedInDesc(localAuthority);
     }
 
 }

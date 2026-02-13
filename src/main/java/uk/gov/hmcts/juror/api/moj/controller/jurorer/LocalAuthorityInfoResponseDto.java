@@ -3,13 +3,17 @@ package uk.gov.hmcts.juror.api.moj.controller.jurorer;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Column;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import uk.gov.hmcts.juror.api.jurorer.domain.EmailRequestStatus;
 import uk.gov.hmcts.juror.api.jurorer.domain.UploadStatus;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -42,4 +46,21 @@ public class LocalAuthorityInfoResponseDto {
 
     @Schema(description = "Notes related to the local authority")
     private String notes;
+
+    @Schema(description = "History of reminder emails sent to the local authority")
+    private List<ReminderHistoryInfo> reminderHistory;
+
+
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Setter
+    @Getter
+    public static class ReminderHistoryInfo {
+
+        private String sentBy;
+
+        private LocalDateTime timeSent;
+    }
+
 }
