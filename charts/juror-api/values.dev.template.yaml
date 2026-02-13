@@ -16,6 +16,8 @@ java:
           alias: JWT_SECRET_BUREAU
         - name: api-JWT-SECRET-PUBLIC
           alias: JWT_SECRET_PUBLIC
+        - name: api-JWT-SECRET-ER-PORTAL
+          alias: JWT_SECRET_ER_PORTAL
         - name: api-JWT-SECRET-HMAC
           alias: JWT_SECRET_HMAC
         - name: api-NOTIFY-KEY

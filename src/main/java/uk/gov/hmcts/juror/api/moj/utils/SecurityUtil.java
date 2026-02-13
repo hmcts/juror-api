@@ -5,6 +5,8 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.config.jurorer.JurorErJwtAuthentication;
+import uk.gov.hmcts.juror.api.config.jurorer.JurorErJwtPayload;
 import uk.gov.hmcts.juror.api.config.public1.PublicJwtAuthentication;
 import uk.gov.hmcts.juror.api.moj.domain.Permission;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
@@ -46,7 +48,6 @@ public final class SecurityUtil {
     public static boolean hasBureauJwtPayload() {
         SecurityContext securityContext = SecurityContextHolder.getContext();
         if (securityContext != null) {
-            // Authentication authentication = ;
             return securityContext.getAuthentication() instanceof BureauJwtAuthentication;
         }
         return false;
@@ -55,7 +56,6 @@ public final class SecurityUtil {
     public static boolean hasPublicJwtPayload() {
         SecurityContext securityContext = SecurityContextHolder.getContext();
         if (securityContext != null) {
-            // Authentication authentication = ;
             return securityContext.getAuthentication() instanceof PublicJwtAuthentication;
         }
         return false;
@@ -70,11 +70,29 @@ public final class SecurityUtil {
         throw new MojException.Forbidden("User must be authorised with BureauJwtAuthentication", null);
     }
 
+    public static JurorErJwtAuthentication getActiveLaUsersJwtAuthentication() {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        Authentication authentication = securityContext.getAuthentication();
+        if (authentication instanceof JurorErJwtAuthentication jurorErJwtAuthentication) {
+            return jurorErJwtAuthentication;
+        }
+        throw new MojException.Forbidden("User must be authorised with JurorErJwtAuthentication", null);
+    }
+
     public static BureauJwtPayload getActiveUsersBureauPayload() {
         Object principal = getActiveUsersBureauJwtAuthentication().getPrincipal();
 
         if (principal instanceof BureauJwtPayload bureauPayload) {
             return bureauPayload;
+        }
+        throw new MojException.InternalServerError("Unexpected principal object type", null);
+    }
+
+    public static JurorErJwtPayload getActiveLaUsersPayload() {
+        Object principal = getActiveLaUsersJwtAuthentication().getPrincipal();
+
+        if (principal instanceof JurorErJwtPayload jurorErJwtPayload) {
+            return jurorErJwtPayload;
         }
         throw new MojException.InternalServerError("Unexpected principal object type", null);
     }
@@ -88,6 +106,15 @@ public final class SecurityUtil {
     }
 
     /**
+     * Get LA code for the current LA user from JWT.
+     *
+     * @return LA code (e.g., "314")
+     */
+    public static String getActiveLaCode() {
+        return getActiveLaUsersPayload().getLaCode();
+    }
+
+    /**
      * Verify whether the current/active user has permission to access to a specific court location.
      *
      * @param locCode 3-digit numeric string to uniquely identify a court location
@@ -95,7 +122,7 @@ public final class SecurityUtil {
     public static void validateCourtLocationPermitted(String locCode) {
         if (!getActiveUsersBureauPayload().getStaff().getCourts().contains(locCode)) {
             throw new MojException.Forbidden(String.format("Current user does not have permissions to Court Location: "
-                + "%s", locCode), null);
+                                                               + "%s", locCode), null);
         }
     }
 
@@ -173,5 +200,69 @@ public final class SecurityUtil {
 
     public static boolean isSystem() {
         return AUTO_USER.equals(getUsername()) || getUserType().equals(UserType.SYSTEM);
+    }
+
+    // ========================================================================
+    // LOCAL AUTHORITY (LA) USER METHODS
+    // ========================================================================
+
+    /**
+     * Check if current user is a Local Authority user.
+     *
+     * @return true if user has JurorErJwtAuthentication
+     */
+    public static boolean isLaUser() {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        if (securityContext != null) {
+            return securityContext.getAuthentication() instanceof JurorErJwtAuthentication;
+        }
+        return false;
+    }
+
+    /**
+     * Get username for LA (Local Authority) user from JWT.
+     *
+     * @return LA user's username (email address)
+     */
+    public static String getLaUsername() {
+        return getActiveLaUsersPayload().getUsername();
+    }
+
+    /**
+     * Get LA name for the current LA user.
+     *
+     * @return LA name (e.g., "Birmingham City Council")
+     */
+    public static String getActiveLaName() {
+        return getActiveLaUsersPayload().getLaName();
+    }
+
+    /**
+     * Validate that current user is a Local Authority user.
+     *
+     * @throws MojException.Forbidden if user is not an LA user
+     */
+    public static void validateIsLaUser() {
+        if (!isLaUser()) {
+            throw new MojException.Forbidden("User must be a Local Authority user", null);
+        }
+    }
+
+    /**
+     * Validate that current LA user has access to specified LA code.
+     * Used to prevent LA users from accessing other LA's data.
+     *
+     * @param laCode LA code to validate against user's LA code
+     * @throws MojException.Forbidden if user does not have access to this LA code
+     */
+    public static void validateCanAccessLaCode(String laCode) {
+        String userLaCode = getActiveLaCode();
+        if (!userLaCode.equals(laCode)) {
+            throw new MojException.Forbidden(
+                String.format("User does not have access to LA code: %s (user LA code: %s)",
+                              laCode, userLaCode),
+                null
+            );
+        }
     }
 }

@@ -36,6 +36,7 @@ public class AppSettingServiceImpl implements AppSettingService {
     private static final String SMART_SURVEY_SUMMONS_RESPONSE_SURVEY_ID = "SMART_SURVEY_SUMMONS_RESPONSE_SURVEY_ID";
     private static final String SMART_SURVEY_SUMMONS_RESPONSE_DAYS = "SMART_SURVEY_SUMMONS_RESPONSE_DAYS";
     private static final String SMART_SURVEY_SUMMONS_RESPONSE_EXPORT_NAME = "SMART_SURVEY_SUMMONS_RESPONSE_EXPORT_NAME";
+    private static final String NOTIFY_ER_REMINDER = "NOTIFY_ER_REMINDER";
 
     private final AppSettingRepository appSettingRepository;
     private final SystemParameterRepository systemParameterRepository;
@@ -189,6 +190,19 @@ public class AppSettingServiceImpl implements AppSettingService {
                 (surveyIdText);
         }
 
+        return null;
+    }
+
+    @Override
+    public String getNotifyErReminderTemplateId() {
+        Optional<AppSetting> templateId = appSettingRepository.findById(NOTIFY_ER_REMINDER);
+        final AppSetting setting = templateId.orElse(null);
+        if (setting != null) {
+            final String templateIdValue = setting.getValue();
+            log.debug("Notify ER Reminder Template ID: {}", templateIdValue);
+            return templateIdValue;
+        }
+        log.warn("Notify ER Reminder Template ID not found in APP_SETTING table!");
         return null;
     }
 

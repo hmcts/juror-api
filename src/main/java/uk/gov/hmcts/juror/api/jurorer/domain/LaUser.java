@@ -1,0 +1,89 @@
+package uk.gov.hmcts.juror.api.jurorer.domain;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "user", schema = "juror_er")
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class LaUser implements Serializable {
+
+    @Id
+    @Column(name = "username", unique = true, length = 200)
+    @NotEmpty
+    @Size(min = 1, max = 200)
+    private String username;
+
+    @JoinColumn(name = "la_code", nullable = false)
+    @ManyToOne
+    @NotNull
+    private LocalAuthority localAuthority;
+
+    @NotNull
+    @Column(name = "active", nullable = false)
+    @Builder.Default
+    private boolean active = true;
+
+    @JsonProperty("last_logged_in")
+    private LocalDateTime lastLoggedIn;
+
+    /**
+     * Helper method to get LocalAuthority object.
+     * This provides compatibility with code expecting getLaCode() method.
+     *
+     * @return LocalAuthority object
+     */
+    public LocalAuthority getLaCode() {
+        return this.localAuthority;
+    }
+
+    /**
+     * Helper method to set LocalAuthority object.
+     *
+     * @param localAuthority LocalAuthority to set
+     */
+    public void setLaCode(LocalAuthority localAuthority) {
+        this.localAuthority = localAuthority;
+    }
+
+    /**
+     * Helper method to get LA code string from relationship.
+     *
+     * @return LA code string
+     */
+    public String getLaCodeString() {
+        return localAuthority != null ? localAuthority.getLaCode() : null;
+    }
+
+    /**
+     * Check if user can authenticate.
+     *
+     * @return true if user is active and LA is active
+     */
+    public boolean canAuthenticate() {
+        return this.active
+            &&
+            this.localAuthority != null
+            &&
+            Boolean.TRUE.equals(this.localAuthority.getActive());
+    }
+
+}
