@@ -34,6 +34,7 @@ import static org.springframework.http.HttpMethod.POST;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + LaNotificationControllerITest.BASE_URL)
+@SuppressWarnings("PMD")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Sql(
     scripts = {"/db/jurorer/teardownLaNotificationControllerITest.sql"},
