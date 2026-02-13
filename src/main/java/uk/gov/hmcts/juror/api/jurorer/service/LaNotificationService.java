@@ -8,7 +8,7 @@ import java.util.Map;
 
 public interface LaNotificationService {
 
-    EmailNotification createEmailNotification(LocalAuthority laDetails,
+    EmailNotification createEmailNotification(String emailAddress,
                                               String templateId,
                                               Map<String, String> payLoad);
 
