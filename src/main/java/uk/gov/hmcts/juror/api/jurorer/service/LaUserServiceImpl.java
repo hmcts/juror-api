@@ -1,10 +1,12 @@
 package uk.gov.hmcts.juror.api.jurorer.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.juror.api.jurorer.controller.dto.ExportLaEmailAddressResponseDto;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.LaJwtDto;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.LaUserDetailsDto;
 import uk.gov.hmcts.juror.api.jurorer.domain.LaRoles;
@@ -17,14 +19,18 @@ import uk.gov.hmcts.juror.api.moj.service.JwtService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.juror.api.moj.service.JwtServiceImpl.timeUnitToMilliseconds;
 import static uk.gov.hmcts.juror.api.validation.LaCodeValidator.isValidLaCode;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class LaUserServiceImpl implements LaUserService {
@@ -65,15 +71,14 @@ public class LaUserServiceImpl implements LaUserService {
         userRepository.save(user);
 
         String jwt = jwtService.generateJwtToken(user.getUsername(),
-            "juror-api",
-            null,
-            timeUnitToMilliseconds(erPortalExpiry),
-                jwtService.getSigningKey(erPortalSecret),
-            claims);
+                                                 "juror-api",
+                                                 null,
+                                                 timeUnitToMilliseconds(erPortalExpiry),
+                                                 jwtService.getSigningKey(erPortalSecret),
+                                                 claims);
 
         return new LaJwtDto(jwt);
     }
-
 
     @Override
     @Transactional(readOnly = true)
@@ -108,15 +113,14 @@ public class LaUserServiceImpl implements LaUserService {
         // build the user details dto using the list of users
         List<LaUserDetailsDto.LaUserDetails> userDetailsList = users.stream().map(user ->
             LaUserDetailsDto.LaUserDetails.builder()
-                .username(user.getUsername())
-                .laCode(localAuthority.getLaCode())
-                .isActive(user.isActive())
-                .lastSignIn(user.getLastLoggedIn())
-                .build()
+            .username(user.getUsername())
+            .laCode(localAuthority.getLaCode())
+            .isActive(user.isActive())
+            .lastSignIn(user.getLastLoggedIn())
+            .build()
         ).toList();
 
         return new LaUserDetailsDto(userDetailsList);
-
     }
 
     @Override
@@ -142,4 +146,46 @@ public class LaUserServiceImpl implements LaUserService {
         return userRepository.findFirstByLocalAuthorityAndLastLoggedInNotNullOrderByLastLoggedInDesc(localAuthority);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public ExportLaEmailAddressResponseDto getAllLaEmailAddresses() {
+        log.info("Exporting all LA email addresses");
+
+        // Get all Local Authorities and sort by name
+        List<LocalAuthority> allLocalAuthorities = new ArrayList<>();
+        localAuthorityRepository.findAll().forEach(allLocalAuthorities::add);
+
+        allLocalAuthorities.sort(Comparator.comparing(LocalAuthority::getLaName));
+
+        List<ExportLaEmailAddressResponseDto.LocalAuthorityEmailsDto> localAuthorityEmailsList =
+            allLocalAuthorities.stream()
+                .map(la -> {
+                    // Get all users for this LA
+                    List<LaUser> users = userRepository.findByLocalAuthority(la);
+
+                    // Map users to email DTOs, sorted by username
+                    List<ExportLaEmailAddressResponseDto.EmailAddressDto> emailAddresses =
+                        users.stream()
+                            .map(user -> ExportLaEmailAddressResponseDto.EmailAddressDto.builder()
+                                .username(user.getUsername())
+                                .active(user.isActive())
+                                .build())
+                            .sorted(Comparator.comparing(ExportLaEmailAddressResponseDto.EmailAddressDto::getUsername))
+                            .collect(Collectors.toList());
+
+                    return ExportLaEmailAddressResponseDto.LocalAuthorityEmailsDto.builder()
+                        .laCode(la.getLaCode())
+                        .laName(la.getLaName())
+                        .isActive(la.getActive())
+                        .emailAddresses(emailAddresses)
+                        .build();
+                })
+                .collect(Collectors.toList());
+
+        log.info("Exported {} Local Authorities with email addresses", localAuthorityEmailsList.size());
+
+        return ExportLaEmailAddressResponseDto.builder()
+            .localAuthorities(localAuthorityEmailsList)
+            .build();
+    }
 }
