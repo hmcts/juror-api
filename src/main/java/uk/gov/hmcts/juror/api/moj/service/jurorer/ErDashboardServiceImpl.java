@@ -158,10 +158,22 @@ public class ErDashboardServiceImpl implements ErDashboardService {
 
         LocalAuthorityInfoResponseDto localAuthorityInfoResponseDto = LocalAuthorityInfoResponseDto.builder()
             .localAuthorityCode(localAuthority.getLaCode())
+            .localAuthorityName(localAuthority.getLaName())
+            .isActive(localAuthority.getActive())
             .uploadStatus(localAuthority.getUploadStatus())
             .emailRequestStatus(localAuthority.getEmailRequestStatus())
             .notes(localAuthority.getNotes())
             .build();
+
+        if (Boolean.FALSE.equals(localAuthority.getActive())) {
+            localAuthorityInfoResponseDto.setInactiveInfo(
+                LocalAuthorityInfoResponseDto.InactiveInfo.builder()
+                    .inactiveReason(localAuthority.getInactiveReason())
+                    .madeInactiveBy(localAuthority.getUpdatedBy())
+                    .madeInactiveAt(localAuthority.getLastUpdated())
+                    .build()
+            );
+        }
 
         if (localAuthority.getEmailRequestSent() != null) {
             localAuthorityInfoResponseDto.setDateEmailRequestSent(localAuthority.getEmailRequestSent().toLocalDate());
