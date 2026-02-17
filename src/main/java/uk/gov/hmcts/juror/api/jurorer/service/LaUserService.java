@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.jurorer.service;
 
+import uk.gov.hmcts.juror.api.jurorer.controller.dto.ExportLaEmailAddressResponseDto;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.LaJwtDto;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.LaUserDetailsDto;
 import uk.gov.hmcts.juror.api.jurorer.domain.LaUser;
@@ -21,5 +22,13 @@ public interface LaUserService {
     void saveLaUser(LaUser laUser);
 
     Optional<LaUser> findLastLoggedInUserByLaCode(String laCode);
+
+    /**
+     * Get all email addresses grouped by Local Authority.
+     * Only includes active Local Authorities.
+     *
+     * @return Export response with all LA email addresses
+     */
+    ExportLaEmailAddressResponseDto getAllLaEmailAddresses();
 
 }
