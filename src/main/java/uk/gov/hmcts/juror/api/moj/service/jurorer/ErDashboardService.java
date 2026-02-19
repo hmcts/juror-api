@@ -5,6 +5,8 @@ import uk.gov.hmcts.juror.api.moj.controller.jurorer.ErLocalAuthorityStatusReque
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.ErLocalAuthorityStatusResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.LocalAuthoritiesResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.LocalAuthorityInfoResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineResponseDto;
 
 public interface ErDashboardService {
 
@@ -15,4 +17,8 @@ public interface ErDashboardService {
     LocalAuthoritiesResponseDto getLocalAuthorities(boolean activeOnly);
 
     LocalAuthorityInfoResponseDto getLocalAuthorityInfo(String laCode);
+
+    UpdateDeadlineResponseDto updateDeadline(UpdateDeadlineRequestDto request);
 }
+
+

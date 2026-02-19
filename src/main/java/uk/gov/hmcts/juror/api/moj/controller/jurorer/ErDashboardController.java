@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -64,6 +65,18 @@ public class ErDashboardController {
         LocalAuthorityInfoResponseDto dto = erDashboardService.getLocalAuthorityInfo(laCode);
         return ResponseEntity.ok().body(dto);
     }
+
+    @IsBureauUser
+    @PutMapping("/deadline")
+    @Operation(summary = "Updates the deadline date for local authority uploads")
+    public ResponseEntity<uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineResponseDto> updateDeadline(
+        @Valid @RequestBody uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineRequestDto request
+    ) {
+        uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineResponseDto dto
+            = erDashboardService.updateDeadline(request);
+        return ResponseEntity.ok().body(dto);
+    }
+
 
 }
 
