@@ -81,8 +81,8 @@ public class LaNotificationControllerITest extends AbstractIntegrationTest {
                 Void.class);
 
             assertThat(response.getStatusCode())
-                .as("HTTP status should be NO_CONTENT")
-                .isEqualTo(HttpStatus.NO_CONTENT);
+                .as("HTTP status should be OK")
+                .isEqualTo(HttpStatus.OK);
 
             // Verify reminder history was created
             List<ReminderHistory> histories = reminderHistoryRepository.findByLaCodeOrderByTimeSentDesc("002");
@@ -109,8 +109,8 @@ public class LaNotificationControllerITest extends AbstractIntegrationTest {
                 Void.class);
 
             assertThat(response.getStatusCode())
-                .as("HTTP status should be NO_CONTENT")
-                .isEqualTo(HttpStatus.NO_CONTENT);
+                .as("HTTP status should be ok")
+                .isEqualTo(HttpStatus.OK);
 
             // Verify reminder history was created for both users
             List<ReminderHistory> histories = reminderHistoryRepository.findByLaCodeOrderByTimeSentDesc("001");
@@ -140,8 +140,8 @@ public class LaNotificationControllerITest extends AbstractIntegrationTest {
                 Void.class);
 
             assertThat(response.getStatusCode())
-                .as("HTTP status should be NO_CONTENT")
-                .isEqualTo(HttpStatus.NO_CONTENT);
+                .as("HTTP status should be OK")
+                .isEqualTo(HttpStatus.OK);
 
             // Verify reminder history was created for all LAs
             // LA 001 has 2 users, LA 002 has 1 user, LA 003 has 1 user = 4 total
@@ -170,8 +170,8 @@ public class LaNotificationControllerITest extends AbstractIntegrationTest {
                 Void.class);
 
             assertThat(response.getStatusCode())
-                .as("HTTP status should be NO_CONTENT")
-                .isEqualTo(HttpStatus.NO_CONTENT);
+                .as("HTTP status should be OK")
+                .isEqualTo(HttpStatus.OK);
 
             // Verify only LA 001 has reminder history
             assertThat(reminderHistoryRepository.findByLaCodeOrderByTimeSentDesc("001"))
@@ -195,8 +195,8 @@ public class LaNotificationControllerITest extends AbstractIntegrationTest {
                 String.class);
 
             assertThat(response.getStatusCode())
-                .as("HTTP status should be NO CONTENT")
-                .isEqualTo(HttpStatus.NO_CONTENT);
+                .as("HTTP status should be OK")
+                .isEqualTo(HttpStatus.OK);
 
             // Verify no reminder history was created
             assertThat(reminderHistoryRepository.count())
@@ -299,8 +299,8 @@ public class LaNotificationControllerITest extends AbstractIntegrationTest {
 
             // Should continue processing valid LAs even when invalid ones exist
             assertThat(response.getStatusCode())
-                .as("HTTP status should be NO_CONTENT")
-                .isEqualTo(HttpStatus.NO_CONTENT);
+                .as("HTTP status should be OK")
+                .isEqualTo(HttpStatus.OK);
 
             // Verify valid LAs still got emails
             assertThat(reminderHistoryRepository.findByLaCodeOrderByTimeSentDesc("001"))
@@ -324,14 +324,14 @@ public class LaNotificationControllerITest extends AbstractIntegrationTest {
                 new RequestEntity<>(request, httpHeaders, POST, URI.create(URL)),
                 Void.class);
 
-            assertThat(response1.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+            assertThat(response1.getStatusCode()).isEqualTo(HttpStatus.OK);
 
             // Send second notification to same LA
             ResponseEntity<Void> response2 = restTemplate.exchange(
                 new RequestEntity<>(request, httpHeaders, POST, URI.create(URL)),
                 Void.class);
 
-            assertThat(response2.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+            assertThat(response2.getStatusCode()).isEqualTo(HttpStatus.OK);
 
             // Verify two reminder history entries exist
             assertThat(reminderHistoryRepository.findByLaCodeOrderByTimeSentDesc("002"))
