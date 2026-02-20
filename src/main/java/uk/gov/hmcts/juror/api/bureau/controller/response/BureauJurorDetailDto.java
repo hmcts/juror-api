@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "All Details available on a juror in the system ")
-@SuppressWarnings("PMD.TooManyFields")
+@SuppressWarnings("PMD")
 //TODO: validation
 public class BureauJurorDetailDto implements Serializable, IJurorResponse {
 

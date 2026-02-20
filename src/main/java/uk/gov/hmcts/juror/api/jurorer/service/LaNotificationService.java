@@ -1,8 +1,9 @@
 package uk.gov.hmcts.juror.api.jurorer.service;
 
 import uk.gov.hmcts.juror.api.juror.notify.EmailNotification;
+import uk.gov.hmcts.juror.api.jurorer.controller.dto.LaNotificationRequestDto;
+import uk.gov.hmcts.juror.api.jurorer.controller.dto.LaNotificationResponseDto;
 
-import java.util.List;
 import java.util.Map;
 
 public interface LaNotificationService {
@@ -11,5 +12,6 @@ public interface LaNotificationService {
                                               String templateId,
                                               Map<String, String> payLoad);
 
-    void sendNotificationsToLocalAuthorities(List<String> laCodes);
+    //void sendNotificationsToLocalAuthorities(List<String> laCodes);
+    LaNotificationResponseDto sendNotificationsToLocalAuthorities(LaNotificationRequestDto request);
 }

@@ -9,6 +9,8 @@ import org.springframework.util.StringUtils;
 import uk.gov.hmcts.juror.api.juror.notify.EmailNotification;
 import uk.gov.hmcts.juror.api.juror.notify.NotifyAdapter;
 import uk.gov.hmcts.juror.api.juror.notify.NotifyApiException;
+import uk.gov.hmcts.juror.api.jurorer.controller.dto.LaNotificationRequestDto;
+import uk.gov.hmcts.juror.api.jurorer.controller.dto.LaNotificationResponseDto;
 import uk.gov.hmcts.juror.api.jurorer.domain.Deadline;
 import uk.gov.hmcts.juror.api.jurorer.domain.LaUser;
 import uk.gov.hmcts.juror.api.jurorer.domain.LocalAuthority;
@@ -23,6 +25,7 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,25 +58,40 @@ public class LaNotificationServiceImpl implements LaNotificationService {
 
     @Override
     @Transactional
-    public void sendNotificationsToLocalAuthorities(List<String> laCodes) {
-        log.info("Processing notifications for {} LA codes", laCodes.size());
+    public LaNotificationResponseDto sendNotificationsToLocalAuthorities(LaNotificationRequestDto request) {
+        log.info("Processing notifications for {} LA codes", request.getLaCodes().size());
+
+        List<LaNotificationResponseDto.FailedNotification> failedNotifications = new ArrayList<>();
+        int successCount = 0;
 
         // Retrieve template ID once for all notifications
         String templateId = appSettingService.getNotifyErReminderTemplateId();
         if (!StringUtils.hasText(templateId)) {
-            log.error("Notify ER Reminder Template ID not configured in APP_SETTING table. Cannot send notifications.");
+            log.error("Notify ER Reminder Template ID not configured in APP_SETTING table");
             throw new IllegalStateException("NOTIFY_ER_REMINDER not configured in APP_SETTING table");
         }
 
         // Get current user for audit
         String currentUser = SecurityUtil.getActiveLogin();
 
-        for (String laCode : laCodes) {
+        for (String laCode : request.getLaCodes()) {
             try {
                 // Verify LA exists
-                LocalAuthority localAuthority = localAuthorityRepository.findById(laCode)
-                    .orElseThrow(() -> new IllegalArgumentException(
-                        String.format("Local Authority not found for code: %s", laCode)));
+                Optional<LocalAuthority> localAuthorityOpt = localAuthorityRepository.findById(laCode);
+
+                if (localAuthorityOpt.isEmpty()) {
+                    log.warn("Local Authority not found for code: {}", laCode);
+                    failedNotifications.add(createFailedNotification(
+                        laCode,
+                        null,
+                        null,
+                        LaNotificationResponseDto.FailureReason.LA_NOT_FOUND,
+                        "Local Authority not found"
+                    ));
+                    continue;
+                }
+
+                LocalAuthority localAuthority = localAuthorityOpt.get();
 
                 // Get all users for this LA and filter to active only
                 List<LaUser> allUsers = laUserRepository.findByLocalAuthority(localAuthority);
@@ -82,8 +100,33 @@ public class LaNotificationServiceImpl implements LaNotificationService {
                     .collect(Collectors.toList());
 
                 if (activeUsers.isEmpty()) {
-                    log.warn("No active users found for LA code: {} ({})",
-                             laCode, localAuthority.getLaName());
+                    // Check if there are inactive users
+                    List<LaUser> inactiveUsers = allUsers.stream()
+                        .filter(user -> !user.isActive())
+                        .collect(Collectors.toList());
+
+                    if (inactiveUsers.isEmpty()) {
+                        log.warn("No users found for LA code: {} ({})", laCode, localAuthority.getLaName());
+                        failedNotifications.add(createFailedNotification(
+                            laCode,
+                            localAuthority.getLaName(),
+                            null,
+                            LaNotificationResponseDto.FailureReason.NO_USERS_FOR_LA,
+                            "No users exist for this Local Authority"
+                        ));
+                    } else {
+                        // There are users but all are inactive
+                        for (LaUser inactiveUser : inactiveUsers) {
+                            String email = inactiveUser.getUsername();
+                            failedNotifications.add(createFailedNotification(
+                                laCode,
+                                localAuthority.getLaName(),
+                                email,
+                                LaNotificationResponseDto.FailureReason.USER_INACTIVE,
+                                "User account is inactive"
+                            ));
+                        }
+                    }
                     continue;
                 }
 
@@ -94,7 +137,14 @@ public class LaNotificationServiceImpl implements LaNotificationService {
                 for (LaUser user : activeUsers) {
                     try {
                         if (!StringUtils.hasText(user.getUsername())) {
-                            log.warn("User has no email address for LA code: {}", laCode);
+                            log.warn("User has blank email address for LA code: {}", laCode);
+                            failedNotifications.add(createFailedNotification(
+                                laCode,
+                                localAuthority.getLaName(),
+                                null,
+                                LaNotificationResponseDto.FailureReason.EMAIL_ADDRESS_BLANK,
+                                "User has no email address"
+                            ));
                             continue;
                         }
 
@@ -109,21 +159,44 @@ public class LaNotificationServiceImpl implements LaNotificationService {
                         log.info("Successfully sent notification to user: {} for LA: {} ({})",
                                  user.getUsername(), localAuthority.getLaName(), laCode);
 
-                        // Record the sent notification in reminder_history with recipient email
+                        // Record the sent notification in reminder_history
                         recordReminderHistory(laCode, currentUser, user.getUsername());
+
+                        successCount++;
 
                     } catch (NotifyApiException e) {
                         log.error("Failed to send notification to user: {} for LA code: {}",
                                   user.getUsername(), laCode, e);
-                        // Continue to next user - don't let one failure stop others
+                        failedNotifications.add(createFailedNotification(
+                            laCode,
+                            localAuthority.getLaName(),
+                            user.getUsername(),
+                            LaNotificationResponseDto.FailureReason.NOTIFY_API_ERROR,
+                            "Failed to send email via GOV.UK Notify: " + e.getMessage()
+                        ));
                     }
                 }
 
             } catch (Exception e) {
                 log.error("Unexpected error processing LA code: {}", laCode, e);
-                // Continue to next LA - don't let one failure stop others
+                failedNotifications.add(createFailedNotification(
+                    laCode,
+                    null,
+                    null,
+                    LaNotificationResponseDto.FailureReason.UNEXPECTED_ERROR,
+                    "Unexpected error: " + e.getMessage()
+                ));
             }
         }
+
+        log.info("Notification processing complete. Successful: {}, Failed: {}",
+                 successCount, failedNotifications.size());
+
+        return LaNotificationResponseDto.builder()
+            .totalLaCodesRequested(request.getLaCodes().size())
+            .successfulNotificationsSent(successCount)
+            .failedNotifications(failedNotifications)
+            .build();
     }
 
     @Override
@@ -133,6 +206,25 @@ public class LaNotificationServiceImpl implements LaNotificationService {
         EmailNotification notification = new EmailNotification(templateId, emailAddress, payload);
         notification.setReferenceNumber(String.format("LA_REMINDER_%s", emailAddress));
         return notification;
+    }
+
+    /**
+     * Creates a failed notification record.
+     */
+    private LaNotificationResponseDto.FailedNotification createFailedNotification(
+        String laCode,
+        String laName,
+        String emailAddress,
+        LaNotificationResponseDto.FailureReason reason,
+        String message) {
+
+        return LaNotificationResponseDto.FailedNotification.builder()
+            .laCode(laCode)
+            .laName(laName)
+            .emailAddress(emailAddress)
+            .failureReason(reason)
+            .failureMessage(message)
+            .build();
     }
 
     /**
