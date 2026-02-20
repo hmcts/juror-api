@@ -72,6 +72,7 @@ public class LocalAuthorityInfoResponseDto {
 
         private LocalDateTime timeSent;
     }
+
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
