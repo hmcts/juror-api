@@ -6,14 +6,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.juror.api.jurorer.domain.Deadline;
 import uk.gov.hmcts.juror.api.jurorer.domain.LaUser;
 import uk.gov.hmcts.juror.api.jurorer.domain.LocalAuthority;
+import uk.gov.hmcts.juror.api.jurorer.repository.DeadlineRepository;
 import uk.gov.hmcts.juror.api.jurorer.repository.LocalAuthorityRepository;
 import uk.gov.hmcts.juror.api.jurorer.service.LaUserService;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.DeactiveLaRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineResponseDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -24,6 +29,7 @@ public class ErAdministrationServiceImpl implements ErAdministrationService {
 
     private final LocalAuthorityRepository localAuthorityRepository;
     private final LaUserService laUserService;
+    private final DeadlineRepository deadlineRepository;
 
     @Override
     @Transactional
@@ -57,4 +63,37 @@ public class ErAdministrationServiceImpl implements ErAdministrationService {
         });
 
     }
+
+
+    @Override
+    @Transactional
+    public UpdateDeadlineResponseDto updateDeadline(UpdateDeadlineRequestDto request) {
+        log.info("Updating deadline date to: {}", request.getDeadlineDate());
+
+        // Get current deadline (should always exist)
+        Deadline deadline = deadlineRepository.getCurrentDeadline()
+            .orElseThrow(() -> new MojException.InternalServerError(
+                "Deadline record not found - it should always exist", null));
+
+        // Get current user from JWT
+        String currentUser = SecurityUtil.getActiveLogin();
+
+        // Update deadline
+        deadline.setDeadlineDate(request.getDeadlineDate());
+        deadline.setUpdatedBy(currentUser);
+        deadline.setLastUpdated(LocalDate.now());
+
+        // Save updated deadline
+        Deadline updatedDeadline = deadlineRepository.save(deadline);
+
+        log.info("Deadline updated successfully by: {}", currentUser);
+
+        return UpdateDeadlineResponseDto.builder()
+            .deadlineDate(updatedDeadline.getDeadlineDate())
+            .updatedBy(updatedDeadline.getUpdatedBy())
+            .lastUpdated(updatedDeadline.getLastUpdated())
+            .daysRemaining(updatedDeadline.getDaysRemaining())
+            .build();
+    }
+
 }
