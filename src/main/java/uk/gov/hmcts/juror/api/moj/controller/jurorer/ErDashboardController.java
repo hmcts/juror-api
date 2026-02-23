@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -62,6 +63,16 @@ public class ErDashboardController {
         @Parameter(description = "laCode", required = true) @PathVariable("laCode") String laCode
     ) {
         LocalAuthorityInfoResponseDto dto = erDashboardService.getLocalAuthorityInfo(laCode);
+        return ResponseEntity.ok().body(dto);
+    }
+
+    @IsBureauUser
+    @PutMapping("/notes")
+    @Operation(summary = "Updates the notes for a local authority")
+    public ResponseEntity<UpdateLocalAuthorityNotesResponseDto> updateLocalAuthorityNotes(
+        @Valid @RequestBody UpdateLocalAuthorityNotesRequestDto request
+    ) {
+        UpdateLocalAuthorityNotesResponseDto dto = erDashboardService.updateLocalAuthorityNotes(request);
         return ResponseEntity.ok().body(dto);
     }
 

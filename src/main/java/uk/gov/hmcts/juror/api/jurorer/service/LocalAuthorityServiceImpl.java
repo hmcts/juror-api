@@ -31,4 +31,11 @@ public class LocalAuthorityServiceImpl implements LocalAuthorityService {
         return localAuthorityRepository.findByLaCode(localAuthorityCode)
             .orElseThrow(() -> new RuntimeException("Local authority not found for code: " + localAuthorityCode));
     }
+
+    @Override
+    @Transactional
+    public LocalAuthority saveLocalAuthority(LocalAuthority localAuthority) {
+        return localAuthorityRepository.save(localAuthority);
+    }
+
 }
