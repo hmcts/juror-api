@@ -216,7 +216,7 @@ jwt:
   secret:
     hmac: test-hmac-secret-key-for-integration-tests-minimum-256-bits-required-for-hs256-algorithm
     bureau: test-bureau-secret-key-for-integration-tests-minimum-256-bits-required-for-hs256
-    er-portal: W3N1cGVyLXNlY3JldC1rZXktZXItcG9ydGFsXVtzdXBlci1zZWNyZXQta2V5LWVyLXBvcnRhbF1bc3VwZXItc2VjcmV0LWtleS1lci1wb3J0YWxd
+    er-portal: test-er-portal-secret-key-for-integration-tests-minimum-256-bits-required-for-hs256
 uk:
   gov:
     hmcts:
