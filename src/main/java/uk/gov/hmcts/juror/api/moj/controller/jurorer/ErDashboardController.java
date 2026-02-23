@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.config.security.IsBureauUser;
 import uk.gov.hmcts.juror.api.moj.service.jurorer.ErDashboardService;
 
+
 @RestController
 @RequestMapping(value = "/api/v1/moj/er-dashboard/", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "ER Dashboard", description = "Bureau ER Dashboard")
@@ -77,6 +78,15 @@ public class ErDashboardController {
         return ResponseEntity.ok().body(dto);
     }
 
+    @IsBureauUser
+    @PutMapping("/notes")
+    @Operation(summary = "Updates the notes for a local authority")
+    public ResponseEntity<UpdateLocalAuthorityNotesResponseDto> updateLocalAuthorityNotes(
+        @Valid @RequestBody UpdateLocalAuthorityNotesRequestDto request
+    ) {
+        UpdateLocalAuthorityNotesResponseDto dto = erDashboardService.updateLocalAuthorityNotes(request);
+        return ResponseEntity.ok().body(dto);
+    }
 
 }
 

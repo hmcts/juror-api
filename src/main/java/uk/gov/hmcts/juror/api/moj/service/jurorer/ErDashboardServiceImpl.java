@@ -23,6 +23,8 @@ import uk.gov.hmcts.juror.api.moj.controller.jurorer.LocalAuthoritiesResponseDto
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.LocalAuthorityInfoResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateLocalAuthorityNotesRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateLocalAuthorityNotesResponseDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -241,6 +243,43 @@ public class ErDashboardServiceImpl implements ErDashboardService {
             .updatedBy(updatedDeadline.getUpdatedBy())
             .lastUpdated(updatedDeadline.getLastUpdated())
             .daysRemaining(updatedDeadline.getDaysRemaining())
+            .build();
+    }
+
+    @Override
+    @Transactional
+    public UpdateLocalAuthorityNotesResponseDto updateLocalAuthorityNotes(UpdateLocalAuthorityNotesRequestDto request) {
+        log.info("Updating notes for LA code: {}", request.getLaCode());
+
+        // Validate LA code format
+        isValidLaCode(request.getLaCode());
+
+        // Get the Local Authority
+        LocalAuthority localAuthority = localAuthorityService.getLocalAuthorityByCode(request.getLaCode());
+
+        if (localAuthority == null) {
+            throw new MojException.NotFound("Local Authority not found for code: " + request.getLaCode(), null);
+        }
+
+        // Get current user from JWT
+        String currentUser = SecurityUtil.getActiveLogin();
+
+        // Update notes (can be null to clear notes)
+        localAuthority.setNotes(request.getNotes());
+        localAuthority.setUpdatedBy(currentUser);
+        localAuthority.setLastUpdated(LocalDateTime.now());
+
+        // Save updated local authority
+        LocalAuthority updatedLocalAuthority = localAuthorityService.saveLocalAuthority(localAuthority);
+
+        log.info("Notes updated successfully for LA code: {} by: {}", request.getLaCode(), currentUser);
+
+        return UpdateLocalAuthorityNotesResponseDto.builder()
+            .laCode(updatedLocalAuthority.getLaCode())
+            .laName(updatedLocalAuthority.getLaName())
+            .notes(updatedLocalAuthority.getNotes())
+            .updatedBy(updatedLocalAuthority.getUpdatedBy())
+            .lastUpdated(updatedLocalAuthority.getLastUpdated())
             .build();
     }
 
