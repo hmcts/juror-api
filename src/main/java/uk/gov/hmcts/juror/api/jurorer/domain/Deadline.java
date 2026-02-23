@@ -8,6 +8,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.envers.AuditTable;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -18,6 +21,8 @@ import java.time.temporal.ChronoUnit;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Audited
+@AuditTable(value = "deadline_audit", schema = "juror_er")
 public class Deadline {
 
     @Id
@@ -27,6 +32,7 @@ public class Deadline {
     @Column(name = "deadline_date")
     private LocalDate deadlineDate;
 
+    @NotAudited
     @Column(name = "upload_start_date")
     private LocalDate uploadStartDate;
 

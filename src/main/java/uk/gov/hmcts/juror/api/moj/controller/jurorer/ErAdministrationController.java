@@ -35,4 +35,16 @@ public class ErAdministrationController {
         return ResponseEntity.ok().build();
     }
 
+    @IsBureauUser
+    @PutMapping("/deadline")
+    @Operation(summary = "Updates the deadline date for local authority uploads")
+    public ResponseEntity<UpdateDeadlineResponseDto> updateDeadline (
+        @Valid @RequestBody UpdateDeadlineRequestDto request
+    ) {
+        UpdateDeadlineResponseDto dto
+            = erAdministrationService.updateDeadline(request);
+        return ResponseEntity.ok().body(dto);
+    }
+
+
 }
