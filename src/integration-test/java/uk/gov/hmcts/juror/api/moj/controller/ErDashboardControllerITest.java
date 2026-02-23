@@ -23,6 +23,8 @@ import uk.gov.hmcts.juror.api.moj.controller.jurorer.ErLocalAuthorityStatusReque
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.ErLocalAuthorityStatusResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.LocalAuthoritiesResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.LocalAuthorityInfoResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateLocalAuthorityNotesRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateLocalAuthorityNotesResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 
 import java.net.URI;
@@ -37,6 +39,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SuppressWarnings("PMD")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 class ErDashboardControllerITest extends AbstractIntegrationTest {
 
@@ -552,6 +555,286 @@ class ErDashboardControllerITest extends AbstractIntegrationTest {
 
 
         }
+
+        @Nested
+        @DisplayName("PUT /api/v1/moj/er-dashboard/notes")
+        @Sql({"/db/mod/truncate.sql", "/db/jurorer/ErDashboardData.sql"})
+        class UpdateNotesTests {
+
+            @Test
+            @DisplayName("Should successfully update notes for a local authority")
+            void testUpdateNotesHappy() {
+                UpdateLocalAuthorityNotesRequestDto request = UpdateLocalAuthorityNotesRequestDto.builder()
+                    .laCode("001")
+                    .notes("Contact attempted on 15/02/2025. Awaiting response.")
+                    .build();
+
+                ResponseEntity<UpdateLocalAuthorityNotesResponseDto> responseEntity =
+                    restTemplate.exchange(new RequestEntity<>(request, httpHeaders, HttpMethod.PUT,
+                                                              URI.create("/api/v1/moj/er-dashboard/notes")),
+                                          UpdateLocalAuthorityNotesResponseDto.class);
+
+                assertThat(responseEntity.getStatusCode())
+                    .as("Expect the status to be OK")
+                    .isEqualTo(HttpStatus.OK);
+
+                assertThat(responseEntity.getBody())
+                    .as("Expect the body to not be null")
+                    .isNotNull();
+
+                UpdateLocalAuthorityNotesResponseDto response = responseEntity.getBody();
+                assertThat(response.getLaCode()).isEqualTo("001");
+                assertThat(response.getLaName()).isEqualTo("West Oxfordshire");
+                assertThat(response.getNotes()).isEqualTo("Contact attempted on 15/02/2025. Awaiting response.");
+                assertThat(response.getUpdatedBy()).isEqualTo("BUREAU_USER");
+                assertThat(response.getLastUpdated()).isNotNull();
+                assertThat(response.getLastUpdated())
+                    .isBetween(LocalDateTime.now().minusSeconds(5), LocalDateTime.now().plusSeconds(5));
+            }
+
+            @Test
+            @DisplayName("Should successfully clear notes by setting to null")
+            void testClearNotes() {
+                UpdateLocalAuthorityNotesRequestDto request = UpdateLocalAuthorityNotesRequestDto.builder()
+                    .laCode("001")
+                    .notes(null)
+                    .build();
+
+                ResponseEntity<UpdateLocalAuthorityNotesResponseDto> responseEntity =
+                    restTemplate.exchange(new RequestEntity<>(request, httpHeaders, HttpMethod.PUT,
+                                                              URI.create("/api/v1/moj/er-dashboard/notes")),
+                                          UpdateLocalAuthorityNotesResponseDto.class);
+
+                assertThat(responseEntity.getStatusCode())
+                    .as("Expect the status to be OK")
+                    .isEqualTo(HttpStatus.OK);
+
+                UpdateLocalAuthorityNotesResponseDto response = responseEntity.getBody();
+                assertThat(response.getLaCode()).isEqualTo("001");
+                assertThat(response.getNotes()).isNull();
+            }
+
+            @Test
+            @DisplayName("Should successfully update notes with empty string")
+            void testUpdateNotesWithEmptyString() {
+                UpdateLocalAuthorityNotesRequestDto request = UpdateLocalAuthorityNotesRequestDto.builder()
+                    .laCode("002")
+                    .notes("")
+                    .build();
+
+                ResponseEntity<UpdateLocalAuthorityNotesResponseDto> responseEntity =
+                    restTemplate.exchange(new RequestEntity<>(request, httpHeaders, HttpMethod.PUT,
+                                                              URI.create("/api/v1/moj/er-dashboard/notes")),
+                                          UpdateLocalAuthorityNotesResponseDto.class);
+
+                assertThat(responseEntity.getStatusCode())
+                    .as("Expect the status to be OK")
+                    .isEqualTo(HttpStatus.OK);
+
+                UpdateLocalAuthorityNotesResponseDto response = responseEntity.getBody();
+                assertThat(response.getNotes()).isEmpty();
+            }
+
+            @Test
+            @DisplayName("Should return BAD_REQUEST for invalid LA code format")
+            void testUpdateNotesInvalidLaCodeFormat() {
+                UpdateLocalAuthorityNotesRequestDto request = UpdateLocalAuthorityNotesRequestDto.builder()
+                    .laCode("INVALID")
+                    .notes("Some notes")
+                    .build();
+
+                ResponseEntity<String> responseEntity =
+                    restTemplate.exchange(new RequestEntity<>(request, httpHeaders, HttpMethod.PUT,
+                                                              URI.create("/api/v1/moj/er-dashboard/notes")),
+                                          String.class);
+
+                assertThat(responseEntity.getStatusCode())
+                    .as("Expect the status to be BAD_REQUEST")
+                    .isEqualTo(HttpStatus.BAD_REQUEST);
+            }
+
+            @Test
+            @DisplayName("Should return BAD_REQUEST for LA code too short")
+            void testUpdateNotesLaCodeTooShort() {
+                UpdateLocalAuthorityNotesRequestDto request = UpdateLocalAuthorityNotesRequestDto.builder()
+                    .laCode("01")
+                    .notes("Some notes")
+                    .build();
+
+                ResponseEntity<String> responseEntity =
+                    restTemplate.exchange(new RequestEntity<>(request, httpHeaders, HttpMethod.PUT,
+                                                              URI.create("/api/v1/moj/er-dashboard/notes")),
+                                          String.class);
+
+                assertThat(responseEntity.getStatusCode())
+                    .as("Expect the status to be BAD_REQUEST")
+                    .isEqualTo(HttpStatus.BAD_REQUEST);
+            }
+
+            @Test
+            @DisplayName("Should return BAD_REQUEST for notes exceeding max length")
+            void testUpdateNotesExceedingMaxLength() {
+                String longNotes = "A".repeat(2001); // 2001 characters, exceeds 2000 limit
+
+                UpdateLocalAuthorityNotesRequestDto request = UpdateLocalAuthorityNotesRequestDto.builder()
+                    .laCode("001")
+                    .notes(longNotes)
+                    .build();
+
+                ResponseEntity<String> responseEntity =
+                    restTemplate.exchange(new RequestEntity<>(request, httpHeaders, HttpMethod.PUT,
+                                                              URI.create("/api/v1/moj/er-dashboard/notes")),
+                                          String.class);
+
+                assertThat(responseEntity.getStatusCode())
+                    .as("Expect the status to be BAD_REQUEST")
+                    .isEqualTo(HttpStatus.BAD_REQUEST);
+            }
+
+            @Test
+            @DisplayName("Should accept notes at exactly max length")
+            void testUpdateNotesAtMaxLength() {
+                String maxLengthNotes = "A".repeat(2000); // Exactly 2000 characters
+
+                UpdateLocalAuthorityNotesRequestDto request = UpdateLocalAuthorityNotesRequestDto.builder()
+                    .laCode("001")
+                    .notes(maxLengthNotes)
+                    .build();
+
+                ResponseEntity<UpdateLocalAuthorityNotesResponseDto> responseEntity =
+                    restTemplate.exchange(new RequestEntity<>(request, httpHeaders, HttpMethod.PUT,
+                                                              URI.create("/api/v1/moj/er-dashboard/notes")),
+                                          UpdateLocalAuthorityNotesResponseDto.class);
+
+                assertThat(responseEntity.getStatusCode())
+                    .as("Expect the status to be OK")
+                    .isEqualTo(HttpStatus.OK);
+
+                UpdateLocalAuthorityNotesResponseDto response = responseEntity.getBody();
+                assertThat(response.getNotes()).hasSize(2000);
+            }
+
+            @Test
+            @DisplayName("Should return NOT_FOUND for non-existent LA code")
+            void testUpdateNotesLaNotFound() {
+                UpdateLocalAuthorityNotesRequestDto request = UpdateLocalAuthorityNotesRequestDto.builder()
+                    .laCode("999")
+                    .notes("Some notes")
+                    .build();
+
+                ResponseEntity<String> responseEntity =
+                    restTemplate.exchange(new RequestEntity<>(request, httpHeaders, HttpMethod.PUT,
+                                                              URI.create("/api/v1/moj/er-dashboard/notes")),
+                                          String.class);
+
+                assertThat(responseEntity.getStatusCode())
+                    .as("Expect the status to be NOT_FOUND")
+                    .isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+
+            @Test
+            @DisplayName("Should return BAD_REQUEST for null LA code")
+            void testUpdateNotesNullLaCode() {
+                UpdateLocalAuthorityNotesRequestDto request = UpdateLocalAuthorityNotesRequestDto.builder()
+                    .laCode(null)
+                    .notes("Some notes")
+                    .build();
+
+                ResponseEntity<String> responseEntity =
+                    restTemplate.exchange(new RequestEntity<>(request, httpHeaders, HttpMethod.PUT,
+                                                              URI.create("/api/v1/moj/er-dashboard/notes")),
+                                          String.class);
+
+                assertThat(responseEntity.getStatusCode())
+                    .as("Expect the status to be BAD_REQUEST")
+                    .isEqualTo(HttpStatus.BAD_REQUEST);
+            }
+
+            @Test
+            @DisplayName("Should return FORBIDDEN for Court user")
+            void testUpdateNotesAsCourtUser() {
+                initHeadersCourt();
+
+                UpdateLocalAuthorityNotesRequestDto request = UpdateLocalAuthorityNotesRequestDto.builder()
+                    .laCode("001")
+                    .notes("Some notes")
+                    .build();
+
+                ResponseEntity<String> responseEntity =
+                    restTemplate.exchange(new RequestEntity<>(request, httpHeaders, HttpMethod.PUT,
+                                                              URI.create("/api/v1/moj/er-dashboard/notes")),
+                                          String.class);
+
+                assertThat(responseEntity.getStatusCode())
+                    .as("Expect the status to be FORBIDDEN")
+                    .isEqualTo(HttpStatus.FORBIDDEN);
+            }
+
+            @Test
+            @DisplayName("Should successfully update notes multiple times for same LA")
+            void testUpdateNotesMultipleTimes() {
+                // First update
+                UpdateLocalAuthorityNotesRequestDto request1 = UpdateLocalAuthorityNotesRequestDto.builder()
+                    .laCode("003")
+                    .notes("First note")
+                    .build();
+
+                ResponseEntity<UpdateLocalAuthorityNotesResponseDto> response1 =
+                    restTemplate.exchange(new RequestEntity<>(request1, httpHeaders, HttpMethod.PUT,
+                                                              URI.create("/api/v1/moj/er-dashboard/notes")),
+                                          UpdateLocalAuthorityNotesResponseDto.class);
+
+                assertThat(response1.getStatusCode()).isEqualTo(HttpStatus.OK);
+                assertThat(response1.getBody().getNotes()).isEqualTo("First note");
+                final LocalDateTime firstUpdate = response1.getBody().getLastUpdated();
+
+                // Wait a moment to ensure timestamp difference
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+
+                // Second update
+                UpdateLocalAuthorityNotesRequestDto request2 = UpdateLocalAuthorityNotesRequestDto.builder()
+                    .laCode("003")
+                    .notes("Second note - updated")
+                    .build();
+
+                ResponseEntity<UpdateLocalAuthorityNotesResponseDto> response2 =
+                    restTemplate.exchange(new RequestEntity<>(request2, httpHeaders, HttpMethod.PUT,
+                                                              URI.create("/api/v1/moj/er-dashboard/notes")),
+                                          UpdateLocalAuthorityNotesResponseDto.class);
+
+                assertThat(response2.getStatusCode()).isEqualTo(HttpStatus.OK);
+                assertThat(response2.getBody().getNotes()).isEqualTo("Second note - updated");
+                assertThat(response2.getBody().getLastUpdated()).isAfter(firstUpdate);
+            }
+
+            @Test
+            @DisplayName("Should verify notes are persisted and retrievable")
+            void testNotesArePersisted() {
+                // Update notes
+                UpdateLocalAuthorityNotesRequestDto updateRequest = UpdateLocalAuthorityNotesRequestDto.builder()
+                    .laCode("001")
+                    .notes("Persisted note content")
+                    .build();
+
+                restTemplate.exchange(new RequestEntity<>(updateRequest, httpHeaders, HttpMethod.PUT,
+                                                          URI.create("/api/v1/moj/er-dashboard/notes")),
+                                      UpdateLocalAuthorityNotesResponseDto.class);
+
+                // Retrieve and verify via local-authority-info endpoint
+                ResponseEntity<LocalAuthorityInfoResponseDto> infoResponse =
+                    restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                      URI.create("/api/v1/moj/er-dashboard/local-authority-info/001")),
+                                          LocalAuthorityInfoResponseDto.class);
+
+                assertThat(infoResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+                assertThat(infoResponse.getBody().getNotes()).isEqualTo("Persisted note content");
+            }
+        }
+
 
     }
 

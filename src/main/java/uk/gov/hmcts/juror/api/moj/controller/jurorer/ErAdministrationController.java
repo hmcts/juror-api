@@ -38,7 +38,7 @@ public class ErAdministrationController {
     @IsBureauUser
     @PutMapping("/deadline")
     @Operation(summary = "Updates the deadline date for local authority uploads")
-    public ResponseEntity<UpdateDeadlineResponseDto> updateDeadline (
+    public ResponseEntity<UpdateDeadlineResponseDto> updateDeadline(
         @Valid @RequestBody UpdateDeadlineRequestDto request
     ) {
         UpdateDeadlineResponseDto dto
