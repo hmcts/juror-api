@@ -493,6 +493,7 @@ class ErDashboardControllerITest extends AbstractIntegrationTest {
 
             LocalAuthorityInfoResponseDto infoResponseDto = responseEntity.getBody();
             assertThat(infoResponseDto.getLocalAuthorityCode()).isEqualTo("001");
+            assertThat(infoResponseDto.getLocalAuthorityName()).isEqualTo("West Oxfordshire");
             assertThat(infoResponseDto.getUploadStatus()).isEqualTo(UploadStatus.UPLOADED);
             assertThat(infoResponseDto.getLastUploadDate()).isEqualTo(LocalDate.now().minusDays(5));
             assertThat(infoResponseDto.getLastLoggedInDate()).isEqualTo(LocalDate.now().minusDays(1));
@@ -511,6 +512,44 @@ class ErDashboardControllerITest extends AbstractIntegrationTest {
             // and there may be a delay between that and when the data is retrieved here
             assertThat(reminder1.getTimeSent()).isBetween(LocalDateTime.now().minusDays(2).minusSeconds(5),
                                                           LocalDateTime.now().minusDays(2).plusSeconds(5));
+
+        }
+
+        @Test
+        void testGetLocalAuthorityInactive() {
+
+            ResponseEntity<LocalAuthorityInfoResponseDto> responseEntity =
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create("/api/v1/moj/er-dashboard/local-authority-info/006")),
+                                      LocalAuthorityInfoResponseDto.class);
+
+            assertThat(responseEntity.getStatusCode())
+                .as("Expect the status to be OK.")
+                .isEqualTo(HttpStatus.OK);
+
+            assertThat(responseEntity.getBody())
+                .as("Expect the body to not be null.")
+                .isNotNull();
+
+            LocalAuthorityInfoResponseDto infoResponseDto = responseEntity.getBody();
+            assertThat(infoResponseDto).isNotNull();
+            assertThat(infoResponseDto.getLocalAuthorityName()).isEqualTo("Folkestone & Hythe");
+            assertThat(infoResponseDto.getLocalAuthorityCode()).isEqualTo("006");
+            assertThat(infoResponseDto.getUploadStatus()).isEqualTo(UploadStatus.NOT_UPLOADED);
+            assertThat(infoResponseDto.getLastUploadDate()).isNull();
+            assertThat(infoResponseDto.getLastLoggedInDate()).isNull();
+            assertThat(infoResponseDto.getEmailRequestStatus()).isNull();
+            assertThat(infoResponseDto.getDateEmailRequestSent()).isNull();
+            assertThat(infoResponseDto.getEmailAddresses()).isEmpty();
+            assertThat(infoResponseDto.getNotes()).isEqualTo("previously Shepway");
+            assertThat(infoResponseDto.getReminderHistory()).isNull();
+            assertThat(infoResponseDto.getInactiveInfo()).isNotNull();
+            LocalAuthorityInfoResponseDto.InactiveInfo inactiveInfo = infoResponseDto.getInactiveInfo();
+            assertThat(inactiveInfo.getInactiveReason()).isEqualTo("This is not an active LA anymore");
+            assertThat(inactiveInfo.getMadeInactiveAt()).isBetween(LocalDateTime.now().minusDays(1).minusSeconds(5),
+                                                                   LocalDateTime.now().minusDays(1).plusSeconds(5));
+            assertThat(inactiveInfo.getMadeInactiveBy()).isEqualTo("BUREAU_USER");
+
 
         }
 

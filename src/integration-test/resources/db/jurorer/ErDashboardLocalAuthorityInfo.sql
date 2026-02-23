@@ -11,7 +11,7 @@ INSERT INTO juror_er.local_authority (la_code,la_name,is_active,upload_status,no
 	 ('003','Eastleigh',true,'NOT_UPLOADED',NULL,NULL,NULL,NULL,NULL,NULL),
 	 ('004','Blackburn',false,'NOT_UPLOADED',NULL,NULL,NULL,NULL,NULL,NULL),
 	 ('005','Harrogate',true,'NOT_UPLOADED',NULL,NULL,NULL,NULL,NULL,NULL),
-	 ('006','Folkestone & Hythe',true,'NOT_UPLOADED','previously Shepway',NULL,NULL,NULL,NULL,NULL),
+	 ('006','Folkestone & Hythe',false,'NOT_UPLOADED','previously Shepway','This is not an active LA anymore',NULL,NULL,'BUREAU_USER',current_timestamp - interval '1 days'),
 	 ('007','Bradford',true,'NOT_UPLOADED',NULL,NULL,NULL,NULL,NULL,NULL);
 
 INSERT INTO juror_er.user (username,la_code,active,last_logged_in) VALUES
