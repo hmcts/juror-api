@@ -35,14 +35,22 @@ public class ErAdministrationController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping(path = "/activate-la")
+    @Operation(summary = "Activate a Local Authority in the ER Portal")
+    @IsBureauUser
+    public ResponseEntity<Void> activateLa(
+        @RequestBody @Valid ActiveLaRequestDto activeLaRequest) {
+        erAdministrationService.activateLa(activeLaRequest);
+        return ResponseEntity.ok().build();
+    }
+
+
     @IsBureauUser
     @PutMapping("/deadline")
     @Operation(summary = "Updates the deadline date for local authority uploads")
-    public ResponseEntity<UpdateDeadlineResponseDto> updateDeadline (
-        @Valid @RequestBody UpdateDeadlineRequestDto request
-    ) {
-        UpdateDeadlineResponseDto dto
-            = erAdministrationService.updateDeadline(request);
+    public ResponseEntity<UpdateDeadlineResponseDto> updateDeadline(
+        @Valid @RequestBody UpdateDeadlineRequestDto request) {
+        UpdateDeadlineResponseDto dto = erAdministrationService.updateDeadline(request);
         return ResponseEntity.ok().body(dto);
     }
 

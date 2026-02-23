@@ -12,6 +12,7 @@ import uk.gov.hmcts.juror.api.jurorer.domain.LocalAuthority;
 import uk.gov.hmcts.juror.api.jurorer.repository.DeadlineRepository;
 import uk.gov.hmcts.juror.api.jurorer.repository.LocalAuthorityRepository;
 import uk.gov.hmcts.juror.api.jurorer.service.LaUserService;
+import uk.gov.hmcts.juror.api.moj.controller.jurorer.ActiveLaRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.DeactiveLaRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineResponseDto;
@@ -21,6 +22,8 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+
+import static uk.gov.hmcts.juror.api.validation.LaCodeValidator.isValidLaCode;
 
 @Service
 @Slf4j
@@ -61,6 +64,41 @@ public class ErAdministrationServiceImpl implements ErAdministrationService {
             log.info("Deactivating user {} associated with LA code {}", user.getUsername(), requestDto.getLaCode());
 
         });
+
+    }
+
+    @Override
+    @Transactional
+    public void activateLa(ActiveLaRequestDto requestDto) {
+        log.info("Activating LA with code {}", requestDto.getLaCode());
+
+        isValidLaCode(requestDto.getLaCode());
+
+        LocalAuthority localAuthority = localAuthorityRepository.findByLaCode(requestDto.getLaCode())
+            .orElseThrow(() -> new MojException.BadRequest("LA with code " + requestDto.getLaCode()
+                                                               + " not found", null));
+
+        if (Boolean.TRUE.equals(localAuthority.getActive())) {
+            log.warn("LA with code {} is already activated", requestDto.getLaCode());
+            throw new MojException.BadRequest("LA with code " + requestDto.getLaCode()
+                                                  + " is already activated", null);
+        }
+
+        localAuthority.setActive(true);
+        localAuthority.setInactiveReason(null);
+        localAuthority.setUpdatedBy(SecurityUtil.getUsername());
+        localAuthority.setLastUpdated(LocalDateTime.now());
+        localAuthorityRepository.save(localAuthority);
+        log.info("LA with code {} has been activated", requestDto.getLaCode());
+
+        // activate the users associated with the LA
+        List<LaUser> laUsers = laUserService.findUsersByLaCode(localAuthority.getLaCode());
+        laUsers.forEach(user -> {
+            user.setActive(true);
+            laUserService.saveLaUser(user);
+            log.info("Activating user {} associated with LA code {}", user.getUsername(), requestDto.getLaCode());
+        });
+
 
     }
 
