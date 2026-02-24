@@ -13,6 +13,7 @@ import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 @Entity
@@ -40,7 +41,7 @@ public class Deadline {
     private String updatedBy;
 
     @Column(name = "last_updated")
-    private LocalDate lastUpdated;
+    private LocalDateTime lastUpdated;
 
     /**
      * Calculate days remaining until deadline from current date.

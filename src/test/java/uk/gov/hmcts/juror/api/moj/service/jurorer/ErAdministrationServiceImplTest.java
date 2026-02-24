@@ -6,17 +6,23 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.TestUtils;
+import uk.gov.hmcts.juror.api.jurorer.domain.Deadline;
 import uk.gov.hmcts.juror.api.jurorer.domain.LaUser;
 import uk.gov.hmcts.juror.api.jurorer.domain.LocalAuthority;
+import uk.gov.hmcts.juror.api.jurorer.repository.DeadlineRepository;
 import uk.gov.hmcts.juror.api.jurorer.repository.LocalAuthorityRepository;
 import uk.gov.hmcts.juror.api.jurorer.service.LaUserService;
+import uk.gov.hmcts.juror.api.moj.controller.jurorer.ActiveLaRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.DeactiveLaRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineRequestDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -33,6 +39,9 @@ class ErAdministrationServiceImplTest {
 
     @Mock
     private LaUserService laUserService;
+
+    @Mock
+    private DeadlineRepository deadlineRepository;
 
 
     @InjectMocks
@@ -140,5 +149,74 @@ class ErAdministrationServiceImplTest {
 
     }
 
+    @Test
+    void activateLaLaCodeNotFound() {
 
+        ActiveLaRequestDto requestDto = new ActiveLaRequestDto("002");
+
+        when(localAuthorityRepository.findByLaCode(requestDto.getLaCode())).thenReturn(Optional.empty());
+
+        MojException.BadRequest exception =
+            assertThrows(
+                MojException.BadRequest.class,
+                () -> erAdministrationService.activateLa(requestDto),
+                "Should throw an error when local authority is not found"
+            );
+
+        assertThat(exception).isNotNull();
+        assertThat(exception.getMessage()).contains("LA with code 002 not found");
+
+        verifyNoInteractions(laUserService);
+    }
+
+    @Test
+    void activateLaAlreadyActive() {
+
+        ActiveLaRequestDto requestDto = new ActiveLaRequestDto("002");
+
+        LocalAuthority localAuthority = LocalAuthority.builder()
+            .laCode("002")
+            .laName("LA2")
+            .active(true)
+            .build();
+
+        when(localAuthorityRepository.findByLaCode(requestDto.getLaCode()))
+            .thenReturn(Optional.of(localAuthority));
+
+        MojException.BadRequest exception =
+            assertThrows(
+                MojException.BadRequest.class,
+                () -> erAdministrationService.activateLa(requestDto),
+                "Should throw an error local authority is already activated"
+            );
+
+        assertThat(exception).isNotNull();
+        assertThat(exception.getMessage()).contains("LA with code 002 is already activated");
+
+        verify(localAuthorityRepository, times(1))
+            .findByLaCode(requestDto.getLaCode());
+
+        verifyNoInteractions(laUserService);
+
+    }
+
+    @Test
+    void updateDeadlineDeadlineNotFound() {
+
+        UpdateDeadlineRequestDto updateDeadlineRequestDto = new UpdateDeadlineRequestDto();
+        updateDeadlineRequestDto.setDeadlineDate(LocalDate.now().plusDays(90));
+
+        when(deadlineRepository.getCurrentDeadline())
+            .thenReturn(Optional.empty());
+
+        MojException.InternalServerError exception = assertThrows(MojException.InternalServerError.class,
+                                              () -> erAdministrationService.updateDeadline(updateDeadlineRequestDto),
+                                              "Expected exception to be thrown when no deadline data is found");
+
+        assertEquals("Deadline record not found - it should always exist", exception.getMessage(),
+                     "Expected exception message to be Deadline record not found - it should always exist");
+
+        verify(deadlineRepository, times(0))
+            .save(any(Deadline.class));
+    }
 }
