@@ -11,4 +11,6 @@ public interface LocalAuthorityService {
 
     LocalAuthority getLocalAuthorityByCode(String localAuthorityCode);
 
+    LocalAuthority saveLocalAuthority(LocalAuthority localAuthority);
+
 }
