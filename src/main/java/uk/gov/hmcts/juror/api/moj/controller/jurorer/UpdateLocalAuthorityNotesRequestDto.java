@@ -27,7 +27,8 @@ public class UpdateLocalAuthorityNotesRequestDto {
 
     @JsonProperty("notes")
     @Size(max = 2000, message = "Notes cannot exceed 2000 characters")
-    @Schema(description = "Notes for the local authority (null to clear notes)", example = "Contact attempted on 15/02/2025",
+    @Schema(description = "Notes for the local authority (null to clear notes)",
+        example = "Contact attempted on 15/02/2025",
         requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String notes;
 }
