@@ -213,7 +213,7 @@ public class UploadServiceImpl implements UploadService {
 
         // Update LA upload status to UPLOADED
         localAuthority.setUploadStatus(UploadStatus.UPLOADED);
-        localAuthority.setUpdatedBy(username);
+        localAuthority.setUpdatedBy("LA_USER_FILE_UPLOAD");
         localAuthority.setLastUpdated(LocalDateTime.now());
         localAuthorityRepository.save(localAuthority);
 
