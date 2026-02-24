@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -24,8 +25,8 @@ public class UpdateDeadlineResponseDto {
     @Schema(description = "Username of who updated the deadline", example = "bureau.admin@hmcts.gov.uk")
     private String updatedBy;
 
-    @Schema(description = "Date when the deadline was updated", example = "2025-02-19")
-    private LocalDate lastUpdated;
+    @Schema(description = "Date and time when the deadline was updated", example = "2024-06-30T14:30:00")
+    private LocalDateTime lastUpdated;
 
     @Schema(description = "Days remaining until the deadline", example = "40")
     private Long daysRemaining;

@@ -31,6 +31,7 @@ import uk.gov.hmcts.juror.api.moj.domain.UserType;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -182,6 +183,7 @@ class ErAdministrationControllerITest extends AbstractIntegrationTest {
     @Nested
     @DisplayName("PUT /api/v1/moj/er-administration/deadline")
     @Sql({"/db/mod/truncate.sql","/db/jurorer/ErDashboardData.sql"})
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     class ChangeDeadlineTest {
 
         @Test
@@ -210,8 +212,8 @@ class ErAdministrationControllerITest extends AbstractIntegrationTest {
                                                                + "remaining.")
                 .isEqualTo(30L);
             assertThat(responseBody.getLastUpdated())
-                .as("Expect the response body to have the last updated date set to today.")
-                .isEqualTo(LocalDate.now());
+                .as("Expect the response body to have the last updated date and time set to now.")
+                .isBetween(LocalDateTime.now().minusSeconds(5), LocalDateTime.now().plusSeconds(5));
             assertThat(responseBody.getUpdatedBy())
                 .as("Expect the response body to have the updated by field set to the current user.")
                 .isEqualTo("BUREAU_USER");
@@ -227,8 +229,8 @@ class ErAdministrationControllerITest extends AbstractIntegrationTest {
 
                 // also check the audit fields have been updated correctly
                 assertThat(deadline.get().getLastUpdated())
-                    .as("Expect the last updated date to be set to today.")
-                    .isEqualTo(LocalDate.now());
+                    .as("Expect the last updated date to be set to now.")
+                    .isBetween(LocalDateTime.now().minusSeconds(5), LocalDateTime.now().plusSeconds(5));
                 assertThat(deadline.get().getUpdatedBy())
                     .as("Expect the updated by field to be set to the current user.")
                     .isEqualTo("BUREAU_USER");

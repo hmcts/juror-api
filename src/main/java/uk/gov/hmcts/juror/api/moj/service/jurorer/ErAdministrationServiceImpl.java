@@ -19,7 +19,6 @@ import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineResponseDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -119,7 +118,7 @@ public class ErAdministrationServiceImpl implements ErAdministrationService {
         // Update deadline
         deadline.setDeadlineDate(request.getDeadlineDate());
         deadline.setUpdatedBy(currentUser);
-        deadline.setLastUpdated(LocalDate.now());
+        deadline.setLastUpdated(LocalDateTime.now());
 
         // Save updated deadline
         Deadline updatedDeadline = deadlineRepository.save(deadline);
