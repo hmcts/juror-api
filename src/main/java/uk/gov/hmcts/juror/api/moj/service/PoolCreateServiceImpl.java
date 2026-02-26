@@ -491,7 +491,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         // read the next juror sequence number and assign to the juror
         Long jurorNumber = jurorRepository.getJurorSequenceNumber();
         juror.setJurorNumber(String.format("%09d", jurorNumber));
-        
+
         juror.setPollNumber(voter.getPollNumber());
         juror.setTitle(voter.getTitle());
         juror.setFirstName(voter.getFirstName());
@@ -508,6 +508,13 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         juror.setDateOfBirth(voter.getDateOfBirth());
         juror.setResponded(false);
         juror.setContactPreference(null);
+
+        // add the hash id and date created for the juror record, this combination should be unique for
+        // each juror and prevent duplicate juror records being created for the same voter on the same day
+        juror.setHashId(voter.getHashId());
+        juror.setSummonedDate(LocalDate.now());
+
+        juror.setDateCreated(LocalDateTime.now());
 
         jurorPool.setIsActive(true);
 
