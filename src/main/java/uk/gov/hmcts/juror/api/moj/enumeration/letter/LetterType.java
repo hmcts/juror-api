@@ -115,7 +115,7 @@ public enum LetterType {
         ReissueLetterService.DataType.EXTRACTED_FLAG,
         ReissueLetterService.DataType.FORM_CODE),
         tupleJPAQuery -> tupleJPAQuery
-            .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED))
+            .where(QJurorPool.jurorPool.status.status.in(IJurorStatus.SUMMONED, IJurorStatus.RESPONDED))
             .where(QJuror.juror.excusalRejected.eq("Y")),
         datePrintedComparator()),
 

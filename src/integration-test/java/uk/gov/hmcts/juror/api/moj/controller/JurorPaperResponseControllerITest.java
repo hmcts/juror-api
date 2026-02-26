@@ -115,7 +115,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         JurorPaperResponseDto requestDto = buildJurorPaperResponseDto();
         setThirdPartyDetails(requestDto);
         requestDto.setCjsEmployment(Collections.singletonList(buildCjsEmployment("Police Force")));
-        requestDto.setReasonableAdjustments(Collections.singletonList(buildSpecialNeeds("V")));
+        requestDto.setReasonableAdjustments(Collections.singletonList(buildReasonableAdjustments("V")));
 
         RequestEntity<JurorPaperResponseDto> requestEntity = new RequestEntity<>(requestDto, httpHeaders,
             HttpMethod.POST, uri);
@@ -1184,20 +1184,21 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
-        List<JurorPaperResponseDto.ReasonableAdjustment> specialNeedList = new ArrayList<>();
+        List<JurorPaperResponseDto.ReasonableAdjustment> reasonableAdjustments = new ArrayList<>();
 
-        JurorPaperResponseDto.ReasonableAdjustment specialNeed = JurorPaperResponseDto.ReasonableAdjustment.builder()
+        JurorPaperResponseDto.ReasonableAdjustment reasonableAdjustment =
+            JurorPaperResponseDto.ReasonableAdjustment.builder()
             .assistanceType("V")
             .assistanceTypeDetails("Some details on type V")
             .build();
-        specialNeedList.add(specialNeed);
-        specialNeed = JurorPaperResponseDto.ReasonableAdjustment.builder()
+        reasonableAdjustments.add(reasonableAdjustment);
+        reasonableAdjustment = JurorPaperResponseDto.ReasonableAdjustment.builder()
             .assistanceType("V")
             .assistanceTypeDetails("Some details on type V")
             .build();
-        specialNeedList.add(specialNeed);
+        reasonableAdjustments.add(reasonableAdjustment);
         ReasonableAdjustmentDetailsDto reasonableAdjustmentDetailsDto = new ReasonableAdjustmentDetailsDto();
-        reasonableAdjustmentDetailsDto.setReasonableAdjustments(specialNeedList);
+        reasonableAdjustmentDetailsDto.setReasonableAdjustments(reasonableAdjustments);
 
         RequestEntity<ReasonableAdjustmentDetailsDto> requestEntity = new RequestEntity<>(
             reasonableAdjustmentDetailsDto, httpHeaders,
@@ -1218,7 +1219,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         List<JurorPaperResponseDto.ReasonableAdjustment> reasonableAdjustmentList = new ArrayList<>();
         // create a different reasonable adjustment to the one in the database
         JurorPaperResponseDto.ReasonableAdjustment reasonableAdjustment =
-            JurorPaperResponseDto.ReasonableAdjustment.builder()
+                                                        JurorPaperResponseDto.ReasonableAdjustment.builder()
                 .assistanceType("M")
                 .assistanceTypeDetails("A number of adjustments")
                 .build();
@@ -1236,10 +1237,10 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             .findByJurorNumber("123456789");
         assertThat(reasonableAdjustments.size()).isEqualTo(1);  // we need a record to be present
 
-        JurorReasonableAdjustment specialNeedDB = reasonableAdjustments.get(0);
-        assertThat(specialNeedDB.getReasonableAdjustment().getCode()).isEqualTo(
+        JurorReasonableAdjustment reasonableAdjustmentDB = reasonableAdjustments.get(0);
+        assertThat(reasonableAdjustmentDB.getReasonableAdjustment().getCode()).isEqualTo(
             reasonableAdjustment.getAssistanceType());
-        assertThat(specialNeedDB.getReasonableAdjustmentDetail()).isEqualTo(
+        assertThat(reasonableAdjustmentDB.getReasonableAdjustmentDetail()).isEqualTo(
             reasonableAdjustment.getAssistanceTypeDetails());
 
     }
@@ -1278,15 +1279,16 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
 
-        List<JurorPaperResponseDto.ReasonableAdjustment> specialNeedList = new ArrayList<>();
+        List<JurorPaperResponseDto.ReasonableAdjustment> reasonableAdjustments = new ArrayList<>();
         // create a different special need to the one in the database
-        JurorPaperResponseDto.ReasonableAdjustment specialNeed = JurorPaperResponseDto.ReasonableAdjustment.builder()
+        JurorPaperResponseDto.ReasonableAdjustment reasonableAdjustment =
+                                                    JurorPaperResponseDto.ReasonableAdjustment.builder()
             .assistanceType("M")
             .assistanceTypeDetails("A number of adjustments")
             .build();
         ReasonableAdjustmentDetailsDto reasonableAdjustmentDetailsDto = new ReasonableAdjustmentDetailsDto();
-        specialNeedList.add(specialNeed);
-        reasonableAdjustmentDetailsDto.setReasonableAdjustments(specialNeedList);
+        reasonableAdjustments.add(reasonableAdjustment);
+        reasonableAdjustmentDetailsDto.setReasonableAdjustments(reasonableAdjustments);
 
         RequestEntity<ReasonableAdjustmentDetailsDto> requestEntity = new RequestEntity<>(
             reasonableAdjustmentDetailsDto, httpHeaders,
@@ -1300,9 +1302,9 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
         JurorReasonableAdjustment reasonableAdjustmentDB = reasonableAdjustmentList.get(0);
         assertThat(reasonableAdjustmentDB.getReasonableAdjustment().getCode()).isEqualTo(
-            specialNeed.getAssistanceType());
+            reasonableAdjustment.getAssistanceType());
         assertThat(reasonableAdjustmentDB.getReasonableAdjustmentDetail()).isEqualTo(
-            specialNeed.getAssistanceTypeDetails());
+            reasonableAdjustment.getAssistanceTypeDetails());
 
     }
 
@@ -1314,15 +1316,16 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
-        List<JurorPaperResponseDto.ReasonableAdjustment> specialNeedList = new ArrayList<>();
+        List<JurorPaperResponseDto.ReasonableAdjustment> reasonableAdjustments = new ArrayList<>();
         // create a different special need to the one in the database
-        JurorPaperResponseDto.ReasonableAdjustment specialNeed = JurorPaperResponseDto.ReasonableAdjustment.builder()
+        JurorPaperResponseDto.ReasonableAdjustment reasonableAdjustment =
+                                                        JurorPaperResponseDto.ReasonableAdjustment.builder()
             .assistanceType("M")
             .assistanceTypeDetails("A number of adjustments")
             .build();
         ReasonableAdjustmentDetailsDto reasonableAdjustmentDetailsDto = new ReasonableAdjustmentDetailsDto();
-        specialNeedList.add(specialNeed);
-        reasonableAdjustmentDetailsDto.setReasonableAdjustments(specialNeedList);
+        reasonableAdjustments.add(reasonableAdjustment);
+        reasonableAdjustmentDetailsDto.setReasonableAdjustments(reasonableAdjustments);
 
         RequestEntity<ReasonableAdjustmentDetailsDto> requestEntity = new RequestEntity<>(
             reasonableAdjustmentDetailsDto, httpHeaders,
@@ -1340,15 +1343,16 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
 
-        List<JurorPaperResponseDto.ReasonableAdjustment> specialNeedList = new ArrayList<>();
+        List<JurorPaperResponseDto.ReasonableAdjustment> reasonableAdjustments = new ArrayList<>();
         // create a different special need to the one in the database
-        JurorPaperResponseDto.ReasonableAdjustment specialNeed = JurorPaperResponseDto.ReasonableAdjustment.builder()
+        JurorPaperResponseDto.ReasonableAdjustment reasonableAdjustment =
+                                                        JurorPaperResponseDto.ReasonableAdjustment.builder()
             .assistanceType("M")
             .assistanceTypeDetails("A number of adjustments")
             .build();
         ReasonableAdjustmentDetailsDto reasonableAdjustmentDetailsDto = new ReasonableAdjustmentDetailsDto();
-        specialNeedList.add(specialNeed);
-        reasonableAdjustmentDetailsDto.setReasonableAdjustments(specialNeedList);
+        reasonableAdjustments.add(reasonableAdjustment);
+        reasonableAdjustmentDetailsDto.setReasonableAdjustments(reasonableAdjustments);
         RequestEntity<ReasonableAdjustmentDetailsDto> requestEntity = new RequestEntity<>(
             reasonableAdjustmentDetailsDto, httpHeaders,
             HttpMethod.PATCH, uri);
@@ -1365,15 +1369,16 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
 
-        List<JurorPaperResponseDto.ReasonableAdjustment> specialNeedList = new ArrayList<>();
+        List<JurorPaperResponseDto.ReasonableAdjustment> reasonableAdjustments = new ArrayList<>();
         // create a different special need to the one in the database
-        JurorPaperResponseDto.ReasonableAdjustment specialNeed = JurorPaperResponseDto.ReasonableAdjustment.builder()
+        JurorPaperResponseDto.ReasonableAdjustment reasonableAdjustment =
+                                                            JurorPaperResponseDto.ReasonableAdjustment.builder()
             .assistanceType("M")
             .assistanceTypeDetails("A number of adjustments")
             .build();
         ReasonableAdjustmentDetailsDto reasonableAdjustmentDetailsDto = new ReasonableAdjustmentDetailsDto();
-        specialNeedList.add(specialNeed);
-        reasonableAdjustmentDetailsDto.setReasonableAdjustments(specialNeedList);
+        reasonableAdjustments.add(reasonableAdjustment);
+        reasonableAdjustmentDetailsDto.setReasonableAdjustments(reasonableAdjustments);
 
         RequestEntity<ReasonableAdjustmentDetailsDto> requestEntity = new RequestEntity<>(
             reasonableAdjustmentDetailsDto, httpHeaders,
@@ -1400,8 +1405,9 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         cjsEmploymentList.add(cjsEmployment);
         cjsEmploymentDetailsDto.setCjsEmployment(cjsEmploymentList);
 
-        RequestEntity<CjsEmploymentDetailsDto> requestEntity = new RequestEntity<>(cjsEmploymentDetailsDto, httpHeaders,
-            HttpMethod.PATCH, uri);
+        RequestEntity<CjsEmploymentDetailsDto> requestEntity =
+                                        new RequestEntity<>(cjsEmploymentDetailsDto, httpHeaders,
+                                        HttpMethod.PATCH, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 
@@ -1433,8 +1439,9 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         cjsEmploymentList.add(cjsEmployment);
         cjsEmploymentDetailsDto.setCjsEmployment(cjsEmploymentList);
 
-        RequestEntity<CjsEmploymentDetailsDto> requestEntity = new RequestEntity<>(cjsEmploymentDetailsDto, httpHeaders,
-            HttpMethod.PATCH, uri);
+        RequestEntity<CjsEmploymentDetailsDto> requestEntity =
+                                            new RequestEntity<>(cjsEmploymentDetailsDto, httpHeaders,
+                                            HttpMethod.PATCH, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 
@@ -1466,8 +1473,9 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         cjsEmploymentList.add(cjsEmployment);
         cjsEmploymentDetailsDto.setCjsEmployment(cjsEmploymentList);
 
-        RequestEntity<CjsEmploymentDetailsDto> requestEntity = new RequestEntity<>(cjsEmploymentDetailsDto, httpHeaders,
-            HttpMethod.PATCH, uri);
+        RequestEntity<CjsEmploymentDetailsDto> requestEntity =
+                                                    new RequestEntity<>(cjsEmploymentDetailsDto, httpHeaders,
+                                                    HttpMethod.PATCH, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
 
@@ -1491,8 +1499,9 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         cjsEmploymentList.add(cjsEmployment);
         cjsEmploymentDetailsDto.setCjsEmployment(cjsEmploymentList);
 
-        RequestEntity<CjsEmploymentDetailsDto> requestEntity = new RequestEntity<>(cjsEmploymentDetailsDto, httpHeaders,
-            HttpMethod.PATCH, uri);
+        RequestEntity<CjsEmploymentDetailsDto> requestEntity =
+                                                    new RequestEntity<>(cjsEmploymentDetailsDto, httpHeaders,
+                                                    HttpMethod.PATCH, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
 
@@ -1516,7 +1525,8 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         cjsEmploymentList.add(cjsEmployment);
         cjsEmploymentDetailsDto.setCjsEmployment(cjsEmploymentList);
 
-        RequestEntity<CjsEmploymentDetailsDto> requestEntity = new RequestEntity<>(cjsEmploymentDetailsDto, httpHeaders,
+        RequestEntity<CjsEmploymentDetailsDto> requestEntity =
+            new RequestEntity<>(cjsEmploymentDetailsDto, httpHeaders,
             HttpMethod.PATCH, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
@@ -1540,7 +1550,8 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         cjsEmploymentList.add(cjsEmployment);
         cjsEmploymentDetailsDto.setCjsEmployment(cjsEmploymentList);
 
-        RequestEntity<CjsEmploymentDetailsDto> requestEntity = new RequestEntity<>(cjsEmploymentDetailsDto, httpHeaders,
+        RequestEntity<CjsEmploymentDetailsDto> requestEntity =
+            new RequestEntity<>(cjsEmploymentDetailsDto, httpHeaders,
             HttpMethod.PATCH, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -1570,7 +1581,8 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         CjsEmploymentDetailsDto cjsEmploymentDetailsDto = new CjsEmploymentDetailsDto();
         cjsEmploymentDetailsDto.setCjsEmployment(cjsEmploymentList);
 
-        RequestEntity<CjsEmploymentDetailsDto> requestEntity = new RequestEntity<>(cjsEmploymentDetailsDto, httpHeaders,
+        RequestEntity<CjsEmploymentDetailsDto> requestEntity =
+            new RequestEntity<>(cjsEmploymentDetailsDto, httpHeaders,
             HttpMethod.PATCH, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -2158,7 +2170,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             .build();
     }
 
-    private JurorPaperResponseDto.ReasonableAdjustment buildSpecialNeeds(String assistanceType) {
+    private JurorPaperResponseDto.ReasonableAdjustment buildReasonableAdjustments(String assistanceType) {
         return JurorPaperResponseDto.ReasonableAdjustment.builder()
             .assistanceType(assistanceType)
             .assistanceTypeDetails("Some test details")

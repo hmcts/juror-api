@@ -33,6 +33,11 @@ public class StandardReportRequest {
     @NotBlank
     @Schema(allowableValues = {
         //Standard
+        "CourtsWithIncompleteServiceReport",
+        "ManualAdjustmentsToExpenseLimitsReport",
+        "ExpensePaymentUsingAdjustLimitsReport",
+        "OutgoingSMSMessagesReport",
+        "ExpensePaymentByTypeReport",
         "CurrentPoolStatusReport",
         "DeferredListByDateReport",
         "NextAttendanceDayReport",
@@ -59,6 +64,7 @@ public class StandardReportRequest {
         "AvailableListByPoolReport",
         "PoolSelectionListReport",
         "PoolAnalysisReport",
+        "WeekendAttendanceReport",
         //Grouped
         "AbsencesReport",
         "PostponedListByDateReport",
@@ -137,4 +143,13 @@ public class StandardReportRequest {
 
     @NotNull(groups = AbstractReport.Validators.RequireFilterOwnedDeferrals.class)
     private Boolean filterOwnedDeferrals;
+
+    @NotNull(groups = AbstractReport.Validators.RequireTransportType.class)
+    @Pattern(groups = AbstractReport.Validators.RequireTransportType.class,
+        regexp = "^(Public Transport|Taxi)$",
+        message = "Transport type must be either 'Public Transport' or 'Taxi'")
+    private String transportType;
+
+    @NotNull(groups = AbstractReport.Validators.RequireRevisionNumber.class)
+    private Long revisionNumber;
 }

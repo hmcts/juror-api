@@ -61,7 +61,7 @@ public class JurorServiceImplTest {
     private static final String TEST_JUROR_NUMBER = "209092530";
 
     @Mock
-    private JurorReasonableAdjustmentRepository specialNeedRepository;
+    private JurorReasonableAdjustmentRepository reasonableAdjustmentRepository;
 
     @Mock
     private ReplyTypeRepository replyTypeRepository;
@@ -189,9 +189,9 @@ public class JurorServiceImplTest {
         final String mentalHealthActDetail = "I have been sectioned in the past.";
         final String cjsEmployer = "Police";
         final String cjsEmployerDetails = "I am a policeman";
-        final String specialNeedType = "M";
-        final String specialNeedDetail = "I have a broken leg.";
-        final String specialArrangements = "I cannot get up stairs easily.";
+        final String reasonableAdjustmentType = "M";
+        final String reasonableAdjustmentNeedDetail = "I have a broken leg.";
+        final String reasonableAdjustmentArrangements = "I cannot get up stairs easily.";
         final String deferralReason = "I am in hospital.";
         final String deferralDates = "I'm in traction for another 6 weeks.";
         final String excusalReason = "I am needed to solve a big case";
@@ -239,10 +239,10 @@ public class JurorServiceImplTest {
                 .cjsEmployerDetails(cjsEmployerDetails)
                 .build()))
             .reasonableAdjustments(Collections.singletonList(JurorResponseDto.ReasonableAdjustment.builder()
-                .assistanceType(specialNeedType)
-                .assistanceTypeDetails(specialNeedDetail)
+                .assistanceType(reasonableAdjustmentType)
+                .assistanceTypeDetails(reasonableAdjustmentNeedDetail)
                 .build()))
-            .assistanceSpecialArrangements(specialArrangements)
+            .assistanceSpecialArrangements(reasonableAdjustmentArrangements)
             .thirdParty(JurorResponseDto.ThirdParty.builder()
                 .thirdPartyFName(thirdPartyFname)
                 .thirdPartyLName(thirdPartyLname)
@@ -263,7 +263,7 @@ public class JurorServiceImplTest {
         //when(tSpecialRepository.findOne(any(Predicate.class))).thenReturn(new TSpecial(SPECIAL_NEED_TYPE, "Spec
         // need description"));
         when(reasonableAdjustmentsRepository.findByCode(anyString()))
-            .thenReturn(new ReasonableAdjustments(specialNeedType, "Spec need " + "description"));
+            .thenReturn(new ReasonableAdjustments(reasonableAdjustmentType, "Spec need " + "description"));
 
         when(replyTypeRepository.findById(anyString())).thenReturn(
             Optional.of(new ReplyType("DIGITAL", "Digital")));
@@ -304,10 +304,10 @@ public class JurorServiceImplTest {
         assertThat(entity.getReasonableAdjustments()).hasSize(1);
         assertThat(entity.getReasonableAdjustments().get(0).getJurorNumber()).isEqualTo(jurorNumber);
         assertThat(entity.getReasonableAdjustments().get(0).getReasonableAdjustment().getCode())
-            .isEqualTo(specialNeedType);
+            .isEqualTo(reasonableAdjustmentType);
         assertThat(entity.getReasonableAdjustments().get(0).getReasonableAdjustmentDetail())
-            .isEqualTo(specialNeedDetail);
-        assertThat(entity.getReasonableAdjustmentsArrangements()).isEqualTo(specialArrangements);
+            .isEqualTo(reasonableAdjustmentNeedDetail);
+        assertThat(entity.getReasonableAdjustmentsArrangements()).isEqualTo(reasonableAdjustmentArrangements);
 
         assertThat(entity.getDeferralReason()).isEqualTo(deferralReason);
         assertThat(entity.getDeferralDate()).isEqualTo(deferralDates);
@@ -397,36 +397,6 @@ public class JurorServiceImplTest {
     }
 
     @Test
-    public void processDeceasedExcusal_happyPath_processDeceasedExcusalNotCalled() throws
-        StraightThroughProcessingServiceException {
-
-        final JurorResponseDto responseDto = mock(JurorResponseDto.class);
-        final DigitalResponse jurorResponse = mock(DigitalResponse.class);
-
-        given(mockJurorService.saveResponse(any(JurorResponseDto.class))).willReturn(jurorResponse);
-
-
-        // ensure the processing of Straight-Through Acceptance and Deceased-Excusals are disabled
-        AppSetting appSettingAcceptanceTrue = new AppSetting(StraightThroughType.ACCEPTANCE.getDbName(), "TRUE");
-        AppSetting appSettingDeceasedExcusalTrue = new AppSetting(StraightThroughType.DECEASED_EXCUSAL.getDbName(),
-            "TRUE");
-
-        // return TRUE the first two DB checks, then null for age excusal check after
-        given(appSettingRepository.findById(anyString()))
-            .willReturn(Optional.of(appSettingAcceptanceTrue))
-            .willReturn(Optional.of(appSettingDeceasedExcusalTrue))
-            .willReturn(Optional.empty());
-
-        // process response
-        Boolean success = jurorPersistenceService.persistJurorResponse(responseDto);
-
-        assertThat(success).isTrue();
-        // check we didn't execute the deceased-excusal logic
-        verify(straightThroughProcessor, times(0)).processAcceptance(any(DigitalResponse.class));
-        verify(straightThroughProcessor, times(0)).processDeceasedExcusal(any(DigitalResponse.class));
-    }
-
-    @Test
     public void processAgeExcusal_happyPath_ageExcusalCalled() throws StraightThroughProcessingServiceException {
 
         final JurorResponseDto responseDto = mock(JurorResponseDto.class);
@@ -450,10 +420,11 @@ public class JurorServiceImplTest {
         Boolean success = jurorPersistenceService.persistJurorResponse(responseDto);
 
         assertThat(success).isTrue();
-        // check we executed the age-excusal logic
+        // check we didn't execute the deceased-excusal logic
         verify(straightThroughProcessor, times(0)).processAcceptance(any(DigitalResponse.class));
         verify(straightThroughProcessor, times(0))
             .processDeceasedExcusal(any(DigitalResponse.class));
+        // check we executed the age-excusal logic
         verify(straightThroughProcessor).processAgeExcusal(any(DigitalResponse.class));
     }
 

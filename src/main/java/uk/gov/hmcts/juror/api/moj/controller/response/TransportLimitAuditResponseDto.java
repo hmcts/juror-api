@@ -12,6 +12,7 @@ import uk.gov.hmcts.juror.api.moj.audit.dto.TransportLimitAuditRecord;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
 @Data
 @Builder
 @NoArgsConstructor

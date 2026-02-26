@@ -40,6 +40,9 @@ public class UpdateAttendanceDto {
     @Length(max = 16)
     private String trialNumber;
 
+    @JsonProperty("juror_in_waiting")
+    private boolean jurorInWaiting;
+
     @AllArgsConstructor
     @NoArgsConstructor
     @Getter
@@ -79,7 +82,4 @@ public class UpdateAttendanceDto {
         @NotNull
         private Boolean singleJuror;
     }
-
-    @JsonProperty("juror_in_waiting")
-    private boolean jurorInWaiting;
 }

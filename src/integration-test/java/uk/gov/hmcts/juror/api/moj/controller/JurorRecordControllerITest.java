@@ -951,7 +951,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             .isEqualTo("Responded");
         assertThat(jurorDetails.getCommonDetails().getCourtName())
             .as("Expect the Juror record to be in Chichester Crown Court")
-            .isEqualTo("LEWES SITTING AT CHICHESTER");
+            .isEqualTo("GUILDFORD SITTING AT CHICHESTER");
         assertThat(thirdParty.getThirdPartyFName())
             .as("Expect the third party first name to be TPFIRSTNAME")
             .isEqualTo("TPFIRSTNAME");
@@ -1009,7 +1009,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             .isEqualTo("Responded");
         assertThat(jurorDetails.getCommonDetails().getCourtName())
             .as("Expect the Juror record to be in Chichester Crown Court")
-            .isEqualTo("LEWES SITTING AT CHICHESTER");
+            .isEqualTo("GUILDFORD SITTING AT CHICHESTER");
         assertThat(jurorDetails.getThirdParty())
             .as("Expect the Juror third party details to be null")
             .isEqualTo(null);
@@ -5901,7 +5901,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertThat(juror.getPoolNumber()).as("Expect the response body to contain the correct pool number")
                 .isEqualTo("416220902");
             assertThat(juror.getCourtName()).as("Expect the response body to contain the correct court name")
-                .isEqualTo("LEWES SITTING AT CHICHESTER");
+                .isEqualTo("GUILDFORD SITTING AT CHICHESTER");
             assertThat(juror.getStatus()).as("Expect the response body to contain the correct status")
                 .isEqualTo("Responded");
         }

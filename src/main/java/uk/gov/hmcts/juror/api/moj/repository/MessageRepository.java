@@ -8,7 +8,7 @@ import uk.gov.hmcts.juror.api.moj.domain.messages.Message;
 import java.util.List;
 
 @Repository
-public interface MessageRepository extends CrudRepository<Message, String>,
+public interface MessageRepository extends IMessageRepository, CrudRepository<Message, String>,
     QuerydslPredicateExecutor<Message> {
 
     Message findByJurorNumber(String jurorNumber);
