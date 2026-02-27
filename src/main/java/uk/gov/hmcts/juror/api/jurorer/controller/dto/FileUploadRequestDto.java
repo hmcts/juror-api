@@ -30,8 +30,8 @@ public class FileUploadRequestDto {
 
     @JsonProperty("file_format")
     @NotBlank(message = "File format is required")
-    @Size(max = 20, message = "File format cannot exceed 20 characters")
-    @Schema(description = "File format/extension", example = "xlsx", required = true)
+    @Size(max = 100, message = "File format cannot exceed 100 characters")
+    @Schema(description = "File format", example = "express", required = true)
     private String fileFormat;
 
     @JsonProperty("file_size_bytes")
