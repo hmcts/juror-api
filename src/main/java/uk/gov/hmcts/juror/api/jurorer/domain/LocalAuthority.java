@@ -45,7 +45,7 @@ public class LocalAuthority {
     @Column(name = "inactive_reason", length = 2000)
     private String inactiveReason;
 
-    @Column(name = "updated_by", length = 30)
+    @Column(name = "updated_by", length = 200)
     private String updatedBy;
 
     @Column(name = "last_updated")
