@@ -7,3 +7,6 @@ ALTER COLUMN file_format type varchar(100);
 
 ALTER TABLE juror_er.local_authority
 ALTER COLUMN updated_by type varchar(200);
+
+ALTER TABLE juror_er.local_authority_audit
+ALTER COLUMN updated_by type varchar(200);
