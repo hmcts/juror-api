@@ -25,10 +25,10 @@ public interface LaUserService {
 
     /**
      * Get all email addresses grouped by Local Authority.
-     * Only includes active Local Authorities.
      *
-     * @return Export response with all LA email addresses
+     * @param activeOnly If true, only includes active users. If false, includes all users.
+     * @return Export response with LA email addresses filtered by active status
      */
-    ExportLaEmailAddressResponseDto getAllLaEmailAddresses();
+    ExportLaEmailAddressResponseDto getAllLaEmailAddresses(boolean activeOnly);
 
 }

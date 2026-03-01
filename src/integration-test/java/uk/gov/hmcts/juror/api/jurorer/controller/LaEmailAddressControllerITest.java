@@ -68,7 +68,7 @@ public class LaEmailAddressControllerITest extends AbstractIntegrationTest {
         private static final String URL = BASE_URL + "/email-addresses";
 
         @Test
-        @DisplayName("Should successfully export all LA email addresses")
+        @DisplayName("Should successfully export all LA email addresses (default - all users)")
         void exportEmailAddressesHappy() {
             ResponseEntity<ExportLaEmailAddressResponseDto> response = restTemplate.exchange(
                 new RequestEntity<>(httpHeaders, GET, URI.create(URL)),
@@ -88,6 +88,91 @@ public class LaEmailAddressControllerITest extends AbstractIntegrationTest {
             assertThat(testLas)
                 .as("Should return our 5 test Local Authorities")
                 .hasSize(5);
+        }
+
+        @Test
+        @DisplayName("Should export all users (active and inactive) when active_only=false")
+        void exportEmailAddressesAllUsers() {
+            ResponseEntity<ExportLaEmailAddressResponseDto> response = restTemplate.exchange(
+                new RequestEntity<>(httpHeaders, GET, URI.create(URL + "?active_only=false")),
+                ExportLaEmailAddressResponseDto.class);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+            // LA 004 has 1 inactive user, should be included when active_only=false
+            ExportLaEmailAddressResponseDto.LocalAuthorityEmailsDto la004 =
+                response.getBody().getLocalAuthorities().stream()
+                    .filter(la -> "004".equals(la.getLaCode()))
+                    .findFirst()
+                    .orElseThrow();
+
+            assertThat(la004.getEmailAddresses())
+                .as("LA 004 should have 1 email address (inactive user included)")
+                .hasSize(1);
+
+            ExportLaEmailAddressResponseDto.EmailAddressDto email = la004.getEmailAddresses().get(0);
+            assertThat(email.getUsername()).isEqualTo("inactive@la004.gov.uk");
+            assertThat(email.getActive())
+                .as("User should be marked as inactive")
+                .isFalse();
+        }
+
+        @Test
+        @DisplayName("Should export only active users when active_only=true")
+        void exportEmailAddressesActiveOnly() {
+            ResponseEntity<ExportLaEmailAddressResponseDto> response = restTemplate.exchange(
+                new RequestEntity<>(httpHeaders, GET, URI.create(URL + "?active_only=true")),
+                ExportLaEmailAddressResponseDto.class);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+            // LA 004 has 1 inactive user, should NOT be included when active_only=true
+            ExportLaEmailAddressResponseDto.LocalAuthorityEmailsDto la004 =
+                response.getBody().getLocalAuthorities().stream()
+                    .filter(la -> "004".equals(la.getLaCode()))
+                    .findFirst()
+                    .orElseThrow();
+
+            assertThat(la004.getEmailAddresses())
+                .as("LA 004 should have 0 email addresses (inactive user excluded)")
+                .isEmpty();
+
+            // LA 001 has 2 active users, both should be included
+            ExportLaEmailAddressResponseDto.LocalAuthorityEmailsDto la001 =
+                response.getBody().getLocalAuthorities().stream()
+                    .filter(la -> "001".equals(la.getLaCode()))
+                    .findFirst()
+                    .orElseThrow();
+
+            assertThat(la001.getEmailAddresses())
+                .as("LA 001 should have 2 active email addresses")
+                .hasSize(2)
+                .allMatch(ExportLaEmailAddressResponseDto.EmailAddressDto::getActive);
+        }
+
+        @Test
+        @DisplayName("Should default to active_only=false when parameter not provided")
+        void exportEmailAddressesDefaultParameter() {
+            ResponseEntity<ExportLaEmailAddressResponseDto> response = restTemplate.exchange(
+                new RequestEntity<>(httpHeaders, GET, URI.create(URL)),
+                ExportLaEmailAddressResponseDto.class);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+            // Should include inactive users by default (active_only defaults to false)
+            ExportLaEmailAddressResponseDto.LocalAuthorityEmailsDto la004 =
+                response.getBody().getLocalAuthorities().stream()
+                    .filter(la -> "004".equals(la.getLaCode()))
+                    .findFirst()
+                    .orElseThrow();
+
+            assertThat(la004.getEmailAddresses())
+                .as("Should include inactive users by default")
+                .hasSize(1);
+
+            assertThat(la004.getEmailAddresses().get(0).getActive())
+                .as("User should be inactive")
+                .isFalse();
         }
 
         @Test
@@ -210,10 +295,10 @@ public class LaEmailAddressControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("Should include both active and inactive users")
+        @DisplayName("Should include both active and inactive users when active_only=false")
         void exportEmailAddressesIncludesInactiveUsers() {
             ResponseEntity<ExportLaEmailAddressResponseDto> response = restTemplate.exchange(
-                new RequestEntity<>(httpHeaders, GET, URI.create(URL)),
+                new RequestEntity<>(httpHeaders, GET, URI.create(URL + "?active_only=false")),
                 ExportLaEmailAddressResponseDto.class);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -256,6 +341,27 @@ public class LaEmailAddressControllerITest extends AbstractIntegrationTest {
                 .extracting(ExportLaEmailAddressResponseDto.EmailAddressDto::getUsername)
                 .as("Email addresses should be sorted alphabetically")
                 .containsExactly("user1@la001.gov.uk", "user2@la001.gov.uk");
+        }
+
+        @Test
+        @DisplayName("Should filter correctly with active_only=true for LA with mixed users")
+        void exportEmailAddressesActiveOnlyFiltersMixedUsers() {
+            // This test assumes test data includes an LA with both active and inactive users
+            // If LA 001 had 1 active and 1 inactive user, this would verify filtering
+
+            ResponseEntity<ExportLaEmailAddressResponseDto> response = restTemplate.exchange(
+                new RequestEntity<>(httpHeaders, GET, URI.create(URL + "?active_only=true")),
+                ExportLaEmailAddressResponseDto.class);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+            // All returned users should be active
+            response.getBody().getLocalAuthorities().stream()
+                .filter(la -> List.of("001", "002", "003", "004", "005").contains(la.getLaCode()))
+                .flatMap(la -> la.getEmailAddresses().stream())
+                .forEach(email -> assertThat(email.getActive())
+                    .as("All users should be active when active_only=true")
+                    .isTrue());
         }
 
         @Test

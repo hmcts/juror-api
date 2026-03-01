@@ -148,8 +148,8 @@ public class LaUserServiceImpl implements LaUserService {
 
     @Override
     @Transactional(readOnly = true)
-    public ExportLaEmailAddressResponseDto getAllLaEmailAddresses() {
-        log.info("Exporting all LA email addresses");
+    public ExportLaEmailAddressResponseDto getAllLaEmailAddresses(boolean activeOnly) {
+        log.info("Exporting all LA email addresses (activeOnly: {})", activeOnly);
 
         // Get all Local Authorities and sort by name
         List<LocalAuthority> allLocalAuthorities = new ArrayList<>();
@@ -163,15 +163,29 @@ public class LaUserServiceImpl implements LaUserService {
                     // Get all users for this LA
                     List<LaUser> users = userRepository.findByLocalAuthority(la);
 
-                    // Map users to email DTOs, sorted by username
-                    List<ExportLaEmailAddressResponseDto.EmailAddressDto> emailAddresses =
-                        users.stream()
+                    // Filter users based on activeOnly parameter
+                    List<ExportLaEmailAddressResponseDto.EmailAddressDto> emailAddresses;
+
+                    if (activeOnly) {
+                        // Only include active users
+                        emailAddresses = users.stream()
+                            .filter(LaUser::isActive)  // Filter to active users only
                             .map(user -> ExportLaEmailAddressResponseDto.EmailAddressDto.builder()
                                 .username(user.getUsername())
                                 .active(user.isActive())
                                 .build())
                             .sorted(Comparator.comparing(ExportLaEmailAddressResponseDto.EmailAddressDto::getUsername))
                             .collect(Collectors.toList());
+                    } else {
+                        // Include all users (active and inactive)
+                        emailAddresses = users.stream()
+                            .map(user -> ExportLaEmailAddressResponseDto.EmailAddressDto.builder()
+                                .username(user.getUsername())
+                                .active(user.isActive())
+                                .build())
+                            .sorted(Comparator.comparing(ExportLaEmailAddressResponseDto.EmailAddressDto::getUsername))
+                            .collect(Collectors.toList());
+                    }
 
                     return ExportLaEmailAddressResponseDto.LocalAuthorityEmailsDto.builder()
                         .laCode(la.getLaCode())
@@ -182,7 +196,8 @@ public class LaUserServiceImpl implements LaUserService {
                 })
                 .collect(Collectors.toList());
 
-        log.info("Exported {} Local Authorities with email addresses", localAuthorityEmailsList.size());
+        log.info("Exported {} Local Authorities with email addresses (activeOnly: {})",
+                 localAuthorityEmailsList.size(), activeOnly);
 
         return ExportLaEmailAddressResponseDto.builder()
             .localAuthorities(localAuthorityEmailsList)
