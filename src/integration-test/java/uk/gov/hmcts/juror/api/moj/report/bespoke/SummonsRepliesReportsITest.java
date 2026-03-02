@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.report.bespoke;
 
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -17,11 +18,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DigitalSummonsRepliesReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.ResponsesCompletedReportResponse;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 
 import java.net.URI;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -192,16 +198,141 @@ class SummonsRepliesReportsITest extends AbstractIntegrationTest {
                 .isEqualTo(HttpStatus.FORBIDDEN);
         }
 
+        private String createCourtJwt() {
+            return createJwt(
+                "test_court_standard",
+                "415",
+                UserType.COURT,
+                Set.of(),
+                "415"
+            );
+        }
+
     }
 
-    private String createCourtJwt() {
-        return createJwt(
-            "test_court_standard",
-            "415",
-            UserType.COURT,
-            Set.of(),
-            "415"
-        );
+    @Nested
+    @DisplayName("Get responses completed for month Report Integration Tests")
+    @Sql({
+        "/db/truncate.sql",
+        "/db/mod/truncate.sql",
+        "/db/mod/reports/ResponsesCompletedReportsITest_typical.sql"
+    })
+    class GetResponsesCompletedReportTests {
+
+        @Test
+        void responsesCompletedReportsHappy() {
+
+            final String bureauManagerJwt = createBureauManagerJwt();
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauManagerJwt);
+
+            ResponseEntity<ResponsesCompletedReportResponse> responseEntity =
+                restTemplate.exchange(
+                    new RequestEntity<Void>(
+                        httpHeaders, HttpMethod.GET,
+                        URI.create(URL_BASE + "/responses-completed/2025-08-01")
+                    ),
+                    ResponsesCompletedReportResponse.class
+                );
+
+            assertThat(responseEntity.getStatusCode()).as("Expect HTTP OK response").isEqualTo(HttpStatus.OK);
+            ResponsesCompletedReportResponse responseBody = responseEntity.getBody();
+            assertThat(responseBody).isNotNull();
+
+            assertThat(responseBody.getHeadings()).isNotNull();
+            assertThat(responseBody.getHeadings().size()).isEqualTo(3);
+
+            assertThat(responseBody.getTableData()).isNotNull();
+            assertThat(responseBody.getTableData().getHeadings()).isNotNull();
+            assertThat(responseBody.getTableData().getHeadings().size()).isEqualTo(33);
+
+            Map<String, AbstractReportResponse.DataTypeValue> headings = responseBody.getHeadings();
+            // validate the totals heading
+            AssertionsForClassTypes.assertThat(headings.get("responses_processed"))
+                                                            .isEqualTo(AbstractReportResponse.DataTypeValue.builder()
+                                                                      .displayName("Number of responses processed")
+                                                                      .dataType("Integer")
+                                                                      .value(23)
+                                                                      .build());
+            // validate table data
+            assertThat(responseBody.getTableData().getData()).isNotNull();
+            assertThat(responseBody.getTableData().getData().size()).isEqualTo(3);
+
+            List<ResponsesCompletedReportResponse.TableData.DataRow> dataRows = responseBody.getTableData().getData();
+
+            // Only Bureau users will be listed, so 3 rows expected
+            // first row should be for MOD Test Bureau
+            ResponsesCompletedReportResponse.TableData.DataRow row = dataRows.get(0);
+            AssertionsForClassTypes.assertThat(row.getStaffName()).isEqualTo("MODTESTBUREAU");
+            AssertionsForClassTypes.assertThat(row.getDailyTotals()).isEqualTo(List.of(0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                   4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0));
+            AssertionsForClassTypes.assertThat(row.getStaffTotal()).isEqualTo(18);
+            // second row should be for MOD Test Bureau2
+            row = dataRows.get(1);
+            AssertionsForClassTypes.assertThat(row.getStaffName()).isEqualTo("MODTESTBUREAU2");
+            AssertionsForClassTypes.assertThat(row.getDailyTotals()).isEqualTo(List.of(0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                   0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+            AssertionsForClassTypes.assertThat(row.getStaffTotal()).isEqualTo(5);
+            // third row should be for Totals
+            row = dataRows.get(2);
+            AssertionsForClassTypes.assertThat(row.getStaffName()).isEqualTo("Total Responses");
+            AssertionsForClassTypes.assertThat(row.getDailyTotals()).isEqualTo(List.of(0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                   4, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 2, 2, 0, 0, 0, 1, 0, 0, 0, 0, 0));
+            AssertionsForClassTypes.assertThat(row.getStaffTotal()).isEqualTo(23);
+
+        }
+
+        @Test
+        void responsesCompletedReportsForbiddenForBureauUserWithoutManagerRole() {
+            final String bureauJwt = createJwt(
+                "test_Bureau_standard",
+                "400",
+                UserType.BUREAU,
+                Set.of(),
+                "400"
+            );
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            ResponseEntity<ResponsesCompletedReportResponse> responseEntity =
+                restTemplate.exchange(
+                    new RequestEntity<Void>(
+                        httpHeaders, HttpMethod.GET,
+                        URI.create(URL_BASE + "/responses-completed/2025-08-01")
+                    ),
+                    ResponsesCompletedReportResponse.class
+                );
+
+            assertThat(responseEntity.getStatusCode()).as("Expect HTTP FORBIDDEN response")
+                .isEqualTo(HttpStatus.FORBIDDEN);
+        }
+
+        @Test
+        void responsesCompletedReportsBadDate() {
+
+            final String bureauManagerJwt = createBureauManagerJwt();
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauManagerJwt);
+
+            ResponseEntity<ResponsesCompletedReportResponse> responseEntity =
+                restTemplate.exchange(
+                    new RequestEntity<Void>(
+                        httpHeaders, HttpMethod.GET,
+                        URI.create(URL_BASE + "/responses-completed/20dr-08-t1")
+                    ),
+                    ResponsesCompletedReportResponse.class
+                );
+
+            assertThat(responseEntity.getStatusCode()).as("Expect HTTP Bad request response")
+                .isEqualTo(HttpStatus.BAD_REQUEST);
+        }
+
+        private String createBureauManagerJwt() {
+            return createJwt(
+                "bureau_manager",
+                "400",
+                UserType.BUREAU,
+                Set.of(Role.MANAGER),
+                "400"
+            );
+        }
     }
 
 }

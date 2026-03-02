@@ -25,10 +25,13 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRep
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.StraightThroughProcessorService;
 import uk.gov.hmcts.juror.api.moj.service.SummonsReplyMergeService;
+import uk.gov.hmcts.juror.api.moj.service.report.SummonsRepliesReportService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 
 import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.getJurorDigitalResponse;
@@ -136,7 +139,27 @@ public class JurorResponseServiceImpl implements JurorResponseService {
         return jurorCommonResponseRepository.getPoolsTransferringNextWeekCount(locCode);
     }
 
+    @Override
+    public List<SummonsRepliesReportService.CompletedResponseRecord> getResponsesCompletedReport(
+                                                                                    LocalDate monthStartDate) {
+        log.info("Retrieving responses completed report data for month starting: {}", monthStartDate);
+        List<String> result = jurorCommonResponseRepository.getResponsesCompletedReportData(
+                                                    monthStartDate, monthStartDate.plusMonths(1));
 
+        return mapToCompletedResponseRecords(result);
+    }
+
+    private List<SummonsRepliesReportService.CompletedResponseRecord> mapToCompletedResponseRecords(
+        List<String> result) {
+        return result.stream().map(row -> {
+            String[] fields = row.split(",");
+            return new SummonsRepliesReportService.CompletedResponseRecord(
+                fields[0],
+                LocalDate.parse(fields[1], DateTimeFormatter.ofPattern("yyyy-MM-dd")),
+                Integer.parseInt(fields[2])
+            );
+        }).toList();
+    }
 
     private boolean hasSummonsReplyDataChanged(AbstractJurorResponse jurorResponse,
                                                JurorPersonalDetailsDto jurorPersonalDetailsDto) {
@@ -197,7 +220,6 @@ public class JurorResponseServiceImpl implements JurorResponseService {
                                             JurorPersonalDetailsDto jurorPersonalDetailsDto, String jurorNumber) {
         String replyMethod = jurorResponse.getReplyType().getDescription();
 
-        //TODO: ADDRESS UPDATES FOR DIGITAL
         if (jurorResponse.getReplyType().getType().equals(ReplyMethod.PAPER.getDescription())) {
             if (hasValueChanged(jurorResponse.getAddressLine1(), jurorPersonalDetailsDto.getAddressLineOne(),
                 ADDRESS_LINE1, jurorNumber, replyMethod)) {
@@ -341,7 +363,7 @@ public class JurorResponseServiceImpl implements JurorResponseService {
     }
 
     @Transactional
-    private void setResponseProcessingStatusToClosed(AbstractJurorResponse jurorResponse) {
+    public void setResponseProcessingStatusToClosed(AbstractJurorResponse jurorResponse) {
         if (jurorResponse.isClosed()) {
             return; //Closed records are static as such we should not update
         }
@@ -360,6 +382,7 @@ public class JurorResponseServiceImpl implements JurorResponseService {
     }
 
     @Override
+    @Transactional
     public void setResponseProcessingStatusToClosed(String jurorNumber) {
         AbstractJurorResponse jurorResponse = jurorDigitalResponseRepository.findByJurorNumber(jurorNumber);
         if (jurorResponse == null) {

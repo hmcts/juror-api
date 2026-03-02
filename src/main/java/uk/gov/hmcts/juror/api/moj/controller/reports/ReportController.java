@@ -34,6 +34,8 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.DigitalSummonsRepl
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.FinancialAuditReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.JurySummoningMonitorReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.MonthlyUtilisationReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.ResponsesCompletedReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.OverdueUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.WeekendAttendanceReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.YieldPerformanceReportResponse;
 import uk.gov.hmcts.juror.api.moj.service.report.AttendanceReportService;
@@ -167,6 +169,13 @@ public class ReportController {
         return ResponseEntity.ok(utilisationReportService.courtUtilisationStatsReport(request));
     }
 
+    @GetMapping("/overdue-utilisation-report")
+    @Operation(summary = "View overdue utilisation stats report for a number of courts")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<OverdueUtilisationReportResponse> getOverdueUtilisationReport() {
+        return ResponseEntity.ok(utilisationReportService.overdueUtilisationReport());
+    }
+
     @PostMapping("/jury-summoning-monitor")
     @Operation(summary = "View a jury summoning monitor report")
     @ResponseStatus(HttpStatus.OK)
@@ -196,6 +205,16 @@ public class ReportController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<WeekendAttendanceReportResponse> getWeekendAttendanceReport() {
         return ResponseEntity.ok(attendanceReportService.getWeekendAttendanceReport());
+    }
+
+    @GetMapping("/responses-completed/{month}")
+    @Operation(summary = "Get a table of number of digital responses completed by staff for a month"
+        + ", provide the start date of month, e.g. 2025-10-01 (for bureau users only)")
+    @IsBureauUser
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<ResponsesCompletedReportResponse> getResponsesCompletedReport(
+        @P("month") @PathVariable("month") LocalDate monthStartDate) {
+        return ResponseEntity.ok(summonsRepliesReportService.getResponsesCompletedReport(monthStartDate));
     }
 
 }
