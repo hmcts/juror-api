@@ -1,5 +1,8 @@
 -- DROP PROCEDURE juror_mod.payment_files_to_clob_write_to_clob(in date, in numeric, inout varchar);
 
+-- update the procedure for JS-771, update to filename format and validation of account name
+-- taking into account the front end validated for [^a-zA-Z0-9 ./'&-] allowed, since Feb 2025
+
 DROP PROCEDURE IF EXISTS juror_mod.payment_files_to_clob_write_to_clob(IN date, IN numeric, INOUT varchar);
 
 CREATE OR REPLACE PROCEDURE juror_mod.payment_files_to_clob_write_to_clob(
@@ -54,7 +57,7 @@ BEGIN
                pd.expense_total,
                pd.juror_number || pd.invoice_id AS part_invoice,
                RPAD(COALESCE(pd.bank_sort_code, ''), 6) AS bank_sort_code,
-               UPPER(COALESCE(REPLACE(REPLACE(REPLACE(pd.bank_ac_name, '|', ' '), CHR(10), ' '), CHR(13), ' '), '')) AS bank_ac_name,
+               UPPER(COALESCE(TRIM(REPLACE(REPLACE(REPLACE(pd.bank_ac_name, chr(39), ' '), chr(10), ' '), chr(13), ' '), ''))) AS bank_ac_name,
                UPPER(COALESCE(REPLACE(REPLACE(REPLACE(pd.bank_ac_number, '|', ' '), CHR(10), ' '), CHR(13), ' '), '')) AS bank_ac_number,
                UPPER(COALESCE(REPLACE(REPLACE(REPLACE(pd.build_soc_number, '|', ' '), CHR(10), ' '), CHR(13), ' '), '')) AS build_soc_number,
                UPPER(COALESCE(REPLACE(REPLACE(REPLACE(pd.address_line_1, '|', ' '), CHR(10), ' '), CHR(13), ' '), '')) AS address_line1,
