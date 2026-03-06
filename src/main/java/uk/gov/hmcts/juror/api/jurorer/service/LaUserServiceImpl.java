@@ -46,9 +46,27 @@ public class LaUserServiceImpl implements LaUserService {
     private String erPortalExpiry;
 
     @Override
-    @Transactional
-    public LaJwtDto createJwt(String email) {
-        LaUser user = findUserByUsername(email);
+    @Transactional(readOnly = true)
+    public List<LocalAuthority> getLocalAuthorities(String email) {
+
+        // read the user by email and get the local authority
+        List<LaUser> user = userRepository.findByUsername(email);
+
+        if (user.isEmpty()) {
+            throw new MojException.NotFound("User not found", null);
+        }
+
+        return user.stream()
+            .map(LaUser::getLocalAuthority)
+            .filter(la -> Boolean.TRUE.equals(la.getActive()))
+            .toList();
+
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public LaJwtDto createJwt(String email, String laCode) {
+        LaUser user = findUserByUsernameAndLa(email, laCode);
 
         if (user == null) {
             throw new MojException.NotFound("User not found", null);
@@ -82,8 +100,18 @@ public class LaUserServiceImpl implements LaUserService {
 
     @Override
     @Transactional(readOnly = true)
-    public LaUser findUserByUsername(String username) {
-        return userRepository.findByUsername(username).orElseThrow(
+    public List<LaUser> findUserByUsername(String username) {
+        return userRepository.findByUsername(username);
+
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public LaUser findUserByUsernameAndLa(String username, String laCode) {
+        LocalAuthority localAuthority = localAuthorityRepository.findByLaCode(laCode).orElseThrow(
+            () -> new MojException.NotFound("Local Authority not found", null)
+        );
+        return userRepository.findByUsernameAndLocalAuthority(username, localAuthority).orElseThrow(
             () -> new MojException.NotFound("User not found", null)
         );
     }

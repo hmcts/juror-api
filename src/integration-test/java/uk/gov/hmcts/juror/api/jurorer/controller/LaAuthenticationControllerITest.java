@@ -25,6 +25,7 @@ import uk.gov.hmcts.juror.api.AbstractControllerIntegrationTest;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.config.jurorer.JurorErJwtPayload;
 import uk.gov.hmcts.juror.api.jurorer.domain.LaRoles;
+import uk.gov.hmcts.juror.api.jurorer.domain.LocalAuthority;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.EmailDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.JwtDto;
 
@@ -128,7 +129,7 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
             void primaryCourt() {
                 testBuilder()
                     .payload(new EmailDto("test_user1" + EMAIL_SUFFIX))
-                    .url(URL)
+                    .url(URL + "/001")
                     .triggerValid()
                     .assertValid((controllerTest, response) -> responseValidator(
                         response,
@@ -159,6 +160,7 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
             @Test
             void userNotFound() {
                 testBuilder()
+                    .url(URL + "/001")
                     .payload(new EmailDto("not_found" + EMAIL_SUFFIX))
                     .triggerInvalid()
                     .assertNotFound("User not found");
@@ -167,10 +169,45 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
             @Test
             void userNotActive() {
                 testBuilder()
+                    .url(URL + "/004")
                     .payload(new EmailDto("test_user1@localauthority4.council.uk"))
                     .triggerInvalid()
                     .assertMojForbiddenResponse("User is not active");
             }
+
+        }
+    }
+
+
+    @Nested
+    @DisplayName("GET local authorities for user")
+    class GetLocalAuthorities extends AbstractControllerIntegrationTest<EmailDto, List<LocalAuthority>> {
+        private static final String URL = BASE_URL + "/local-authorities";
+
+        GetLocalAuthorities() {
+            super(POST, template, HttpStatus.OK);
+        }
+
+        @Override
+        protected String getValidUrl() {
+            return URL;
+        }
+
+        @Override
+        protected String getValidJwt() {
+            return createHmacJwt();
+        }
+
+        @Override
+        protected EmailDto getValidPayload() {
+            return new EmailDto("test_user1" + EMAIL_SUFFIX);
+        }
+
+
+        @DisplayName("Positive")
+        @Nested
+        class Positive {
+
 
         }
     }

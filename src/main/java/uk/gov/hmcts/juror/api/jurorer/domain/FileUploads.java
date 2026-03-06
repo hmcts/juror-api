@@ -44,14 +44,13 @@ public class FileUploads implements Serializable {
     @JoinColumn(name = "la_code", referencedColumnName = "la_code", nullable = false)
     private LocalAuthority localAuthority;
 
-    /**
-     * ManyToOne to User table (references "user".username).
-     * The referenced entity must expose a 'username' column mapped.
-     */
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "la_username", referencedColumnName = "username", nullable = false)
-    private LaUser user;
+    @Column(name = "la_username", length = 200, nullable = false)
+    private String username;
 
+    /**
+    * ManyToOne to LaUser table (references user.username and user.la_code).
+    * The referenced entity must have a composite primary key of (username, la_code).
+    */
     @Column(name = "filename", length = 200, nullable = false)
     private String filename;
 
@@ -71,10 +70,10 @@ public class FileUploads implements Serializable {
     }
 
     // Convenience constructor for required fields
-    public FileUploads(LocalAuthority localAuthority, LaUser user, String filename,
+    public FileUploads(LocalAuthority localAuthority, String user, String filename,
                        String fileFormat, LocalDateTime uploadDate) {
         this.localAuthority = Objects.requireNonNull(localAuthority, "localAuthority");
-        this.user = Objects.requireNonNull(user, "user");
+        this.username = Objects.requireNonNull(user, "user");
         this.filename = Objects.requireNonNull(filename, "filename");
         this.fileFormat = Objects.requireNonNull(fileFormat, "fileFormat");
         this.uploadDate = Objects.requireNonNull(uploadDate, "uploadDate");
