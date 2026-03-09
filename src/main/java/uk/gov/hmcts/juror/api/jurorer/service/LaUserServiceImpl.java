@@ -72,7 +72,7 @@ public class LaUserServiceImpl implements LaUserService {
             throw new MojException.NotFound("User not found", null);
         }
 
-        if (Boolean.FALSE == user.isActive()) {
+        if (Boolean.FALSE.equals(user.isActive())) {
             throw new MojException.Forbidden("User is not active", null);
         }
 

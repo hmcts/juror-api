@@ -28,6 +28,7 @@ import uk.gov.hmcts.juror.api.jurorer.domain.LaRoles;
 import uk.gov.hmcts.juror.api.jurorer.domain.LocalAuthority;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.EmailDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.JwtDto;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 
 import java.time.Clock;
 import java.util.Collections;
@@ -173,6 +174,14 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
                     .payload(new EmailDto("test_user1@localauthority4.council.uk"))
                     .triggerInvalid()
                     .assertMojForbiddenResponse("User is not active");
+            }
+
+            @Test
+            void invalidLaCode() {
+                testBuilder()
+                    .url(URL + "/0T1")
+                    .payload(new EmailDto("test_user1@localauthority4.council.uk"))
+                    .triggerInvalid();
             }
 
         }
