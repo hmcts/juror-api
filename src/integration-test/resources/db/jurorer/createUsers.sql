@@ -14,5 +14,7 @@ INSERT INTO juror_er."user" (username,la_code,active,last_logged_in) VALUES
 	 ('test_user1@localauthority2.council.uk','002',true,NULL),
 	 ('test_user2@localauthority2.council.uk','002',true,NULL),
 	 ('test_user3@localauthority2.council.uk','002',true,NULL),
-	 ('test_user3@localauthority2.council.uk','003',true,NULL), -- has access to two LAs
-	 ('test_user1@localauthority4.council.uk','004',false,NULL);
+	 ('test_user3@localauthority2.council.uk','003',true,NULL), -- has access to two LAs, both active
+	 ('test_user1@localauthority4.council.uk','004',false,NULL),
+	 ('test_user4@another.council.uk','003',true,NULL), -- has access to two LAs, one active and one inactive
+   ('test_user4@another.council.uk','004',false,NULL);

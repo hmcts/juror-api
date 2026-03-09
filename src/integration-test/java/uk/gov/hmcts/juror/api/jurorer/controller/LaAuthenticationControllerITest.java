@@ -208,6 +208,62 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
         @Nested
         class Positive {
 
+            @Test
+            void singleCourt() {
+                testBuilder()
+                    .payload(new EmailDto("test_user1" + EMAIL_SUFFIX))
+                    .triggerValid()
+                    .assertValid((controllerTest, response) -> assertThat(response)
+                        .hasSize(1)
+                        .extracting(LocalAuthority::getLaCode)
+                        .containsExactly("001"));
+            }
+
+            @Test
+            void twoCourts() {
+                testBuilder()
+                    .payload(new EmailDto("test_user3@localauthority2.council.uk"))
+                    .triggerValid()
+                    .assertValid((controllerTest, response) -> assertThat(response)
+                        .hasSize(2)
+                        .extracting(LocalAuthority::getLaCode)
+                        .containsExactlyInAnyOrder("002", "003"));
+            }
+
+            @Test
+            void twoCourtsOneActive() {
+                testBuilder()
+                    .payload(new EmailDto("test_user4@another.council.uk"))
+                    .triggerValid()
+                    .assertValid((controllerTest, response) -> assertThat(response)
+                        .hasSize(1)
+                        .extracting(LocalAuthority::getLaCode)
+                        .containsExactlyInAnyOrder("003"));
+            }
+
+        }
+
+
+        @DisplayName("Negative")
+        @Nested
+        class Negative {
+
+            @Test
+            void singleCourtInactive() {
+                testBuilder()
+                    .payload(new EmailDto("test_user1@localauthority4.council.uk"))
+                    .triggerValid()
+                    .assertValid((controllerTest, response) -> assertThat(response)
+                        .hasSize(0));
+            }
+
+            @Test
+            void userNotFound() {
+                testBuilder()
+                    .payload(new EmailDto("test_user1@somela.council.uk"))
+                    .triggerInvalid()
+                    .assertNotFound("User not found");
+            }
 
         }
     }
