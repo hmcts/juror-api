@@ -28,7 +28,6 @@ import uk.gov.hmcts.juror.api.jurorer.domain.LaRoles;
 import uk.gov.hmcts.juror.api.jurorer.domain.LocalAuthority;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.EmailDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.JwtDto;
-import uk.gov.hmcts.juror.api.moj.exception.MojException;
 
 import java.time.Clock;
 import java.util.Collections;
@@ -119,11 +118,12 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
                 assertThat(claims.getIssuedAt()).isAfter(new Date(clock.millis() - 60_000));
 
                 assertThat(claims)
-                    .hasSize(8)
+                    .hasSize(9)
                     .containsEntry("username", expectedJwtClaims.getUsername())
                     .containsEntry("laCode", expectedJwtClaims.getLaCode())
                     .containsEntry("laName", expectedJwtClaims.getLaName())
-                    .containsEntry("role", List.of(LaRoles.LA_USER.toString()));
+                    .containsEntry("role", List.of(LaRoles.LA_USER.toString()))
+                    .containsEntry("localAuthorities", List.of("001"));
             }
 
             @Test

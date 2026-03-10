@@ -66,7 +66,16 @@ public class LaUserServiceImpl implements LaUserService {
     @Override
     @Transactional(readOnly = true)
     public LaJwtDto createJwt(String email, String laCode) {
-        LaUser user = findUserByUsernameAndLa(email, laCode);
+        List<LaUser> userList = findUserByUsername(email);
+
+        LaUser user = userList.stream()
+            .filter(u -> u.getLocalAuthority().getLaCode().equals(laCode))
+            .findFirst()
+            .orElse(null);
+
+        List<String> userLaCodes = userList.stream()
+            .map(u -> u.getLocalAuthority().getLaCode())
+            .toList();
 
         if (user == null) {
             throw new MojException.NotFound("User not found", null);
@@ -84,6 +93,7 @@ public class LaUserServiceImpl implements LaUserService {
         claims.put("laCode", localAuthority.getLaCode());
         claims.put("laName", localAuthority.getLaName());
         claims.put("role", List.of(LaRoles.LA_USER.toString()));
+        claims.put("localAuthorities", userLaCodes);
 
         user.setLastLoggedIn(LocalDateTime.now());
         userRepository.save(user);
