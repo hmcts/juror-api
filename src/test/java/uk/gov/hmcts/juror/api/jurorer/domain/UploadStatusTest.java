@@ -11,7 +11,7 @@ class UploadStatusTest {
     @Test
     void values() {
         UploadStatus[] expected = {UploadStatus.NOT_UPLOADED, UploadStatus.UPLOADED};
-            assertArrayEquals(expected, UploadStatus.values());
+        assertArrayEquals(expected, UploadStatus.values());
     }
 
     @Test

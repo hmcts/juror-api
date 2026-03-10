@@ -126,6 +126,26 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
                     .containsEntry("localAuthorities", List.of("001"));
             }
 
+            private void responseValidatorLite(JwtDto response,
+                                           String username, JurorErJwtPayload expectedJwtClaims) {
+                Jwt<JwsHeader, Claims> jwt = Jwts.parser()
+                    .verifyWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(erPortalSecret)))
+                    .build()
+                    .parseSignedClaims(response.getJwt());
+
+                Claims claims = jwt.getPayload();
+
+                assertThat(claims.getId()).isEqualTo(username);
+
+                assertThat(claims)
+                    .hasSize(9)
+                    .containsEntry("username", expectedJwtClaims.getUsername())
+                    .containsEntry("laCode", expectedJwtClaims.getLaCode())
+                    .containsEntry("laName", expectedJwtClaims.getLaName())
+                    .containsEntry("role", List.of(LaRoles.LA_USER.toString()))
+                    .containsEntry("localAuthorities", List.of("002", "003"));
+            }
+
             @Test
             void primaryCourt() {
                 testBuilder()
@@ -140,6 +160,26 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
                             .laCode("001")
                             .laName("West Oxfordshire")
                             .roles(List.of(LaRoles.LA_USER.toString()))
+                            .localAuthorities(List.of("001"))
+                            .build()
+                    ));
+            }
+
+            @Test
+            void multipleLas() {
+                testBuilder()
+                    .payload(new EmailDto("test_user3@localauthority2.council.uk"))
+                    .url(URL + "/003")
+                    .triggerValid()
+                    .assertValid((controllerTest, response) -> responseValidatorLite(
+                        response,
+                        "test_user3@localauthority2.council.uk",
+                        JurorErJwtPayload.builder()
+                            .username("test_user3@localauthority2.council.uk")
+                            .laCode("003")
+                            .laName("Eastleigh")
+                            .roles(List.of(LaRoles.LA_USER.toString()))
+                            .localAuthorities(List.of("002", "003"))
                             .build()
                     ));
             }

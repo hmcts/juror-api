@@ -35,6 +35,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
+@SuppressWarnings("PMD.TooManyMethods") // test class with multiple test cases
 class LaUserServiceImplTest {
 
     @Mock
@@ -50,6 +51,7 @@ class LaUserServiceImplTest {
     private LaUserServiceImpl laUserService;
 
     @Test
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     void testGetLocalAuthoritiesHappy() {
 
         String email = "testemail@localauth1.gov.uk";
@@ -97,6 +99,7 @@ class LaUserServiceImplTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     void createJwtHappy() {
 
         String email = "testemail@localauth1.gov.uk";
@@ -120,8 +123,8 @@ class LaUserServiceImplTest {
 
         try (MockedStatic<JwtServiceImpl> mocked = Mockito.mockStatic(JwtServiceImpl.class)) {
             mocked.when(() -> JwtServiceImpl.timeUnitToMilliseconds(anyString()))
-                .thenReturn(3600000L);
-            when(jwtService.generateJwtToken(anyString(),anyString(), any() , anyLong(), any(),
+                .thenReturn(3_600_000L);
+            when(jwtService.generateJwtToken(anyString(),anyString(), any(), anyLong(), any(),
                                              anyMap())).thenReturn("jwt-token");
 
 
@@ -251,7 +254,7 @@ class LaUserServiceImplTest {
     }
 
     @Test
-    void getLaUserDetailsInvalidLaCode() {
+    void testGetLaUserDetailsInvalidLaCode() {
 
         String laCode = "00efd1";
 
@@ -259,7 +262,7 @@ class LaUserServiceImplTest {
             assertThrows(
                 MojException.BadRequest.class,
                 () -> laUserService.getLaUserDetails(laCode),
-                "Should throw an error when user is not found"
+                "Should throw an error when invalid LA code is provided"
             );
 
         assertThat(exception).isNotNull();
@@ -268,7 +271,7 @@ class LaUserServiceImplTest {
     }
 
     @Test
-    void getLaUserDetailsDifferentLaCodeToUser() {
+    void testGetLaUserDetailsDifferentLaCodeToUser() {
 
         String laCode = "001";
 
@@ -278,7 +281,7 @@ class LaUserServiceImplTest {
                 assertThrows(
                     MojException.Forbidden.class,
                     () -> laUserService.getLaUserDetails(laCode),
-                    "Should throw an error when user is not found"
+                    "Should throw an error when user has a different LA code to the one provided"
                 );
 
             assertThat(exception).isNotNull();
@@ -308,12 +311,11 @@ class LaUserServiceImplTest {
     }
 
     @Test
-    void getAllLaEmailAddresses() {
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
+    void testGetAllLaEmailAddresses() {
 
         when(localAuthorityRepository.findAll()).thenReturn(List.of());
-
         ExportLaEmailAddressResponseDto exportLaEmailAddressResponseDto = laUserService.getAllLaEmailAddresses(true);
-
         assertNotNull(exportLaEmailAddressResponseDto);
     }
 }
