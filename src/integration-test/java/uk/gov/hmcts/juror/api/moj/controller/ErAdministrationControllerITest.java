@@ -18,6 +18,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.jurorer.domain.Deadline;
+import uk.gov.hmcts.juror.api.jurorer.domain.EmailRequestStatus;
 import uk.gov.hmcts.juror.api.jurorer.domain.LaUser;
 import uk.gov.hmcts.juror.api.jurorer.domain.LocalAuthority;
 import uk.gov.hmcts.juror.api.jurorer.repository.DeadlineRepository;
@@ -25,6 +26,7 @@ import uk.gov.hmcts.juror.api.jurorer.repository.LaUserRepository;
 import uk.gov.hmcts.juror.api.jurorer.repository.LocalAuthorityRepository;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.ActiveLaRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.DeactiveLaRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.jurorer.MarkAsDeliveredRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
@@ -43,6 +45,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@SuppressWarnings("PMD.ExcessiveImports") // false positive, the test needs to import a lot of classes
 class ErAdministrationControllerITest extends AbstractIntegrationTest {
 
     public static final String EXPECT_THE_STATUS_TO_BE_FORBIDDEN = "Expect the status to be forbidden.";
@@ -258,6 +261,51 @@ class ErAdministrationControllerITest extends AbstractIntegrationTest {
         }
 
     }
+
+    @Nested
+    @DisplayName("PUT /api/v1/moj/er-administration/mark-delivered")
+    @Sql({"/db/mod/truncate.sql","/db/jurorer/ErDashboardData.sql"})
+
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
+    class MarkAsDeliveredTest {
+        @Test
+        void testMarkAsDeliveredHappy() {
+
+            MarkAsDeliveredRequestDto requestDto = new MarkAsDeliveredRequestDto();
+            requestDto.setLaCodes(List.of("001", "002"));
+
+            ResponseEntity<Void> responseEntity =
+                restTemplate.exchange(
+                    new RequestEntity<>(
+                        requestDto, httpHeaders, HttpMethod.PUT,
+                        URI.create("/api/v1/moj/er-administration/mark-delivered")
+                    ),
+                    Void.class
+                );
+
+            assertThat(responseEntity.getStatusCode())
+                .as("Expect the status to be OK.")
+                .isEqualTo(HttpStatus.OK);
+
+            executeInTransaction(() -> {
+                Optional<LocalAuthority> localAuthorityOpt = localAuthorityRepository.findByLaCode("001");
+                assertThat(localAuthorityOpt).isPresent();
+                LocalAuthority localAuthority1 = localAuthorityOpt.get();
+                assertThat(localAuthority1.getEmailRequestStatus())
+                    .as("Expect LA 001 to have the email request sent flag set to SENT.")
+                    .isEqualTo(EmailRequestStatus.SENT);
+
+                localAuthorityOpt = localAuthorityRepository.findByLaCode("002");
+                assertThat(localAuthorityOpt).isPresent();
+                LocalAuthority localAuthority2 = localAuthorityOpt.get();
+                assertThat(localAuthority2.getEmailRequestStatus())
+                    .as("Expect LA 002 to have the email request sent flag set to SENT.")
+                    .isEqualTo(EmailRequestStatus.SENT);
+            });
+        }
+
+    }
+
 
     private void initHeadersCourt() {
         httpHeaders =

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.jurorer.domain.Deadline;
+import uk.gov.hmcts.juror.api.jurorer.domain.EmailRequestStatus;
 import uk.gov.hmcts.juror.api.jurorer.domain.LaUser;
 import uk.gov.hmcts.juror.api.jurorer.domain.LocalAuthority;
 import uk.gov.hmcts.juror.api.jurorer.repository.DeadlineRepository;
@@ -14,6 +15,7 @@ import uk.gov.hmcts.juror.api.jurorer.repository.LocalAuthorityRepository;
 import uk.gov.hmcts.juror.api.jurorer.service.LaUserService;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.ActiveLaRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.DeactiveLaRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.jurorer.MarkAsDeliveredRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineResponseDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -131,6 +133,40 @@ public class ErAdministrationServiceImpl implements ErAdministrationService {
             .lastUpdated(updatedDeadline.getLastUpdated())
             .daysRemaining(updatedDeadline.getDaysRemaining())
             .build();
+    }
+
+    @Override
+    @Transactional
+    public void markAsDelivered(MarkAsDeliveredRequestDto request) {
+
+        log.info("Marking initial email as delivered for LAs}");
+
+        // for each LA code, find the LA and update the email request sent flag to true
+        request.getLaCodes().forEach(laCode -> {
+            isValidLaCode(laCode);
+            markDelivered(laCode);
+        });
+    }
+
+    private void markDelivered(String laCode) {
+        LocalAuthority localAuthority = localAuthorityRepository.findByLaCode(laCode)
+            .orElseThrow(() -> new MojException.BadRequest("LA with code " + laCode
+                                                               + " not found", null));
+
+        if (localAuthority.getEmailRequestSent() != null
+            && localAuthority.getEmailRequestStatus() == EmailRequestStatus.SENT) {
+            log.warn("Initial email for LA code {} is already marked as delivered", laCode);
+            throw new MojException.BadRequest("Initial email for LA code " + laCode
+                                                  + " is already marked as delivered", null);
+        }
+
+
+        localAuthority.setEmailRequestStatus(EmailRequestStatus.SENT);
+        localAuthority.setEmailRequestSent(LocalDateTime.now());
+        localAuthority.setUpdatedBy(SecurityUtil.getUsername());
+        localAuthority.setLastUpdated(LocalDateTime.now());
+        localAuthorityRepository.save(localAuthority);
+        log.info("Initial email for LA code {} has been marked as delivered", laCode);
     }
 
 }

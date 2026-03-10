@@ -54,5 +54,14 @@ public class ErAdministrationController {
         return ResponseEntity.ok().body(dto);
     }
 
+    @IsBureauUser
+    @PutMapping("/mark-delivered")
+    @Operation(summary = "Updates local authorities for initial request emails sent to be set to delivered")
+    public ResponseEntity<Void> markAsDelivered(
+        @Valid @RequestBody MarkAsDeliveredRequestDto request) {
+        erAdministrationService.markAsDelivered(request);
+        return ResponseEntity.ok().build();
+    }
+
 
 }
