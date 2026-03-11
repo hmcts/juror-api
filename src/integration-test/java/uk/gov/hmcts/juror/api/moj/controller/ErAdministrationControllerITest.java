@@ -166,7 +166,7 @@ class ErAdministrationControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        void testAactivateLaForCourtUserShouldBeForbidden() {
+        void testActivateLaForCourtUserShouldBeForbidden() {
             initHeadersCourt();
             ActiveLaRequestDto requestDto = new ActiveLaRequestDto("004");
 
@@ -265,12 +265,13 @@ class ErAdministrationControllerITest extends AbstractIntegrationTest {
     @Nested
     @DisplayName("PUT /api/v1/moj/er-administration/mark-delivered")
     @Sql({"/db/mod/truncate.sql","/db/jurorer/ErDashboardData.sql"})
-
     @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     class MarkAsDeliveredTest {
+
         @Test
         void testMarkAsDeliveredHappy() {
 
+            // the initial data has LA1 and LA2 with the email request sent flag is null
             MarkAsDeliveredRequestDto requestDto = new MarkAsDeliveredRequestDto();
             requestDto.setLaCodes(List.of("001", "002"));
 
@@ -302,6 +303,24 @@ class ErAdministrationControllerITest extends AbstractIntegrationTest {
                     .as("Expect LA 002 to have the email request sent flag set to SENT.")
                     .isEqualTo(EmailRequestStatus.SENT);
             });
+        }
+
+        @Test
+        void testMarkAsDeliveredForCourtUserShouldBeForbidden() {
+            initHeadersCourt();
+
+            UpdateDeadlineRequestDto requestDto = new UpdateDeadlineRequestDto();
+            requestDto.setDeadlineDate(LocalDate.now().plusDays(30));
+
+            ResponseEntity<UpdateDeadlineResponseDto> responseEntity =
+                restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PUT,
+                                                          URI.create("/api/v1/moj/er-administration/mark-delivered")),
+                                      UpdateDeadlineResponseDto.class);
+
+            assertThat(responseEntity.getStatusCode())
+                .as(EXPECT_THE_STATUS_TO_BE_FORBIDDEN)
+                .isEqualTo(HttpStatus.FORBIDDEN);
+
         }
 
     }
