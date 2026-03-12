@@ -56,6 +56,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.POSTCODE_REG
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/bureau/juror/{jurorId}", produces = MediaType.APPLICATION_JSON_VALUE)
+@SuppressWarnings("PMD")
 @Tag(name = "Bureau Response Edit API", description = "Bureau operations relating to editing a juror response.")
 public class ResponseUpdateController {
     private final ResponseUpdateService responseUpdateService;

@@ -53,7 +53,7 @@ jacoco {
     toolVersion = "0.8.13"
 }
 
-version = '5.20.0'
+version = '5.21.0'
 
 repositories {
     mavenLocal()
@@ -213,7 +213,7 @@ flyway {
     user = "$dbUserName"
     password = "$dbPassword"
     locations = [ "$flywayLocations" ]
-    schemas = ['juror_dashboard', 'juror_mod']
+    schemas = ['juror_dashboard', 'juror_mod', 'juror_er']
     defaultSchema = 'juror_mod'
     table = 'schema_history'
     cleanDisabled = System.getenv("FLYWAY_CLEAN_DISABLED") ?: true

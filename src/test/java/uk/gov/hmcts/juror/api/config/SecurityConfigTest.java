@@ -23,6 +23,8 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthenticationProvider;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.config.hmac.HmacJwtAuthenticationProvider;
+import uk.gov.hmcts.juror.api.config.jurorer.JurorErJwtAuthenticationProvider;
+import uk.gov.hmcts.juror.api.config.jurorer.JurorErJwtPayload;
 import uk.gov.hmcts.juror.api.config.public1.PublicJwtAuthenticationProvider;
 import uk.gov.hmcts.juror.api.config.public1.PublicJwtPayload;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
@@ -54,6 +56,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     PublicJwtAuthenticationProvider.class,
     BureauJwtAuthenticationProvider.class,
     HmacJwtAuthenticationProvider.class,
+    JurorErJwtAuthenticationProvider.class,
     JwtServiceImpl.class,
     ApplicationBeans.class
 })
@@ -67,6 +70,7 @@ class SecurityConfigTest {
     protected static String bureauSecret;
     protected static String publicSecret;
     protected static String hmacSecret;
+    protected static String erportalSecret;
 
     @Value("${jwt.secret.bureau}")
     public void setBureauSecret(String secret) {
@@ -81,6 +85,11 @@ class SecurityConfigTest {
     @Value("${jwt.secret.hmac}")
     public void setHmacSecret(String secret) {
         hmacSecret = secret;
+    }
+
+    @Value("${jwt.secret.er-portal}")
+    public void setErportalSecret(String secret) {
+        erportalSecret = secret;
     }
 
     @Autowired
@@ -136,13 +145,14 @@ class SecurityConfigTest {
     }
 
     private enum UrLs {
-        hmacAuth1(JwtType.HMAC, "/api/v1/auth/juror/test"),
-        hmacAuth2(JwtType.HMAC, "/api/v1/auth/bureau/test"),
-        hmacAuth3(JwtType.HMAC, "/api/v1/auth/public/test"),
-        hmacAuth4(JwtType.HMAC, "/api/v1/auth/settings/test"),
-        publicAuth(JwtType.PUBLIC, "/api/v1/public/test"),
-        bureauAuth(JwtType.BUREAU, "/api/v1/bureau/test"),
-        bureauAuth2(JwtType.BUREAU, "/api/v1/moj/test");
+        HMAC_AUTH_1(JwtType.HMAC, "/api/v1/auth/juror/test"),
+        HMAC_AUTH_2(JwtType.HMAC, "/api/v1/auth/bureau/test"),
+        HMAC_AUTH_3(JwtType.HMAC, "/api/v1/auth/public/test"),
+        HMAC_AUTH_4(JwtType.HMAC, "/api/v1/auth/settings/test"),
+        PUBLIC_AUTH(JwtType.PUBLIC, "/api/v1/public/test"),
+        BUREAU_AUTH(JwtType.BUREAU, "/api/v1/bureau/test"),
+        BUREAU_AUTH_2(JwtType.BUREAU, "/api/v1/moj/test"),
+        JUROR_ER(JwtType.JURORER, "/api/v1/juror-er/test");
 
         private final String url;
         private final JwtType jwtType;
@@ -155,7 +165,8 @@ class SecurityConfigTest {
         private enum JwtType {
             HMAC(SecurityConfigTest.hmacSecret, JwtType::getHmacClaimMap),
             PUBLIC(SecurityConfigTest.publicSecret, JwtType::getPublicClaimMap),
-            BUREAU(SecurityConfigTest.bureauSecret, JwtType::getBureauClaimMap);
+            BUREAU(SecurityConfigTest.bureauSecret, JwtType::getBureauClaimMap),
+            JURORER(SecurityConfigTest.erportalSecret, JwtType::getJurorErClaimMap);
 
             private final String secret;
             private final Supplier<Map<String, Object>> jwtClaimMapSupplier;
@@ -209,6 +220,21 @@ class SecurityConfigTest {
                 return claimsMap;
             }
 
+            private static Map<String, Object> getJurorErClaimMap() {
+                JurorErJwtPayload payload = JurorErJwtPayload.builder()
+                    .username("juror_user_1")
+                    .laCode("001")
+                    .laName("Local Authority Y")
+                    .roles(Collections.singletonList("LA_USER"))
+                    .build();
+                final Map<String, Object> claimsMap = new HashMap<>();
+                claimsMap.put("username", payload.getUsername());
+                claimsMap.put("laCode", payload.getLaCode());
+                claimsMap.put("laName", payload.getLaName());
+                claimsMap.put("roles", payload.getRoles());
+                return claimsMap;
+            }
+
             public static String getJwt(String secret, Map<String, Object> claimsMap) {
                 claimsMap.put(Claims.EXPIRATION, Date.from(Instant.now().plus(100L * 365L, ChronoUnit.DAYS)));
                 claimsMap.put(Claims.ISSUED_AT, Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
@@ -230,9 +256,11 @@ class SecurityConfigTest {
             "/api/v1/public/test",
             "/api/v1/bureau/test",
             "/api/v1/moj/test",
+            "/api/v1/juror-er/test",
             "/api/v1/auth/juror/test",
             "/api/v1/auth/bureau/test",
             "/api/v1/auth/public/test",
+            "/api/v1/auth/juror-er/test",
             "/api/v1/auth/settings/test"
         })
         public ResponseEntity<Map<String, Boolean>> validResponse() {
