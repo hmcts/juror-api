@@ -47,10 +47,6 @@ public class FileUploads implements Serializable {
     @Column(name = "la_username", length = 200, nullable = false)
     private String username;
 
-    /**
-    * ManyToOne to LaUser table (references user.username and user.la_code).
-    * The referenced entity must have a composite primary key of (username, la_code).
-    */
     @Column(name = "filename", length = 200, nullable = false)
     private String filename;
 
