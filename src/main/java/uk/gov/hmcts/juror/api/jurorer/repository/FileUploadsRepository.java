@@ -57,7 +57,7 @@ public interface FileUploadsRepository extends JpaRepository<FileUploads, Long> 
      * @return List of file uploads by this user
      */
     @Query("SELECT f FROM FileUploads f "
-        + "WHERE f.user.username = :username "
+        + "WHERE f.username = :username "
         + "ORDER BY f.uploadDate DESC")
     List<FileUploads> findByUsernameOrderByUploadDateDesc(@Param("username") String username);
 

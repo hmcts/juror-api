@@ -29,6 +29,7 @@ import uk.gov.hmcts.juror.api.moj.controller.jurorer.DeactiveLaRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.MarkAsDeliveredRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateEmailRequestSentDto;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 
 import java.net.URI;
@@ -324,7 +325,6 @@ class ErAdministrationControllerITest extends AbstractIntegrationTest {
         }
 
     }
-
 
     private void initHeadersCourt() {
         httpHeaders =
