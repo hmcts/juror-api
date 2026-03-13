@@ -116,9 +116,8 @@ class LaUserServiceImplTest {
                 .localAuthority(localAuthority)
                 .build();
 
-        when(userRepository.findByUsernameAndLocalAuthority(email, localAuthority))
-            .thenReturn(Optional.of(laUser));
-        when(localAuthorityRepository.findByLaCode("001")).thenReturn(Optional.of(localAuthority));
+        when(userRepository.findByUsername(email))
+            .thenReturn(List.of(laUser));
         when(jwtService.getSigningKey(anyString())).thenReturn(null);
 
         try (MockedStatic<JwtServiceImpl> mocked = Mockito.mockStatic(JwtServiceImpl.class)) {
@@ -133,55 +132,27 @@ class LaUserServiceImplTest {
             assertEquals("jwt-token", dto.getJwt());
         }
 
-        verify(userRepository).findByUsernameAndLocalAuthority(email, localAuthority);
-        verify(localAuthorityRepository).findByLaCode("001");
+        verify(userRepository).findByUsername(email);
         verify(jwtService).getSigningKey(null);
 
         Map<String, Object> expectedClaims = Map.of(
             "laCode", "001",
             "role", List.of("LA_USER"),
             "laName", "Local Authority 1",
-            "username", "testemail@localauth1.gov.uk");
+            "username", "testemail@localauth1.gov.uk",
+            "localAuthorities", List.of("001"));
 
         verify(jwtService).generateJwtToken("testemail@localauth1.gov.uk", "juror-api", null, 0L, null, expectedClaims);
-
+        verify(userRepository).save(laUser);
     }
 
-    @Test
-    void createJwtLaNotFound() {
-
-        String email = "testemail@localauth1.gov.uk";
-
-        when(localAuthorityRepository.findByLaCode("001")).thenReturn(Optional.empty());
-
-        MojException.NotFound exception =
-            assertThrows(
-                MojException.NotFound.class,
-                () -> laUserService.createJwt(email, "001"),
-                "Should throw an error when Local Authority is not found"
-            );
-
-        assertThat(exception).isNotNull();
-        assertThat(exception.getMessage()).contains("Local Authority not found");
-
-        verify(localAuthorityRepository).findByLaCode("001");
-        verifyNoInteractions(userRepository);
-        verifyNoInteractions(jwtService);
-    }
 
     @Test
     void createJwtUserNotFound() {
 
         String email = "testemail@localauth1.gov.uk";
 
-        LocalAuthority localAuthority = LocalAuthority.builder()
-            .laCode("001")
-            .laName("Local Authority 1")
-            .active(true)
-            .build();
-
-        when(localAuthorityRepository.findByLaCode("001")).thenReturn(Optional.of(localAuthority));
-        when(userRepository.findByUsernameAndLocalAuthority(email, localAuthority)).thenReturn(Optional.empty());
+        when(userRepository.findByUsername(email)).thenReturn(List.of());
 
         MojException.NotFound exception =
             assertThrows(
@@ -193,8 +164,7 @@ class LaUserServiceImplTest {
         assertThat(exception).isNotNull();
         assertThat(exception.getMessage()).contains("User not found");
 
-        verify(localAuthorityRepository).findByLaCode("001");
-        verify(userRepository).findByUsernameAndLocalAuthority(email, localAuthority);
+        verify(userRepository).findByUsername(email);
         verifyNoInteractions(jwtService);
     }
 
