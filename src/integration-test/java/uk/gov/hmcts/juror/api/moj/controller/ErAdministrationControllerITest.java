@@ -26,6 +26,7 @@ import uk.gov.hmcts.juror.api.jurorer.repository.LaUserRepository;
 import uk.gov.hmcts.juror.api.jurorer.repository.LocalAuthorityRepository;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.ActiveLaRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.DeactiveLaRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.jurorer.MarkAsDeliveredRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateEmailRequestSentDto;
@@ -45,7 +46,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@SuppressWarnings("PMD.ExcessiveImports") // false positive, the imports are necessary for the test
+@SuppressWarnings("PMD.ExcessiveImports") // false positive, the test needs to import a lot of classes
 class ErAdministrationControllerITest extends AbstractIntegrationTest {
 
     public static final String EXPECT_THE_STATUS_TO_BE_FORBIDDEN = "Expect the status to be forbidden.";
@@ -166,7 +167,7 @@ class ErAdministrationControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        void testAactivateLaForCourtUserShouldBeForbidden() {
+        void testActivateLaForCourtUserShouldBeForbidden() {
             initHeadersCourt();
             ActiveLaRequestDto requestDto = new ActiveLaRequestDto("004");
 
@@ -263,24 +264,23 @@ class ErAdministrationControllerITest extends AbstractIntegrationTest {
     }
 
     @Nested
-    @DisplayName("PUT /api/v1/moj/er-administration/email-sent")
+    @DisplayName("PUT /api/v1/moj/er-administration/mark-delivered")
     @Sql({"/db/mod/truncate.sql","/db/jurorer/ErDashboardData.sql"})
     @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
-    class UpdateEmailRequestSentTest {
+    class MarkAsDeliveredTest {
 
         @Test
-        void testEmailRequestSentHappy() {
+        void testMarkAsDeliveredHappy() {
 
             // the initial data has LA1 and LA2 with the email request sent flag is null
-            UpdateEmailRequestSentDto requestDto = new UpdateEmailRequestSentDto();
-            requestDto.setLaCode("001");
-            requestDto.setEmailRequestStatus(EmailRequestStatus.UNDELIVERED);
+            MarkAsDeliveredRequestDto requestDto = new MarkAsDeliveredRequestDto();
+            requestDto.setLaCodes(List.of("001", "002"));
 
             ResponseEntity<Void> responseEntity =
                 restTemplate.exchange(
                     new RequestEntity<>(
                         requestDto, httpHeaders, HttpMethod.PUT,
-                        URI.create("/api/v1/moj/er-administration/email-sent")
+                        URI.create("/api/v1/moj/er-administration/mark-delivered")
                     ),
                     Void.class
                 );
@@ -294,22 +294,28 @@ class ErAdministrationControllerITest extends AbstractIntegrationTest {
                 assertThat(localAuthorityOpt).isPresent();
                 LocalAuthority localAuthority1 = localAuthorityOpt.get();
                 assertThat(localAuthority1.getEmailRequestStatus())
-                    .as("Expect LA 001 to have the email request sent flag set to UNDELIVERED.")
-                    .isEqualTo(EmailRequestStatus.UNDELIVERED);
+                    .as("Expect LA 001 to have the email request sent flag set to SENT.")
+                    .isEqualTo(EmailRequestStatus.SENT);
 
+                localAuthorityOpt = localAuthorityRepository.findByLaCode("002");
+                assertThat(localAuthorityOpt).isPresent();
+                LocalAuthority localAuthority2 = localAuthorityOpt.get();
+                assertThat(localAuthority2.getEmailRequestStatus())
+                    .as("Expect LA 002 to have the email request sent flag set to SENT.")
+                    .isEqualTo(EmailRequestStatus.SENT);
             });
         }
 
         @Test
-        void testUpdateEmailSentForCourtUserShouldBeForbidden() {
+        void testMarkAsDeliveredForCourtUserShouldBeForbidden() {
             initHeadersCourt();
-            UpdateEmailRequestSentDto requestDto = new UpdateEmailRequestSentDto();
-            requestDto.setLaCode("001");
-            requestDto.setEmailRequestStatus(EmailRequestStatus.UNDELIVERED);
+
+            UpdateDeadlineRequestDto requestDto = new UpdateDeadlineRequestDto();
+            requestDto.setDeadlineDate(LocalDate.now().plusDays(30));
 
             ResponseEntity<UpdateDeadlineResponseDto> responseEntity =
                 restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PUT,
-                                                          URI.create("/api/v1/moj/er-administration/email-sent")),
+                                                          URI.create("/api/v1/moj/er-administration/mark-delivered")),
                                       UpdateDeadlineResponseDto.class);
 
             assertThat(responseEntity.getStatusCode())

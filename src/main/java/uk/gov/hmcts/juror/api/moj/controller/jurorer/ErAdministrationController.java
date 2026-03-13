@@ -55,12 +55,13 @@ public class ErAdministrationController {
     }
 
     @IsBureauUser
-    @PutMapping("/email-sent")
-    @Operation(summary = "Updates the email request sent status for a local authority")
-    public ResponseEntity<Void> updateEmailSent(
-        @Valid @RequestBody UpdateEmailRequestSentDto request) {
-        erAdministrationService.updateEmailRequestSent(request);
+    @PutMapping("/mark-delivered")
+    @Operation(summary = "Updates local authorities for initial request emails sent to be set to delivered")
+    public ResponseEntity<Void> markAsDelivered(
+        @Valid @RequestBody MarkAsDeliveredRequestDto request) {
+        erAdministrationService.markAsDelivered(request);
         return ResponseEntity.ok().build();
     }
+
 
 }

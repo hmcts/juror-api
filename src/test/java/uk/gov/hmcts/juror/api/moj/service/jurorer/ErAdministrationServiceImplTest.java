@@ -14,6 +14,7 @@ import uk.gov.hmcts.juror.api.jurorer.repository.LocalAuthorityRepository;
 import uk.gov.hmcts.juror.api.jurorer.service.LaUserService;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.ActiveLaRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.DeactiveLaRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.jurorer.MarkAsDeliveredRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineRequestDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 
@@ -218,5 +219,31 @@ class ErAdministrationServiceImplTest {
 
         verify(deadlineRepository, times(0))
             .save(any(Deadline.class));
+    }
+
+    @Test
+    void markAsDeliveredLaNotFound() {
+        MarkAsDeliveredRequestDto request = new MarkAsDeliveredRequestDto();
+        request.setLaCodes(List.of("001", "002"));
+
+        when(localAuthorityRepository.findByLaCode("001"))
+            .thenReturn(Optional.empty());
+
+        MojException.BadRequest exception =
+            assertThrows(
+                MojException.BadRequest.class,
+                () -> erAdministrationService.markAsDelivered(request),
+                "Should throw an error local authority is not found"
+            );
+
+        assertThat(exception).isNotNull();
+        assertThat(exception.getMessage()).contains("LA with code 001 not found");
+
+        verify(localAuthorityRepository, times(1))
+            .findByLaCode("001");
+        verify(localAuthorityRepository, times(0))
+            .findByLaCode("002");
+        verifyNoInteractions(laUserService);
+
     }
 }
