@@ -4,6 +4,7 @@ import uk.gov.hmcts.juror.api.moj.controller.jurorer.ActiveLaRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.DeactiveLaRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateEmailRequestSentDto;
 
 public interface ErAdministrationService {
 
@@ -12,4 +13,6 @@ public interface ErAdministrationService {
     void activateLa(ActiveLaRequestDto requestDto);
 
     UpdateDeadlineResponseDto updateDeadline(UpdateDeadlineRequestDto request);
+
+    void updateEmailRequestSent(UpdateEmailRequestSentDto request);
 }

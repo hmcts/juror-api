@@ -16,6 +16,7 @@ import uk.gov.hmcts.juror.api.moj.controller.jurorer.ActiveLaRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.DeactiveLaRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateEmailRequestSentDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -131,6 +132,24 @@ public class ErAdministrationServiceImpl implements ErAdministrationService {
             .lastUpdated(updatedDeadline.getLastUpdated())
             .daysRemaining(updatedDeadline.getDaysRemaining())
             .build();
+    }
+
+    @Override
+    @Transactional
+    public void updateEmailRequestSent(UpdateEmailRequestSentDto request) {
+        log.info("Updating email request sent status for LA code: {} to {}", request.getLaCode(), request.getEmailRequestStatus());
+
+        LocalAuthority localAuthority = localAuthorityRepository.findByLaCode(request.getLaCode())
+            .orElseThrow(() -> new MojException.BadRequest("LA with code " + request.getLaCode()
+                                                               + " not found", null));
+
+        localAuthority.setEmailRequestStatus(request.getEmailRequestStatus());
+        localAuthority.setEmailRequestSent(LocalDateTime.now());
+        localAuthority.setUpdatedBy(SecurityUtil.getUsername());
+        localAuthority.setLastUpdated(LocalDateTime.now());
+        localAuthorityRepository.save(localAuthority);
+
+        log.info("Email request sent status updated successfully for LA code: {}", request.getLaCode());
     }
 
 }
