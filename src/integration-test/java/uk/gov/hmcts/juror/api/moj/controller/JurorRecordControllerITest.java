@@ -5411,6 +5411,83 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     }
 
     @Nested
+    @DisplayName("Mark a juror as summoned")
+    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_InitMarkAsSummoned.sql"})
+    class MarkJurorSummoned {
+
+        @Test
+        void markJurorSummonedCourtHappyPath() throws Exception {
+
+            String jurorNumber = "111111111";
+            final String url = BASE_URL + "/mark-summoned/" + jurorNumber;
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
+                                                                     UserType.COURT));
+
+            ResponseEntity<Void> response =
+                restTemplate.exchange(new RequestEntity<>(null, httpHeaders, HttpMethod.PATCH,
+                                                          URI.create(url)), Void.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP POST request to be OK")
+                .isEqualTo(HttpStatus.OK);
+            executeInTransaction(() -> {
+                JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumber(jurorNumber);
+
+                assertThat(jurorPool.getStatus().getStatus()).isEqualTo(IJurorStatus.SUMMONED);
+                assertThat(jurorPool.getNextDate()).isEqualTo(LocalDate.now().minusWeeks(2));
+                assertThat(jurorPool.getReturnDate()).isEqualTo(LocalDate.now().minusWeeks(2));
+            });
+
+        }
+
+        @Test
+        void markJurorSummonedBureauHappyPath() throws Exception {
+
+            String jurorNumber = "222222222";
+            final String url = BASE_URL + "/mark-summoned/" + jurorNumber;
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("400", Collections.singletonList("400"),
+                                                                     UserType.BUREAU));
+
+            ResponseEntity<Void> response =
+                restTemplate.exchange(new RequestEntity<>(null, httpHeaders, HttpMethod.PATCH,
+                                                          URI.create(url)), Void.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP POST request to be OK")
+                .isEqualTo(HttpStatus.OK);
+            executeInTransaction(() -> {
+                JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumber(jurorNumber);
+
+                assertThat(jurorPool.getStatus().getStatus()).isEqualTo(IJurorStatus.SUMMONED);
+                assertThat(jurorPool.getNextDate()).isEqualTo(LocalDate.now().minusWeeks(2));
+                assertThat(jurorPool.getReturnDate()).isEqualTo(LocalDate.now().minusWeeks(2));
+            });
+        }
+
+        @Test
+        void markJurorSummonedBureauJurorNotFound() throws Exception {
+
+            String jurorNumber = "333333333";
+            final String url = BASE_URL + "/mark-responded/" + jurorNumber;
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("400", Collections.singletonList("400"),
+                                                                     UserType.BUREAU));
+
+            ResponseEntity<Void> response =
+                restTemplate.exchange(new RequestEntity<>(null, httpHeaders, HttpMethod.PATCH,
+                                                          URI.create(url)), Void.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP POST request to be NOT_FOUND")
+                .isEqualTo(HttpStatus.NOT_FOUND);
+
+        }
+
+    }
+
+    @Nested
     @DisplayName("POST " + CreateManualJurorRecord.URL)
     class CreateManualJurorRecord {
 
