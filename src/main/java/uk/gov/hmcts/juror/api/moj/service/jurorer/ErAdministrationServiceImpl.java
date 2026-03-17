@@ -173,7 +173,8 @@ public class ErAdministrationServiceImpl implements ErAdministrationService {
     @Override
     @Transactional
     public void updateEmailRequestSent(UpdateEmailRequestSentDto request) {
-        log.info("Updating email request sent status for LA code: {} to {}", request.getLaCode(), request.getEmailRequestStatus());
+        log.info("Updating email request sent status for LA code: {} to {}",
+                    request.getLaCode(), request.getEmailRequestStatus());
 
         LocalAuthority localAuthority = localAuthorityRepository.findByLaCode(request.getLaCode())
             .orElseThrow(() -> new MojException.BadRequest("LA with code " + request.getLaCode()
