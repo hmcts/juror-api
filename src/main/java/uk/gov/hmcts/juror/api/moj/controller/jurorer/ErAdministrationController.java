@@ -63,5 +63,14 @@ public class ErAdministrationController {
         return ResponseEntity.ok().build();
     }
 
+    @IsBureauUser
+    @PutMapping("/email-sent")
+    @Operation(summary = "Updates the email request sent status for a local authority")
+    public ResponseEntity<Void> updateEmailSent(
+        @Valid @RequestBody UpdateEmailRequestSentDto request) {
+        erAdministrationService.updateEmailRequestSent(request);
+        return ResponseEntity.ok().build();
+    }
+
 
 }

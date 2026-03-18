@@ -29,6 +29,7 @@ import uk.gov.hmcts.juror.api.moj.controller.jurorer.DeactiveLaRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.MarkAsDeliveredRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateEmailRequestSentDto;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 
 import java.net.URI;
@@ -315,6 +316,64 @@ class ErAdministrationControllerITest extends AbstractIntegrationTest {
             ResponseEntity<UpdateDeadlineResponseDto> responseEntity =
                 restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PUT,
                                                           URI.create("/api/v1/moj/er-administration/mark-delivered")),
+                                      UpdateDeadlineResponseDto.class);
+
+            assertThat(responseEntity.getStatusCode())
+                .as(EXPECT_THE_STATUS_TO_BE_FORBIDDEN)
+                .isEqualTo(HttpStatus.FORBIDDEN);
+
+        }
+
+    }
+
+    @Nested
+    @DisplayName("PUT /api/v1/moj/er-administration/email-sent")
+    @Sql({"/db/mod/truncate.sql","/db/jurorer/ErDashboardData.sql"})
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
+    class UpdateEmailRequestSentTest {
+
+        @Test
+        void testEmailRequestSentHappy() {
+
+            // the initial data has LA1 and LA2 with the email request sent flag is null
+            UpdateEmailRequestSentDto requestDto = new UpdateEmailRequestSentDto();
+            requestDto.setLaCode("001");
+            requestDto.setEmailRequestStatus(EmailRequestStatus.UNDELIVERED);
+
+            ResponseEntity<Void> responseEntity =
+                restTemplate.exchange(
+                    new RequestEntity<>(
+                        requestDto, httpHeaders, HttpMethod.PUT,
+                        URI.create("/api/v1/moj/er-administration/email-sent")
+                    ),
+                    Void.class
+                );
+
+            assertThat(responseEntity.getStatusCode())
+                .as("Expect the status to be OK.")
+                .isEqualTo(HttpStatus.OK);
+
+            executeInTransaction(() -> {
+                Optional<LocalAuthority> localAuthorityOpt = localAuthorityRepository.findByLaCode("001");
+                assertThat(localAuthorityOpt).isPresent();
+                LocalAuthority localAuthority1 = localAuthorityOpt.get();
+                assertThat(localAuthority1.getEmailRequestStatus())
+                    .as("Expect LA 001 to have the email request sent flag set to UNDELIVERED.")
+                    .isEqualTo(EmailRequestStatus.UNDELIVERED);
+
+            });
+        }
+
+        @Test
+        void testUpdateEmailSentForCourtUserShouldBeForbidden() {
+            initHeadersCourt();
+            UpdateEmailRequestSentDto requestDto = new UpdateEmailRequestSentDto();
+            requestDto.setLaCode("001");
+            requestDto.setEmailRequestStatus(EmailRequestStatus.UNDELIVERED);
+
+            ResponseEntity<UpdateDeadlineResponseDto> responseEntity =
+                restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PUT,
+                                                          URI.create("/api/v1/moj/er-administration/email-sent")),
                                       UpdateDeadlineResponseDto.class);
 
             assertThat(responseEntity.getStatusCode())
