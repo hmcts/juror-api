@@ -161,12 +161,7 @@ public class ErAdministrationServiceImpl implements ErAdministrationService {
                                                   + " is already marked as delivered", null);
         }
 
-
-        localAuthority.setEmailRequestStatus(EmailRequestStatus.SENT);
-        localAuthority.setEmailRequestSent(LocalDateTime.now());
-        localAuthority.setUpdatedBy(SecurityUtil.getUsername());
-        localAuthority.setLastUpdated(LocalDateTime.now());
-        localAuthorityRepository.save(localAuthority);
+        updateEmailSentStatus(localAuthority, EmailRequestStatus.SENT);
         log.info("Initial email for LA code {} has been marked as delivered", laCode);
     }
 
@@ -180,13 +175,17 @@ public class ErAdministrationServiceImpl implements ErAdministrationService {
             .orElseThrow(() -> new MojException.BadRequest("LA with code " + request.getLaCode()
                                                                + " not found", null));
 
-        localAuthority.setEmailRequestStatus(request.getEmailRequestStatus());
+        updateEmailSentStatus(localAuthority, request.getEmailRequestStatus());
+
+        log.info("Email request sent status updated successfully for LA code: {}", request.getLaCode());
+    }
+
+    private void updateEmailSentStatus(LocalAuthority localAuthority, EmailRequestStatus request) {
+        localAuthority.setEmailRequestStatus(request);
         localAuthority.setEmailRequestSent(LocalDateTime.now());
         localAuthority.setUpdatedBy(SecurityUtil.getUsername());
         localAuthority.setLastUpdated(LocalDateTime.now());
         localAuthorityRepository.save(localAuthority);
-
-        log.info("Email request sent status updated successfully for LA code: {}", request.getLaCode());
     }
 
 }
