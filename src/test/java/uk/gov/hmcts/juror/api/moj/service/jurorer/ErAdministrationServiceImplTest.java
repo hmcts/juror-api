@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.jurorer.domain.Deadline;
+import uk.gov.hmcts.juror.api.jurorer.domain.EmailRequestStatus;
 import uk.gov.hmcts.juror.api.jurorer.domain.LaUser;
 import uk.gov.hmcts.juror.api.jurorer.domain.LocalAuthority;
 import uk.gov.hmcts.juror.api.jurorer.repository.DeadlineRepository;
@@ -15,10 +16,12 @@ import uk.gov.hmcts.juror.api.jurorer.service.LaUserService;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.ActiveLaRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.DeactiveLaRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.MarkAsDeliveredRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.jurorer.MarkAsDeliveredResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineRequestDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,6 +35,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("all")
 @ExtendWith(SpringExtension.class)
 class ErAdministrationServiceImplTest {
 
@@ -222,28 +226,101 @@ class ErAdministrationServiceImplTest {
     }
 
     @Test
-    void markAsDeliveredLaNotFound() {
+    void markAsDeliveredAllUpdated() {
+        TestUtils.setUpMockAuthentication("400", "Bureau", "1", List.of("400"));
+
         MarkAsDeliveredRequestDto request = new MarkAsDeliveredRequestDto();
         request.setLaCodes(List.of("001", "002"));
 
-        when(localAuthorityRepository.findByLaCode("001"))
-            .thenReturn(Optional.empty());
+        LocalAuthority la1 = LocalAuthority.builder().laCode("001").emailRequestStatus(null).emailRequestSent(null).build();
+        LocalAuthority la2 = LocalAuthority.builder().laCode("002").emailRequestStatus(null).emailRequestSent(null).build();
 
-        MojException.BadRequest exception =
-            assertThrows(
-                MojException.BadRequest.class,
-                () -> erAdministrationService.markAsDelivered(request),
-                "Should throw an error local authority is not found"
-            );
+        when(localAuthorityRepository.findByLaCode("001")).thenReturn(Optional.of(la1));
+        when(localAuthorityRepository.findByLaCode("002")).thenReturn(Optional.of(la2));
+        when(localAuthorityRepository.save(any(LocalAuthority.class))).thenAnswer(i -> i.getArgument(0));
 
-        assertThat(exception).isNotNull();
-        assertThat(exception.getMessage()).contains("LA with code 001 not found");
+        MarkAsDeliveredResponseDto response = erAdministrationService.markAsDelivered(request);
 
-        verify(localAuthorityRepository, times(1))
-            .findByLaCode("001");
-        verify(localAuthorityRepository, times(0))
-            .findByLaCode("002");
-        verifyNoInteractions(laUserService);
+        assertThat(response.getUpdated()).containsExactlyInAnyOrder("001", "002");
+        assertThat(response.getAlreadySent()).isEmpty();
+        assertThat(response.getErrors()).isEmpty();
 
+        verify(localAuthorityRepository, times(2)).save(any(LocalAuthority.class));
+    }
+
+    @Test
+    void markAsDeliveredAlreadySent() {
+        TestUtils.setUpMockAuthentication("400", "Bureau", "1", List.of("400"));
+
+        MarkAsDeliveredRequestDto request = new MarkAsDeliveredRequestDto();
+        request.setLaCodes(List.of("001"));
+
+        LocalAuthority la1 = LocalAuthority.builder()
+            .laCode("001")
+            .emailRequestStatus(EmailRequestStatus.SENT)
+            .emailRequestSent(LocalDateTime.now().minusDays(1))
+            .build();
+
+        when(localAuthorityRepository.findByLaCode("001")).thenReturn(Optional.of(la1));
+
+        MarkAsDeliveredResponseDto response = erAdministrationService.markAsDelivered(request);
+
+        assertThat(response.getUpdated()).isEmpty();
+        assertThat(response.getAlreadySent()).containsExactly("001");
+        assertThat(response.getErrors()).isEmpty();
+
+        verify(localAuthorityRepository, times(0)).save(any(LocalAuthority.class));
+    }
+
+    @Test
+    void markAsDeliveredLaNotFoundGoesToErrors() {
+        MarkAsDeliveredRequestDto request = new MarkAsDeliveredRequestDto();
+        request.setLaCodes(List.of("001", "002"));
+
+        LocalAuthority la2 = LocalAuthority.builder().laCode("002").emailRequestStatus(null).emailRequestSent(null).build();
+
+        when(localAuthorityRepository.findByLaCode("001")).thenReturn(Optional.empty());
+        when(localAuthorityRepository.findByLaCode("002")).thenReturn(Optional.of(la2));
+        when(localAuthorityRepository.save(any(LocalAuthority.class))).thenAnswer(i -> i.getArgument(0));
+
+        MarkAsDeliveredResponseDto response = erAdministrationService.markAsDelivered(request);
+
+        assertThat(response.getUpdated()).containsExactly("002");
+        assertThat(response.getAlreadySent()).isEmpty();
+        assertThat(response.getErrors()).hasSize(1);
+        assertThat(response.getErrors().get(0).getLaCode()).isEqualTo("001");
+        assertThat(response.getErrors().get(0).getReason()).contains("LA with code 001 not found");
+
+        verify(localAuthorityRepository, times(1)).findByLaCode("001");
+        verify(localAuthorityRepository, times(1)).findByLaCode("002");
+    }
+
+    @Test
+    void markAsDeliveredMixedResults() {
+        TestUtils.setUpMockAuthentication("400", "Bureau", "1", List.of("400"));
+
+        MarkAsDeliveredRequestDto request = new MarkAsDeliveredRequestDto();
+        request.setLaCodes(List.of("001", "002", "003"));
+
+        LocalAuthority la1 = LocalAuthority.builder().laCode("001").emailRequestStatus(null).emailRequestSent(null).build();
+        LocalAuthority la2 = LocalAuthority.builder()
+            .laCode("002")
+            .emailRequestStatus(EmailRequestStatus.SENT)
+            .emailRequestSent(LocalDateTime.now().minusDays(1))
+            .build();
+
+        when(localAuthorityRepository.findByLaCode("001")).thenReturn(Optional.of(la1));
+        when(localAuthorityRepository.findByLaCode("002")).thenReturn(Optional.of(la2));
+        when(localAuthorityRepository.findByLaCode("003")).thenReturn(Optional.empty());
+        when(localAuthorityRepository.save(any(LocalAuthority.class))).thenAnswer(i -> i.getArgument(0));
+
+        MarkAsDeliveredResponseDto response = erAdministrationService.markAsDelivered(request);
+
+        assertThat(response.getUpdated()).containsExactly("001");
+        assertThat(response.getAlreadySent()).containsExactly("002");
+        assertThat(response.getErrors()).hasSize(1);
+        assertThat(response.getErrors().get(0).getLaCode()).isEqualTo("003");
+
+        verify(localAuthorityRepository, times(1)).save(any(LocalAuthority.class));
     }
 }

@@ -16,6 +16,7 @@ import uk.gov.hmcts.juror.api.jurorer.service.LaUserService;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.ActiveLaRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.DeactiveLaRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.MarkAsDeliveredRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.jurorer.MarkAsDeliveredResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateEmailRequestSentDto;
@@ -23,6 +24,7 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static uk.gov.hmcts.juror.api.validation.LaCodeValidator.isValidLaCode;
@@ -138,31 +140,57 @@ public class ErAdministrationServiceImpl implements ErAdministrationService {
 
     @Override
     @Transactional
-    public void markAsDelivered(MarkAsDeliveredRequestDto request) {
+    public MarkAsDeliveredResponseDto markAsDelivered(MarkAsDeliveredRequestDto request) {
+        log.info("Marking initial email as delivered for {} LAs", request.getLaCodes().size());
 
-        log.info("Marking initial email as delivered for LAs}");
+        List<String> updated = new ArrayList<>();
+        List<String> alreadySent = new ArrayList<>();
+        List<MarkAsDeliveredResponseDto.MarkAsDeliveredErrorDto> errors = new ArrayList<>();
 
-        // for each LA code, find the LA and update the email request sent flag to true
         request.getLaCodes().forEach(laCode -> {
-            isValidLaCode(laCode);
-            markDelivered(laCode);
+            try {
+                isValidLaCode(laCode);
+                MarkDeliveredResult result = markDelivered(laCode);
+                switch (result) {
+                    case UPDATED -> updated.add(laCode);
+                    case ALREADY_SENT -> alreadySent.add(laCode);
+                }
+            } catch (Exception e) {
+                log.error("Failed to mark LA code {} as delivered: {}", laCode, e.getMessage());
+                errors.add(MarkAsDeliveredResponseDto.MarkAsDeliveredErrorDto.builder()
+                               .laCode(laCode)
+                               .reason(e.getMessage())
+                               .build());
+            }
         });
+
+        log.info("Mark as delivered complete - updated: {}, already sent: {}, errors: {}",
+                 updated.size(), alreadySent.size(), errors.size());
+
+        return MarkAsDeliveredResponseDto.builder()
+            .updated(updated)
+            .alreadySent(alreadySent)
+            .errors(errors)
+            .build();
     }
 
-    private void markDelivered(String laCode) {
+    private enum MarkDeliveredResult {
+        UPDATED, ALREADY_SENT
+    }
+
+    private MarkDeliveredResult markDelivered(String laCode) {
         LocalAuthority localAuthority = localAuthorityRepository.findByLaCode(laCode)
-            .orElseThrow(() -> new MojException.BadRequest("LA with code " + laCode
-                                                               + " not found", null));
+            .orElseThrow(() -> new MojException.BadRequest("LA with code " + laCode + " not found", null));
 
         if (localAuthority.getEmailRequestSent() != null
             && localAuthority.getEmailRequestStatus() == EmailRequestStatus.SENT) {
-            log.warn("Initial email for LA code {} is already marked as delivered", laCode);
-            throw new MojException.BadRequest("Initial email for LA code " + laCode
-                                                  + " is already marked as delivered", null);
+            log.info("Initial email for LA code {} is already marked as delivered - skipping", laCode);
+            return MarkDeliveredResult.ALREADY_SENT;
         }
 
         updateEmailSentStatus(localAuthority, EmailRequestStatus.SENT);
         log.info("Initial email for LA code {} has been marked as delivered", laCode);
+        return MarkDeliveredResult.UPDATED;
     }
 
     @Override

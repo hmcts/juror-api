@@ -57,10 +57,10 @@ public class ErAdministrationController {
     @IsBureauUser
     @PutMapping("/mark-delivered")
     @Operation(summary = "Updates local authorities for initial request emails sent to be set to delivered")
-    public ResponseEntity<Void> markAsDelivered(
+    public ResponseEntity<MarkAsDeliveredResponseDto> markAsDelivered(
         @Valid @RequestBody MarkAsDeliveredRequestDto request) {
-        erAdministrationService.markAsDelivered(request);
-        return ResponseEntity.ok().build();
+        MarkAsDeliveredResponseDto response = erAdministrationService.markAsDelivered(request);
+        return ResponseEntity.ok().body(response);
     }
 
     @IsBureauUser
