@@ -1,6 +1,8 @@
 package uk.gov.hmcts.juror.api.juror.controller.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
@@ -35,6 +37,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.THIRD_PARTY_
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Builder(builderMethodName = "realBuilder")
 @Schema(description = "Juror response information from a Juror Response updating exiting information. Parameters "
     + "should be the correct values, not just changes.")
