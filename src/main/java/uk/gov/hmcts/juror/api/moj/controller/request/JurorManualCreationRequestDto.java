@@ -1,8 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.controller.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -24,7 +22,6 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.PHONE_NO_REG
 
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Getter
 @Builder
 public class JurorManualCreationRequestDto {

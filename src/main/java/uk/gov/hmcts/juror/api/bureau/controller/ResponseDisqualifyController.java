@@ -2,8 +2,6 @@ package uk.gov.hmcts.juror.api.bureau.controller;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.jsonwebtoken.lang.Assert;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -95,7 +93,6 @@ public class ResponseDisqualifyController {
      */
     @AllArgsConstructor
     @NoArgsConstructor
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Data
     @Schema(description = "List of Disqualification Reasons")
     public static class DisqualifyReasonsDto {
@@ -111,7 +108,6 @@ public class ResponseDisqualifyController {
      */
     @AllArgsConstructor
     @NoArgsConstructor
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Data
     @Schema(description = "Disqualification Reason")
     public static class DisqualifyCodeDto {

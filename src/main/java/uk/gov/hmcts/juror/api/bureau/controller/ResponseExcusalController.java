@@ -2,8 +2,6 @@ package uk.gov.hmcts.juror.api.bureau.controller;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.jsonwebtoken.lang.Assert;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -113,7 +111,6 @@ public class ResponseExcusalController {
      */
     @AllArgsConstructor
     @NoArgsConstructor
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Data
     @Schema(description = "List of Excusal Reasons")
     public static class ExcusalReasonsDto {
@@ -129,7 +126,6 @@ public class ResponseExcusalController {
      */
     @AllArgsConstructor
     @NoArgsConstructor
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Data
     @Schema(description = "Excusal Reason")
     public static class ExcusalCodeDto {

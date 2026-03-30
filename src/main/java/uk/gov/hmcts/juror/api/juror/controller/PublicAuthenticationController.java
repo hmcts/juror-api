@@ -100,7 +100,6 @@ public class PublicAuthenticationController {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Data
     @Schema(description = "Public Juror authentication response. Used to mint a valid JWT")
     public static class PublicAuthenticationResponseDto {

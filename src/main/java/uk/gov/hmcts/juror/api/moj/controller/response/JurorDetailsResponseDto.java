@@ -1,7 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.controller.response;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -31,7 +29,6 @@ import java.util.Arrays;
 @Setter
 @Getter
 @NoArgsConstructor
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Schema(description = "Juror detail information for the Juror Record")
 public class JurorDetailsResponseDto {
 

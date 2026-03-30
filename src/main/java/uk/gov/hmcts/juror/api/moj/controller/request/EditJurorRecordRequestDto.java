@@ -2,9 +2,7 @@ package uk.gov.hmcts.juror.api.moj.controller.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
@@ -33,7 +31,6 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.POSTCODE_REG
 @AllArgsConstructor
 @Getter
 @Setter
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Schema(description = "Juror paper response personal details")
 public class EditJurorRecordRequestDto {
 

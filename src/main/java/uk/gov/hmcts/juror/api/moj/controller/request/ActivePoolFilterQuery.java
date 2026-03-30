@@ -1,8 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.controller.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.querydsl.core.types.Expression;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
@@ -18,7 +16,6 @@ import uk.gov.hmcts.juror.api.validation.CourtLocationCode;
 
 @Data
 @Builder
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ActivePoolFilterQuery implements IsPageable {
 
     @JsonProperty("loc_code")

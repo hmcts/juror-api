@@ -2,8 +2,6 @@ package uk.gov.hmcts.juror.api.moj.controller.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -24,7 +22,6 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Schema(description = "List of pool history relating to a specific pool request")
 public class PoolHistoryListDto {
 
@@ -36,7 +33,6 @@ public class PoolHistoryListDto {
     @AllArgsConstructor
     @NoArgsConstructor
     @Getter
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Schema(description = "Pool History data")
     @ToString
     public static class PoolHistoryDataDto {

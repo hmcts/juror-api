@@ -1,8 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -27,7 +25,6 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REG
 @Getter
 @Setter
 @Builder
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Schema(description = "Attendance details response DTO")
 public class AttendanceDetailsResponse {
 
@@ -44,7 +41,6 @@ public class AttendanceDetailsResponse {
     @Getter
     @Setter
     @Builder
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Schema(description = "Attendance details")
     public static class Details {
         @JsonProperty("juror_number")
@@ -94,7 +90,6 @@ public class AttendanceDetailsResponse {
     @Getter
     @Setter
     @Builder
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Schema(description = "Summary details")
     public static class Summary {
         @JsonProperty("checkedIn")
