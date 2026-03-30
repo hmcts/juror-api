@@ -7,6 +7,7 @@ import lombok.Data;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
 
 import java.io.Serializable;
+
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Data
 @Schema(description = "Details on a Juror's employments with the CJS")

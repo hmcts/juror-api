@@ -85,8 +85,8 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
         assertThat(exchange).isNotNull();
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.OK);
         final String responseJson = TestUtil.parseToJsonString(exchange.getBody());
-        assertThatJson(responseJson).node("jurorNumber").isStringEqualTo(jurorNumber);
-        assertThatJson(responseJson).node("lastName").isStringEqualTo(lastName.toUpperCase());
+        assertThatJson(responseJson).node("juror_number").isStringEqualTo(jurorNumber);
+        assertThatJson(responseJson).node("last_name").isStringEqualTo(lastName.toUpperCase());
         assertThatJson(responseJson).node("postcode").isStringEqualTo(postcode.toUpperCase());
     }
 
@@ -118,8 +118,8 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
         assertThat(exchange).isNotNull();
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.OK);
         final String responseJson = TestUtil.parseToJsonString(exchange.getBody());
-        assertThatJson(responseJson).node("jurorNumber").isStringEqualTo(jurorNumber);
-        assertThatJson(responseJson).node("lastName").isStringEqualTo(lastName.toUpperCase());
+        assertThatJson(responseJson).node("juror_number").isStringEqualTo(jurorNumber);
+        assertThatJson(responseJson).node("last_name").isStringEqualTo(lastName.toUpperCase());
         assertThatJson(responseJson).node("postcode").isStringEqualTo("AB3 9RY");// matches database value with space
     }
 

@@ -59,56 +59,46 @@ public class JurorDetailsCommonResponseDto {
     private String lastName;
 
     @NotNull
-    @JsonProperty("jurorNumber")
     @Schema(name = "Juror number", description = "Jurors Number")
     private String jurorNumber;
 
     @NotNull
-    @JsonProperty("jurorStatus")
     @Schema(name = "Juror Status", description = "Jurors status")
     private String jurorStatus;
 
     @NotNull
-    @JsonProperty("poolNumber")
     @Schema(name = "Pool number", description = "The Pool number Juror belongs to")
     private String poolNumber;
 
     @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd")
-    @JsonProperty("startDate")
     @Schema(name = "Start Date", description = "Service Start Date")
     private LocalDate startDate;
 
     @NotNull
-    @JsonProperty("courtName")
     @Schema(name = "Court name", description = "Name of court Juror will attend")
     private String courtName;
 
     @JsonProperty("is_welsh_court")
     private boolean isWelshCourt;
 
-    @JsonProperty("excusalRejected")
+
     @Schema(name = "Excusal Rejected flag", description = "Flag to indicate if an excusal was rejected for juror")
     private String excusalRejected;
 
-    @JsonProperty("excusalCode")
     @Schema(name = "Excusal Code", description = "Excusal code indicating reason selected by the user")
     private String excusalCode;
 
-    @JsonProperty("excusalDescription")
     @Schema(name = "Excusal description", description = "Description of excusal code", example = "Student")
     private String excusalDescription;
 
-    @JsonProperty("deferredTo")
     @JsonFormat(pattern = "yyyy-MM-dd")
     @Schema(name = "Deferred to date", description = "The date that the juror was deferred to")
     private LocalDate deferredTo;
 
-    @JsonProperty("noDeferrals")
     @Schema(name = "Number of deferrals", description = "No. Deferrals")
     private Integer noDeferrals;
 
-    @JsonProperty("deferralDate")
     @Schema(name = "Deferral date", description = "Deferral date")
     private LocalDate deferralDate;
 

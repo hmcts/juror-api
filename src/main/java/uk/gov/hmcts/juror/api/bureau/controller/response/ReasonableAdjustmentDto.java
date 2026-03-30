@@ -7,6 +7,7 @@ import lombok.Data;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
 
 import java.io.Serializable;
+
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Data
 @Schema(description = "Details on any reasonable adjustment  a Juror has")
