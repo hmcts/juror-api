@@ -130,14 +130,14 @@ class JurorRecordControllerTest {
         doReturn(dto).when(jurorRecordService).getJurorOverview(bureauJwtPayload, JUROR_NUMBER, LOC_CODE);
 
         mockMvc.perform(get("/api/v1/moj/juror-record/overview/" + JUROR_NUMBER + "/" + LOC_CODE)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(commonDto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(commonDto)))
             .andExpect(status().is2xxSuccessful())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$['common_details']['juror_number']", CoreMatchers.is(JUROR_NUMBER)))
-            .andExpect(jsonPath("$['welsh_language_required']", CoreMatchers.nullValue()))
-            .andExpect(jsonPath("$['common_details']['police_check']", CoreMatchers.is("NOT_CHECKED")));
+            .andExpect(jsonPath("$['commonDetails']['jurorNumber']", CoreMatchers.is(JUROR_NUMBER)))
+            .andExpect(jsonPath("$['welshLanguageRequired']", CoreMatchers.nullValue()))
+            .andExpect(jsonPath("$['commonDetails']['police_check']", CoreMatchers.is("NOT_CHECKED")));
 
         verify(jurorRecordService, times(1))
             .getJurorOverview(bureauJwtPayload, JUROR_NUMBER, LOC_CODE);
@@ -162,43 +162,43 @@ class JurorRecordControllerTest {
             .getJurorOverview(bureauJwtPayload, JUROR_NUMBER, LOC_CODE);
 
         mockMvc.perform(get("/api/v1/moj/juror-record/overview/" + JUROR_NUMBER + "/" + LOC_CODE)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().is2xxSuccessful())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$['common_details']['owner']", CoreMatchers.is("400")))
-            .andExpect(jsonPath("$['common_details']['title']", CoreMatchers.is("Miss")))
-            .andExpect(jsonPath("$['common_details']['first_name']", CoreMatchers.is("FirstName")))
-            .andExpect(jsonPath("$['common_details']['last_name']", CoreMatchers.is("LastName")))
-            .andExpect(jsonPath("$['common_details']['juror_number']", CoreMatchers.is(JUROR_NUMBER)))
-            .andExpect(jsonPath("$['common_details']['juror_status']", CoreMatchers.is("Summoned")))
-            .andExpect(jsonPath("$['common_details']['pool_number']", CoreMatchers.is("12345678")))
-            .andExpect(jsonPath("$['common_details']['start_date']",
-                                CoreMatchers.is(localDateCommonDto.toString())))
-            .andExpect(jsonPath("$['common_details']['court_name']", CoreMatchers.is("Chester")))
-            .andExpect(jsonPath("$['common_details']['excusal_rejected']", CoreMatchers.is("Rejected")))
-            .andExpect(jsonPath("$['common_details']['excusal_code']", CoreMatchers.is("C")))
-            .andExpect(jsonPath("$['common_details']['excusal_description']", CoreMatchers.is("Childcare")))
-            .andExpect(jsonPath("$['common_details']['deferred_to']", CoreMatchers.nullValue()))
-            .andExpect(jsonPath("$['common_details']['no_deferrals']", CoreMatchers.is(0)))
-            .andExpect(jsonPath("$['common_details']['deferral_date']", CoreMatchers.nullValue()))
-            .andExpect(jsonPath("$['common_details']['police_check']", CoreMatchers.is("NOT_CHECKED")))
-            .andExpect(jsonPath("$['common_details']['pending_title']", CoreMatchers.is("Dr")))
-            .andExpect(jsonPath("$['common_details']['pending_first_name']",
-                                CoreMatchers.is("NewFirstName")))
-            .andExpect(jsonPath("$['common_details']['pending_last_name']",
-                                CoreMatchers.is("NewLastName")))
-            .andExpect(jsonPath("$['reply_status']", CoreMatchers.is("TODO")))
-            .andExpect(jsonPath("$['reply_date']", CoreMatchers.is(overviewResponseLocalDate.toString())))
-            .andExpect(jsonPath("$['reply_method']", CoreMatchers.is("Paper")))
-            .andExpect(jsonPath("$['special_need']", CoreMatchers.is("Wheelchair access")))
-            .andExpect(jsonPath("$['special_need_description']",
-                                CoreMatchers.is("Wheelchair access required")))
-            .andExpect(jsonPath("$['special_need_message']",
-                                CoreMatchers.is("Wheelchair access required")))
-            .andExpect(jsonPath("$['optic_reference']", CoreMatchers.is("12345678")))
-            .andExpect(jsonPath("$['welsh_language_required']", CoreMatchers.is(true)));
+            .andExpect(jsonPath("$['commonDetails']['owner']", CoreMatchers.is("400")))
+            .andExpect(jsonPath("$['commonDetails']['title']", CoreMatchers.is("Miss")))
+            .andExpect(jsonPath("$['commonDetails']['firstName']", CoreMatchers.is("FirstName")))
+            .andExpect(jsonPath("$['commonDetails']['lastName']", CoreMatchers.is("LastName")))
+            .andExpect(jsonPath("$['commonDetails']['jurorNumber']", CoreMatchers.is(JUROR_NUMBER)))
+            .andExpect(jsonPath("$['commonDetails']['jurorStatus']", CoreMatchers.is("Summoned")))
+            .andExpect(jsonPath("$['commonDetails']['poolNumber']", CoreMatchers.is("12345678")))
+            .andExpect(jsonPath("$['commonDetails']['startDate']",
+                CoreMatchers.is(localDateCommonDto.toString())))
+            .andExpect(jsonPath("$['commonDetails']['courtName']", CoreMatchers.is("Chester")))
+            .andExpect(jsonPath("$['commonDetails']['excusalRejected']", CoreMatchers.is("Rejected")))
+            .andExpect(jsonPath("$['commonDetails']['excusalCode']", CoreMatchers.is("C")))
+            .andExpect(jsonPath("$['commonDetails']['excusalDescription']", CoreMatchers.is("Childcare")))
+            .andExpect(jsonPath("$['commonDetails']['deferredTo']", CoreMatchers.nullValue()))
+            .andExpect(jsonPath("$['commonDetails']['noDeferrals']", CoreMatchers.is(0)))
+            .andExpect(jsonPath("$['commonDetails']['deferralDate']", CoreMatchers.nullValue()))
+            .andExpect(jsonPath("$['commonDetails']['police_check']", CoreMatchers.is("NOT_CHECKED")))
+            .andExpect(jsonPath("$['commonDetails']['pendingTitle']", CoreMatchers.is("Dr")))
+            .andExpect(jsonPath("$['commonDetails']['pendingFirstName']",
+                CoreMatchers.is("NewFirstName")))
+            .andExpect(jsonPath("$['commonDetails']['pendingLastName']",
+                CoreMatchers.is("NewLastName")))
+            .andExpect(jsonPath("$['replyStatus']", CoreMatchers.is("TODO")))
+            .andExpect(jsonPath("$['replyDate']", CoreMatchers.is(overviewResponseLocalDate.toString())))
+            .andExpect(jsonPath("$['replyMethod']", CoreMatchers.is("Paper")))
+            .andExpect(jsonPath("$['specialNeed']", CoreMatchers.is("Wheelchair access")))
+            .andExpect(jsonPath("$['specialNeedDescription']",
+                CoreMatchers.is("Wheelchair access required")))
+            .andExpect(jsonPath("$['specialNeedMessage']",
+                CoreMatchers.is("Wheelchair access required")))
+            .andExpect(jsonPath("$['opticReference']", CoreMatchers.is("12345678")))
+            .andExpect(jsonPath("$['welshLanguageRequired']", CoreMatchers.is(true)));
 
         verify(jurorRecordService, times(1))
             .getJurorOverview(bureauJwtPayload, JUROR_NUMBER, LOC_CODE);
@@ -222,14 +222,14 @@ class JurorRecordControllerTest {
             .getJurorOverview(bureauJwtPayload, JUROR_NUMBER, LOC_CODE);
 
         mockMvc.perform(get("/api/v1/moj/juror-record/overview/" + JUROR_NUMBER + "/" + LOC_CODE)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(commonDto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(commonDto)))
             .andExpect(status().is2xxSuccessful())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$['welsh_language_required']", CoreMatchers.is(true)))
-            .andExpect(jsonPath("$['common_details']['juror_number']", CoreMatchers.is(JUROR_NUMBER)))
-            .andExpect(jsonPath("$['common_details']['police_check']", CoreMatchers.nullValue()));
+            .andExpect(jsonPath("$['welshLanguageRequired']", CoreMatchers.is(true)))
+            .andExpect(jsonPath("$['commonDetails']['jurorNumber']", CoreMatchers.is(JUROR_NUMBER)))
+            .andExpect(jsonPath("$['commonDetails']['police_check']", CoreMatchers.nullValue()));
 
         verify(jurorRecordService, times(1))
             .getJurorOverview(bureauJwtPayload, JUROR_NUMBER, LOC_CODE);
@@ -262,14 +262,14 @@ class JurorRecordControllerTest {
             .fixErrorInJurorName(bureauJwtPayload, JUROR_NUMBER, dto);
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/fix-name/" + JUROR_NUMBER)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().is2xxSuccessful());
 
         verify(jurorRecordService, times(1))
             .fixErrorInJurorName(any(BureauJwtPayload.class), Mockito.anyString(),
-                                 any(JurorNameDetailsDto.class));
+                any(JurorNameDetailsDto.class));
     }
 
     @Test
@@ -285,14 +285,14 @@ class JurorRecordControllerTest {
             .fixErrorInJurorName(bureauJwtPayload, JUROR_NUMBER, dto);
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/fix-name/" + JUROR_NUMBER)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().is2xxSuccessful());
 
         verify(jurorRecordService, times(1))
             .fixErrorInJurorName(any(BureauJwtPayload.class), Mockito.anyString(),
-                                 any(JurorNameDetailsDto.class));
+                any(JurorNameDetailsDto.class));
     }
 
     @ParameterizedTest
@@ -309,13 +309,13 @@ class JurorRecordControllerTest {
             .fixErrorInJurorName(bureauJwtPayload, JUROR_NUMBER, dto);
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/fix-name/" + JUROR_NUMBER)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never()).fixErrorInJurorName(any(BureauJwtPayload.class),
-                                                Mockito.anyString(), any(JurorNameDetailsDto.class));
+            Mockito.anyString(), any(JurorNameDetailsDto.class));
     }
 
 
@@ -335,13 +335,13 @@ class JurorRecordControllerTest {
             .fixErrorInJurorName(jwtPayload, JUROR_NUMBER, dto);
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/fix-name/" + JUROR_NUMBER)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never()).fixErrorInJurorName(any(BureauJwtPayload.class),
-                                                Mockito.anyString(), any(JurorNameDetailsDto.class));
+            Mockito.anyString(), any(JurorNameDetailsDto.class));
     }
 
 
@@ -361,13 +361,13 @@ class JurorRecordControllerTest {
             .fixErrorInJurorName(jwtPayload, JUROR_NUMBER, dto);
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/fix-name/" + JUROR_NUMBER)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never()).fixErrorInJurorName(any(BureauJwtPayload.class),
-                                                Mockito.anyString(), any(JurorNameDetailsDto.class));
+            Mockito.anyString(), any(JurorNameDetailsDto.class));
     }
 
     @ParameterizedTest
@@ -385,13 +385,13 @@ class JurorRecordControllerTest {
             .fixErrorInJurorName(jwtPayload, jurorNumber, dto);
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/fix-name/" + jurorNumber)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never()).fixErrorInJurorName(any(BureauJwtPayload.class),
-                                                Mockito.anyString(), any(JurorNameDetailsDto.class));
+            Mockito.anyString(), any(JurorNameDetailsDto.class));
     }
 
     @Test
@@ -402,20 +402,20 @@ class JurorRecordControllerTest {
         when(mockPrincipal.getPrincipal()).thenReturn(bureauJwtPayload);
 
         ProcessNameChangeRequestDto dto = new ProcessNameChangeRequestDto(ApprovalDecision.APPROVE,
-                                                                          "Marriage certificate and passport");
+            "Marriage certificate and passport");
 
         doNothing().when(jurorRecordService)
             .processPendingNameChange(bureauJwtPayload, JUROR_NUMBER, dto);
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/change-name/" + JUROR_NUMBER)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().is2xxSuccessful());
 
         verify(jurorRecordService, times(1))
             .processPendingNameChange(any(BureauJwtPayload.class), Mockito.anyString(),
-                                      any(ProcessNameChangeRequestDto.class));
+                any(ProcessNameChangeRequestDto.class));
     }
 
     @Test
@@ -426,17 +426,17 @@ class JurorRecordControllerTest {
         when(mockPrincipal.getPrincipal()).thenReturn(bureauJwtPayload);
 
         ProcessNameChangeRequestDto dto = new ProcessNameChangeRequestDto(ApprovalDecision.APPROVE,
-                                                                          "Marriage certificate and passport");
+            "Marriage certificate and passport");
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/change-name/" + JUROR_NUMBER)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isForbidden());
 
         verify(jurorRecordService, Mockito.never())
             .processPendingNameChange(any(BureauJwtPayload.class), Mockito.anyString(),
-                                      any(ProcessNameChangeRequestDto.class));
+                any(ProcessNameChangeRequestDto.class));
     }
 
     @Test
@@ -446,17 +446,17 @@ class JurorRecordControllerTest {
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
         ProcessNameChangeRequestDto dto = new ProcessNameChangeRequestDto(null,
-                                                                          "Marriage certificate and passport");
+            "Marriage certificate and passport");
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/change-name/" + JUROR_NUMBER)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never())
             .processPendingNameChange(any(BureauJwtPayload.class), Mockito.anyString(),
-                                      any(ProcessNameChangeRequestDto.class));
+                any(ProcessNameChangeRequestDto.class));
     }
 
     @Test
@@ -468,14 +468,14 @@ class JurorRecordControllerTest {
         ProcessNameChangeRequestDto dto = new ProcessNameChangeRequestDto(ApprovalDecision.REJECT, null);
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/change-name/" + JUROR_NUMBER)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never())
             .processPendingNameChange(any(BureauJwtPayload.class), Mockito.anyString(),
-                                      any(ProcessNameChangeRequestDto.class));
+                any(ProcessNameChangeRequestDto.class));
     }
 
     @Test
@@ -485,19 +485,19 @@ class JurorRecordControllerTest {
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
         ProcessNameChangeRequestDto dto = new ProcessNameChangeRequestDto(ApprovalDecision.REJECT,
-                                                                          "Their name has not been legally changed");
+            "Their name has not been legally changed");
 
         // this endpoint expects a juror number in the path
         // so we are not providing it here to test the missing juror number case
         mockMvc.perform(patch("/api/v1/moj/juror-record/change-name/")
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isNotFound());
 
         verify(jurorRecordService, Mockito.never())
             .processPendingNameChange(any(BureauJwtPayload.class), Mockito.anyString(),
-                                      any(ProcessNameChangeRequestDto.class));
+                any(ProcessNameChangeRequestDto.class));
     }
 
 
@@ -511,14 +511,14 @@ class JurorRecordControllerTest {
         ProcessNameChangeRequestDto dto = new ProcessNameChangeRequestDto(ApprovalDecision.REJECT, "test notes");
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/change-name/" + jurorNumber)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never())
             .processPendingNameChange(any(BureauJwtPayload.class), Mockito.anyString(),
-                                      any(ProcessNameChangeRequestDto.class));
+                any(ProcessNameChangeRequestDto.class));
     }
 
     @Test
@@ -532,9 +532,9 @@ class JurorRecordControllerTest {
         doNothing().when(jurorRecordService).editJurorDetails(any(), any(), any());
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/edit-juror/" + JUROR_NUMBER)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isNoContent());
 
         verify(jurorRecordService, times(1))
@@ -551,9 +551,9 @@ class JurorRecordControllerTest {
         dto.setTitle("|Title|");
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/edit-juror/" + JUROR_NUMBER)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never())
@@ -572,9 +572,9 @@ class JurorRecordControllerTest {
         dto.setFirstName(firstName);
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/edit-juror/" + JUROR_NUMBER)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never())
@@ -593,9 +593,9 @@ class JurorRecordControllerTest {
         dto.setLastName(lastName);
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/edit-juror/" + JUROR_NUMBER)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never())
@@ -614,9 +614,9 @@ class JurorRecordControllerTest {
         dto.setAddressLineOne(addressLine1);
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/edit-juror/" + JUROR_NUMBER)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never())
@@ -636,9 +636,9 @@ class JurorRecordControllerTest {
         dto.setLastName("Last|Name");
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/edit-juror/" + jurorNumber)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never())
@@ -658,9 +658,9 @@ class JurorRecordControllerTest {
         dto.setAddressLineOne("");
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/edit-juror/" + jurorNumber)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never())
@@ -680,9 +680,9 @@ class JurorRecordControllerTest {
         dto.setAddressLineOne("Address|Line");
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/edit-juror/" + jurorNumber)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never())
@@ -699,9 +699,9 @@ class JurorRecordControllerTest {
         dto.setAddressLineTwo("Address|Line");
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/edit-juror/" + JUROR_NUMBER)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never())
@@ -718,9 +718,9 @@ class JurorRecordControllerTest {
         dto.setAddressLineThree("Address|Line");
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/edit-juror/" + JUROR_NUMBER)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never())
@@ -737,9 +737,9 @@ class JurorRecordControllerTest {
         dto.setAddressTown("Some|Town");
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/edit-juror/" + JUROR_NUMBER)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never())
@@ -756,9 +756,9 @@ class JurorRecordControllerTest {
         dto.setAddressCounty("Some|County");
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/edit-juror/" + JUROR_NUMBER)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never())
@@ -775,9 +775,9 @@ class JurorRecordControllerTest {
         dto.setAddressPostcode("AB1CD");
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/edit-juror/" + JUROR_NUMBER)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never())
@@ -794,9 +794,9 @@ class JurorRecordControllerTest {
         dto.setDateOfBirth(LocalDate.now().minusYears(125));
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/edit-juror/" + JUROR_NUMBER)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never())
@@ -813,9 +813,9 @@ class JurorRecordControllerTest {
         dto.setDateOfBirth(LocalDate.now());
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/edit-juror/" + JUROR_NUMBER)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never())
@@ -832,9 +832,9 @@ class JurorRecordControllerTest {
         dto.setPrimaryPhone("987654");
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/edit-juror/" + JUROR_NUMBER)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never())
@@ -851,9 +851,9 @@ class JurorRecordControllerTest {
         dto.setSecondaryPhone("987654");
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/edit-juror/" + JUROR_NUMBER)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never())
@@ -870,9 +870,9 @@ class JurorRecordControllerTest {
         dto.setEmailAddress("some.email");
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/edit-juror/" + JUROR_NUMBER)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never())
@@ -889,9 +889,9 @@ class JurorRecordControllerTest {
         dto.setPendingTitle(TestUtils.buildStringToLength(11));
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/edit-juror/" + JUROR_NUMBER)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never())
@@ -908,9 +908,9 @@ class JurorRecordControllerTest {
         dto.setPendingFirstName(TestUtils.buildStringToLength(21));
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/edit-juror/" + JUROR_NUMBER)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never())
@@ -927,9 +927,9 @@ class JurorRecordControllerTest {
         dto.setPendingLastName(TestUtils.buildStringToLength(27));
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/edit-juror/" + JUROR_NUMBER)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never())
@@ -946,9 +946,9 @@ class JurorRecordControllerTest {
         EditJurorRecordRequestDto dto = createEditJurorRecordRequestDto();
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/edit-juror/" + jurorNumber)
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never())
@@ -964,9 +964,9 @@ class JurorRecordControllerTest {
         EditJurorRecordRequestDto dto = createEditJurorRecordRequestDto();
 
         mockMvc.perform(patch("/api/v1/moj/juror-record/edit-juror/")
-                            .principal(mockPrincipal)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(TestUtils.asJsonString(dto)))
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isNotFound());
 
         verify(jurorRecordService, Mockito.never())
@@ -1216,7 +1216,7 @@ class JurorRecordControllerTest {
 
                 MojException.NotFound exception =
                     new MojException.NotFound("Juror not found: JurorNumber: " + TestConstants.VALID_JUROR_NUMBER
-                                                  + " Revision: null", null);
+                        + " Revision: null", null);
                 when(jurorRecordService.getJurorDetails(payload))
                     .thenThrow(exception);
 
@@ -1239,7 +1239,7 @@ class JurorRecordControllerTest {
         void juryOfficerGetJurorBankDetailsHappyPath() throws Exception {
             BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,
-                                                       Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
+                Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
             BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
             when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -1259,8 +1259,8 @@ class JurorRecordControllerTest {
             doReturn(jurorBankDetailsDto).when(jurorRecordService).getJurorBankDetails(JUROR_NUMBER);
 
             mockMvc.perform(get(URL.replace("{juror_number}", JUROR_NUMBER))
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .principal(mockPrincipal))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .principal(mockPrincipal))
                 .andExpect(status().isOk())
                 .andExpect(content().json(TestUtils.asJsonString(jurorBankDetailsDto)));
 
@@ -1273,13 +1273,13 @@ class JurorRecordControllerTest {
         void juryOfficerGetJurorBankDetailsJurorNumberTooLong() throws Exception {
             BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,
-                                                       Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
+                Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
             BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
             when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
             mockMvc.perform(get(URL.replace("{juror_number}", TestConstants.INVALID_JUROR_NUMBER))
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .principal(mockPrincipal))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .principal(mockPrincipal))
                 .andExpect(status().isBadRequest());
 
             verifyNoInteractions(jurorRecordService);
@@ -1291,13 +1291,13 @@ class JurorRecordControllerTest {
         void bureauUserGetJurorBankDetailsDoesNotHaveAccess() throws Exception {
             BureauJwtPayload jwtPayload = TestUtils.createJwt(SecurityUtil.BUREAU_OWNER, "BUREAU_USER");
             jwtPayload.setStaff(TestUtils.staffBuilder("Bureau User", 1,
-                                                       Collections.singletonList(SecurityUtil.BUREAU_OWNER)));
+                Collections.singletonList(SecurityUtil.BUREAU_OWNER)));
             BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
             when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
             mockMvc.perform(get(URL.replace("{juror_number}", JUROR_NUMBER))
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .principal(mockPrincipal))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .principal(mockPrincipal))
                 .andExpect(status().isForbidden());
 
             verifyNoInteractions(jurorRecordService);
@@ -1311,7 +1311,7 @@ class JurorRecordControllerTest {
         void happyPathEditBankDetails() throws Exception {
             BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,
-                                                       Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
+                Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
             BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
             when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -1329,8 +1329,8 @@ class JurorRecordControllerTest {
             doNothing().when(jurorRecordService).editJurorsBankDetails(dto);
 
             mockMvc.perform(patch(String.format(BASE_URL + "/update-bank-details"))
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(TestUtils.asJsonString(dto)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtils.asJsonString(dto)))
                 .andExpect(status().isOk());
 
             verify(jurorRecordService, times(1)).editJurorsBankDetails(dto);
@@ -1341,7 +1341,7 @@ class JurorRecordControllerTest {
         void invalidAccountNumber() throws Exception {
             BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,
-                                                       Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
+                Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
             BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
             when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
             String jurorNumber = "123456789";
@@ -1356,9 +1356,9 @@ class JurorRecordControllerTest {
             juror.setJurorNumber(jurorNumber);
 
             mockMvc.perform(patch(String.format(BASE_URL + "/update-bank-details"))
-                                .content(TestUtils.asJsonString(dto))
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .principal(mockPrincipal))
+                    .content(TestUtils.asJsonString(dto))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .principal(mockPrincipal))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest());
 
@@ -1369,7 +1369,7 @@ class JurorRecordControllerTest {
         void wrongSortCode() throws Exception {
             BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,
-                                                       Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
+                Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
             BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
             when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
             String jurorNumber = "123456789";
@@ -1384,9 +1384,9 @@ class JurorRecordControllerTest {
             juror.setJurorNumber(jurorNumber);
 
             mockMvc.perform(patch(String.format(BASE_URL + "/update-bank-details"))
-                                .content(TestUtils.asJsonString(dto))
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .principal(mockPrincipal))
+                    .content(TestUtils.asJsonString(dto))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .principal(mockPrincipal))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest());
 
@@ -1397,7 +1397,7 @@ class JurorRecordControllerTest {
         void wrongAccountName() throws Exception {
             BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,
-                                                       Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
+                Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
             BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
             when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
             String jurorNumber = "123456789";
@@ -1412,9 +1412,9 @@ class JurorRecordControllerTest {
             juror.setJurorNumber(jurorNumber);
 
             mockMvc.perform(patch(String.format(BASE_URL + "/update-bank-details"))
-                                .content(TestUtils.asJsonString(dto))
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .principal(mockPrincipal))
+                    .content(TestUtils.asJsonString(dto))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .principal(mockPrincipal))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest());
 
