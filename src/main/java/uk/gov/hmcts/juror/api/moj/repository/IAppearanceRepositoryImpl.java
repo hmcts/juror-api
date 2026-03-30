@@ -409,7 +409,8 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .where(QAppearance.appearance.hideOnUnpaidExpenseAndReports.isFalse())
             .where(QAppearance.appearance.appearanceStage.in(
                 AppearanceStage.EXPENSE_ENTERED, AppearanceStage.EXPENSE_EDITED
-            ))
+            )) // JS-777 hide appearances before 1 Jan 2025.
+            .where(QAppearance.appearance.attendanceDate.goe(LocalDate.of(2025, 1, 1)))
             .join(QJuror.juror)
             .on(QJuror.juror.jurorNumber.eq(QAppearance.appearance.jurorNumber))
             .groupBy(
