@@ -23,11 +23,11 @@ DECLARE
     v_new_suffix INTEGER;
     c_extract    RECORD;
 BEGIN
-    -- Build date prefix
-    v_date_prefix := TO_CHAR(p_creation_date, 'DDMonYYYY');
+   -- Build date prefix
+    v_date_prefix := TO_CHAR(p_creation_date, 'DDMonYY');
 
     -- Get the current max suffix for today's file name
-    SELECT substring(document_id FROM 21 FOR 4) as integer
+    SELECT substring(document_id FROM 20 FOR 4) as integer
     INTO v_max_suffix
     from juror_mod.content_store where file_type = 'PAYMENT'
     order by date_on_q_for_send desc limit 1;
@@ -41,7 +41,7 @@ BEGIN
     v_new_suffix := v_max_suffix + 1;
 
     -- Create the full file name
-    p_file_name := 'JUROR_' || v_date_prefix || LPAD(v_new_suffix::TEXT, 9, '0') || '.dat';
+    p_file_name := 'JUROR_' || v_date_prefix || LPAD(v_new_suffix::TEXT, 10, '0') || '.dat';
 
     -- Build the header line
     v_header := 'HEADER' || '|' || LPAD(v_new_suffix::TEXT, 9, '0') || '|' || LPAD(TO_CHAR(p_total, '9999990.90'), 11);
