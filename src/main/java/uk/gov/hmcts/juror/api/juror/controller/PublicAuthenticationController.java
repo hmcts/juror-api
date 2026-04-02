@@ -1,7 +1,5 @@
 package uk.gov.hmcts.juror.api.juror.controller;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -69,7 +67,6 @@ public class PublicAuthenticationController {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Data
     @Schema(description = "Public Juror login credentials")
     public static class PublicAuthenticationRequestDto implements Serializable {
