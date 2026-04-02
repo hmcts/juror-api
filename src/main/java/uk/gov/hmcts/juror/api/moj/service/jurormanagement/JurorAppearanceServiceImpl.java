@@ -203,6 +203,14 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
         if (appearanceOpt.isPresent()) {
             appearance = appearanceOpt.get();
+
+            // check if the appearance is a no show record
+            if (Boolean.TRUE.equals(appearance.getNoShow())) {
+                throw new MojException.BusinessRuleViolation("Cannot update a no show record for juror "
+                                                                 + jurorNumber,
+                                                             ATTENDANCE_RECORD_ALREADY_EXISTS);
+            }
+
             // validate the current record and the new appearance stage
             validateAppearanceStage(jurorNumber, appearanceStage, appearance);
         } else {
