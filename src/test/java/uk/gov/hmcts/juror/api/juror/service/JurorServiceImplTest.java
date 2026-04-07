@@ -55,6 +55,7 @@ import static org.mockito.Mockito.when;
 /**
  * Unit test of {@link JurorServiceImpl}.
  */
+@SuppressWarnings("unchecked")
 @RunWith(MockitoJUnitRunner.StrictStubs.class)
 public class JurorServiceImplTest {
 

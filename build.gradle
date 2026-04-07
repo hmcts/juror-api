@@ -36,8 +36,15 @@ java {
     }
 }
 
+// don't want deprecation and removal warnings to be treated as errors as we have some dependencies
+// that are using deprecated APIs and we don't want to fail the build because of that
 tasks.withType(JavaCompile) {
-    options.compilerArgs << "-Xlint:unchecked" //<< "-Werror"
+  options.compilerArgs += [
+    "-Xlint:unchecked",
+    "-Xlint:-deprecation",
+    "-Xlint:-removal",
+    "-Werror"
+  ]
 }
 
 // https://github.com/gradle/gradle/issues/16791

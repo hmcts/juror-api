@@ -53,12 +53,25 @@ public class ExpenseRatesDto {
     private BigDecimal limitFinancialLossFullDayLongTrial;
 
     //TODO setting default value for the following field until another ticket is created to update the value
+    @Builder.Default
     private BigDecimal limitFinancialLossHalfDayExtraLongTrial = BigDecimal.valueOf(114.3);
+
     //TODO setting default value for the following field until another ticket is created to update the value
+    @Builder.Default
     private BigDecimal limitFinancialLossFullDayExtraLongTrial = BigDecimal.valueOf(228.6);
 
     private BigDecimal subsistenceRateStandard;
     private BigDecimal subsistenceRateLongDay;
+
+    public BigDecimal getLimitFinancialLossHalfDayExtraLongTrial() {
+        return limitFinancialLossHalfDayExtraLongTrial == null ? BigDecimal.valueOf(114.3)
+            : limitFinancialLossHalfDayExtraLongTrial;
+    }
+
+    public BigDecimal getLimitFinancialLossFullDayExtraLongTrial() {
+        return limitFinancialLossFullDayExtraLongTrial == null ? BigDecimal.valueOf(228.6)
+            : limitFinancialLossFullDayExtraLongTrial;
+    }
 
     public ExpenseRatesDto(ExpenseRates expenseRates) {
         this.carMileageRatePerMile0Passengers = expenseRates.getCarMileageRatePerMile0Passengers();

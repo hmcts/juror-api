@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Locale;
 
 @Getter
-@SuppressWarnings("PMD.ArrayIsStoredDirectly")
+@SuppressWarnings({"PMD.ArrayIsStoredDirectly", "unchecked"})
 public enum DataType implements IDataType {
     JUROR_NUMBER("Juror Number", String.class, QJuror.juror.jurorNumber, QJuror.juror),
     FIRST_NAME("First Name", String.class, QJuror.juror.firstName, QJuror.juror),
