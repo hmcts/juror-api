@@ -154,6 +154,7 @@ public class ErAdministrationServiceImpl implements ErAdministrationService {
                 switch (result) {
                     case UPDATED -> updated.add(laCode);
                     case ALREADY_SENT -> alreadySent.add(laCode);
+                    default -> throw new IllegalStateException("Unexpected result from markDelivered: " + result);
                 }
             } catch (Exception e) {
                 log.error("Failed to mark LA code {} as delivered: {}", laCode, e.getMessage());

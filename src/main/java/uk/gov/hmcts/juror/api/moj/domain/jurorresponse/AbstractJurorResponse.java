@@ -198,14 +198,12 @@ public class AbstractJurorResponse extends Address implements Serializable {
     @JoinColumn(name = "staff_login")
     private User staff;
 
-
     /**
      * Contact log for the juror of this response.
      */
     @OneToMany(mappedBy = "jurorNumber")
     @Builder.Default
     private List<ContactLog> contactLog = new ArrayList<>();
-
 
     /**
      * List of {@link JurorReasonableAdjustment} entities associated with this entity.
@@ -220,6 +218,7 @@ public class AbstractJurorResponse extends Address implements Serializable {
     @OneToMany(mappedBy = "jurorNumber")
     @Builder.Default
     private List<JurorResponseCjsEmployment> cjsEmployments = new ArrayList<>();
+
     /**
      * Flag that this response is urgent.
      */

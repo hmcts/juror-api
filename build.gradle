@@ -36,13 +36,8 @@ java {
     }
 }
 
-tasks.withType(JavaCompile) {
-    options.compilerArgs << "-Xlint:unchecked" << "-Werror"
-}
-
 // don't want deprecation and removal warnings to be treated as errors as we have some dependencies
-// that are using deprecated APIs and we want to be able to update those dependencies without having
-// to wait for us to update our code to remove the deprecation warnings
+// that are using deprecated APIs and we don't want to fail the build because of that
 tasks.withType(JavaCompile) {
   options.compilerArgs += [
     "-Xlint:unchecked",
