@@ -99,9 +99,9 @@ public class LaUserControllerITest extends AbstractIntegrationTest {
 
             @Test
             void noLaUsersFoundAsNoneExist() {
-                initHeadersLaUsers("003");
+                initHeadersLaUsers("007");
                 ResponseEntity<LaUserDetailsDto> response =
-                        restTemplate.exchange(new RequestEntity<>(httpHeaders, GET, URI.create(BASE_URL + "/003")),
+                        restTemplate.exchange(new RequestEntity<>(httpHeaders, GET, URI.create(BASE_URL + "/007")),
                                 LaUserDetailsDto.class);
                 assertThat(response.getStatusCode()).as("Expect the status to be ok")
                         .isEqualTo(HttpStatus.OK);

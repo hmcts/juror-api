@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.jurorer.domain.Deadline;
+import uk.gov.hmcts.juror.api.jurorer.domain.EmailRequestStatus;
 import uk.gov.hmcts.juror.api.jurorer.domain.LaUser;
 import uk.gov.hmcts.juror.api.jurorer.domain.LocalAuthority;
 import uk.gov.hmcts.juror.api.jurorer.repository.DeadlineRepository;
@@ -14,12 +15,16 @@ import uk.gov.hmcts.juror.api.jurorer.repository.LocalAuthorityRepository;
 import uk.gov.hmcts.juror.api.jurorer.service.LaUserService;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.ActiveLaRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.DeactiveLaRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.jurorer.MarkAsDeliveredRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.jurorer.MarkAsDeliveredResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateEmailRequestSentDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static uk.gov.hmcts.juror.api.validation.LaCodeValidator.isValidLaCode;
@@ -131,6 +136,84 @@ public class ErAdministrationServiceImpl implements ErAdministrationService {
             .lastUpdated(updatedDeadline.getLastUpdated())
             .daysRemaining(updatedDeadline.getDaysRemaining())
             .build();
+    }
+
+    @Override
+    @Transactional
+    public MarkAsDeliveredResponseDto markAsDelivered(MarkAsDeliveredRequestDto request) {
+        log.info("Marking initial email as delivered for {} LAs", request.getLaCodes().size());
+
+        List<String> updated = new ArrayList<>();
+        List<String> alreadySent = new ArrayList<>();
+        List<MarkAsDeliveredResponseDto.MarkAsDeliveredErrorDto> errors = new ArrayList<>();
+
+        request.getLaCodes().forEach(laCode -> {
+            try {
+                isValidLaCode(laCode);
+                MarkDeliveredResult result = markDelivered(laCode);
+                switch (result) {
+                    case UPDATED -> updated.add(laCode);
+                    case ALREADY_SENT -> alreadySent.add(laCode);
+                }
+            } catch (Exception e) {
+                log.error("Failed to mark LA code {} as delivered: {}", laCode, e.getMessage());
+                errors.add(MarkAsDeliveredResponseDto.MarkAsDeliveredErrorDto.builder()
+                               .laCode(laCode)
+                               .reason(e.getMessage())
+                               .build());
+            }
+        });
+
+        log.info("Mark as delivered complete - updated: {}, already sent: {}, errors: {}",
+                 updated.size(), alreadySent.size(), errors.size());
+
+        return MarkAsDeliveredResponseDto.builder()
+            .updated(updated)
+            .alreadySent(alreadySent)
+            .errors(errors)
+            .build();
+    }
+
+    private enum MarkDeliveredResult {
+        UPDATED, ALREADY_SENT
+    }
+
+    private MarkDeliveredResult markDelivered(String laCode) {
+        LocalAuthority localAuthority = localAuthorityRepository.findByLaCode(laCode)
+            .orElseThrow(() -> new MojException.BadRequest("LA with code " + laCode + " not found", null));
+
+        if (localAuthority.getEmailRequestSent() != null
+            && localAuthority.getEmailRequestStatus() == EmailRequestStatus.SENT) {
+            log.info("Initial email for LA code {} is already marked as delivered - skipping", laCode);
+            return MarkDeliveredResult.ALREADY_SENT;
+        }
+
+        updateEmailSentStatus(localAuthority, EmailRequestStatus.SENT);
+        log.info("Initial email for LA code {} has been marked as delivered", laCode);
+        return MarkDeliveredResult.UPDATED;
+    }
+
+    @Override
+    @Transactional
+    public void updateEmailRequestSent(UpdateEmailRequestSentDto request) {
+        log.info("Updating email request sent status for LA code: {} to {}",
+                    request.getLaCode(), request.getEmailRequestStatus());
+
+        LocalAuthority localAuthority = localAuthorityRepository.findByLaCode(request.getLaCode())
+            .orElseThrow(() -> new MojException.BadRequest("LA with code " + request.getLaCode()
+                                                               + " not found", null));
+
+        updateEmailSentStatus(localAuthority, request.getEmailRequestStatus());
+
+        log.info("Email request sent status updated successfully for LA code: {}", request.getLaCode());
+    }
+
+    private void updateEmailSentStatus(LocalAuthority localAuthority, EmailRequestStatus request) {
+        localAuthority.setEmailRequestStatus(request);
+        localAuthority.setEmailRequestSent(LocalDateTime.now());
+        localAuthority.setUpdatedBy(SecurityUtil.getUsername());
+        localAuthority.setLastUpdated(LocalDateTime.now());
+        localAuthorityRepository.save(localAuthority);
     }
 
 }

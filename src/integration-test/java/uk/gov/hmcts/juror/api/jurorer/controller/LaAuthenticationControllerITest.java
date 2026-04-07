@@ -25,6 +25,7 @@ import uk.gov.hmcts.juror.api.AbstractControllerIntegrationTest;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.config.jurorer.JurorErJwtPayload;
 import uk.gov.hmcts.juror.api.jurorer.domain.LaRoles;
+import uk.gov.hmcts.juror.api.jurorer.domain.LocalAuthority;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.EmailDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.JwtDto;
 
@@ -117,18 +118,39 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
                 assertThat(claims.getIssuedAt()).isAfter(new Date(clock.millis() - 60_000));
 
                 assertThat(claims)
-                    .hasSize(8)
+                    .hasSize(9)
                     .containsEntry("username", expectedJwtClaims.getUsername())
                     .containsEntry("laCode", expectedJwtClaims.getLaCode())
                     .containsEntry("laName", expectedJwtClaims.getLaName())
-                    .containsEntry("role", List.of(LaRoles.LA_USER.toString()));
+                    .containsEntry("role", List.of(LaRoles.LA_USER.toString()))
+                    .containsEntry("localAuthorities", List.of("001"));
+            }
+
+            private void responseValidatorLite(JwtDto response,
+                                           String username, JurorErJwtPayload expectedJwtClaims) {
+                Jwt<JwsHeader, Claims> jwt = Jwts.parser()
+                    .verifyWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(erPortalSecret)))
+                    .build()
+                    .parseSignedClaims(response.getJwt());
+
+                Claims claims = jwt.getPayload();
+
+                assertThat(claims.getId()).isEqualTo(username);
+
+                assertThat(claims)
+                    .hasSize(9)
+                    .containsEntry("username", expectedJwtClaims.getUsername())
+                    .containsEntry("laCode", expectedJwtClaims.getLaCode())
+                    .containsEntry("laName", expectedJwtClaims.getLaName())
+                    .containsEntry("role", List.of(LaRoles.LA_USER.toString()))
+                    .containsEntry("localAuthorities", List.of("002", "003"));
             }
 
             @Test
             void primaryCourt() {
                 testBuilder()
                     .payload(new EmailDto("test_user1" + EMAIL_SUFFIX))
-                    .url(URL)
+                    .url(URL + "/001")
                     .triggerValid()
                     .assertValid((controllerTest, response) -> responseValidator(
                         response,
@@ -138,6 +160,26 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
                             .laCode("001")
                             .laName("West Oxfordshire")
                             .roles(List.of(LaRoles.LA_USER.toString()))
+                            .localAuthorities(List.of("001"))
+                            .build()
+                    ));
+            }
+
+            @Test
+            void multipleLas() {
+                testBuilder()
+                    .payload(new EmailDto("test_user3@localauthority2.council.uk"))
+                    .url(URL + "/003")
+                    .triggerValid()
+                    .assertValid((controllerTest, response) -> responseValidatorLite(
+                        response,
+                        "test_user3@localauthority2.council.uk",
+                        JurorErJwtPayload.builder()
+                            .username("test_user3@localauthority2.council.uk")
+                            .laCode("003")
+                            .laName("Eastleigh")
+                            .roles(List.of(LaRoles.LA_USER.toString()))
+                            .localAuthorities(List.of("002", "003"))
                             .build()
                     ));
             }
@@ -159,6 +201,7 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
             @Test
             void userNotFound() {
                 testBuilder()
+                    .url(URL + "/001")
                     .payload(new EmailDto("not_found" + EMAIL_SUFFIX))
                     .triggerInvalid()
                     .assertNotFound("User not found");
@@ -167,9 +210,108 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
             @Test
             void userNotActive() {
                 testBuilder()
+                    .url(URL + "/004")
                     .payload(new EmailDto("test_user1@localauthority4.council.uk"))
                     .triggerInvalid()
                     .assertMojForbiddenResponse("User is not active");
+            }
+
+            @Test
+            void invalidLaCode() {
+                testBuilder()
+                    .url(URL + "/0T1")
+                    .payload(new EmailDto("test_user1@localauthority4.council.uk"))
+                    .triggerInvalid();
+            }
+
+        }
+    }
+
+
+    @Nested
+    @DisplayName("GET local authorities for user")
+    class GetLocalAuthorities extends AbstractControllerIntegrationTest<EmailDto, List<LocalAuthority>> {
+        private static final String URL = BASE_URL + "/local-authorities";
+
+        GetLocalAuthorities() {
+            super(POST, template, HttpStatus.OK);
+        }
+
+        @Override
+        protected String getValidUrl() {
+            return URL;
+        }
+
+        @Override
+        protected String getValidJwt() {
+            return createHmacJwt();
+        }
+
+        @Override
+        protected EmailDto getValidPayload() {
+            return new EmailDto("test_user1" + EMAIL_SUFFIX);
+        }
+
+
+        @DisplayName("Positive")
+        @Nested
+        class Positive {
+
+            @Test
+            void singleCourt() {
+                testBuilder()
+                    .payload(new EmailDto("test_user1" + EMAIL_SUFFIX))
+                    .triggerValid()
+                    .assertValid((controllerTest, response) -> assertThat(response)
+                        .hasSize(1)
+                        .extracting(LocalAuthority::getLaCode)
+                        .containsExactly("001"));
+            }
+
+            @Test
+            void twoCourts() {
+                testBuilder()
+                    .payload(new EmailDto("test_user3@localauthority2.council.uk"))
+                    .triggerValid()
+                    .assertValid((controllerTest, response) -> assertThat(response)
+                        .hasSize(2)
+                        .extracting(LocalAuthority::getLaCode)
+                        .containsExactlyInAnyOrder("002", "003"));
+            }
+
+            @Test
+            void twoCourtsOneActive() {
+                testBuilder()
+                    .payload(new EmailDto("test_user4@another.council.uk"))
+                    .triggerValid()
+                    .assertValid((controllerTest, response) -> assertThat(response)
+                        .hasSize(1)
+                        .extracting(LocalAuthority::getLaCode)
+                        .containsExactlyInAnyOrder("003"));
+            }
+
+        }
+
+
+        @DisplayName("Negative")
+        @Nested
+        class Negative {
+
+            @Test
+            void singleCourtInactive() {
+                testBuilder()
+                    .payload(new EmailDto("test_user1@localauthority4.council.uk"))
+                    .triggerValid()
+                    .assertValid((controllerTest, response) -> assertThat(response)
+                        .hasSize(0));
+            }
+
+            @Test
+            void userNotFound() {
+                testBuilder()
+                    .payload(new EmailDto("test_user1@somela.council.uk"))
+                    .triggerInvalid()
+                    .assertNotFound("User not found");
             }
 
         }
