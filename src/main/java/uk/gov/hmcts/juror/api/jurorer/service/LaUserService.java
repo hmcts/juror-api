@@ -4,6 +4,7 @@ import uk.gov.hmcts.juror.api.jurorer.controller.dto.ExportLaEmailAddressRespons
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.LaJwtDto;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.LaUserDetailsDto;
 import uk.gov.hmcts.juror.api.jurorer.domain.LaUser;
+import uk.gov.hmcts.juror.api.jurorer.domain.LocalAuthority;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,9 +12,13 @@ import java.util.Optional;
 
 public interface LaUserService {
 
-    LaJwtDto createJwt(String email);
+    List<LocalAuthority> getLocalAuthorities(String email);
 
-    LaUser findUserByUsername(String username);
+    LaJwtDto createJwt(String email, String laCode);
+
+    List<LaUser> findUserByUsername(String username);
+
+    LaUser findUserByUsernameAndLa(String username, String laCode);
 
     LaUserDetailsDto getLaUserDetails(String laCode);
 

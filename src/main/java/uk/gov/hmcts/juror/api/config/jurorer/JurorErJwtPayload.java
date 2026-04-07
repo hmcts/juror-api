@@ -29,6 +29,7 @@ public class JurorErJwtPayload {
     private String laName;
     private String laCode;
     private List<String> roles;
+    private List<String> localAuthorities;
 
     public List<GrantedAuthority> getGrantedAuthority() {
         roles = List.of(LaRoles.LA_USER.toString()); // there is only one role for LA users
@@ -41,6 +42,7 @@ public class JurorErJwtPayload {
         data.put("loCode", laCode);
         data.put("laName", laName);
         data.put("role", roles);
+        data.put("localAuthorities", localAuthorities);
         return data;
     }
 
@@ -52,6 +54,7 @@ public class JurorErJwtPayload {
             .laCode(claims.get("laCode", String.class))
             .laName(claims.get("laName", String.class))
             .roles(claims.get("role", List.class))
+            .localAuthorities(claims.get("localAuthorities", List.class))
             .build();
     }
 

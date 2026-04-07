@@ -6,7 +6,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.jurorer.controller.LaNotFoundException;
-import uk.gov.hmcts.juror.api.jurorer.controller.UserNotFoundException;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.DashboardInfoDto;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.DeadlineDto;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.FileUploadDto;
@@ -22,6 +21,7 @@ import uk.gov.hmcts.juror.api.jurorer.repository.DeadlineRepository;
 import uk.gov.hmcts.juror.api.jurorer.repository.FileUploadsRepository;
 import uk.gov.hmcts.juror.api.jurorer.repository.LaUserRepository;
 import uk.gov.hmcts.juror.api.jurorer.repository.LocalAuthorityRepository;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -41,6 +41,7 @@ public class UploadServiceImpl implements UploadService {
     private final LocalAuthorityRepository localAuthorityRepository;
     private final LaUserRepository laUserRepository;
     private final FileUploadsRepository fileUploadsRepository;
+    private final LaUserService laUserService;
 
 
     @Override
@@ -48,11 +49,7 @@ public class UploadServiceImpl implements UploadService {
     public DashboardInfoDto getDashboardInfo(String username) {
         log.info("Getting dashboard info for user: {}", username);
 
-        LaUser user = laUserRepository.findByUsername(username)
-                .orElseThrow(() -> {
-                    log.error("User not found: {}", username);
-                    return new UserNotFoundException("User not found: " + username);
-                });
+        LaUser user = laUserService.findUserByUsernameAndLa(username, SecurityUtil.getActiveLaCode());
 
         Deadline deadline = deadlineRepository.getCurrentDeadline().orElse(null);
         LocalAuthority localAuthority = user.getLaCode();
@@ -93,8 +90,7 @@ public class UploadServiceImpl implements UploadService {
     public UploadHistoryDto getUploadHistory(String username, int limit) {
         log.debug("Getting upload history for user: {} (limit: {})", username, limit);
 
-        LaUser user = laUserRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
+        LaUser user = laUserService.findUserByUsernameAndLa(username, SecurityUtil.getActiveLaCode());
 
         LocalAuthority la = user.getLaCode();
         if (la == null) {
@@ -168,8 +164,7 @@ public class UploadServiceImpl implements UploadService {
     public UploadStatusDto getUploadStatusForUser(String username) {
         log.debug("Getting upload status for user: {}", username);
 
-        LaUser user = laUserRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
+        LaUser user = laUserService.findUserByUsernameAndLa(username, SecurityUtil.getActiveLaCode());
 
         LocalAuthority localAuthority = user.getLaCode();
         if (localAuthority == null) {
@@ -180,19 +175,16 @@ public class UploadServiceImpl implements UploadService {
     }
 
 
-
     @Override
     @Transactional
-    public void processFileUpload(
-            String username,
-            FileUploadRequestDto request) {
+    public void processFileUpload(String username, FileUploadRequestDto request) {
 
         log.info("Processing file upload for user: {}", username);
 
-        LaUser user = laUserRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
+        LaUser user = laUserService.findUserByUsernameAndLa(username, SecurityUtil.getActiveLaCode());
 
-        LocalAuthority localAuthority = user.getLaCode();
+        LocalAuthority localAuthority = localAuthorityRepository.findByLaCode(SecurityUtil.getActiveLaCode())
+                .orElse(null);
         if (localAuthority == null) {
             throw new LaNotFoundException("Local Authority not found for user: " + username);
         }
@@ -200,7 +192,7 @@ public class UploadServiceImpl implements UploadService {
         // Create file upload record
         FileUploads fileUpload = FileUploads.builder()
                 .localAuthority(localAuthority)
-                .user(user)
+                .username(user.getUsername())
                 .filename(request.getFilename())
                 .fileFormat(request.getFileFormat())
                 .fileSizeBytes(request.getFileSizeBytes())
@@ -242,7 +234,7 @@ public class UploadServiceImpl implements UploadService {
                 .fileFormat(upload.getFileFormat())
                 .fileSizeBytes(upload.getFileSizeBytes())
                 .fileSizeFormatted(upload.getFileSizeFormatted())
-                .uploadedBy(upload.getUser().getUsername())
+                .uploadedBy(upload.getUsername())
                 .uploadDate(upload.getUploadDate())
                 .otherInformation(upload.getOtherInformation())
                 .build();

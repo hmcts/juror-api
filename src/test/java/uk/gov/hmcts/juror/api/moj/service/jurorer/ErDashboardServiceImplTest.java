@@ -322,7 +322,7 @@ class ErDashboardServiceImplTest {
     }
 
     @Test
-    void getLocalAuthorityInfoHappy() {
+    void testGetLocalAuthorityInfoHappy() {
 
         String laCode = "123";
 
@@ -348,7 +348,7 @@ class ErDashboardServiceImplTest {
 
 
     @Test
-    void getLocalAuthorityInfoInvalidLaCode() {
+    void testGetLocalAuthorityInfoInvalidLaCode() {
 
         String laCode = "A23";
 
@@ -364,7 +364,7 @@ class ErDashboardServiceImplTest {
     }
 
     @Test
-    void getLocalAuthorityInfoNoLaData() {
+    void testGetLocalAuthorityInfoNoLaData() {
         String laCode = "123";
 
         when(localAuthorityService.getLocalAuthorityByCode(laCode))
