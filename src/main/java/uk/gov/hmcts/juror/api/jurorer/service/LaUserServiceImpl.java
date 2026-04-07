@@ -46,26 +46,54 @@ public class LaUserServiceImpl implements LaUserService {
     private String erPortalExpiry;
 
     @Override
-    @Transactional
-    public LaJwtDto createJwt(String email) {
-        LaUser user = findUserByUsername(email);
+    @Transactional(readOnly = true)
+    public List<LocalAuthority> getLocalAuthorities(String email) {
+
+        // read the user by email and get the local authority
+        List<LaUser> user = userRepository.findByUsername(email);
+
+        if (user.isEmpty()) {
+            throw new MojException.NotFound("User not found", null);
+        }
+
+        return user.stream()
+            .map(LaUser::getLocalAuthority)
+            .filter(la -> Boolean.TRUE.equals(la.getActive()))
+            .toList();
+
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public LaJwtDto createJwt(String email, String laCode) {
+        final List<LaUser> userList = findUserByUsername(email);
+
+        LaUser user = userList.stream()
+            .filter(u -> u.getLocalAuthority().getLaCode().equals(laCode))
+            .findFirst()
+            .orElse(null);
 
         if (user == null) {
             throw new MojException.NotFound("User not found", null);
         }
 
-        if (Boolean.FALSE == user.isActive()) {
+        if (Boolean.FALSE.equals(user.isActive())) {
             throw new MojException.Forbidden("User is not active", null);
         }
 
         Map<String, Object> claims = new ConcurrentHashMap<>();
 
-        LocalAuthority localAuthority = user.getLocalAuthority();
+        final LocalAuthority localAuthority = user.getLocalAuthority();
+
+        final List<String> userLaCodes = userList.stream()
+            .map(u -> u.getLocalAuthority().getLaCode())
+            .toList();
 
         claims.put("username", user.getUsername());
         claims.put("laCode", localAuthority.getLaCode());
         claims.put("laName", localAuthority.getLaName());
         claims.put("role", List.of(LaRoles.LA_USER.toString()));
+        claims.put("localAuthorities", userLaCodes);
 
         user.setLastLoggedIn(LocalDateTime.now());
         userRepository.save(user);
@@ -81,9 +109,18 @@ public class LaUserServiceImpl implements LaUserService {
     }
 
     @Override
+    public List<LaUser> findUserByUsername(String username) {
+        return userRepository.findByUsername(username);
+
+    }
+
+    @Override
     @Transactional(readOnly = true)
-    public LaUser findUserByUsername(String username) {
-        return userRepository.findByUsername(username).orElseThrow(
+    public LaUser findUserByUsernameAndLa(String username, String laCode) {
+        LocalAuthority localAuthority = localAuthorityRepository.findByLaCode(laCode).orElseThrow(
+            () -> new MojException.NotFound("Local Authority not found", null)
+        );
+        return userRepository.findByUsernameAndLocalAuthority(username, localAuthority).orElseThrow(
             () -> new MojException.NotFound("User not found", null)
         );
     }

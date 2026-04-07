@@ -9,6 +9,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.deferralmaintenance.Process
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralOptionsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralResponseDto;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
@@ -64,4 +65,10 @@ public interface ManageDeferralsService {
     }
 
     void moveDeferredJuror(DeferredJurorMoveRequestDto requestDto);
+
+    static void clearOnCallIfRequired(JurorPool jurorPool) {
+        if (jurorPool.isOnCall()) {
+            jurorPool.setOnCall(false);
+        }
+    }
 }

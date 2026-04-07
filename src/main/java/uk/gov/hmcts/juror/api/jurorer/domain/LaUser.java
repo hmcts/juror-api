@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -20,6 +21,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "user", schema = "juror_er")
+@IdClass(LaUserId.class)
 @Data
 @Builder
 @AllArgsConstructor
@@ -32,6 +34,7 @@ public class LaUser implements Serializable {
     @Size(min = 1, max = 200)
     private String username;
 
+    @Id
     @JoinColumn(name = "la_code", nullable = false)
     @ManyToOne
     @NotNull
