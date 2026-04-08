@@ -44,6 +44,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.UNCONFIRMED_ATTENDANCE_EXISTS;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
@@ -257,6 +259,15 @@ public class JurorManagementServiceImpl implements JurorManagementService {
             );
             log.error(message);
             throw new MojException.BadRequest(message, null);
+        }
+
+        if (appearanceService.getUnconfirmedAttendanceCountAtCourt(
+                                                jurorManagementRequestDto.getSourceCourtLocCode()) > 0
+            && !jurorManagementRequestDto.getSourceCourtLocCode().equals(jurorManagementRequestDto.getReceivingCourtLocCode())) {
+            throw new MojException.BusinessRuleViolation("Cannot reassign pool members when there are unconfirmed "
+                                                             + "attendances at the sending court location",
+                                                         UNCONFIRMED_ATTENDANCE_EXISTS);
+
         }
     }
 
