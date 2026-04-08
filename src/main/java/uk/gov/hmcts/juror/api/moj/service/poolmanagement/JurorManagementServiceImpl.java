@@ -263,7 +263,8 @@ public class JurorManagementServiceImpl implements JurorManagementService {
 
         if (appearanceService.getUnconfirmedAttendanceCountAtCourt(
                                                 jurorManagementRequestDto.getSourceCourtLocCode()) > 0
-            && !jurorManagementRequestDto.getSourceCourtLocCode().equals(jurorManagementRequestDto.getReceivingCourtLocCode())) {
+            && !jurorManagementRequestDto.getSourceCourtLocCode()
+            .equals(jurorManagementRequestDto.getReceivingCourtLocCode())) {
             throw new MojException.BusinessRuleViolation("Cannot reassign pool members when there are unconfirmed "
                                                              + "attendances at the sending court location",
                                                          UNCONFIRMED_ATTENDANCE_EXISTS);
