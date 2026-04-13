@@ -261,7 +261,8 @@ public class JurorManagementServiceImpl implements JurorManagementService {
             throw new MojException.BadRequest(message, null);
         }
 
-        if (appearanceService.getUnconfirmedAttendanceCountAtCourt(
+        if (appearanceService.getUnconfirmedAttendanceCountForJurorsAtCourt(
+                                                jurorManagementRequestDto.getJurorNumbers(),
                                                 jurorManagementRequestDto.getSourceCourtLocCode()) > 0
             && !jurorManagementRequestDto.getSourceCourtLocCode()
             .equals(jurorManagementRequestDto.getReceivingCourtLocCode())) {
