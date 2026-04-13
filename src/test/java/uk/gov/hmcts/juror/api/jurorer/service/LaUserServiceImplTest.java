@@ -67,7 +67,7 @@ class LaUserServiceImplTest {
                 .localAuthority(localAuthority)
                 .build());
 
-        when(userRepository.findByUsername(email)).thenReturn(laUsers);
+        when(userRepository.findByUsernameIgnoreCase(email)).thenReturn(laUsers);
 
         List<LocalAuthority> localAuthorities = laUserService.getLocalAuthorities(email);
 
@@ -82,7 +82,7 @@ class LaUserServiceImplTest {
 
         String email = "testemail@localauth1.gov.uk";
 
-        when(userRepository.findByUsername(email)).thenReturn(List.of());
+        when(userRepository.findByUsernameIgnoreCase(email)).thenReturn(List.of());
 
         MojException.NotFound exception =
             assertThrows(
@@ -94,7 +94,7 @@ class LaUserServiceImplTest {
         assertThat(exception).isNotNull();
         assertThat(exception.getMessage()).contains("User not found");
 
-        verify(userRepository).findByUsername(email);
+        verify(userRepository).findByUsernameIgnoreCase(email);
 
     }
 
@@ -116,7 +116,7 @@ class LaUserServiceImplTest {
                 .localAuthority(localAuthority)
                 .build();
 
-        when(userRepository.findByUsername(email))
+        when(userRepository.findByUsernameIgnoreCase(email))
             .thenReturn(List.of(laUser));
         when(jwtService.getSigningKey(anyString())).thenReturn(null);
 
@@ -132,7 +132,7 @@ class LaUserServiceImplTest {
             assertEquals("jwt-token", dto.getJwt());
         }
 
-        verify(userRepository).findByUsername(email);
+        verify(userRepository).findByUsernameIgnoreCase(email);
         verify(jwtService).getSigningKey(null);
 
         Map<String, Object> expectedClaims = Map.of(
@@ -152,7 +152,7 @@ class LaUserServiceImplTest {
 
         String email = "testemail@localauth1.gov.uk";
 
-        when(userRepository.findByUsername(email)).thenReturn(List.of());
+        when(userRepository.findByUsernameIgnoreCase(email)).thenReturn(List.of());
 
         MojException.NotFound exception =
             assertThrows(
@@ -164,7 +164,7 @@ class LaUserServiceImplTest {
         assertThat(exception).isNotNull();
         assertThat(exception.getMessage()).contains("User not found");
 
-        verify(userRepository).findByUsername(email);
+        verify(userRepository).findByUsernameIgnoreCase(email);
         verifyNoInteractions(jwtService);
     }
 
@@ -185,7 +185,7 @@ class LaUserServiceImplTest {
                 .localAuthority(localAuthority)
                 .build());
 
-        when(userRepository.findByUsername(email)).thenReturn(laUsers);
+        when(userRepository.findByUsernameIgnoreCase(email)).thenReturn(laUsers);
 
         List<LaUser> laUserList = laUserService.findUserByUsername(email);
 
@@ -194,7 +194,7 @@ class LaUserServiceImplTest {
         assertThat(laUserList.get(0).getUsername()).isEqualTo(email);
         assertThat(laUserList.get(0).getLocalAuthority().getLaCode()).isEqualTo("001");
 
-        verify(userRepository).findByUsername(email);
+        verify(userRepository).findByUsernameIgnoreCase(email);
     }
 
     @Test
@@ -213,12 +213,13 @@ class LaUserServiceImplTest {
                 .localAuthority(localAuthority)
                 .build();
 
-        when(userRepository.findByUsernameAndLocalAuthority(email, localAuthority)).thenReturn(Optional.of(laUser));
+        when(userRepository.findByUsernameIgnoreCaseAndLocalAuthority(email, localAuthority))
+            .thenReturn(Optional.of(laUser));
         when(localAuthorityRepository.findByLaCode("001")).thenReturn(Optional.of(localAuthority));
 
         laUserService.findUserByUsernameAndLa(email, "001");
 
-        verify(userRepository).findByUsernameAndLocalAuthority(email, localAuthority);
+        verify(userRepository).findByUsernameIgnoreCaseAndLocalAuthority(email, localAuthority);
         verify(localAuthorityRepository).findByLaCode("001");
 
     }
