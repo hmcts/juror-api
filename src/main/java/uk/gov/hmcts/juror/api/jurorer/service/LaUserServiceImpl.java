@@ -50,7 +50,7 @@ public class LaUserServiceImpl implements LaUserService {
     public List<LocalAuthority> getLocalAuthorities(String email) {
 
         // read the user by email and get the local authority
-        List<LaUser> user = userRepository.findByUsername(email);
+        List<LaUser> user = userRepository.findByUsernameIgnoreCase(email);
 
         if (user.isEmpty()) {
             throw new MojException.NotFound("User not found", null);
@@ -110,7 +110,7 @@ public class LaUserServiceImpl implements LaUserService {
 
     @Override
     public List<LaUser> findUserByUsername(String username) {
-        return userRepository.findByUsername(username);
+        return userRepository.findByUsernameIgnoreCase(username);
 
     }
 
@@ -120,7 +120,7 @@ public class LaUserServiceImpl implements LaUserService {
         LocalAuthority localAuthority = localAuthorityRepository.findByLaCode(laCode).orElseThrow(
             () -> new MojException.NotFound("Local Authority not found", null)
         );
-        return userRepository.findByUsernameAndLocalAuthority(username, localAuthority).orElseThrow(
+        return userRepository.findByUsernameIgnoreCaseAndLocalAuthority(username, localAuthority).orElseThrow(
             () -> new MojException.NotFound("User not found", null)
         );
     }
