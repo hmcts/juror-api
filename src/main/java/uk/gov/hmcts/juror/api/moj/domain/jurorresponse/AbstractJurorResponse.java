@@ -10,6 +10,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import jakarta.validation.constraints.NotNull;
@@ -293,5 +294,18 @@ public class AbstractJurorResponse extends Address implements Serializable {
             .newProcessingStatus(processingStatus)
             .build());
         this.processingStatus = processingStatus;
+    }
+
+    @PrePersist
+    private void ensureDefaults() {
+        if (processingStatus == null) {
+            processingStatus = ProcessingStatus.TODO;
+        }
+        if (processingComplete == null) {
+            processingComplete = Boolean.FALSE;
+        }
+        if (welsh == null) {
+            welsh = Boolean.FALSE;
+        }
     }
 }
