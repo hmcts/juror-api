@@ -10,6 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import jakarta.validation.constraints.NotNull;
@@ -45,6 +46,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REG
 @SuperBuilder
 @ToString(exclude = {"reasonableAdjustments", "cjsEmployments"})// lazy init fields
 @EqualsAndHashCode(callSuper = true, exclude = {"cjsEmployments", "reasonableAdjustments", "staff"})
+@SuppressWarnings("PMD.TooManyFields")
 public class CombinedJurorResponse extends Address implements Serializable {
 
     @Id
@@ -263,6 +265,20 @@ public class CombinedJurorResponse extends Address implements Serializable {
     private Boolean signed;
 
     protected CombinedJurorResponse() {
+        super();
         // This constructor is intentionally empty. Nothing special is needed here.
+    }
+
+    @PrePersist
+    private void ensureDefaults() {
+        if (processingStatus == null) {
+            processingStatus = ProcessingStatus.TODO;
+        }
+        if (processingComplete == null) {
+            processingComplete = Boolean.FALSE;
+        }
+        if (welsh == null) {
+            welsh = Boolean.FALSE;
+        }
     }
 }
