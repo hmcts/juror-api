@@ -35,7 +35,6 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.POSTCODE_REG
 @SuppressWarnings("PMD.TooManyFields")
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Getter
 @Setter
 @Schema(description = "Juror paper response details submitted by an Officer.")
