@@ -4,8 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum TemporaryCourtPhone {
-    TAUNTON("01823 281 100"),
-    HARROW("02085111421");
+    TAUNTON("01823 281 100");
 
     private final String temporaryCourtPhone;
 
