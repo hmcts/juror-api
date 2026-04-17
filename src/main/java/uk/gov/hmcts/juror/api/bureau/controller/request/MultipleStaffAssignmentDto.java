@@ -40,6 +40,7 @@ public class MultipleStaffAssignmentDto implements Serializable {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Data
     @Schema(description = "Multiple juror response to staff assignment request")
     public static class ResponseMetadata implements Serializable {
