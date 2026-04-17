@@ -10,7 +10,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -42,7 +41,6 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.JUROR_NUMBER
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REGEX;
 
 @MappedSuperclass
-@Table(name = "juror_response", schema = "juror_mod")
 @Getter
 @SuperBuilder
 @Setter
@@ -242,6 +240,7 @@ public class AbstractJurorResponse extends Address implements Serializable {
     private ReplyType replyType;
 
     protected AbstractJurorResponse() {
+        super();
         // This constructor is intentionally empty. Nothing special is needed here.
     }
 

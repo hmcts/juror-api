@@ -62,11 +62,6 @@ public class PaymentData {
     private String jurorNumber;
 
     @Column(name = "invoice_id", insertable = false, updatable = false)
-    @SequenceGenerator(name = "payment_data_invoice_number_gen",
-        schema = "juror_mod",
-        sequenceName = "payment_data_invoice_number_seq",
-        allocationSize = 1)
-    @GeneratedValue(generator = "payment_data_invoice_number_gen", strategy = GenerationType.SEQUENCE)
     private String invoiceId;
 
     @Column(name = "bank_sort_code")

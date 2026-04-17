@@ -85,12 +85,11 @@ public class PoolRequestServiceImpl implements PoolRequestService {
         log.debug(String.format("Pool Request: %s to be created (court-only flag: %s)",
             poolRequestDto.getPoolNumber(), poolRequestDto.isCourtOnly()));
 
-        PoolRequest poolRequest = poolRequestDto.isCourtOnly()
-            ? createPoolForCourtUse(poolRequestDto, payload)
-            : requestPoolFromBureau(poolRequestDto, payload);
-
-        poolRequestRepository.saveAndFlush(poolRequest);
-
+        if (poolRequestDto.isCourtOnly()) {
+            createPoolForCourtUse(poolRequestDto, payload);
+        } else {
+            poolRequestRepository.saveAndFlush(requestPoolFromBureau(poolRequestDto, payload));
+        }
         log.trace("Exit savePoolRequest");
     }
 
@@ -226,9 +225,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
         poolRequest.setNewRequest(CREATED_REQUEST_STATE);
         poolRequest.setNumberRequested(null);
 
-        poolRequestRepository.save(poolRequest);
-
-        return poolRequest;
+        return poolRequestRepository.saveAndFlush(poolRequest);
     }
 
     private PoolRequest convertFromDto(PoolRequestDto poolRequestDto, String owner, String login) {
@@ -256,8 +253,6 @@ public class PoolRequestServiceImpl implements PoolRequestService {
 
         log.debug("Retrieve the Pool Type object from the database for: {}", poolRequestDto.getPoolType());
         poolRequest.setPoolType(RepositoryUtils.retrieveFromDatabase(poolRequestDto.getPoolType(), poolTypeRepository));
-
-        poolRequestRepository.save(poolRequest);
 
         return poolRequest;
     }
