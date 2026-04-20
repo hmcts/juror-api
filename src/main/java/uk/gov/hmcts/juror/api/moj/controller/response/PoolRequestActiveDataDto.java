@@ -66,4 +66,9 @@ public class PoolRequestActiveDataDto {
         description = "Indicates total amount required for the court to operate")
     private int required;
 
+    @JsonProperty("responded_jurors")
+    @Schema(name = "Responded Jurors in the Pool",
+        description = "The number of pool members owned by Court who have a status of Responded")
+    private long respondedJurors;
+
 }
