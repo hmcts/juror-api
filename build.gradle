@@ -110,8 +110,8 @@ dependencies {
 
     implementation('com.google.guava:guava:33.4.0-jre')
 
-    implementation('org.hibernate.orm:hibernate-core:6.5.1.Final')
-
+    implementation('org.hibernate.orm:hibernate-core:6.5.3.Final')
+    
     // QueryDSL
     implementation("com.querydsl:querydsl-core:${queryDslVersion}")
     implementation("com.querydsl:querydsl-jpa:${queryDslVersion}:jakarta")
