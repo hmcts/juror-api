@@ -68,7 +68,7 @@ public class PoolRequestActiveDataDto {
 
     @JsonProperty("responded_jurors")
     @Schema(name = "Responded Jurors in the Pool",
-        description = "The number of pool members owned by Court who have a status of Responded")
+        description = "The number of pool members who have a status of Responded")
     private long respondedJurors;
 
 }
