@@ -1,3 +1,2 @@
-pgsql_storage_mb    = 262144
-pgsql_storage_tier  = "P15"
-service_criticality = 4
+pgsql_storage_mb   = 262144
+pgsql_storage_tier = "P15"
