@@ -90,7 +90,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}")
     implementation("org.springframework.data:spring-data-envers:${envers}")
-   // implementation("org.springframework.data:spring-data-envers")
     implementation("org.springframework.boot:spring-boot-starter-security:${springBootVersion}")
     implementation("org.springframework.boot:spring-boot-starter-web:${springBootVersion}")
     implementation("org.springframework.boot:spring-boot-starter-json:${springBootVersion}")
@@ -110,8 +109,6 @@ dependencies {
 
     implementation('com.google.guava:guava:33.4.0-jre')
 
-    implementation('org.hibernate.orm:hibernate-core:6.5.3.Final')
-    
     // QueryDSL
     implementation("com.querydsl:querydsl-core:${queryDslVersion}")
     implementation("com.querydsl:querydsl-jpa:${queryDslVersion}:jakarta")
