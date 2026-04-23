@@ -10,6 +10,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import jakarta.validation.constraints.NotNull;
@@ -86,6 +87,7 @@ public class AbstractJurorResponse extends Address implements Serializable {
     @Column(name = "processing_status")
     @Enumerated(EnumType.STRING)
     @Setter(AccessLevel.NONE)
+    @Builder.Default
     private ProcessingStatus processingStatus = ProcessingStatus.TODO;
 
     @LocalDateOfBirth
@@ -185,6 +187,7 @@ public class AbstractJurorResponse extends Address implements Serializable {
     private String reasonableAdjustmentsArrangements;
 
     @Column(name = "processing_complete")
+    @Builder.Default
     private Boolean processingComplete = Boolean.FALSE;
 
     @Column(name = "completed_at")
@@ -196,25 +199,27 @@ public class AbstractJurorResponse extends Address implements Serializable {
     @JoinColumn(name = "staff_login")
     private User staff;
 
-
     /**
      * Contact log for the juror of this response.
      */
     @OneToMany(mappedBy = "jurorNumber")
+    @Builder.Default
     private List<ContactLog> contactLog = new ArrayList<>();
-
 
     /**
      * List of {@link JurorReasonableAdjustment} entities associated with this entity.
      */
     @OneToMany(mappedBy = "jurorNumber")
+    @Builder.Default
     private List<JurorReasonableAdjustment> reasonableAdjustments = new ArrayList<>();
 
     /**
      * List of {@link JurorResponseCjsEmployment} entities associated with this entity.
      */
     @OneToMany(mappedBy = "jurorNumber")
+    @Builder.Default
     private List<JurorResponseCjsEmployment> cjsEmployments = new ArrayList<>();
+
     /**
      * Flag that this response is urgent.
      */
@@ -225,6 +230,7 @@ public class AbstractJurorResponse extends Address implements Serializable {
      * Flag this response as welsh language.
      */
     @Column(name = "welsh")
+    @Builder.Default
     private Boolean welsh = Boolean.FALSE;
 
     @Version
@@ -243,6 +249,30 @@ public class AbstractJurorResponse extends Address implements Serializable {
 
     protected AbstractJurorResponse() {
         // This constructor is intentionally empty. Nothing special is needed here.
+    }
+
+    public Boolean getProcessingComplete() {
+        return processingComplete == null ? Boolean.FALSE : processingComplete;
+    }
+
+    public ProcessingStatus getProcessingStatus() {
+        return processingStatus == null ? ProcessingStatus.TODO : processingStatus;
+    }
+
+    public Boolean getWelsh() {
+        return welsh == null ? Boolean.FALSE : welsh;
+    }
+
+    public List<JurorResponseCjsEmployment> getCjsEmployments() {
+        return cjsEmployments == null ? new ArrayList<>() : cjsEmployments;
+    }
+
+    public List<JurorReasonableAdjustment> getReasonableAdjustments() {
+        return reasonableAdjustments == null ? new ArrayList<>() : reasonableAdjustments;
+    }
+
+    public List<ContactLog> getContactLog() {
+        return contactLog == null ? new ArrayList<>() : contactLog;
     }
 
     public boolean isClosed() {
@@ -264,5 +294,18 @@ public class AbstractJurorResponse extends Address implements Serializable {
             .newProcessingStatus(processingStatus)
             .build());
         this.processingStatus = processingStatus;
+    }
+
+    @PrePersist
+    private void ensureDefaults() {
+        if (processingStatus == null) {
+            processingStatus = ProcessingStatus.TODO;
+        }
+        if (processingComplete == null) {
+            processingComplete = Boolean.FALSE;
+        }
+        if (welsh == null) {
+            welsh = Boolean.FALSE;
+        }
     }
 }

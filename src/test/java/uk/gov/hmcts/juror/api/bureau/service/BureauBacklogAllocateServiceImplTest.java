@@ -39,6 +39,7 @@ import static org.mockito.Mockito.verify;
 /**
  * Unit tests for {@link BureauBacklogAllocateServiceImpl}.
  */
+@SuppressWarnings("unchecked")
 class BureauBacklogAllocateServiceImplTest {
 
     private static final Comparator<DigitalResponse> ASCENDING_DATE_ORDER =

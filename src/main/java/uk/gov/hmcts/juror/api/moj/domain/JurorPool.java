@@ -145,6 +145,7 @@ public class JurorPool implements Serializable {
         @JoinColumn(name = "pool_number", referencedColumnName = "pool_number")
 
     })
+    @Builder.Default
     private List<Appearance> appearances = new ArrayList<>();
 
     /**
