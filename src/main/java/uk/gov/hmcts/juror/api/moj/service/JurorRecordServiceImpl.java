@@ -726,6 +726,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
                 validateOnCall(jurorPool);
                 jurorPool.setOnCall(true);
                 jurorPool.setNextDate(null);
+                jurorHistoryService.createOnCallHistory(jurorPool);
                 log.info("Juror {} has been placed on call", juror);
             } else if (dto.getNextDate() != null) {
                 jurorPool.setOnCall(false);
