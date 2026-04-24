@@ -1,7 +1,7 @@
 # Juror Backend API
 
 This is the API for the Juror Modernisation project. It is a Spring Boot application that provides RESTful endpoints for
-managing jurors. 
+managing jurors.
 
 # Building and deploying the application
 
@@ -146,3 +146,4 @@ is dependent, such as web services, Notify etc.
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
