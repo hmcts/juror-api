@@ -1,6 +1,8 @@
 package uk.gov.hmcts.juror.api.moj.controller.response.expense;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,6 +23,7 @@ import static uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils.getOrZero;
 @AllArgsConstructor
 @SuperBuilder
 @ToString(callSuper = true)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ExpenseDetailsForTotals extends ExpenseDetailsWithTotalsDto {
 
     private boolean financialLossApportionedApplied;
@@ -36,14 +39,13 @@ public class ExpenseDetailsForTotals extends ExpenseDetailsWithTotalsDto {
 
 
 
-    @JsonProperty("total_financial_loss_apportioned")
+
     public BigDecimal getTotalFinancialLossApportioned() {
         return getLossOfEarnings()
             .add(getExtraCare())
             .add(getOther());
     }
 
-    @JsonProperty("total_travel_expenses")
     public BigDecimal getTotalTravelExpense() {
         return getOrZero(getCar())
             .add(getMotorcycle())

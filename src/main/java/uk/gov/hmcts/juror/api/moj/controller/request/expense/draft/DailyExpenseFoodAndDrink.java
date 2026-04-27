@@ -1,6 +1,8 @@
 package uk.gov.hmcts.juror.api.moj.controller.request.expense.draft;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
@@ -11,12 +13,11 @@ import java.math.BigDecimal;
 
 @Data
 @Builder
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class DailyExpenseFoodAndDrink {
-    @JsonProperty("food_and_drink_claim_type")
     @NotNull(groups = {DailyExpense.AttendanceDay.class, DailyExpense.NonAttendanceDay.class})
     private FoodDrinkClaimType foodAndDrinkClaimType;
 
-    @JsonProperty("smart_card_amount")
     @Min(0)
     private BigDecimal smartCardAmount;
 

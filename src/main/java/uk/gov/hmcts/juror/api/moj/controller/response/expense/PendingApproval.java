@@ -30,11 +30,9 @@ public class PendingApproval extends JurorNumberAndPoolNumberDto {
 
     private BigDecimal amountDue;
 
-
     private ExpenseType expenseType;
 
     private boolean canApprove;
 
-    @JsonProperty("revisions")
     private List<ApproveExpenseDto.DateToRevision> dateToRevisions;
 }

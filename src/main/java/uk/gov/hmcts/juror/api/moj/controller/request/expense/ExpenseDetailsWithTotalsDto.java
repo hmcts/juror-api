@@ -1,6 +1,8 @@
 package uk.gov.hmcts.juror.api.moj.controller.request.expense;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,6 +22,7 @@ import java.util.Optional;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(callSuper = true)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ExpenseDetailsWithTotalsDto extends ExpenseDetailsDto implements HasTotals {
 
     @NotNull
@@ -33,19 +36,19 @@ public class ExpenseDetailsWithTotalsDto extends ExpenseDetailsDto implements Ha
         this.totalPaid = appearance.getTotalPaid();
     }
 
-    @JsonProperty("total_due")
+
     @Override
     public BigDecimal getTotalDue() {
         return Optional.ofNullable(totalDue).orElse(BigDecimal.ZERO);
     }
 
-    @JsonProperty("total_paid")
+
     @Override
     public BigDecimal getTotalPaid() {
         return Optional.ofNullable(totalPaid).orElse(BigDecimal.ZERO);
     }
 
-    @JsonProperty("total_outstanding")
+
     @NotNull
     public BigDecimal getTotalOutstanding() {
         return getTotalDue()

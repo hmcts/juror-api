@@ -21,7 +21,6 @@ import java.util.Optional;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ExpenseDetailsWithOriginalTotalsDto extends ExpenseTotal<ExpenseDetailsWithOriginalDto> {
 
-    @JsonProperty("original_total_paid")
     private BigDecimal originalTotalPaid;
 
     public ExpenseDetailsWithOriginalTotalsDto() {
@@ -34,7 +33,6 @@ public class ExpenseDetailsWithOriginalTotalsDto extends ExpenseTotal<ExpenseDet
         super.add(expenseDetailsDto);
         originalTotalPaid = originalTotalPaid.add(expenseDetailsDto.getOriginal().getTotalPaid());
     }
-
     @JsonProperty("change_from_original")
     public BigDecimal getOriginalTotalPaid() {
         return Optional.ofNullable(this.getTotalPaid())

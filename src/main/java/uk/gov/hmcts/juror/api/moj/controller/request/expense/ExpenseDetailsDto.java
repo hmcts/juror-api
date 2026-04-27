@@ -2,6 +2,8 @@ package uk.gov.hmcts.juror.api.moj.controller.request.expense;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -20,17 +22,15 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(callSuper = true)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ExpenseDetailsDto extends ExpenseValuesDto {
 
-    @JsonProperty("attendance_date")
     @JsonFormat(pattern = "yyyy-MM-dd")
     protected LocalDate attendanceDate;
 
-    @JsonProperty("attendance_type")
     protected AttendanceType attendanceType;
 
 
-    @JsonProperty("payment_method")
     protected PaymentMethod paymentMethod;
 
     public ExpenseDetailsDto(Appearance appearance) {

@@ -1,6 +1,8 @@
 package uk.gov.hmcts.juror.api.moj.controller.response.expense;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,12 +12,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class CombinedSimplifiedExpenseDetailDto {
 
-    @JsonProperty("expense_details")
     private List<SimplifiedExpenseDetailDto> expenseDetails;
 
-    @JsonProperty("total")
     private Total total;
 
     public CombinedSimplifiedExpenseDetailDto() {
@@ -31,27 +32,24 @@ public class CombinedSimplifiedExpenseDetailDto {
     @Data
     @Builder
     @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class Total {
 
-        @JsonProperty("total_attendances")
+
         private int totalAttendances;
 
-        @JsonProperty("financial_loss")
         private BigDecimal financialLoss;
-        @JsonProperty("travel")
+
         private BigDecimal travel;
-        @JsonProperty("food_and_drink")
+
         private BigDecimal foodAndDrink;
-        @JsonProperty("smartcard")
+
         private BigDecimal smartcard;
 
-        @JsonProperty("total_due")
         private BigDecimal totalDue;
 
-        @JsonProperty("total_paid")
         private BigDecimal totalPaid;
 
-        @JsonProperty("balance_to_pay")
         private BigDecimal balanceToPay;
 
 

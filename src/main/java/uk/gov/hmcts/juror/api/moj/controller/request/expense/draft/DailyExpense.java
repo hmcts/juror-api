@@ -3,6 +3,8 @@ package uk.gov.hmcts.juror.api.moj.controller.request.expense.draft;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
@@ -20,40 +22,34 @@ import java.util.List;
 @Data
 @Builder
 @ValidateIfTrigger(classToValidate = DailyExpense.class, groups = DailyExpense.CalculateTotals.class)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class DailyExpense {
 
-    @JsonProperty("date_of_expense")
     @JsonFormat(pattern = "yyyy-MM-dd")
     @NotNull(groups = {AttendanceDay.class, NonAttendanceDay.class, EditDay.class, CalculateTotals.class})
     private LocalDate dateOfExpense;
 
 
-    @JsonProperty("payment_method")
     @NotNull(groups = {AttendanceDay.class, NonAttendanceDay.class, EditDay.class})
     @ValidateIf(fields = {"time", "financialLoss", "travel", "foodAndDrink"},
         condition = ValidateIf.Condition.ANY_PRESENT,
         type = ValidateIf.Type.REQUIRE)
     private PaymentMethod paymentMethod;
 
-    @JsonProperty("time")
     @Valid
     private DailyExpenseTime time;
 
-    @JsonProperty("financial_loss")
     @Valid
     private DailyExpenseFinancialLoss financialLoss;
 
-    @JsonProperty("travel")
     @Null(groups = {NonAttendanceDay.class})
     @Valid
     private DailyExpenseTravel travel;
 
-    @JsonProperty("food_and_drink")
     @Null(groups = {NonAttendanceDay.class})
     @Valid
     private DailyExpenseFoodAndDrink foodAndDrink;
 
-    @JsonProperty("apply_to_days")
     @Valid
     @Null(groups = {EditDay.class})
     private List<

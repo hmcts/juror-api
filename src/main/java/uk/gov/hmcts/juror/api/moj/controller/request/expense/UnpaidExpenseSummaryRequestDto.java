@@ -2,6 +2,8 @@ package uk.gov.hmcts.juror.api.moj.controller.request.expense;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.DatePath;
 import com.querydsl.core.types.dsl.Expressions;
@@ -21,6 +23,7 @@ import java.time.LocalDate;
 
 @Data
 @Builder
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class UnpaidExpenseSummaryRequestDto implements IsPageable {
 
     @JsonFormat(pattern = ValidationConstants.DATE_FORMAT)
@@ -29,17 +32,13 @@ public class UnpaidExpenseSummaryRequestDto implements IsPageable {
     private LocalDate to;
 
     @Min(1)
-    @JsonProperty("page_number")
     private long pageNumber;
 
     @Min(1)
-    @JsonProperty("page_limit")
     private long pageLimit;
 
-    @JsonProperty("sort_method")
     private SortMethod sortMethod;
 
-    @JsonProperty("sort_field")
     private UnpaidExpenseSummaryRequestDto.SortField sortField;
 
     public static final NumberPath<BigDecimal> TOTAL_OUTSTANDING_EXPRESSION =

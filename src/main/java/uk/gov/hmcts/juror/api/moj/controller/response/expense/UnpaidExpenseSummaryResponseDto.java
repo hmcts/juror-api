@@ -1,6 +1,8 @@
 package uk.gov.hmcts.juror.api.moj.controller.response.expense;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,31 +21,26 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @Schema(description = "Summary of jurors with unpaid appearance expenses")
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class UnpaidExpenseSummaryResponseDto {
 
-    @JsonProperty("juror_number")
     @Schema(description = "9-digit numeric string to uniquely identify a juror")
     @JurorNumber
     String jurorNumber;
 
-    @JsonProperty("pool_number")
     @Schema(description = "9-digit numeric string to uniquely identify a pool request")
     @PoolNumber
     String poolNumber;
 
-    @JsonProperty("first_name")
     @Schema(description = "Juror's first name")
     String firstName;
 
-    @JsonProperty("last_name")
     @Schema(description = "Juror's last name")
     String lastName;
 
-    @JsonProperty("last_attendance_date")
     @Schema(description = "Juror's last attendance date")
     LocalDate lastAttendanceDate;
 
-    @JsonProperty("total_unapproved")
     @Schema(description = "Sum of all unapproved expense items for a given juror in a given pool")
     BigDecimal totalUnapproved;
 

@@ -1,6 +1,8 @@
 package uk.gov.hmcts.juror.api.moj.controller.response.expense;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,64 +22,53 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ExpenseDto {
 
-    @JsonProperty("public_transport")
     @Builder.Default
     @NotNull
     protected BigDecimal publicTransport = BigDecimal.ZERO;
 
-    @JsonProperty("taxi")
     @Builder.Default
     @NotNull
     protected BigDecimal taxi = BigDecimal.ZERO;
 
-    @JsonProperty("motorcycle")
     @Builder.Default
     @NotNull
     protected BigDecimal motorcycle = BigDecimal.ZERO;
 
-    @JsonProperty("car")
     @Builder.Default
     @NotNull
     protected BigDecimal car = BigDecimal.ZERO;
 
-    @JsonProperty("bicycle")
     @Builder.Default
     @NotNull
     protected BigDecimal bicycle = BigDecimal.ZERO;
 
-    @JsonProperty("parking")
     @Builder.Default
     @NotNull
     protected BigDecimal parking = BigDecimal.ZERO;
 
-    @JsonProperty("food_and_drink")
     @Builder.Default
     @NotNull
     protected BigDecimal foodAndDrink = BigDecimal.ZERO;
 
-    @JsonProperty("loss_of_earnings")
     @Builder.Default
     @NotNull
     protected BigDecimal lossOfEarnings = BigDecimal.ZERO;
 
-    @JsonProperty("extra_care")
     @Builder.Default
     @NotNull
     protected BigDecimal extraCare = BigDecimal.ZERO;
 
-    @JsonProperty("other")
     @Builder.Default
     @NotNull
     protected BigDecimal other = BigDecimal.ZERO;
 
-    @JsonProperty("smart_card")
     @Builder.Default
     @NotNull
     protected BigDecimal smartCard = BigDecimal.ZERO;
 
-    @JsonProperty("total")
     public BigDecimal getTotal() {
         return publicTransport
             .add(taxi)
