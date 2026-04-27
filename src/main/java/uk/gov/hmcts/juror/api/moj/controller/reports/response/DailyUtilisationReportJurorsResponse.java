@@ -48,6 +48,7 @@ public class DailyUtilisationReportJurorsResponse {
     @NoArgsConstructor
     @ToString
     @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class TableData {
         private List<Heading> headings;
         private int totalJurorWorkingDays;
@@ -65,6 +66,7 @@ public class DailyUtilisationReportJurorsResponse {
         @Builder
         @NoArgsConstructor
         @AllArgsConstructor
+        @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
         public static class Heading {
             private UtilisationReportService.TableHeading id;
             private String name;
@@ -76,6 +78,7 @@ public class DailyUtilisationReportJurorsResponse {
         @Builder
         @NoArgsConstructor
         @AllArgsConstructor
+        @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
         public static class Juror {
             private String juror;
             private int jurorWorkingDay;

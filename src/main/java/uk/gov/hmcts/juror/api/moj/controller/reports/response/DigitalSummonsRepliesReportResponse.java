@@ -41,6 +41,7 @@ public class DigitalSummonsRepliesReportResponse {
     @NoArgsConstructor
     @ToString
     @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class TableData {
         private List<Heading> headings;
         private List<DataRow> data;
@@ -53,6 +54,7 @@ public class DigitalSummonsRepliesReportResponse {
         @Builder
         @NoArgsConstructor
         @AllArgsConstructor
+        @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
         public static class Heading {
             private SummonsRepliesReportServiceImpl.TableHeading id;
             private String name;
@@ -63,6 +65,7 @@ public class DigitalSummonsRepliesReportResponse {
         @Builder
         @NoArgsConstructor
         @AllArgsConstructor
+        @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
         public static class DataRow {
             private LocalDate date;
             private Integer noOfReplies;
