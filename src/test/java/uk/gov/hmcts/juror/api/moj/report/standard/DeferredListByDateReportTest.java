@@ -30,6 +30,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.withSettings;
 
+@SuppressWarnings("unchecked")
 class DeferredListByDateReportTest extends AbstractStandardReportTestSupport<DeferredListByDateReport> {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;

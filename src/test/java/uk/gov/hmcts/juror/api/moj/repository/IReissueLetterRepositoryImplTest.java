@@ -36,6 +36,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("unchecked")
 class IReissueLetterRepositoryImplTest {
 
     private static final String JUROR_NUMBER = "123456789";

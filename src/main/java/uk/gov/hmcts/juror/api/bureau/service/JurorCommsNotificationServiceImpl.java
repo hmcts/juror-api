@@ -216,7 +216,7 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
      * @return NotifyTemplateMapping details for given template Id.
      */
     private NotifyTemplateMappingMod getTemplate(String templateKey) {
-        //return notifyTemplateMappingRepository.findByTemplateName(templateKey);
+
         return notifyTemplateMappingRepositoryMod.findByTemplateName(templateKey);
     }
 

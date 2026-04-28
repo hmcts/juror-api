@@ -40,7 +40,6 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
     private final BulkPrintDataRepository bulkPrintDataRepository;
     private final JurorPoolRepository jurorPoolRepository;
 
-    private static final String LOC_CODE_HARROW = "468";
     private static final String LOC_CODE_TAUNTON = "459";
 
     /**
@@ -78,7 +77,7 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
                             SecurityUtil.BUREAU_OWNER);
                     String locCode = printFile.getLocCode();
 
-                    if (Objects.equals(locCode, LOC_CODE_TAUNTON) || Objects.equals(locCode, LOC_CODE_HARROW)) {
+                    if (Objects.equals(locCode, LOC_CODE_TAUNTON)) {
 
                         String templateName = printFile.getTemplateName();
 
@@ -189,7 +188,6 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
         locCodeTemplateMap.put("TEMP_DEF_GRANTED_ENG", "f5072da7-b250-4f02-b206-f176b1a0b80b");
         locCodeTemplateMap.put("TEMP_EXC_DENIED_ENG", "f5669ddd-4bb3-4092-b60b-45f410de74a7");
         locCodeTemplateMap.put("TEMP_POSTPONE_JUROR_ENG", "6504a964-0081-4b42-95da-9cccd26c1202");
-        locCodeTemplateMap.put("CONFIRMATION OF SERVICE HARROW", "bdcb84c2-49c1-435f-9821-262446c98a1c");
         locCodeTemplateMap.put("CONFRIM_JUROR_ENG", "00afe3f3-28cb-4ae0-9776-9b78556ae8e7");
         locCodeTemplateMap.put("DEF_DENIED_ENG", "7e6f2099-6fb7-4179-b968-e9c867e73c64");
         locCodeTemplateMap.put("DEF_GRANTED_ENG", "399c27ff-9651-4a49-9398-99c990db1a34");
@@ -201,7 +199,6 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
     private Map<String, String> getChangeTemplateMap() {
         Map<String, String> changeTemplateMap = new HashMap<>();
         changeTemplateMap.put("CONFRIM_JUROR_ENG", "CONFIRMATION OF SERVICE TAUNTON");
-        changeTemplateMap.put("CONFRIM_JUROR_ENG", "CONFIRMATION OF SERVICE HARROW");
         changeTemplateMap.put("DEF_DENIED_ENG", "TEMP_DEF_DENIED_ENG");
         changeTemplateMap.put("DEF_GRANTED_ENG", "TEMP_DEF_GRANTED_ENG");
         changeTemplateMap.put("EXC_DENIED_ENG", "TEMP_EXC_DENIED_ENG");
