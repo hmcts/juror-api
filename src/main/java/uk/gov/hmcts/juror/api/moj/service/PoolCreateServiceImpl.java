@@ -65,8 +65,11 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -420,8 +423,18 @@ public class PoolCreateServiceImpl implements PoolCreateService {
             }
 
             // Saving records (bulk)
-            jurorRepository.saveAll(jurorPools.stream().map(JurorPool::getJuror).toList());
-            jurorPoolRepository.saveAll(jurorPools);
+            List<Juror> savedJurors = jurorRepository.saveAll(jurorPools.stream().map(JurorPool::getJuror).toList());
+
+            Map<String, Juror> jurorByNumber = savedJurors.stream()
+                .collect(Collectors.toMap(Juror::getJurorNumber, Function.identity()));
+
+            for (JurorPool pool : jurorPools) {
+                // need to set the juror that refers to the same juror number in the jurorPool
+                pool.setJuror(jurorByNumber.get(pool.getJuror().getJurorNumber()));
+            }
+
+            jurorPools = jurorPoolRepository.saveAll(jurorPools);
+
 
             // create a summons letter for juror
             List<JurorPool> summonedJurors = jurorPools.stream()
