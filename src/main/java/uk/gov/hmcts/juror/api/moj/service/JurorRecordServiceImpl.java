@@ -820,8 +820,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             .contactPreference(null)
             .build();
 
-        jurorRepository.save(juror);
-        return juror;
+        return jurorRepository.save(juror);
     }
 
 
@@ -872,7 +871,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             .responseEntered(true)
             .build();
 
-        jurorRepository.save(juror);
+        juror = jurorRepository.save(juror);
+
         log.info("Juror record created for juror {}", pendingJuror.getJurorNumber());
 
         PoolRequest poolRequest =
