@@ -7,6 +7,7 @@ buildscript {
         flywayVersion = '10.22.0'
         postgresVersion = '42.7.5'
         envers = '3.5.4'
+        jwtVersion = '0.13.0'
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
@@ -108,10 +109,10 @@ dependencies {
     implementation "org.flywaydb:flyway-database-postgresql:${flywayVersion}"
     implementation "org.flywaydb:flyway-core:${flywayVersion}"
 
-    implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+    implementation "io.jsonwebtoken:jjwt-api:${jwtVersion}"
     implementation 'javax.mail:mail:1.4.7'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+    runtimeOnly "io.jsonwebtoken:jjwt-impl:${jwtVersion}"
+    runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jwtVersion}"
     implementation 'org.apache.httpcomponents.client5:httpclient5:5.4.4'
 
     implementation('com.google.guava:guava:33.4.0-jre')
