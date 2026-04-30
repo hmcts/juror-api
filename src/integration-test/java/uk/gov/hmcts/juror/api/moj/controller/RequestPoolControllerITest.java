@@ -260,6 +260,14 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
 
         PoolRequestActiveDataDto data = responseBody.getData().get(0);
         assertThat(data.getCourtName())
+            .as("Court Name should be CHESTER for the pool request with LOC_CODE 415")
+            .isEqualTo("CHESTER");
+        assertThat(data.getPoolNumber())
+            .as("Pool Number should be mapped from the Pool Request view")
+            .isEqualTo("415220101");
+
+        data = responseBody.getData().get(1);
+        assertThat(data.getCourtName())
             .as("Court Name should be populated from the Court Location table using the LOC_CODE foreign key")
             .isEqualTo("CHESTER");
         assertThat(data.getPoolNumber())
@@ -275,13 +283,6 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .as("Attendance Date should be mapped from the RETURN_DATE column in the Pool Request view")
             .hasDayOfMonth(20).hasMonth(Month.JANUARY).hasYear(2022);
 
-        data = responseBody.getData().get(1);
-        assertThat(data.getCourtName())
-            .as("Court Name should be CHESTER for the pool request with LOC_CODE 415")
-            .isEqualTo("CHESTER");
-        assertThat(data.getPoolNumber())
-            .as("Pool Number should be mapped from the Pool Request view")
-            .isEqualTo("415220101");
     }
 
     @Test
@@ -2022,8 +2023,8 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .as("Expect the court type to be equal to CROWN COURT")
             .isEqualTo("CROWN COURT");
         assertThat(poolRequestActiveDataDto.getAttendanceDate())
-            .as("Expect the service start date to be equal today's date plus 1 week")
-            .isEqualTo(LocalDate.now().plusWeeks(1));
+            .as("Expect the service start date to be equal today's date minus 10 days")
+            .isEqualTo(LocalDate.now().minusDays(10));
         assertThat(poolRequestActiveDataDto.getRespondedJurors())
             .as("Expect the responded jurors in pool to be equal to 2")
             .isEqualTo(2);
