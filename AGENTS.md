@@ -55,8 +55,10 @@ Before generating or refactoring code, consult:
 
 - `config/checkstyle/checkstyle.xml`
 - `config/pmd/ruleset.xml`
+- `.idea/codeStyles/codeStyleConfig.xml`
 
-There is no checked-in IntelliJ code style file in this repo, so the build rules are the source of truth.
+The checked-in IntelliJ code style metadata is limited, so the build rules remain the source of truth when there is
+any conflict.
 
 ## Persistence & Query Guidance
 
