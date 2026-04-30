@@ -120,12 +120,6 @@ class TrialServiceImplTest {
     BureauJwtPayload payload = createJwtPayload("415", "COURT_USER");
 
 
-    @BeforeEach
-    void beforeEach() {
-        doAnswer(invocation -> invocation.getArgument(0)).when(appearanceCreationService)
-            .addStandardAttributes(any(), any(), any(), any());
-    }
-
     @Test
     void testCreateTrial() {
         TrialDto trialDto = createTrialDto();

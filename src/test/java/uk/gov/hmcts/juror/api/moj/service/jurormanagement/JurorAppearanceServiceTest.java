@@ -151,7 +151,6 @@ class JurorAppearanceServiceTest {
     @BeforeEach
     public void setUp() {
         TestUtils.setUpMockAuthentication("415", "COURT_USER", "1", List.of("415"));
-        doReturn(0L).when(appearanceCreationService).getLastVersionNumber(any(), any(), any());
     }
 
 
