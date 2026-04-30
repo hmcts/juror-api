@@ -52,7 +52,6 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
     private static final DateTimeFormatter WELSH_DATE_TIME_FORMATTER =
         DateTimeFormatter.ofPattern(DATE_FORMAT, new Locale("en", "GB"));
     private static final String TAUNTON_LOC_CODE = "459";
-    private static final String HARROW_LOC_CODE = "468";
 
     private final NotifyTemplateFieldRepositoryMod notifyTemplateFieldRepositoryMod;
     private final JurorCommonResponseRepositoryMod commonResponseRepositoryMod;
@@ -91,10 +90,6 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
             context.setTemporaryCourtName(TemporaryCourtName.TAUNTON.getTemporaryCourtName());
             context.setTemporaryCourtAddress(TemporaryCourtAddress.TAUNTON.getTemporaryCourtAddress());
             context.setTemporaryCourtPhone(TemporaryCourtPhone.TAUNTON.getTemporaryCourtPhone());
-        } else if (juror.getCourt() != null && HARROW_LOC_CODE.equals(juror.getCourt().getLocCode())) {
-            context.setTemporaryCourtName(TemporaryCourtName.HARROW.getTemporaryCourtName());
-            context.setTemporaryCourtAddress(TemporaryCourtAddress.HARROW.getTemporaryCourtAddress());
-            context.setTemporaryCourtPhone(TemporaryCourtPhone.HARROW.getTemporaryCourtPhone());
         } else {
             log.warn("Court location code is null or unrecognized for juror: {}", juror.getJurorNumber());
         }
@@ -194,10 +189,7 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
             context.setTemporaryCourtName(TemporaryCourtName.TAUNTON.getTemporaryCourtName());
             context.setTemporaryCourtAddress(TemporaryCourtAddress.TAUNTON.getTemporaryCourtAddress());
             context.setTemporaryCourtPhone(TemporaryCourtPhone.TAUNTON.getTemporaryCourtPhone());
-        } else if (jurorPool.getCourt() != null && HARROW_LOC_CODE.equals(jurorPool.getCourt().getLocCode())) {
-            context.setTemporaryCourtName(TemporaryCourtName.HARROW.getTemporaryCourtName());
-            context.setTemporaryCourtAddress(TemporaryCourtAddress.HARROW.getTemporaryCourtAddress());
-            context.setTemporaryCourtPhone(TemporaryCourtPhone.HARROW.getTemporaryCourtPhone());
+
         } else {
             log.warn("Court location code is null or unrecognized for juror: {}", jurorPool.getJurorNumber());
         }

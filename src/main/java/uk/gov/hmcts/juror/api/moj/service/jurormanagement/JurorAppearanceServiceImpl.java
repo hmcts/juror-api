@@ -1601,6 +1601,14 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     }
 
     @Override
+    public int getUnconfirmedAttendanceCountForJurorsAtCourt(List<String> jurorNumbers, String locCode) {
+        log.info("Retrieving unconfirmed attendance count for jurors at court for location {}", locCode);
+        return appearanceRepository
+            .getUnconfirmedAttendanceCountForJurorsAtCourt(jurorNumbers, locCode);
+
+    }
+
+    @Override
     public List<String> getExpectedJurorsAtCourt(String locationCode, LocalDate attendanceDate) {
         return appearanceRepository.getExpectedJurorNumbers(locationCode, attendanceDate);
     }

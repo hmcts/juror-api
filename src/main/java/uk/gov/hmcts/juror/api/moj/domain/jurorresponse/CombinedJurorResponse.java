@@ -10,6 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import jakarta.validation.constraints.NotNull;
@@ -19,6 +20,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.validator.constraints.Length;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Address;
@@ -41,8 +43,10 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REG
 @Table(name = "juror_response", schema = "juror_mod")
 @Entity
 @Getter
+@SuperBuilder
 @ToString(exclude = {"reasonableAdjustments", "cjsEmployments"})// lazy init fields
 @EqualsAndHashCode(callSuper = true, exclude = {"cjsEmployments", "reasonableAdjustments", "staff"})
+@SuppressWarnings("PMD.TooManyFields")
 public class CombinedJurorResponse extends Address implements Serializable {
 
     @Id
@@ -78,6 +82,7 @@ public class CombinedJurorResponse extends Address implements Serializable {
 
     @Column(name = "processing_status")
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private ProcessingStatus processingStatus = ProcessingStatus.TODO;
 
     @LocalDateOfBirth
@@ -132,6 +137,7 @@ public class CombinedJurorResponse extends Address implements Serializable {
     private String reasonableAdjustmentsArrangements;
 
     @Column(name = "processing_complete")
+    @Builder.Default
     private Boolean processingComplete = Boolean.FALSE;
 
     @Column(name = "completed_at")
@@ -151,6 +157,7 @@ public class CombinedJurorResponse extends Address implements Serializable {
      * Contact log for the juror of this response.
      */
     @OneToMany(mappedBy = "jurorNumber")
+    @Builder.Default
     private List<ContactLog> contactLog = new ArrayList<>();
 
 
@@ -158,12 +165,14 @@ public class CombinedJurorResponse extends Address implements Serializable {
      * List of {@link JurorReasonableAdjustment} entities associated with this entity.
      */
     @OneToMany(mappedBy = "jurorNumber")
+    @Builder.Default
     private List<JurorReasonableAdjustment> reasonableAdjustments = new ArrayList<>();
 
     /**
      * List of {@link JurorResponseCjsEmployment} entities associated with this entity.
      */
     @OneToMany(mappedBy = "jurorNumber")
+    @Builder.Default
     private List<JurorResponseCjsEmployment> cjsEmployments = new ArrayList<>();
     /**
      * Flag that this response is urgent.
@@ -175,6 +184,7 @@ public class CombinedJurorResponse extends Address implements Serializable {
      * Flag this response as welsh language.
      */
     @Column(name = "welsh")
+    @Builder.Default
     private Boolean welsh = Boolean.FALSE;
 
     @Version
@@ -255,6 +265,20 @@ public class CombinedJurorResponse extends Address implements Serializable {
     private Boolean signed;
 
     protected CombinedJurorResponse() {
+        super();
         // This constructor is intentionally empty. Nothing special is needed here.
+    }
+
+    @PrePersist
+    private void ensureDefaults() {
+        if (processingStatus == null) {
+            processingStatus = ProcessingStatus.TODO;
+        }
+        if (processingComplete == null) {
+            processingComplete = Boolean.FALSE;
+        }
+        if (welsh == null) {
+            welsh = Boolean.FALSE;
+        }
     }
 }

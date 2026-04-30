@@ -8,8 +8,6 @@ import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
 
 @Slf4j
 public class JurorPoolQueries {
@@ -20,7 +18,7 @@ public class JurorPoolQueries {
 
     private static final String deceased = "D";
 
-    private static final List<String> locCodes = Arrays.asList("459", "468");
+    private static final String TEMPORARY_COURT_LOC_CODE = "459";
 
 
     private JurorPoolQueries() {
@@ -31,7 +29,7 @@ public class JurorPoolQueries {
 
     /**
      * Query to match Responded Juror instances.
-    */
+     */
     public static BooleanExpression respondedStatus() {
         return jurorDetail.status.status.eq(IJurorStatus.RESPONDED);
     }
@@ -41,23 +39,23 @@ public class JurorPoolQueries {
     }
 
     /**
-    * ø
-    * Matches Juror instances where notification flag indicates, sentToCourt comms has not been sent.
-    */
+     * ø
+     * Matches Juror instances where notification flag indicates, sentToCourt comms has not been sent.
+     */
     public static BooleanExpression sentToCourtCommsNotSent() {
         return jurorDetail.juror.notifications.ne(SENT_T_COURT_COMMS_SENT);
     }
 
     /**
-    * Matches Juror instances where notification flag indicates, weekly info_comms has not been sent.
-    */
+     * Matches Juror instances where notification flag indicates, weekly info_comms has not been sent.
+     */
     public static BooleanExpression infoCommsNotSent() {
         return jurorDetail.juror.notifications.eq(INFO_COMMS_NOT_SENT);
     }
 
     /**
-    * Matches on all records owned by bureau.
-    */
+     * Matches on all records owned by bureau.
+     */
     public static BooleanExpression jurorRecordWithBureau() {
         return jurorDetail.owner.eq(OWNER_IS_BUREAU);
     }
@@ -67,24 +65,24 @@ public class JurorPoolQueries {
     }
 
     /**
-    * Query to match instance where an email exists.
-    */
+     * Query to match instance where an email exists.
+     */
     public static BooleanExpression emailIsPresent() {
         return jurorDetail.juror.email.isNotNull();
     }
 
     /**
-    * Query to match all records where bureau_to_court_transfer date is between 6pm and midnight.
-    */
+     * Query to match all records where bureau_to_court_transfer date is between 6pm and midnight.
+     */
     public static BooleanExpression bureauToCourtTransferDate() {
         LocalDate currentDate = LocalDate.now();
         log.info("Bureau To Court Transfer Date {}", jurorDetail.juror.bureauTransferDate);
         log.info("Current Date at 6pm {}", currentDate);
         return jurorDetail
-        .juror
-        .bureauTransferDate
-        .after(currentDate)
-        .or(jurorDetail.juror.bureauTransferDate.eq(currentDate));
+            .juror
+            .bureauTransferDate
+            .after(currentDate)
+            .or(jurorDetail.juror.bureauTransferDate.eq(currentDate));
     }
 
     public static BooleanExpression courtDateWithin4Wks() {
@@ -94,53 +92,53 @@ public class JurorPoolQueries {
     }
 
     /**
-    * Query to match instance where police checked or not based on given parameter.
-    */
+     * Query to match instance where police checked or not based on given parameter.
+     */
     public static BooleanExpression isPoliceChecked() {
         return jurorDetail.juror.policeCheck.eq(PoliceCheck.ELIGIBLE);
     }
 
     /**
-    * Identify all Pool Records for which a sent To Comms needs to be sent.
-    */
+     * Identify all Pool Records for which a sent To Comms needs to be sent.
+     */
     public static BooleanExpression awaitingSentToCourtComms() {
         return jurorDetail
-        .nextDate
-        .after(LocalDate.now())
-        .and(respondedStatus())
-        .and(jurorRecordNotWithBureau())
-        .and(sentToCourtCommsNotSent())
-        .and(bureauToCourtTransferDate())
-        .and(locCodeNotIn(locCodes));
+            .nextDate
+            .after(LocalDate.now())
+            .and(respondedStatus())
+            .and(jurorRecordNotWithBureau())
+            .and(sentToCourtCommsNotSent())
+            .and(bureauToCourtTransferDate())
+            .and(locCodeNotTemporaryCourt());
 
     }
 
     /**
-    * Identify all Pool Records for which a sent To Comms needs to be sent for a certain locCode.
-    */
+     * Identify all Pool Records for which a sent To Comms needs to be sent for a certain locCode.
+     */
     public static BooleanExpression awaitingSentToCourtCommsTemporaryCourt() {
         return jurorDetail
-        .nextDate
-        .after(LocalDate.now())
-        .and(respondedStatus())
-        .and(jurorRecordNotWithBureau())
-        .and(sentToCourtCommsNotSent())
-        .and(bureauToCourtTransferDate())
-        .and(locCodeIn(locCodes));
+            .nextDate
+            .after(LocalDate.now())
+            .and(respondedStatus())
+            .and(jurorRecordNotWithBureau())
+            .and(sentToCourtCommsNotSent())
+            .and(bureauToCourtTransferDate())
+            .and(locCodeIsTemporaryCourt());
     }
 
     /**
-    * Identify all Pool Records for Informational Comms (4wks comms).
-    */
+     * Identify all Pool Records for Informational Comms (4wks comms).
+     */
     public static BooleanExpression awaitingInfoComms() {
 
         return courtDateWithin4Wks()
-        .and(respondedStatus())
-        .and(jurorRecordWithBureau())
-        .and(infoCommsNotSent())
-        .and(emailIsPresent())
-        .and(isPoliceChecked())
-        .and(locCodeNotIn(locCodes));
+            .and(respondedStatus())
+            .and(jurorRecordWithBureau())
+            .and(infoCommsNotSent())
+            .and(emailIsPresent())
+            .and(isPoliceChecked())
+            .and(locCodeNotTemporaryCourt());
     }
 
     /**
@@ -148,95 +146,91 @@ public class JurorPoolQueries {
      */
     public static BooleanExpression awaitingInfoCommsTemporaryCourt() {
         return courtDateWithin4Wks()
-        .and(respondedStatus())
-        .and(jurorRecordWithBureau())
-        .and(infoCommsNotSent())
-        .and(emailIsPresent())
-        .and(isPoliceChecked())
-        .and(locCodeIn(locCodes));
+            .and(respondedStatus())
+            .and(jurorRecordWithBureau())
+            .and(infoCommsNotSent())
+            .and(emailIsPresent())
+            .and(isPoliceChecked())
+            .and(locCodeIsTemporaryCourt());
     }
 
     /**
-    * Query to match where SERVICE_COMP_COMMS_STATUS EQUALS NULL.
-    */
+     * Query to match where SERVICE_COMP_COMMS_STATUS EQUALS NULL.
+     */
     public static BooleanExpression serviceCompCommsStatus() {
         return jurorDetail.juror.serviceCompCommsStatus.isNull();
     }
 
     /**
-    * Query to match Excused PoolCourt instances.
-    */
+     * Query to match Excused PoolCourt instances.
+     */
     public static BooleanExpression excusedStatus() {
         return jurorDetail.status.status.eq(IJurorStatus.EXCUSED);
     }
 
     /**
-    * Query to match Excused Juror instances.
-    */
+     * Query to match Excused Juror instances.
+     */
     public static BooleanExpression excusedCode() {
         return jurorDetail.juror.excusalCode.ne(deceased).or(jurorDetail.juror.excusalCode.isNull());
     }
 
     /**
-    * Query to match  Date_EXCUS between now and now minus excusal date parameter.
-    */
+     * Query to match  Date_EXCUS between now and now minus excusal date parameter.
+     */
     public static BooleanExpression excusalDateBetweenSysdateExcusalParameter() {
 
         return jurorDetail.juror.excusalDate.between(
-           LocalDateTime.now().minusDays(3L).toLocalDate(), LocalDate.now());
+            LocalDateTime.now().minusDays(3L).toLocalDate(), LocalDate.now());
     }
 
     /**
-    * Query COMPLETION_DATE between now and now minus SERVICE COMPLETION PARAMETER.
-    */
+     * Query COMPLETION_DATE between now and now minus SERVICE COMPLETION PARAMETER.
+     */
     public static BooleanExpression completionDateBetweenSysdateCompletionParameter() {
         return jurorDetail.juror.completionDate.between(LocalDate.now().minusDays(2L), LocalDate.now());
     }
 
     /**
-    * Query on COMPLETION_DATE is not null.
-    */
+     * Query on COMPLETION_DATE is not null.
+     */
     public static BooleanExpression completionDateNotNull() {
         return jurorDetail.juror.completionDate.isNotNull();
     }
 
     /**
-    * Identify all juror Records for Excusal Comms.
-    */
+     * Identify all juror Records for Excusal Comms.
+     */
     public static BooleanExpression recordsForExcusalComms() {
         return excusalDateBetweenSysdateExcusalParameter()
-         .and(excusedStatus())
-         .and(serviceCompCommsStatus())
-         .and(excusedCode());
+            .and(excusedStatus())
+            .and(serviceCompCommsStatus())
+            .and(excusedCode());
     }
 
     /**
-    * Identify all juror Records for Service Completed  Comms.
-    */
+     * Identify all juror Records for Service Completed  Comms.
+     */
     public static BooleanExpression recordsForServiceCompletedComms() {
         return completionDateBetweenSysdateCompletionParameter()
-         .and(completedStatus())
-         .and(serviceCompCommsStatus())
-         .and(completionDateNotNull());
+            .and(completedStatus())
+            .and(serviceCompCommsStatus())
+            .and(completionDateNotNull());
     }
 
 
     /**
-    * Query to match instance where juror locCode is equal to '459','468'.
-    */
-    public static BooleanExpression locCodeIn(List<String> locCodes) {
-        return jurorDetail.pool.courtLocation.locCode.in(locCodes);
-    }
-
-    /**
-     * Query to match instance where juror locCode is not equal to '459','468'.
+     * Query to match instance where juror locCode equals the temporary court location.
      */
-    public static BooleanExpression locCodeNotIn(List<String> locCodes) {
-        return jurorDetail.pool.courtLocation.locCode.notIn(locCodes);
+    public static BooleanExpression locCodeIsTemporaryCourt() {
+        return jurorDetail.pool.courtLocation.locCode.eq(TEMPORARY_COURT_LOC_CODE);
+    }
 
-
+    /**
+     * Query to match instance where juror locCode does not equal the temporary court location.
+     */
+    public static BooleanExpression locCodeNotTemporaryCourt() {
+        return jurorDetail.pool.courtLocation.locCode.ne(TEMPORARY_COURT_LOC_CODE);
     }
 
 }
-
-
