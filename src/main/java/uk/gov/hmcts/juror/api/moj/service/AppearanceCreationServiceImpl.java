@@ -9,7 +9,6 @@ import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
-import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
@@ -18,8 +17,6 @@ import java.time.LocalDate;
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class AppearanceCreationServiceImpl implements AppearanceCreationService {
-    private final AppearanceRepository appearanceRepository;
-    private final UserService userService;
 
     @Override
     @Transactional
@@ -70,8 +67,7 @@ public class AppearanceCreationServiceImpl implements AppearanceCreationService 
                 .build();
     }
 
-    //Public for test use should only be used internally
-    public Appearance.AppearanceBuilder addStandardAttributes(Appearance.AppearanceBuilder appearanceBuilder) {
+    private Appearance.AppearanceBuilder addStandardAttributes(Appearance.AppearanceBuilder appearanceBuilder) {
         return appearanceBuilder
             .createdBy(SecurityUtil.getActiveLogin());
     }

@@ -36,7 +36,7 @@ class AppearanceCreationServiceImplTest {
     @BeforeEach
     void beforeEach() {
         TestUtils.setUpMockAuthentication("415", COURT_USER, "1", List.of("415"));
-        appearanceCreationService = new AppearanceCreationServiceImpl(appearanceRepository, userService);
+        appearanceCreationService = new AppearanceCreationServiceImpl();
     }
 
     @Test
