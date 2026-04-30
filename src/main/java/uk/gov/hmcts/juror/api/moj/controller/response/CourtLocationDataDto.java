@@ -1,6 +1,8 @@
 package uk.gov.hmcts.juror.api.moj.controller.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,21 +16,18 @@ import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 @Getter
 @Schema(description = "Court location data")
 @ToString
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class CourtLocationDataDto {
 
-    @JsonProperty("locationCode")
     @Schema(name = "locationCode", description = "3 digit identification code for a court location")
     private String locationCode;
 
-    @JsonProperty("locationName")
     @Schema(name = "locationName", description = "The court name")
     private String locationName;
 
-    @JsonProperty("attendanceTime")
     @Schema(name = "attendanceTime", description = "The default start time for a court location")
     private String attendanceTime;
 
-    @JsonProperty("owner")
     @Schema(name = "owner", description = "3 digit identification code for a primary court location which owns this "
         + "court location")
     private String owner;

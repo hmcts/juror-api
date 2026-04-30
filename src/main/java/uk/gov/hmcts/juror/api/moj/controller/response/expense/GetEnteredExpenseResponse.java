@@ -2,6 +2,8 @@ package uk.gov.hmcts.juror.api.moj.controller.response.expense;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,44 +25,36 @@ import java.time.LocalTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class GetEnteredExpenseResponse {
-    @JsonProperty("date_of_expense")
+
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate dateOfExpense;
 
-    @JsonProperty("none_attendance_day")
     private Boolean noneAttendanceDay;
 
-    @JsonProperty("appearance_stage")
     private AppearanceStage stage;
 
-    @JsonProperty("total_due")
     private BigDecimal totalDue;
 
-    @JsonProperty("total_paid")
     private BigDecimal totalPaid;
 
-    @JsonProperty("payment_method")
     private PaymentMethod paymentMethod;
 
-    @JsonProperty("time")
     private DailyExpenseTimeEntered time;
 
-    @JsonProperty("financial_loss")
     private DailyExpenseFinancialLoss financialLoss;
 
-    @JsonProperty("travel")
     private DailyExpenseTravel travel;
 
-    @JsonProperty("food_and_drink")
     private DailyExpenseFoodAndDrink foodAndDrink;
 
 
     @SuperBuilder
     @Getter
     @NoArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class DailyExpenseTimeEntered extends DailyExpenseTime {
-        @JsonProperty("time_spent_at_court")
         @JsonFormat(pattern = "HH:mm")
         private LocalTime timeSpentAtCourt;
     }

@@ -1,6 +1,8 @@
 package uk.gov.hmcts.juror.api.moj.controller.response.trial;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,31 +16,24 @@ import java.time.LocalDate;
 @Builder
 @Data
 @Schema(description = "A List of trials")
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class TrialListDto {
-    @JsonProperty("trial_number")
+
     private String trialNumber;
 
-    @JsonProperty("parties")
     private String defendants;
 
-    @JsonProperty("trial_type")
     private String trialType;
 
-    @JsonProperty("judge")
     private String judge;
 
-    @JsonProperty("courtroom")
     private String courtroom;
 
-    @JsonProperty("court")
     private String courtLocationName;
 
-    @JsonProperty("court_location")
     private String courtLocationCode;
 
-    @JsonProperty("start_date")
     private LocalDate startDate;
 
-    @JsonProperty("is_active")
     private Boolean isActive;
 }

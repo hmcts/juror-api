@@ -41,7 +41,6 @@ public class JurorDetailsCommonResponseDto {
     private String owner;
 
     @Schema(name = "LocCode", description = "Current locCode")
-    @JsonProperty("loc_code")
     private String locCode;
 
     @Length(max = 10)
@@ -102,15 +101,12 @@ public class JurorDetailsCommonResponseDto {
     @Schema(name = "Deferral date", description = "Deferral date")
     private LocalDate deferralDate;
 
-    @JsonProperty("deferral_code")
     @Schema(name = "Deferral Code", description = "Code indicating deferral reason selected by the user")
     private String deferralCode;
 
-    @JsonProperty("disqualify_code")
     @Schema(name = "Disqualification Code", description = "Code indicating disqualification reason")
     private String disqualifyCode;
 
-    @JsonProperty("police_check")
     @Enumerated(EnumType.STRING)
     @Schema(name = "Police Check Status")
     private PoliceCheck policeCheck;
@@ -130,7 +126,6 @@ public class JurorDetailsCommonResponseDto {
     @Schema(description = "check for juror manually created")
     private boolean manuallyCreated;
 
-    @JsonProperty("response_entered")
     @Schema(name = "Response Entered", description = "Flag to indicate if a response has been entered for the juror")
     private boolean responseEntered;
 

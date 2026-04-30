@@ -16,9 +16,8 @@ import java.time.LocalDate;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class CertificateOfAttendanceLetterData extends LetterResponseData {
 
-    @JsonProperty("start_date")
+
     LocalDate startDate;
-    @JsonProperty("completion_date")
     LocalDate completionDate;
 
 

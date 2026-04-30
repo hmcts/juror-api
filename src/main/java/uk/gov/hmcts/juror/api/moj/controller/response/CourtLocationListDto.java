@@ -1,6 +1,8 @@
 package uk.gov.hmcts.juror.api.moj.controller.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,9 +17,9 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Schema(description = "Court location list response")
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class CourtLocationListDto {
 
-    @JsonProperty("courts")
     @Schema(description = "List of court locations")
     private List<CourtLocationDataDto> data;
 

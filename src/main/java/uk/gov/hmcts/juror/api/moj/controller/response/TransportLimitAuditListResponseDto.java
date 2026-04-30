@@ -27,11 +27,9 @@ import java.util.stream.Collectors;
 @Schema(description = "List of audit records for transport limit changes")
 public class TransportLimitAuditListResponseDto implements Serializable {
 
-    @JsonProperty("audit_records")
     @Schema(description = "List of audit records")
     private List<TransportLimitAuditResponseDto> auditRecords;
 
-    @JsonProperty("total_records")
     @Schema(description = "Total number of audit records", example = "5")
     private Integer totalRecords;
 

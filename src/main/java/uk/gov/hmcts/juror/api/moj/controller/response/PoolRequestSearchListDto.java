@@ -31,11 +31,9 @@ public class PoolRequestSearchListDto {
     private static final String BUREAU_STAGE_TEXT = "With the Bureau";
     private static final String COURT_STAGE_TEXT = "At court";
 
-    @JsonProperty("poolRequests")
     @Schema(description = "List of pool requests")
     private List<PoolRequestSearchDataDto> data;
 
-    @JsonProperty("resultsCount")
     @Schema(description = "Total number of results returned by search query (before pagination)")
     private long resultsCount;
 
@@ -45,30 +43,25 @@ public class PoolRequestSearchListDto {
     @Getter
     @Schema(description = "Pool Request data")
     @ToString
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class PoolRequestSearchDataDto {
 
-        @JsonProperty("poolNumber")
         @Schema(name = "Pool number", description = "The unique number for a pool request")
         private String poolNumber;
 
-        @JsonProperty("courtName")
         @Schema(name = "Court name", description = "Name for a given court location")
         private String courtName;
 
-        @JsonProperty("poolStage")
         @Schema(name = "Pool stage", description = "Who currently owns the pool (Bureau or Court)")
         private String poolStage;
 
-        @JsonProperty("poolStatus")
         @Schema(name = "Pool status",
             description = "What lifecycle stage is the pool currently in (Requested, Active or Completed) ")
         private String poolStatus;
 
-        @JsonProperty("poolType")
         @Schema(name = "Pool type", description = "The type of court the pool is being requested for")
         private String poolType;
 
-        @JsonProperty("serviceStartDate")
         @JsonFormat(pattern = "yyyy-MM-dd")
         @Schema(name = "Service start date ",
             description = "The date the pool has been requested for and when the jurors are expected to first attend "

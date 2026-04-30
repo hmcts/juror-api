@@ -18,11 +18,10 @@ import java.time.LocalDate;
 @Schema(description = "A List of trials for issuing exemptions")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class TrialExemptionListDto  {
-    @JsonProperty("case_number")
+
     @Schema(description = "A Unique number representing the trial at a given court")
     private String trialNumber;
 
-    @JsonProperty("parties")
     @Schema(description = "A list of the accused member(s)")
     private String defendants;
 

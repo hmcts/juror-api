@@ -16,11 +16,10 @@ import java.time.LocalDate;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ExcusalLetterData extends LetterResponseData {
 
-    @JsonProperty("date_excused")
+
     @JsonFormat(pattern = "yyyy-MM-dd")
     LocalDate dateExcused;
 
-    @JsonProperty("reason")
     String reason;
 
     @Builder
