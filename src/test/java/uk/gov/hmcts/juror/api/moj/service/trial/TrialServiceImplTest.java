@@ -123,7 +123,7 @@ class TrialServiceImplTest {
     @BeforeEach
     void beforeEach() {
         doAnswer(invocation -> invocation.getArgument(0)).when(appearanceCreationService)
-            .addStandardAttributes(any(), any(), any(), any());
+            .addStandardAttributes(any());
     }
 
     @Test
