@@ -258,7 +258,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .as("Expect the response data to contain 2 Pool Requests")
             .isEqualTo(2);
 
-        PoolRequestActiveDataDto data = responseBody.getData().get(1);
+        PoolRequestActiveDataDto data = responseBody.getData().get(0);
         assertThat(data.getCourtName())
             .as("Court Name should be populated from the Court Location table using the LOC_CODE foreign key")
             .isEqualTo("CHESTER");
@@ -275,7 +275,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .as("Attendance Date should be mapped from the RETURN_DATE column in the Pool Request view")
             .hasDayOfMonth(20).hasMonth(Month.JANUARY).hasYear(2022);
 
-        data = responseBody.getData().get(2);
+        data = responseBody.getData().get(1);
         assertThat(data.getCourtName())
             .as("Court Name should be CHESTER for the pool request with LOC_CODE 415")
             .isEqualTo("CHESTER");
