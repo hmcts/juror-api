@@ -55,10 +55,9 @@ Before generating or refactoring code, consult:
 
 - `config/checkstyle/checkstyle.xml`
 - `config/pmd/ruleset.xml`
-- `.idea/codeStyles/codeStyleConfig.xml`
+- `config/editorConfig/Project.xml`
 
-The checked-in IntelliJ code style metadata is limited, so the build rules remain the source of truth when there is
-any conflict.
+If IntelliJ formatting guidance conflicts with build-enforced rules, treat the build rules as the source of truth.
 
 ## Persistence & Query Guidance
 
