@@ -41,6 +41,12 @@ public class JuryListReport extends AbstractStandardReport {
         query.where(QPanel.panel.trial.trialNumber.eq(request.getTrialNumber()));
         query.where(QPanel.panel.trial.courtLocation.owner.eq(SecurityUtil.getActiveOwner()));
         query.where(QPanel.panel.result.eq(PanelResult.JUROR));
+
+        if (Boolean.TRUE.equals(request.getCurrentJurorsOnly())) {
+            query.where(QPanel.panel.empanelledDate.isNotNull());
+            query.where(QPanel.panel.returnDate.isNull());
+        }
+
         query.orderBy(QJuror.juror.jurorNumber.asc());
     }
 
