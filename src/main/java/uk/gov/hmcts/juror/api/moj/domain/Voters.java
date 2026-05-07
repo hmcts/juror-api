@@ -113,4 +113,7 @@ public class Voters implements Serializable {
     @Length(max = 1)
     private String sourceId;
 
+    @Column(name = "hash_id")
+    private Long hashId;
+
 }
