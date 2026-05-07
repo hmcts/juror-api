@@ -66,6 +66,10 @@ If IntelliJ formatting guidance conflicts with build-enforced rules, treat the b
 - Keep transaction boundaries in service methods, not controllers.
 - Use `@Transactional(readOnly = true)` for read-only service operations where appropriate.
 - When changing query behavior, check existing integration tests and SQL fixtures before assuming semantics.
+- Do not modify existing flyway migrations. Instead, create new migrations for any schema changes.
+- If adding Flyway migrations, ensure they are idempotent and compatible with existing test fixtures.
+- When adding new database fields, consider how they will be populated in both runtime and test contexts, and whether they require updates to existing fixtures or new ones.
+- When modifying existing queries, consider the impact on both runtime behavior and integration tests that rely on specific query results. If necessary, update or add SQL fixtures to ensure tests remain valid and reflect the new query semantics.
 
 ## Testing Guidelines
 
