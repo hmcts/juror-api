@@ -33,6 +33,7 @@ public class ExpenseDetailsWithOriginalTotalsDto extends ExpenseTotal<ExpenseDet
         super.add(expenseDetailsDto);
         originalTotalPaid = originalTotalPaid.add(expenseDetailsDto.getOriginal().getTotalPaid());
     }
+
     @JsonProperty("change_from_original")
     public BigDecimal getOriginalTotalPaid() {
         return Optional.ofNullable(this.getTotalPaid())

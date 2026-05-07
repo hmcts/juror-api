@@ -50,6 +50,7 @@ public class DailyExpense {
     @Valid
     private DailyExpenseFoodAndDrink foodAndDrink;
 
+    @JsonProperty("apply_to_days")
     @Valid
     @Null(groups = {EditDay.class})
     private List<
