@@ -1,6 +1,11 @@
 
 -- JS-892 update voters table schema
 
+-- need to drop the view juror_mod.loc_postcode_totals_view before we can make changes to the voters table,
+-- as the view depends on the voters table, and it will be updated to use the old voters table
+-- automatically when we rename the existing voters table to voters_old
+DROP VIEW IF EXISTS juror_mod.loc_postcode_totals_view;
+
 -- back up the existing voters table before making changes
 ALTER TABLE juror_mod.voters RENAME TO voters_old;
 ALTER INDEX IF EXISTS juror_mod.voters_optimized_idx RENAME TO voters_old_optimized_idx;
@@ -29,6 +34,25 @@ CREATE TABLE juror_mod.voters (
   postcode_start varchar(10) GENERATED ALWAYS AS (split_part(postcode::text, ' '::text, 1)) STORED,
   CONSTRAINT voters_pkey PRIMARY KEY (hash_id)
 );
+
+-- recreate the view that was dropped
+CREATE OR REPLACE VIEW juror_mod.loc_postcode_totals_view
+AS SELECT cca.loc_code,
+      v.postcode_start,
+      sum(
+               CASE
+                 WHEN v.date_selected1 IS NULL AND v.perm_disqual IS NULL THEN 1
+                 ELSE 0
+                 END) AS total,
+      sum(
+               CASE
+                 WHEN v.date_selected1 IS NULL AND v.perm_disqual IS NULL AND v.flags IS NULL THEN 1
+                 ELSE 0
+                 END) AS total_cor
+FROM juror_mod.voters v
+      JOIN juror_mod.court_catchment_area cca ON v.postcode_start::text = cca.postcode::text
+WHERE v.date_selected1 IS NULL AND v.perm_disqual IS NULL
+GROUP BY cca.loc_code, v.postcode_start;
 
 CREATE INDEX voters_optimized_idx ON juror_mod.voters USING btree (postcode_start, date_selected1, perm_disqual, flags);
 CREATE INDEX voters_postcode_start_idx ON juror_mod.voters USING btree (postcode_start, perm_disqual, flags, dob);

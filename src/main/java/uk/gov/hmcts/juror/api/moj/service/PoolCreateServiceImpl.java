@@ -490,7 +490,6 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         jurorPool.setOwner(owner);
         jurorPool.setPool(poolRequest);
 
-        juror.setJurorNumber(generateJurorNumber(poolCreateRequestDto.getCatchmentArea()));
         // read the next juror sequence number and assign to the juror
         Long jurorNumber = jurorRepository.getJurorSequenceNumber();
         juror.setJurorNumber(String.format("%09d", jurorNumber));
@@ -531,14 +530,6 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         log.info("Pool member {} added to the Pool Member table", juror.getJurorNumber());
 
         return jurorPool;
-    }
-
-    private String generateJurorNumber(String locCode) {
-        String jurorNumber = pendingJurorRepository.generatePendingJurorNumber(locCode);
-        if (jurorNumber == null || "null".equals(jurorNumber)) {
-            throw new MojException.InternalServerError("Error generating new Juror Number", null);
-        }
-        return jurorNumber;
     }
 
     private void setAddress4(Voters voter, Juror juror) {
@@ -936,7 +927,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                 for (int index = 0; index < requiredMembers; index++) {
                     Voters voter = voters.get(index);
                     selectedVoters.add(voter);
-                    createCoronerJurorPool(poolNumber, locCode, voter);
+                    createCoronerJurorPool(poolNumber, voter);
                 }
                 votersService.markVotersAsSelected(selectedVoters, Date.valueOf(LocalDate.now()));
             } catch (MojException.BusinessRuleViolation businessRuleViolation) {
@@ -981,10 +972,14 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         return postCodeAndNumbersList;
     }
 
-    private void createCoronerJurorPool(String poolNumber, String locCode, Voters voter) {
+    private void createCoronerJurorPool(String poolNumber, Voters voter) {
         CoronerPoolDetail coronerPoolDetail = new CoronerPoolDetail();
         coronerPoolDetail.setPoolNumber(poolNumber);
-        coronerPoolDetail.setJurorNumber(generateJurorNumber(locCode));
+
+        // read the next juror sequence number and assign to the juror
+        Long jurorNumber = jurorRepository.getJurorSequenceNumber();
+        coronerPoolDetail.setJurorNumber(String.format("%09d", jurorNumber));
+
         coronerPoolDetail.setTitle(voter.getTitle());
         coronerPoolDetail.setFirstName(voter.getFirstName());
         coronerPoolDetail.setLastName(voter.getLastName());
