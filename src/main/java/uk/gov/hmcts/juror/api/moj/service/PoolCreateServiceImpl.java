@@ -49,6 +49,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
+import uk.gov.hmcts.juror.api.moj.repository.PendingJurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolTypeRepository;
@@ -102,6 +103,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     private final GenerateCoronerPoolNumberService generateCoronerPoolNumberService;
     private final CoronerPoolDetailRepository coronerPoolDetailRepository;
     private final CoronerPoolRepository coronerPoolRepository;
+    private final PendingJurorRepository pendingJurorRepository;
 
     @Override
     @Transactional
@@ -488,7 +490,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         jurorPool.setOwner(owner);
         jurorPool.setPool(poolRequest);
 
-        juror.setJurorNumber(voter.getJurorNumber());
+        juror.setJurorNumber(generateJurorNumber(poolCreateRequestDto.getCatchmentArea()));
         juror.setPollNumber(voter.getPollNumber());
         juror.setTitle(voter.getTitle());
         juror.setFirstName(voter.getFirstName());
@@ -518,6 +520,14 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         log.info("Pool member {} added to the Pool Member table", juror.getJurorNumber());
 
         return jurorPool;
+    }
+
+    private String generateJurorNumber(String locCode) {
+        String jurorNumber = pendingJurorRepository.generatePendingJurorNumber(locCode);
+        if (jurorNumber == null || "null".equals(jurorNumber)) {
+            throw new MojException.InternalServerError("Error generating new Juror Number", null);
+        }
+        return jurorNumber;
     }
 
     private void setAddress4(Voters voter, Juror juror) {
@@ -915,7 +925,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                 for (int index = 0; index < requiredMembers; index++) {
                     Voters voter = voters.get(index);
                     selectedVoters.add(voter);
-                    createCoronerJurorPool(poolNumber, voter);
+                    createCoronerJurorPool(poolNumber, locCode, voter);
                 }
                 votersService.markVotersAsSelected(selectedVoters, Date.valueOf(LocalDate.now()));
             } catch (MojException.BusinessRuleViolation businessRuleViolation) {
@@ -960,10 +970,10 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         return postCodeAndNumbersList;
     }
 
-    private void createCoronerJurorPool(String poolNumber, Voters voter) {
+    private void createCoronerJurorPool(String poolNumber, String locCode, Voters voter) {
         CoronerPoolDetail coronerPoolDetail = new CoronerPoolDetail();
         coronerPoolDetail.setPoolNumber(poolNumber);
-        coronerPoolDetail.setJurorNumber(voter.getJurorNumber());
+        coronerPoolDetail.setJurorNumber(generateJurorNumber(locCode));
         coronerPoolDetail.setTitle(voter.getTitle());
         coronerPoolDetail.setFirstName(voter.getFirstName());
         coronerPoolDetail.setLastName(voter.getLastName());
