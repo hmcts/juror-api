@@ -1,6 +1,6 @@
 java:
   applicationPort: 8080
-  image: 'sdshmctspublic.azurecr.io/juror/api:latest'
+  image: 'hmctsprod.azurecr.io/juror/api:latest'
   ingressHost: juror-api.{{ .Values.global.environment }}.platform.hmcts.net
   aadIdentityName: juror
   startupPath: '/health'

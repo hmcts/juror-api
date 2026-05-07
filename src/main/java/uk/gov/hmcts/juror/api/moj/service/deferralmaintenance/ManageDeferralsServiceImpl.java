@@ -703,6 +703,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     public void setDeferralPoolMember(JurorPool jurorPool, DeferralReasonRequestDto dto, String auditorUsername,
                                       Boolean incrementNoDefPos) {
 
+        ManageDeferralsService.clearOnCallIfRequired(jurorPool); // clear on_call if set
+
         jurorPool.setDeferralDate(dto.getDeferralDate());
         jurorPool.setNextDate(null);
         jurorPool.setStatus(RepositoryUtils.retrieveFromDatabase(IJurorStatus.DEFERRED, jurorStatusRepository));

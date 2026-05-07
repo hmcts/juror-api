@@ -48,7 +48,7 @@ public enum JurorCommsNotifyTemplateType {
     /**
      * weekly comms token in key.
      */
-    static final String[] weeklyCommsSuffixes = new String[]{"TH_", "ST_", "ND_", "RD_"};
+    static final String[] weeklyCommsSuffixes = {"TH_", "ST_", "ND_", "RD_"};
 
     /**
      * type message token in key.h

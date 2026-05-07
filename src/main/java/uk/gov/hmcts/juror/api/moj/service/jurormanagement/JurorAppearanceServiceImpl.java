@@ -203,6 +203,14 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
         if (appearanceOpt.isPresent()) {
             appearance = appearanceOpt.get();
+
+            // check if the appearance is a no show record
+            if (Boolean.TRUE.equals(appearance.getNoShow())) {
+                throw new MojException.BusinessRuleViolation("Cannot update a no show record for juror "
+                                                                 + jurorNumber,
+                                                             ATTENDANCE_RECORD_ALREADY_EXISTS);
+            }
+
             // validate the current record and the new appearance stage
             validateAppearanceStage(jurorNumber, appearanceStage, appearance);
         } else {
@@ -1589,6 +1597,14 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         log.info("Retrieving unconfirmed attendance count at court for location {}", locCode);
         return appearanceRepository
             .getUnconfirmedAttendanceCountAtCourt(locCode);
+
+    }
+
+    @Override
+    public int getUnconfirmedAttendanceCountForJurorsAtCourt(List<String> jurorNumbers, String locCode) {
+        log.info("Retrieving unconfirmed attendance count for jurors at court for location {}", locCode);
+        return appearanceRepository
+            .getUnconfirmedAttendanceCountForJurorsAtCourt(jurorNumbers, locCode);
 
     }
 

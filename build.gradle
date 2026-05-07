@@ -32,12 +32,19 @@ apply plugin: 'io.spring.dependency-management'
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
+// don't want deprecation and removal warnings to be treated as errors as we have some dependencies
+// that are using deprecated APIs and we don't want to fail the build because of that
 tasks.withType(JavaCompile) {
-    options.compilerArgs << "-Xlint:unchecked" //<< "-Werror"
+  options.compilerArgs += [
+    "-Xlint:unchecked",
+    "-Xlint:-deprecation",
+    "-Xlint:-removal",
+    "-Werror"
+  ]
 }
 
 // https://github.com/gradle/gradle/issues/16791
@@ -53,7 +60,7 @@ jacoco {
     toolVersion = "0.8.13"
 }
 
-version = '5.20.0'
+version = '5.24.0'
 
 repositories {
     mavenLocal()
@@ -150,9 +157,9 @@ dependencies {
 
     testImplementation('net.bytebuddy:byte-buddy:1.17.7')
     testImplementation('junit:junit:4.13.2')
-    testImplementation "org.testcontainers:testcontainers:1.21.3"
-    testImplementation "org.testcontainers:junit-jupiter:1.21.3"
-    testImplementation 'org.testcontainers:postgresql:1.21.3'
+    testImplementation "org.testcontainers:testcontainers:1.21.4"
+    testImplementation "org.testcontainers:junit-jupiter:1.21.4"
+    testImplementation 'org.testcontainers:postgresql:1.21.4'
 
     // Validation
     testImplementation 'org.wiremock:wiremock-standalone:3.10.0'
@@ -213,7 +220,7 @@ flyway {
     user = "$dbUserName"
     password = "$dbPassword"
     locations = [ "$flywayLocations" ]
-    schemas = ['juror_dashboard', 'juror_mod']
+    schemas = ['juror_dashboard', 'juror_mod', 'juror_er']
     defaultSchema = 'juror_mod'
     table = 'schema_history'
     cleanDisabled = System.getenv("FLYWAY_CLEAN_DISABLED") ?: true

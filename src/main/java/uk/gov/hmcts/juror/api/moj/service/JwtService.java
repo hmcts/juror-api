@@ -6,6 +6,7 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import java.security.Key;
 import java.util.Date;
 import java.util.Map;
+import javax.crypto.SecretKey;
 
 public interface JwtService {
 
@@ -22,4 +23,6 @@ public interface JwtService {
                             Map<String, Object> claims);
 
     String generateBureauJwtToken(String id, BureauJwtPayload payload);
+
+    SecretKey getSigningKey(String jwtSecret);
 }

@@ -409,7 +409,8 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .where(QAppearance.appearance.hideOnUnpaidExpenseAndReports.isFalse())
             .where(QAppearance.appearance.appearanceStage.in(
                 AppearanceStage.EXPENSE_ENTERED, AppearanceStage.EXPENSE_EDITED
-            ))
+            )) // JS-777 hide appearances before 1 Jan 2025.
+            .where(QAppearance.appearance.attendanceDate.goe(LocalDate.of(2025, 1, 1)))
             .join(QJuror.juror)
             .on(QJuror.juror.jurorNumber.eq(QAppearance.appearance.jurorNumber))
             .groupBy(
@@ -488,6 +489,22 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
         Long count = queryFactory
             .select(APPEARANCE.count())
             .from(APPEARANCE)
+            .where(APPEARANCE.courtLocation.locCode.eq(locCode))
+            .where(APPEARANCE.appearanceStage.in(AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT))
+            .where(APPEARANCE.noShow.isNull().or(APPEARANCE.noShow.isFalse()))
+            .where(APPEARANCE.nonAttendanceDay.isNull().or(APPEARANCE.nonAttendanceDay.isFalse()))
+            .fetchOne();
+
+        return count != null ? count.intValue() : 0;
+    }
+
+    @Override
+    public int getUnconfirmedAttendanceCountForJurorsAtCourt(List<String> jurorNumbers, String locCode) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        Long count = queryFactory
+            .select(APPEARANCE.count())
+            .from(APPEARANCE)
+            .where(APPEARANCE.jurorNumber.in(jurorNumbers))
             .where(APPEARANCE.courtLocation.locCode.eq(locCode))
             .where(APPEARANCE.appearanceStage.in(AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT))
             .where(APPEARANCE.noShow.isNull().or(APPEARANCE.noShow.isFalse()))

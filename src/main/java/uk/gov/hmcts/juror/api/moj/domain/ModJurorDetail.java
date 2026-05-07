@@ -12,7 +12,6 @@ import jakarta.persistence.Transient;
 import jakarta.persistence.Version;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -39,7 +38,6 @@ import java.util.List;
 @Getter
 @Setter
 @Table(name = "mod_juror_detail", schema = "juror_mod")
-@EqualsAndHashCode(exclude = "changeLogs")
 public class ModJurorDetail implements Serializable {
 
     @Id

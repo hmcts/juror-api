@@ -356,7 +356,7 @@ class ExpensePaymentsUsingAdjustedLimitsReportTest {
     @DisplayName("Should use correct repository method for each transport type")
     void positiveUsesCorrectRepositoryMethod() {
         // Given - Public Transport
-        StandardReportRequest requestPT = createValidRequest("Public Transport", REVISION_NUMBER);
+        final StandardReportRequest requestPT = createValidRequest("Public Transport", REVISION_NUMBER);
 
         when(courtLocationRepository.findByLocCode(LOC_CODE)).thenReturn(Optional.of(courtLocation));
         when(appearanceRepository.findPublicTransportExpensesByRevision(anyLong(), anyString()))
@@ -364,21 +364,16 @@ class ExpensePaymentsUsingAdjustedLimitsReportTest {
         when(courtLocationRepository.getRevisionLimits(anyString(), anyLong()))
                 .thenReturn(List.of("415,7.50,15.00,5.00,12.00"));
 
-
         report.getStandardReportResponse(requestPT);
-
 
         verify(appearanceRepository, times(1))
                 .findPublicTransportExpensesByRevision(REVISION_NUMBER, LOC_CODE);
         verify(appearanceRepository, times(0))
                 .findTaxiExpensesByRevision(REVISION_NUMBER, LOC_CODE);
 
-
         StandardReportRequest requestTaxi = createValidRequest("Taxi", REVISION_NUMBER);
 
-
         report.getStandardReportResponse(requestTaxi);
-
 
         verify(appearanceRepository, times(1))
                 .findTaxiExpensesByRevision(REVISION_NUMBER, LOC_CODE);

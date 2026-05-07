@@ -1,7 +1,7 @@
 -- create a pool for court location 415
 insert into juror_mod.pool (owner, pool_no, return_date, total_no_required, no_requested, pool_type, loc_code,
                             new_request, attend_time)
-values ('400', '415230101', '2023-01-05', 5, 5, 'CRO', '415', 'N', '2023-01-05 09:30:00.000');
+values ('400', '415230101', '2025-01-05', 5, 5, 'CRO', '415', 'N', '2025-01-05 09:30:00.000');
 
 -- create juror records
 insert into juror_mod.juror (juror_number, last_name, first_name, dob, address_line_1, address_line_4, postcode,
@@ -44,18 +44,18 @@ INSERT INTO juror_mod.appearance
 values
     -- expenses for 641500020
     --3 Draft
-    ('2023-01-05', '641500020', '415', '09:30', '16:00', false, '00:40', true, '415230101',
+    ('2025-01-05', '641500020', '415', '09:30', '16:00', false, '00:40', true, '415230101',
      true, 10, 0, 20, 0, 30, 0, 40, 0, 50, 0, 60, 0, 70, 0, 80, 0, 'Desc 1', 90, 0, 100, 0, 25, 0, 'FULL_DAY',
      true, null, 'EXPENSE_ENTERED', true, 1, true, 2, true, 4, 'LESS_THAN_OR_EQUAL_TO_10_HOURS'),
-    ('2023-01-06', '641500020', '415', '09:30', '16:00', false, '00:40', true, '415230101',
+    ('2025-01-06', '641500020', '415', '09:30', '16:00', false, '00:40', true, '415230101',
      true, 11, 0, 21, 0, 31, 0, 41, 0, 51, 0, 61, 0, 71, 0, 81, 0, 'Desc 2', 91, 0, 101, 0, 26, 0, 'FULL_DAY',
      true, null, 'EXPENSE_ENTERED', null, null, null, null, null, null, null),
     -- For approval
-    ('2023-01-08', '641500020', '415', '09:00', '13:00', false, '00:40', true, '415230101',
+    ('2025-01-08', '641500020', '415', '09:00', '13:00', false, '00:40', true, '415230101',
      false, 13.97, 0, 23, 0, 33, 0, 43, 0, 53, 0, 63, 0, 73, 0, 83, 0, 'Desc 3', 93, 0, 103, 0, 28, 0, 'HALF_DAY',
      false, '123', 'EXPENSE_ENTERED', null, null, false, null, true, 6, 'NONE'),
     -- For Approved
-    ('2023-01-11', '641500020', '415', '09:35', '16:00', false, '01:43', true, '415230101',
+    ('2025-01-11', '641500020', '415', '09:35', '16:00', false, '01:43', true, '415230101',
      false, 103, 93, 93, 93, 83, 83, 73, 73, 63, 63, 53, 53, 43, 43, 33, 33, 'Desc 4', 23, 23, 13, 13, 28.52, 28.52,
      'FULL_DAY', false, '321', 'EXPENSE_AUTHORISED', true, 3, null, null, null, 9, 'MORE_THAN_10_HOURS')
 ;

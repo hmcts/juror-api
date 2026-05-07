@@ -17,6 +17,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.config.jurorer.JurorErJwtPayload;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -62,6 +63,9 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
     @Value("${jwt.secret.hmac}")
     protected String hmacSecret;
 
+    @Value("${jwt.secret.er-portal}")
+    protected String jurorErSecret;
+
 
     protected void executeInTransaction(Runnable supplier) {
         executeInTransaction(() -> {
@@ -104,6 +108,11 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
     protected String createHmacJwt() {
         return TestUtil.mintHmacJwt(SignatureAlgorithm.HS256, hmacSecret,
             Instant.now().plus(100L * 365L, ChronoUnit.DAYS));
+    }
+
+    protected String mintJurorErJwt(final JurorErJwtPayload payload) {
+        return TestUtil.mintJurorErJwt(payload, SignatureAlgorithm.HS256, jurorErSecret,
+                                      Instant.now().plus(100L * 365L, ChronoUnit.DAYS));
     }
 
 

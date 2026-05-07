@@ -1672,6 +1672,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         }
 
         final String auditorUsername = SecurityUtil.getActiveLogin();
+
+        jurorPool.setNextDate(jurorPool.getPool().getReturnDate());
         jurorPool.setUserEdtq(auditorUsername);
         jurorPool.setStatus(RepositoryUtils.retrieveFromDatabase(IJurorStatus.SUMMONED, jurorStatusRepository));
         jurorPoolRepository.save(jurorPool);

@@ -49,3 +49,9 @@ variable "pgsql_storage_tier" {
   type        = string
   default     = null
 }
+
+variable "service_criticality" {
+  description = "Service criticality rating from 1-5."
+  type        = number
+  default     = 1
+}

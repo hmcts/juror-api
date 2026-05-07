@@ -1,6 +1,8 @@
 package uk.gov.hmcts.juror.api.bureau.controller.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,12 +18,13 @@ import java.util.List;
  */
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Builder
 @Data
 @Schema(description = "Staff assignments list response")
 public class AssignmentsListDto {
 
-    @JsonProperty("data")
+
     @Schema(description = "response data")
     private List<AssignmentListDataDto> data;
 
@@ -32,27 +35,27 @@ public class AssignmentsListDto {
     @Schema(description = "Staff assignment list data")
     public static class AssignmentListDataDto {
 
-        @JsonProperty("jurorNumber")
+
         @Schema(description = "Juror response number")
         private String jurorNumber;
 
-        @JsonProperty("version")
+
         @Schema(description = "Response optimistic locking version")
         private Integer version;
 
-        @JsonProperty("assignedTo")
+
         @Schema(description = "Staff member assigned to response (null == backlog)")
         private String assignedTo;
 
-        @JsonProperty("processingStatus")
+
         @Schema(description = "Current processing status of response")
         private ProcessingStatus processingStatus;
 
-        @JsonProperty("urgent")
+
         @Schema(description = "Urgent flag")
         private Boolean urgent;
 
-        @JsonProperty("jurorNameDisplay")
+
         @Schema(description = "Juror Name display format")
         private String jurorName;
     }
