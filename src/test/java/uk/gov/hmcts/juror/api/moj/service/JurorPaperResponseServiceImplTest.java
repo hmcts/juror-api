@@ -49,7 +49,6 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjust
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
-import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -560,7 +559,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_saveResponse_withCjs_withSpecialNeeds() {
-        BureauJwtPayload payload = buildPayload();
+        final BureauJwtPayload payload = buildPayload();
         JurorPaperResponseDto responseDto = buildJurorPaperResponseDto();
         List<JurorPaperResponseDto.CjsEmployment> cjsEmployment =
             Collections.singletonList(buildCjsEmployment(CjsEmploymentType.POLICE.getEmployer()));

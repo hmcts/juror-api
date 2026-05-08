@@ -225,10 +225,9 @@ public class StraightThroughProcessorServiceImplTest {
         paperResponse.setRelationship("Some Relation");
         paperResponse.setThirdPartyReason("Example Third Party Reason");
 
-        // Paper responses can be auto processed even if submitted by a third party (JS-885)
         Assertions.assertThat(
             straightThroughProcessorService.isValidForStraightThroughAgeDisqualification(paperResponse,
-                serviceStartDate, jurorPool)).isTrue();
+                serviceStartDate, jurorPool)).isFalse();
     }
 
     @Test
@@ -837,9 +836,8 @@ public class StraightThroughProcessorServiceImplTest {
             .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
-        // Paper response can be auto processed even when submitted by a third party (JS-885)
         Assertions.assertThat(straightThroughProcessorService
-            .isValidForStraightThroughAcceptance(jurorNumber, bureauOwner, true)).isTrue();
+            .isValidForStraightThroughAcceptance(jurorNumber, bureauOwner, true)).isFalse();
     }
 
     @Test
