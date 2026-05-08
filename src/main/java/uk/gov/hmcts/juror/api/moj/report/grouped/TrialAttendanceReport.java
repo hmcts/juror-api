@@ -65,7 +65,8 @@ public class TrialAttendanceReport extends AbstractGroupedReport {
                 JPAExpressions.select(QPanel.panel.juror.jurorNumber)
                     .from(QPanel.panel)
                     .where(QPanel.panel.trial.trialNumber.eq(request.getTrialNumber()))
-                    .where(QPanel.panel.result.ne(PanelResult.RETURNED))
+                    .where(QPanel.panel.result.isNull()
+                               .or(QPanel.panel.result.ne(PanelResult.RETURNED)))
                     .where(QPanel.panel.returnDate.isNull())
             ));
         }

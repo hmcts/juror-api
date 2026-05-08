@@ -43,6 +43,8 @@ public class JuryListReport extends AbstractStandardReport {
         query.where(QPanel.panel.result.eq(PanelResult.JUROR));
 
         if (Boolean.TRUE.equals(request.getCurrentJurorsOnly())) {
+            query.where(QPanel.panel.result.isNull()
+                            .or(QPanel.panel.result.ne(PanelResult.RETURNED)));
             query.where(QPanel.panel.returnDate.isNull());
         }
 
