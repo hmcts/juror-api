@@ -22,4 +22,7 @@ public interface StraightThroughProcessorService {
 
     boolean isValidForStraightThroughAgeDisqualification(DigitalResponse jurorDigitalResponse,
                                                          LocalDate returnDate, JurorPool poolMember);
+
+    boolean isJurorAgeValidForServiceStartDate(String jurorNumber, LocalDate dateOfBirth,
+                                               LocalDate serviceStartDate);
 }

@@ -203,6 +203,18 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
             jurorDigitalResponse.getDateOfBirth(), returnDate);
     }
 
+    @Override
+    public boolean isJurorAgeValidForServiceStartDate(String jurorNumber, LocalDate dateOfBirth,
+                                                      LocalDate serviceStartDate) {
+        int youngestJurorAgeAllowed = responseInspector.getYoungestJurorAgeAllowed();
+        int tooOldJurorAge = responseInspector.getTooOldJurorAge();
+        int age = JurorUtils.getJurorAgeAtHearingDate(dateOfBirth, serviceStartDate);
+
+        log.debug("Juror: {}. The juror will be {} year's old on their service start date", jurorNumber, age);
+
+        return age >= youngestJurorAgeAllowed && age < tooOldJurorAge;
+    }
+
     private void ageDisqualificationImplementation(AbstractJurorResponse jurorResponse,
                                                    JurorPool jurorPool, BureauJwtPayload payload) {
         final String username = payload.getLogin();
@@ -263,17 +275,6 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
         }
 
         return true;
-    }
-
-    private boolean isJurorAgeValidForServiceStartDate(String jurorNumber, LocalDate dateOfBirth,
-                                                       LocalDate serviceStartDate) {
-        int youngestJurorAgeAllowed = responseInspector.getYoungestJurorAgeAllowed();
-        int tooOldJurorAge = responseInspector.getTooOldJurorAge();
-        int age = JurorUtils.getJurorAgeAtHearingDate(dateOfBirth, serviceStartDate);
-
-        log.debug("Juror: {}. The juror will be {} year's old on their service start date", jurorNumber, age);
-
-        return age >= youngestJurorAgeAllowed && age < tooOldJurorAge;
     }
 
     private void processJurorAgeDisqualification(JurorPool jurorPool, String jurorNumber, String owner,
