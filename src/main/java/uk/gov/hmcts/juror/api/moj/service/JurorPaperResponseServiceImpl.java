@@ -923,7 +923,12 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         if (jurorPaperResponse.getDateOfBirth() != null && returnDate != null
             && Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.SUMMONED)
             && !straightThroughProcessorService.isJurorAgeValidForServiceStartDate(jurorPool.getJurorNumber(),
+<<<<<<< Updated upstream
                                                    jurorPaperResponse.getDateOfBirth(), returnDate)) {
+=======
+                                                   jurorPaperResponse.getDateOfBirth(), returnDate)
+            ) {
+>>>>>>> Stashed changes
             log.info("Juror {} - processed automatically due to age disqualification", jurorPool.getJurorNumber());
             straightThroughProcessorService.processAgeDisqualification(jurorPaperResponse, returnDate, jurorPool,
                 payload);
