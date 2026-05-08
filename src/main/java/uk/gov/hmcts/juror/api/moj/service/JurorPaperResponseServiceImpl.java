@@ -19,6 +19,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.ContactLogListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorPaperResponseDetailDto;
 import uk.gov.hmcts.juror.api.moj.domain.CjsEmploymentType;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.SummonsSnapshot;
@@ -51,6 +52,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Juror Paper Response service.
@@ -918,9 +920,9 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
                                                 LocalDate returnDate, BureauJwtPayload payload) {
         log.trace("Enter processStraightThroughResponse for {}", jurorPool.getJurorNumber());
 
+
         if (jurorPaperResponse.getDateOfBirth() != null && returnDate != null
-            && straightThroughProcessorService.isValidForStraightThroughAgeDisqualification(jurorPaperResponse,
-            returnDate, jurorPool)) {
+            && Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.SUMMONED)) {
             log.info("Juror {} - processed automatically due to age disqualification", jurorPool.getJurorNumber());
             straightThroughProcessorService.processAgeDisqualification(jurorPaperResponse, returnDate, jurorPool,
                 payload);
