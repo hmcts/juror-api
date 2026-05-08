@@ -66,7 +66,6 @@ public class TrialAttendanceReport extends AbstractGroupedReport {
                     .from(QPanel.panel)
                     .where(QPanel.panel.trial.trialNumber.eq(request.getTrialNumber()))
                     .where(QPanel.panel.result.ne(PanelResult.RETURNED))
-                    .where(QPanel.panel.empanelledDate.isNotNull())
                     .where(QPanel.panel.returnDate.isNull())
             ));
         }

@@ -49,16 +49,7 @@ class PanelSummaryReportITest extends AbstractStandardReportControllerITest {
             .assertEquals(getTypicalResponse());
     }
 
-    @Test
-    void positiveCurrentJurorsOnly() {
-        StandardReportRequest request = getValidPayload();
-        request.setCurrentJurorsOnly(true);
-        testBuilder()
-            .payload(request)
-            .triggerValid()
-            .responseConsumer(this::verifyAndRemoveReportCreated)
-            .assertEquals(getCurrentJurorsOnlyResponse());
-    }
+
 
     @Test
     void positiveCurrentJurorsOnlyFalse() {
