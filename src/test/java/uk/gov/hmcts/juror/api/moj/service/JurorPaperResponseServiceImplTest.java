@@ -49,6 +49,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjust
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
+import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -106,6 +107,7 @@ public class JurorPaperResponseServiceImplTest {
     private JurorHistoryService jurorHistoryService;
     @InjectMocks
     private JurorPaperResponseServiceImpl jurorPaperResponseService;
+
 
     @Before
     public void setUpMocks() {
@@ -359,8 +361,8 @@ public class JurorPaperResponseServiceImplTest {
         Mockito.verify(jurorResponseCjsRepository, Mockito.never()).save(any());
         Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.never()).save(any());
         Mockito.verify(straightThroughProcessorService, Mockito.times(1))
-            .isValidForStraightThroughAgeDisqualification(any(PaperResponse.class),
-                any(LocalDate.class), any(JurorPool.class));
+            .isJurorAgeValidForServiceStartDate(any(String.class),
+                any(LocalDate.class), any(LocalDate.class));
         Mockito.verify(straightThroughProcessorService, Mockito.times(1))
             .processAgeDisqualification(any(PaperResponse.class), any(LocalDate.class),
                 any(JurorPool.class), any());
@@ -432,6 +434,10 @@ public class JurorPaperResponseServiceImplTest {
         setEligibilityDetails(responseDto);
         setThirdPartyDetails(responseDto);
 
+        Mockito.doReturn(true).when(straightThroughProcessorService)
+            .isJurorAgeValidForServiceStartDate(any(String.class),
+                                                any(LocalDate.class), any(LocalDate.class));
+
         jurorPaperResponseService.saveResponse(payload, responseDto);
 
         Mockito.verify(jurorPoolService, Mockito.times(1))
@@ -446,8 +452,8 @@ public class JurorPaperResponseServiceImplTest {
         Mockito.verify(jurorResponseCjsRepository, Mockito.never()).save(any());
         Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.never()).save(any());
         Mockito.verify(straightThroughProcessorService, Mockito.times(1))
-            .isValidForStraightThroughAgeDisqualification(any(PaperResponse.class), any(LocalDate.class),
-                any(JurorPool.class));
+            .isJurorAgeValidForServiceStartDate(any(String.class),
+                                                any(LocalDate.class), any(LocalDate.class));
         Mockito.verify(straightThroughProcessorService, Mockito.never())
             .processAgeDisqualification(any(PaperResponse.class), any(LocalDate.class),
                 any(JurorPool.class), any());
@@ -502,6 +508,10 @@ public class JurorPaperResponseServiceImplTest {
             Collections.singletonList(buildCjsEmployment(CjsEmploymentType.POLICE.getEmployer()));
         responseDto.setCjsEmployment(cjsEmployment);
 
+        Mockito.doReturn(true).when(straightThroughProcessorService)
+            .isJurorAgeValidForServiceStartDate(any(String.class),
+                                                any(LocalDate.class), any(LocalDate.class));
+
         jurorPaperResponseService.saveResponse(payload, responseDto);
 
         Mockito.verify(jurorPoolService, Mockito.times(1))
@@ -512,8 +522,8 @@ public class JurorPaperResponseServiceImplTest {
         Mockito.verify(jurorResponseCjsRepository, Mockito.times(1)).saveAll(any());
         Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.times(1)).saveAll(any());
         Mockito.verify(straightThroughProcessorService, Mockito.times(1))
-            .isValidForStraightThroughAgeDisqualification(any(PaperResponse.class), any(),
-                any());
+            .isJurorAgeValidForServiceStartDate(any(String.class),
+                                                any(LocalDate.class), any(LocalDate.class));
         Mockito.verify(straightThroughProcessorService, Mockito.never())
             .processAgeDisqualification(any(PaperResponse.class), any(LocalDate.class),
                 any(JurorPool.class), any());
@@ -527,6 +537,10 @@ public class JurorPaperResponseServiceImplTest {
             Collections.singletonList(buildSpecialNeeds(ReasonableAdjustmentsEnum.VISUAL_IMPAIRMENT.getCode()));
         responseDto.setReasonableAdjustments(specialNeeds);
 
+        Mockito.doReturn(true).when(straightThroughProcessorService)
+            .isJurorAgeValidForServiceStartDate(any(String.class),
+                                                any(LocalDate.class), any(LocalDate.class));
+
         jurorPaperResponseService.saveResponse(payload, responseDto);
 
         Mockito.verify(jurorPoolService, Mockito.times(1))
@@ -537,8 +551,8 @@ public class JurorPaperResponseServiceImplTest {
         Mockito.verify(jurorResponseCjsRepository, Mockito.times(1)).saveAll(any());
         Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.times(1)).saveAll(any());
         Mockito.verify(straightThroughProcessorService, Mockito.times(1))
-            .isValidForStraightThroughAgeDisqualification(any(PaperResponse.class), any(LocalDate.class),
-                any(JurorPool.class));
+            .isJurorAgeValidForServiceStartDate(any(String.class),
+                                                any(LocalDate.class), any(LocalDate.class));
         Mockito.verify(straightThroughProcessorService, Mockito.never())
             .processAgeDisqualification(any(PaperResponse.class), any(LocalDate.class),
                 any(JurorPool.class), any());
@@ -555,6 +569,10 @@ public class JurorPaperResponseServiceImplTest {
             Collections.singletonList(buildSpecialNeeds(ReasonableAdjustmentsEnum.VISUAL_IMPAIRMENT.getCode()));
         responseDto.setReasonableAdjustments(specialNeeds);
 
+        Mockito.doReturn(true).when(straightThroughProcessorService)
+            .isJurorAgeValidForServiceStartDate(any(String.class),
+                                                any(LocalDate.class), any(LocalDate.class));
+
         jurorPaperResponseService.saveResponse(payload, responseDto);
 
         Mockito.verify(jurorPoolService, Mockito.times(1))
@@ -565,8 +583,8 @@ public class JurorPaperResponseServiceImplTest {
         Mockito.verify(jurorResponseCjsRepository, Mockito.times(1)).saveAll(any());
         Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.times(1)).saveAll(any());
         Mockito.verify(straightThroughProcessorService, Mockito.times(1))
-            .isValidForStraightThroughAgeDisqualification(any(PaperResponse.class), any(LocalDate.class),
-                any(JurorPool.class));
+            .isJurorAgeValidForServiceStartDate(any(String.class),
+                                                any(LocalDate.class), any(LocalDate.class));
         Mockito.verify(straightThroughProcessorService, Mockito.never())
             .processAgeDisqualification(any(PaperResponse.class), any(LocalDate.class),
                 any(JurorPool.class), any());
@@ -655,8 +673,8 @@ public class JurorPaperResponseServiceImplTest {
         Mockito.verify(jurorResponseCjsRepository, Mockito.never()).save(any());
         Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.never()).save(any());
         Mockito.verify(straightThroughProcessorService, Mockito.times(1))
-            .isValidForStraightThroughAgeDisqualification(any(PaperResponse.class), any(LocalDate.class),
-                any(JurorPool.class));
+            .isJurorAgeValidForServiceStartDate(any(String.class),
+                                                any(LocalDate.class), any(LocalDate.class));
         Mockito.verify(straightThroughProcessorService, Mockito.times(1))
             .processAgeDisqualification(any(PaperResponse.class), any(LocalDate.class),
                 any(JurorPool.class), any());
@@ -702,8 +720,8 @@ public class JurorPaperResponseServiceImplTest {
         Mockito.verify(jurorResponseCjsRepository, Mockito.never()).save(any());
         Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.never()).save(any());
         Mockito.verify(straightThroughProcessorService, Mockito.times(1))
-            .isValidForStraightThroughAgeDisqualification(any(PaperResponse.class),
-                                                          any(LocalDate.class), any(JurorPool.class));
+            .isJurorAgeValidForServiceStartDate(any(String.class),
+                                                any(LocalDate.class), any(LocalDate.class));
         Mockito.verify(straightThroughProcessorService, Mockito.times(1))
             .processAgeDisqualification(any(PaperResponse.class), any(LocalDate.class),
                                         any(JurorPool.class), any());
@@ -1619,8 +1637,8 @@ public class JurorPaperResponseServiceImplTest {
         juror.setJurorNumber(jurorNumber);
 
         JurorStatus jurorStatus = new JurorStatus();
-        jurorStatus.setStatus(IJurorStatus.RESPONDED);
-        jurorStatus.setStatusDesc("Responded");
+        jurorStatus.setStatus(IJurorStatus.SUMMONED);
+        jurorStatus.setStatusDesc("Summoned");
 
         JurorPool jurorPool = new JurorPool();
         jurorPool.setPool(poolRequest);
