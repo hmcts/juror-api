@@ -43,7 +43,7 @@ public class PanelSummaryReport extends AbstractStandardReport {
         query.where(QPanel.panel.trial.courtLocation.owner.eq(SecurityUtil.getActiveOwner()));
 
         if (Boolean.TRUE.equals(request.getCurrentJurorsOnly())) {
-            query.where(QPanel.panel.result.eq(PanelResult.JUROR));
+            query.where(QPanel.panel.result.ne(PanelResult.RETURNED));
             query.where(QPanel.panel.empanelledDate.isNotNull());
             query.where(QPanel.panel.returnDate.isNull());
         }

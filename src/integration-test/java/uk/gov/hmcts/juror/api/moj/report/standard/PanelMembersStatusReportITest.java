@@ -142,10 +142,22 @@ class PanelMembersStatusReportITest extends AbstractStandardReportControllerITes
                 StandardReportResponse.TableData.<StandardTableData>builder()
                     .headings(getStandardTableHeadings())
                     .data(new StandardTableData(List.of(
-                        // result J, empanelled_date set, return_date NULL
+                        // result CD, empanelled, no return date — NOW INCLUDED
+                        new ReportLinkedMap<String, Object>()
+                            .add("juror_number_from_trial", "041500001")
+                            .add("panel_status", "Challenged"),
+                        // result J, empanelled, no return date
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number_from_trial", "041500002")
                             .add("panel_status", "Juror"),
+                        // result NU, empanelled, no return date — NOW INCLUDED
+                        new ReportLinkedMap<String, Object>()
+                            .add("juror_number_from_trial", "041500003")
+                            .add("panel_status", "Not Used"),
+                        // result CD, empanelled, no return date — NOW INCLUDED
+                        new ReportLinkedMap<String, Object>()
+                            .add("juror_number_from_trial", "041500004")
+                            .add("panel_status", "Challenged"),
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number_from_trial", "041500005")
                             .add("panel_status", "Juror"),
@@ -161,6 +173,8 @@ class PanelMembersStatusReportITest extends AbstractStandardReportControllerITes
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number_from_trial", "041500009")
                             .add("panel_status", "Juror"),
+                        // 041500010 excluded — result R, returnDate set
+                        // 041500011 excluded — result R, returnDate set
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number_from_trial", "041500012")
                             .add("panel_status", "Juror"),
@@ -173,21 +187,21 @@ class PanelMembersStatusReportITest extends AbstractStandardReportControllerITes
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number_from_trial", "041500015")
                             .add("panel_status", "Juror"),
+                        // 041500016 excluded — result R, empanelledDate NULL
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number_from_trial", "041500017")
                             .add("panel_status", "Juror"),
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number_from_trial", "041500018")
-                            .add("panel_status", "Juror")
-                    // excluded:
-                    // 041500001 — result CD
-                    // 041500003 — result NU
-                    // 041500004 — result CD
-                    // 041500010 — result R (Returned Juror), return_date set
-                    // 041500011 — result R (Returned Juror), return_date set
-                    // 041500016 — result R (Returned), no empanelled_date
-                    // 041500019 — result NU
-                    // 041500020 — result CD
+                            .add("panel_status", "Juror"),
+                        // result NU, empanelled, no return date — NOW INCLUDED
+                        new ReportLinkedMap<String, Object>()
+                            .add("juror_number_from_trial", "041500019")
+                            .add("panel_status", "Not Used"),
+                        // result CD, empanelled, no return date — NOW INCLUDED
+                        new ReportLinkedMap<String, Object>()
+                            .add("juror_number_from_trial", "041500020")
+                            .add("panel_status", "Challenged")
                     )))
                     .build())
             .build();

@@ -40,7 +40,7 @@ public class PanelMembersStatusReport extends AbstractStandardReport {
         query.where(QPanel.panel.trial.courtLocation.locCode.eq(SecurityUtil.getLocCode()));
 
         if (Boolean.TRUE.equals(request.getCurrentJurorsOnly())) {
-            query.where(QPanel.panel.result.eq(PanelResult.JUROR));
+            query.where(QPanel.panel.result.ne(PanelResult.RETURNED));
             query.where(QPanel.panel.empanelledDate.isNotNull());
             query.where(QPanel.panel.returnDate.isNull());
         }
