@@ -920,16 +920,10 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
                                                 LocalDate returnDate, BureauJwtPayload payload) {
         log.trace("Enter processStraightThroughResponse for {}", jurorPool.getJurorNumber());
 
-
         if (jurorPaperResponse.getDateOfBirth() != null && returnDate != null
-<<<<<<< Updated upstream
-            && Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.SUMMONED)) {
-=======
             && Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.SUMMONED)
             && !straightThroughProcessorService.isJurorAgeValidForServiceStartDate(jurorPool.getJurorNumber(),
-                                                   jurorPaperResponse.getDateOfBirth(), returnDate)
-            ) {
->>>>>>> Stashed changes
+                                                   jurorPaperResponse.getDateOfBirth(), returnDate)) {
             log.info("Juror {} - processed automatically due to age disqualification", jurorPool.getJurorNumber());
             straightThroughProcessorService.processAgeDisqualification(jurorPaperResponse, returnDate, jurorPool,
                 payload);
