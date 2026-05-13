@@ -6,3 +6,8 @@ CREATE SEQUENCE IF NOT EXISTS juror_mod.juror_number_seq
     START 610000000
     CACHE 50
     NO CYCLE;
+
+/*
+  Roll back if required - this will drop the juror_number_seq sequence.
+  DROP SEQUENCE IF EXISTS juror_mod.juror_number_seq;
+ */

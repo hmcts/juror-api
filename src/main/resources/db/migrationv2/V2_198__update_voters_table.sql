@@ -8,6 +8,7 @@ DROP VIEW IF EXISTS juror_mod.loc_postcode_totals_view;
 
 -- back up the existing voters table before making changes
 ALTER TABLE juror_mod.voters RENAME TO voters_old;
+ALTER INDEX IF EXISTS juror_mod.voters_pkey RENAME TO voters_old_pkey;
 ALTER INDEX IF EXISTS juror_mod.voters_optimized_idx RENAME TO voters_old_optimized_idx;
 ALTER INDEX IF EXISTS juror_mod.voters_postcode_start_idx RENAME TO voters_old_postcode_start_idx;
 
@@ -56,3 +57,36 @@ GROUP BY cca.loc_code, v.postcode_start;
 
 CREATE INDEX voters_optimized_idx ON juror_mod.voters USING btree (postcode_start, date_selected1, perm_disqual, flags);
 CREATE INDEX voters_postcode_start_idx ON juror_mod.voters USING btree (postcode_start, perm_disqual, flags, dob);
+
+/* Roll back if required - this will drop the new voters table and recreate the old voters table with the original schema,
+   and rename the indexes back to their original names. It will also drop and recreate the view that was dropped at the start of the migration.
+
+DROP VIEW IF EXISTS juror_mod.loc_postcode_totals_view;
+
+DROP TABLE IF EXISTS juror_mod.voters;
+
+ALTER TABLE juror_mod.voters_old RENAME TO voters;
+
+ALTER INDEX IF EXISTS juror_mod.voters_old_pkey RENAME TO voters_pkey;
+ALTER INDEX IF EXISTS juror_mod.voters_old_optimized_idx RENAME TO voters_optimized_idx;
+ALTER INDEX IF EXISTS juror_mod.voters_old_postcode_start_idx RENAME TO voters_postcode_start_idx;
+
+ -- recreate the view that was dropped
+CREATE OR REPLACE VIEW juror_mod.loc_postcode_totals_view
+AS SELECT cca.loc_code,
+      v.postcode_start,
+      sum(
+               CASE
+                 WHEN v.date_selected1 IS NULL AND v.perm_disqual IS NULL THEN 1
+                 ELSE 0
+                 END) AS total,
+      sum(
+               CASE
+                 WHEN v.date_selected1 IS NULL AND v.perm_disqual IS NULL AND v.flags IS NULL THEN 1
+                 ELSE 0
+                 END) AS total_cor
+FROM juror_mod.voters v
+      JOIN juror_mod.court_catchment_area cca ON v.postcode_start::text = cca.postcode::text
+WHERE v.date_selected1 IS NULL AND v.perm_disqual IS NULL
+GROUP BY cca.loc_code, v.postcode_start;
+ */
