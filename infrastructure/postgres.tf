@@ -42,7 +42,11 @@ module "postgresql_flexible" {
     {
       name  = "azure.enable_temp_tablespaces_on_local_ssd"
       value = "off"
-    }
+    },
+    {
+      name  = "track_io_timing"
+      value = "ON"
+    },
   ]
   pgsql_version = "16"
 }
