@@ -143,7 +143,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Sql(statements = "UPDATE JUROR_MOD.POOL SET NEW_REQUEST = 'N' WHERE POOL_NO = '415221001' AND OWNER = '400';")
     public void testGPoolStatisticsAllDataPresent() {
         ResponseEntity<PoolSummaryResponseDto> responseEntity =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                     URI.create(String.format(URI_MANAGE_POOL_SUMMARY, POOL_NUMBER_415221001))),
                 PoolSummaryResponseDto.class);
 
@@ -227,7 +227,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         "/db/ManagePoolController_initCourtSupply.sql"})
     public void testGPoolStatisticsCourtSupplyOnly() {
         ResponseEntity<PoolSummaryResponseDto> responseEntity =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                 URI.create(String.format(URI_MANAGE_POOL_SUMMARY, 415_221_001))), PoolSummaryResponseDto.class);
 
         assertThat(responseEntity.getStatusCode()).as(EXPECT_HTTP_RESPONSE_SUCCESSFUL).isEqualTo(HttpStatus.OK);
@@ -318,7 +318,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Sql(statements = "UPDATE juror_mod.pool SET total_no_required = 0 WHERE pool_no = '415221001' AND owner = '400';")
     public void testGPoolStatisticsNoPoolRequestExt() {
         ResponseEntity<PoolSummaryResponseDto> responseEntity =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                     URI.create(String.format(URI_MANAGE_POOL_SUMMARY, POOL_NUMBER_415221001))),
                 PoolSummaryResponseDto.class);
 
@@ -402,7 +402,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
         String poolNumber = "415220101";
 
-        ResponseEntity<?> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.DELETE,
+        ResponseEntity<?> response = restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.DELETE,
             URI.create("/api/v1/moj/manage-pool/delete?poolNumber=" + poolNumber)), Object.class);
 
         assertThat(response.getStatusCode())
@@ -414,7 +414,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         initHeaders(Role.SENIOR_JUROR_OFFICER);
         String poolNumber = "415220101";
 
-        ResponseEntity<?> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.DELETE,
+        ResponseEntity<?> response = restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.DELETE,
             URI.create("/api/v1/moj/manage-pool/delete?poolNumber=" + poolNumber)), Object.class);
 
         assertThat(response.getStatusCode())
@@ -434,7 +434,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
         courtLocationService.getVotersLock(poolRequest.get().getCourtLocation().getLocCode());
 
-        ResponseEntity<?> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.DELETE,
+        ResponseEntity<?> response = restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.DELETE,
             URI.create("/api/v1/moj/manage-pool/delete?poolNumber=" + poolNumber)), Object.class);
 
         assertThat(response.getStatusCode())
@@ -454,7 +454,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
         String poolNumber = "415220110";
 
-        ResponseEntity<?> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.DELETE,
+        ResponseEntity<?> response = restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.DELETE,
             URI.create("/api/v1/moj/manage-pool/delete?poolNumber=" + poolNumber)), Object.class);
 
         assertThat(response.getStatusCode())
@@ -470,7 +470,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         Optional<PoolRequest> poolRequestExists = poolRequestRepository.findByPoolNumber(poolNumber);
         assertThat(poolRequestExists).isPresent();
 
-        ResponseEntity<?> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.DELETE,
+        ResponseEntity<?> response = restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.DELETE,
             URI.create("/api/v1/moj/manage-pool/delete?poolNumber=" + poolNumber)), Object.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -1427,7 +1427,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         httpHeaders = initialiseHeaders(COURT_USER, UserType.COURT, null, "416");
 
         ResponseEntity<AvailablePoolsInCourtLocationDto> responseEntity =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET, uri),
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET, uri),
                 AvailablePoolsInCourtLocationDto.class);
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -1460,7 +1460,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         final URI uri = URI.create(String.format(URI_AVAILABLE_POOLS, "404"));
         httpHeaders = initialiseHeaders(COURT_USER, UserType.COURT, null, "505");
 
-        ResponseEntity<String> responseEntity = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+        ResponseEntity<String> responseEntity = restTemplate.exchange(new RequestEntity<>(httpHeaders,
             HttpMethod.GET, uri), String.class);
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
@@ -1479,7 +1479,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initAvailablePools.sql"})
     public void availablePoolsInCourtLocationBureauUserHappy() {
         ResponseEntity<AvailablePoolsInCourtLocationDto> responseEntity =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                     URI.create("/api/v1/moj/manage-pool/available-pools/415?is-reassign=true")),
                 AvailablePoolsInCourtLocationDto.class);
 
@@ -1514,7 +1514,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     public void availablePoolsInCourtLocationCourtOwnedCourtUserHappy() {
         httpHeaders = initialiseHeaders(COURT_USER, UserType.COURT, null, "416");
         ResponseEntity<AvailablePoolsInCourtLocationDto> responseEntity =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                     URI.create("/api/v1/moj/manage-pool/available-pools-court-owned/416")),
                 AvailablePoolsInCourtLocationDto.class);
 
@@ -2262,7 +2262,6 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
             .isEqualTo(LocalDate.now());
     }
 
-    @SuppressWarnings("PMD.NcssCount")
     private void transferJurorPoolValidateNewlyCreatedJurorPool(String jurorNumber, String sourcePoolNumber,
                                                                 String targetPoolNumber, String targetLocCode,
                                                                 LocalDate targetStartDate, String currentUser) {

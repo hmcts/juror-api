@@ -100,7 +100,6 @@ class BureauJwtPayloadTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void positiveToClaims() {
         BureauJwtPayload payload = new BureauJwtPayload(
             "email@email.com",
@@ -242,7 +241,6 @@ class BureauJwtPayloadTest {
     @Nested
     class StaffTest {
         @Test
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void positiveToClaims() {
             BureauJwtPayload.Staff staff = new BureauJwtPayload.Staff(
                 "StaffName",
@@ -259,7 +257,6 @@ class BureauJwtPayloadTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void positiveFromClaimsHasValues() {
             assertThat(BureauJwtPayload.Staff.fromClaims(Map.of(
                 "name", "StaffName",

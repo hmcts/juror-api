@@ -24,7 +24,6 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/ReasonableAdjustmentAndCJEReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class ReasonableAdjustmentAndCjeReportITest extends AbstractGroupedReportControllerITest {
 
     @Autowired

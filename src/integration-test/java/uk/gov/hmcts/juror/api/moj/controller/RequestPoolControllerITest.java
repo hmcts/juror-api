@@ -99,7 +99,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     @Test
     public void test_getCourtLocations_bureauUser() {
         ResponseEntity<CourtLocationListDto> responseEntity =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                 URI.create("/api/v1/moj/pool-request/court-locations")), CourtLocationListDto.class);
 
         assertThat(responseEntity.getStatusCode())
@@ -131,7 +131,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void test_getCourtLocations_courtUser() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, getSatelliteCourtJwt("799", "799"));
         ResponseEntity<CourtLocationListDto> responseEntity =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                 URI.create("/api/v1/moj/pool-request/court-locations")), CourtLocationListDto.class);
 
         assertThat(responseEntity.getStatusCode())
@@ -163,7 +163,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/RequestPoolController_initPoolRequests.sql"})
     public void test_getPoolRequests_withoutLocCodeParam_bureauUser() {
         ResponseEntity<PaginatedList<PoolRequestDataDto>> responseEntity =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                     URI.create("/api/v1/moj/pool-request/pools-requested"
                         + "?pageNumber=1&pageLimit=25&sortBy=RETURN_DATE&sortOrder=ASC")),
                 new ParameterizedTypeReference<>() {
@@ -187,7 +187,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/RequestPoolController_initPoolRequests.sql"})
     public void test_getPoolRequests_withoutLocCodeParam_bureauUser_page2() {
         ResponseEntity<PaginatedList<PoolRequestDataDto>> responseEntity =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                     URI.create("/api/v1/moj/pool-request/pools-requested"
                         + "?pageNumber=2&pageLimit=25&sortBy=RETURN_DATE&sortOrder=ASC")),
                 new ParameterizedTypeReference<>() {
@@ -213,7 +213,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, getSatelliteCourtJwt("457", "457", "479"));
 
         ResponseEntity<PaginatedList<PoolRequestDataDto>> responseEntity =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                     URI.create("/api/v1/moj/pool-request/pools-requested"
                         + "?pageNumber=1&pageLimit=25&sortBy=RETURN_DATE&sortOrder=ASC")),
                 new ParameterizedTypeReference<>() {
@@ -237,7 +237,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/RequestPoolController_initPoolRequests.sql"})
     public void test_getPoolRequests_createdWithLocCodeParam() {
         ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> responseEntity =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                     URI.create("/api/v1/moj/pool-request/pools-active"
                         + "?tab=bureau"
                         + "&pageNumber=1"
@@ -289,7 +289,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/RequestPoolController_initPoolRequests.sql"})
     public void test_getPoolRequests_requestedWithLocCodeParam_noPoolsExist() {
         ResponseEntity<PaginatedList<PoolRequestDataDto>> responseEntity =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                     URI.create("/api/v1/moj/pool-request/pools-requested"
                         + "?locCode=414&pageNumber=1&pageLimit=25&sortBy=RETURN_DATE&sortOrder=ASC")),
                 new ParameterizedTypeReference<>() {
@@ -313,7 +313,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/RequestPoolController_initPoolRequests.sql"})
     public void test_getPoolRequests_requestedWithLocCodeParam_poolsExist() {
         ResponseEntity<PaginatedList<PoolRequestDataDto>> responseEntity =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                     URI.create("/api/v1/moj/pool-request/pools-requested"
                         + "?locCode=415&pageNumber=1&pageLimit=25&sortBy=RETURN_DATE&sortOrder=ASC")),
                 new ParameterizedTypeReference<>() {
@@ -1040,7 +1040,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void test_courtDeferrals_multipleDeferralsExist() {
         String locationCode = "415";
         String attendanceDate = "2022-10-03";
-        ResponseEntity<Integer> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+        ResponseEntity<Integer> response = restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                 URI.create("/api/v1/moj/pool-request/deferrals?locationCode=" + locationCode
                     + "&deferredTo=" + attendanceDate)),
             Integer.class);
@@ -1058,7 +1058,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void test_courtDeferrals_oneDeferralsExists() {
         String locationCode = "416";
         String attendanceDate = "2022-10-03";
-        ResponseEntity<Integer> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+        ResponseEntity<Integer> response = restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                 URI.create("/api/v1/moj/pool-request/deferrals?locationCode=" + locationCode
                     + "&deferredTo=" + attendanceDate)),
             Integer.class);
@@ -1076,7 +1076,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void test_courtDeferrals_noDeferralsExists() {
         String locationCode = "416";
         String attendanceDate = "2022-10-04";
-        ResponseEntity<Integer> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+        ResponseEntity<Integer> response = restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                 URI.create("/api/v1/moj/pool-request/deferrals?locationCode=" + locationCode
                     + "&deferredTo=" + attendanceDate)),
             Integer.class);
@@ -1094,7 +1094,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void test_courtDeferrals_invalidDateFormat() {
         String locationCode = "415";
         String attendanceDate = "12/10/2022";
-        ResponseEntity<String> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+        ResponseEntity<String> response = restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                 URI.create("/api/v1/moj/pool-request/deferrals?locationCode=" + locationCode
                     + "&deferredTo=" + attendanceDate)),
             String.class);
@@ -1109,7 +1109,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void test_checkDate_businessDay() {
         String locationCode = "415";
         String attendanceDate = "2022-10-03";
-        ResponseEntity<DayType> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+        ResponseEntity<DayType> response = restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                 URI.create("/api/v1/moj/pool-request/day-type?locationCode=" + locationCode
                     + "&attendanceDate=" + attendanceDate)),
             DayType.class);
@@ -1127,7 +1127,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void test_checkDate_weekend() {
         String locationCode = "415";
         String attendanceDate = "2022-10-02";
-        ResponseEntity<DayType> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+        ResponseEntity<DayType> response = restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                 URI.create("/api/v1/moj/pool-request/day-type?locationCode=" + locationCode
                     + "&attendanceDate=" + attendanceDate)),
             DayType.class);
@@ -1145,7 +1145,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void test_checkDate_holiday() {
         String locationCode = "416";
         String attendanceDate = "2022-10-03";
-        ResponseEntity<DayType> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+        ResponseEntity<DayType> response = restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                 URI.create("/api/v1/moj/pool-request/day-type?locationCode=" + locationCode
                     + "&attendanceDate=" + attendanceDate)),
             DayType.class);
@@ -1164,7 +1164,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void test_checkDate_invalidDateFormat() {
         String locationCode = "416";
         String attendanceDate = "2022/10/03";
-        ResponseEntity<String> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+        ResponseEntity<String> response = restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                 URI.create("/api/v1/moj/pool-request/day-type?locationCode=" + locationCode
                     + "&attendanceDate=" + attendanceDate)),
             String.class);
@@ -1178,7 +1178,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void test_checkDate_courtLocationDoesNotExist() {
         String locationCode = "012";
         String attendanceDate = "2022-10-03";
-        ResponseEntity<String> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+        ResponseEntity<String> response = restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                 URI.create("/api/v1/moj/pool-request/day-type?locationCode=" + locationCode
                     + "&attendanceDate=" + attendanceDate)),
             String.class);
@@ -1192,7 +1192,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void test_checkDate_courtLocationTooShort() {
         String locationCode = "41";
         String attendanceDate = "2022-10-03";
-        ResponseEntity<String> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+        ResponseEntity<String> response = restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                 URI.create("/api/v1/moj/pool-request/day-type?locationCode=" + locationCode
                     + "&attendanceDate=" + attendanceDate)),
             String.class);
@@ -1207,7 +1207,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void test_generatePoolNumber_firstSequence() {
         String locationCode = "415";
         String attendanceDate = "2022-10-03";
-        ResponseEntity<String> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+        ResponseEntity<String> response = restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                 URI.create("/api/v1/moj/pool-request/generate-pool-number?locationCode=" + locationCode
                     + "&attendanceDate=" + attendanceDate)),
             String.class);
@@ -1225,7 +1225,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void test_generatePoolNumber_nextSequence() {
         String locationCode = "415";
         String attendanceDate = "2022-10-31";
-        ResponseEntity<String> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+        ResponseEntity<String> response = restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                 URI.create("/api/v1/moj/pool-request/generate-pool-number?locationCode=" + locationCode
                     + "&attendanceDate=" + attendanceDate)),
             String.class);
@@ -1244,7 +1244,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void test_generatePoolNumber_invalidSequence() {
         String locationCode = "457";
         String attendanceDate = "2022-06-27";
-        ResponseEntity<String> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+        ResponseEntity<String> response = restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                 URI.create("/api/v1/moj/pool-request/generate-pool-number?locationCode=" + locationCode
                     + "&attendanceDate=" + attendanceDate)),
             String.class);
@@ -1261,7 +1261,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     public void test_generatePoolNumber_invalidDateFormat() {
         String locationCode = "415";
         String attendanceDate = "2022/10/03";
-        ResponseEntity<String> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+        ResponseEntity<String> response = restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                 URI.create("/api/v1/moj/pool-request/generate-pool-number?locationCode=" + locationCode
                     + "&attendanceDate=" + attendanceDate)),
             String.class);
@@ -1275,7 +1275,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/RequestPoolController_initPoolRequests.sql"})
     public void test_getPoolNumbers() {
         String poolNumberPrefix = "4152201";
-        ResponseEntity<PoolNumbersListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+        ResponseEntity<PoolNumbersListDto> response = restTemplate.exchange(new RequestEntity<>(httpHeaders,
                 HttpMethod.GET,
                 URI.create("/api/v1/moj/pool-request/pool-numbers?poolNumberPrefix=" + poolNumberPrefix)),
             PoolNumbersListDto.class);
@@ -1298,7 +1298,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/RequestPoolController_initPoolRequests.sql"})
     public void test_getPoolNumbers_noPoolsExist() {
         String poolNumberPrefix = "4142301";
-        ResponseEntity<PoolNumbersListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+        ResponseEntity<PoolNumbersListDto> response = restTemplate.exchange(new RequestEntity<>(httpHeaders,
                 HttpMethod.GET,
                 URI.create("/api/v1/moj/pool-request/pool-numbers?poolNumberPrefix=" + poolNumberPrefix)),
             PoolNumbersListDto.class);
@@ -1333,7 +1333,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             + "&sortBy=" + sortBy
             + "&sortOrder=" + sortOrder;
         ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders,
                 HttpMethod.GET, URI.create(requestUrl)), new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode())
@@ -1392,7 +1392,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             + "&sortOrder=" + sortOrder;
 
         ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders,
                 HttpMethod.GET, URI.create(requestUrl)), new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode())
@@ -1451,7 +1451,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             + "&sortOrder=" + sortOrder;
 
         ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders,
                 HttpMethod.GET, URI.create(requestUrl)), new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode())
@@ -1512,7 +1512,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             + "&sortOrder=" + sortOrder;
 
         ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders,
                 HttpMethod.GET, URI.create(requestUrl)), new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode())
@@ -1573,7 +1573,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             + "&sortOrder=" + sortOrder;
 
         ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders,
                 HttpMethod.GET, URI.create(requestUrl)), new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode())
@@ -1636,7 +1636,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             + "&sortOrder=" + sortOrder;
 
         ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders,
                 HttpMethod.GET, URI.create(requestUrl)), new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode())
@@ -1695,7 +1695,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             + "&sortOrder=" + sortOrder;
 
         ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders,
                 HttpMethod.GET, URI.create(requestUrl)), new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode())
@@ -1754,7 +1754,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             + "&sortOrder=" + sortOrder;
 
         ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders,
                 HttpMethod.GET, URI.create(requestUrl)), new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode())
@@ -1815,7 +1815,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             + "&sortOrder=" + sortOrder;
 
         ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders,
                 HttpMethod.GET, URI.create(requestUrl)), new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode())
@@ -1876,7 +1876,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             + "&sortOrder=" + sortOrder;
 
         ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders,
                 HttpMethod.GET, URI.create(requestUrl)), new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode())
@@ -1964,7 +1964,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             + "&sortOrder=" + sortOrder;
 
         ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders,
                 HttpMethod.GET, URI.create(requestUrl)), new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode())
@@ -2049,7 +2049,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             + "&sortOrder=" + sortOrder;
 
         ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders,
                 HttpMethod.GET, URI.create(requestUrl)), new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode())
@@ -2127,7 +2127,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             + "&sortOrder=" + sortOrder;
 
         ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders,
                 HttpMethod.GET, URI.create(requestUrl)), new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode())
@@ -2196,7 +2196,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             + "&sortOrder=" + sortOrder;
 
         ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders,
                 HttpMethod.GET, URI.create(requestUrl)), new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode())
@@ -2233,7 +2233,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             + "&sortOrder=" + sortOrder;
 
         ResponseEntity<PaginatedList<PoolRequestActiveDataDto>> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders,
                 HttpMethod.GET, URI.create(requestUrl)), new ParameterizedTypeReference<>() {});
 
         assertThat(response.getStatusCode())
@@ -2260,7 +2260,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         String requestUrl = "/api/v1/moj/pool-request/pools-at-court?locCode=" + locCode;
 
         ResponseEntity<PoolsAtCourtLocationListDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders,
                 HttpMethod.GET, URI.create(requestUrl)), PoolsAtCourtLocationListDto.class);
 
         assertThat(response.getStatusCode())
@@ -2308,7 +2308,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         String requestUrl = "/api/v1/moj/pool-request/pools-at-court?locCode=" + locCode;
 
         ResponseEntity<PoolsAtCourtLocationListDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders,
                 HttpMethod.GET, URI.create(requestUrl)), PoolsAtCourtLocationListDto.class);
 
         assertThat(response.getStatusCode())
@@ -2366,7 +2366,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         String requestUrl = "/api/v1/moj/pool-request/pools-at-court?locCode=" + locCode;
 
         ResponseEntity<PoolsAtCourtLocationListDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders,
                 HttpMethod.GET, URI.create(requestUrl)), PoolsAtCourtLocationListDto.class);
 
         assertThat(response.getStatusCode())
@@ -2406,7 +2406,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         String requestUrl = "/api/v1/moj/pool-request/active-pools-by-court?locCode=" + locCode;
 
         ResponseEntity<PoolsAtCourtLocationListDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders,
                 HttpMethod.GET, URI.create(requestUrl)), PoolsAtCourtLocationListDto.class);
 
         assertThat(response.getStatusCode())
@@ -2490,7 +2490,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         String requestUrl = "/api/v1/moj/pool-request/pools-at-court?locCode=" + locCode;
 
         ResponseEntity<PoolsAtCourtLocationListDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders,
                 HttpMethod.GET, URI.create(requestUrl)), PoolsAtCourtLocationListDto.class);
 
         assertThat(response.getStatusCode())
@@ -2513,7 +2513,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, getSatelliteCourtJwt("400", "419"));
         String requestUrl = "/api/v1/moj/pool-request/pools-at-court?locCode=" + locCode;
 
-        ResponseEntity<PoolsAtCourtLocationListDto> response = restTemplate.exchange(new RequestEntity<Void>(
+        ResponseEntity<PoolsAtCourtLocationListDto> response = restTemplate.exchange(new RequestEntity<>(
             httpHeaders, HttpMethod.GET, URI.create(requestUrl)), PoolsAtCourtLocationListDto.class);
 
         assertThat(response.getStatusCode())

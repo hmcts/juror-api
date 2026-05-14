@@ -25,10 +25,6 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/UnconfirmedAttendanceReportITest_typical.sql"
 })
-@SuppressWarnings({
-    "PMD.LawOfDemeter",
-    "PMD.JUnitTestsShouldIncludeAssert"
-})
 class UnconfirmedAttendanceReportITest extends AbstractGroupedReportControllerITest {
 
     @Autowired

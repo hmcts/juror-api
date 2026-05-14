@@ -187,7 +187,6 @@ class ErAdministrationControllerITest extends AbstractIntegrationTest {
     @Nested
     @DisplayName("PUT /api/v1/moj/er-administration/deadline")
     @Sql({"/db/mod/truncate.sql","/db/jurorer/ErDashboardData.sql"})
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     class ChangeDeadlineTest {
 
         @Test
@@ -266,7 +265,6 @@ class ErAdministrationControllerITest extends AbstractIntegrationTest {
     @Nested
     @DisplayName("PUT /api/v1/moj/er-administration/mark-delivered")
     @Sql({"/db/mod/truncate.sql","/db/jurorer/ErDashboardData.sql"})
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     class MarkAsDeliveredTest {
 
         @Test
@@ -329,7 +327,6 @@ class ErAdministrationControllerITest extends AbstractIntegrationTest {
     @Nested
     @DisplayName("PUT /api/v1/moj/er-administration/email-sent")
     @Sql({"/db/mod/truncate.sql","/db/jurorer/ErDashboardData.sql"})
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     class UpdateEmailRequestSentTest {
 
         @Test

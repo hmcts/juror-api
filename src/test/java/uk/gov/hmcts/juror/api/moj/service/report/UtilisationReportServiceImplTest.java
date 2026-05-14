@@ -55,10 +55,6 @@ import static uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService
 import static uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService.TableHeading.SITTING_DAYS;
 import static uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService.TableHeading.UTILISATION;
 
-@SuppressWarnings({
-    "PMD.AssertionsShouldIncludeMessage",
-    "PMD.UnnecessaryFullyQualifiedName"
-})
 class UtilisationReportServiceImplTest {
     private final CourtLocationRepository courtLocationRepository;
     private final JurorRepository jurorRepository;
@@ -90,7 +86,6 @@ class UtilisationReportServiceImplTest {
 
     @Nested
     @DisplayName("Daily Utilisation report tests")
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") //false positive
     class DailyUtilisationTests {
 
         @Test
@@ -219,7 +214,6 @@ class UtilisationReportServiceImplTest {
 
     @Nested
     @DisplayName("Daily Utilisation Jurors tests")
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") //false positive
     class DailyUtilisationJurorsTests {
 
         @Test

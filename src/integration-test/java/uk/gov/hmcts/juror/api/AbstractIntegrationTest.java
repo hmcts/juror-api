@@ -41,7 +41,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Slf4j
 @ActiveProfiles("test")
 @SuppressWarnings({
-    "PMD.AbstractClassWithoutAbstractMethod",
     "PMD.TooManyMethods",
     "PMD.ExcessiveImports"
 })

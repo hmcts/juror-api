@@ -33,7 +33,6 @@ class AbstractStandardReportTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void positiveConstructor() {
         AbstractStandardReport report = new AbstractStandardReportTestImpl(
             poolRequestRepository,

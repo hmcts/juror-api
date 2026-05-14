@@ -3329,7 +3329,6 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Nested
         @DisplayName("Summons Reminder Letter")
         //False positive
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         class SummonsReminderLetter {
             @Test
             @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initSummonsReminderLetter.sql"})
@@ -3600,7 +3599,6 @@ class LetterControllerITest extends AbstractIntegrationTest {
             @Test
             @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initSummonsReminderLetter.sql"})
             //False positive
-            @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
             void summonsReminderReissueLetterUsingADifferentCreationDate() {
                 triggerValidBureau(
                     ReissueLetterRequestDto.ReissueLetterRequestData.builder()
@@ -6420,7 +6418,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
                 ResponseEntity<String> response =
-                    template.exchange(new RequestEntity<Void>(httpHeaders, GET, URL), String.class);
+                    template.exchange(new RequestEntity<>(httpHeaders, GET, URL), String.class);
 
                 assertThat(response.getStatusCode()).as("Status code should be NOT_FOUND")
                     .isEqualTo(NOT_FOUND);
@@ -6433,7 +6431,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
             ResponseEntity<LetterListResponseDto> response =
-                template.exchange(new RequestEntity<Void>(httpHeaders, GET, URI.create(url + "/" + includePrinted)),
+                template.exchange(new RequestEntity<>(httpHeaders, GET, URI.create(url + "/" + includePrinted)),
                     LetterListResponseDto.class);
 
             assertThat(response).as(RESPONSE_ENTITY_NOT_NULL_MESSAGE).isNotNull();
@@ -6571,7 +6569,6 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Reissue Show Cause letter - invalid request - missing mandatory data: showCauseDate")
         //False Positive
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void printCourtLettersShowCauseInvalidRequestMissingShowCauseDate() {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwt("COURT_USER", "415"));
 
@@ -6603,7 +6600,6 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Reissue Show Cause letter - invalid request - missing mandatory data: showCauseTime")
         //False Positive
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void printCourtLettersShowCauseInvalidRequestMissingShowCauseTime() {
             List<String> jurorNumbers = new ArrayList<>();
             jurorNumbers.add(JUROR_NUMBER + "61");
@@ -6679,7 +6675,6 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         private void verifyDataEnglish(PrintLetterDataResponseDto response,
                                        PrintLettersRequestDto request,
                                        LocalDate attendanceDate,

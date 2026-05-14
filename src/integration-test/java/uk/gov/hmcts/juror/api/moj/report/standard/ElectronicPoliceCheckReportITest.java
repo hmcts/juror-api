@@ -21,7 +21,6 @@ import static org.assertj.core.api.Assertions.assertThat;
     "/db/mod/truncate.sql",
     "/db/mod/reports/ElectronicPoliceCheckReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
 class ElectronicPoliceCheckReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired

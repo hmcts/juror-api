@@ -186,7 +186,6 @@ class PostponedListByDateReportTest extends AbstractGroupedReportTestSupport<Pos
     @Test
     @SuppressWarnings({
         "unchecked",
-        "PMD.UseConcurrentHashMap"
     })
     void positiveGetHeadingsTypicalBureau() {
         StandardReportRequest request = mock(StandardReportRequest.class);

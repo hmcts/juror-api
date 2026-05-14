@@ -215,7 +215,6 @@ class JurorExpenseControllerTest {
 
         @Test
         @DisplayName("Valid Request")
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void happyPathForGetDefaultExpenses() throws Exception {
             final String jurorNumber = "111111111";
 
@@ -267,7 +266,6 @@ class JurorExpenseControllerTest {
 
         @Test
         @DisplayName("Happy Path - Set Default Expenses")
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void happyPathForSetDefaultExpensesNotOverrideDraftExpenses() throws Exception {
             RequestDefaultExpensesDto payload = new RequestDefaultExpensesDto();
             payload.setTravelTime(LocalTime.of(4, 30));
