@@ -25,7 +25,6 @@ import java.util.List;
     "/db/administration/createCourts.sql",
     "/db/mod/reports/UnpaidAttendanceReportDetailedITest_typical.sql"
 })
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
 class UnpaidAttendanceReportDetailedReportITest extends AbstractGroupedReportControllerITest {
 
     @Autowired
@@ -74,9 +73,6 @@ class UnpaidAttendanceReportDetailedReportITest extends AbstractGroupedReportCon
     }
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
     void positiveNotFound() {
         testBuilder()
             .jwt(getCourtJwt("416"))

@@ -33,10 +33,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings({
-    "PMD.LawOfDemeter",
-    "PMD.ExcessiveImports"
-})
 class UnconfirmedAttendanceReportTest extends AbstractGroupedReportTestSupport<UnconfirmedAttendanceReport> {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;

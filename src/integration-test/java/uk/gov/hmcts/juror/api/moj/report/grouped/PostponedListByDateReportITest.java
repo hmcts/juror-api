@@ -45,9 +45,6 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
     }
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
     void positiveTypicalCourt() {
         testBuilder()
             .triggerValid()
@@ -56,9 +53,6 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
     }
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
     void positiveTypicalBureau() {
         testBuilder()
             .jwt(getBureauJwt())
@@ -69,9 +63,6 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
 
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
     void positiveNotFound() {
         testBuilder()
             .jwt(getCourtJwt("414"))

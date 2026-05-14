@@ -59,7 +59,6 @@ class YieldPerformanceReportServiceImplTest {
 
     @Nested
     @DisplayName("Yield Performance report tests")
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") //false positive
     class YieldPerformanceReportTests {
 
         @Test

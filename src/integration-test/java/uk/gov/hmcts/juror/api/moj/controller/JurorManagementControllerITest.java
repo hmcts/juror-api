@@ -375,7 +375,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         String localDate = now().minusDays(2).toString().formatted("YYYY-mm-dd");
 
         ResponseEntity<JurorAppearanceResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, GET,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, GET,
                     URI.create("/api/v1/moj/juror-management/appearance?locationCode=415&attendanceDate=" + localDate
                         + "&group=" + JurorStatusGroup.AT_COURT)),
                 JurorAppearanceResponseDto.class);
@@ -391,7 +391,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         String localDate = now().minusDays(2).toString().formatted("YYYY-mm-dd");
 
         ResponseEntity<JurorAppearanceResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, GET,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, GET,
                     URI.create("/api/v1/moj/juror-management/appearance?locationCode=415&attendanceDate=" + localDate
                         + "&group=" + JurorStatusGroup.IN_WAITING)),
                 JurorAppearanceResponseDto.class);
@@ -428,7 +428,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         String localDate = now().minusDays(2).toString().formatted("YYYY-mm-dd");
 
         ResponseEntity<JurorAppearanceResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, GET,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, GET,
                     URI.create("/api/v1/moj/juror-management/appearance?locationCode=415&attendanceDate=" + localDate
                         + "&group=" + JurorStatusGroup.ON_TRIAL)),
                 JurorAppearanceResponseDto.class);
@@ -452,7 +452,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
     @DisplayName("GET getAppearanceRecords() - no records found for criteria")
     void testGetAppearanceUnhappyPath() {
         ResponseEntity<JurorAppearanceResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, GET,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, GET,
                     URI.create("/api/v1/moj/juror-management/appearance?locationCode=415&attendanceDate=2023-10-08"
                         + "&group=" + JurorStatusGroup.AT_COURT)),
                 JurorAppearanceResponseDto.class);
@@ -506,7 +506,6 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("GET Retrieve attendance details okay - for tag NOT_CHECKED_OUT")
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False positive
         void retrieveAttendanceNotCheckedOutTag() {
             RetrieveAttendanceDetailsDto request = buildRetrieveAttendanceDetailsDto(null);
             request.getCommonData().setTag(RetrieveAttendanceDetailsTag.NOT_CHECKED_OUT);
@@ -540,7 +539,6 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("GET Retrieve attendance details okay - for tag CONFIRM_ATTENDANCE")
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False Positive
         void retrieveAttendanceConfirmAttendanceTag() {
             RetrieveAttendanceDetailsDto request = buildRetrieveAttendanceDetailsDto(null);
             request.getCommonData().setTag(RetrieveAttendanceDetailsTag.CONFIRM_ATTENDANCE);
@@ -751,7 +749,6 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         @Test
         @DisplayName("PATCH Update attendance - checkout multiple jurors in list")
         @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql"})
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False Positive
         void updateAttendanceCheckOutMultipleJurorsInList() {
             List<String> jurors = new ArrayList<>();
             jurors.add(JUROR6);
@@ -831,7 +828,6 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         @Test
         @DisplayName("PATCH Update attendance - check out all panelled jurors")
         @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql"})
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False Positive
         void updateAttendanceCheckOutAllPanelledJurors() {
             UpdateAttendanceDto request = buildUpdateAttendanceDto(null);
             request.getCommonData().setStatus(UpdateAttendanceStatus.CHECK_OUT_PANELLED);
@@ -887,7 +883,6 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         @Test
         @DisplayName("PATCH Update attendance - - check out all panelled jurors in list")
         @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql"})
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False Positive
         void updateAttendanceCheckOutAllPanelledJurorsInList() {
             List<String> jurors = new ArrayList<>();
             jurors.add(JUROR3);
@@ -1095,7 +1090,6 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         @DisplayName("PATCH Update attendance - confirm attendance (no shows)")
         @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql",
             "/db/JurorExpenseControllerITest_expenseRates.sql"})
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False positive
         void updateAttendanceNoShow() {
             UpdateAttendanceDto request = buildUpdateAttendanceDto(new ArrayList<>());
             request.getCommonData().setCheckInTime(null);

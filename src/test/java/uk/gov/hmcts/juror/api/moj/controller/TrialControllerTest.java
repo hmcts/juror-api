@@ -205,9 +205,6 @@ class TrialControllerTest {
     }
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
     void testReturnJury() {
         final String methodUrl = "/return-jury?trial_number=T10000000&location_code=415";
 
@@ -223,9 +220,6 @@ class TrialControllerTest {
     }
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
     void testReturnJuryEmptyTimes() throws Exception {
         final String methodUrl = "/return-jury?trial_number=T10000000&location_code=415";
 
@@ -245,9 +239,6 @@ class TrialControllerTest {
     }
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
     void testReturnPanel() {
         final String methodUrl = "/return-panel?trial_number=T10000000&location_code=415";
 

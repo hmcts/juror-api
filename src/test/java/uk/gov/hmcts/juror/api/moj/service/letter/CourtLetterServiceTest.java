@@ -134,7 +134,6 @@ public class CourtLetterServiceTest {
 
         @Test
         @DisplayName("getEligibleList - exclude printed")
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void eligibleListExcludePrinted() {
             String owner = "415";
             mockCurrentUser(owner);
@@ -171,7 +170,6 @@ public class CourtLetterServiceTest {
 
         @Test
         @DisplayName("getEligibleList - include printed")
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void eligibleListIncludePrinted() {
             String owner = "415";
             mockCurrentUser(owner);
@@ -211,7 +209,6 @@ public class CourtLetterServiceTest {
 
         @Test
         @DisplayName("getEligibleList - no data")
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void eligibleListNoData() {
             String owner = "415";
             mockCurrentUser(owner);
@@ -309,7 +306,6 @@ public class CourtLetterServiceTest {
 
         @Test
         @DisplayName("getEligibleList - exclude printed")
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void eligibleListExcludePrinted() {
             String owner = "415";
             mockCurrentUser(owner);
@@ -355,7 +351,6 @@ public class CourtLetterServiceTest {
 
         @Test
         @DisplayName("getEligibleList - include printed")
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void eligibleListIncludePrinted() {
             String owner = "415";
             mockCurrentUser(owner);
@@ -403,7 +398,6 @@ public class CourtLetterServiceTest {
 
         @Test
         @DisplayName("getEligibleList - no data")
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void eligibleListNoData() {
             String owner = "415";
             mockCurrentUser(owner);
@@ -503,7 +497,6 @@ public class CourtLetterServiceTest {
     public class ExcusalGranted {
         @Test
         @DisplayName("getEligibleList - exclude printed")
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void eligibleListExcludePrinted() {
             String owner = "415";
             mockCurrentUser(owner);
@@ -540,7 +533,6 @@ public class CourtLetterServiceTest {
 
         @Test
         @DisplayName("getEligibleList - include printed")
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void eligibleListIncludePrinted() {
             String owner = "415";
             mockCurrentUser(owner);
@@ -580,7 +572,6 @@ public class CourtLetterServiceTest {
 
         @Test
         @DisplayName("getEligibleList - no data")
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void eligibleListNoData() {
             String owner = "415";
             mockCurrentUser(owner);
@@ -671,7 +662,6 @@ public class CourtLetterServiceTest {
     public class ExcusalRefused {
         @Test
         @DisplayName("getEligibleList - exclude printed")
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void eligibleListExcludePrinted() {
             String owner = "415";
             mockCurrentUser(owner);
@@ -708,7 +698,6 @@ public class CourtLetterServiceTest {
 
         @Test
         @DisplayName("getEligibleList - include printed")
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void eligibleListIncludePrinted() {
             String owner = "415";
             mockCurrentUser(owner);
@@ -748,7 +737,6 @@ public class CourtLetterServiceTest {
 
         @Test
         @DisplayName("getEligibleList - no data")
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void eligibleListNoData() {
             String owner = "415";
             mockCurrentUser(owner);
@@ -841,7 +829,6 @@ public class CourtLetterServiceTest {
 
         @Test
         @DisplayName("getEligibleList - exclude printed")
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void eligibleListExcludePrinted() {
             String owner = "415";
             mockCurrentUser(owner);
@@ -878,7 +865,6 @@ public class CourtLetterServiceTest {
 
         @Test
         @DisplayName("getEligibleList - include printed")
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void eligibleListIncludePrinted() {
             String owner = "415";
             mockCurrentUser(owner);
@@ -917,7 +903,6 @@ public class CourtLetterServiceTest {
 
         @Test
         @DisplayName("getEligibleList - no data")
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void eligibleListNoData() {
             String owner = "415";
             mockCurrentUser(owner);

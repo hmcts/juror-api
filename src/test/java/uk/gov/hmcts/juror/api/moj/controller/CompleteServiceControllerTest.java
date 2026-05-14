@@ -62,9 +62,6 @@ import static uk.gov.hmcts.juror.api.moj.controller.CompleteServiceControllerTes
     }
 )
 @DisplayName("Controller: " + CompleteServiceControllerTest.BASE_URL)
-@SuppressWarnings({
-    "PMD.ExcessiveImports"
-})
 class CompleteServiceControllerTest {
     public static final String BASE_URL = "/api/v1/moj/complete-service";
 
@@ -420,9 +417,6 @@ class CompleteServiceControllerTest {
 
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert" //False positive
-    })
     void negativeNotFound() throws Exception {
         JurorNumberListDto payload = new JurorNumberListDto();
         payload.setJurorNumbers(List.of("123456789", "123456788"));

@@ -128,7 +128,6 @@ class AdministrationServiceImplTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void positiveNoValuesUseQuerySomeDisabled() {
             HasCodeAndDescription<Integer> hasCodeAndDescription1 = mockHasCodeAndDescription(1, "desc1", true);
             HasCodeAndDescription<Integer> hasCodeAndDescription2 = mockHasCodeAndDescription(2, "desc2", false);

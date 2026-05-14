@@ -38,9 +38,6 @@ class NextAttendanceDayReportITest extends AbstractStandardReportControllerITest
     }
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
     void positiveTypicalCourt() {
         testBuilder()
             .triggerValid()
@@ -49,9 +46,6 @@ class NextAttendanceDayReportITest extends AbstractStandardReportControllerITest
     }
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
     void positiveTypicalBureau() {
         testBuilder()
             .jwt(getBureauJwt())
@@ -61,9 +55,6 @@ class NextAttendanceDayReportITest extends AbstractStandardReportControllerITest
     }
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
     void negativeInvalidPayload() {
         StandardReportRequest request = getValidPayload();
         request.setPoolNumber(null);
@@ -74,9 +65,6 @@ class NextAttendanceDayReportITest extends AbstractStandardReportControllerITest
     }
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
     void negativeUnauthorised() {
         testBuilder()
             .jwt(getCourtJwt("414"))

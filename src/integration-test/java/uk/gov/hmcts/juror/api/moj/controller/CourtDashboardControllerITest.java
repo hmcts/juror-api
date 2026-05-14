@@ -125,7 +125,6 @@ public class CourtDashboardControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CourtDashboardAttendanceITest.sql"})
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     public void courtAttendanceNonSjoHappy() {
         initHeadersCourt();
         ResponseEntity<CourtAttendanceInfoDto> response = restTemplate.exchange(

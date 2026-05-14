@@ -55,7 +55,6 @@ class UserCourtDtoTest extends AbstractValidatorTest<UserCourtDto> {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void positiveConstructorJustHasSatellite() {
         UserCourtDto userCourtDto = new UserCourtDto(List.of(
             mockCourtLocation("name1", "001", CourtType.MAIN),

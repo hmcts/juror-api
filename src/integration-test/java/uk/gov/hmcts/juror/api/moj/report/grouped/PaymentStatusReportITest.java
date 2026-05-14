@@ -22,9 +22,6 @@ import java.util.List;
     "/db/mod/truncate.sql",
     "/db/mod/reports/PaymentStatusReportITest_typical.sql"
 })
-@SuppressWarnings({
-    "PMD.JUnitTestsShouldIncludeAssert"//False positive
-})
 class PaymentStatusReportITest extends AbstractGroupedReportControllerITest {
 
     @Autowired

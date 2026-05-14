@@ -1050,9 +1050,6 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @TestFactory
             @DisplayName("Generated")
-            @SuppressWarnings({
-                "PMD.JUnitTestsShouldIncludeAssert"//False positive
-            })
             Stream<DynamicContainer> tests() {
                 return tests.stream();
             }
@@ -2343,9 +2340,6 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @TestFactory
             @DisplayName("Generated")
-            @SuppressWarnings({
-                "PMD.JUnitTestsShouldIncludeAssert"//False positive
-            })
             Stream<DynamicContainer> tests() {
                 return tests.stream();
             }
@@ -3343,9 +3337,6 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @TestFactory
             @DisplayName("Generated")
-            @SuppressWarnings({
-                "PMD.JUnitTestsShouldIncludeAssert"//False positive
-            })
             Stream<DynamicContainer> tests() {
                 return tests.stream();
             }
@@ -3498,7 +3489,6 @@ class MessagingControllerITest extends AbstractIntegrationTest {
     @Nested
     @DisplayName("POST " + GetMessageDetailsPopulated.URL)
     @Sql({"/db/mod/truncate.sql", "/db/MessagingControllerITest_toCsv.sql"})
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     class ToCsv extends AbstractControllerIntegrationTest<ExportContactDetailsRequest, String> {
 
         private static final String URL = BASE_URL + "/csv/{loc_code}";

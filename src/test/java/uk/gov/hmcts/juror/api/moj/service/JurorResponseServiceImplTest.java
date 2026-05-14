@@ -35,7 +35,7 @@ import java.util.Set;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
+@SuppressWarnings("PMD.TooManyMethods")
 class JurorResponseServiceImplTest {
     private JurorPoolRepository jurorPoolRepository;
     private JurorPaperResponseRepositoryMod jurorPaperResponseRepository;

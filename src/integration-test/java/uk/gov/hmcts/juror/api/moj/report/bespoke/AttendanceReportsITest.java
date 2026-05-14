@@ -68,7 +68,7 @@ class AttendanceReportsITest extends AbstractIntegrationTest {
         void weekendAttendanceReportBureauUserHappy() {
 
             ResponseEntity<WeekendAttendanceReportResponse> responseEntity =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                         URI.create(URL_BASE + "/weekend-attendance")),
                                       WeekendAttendanceReportResponse.class);
 
@@ -85,7 +85,7 @@ class AttendanceReportsITest extends AbstractIntegrationTest {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
 
             ResponseEntity<WeekendAttendanceReportResponse> responseEntity =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                                                               URI.create(URL_BASE + "/weekend-attendance")),
                                       WeekendAttendanceReportResponse.class);
 

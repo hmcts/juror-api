@@ -66,7 +66,6 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 @SuppressWarnings({
     "PMD.ExcessiveImports",
     "PMD.TooManyMethods",
-    "PMD.GodClass"
 })
 class PanelServiceImplTest {
     @Mock

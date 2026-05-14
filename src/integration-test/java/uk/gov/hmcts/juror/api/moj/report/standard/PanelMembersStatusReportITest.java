@@ -21,7 +21,6 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/PanelMembersStatusReportITest_Typical.sql"
 })
-@SuppressWarnings({"PMD.JUnitTestsShouldIncludeAssert"})
 class PanelMembersStatusReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired

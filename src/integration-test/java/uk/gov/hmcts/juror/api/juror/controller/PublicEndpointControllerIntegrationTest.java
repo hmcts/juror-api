@@ -168,8 +168,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         final String description = "Authentication header is not present";
 
         ResponseEntity<SpringBootErrorResponse> exchange = template.exchange(
-            new RequestEntity<Void>(httpHeaders, HttpMethod.GET, URI.create("/api/v1/public/juror/123456789")),
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
+            new RequestEntity<>(httpHeaders, HttpMethod.GET, URI.create("/api/v1/public/juror/123456789")),
+            new ParameterizedTypeReference<>() {
             });
 
         assertThat(exchange).describedAs(description).isNotNull();
@@ -186,8 +186,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, null);
         ResponseEntity<SpringBootErrorResponse> exchange = template.exchange(
-            new RequestEntity<Void>(httpHeaders, HttpMethod.GET, URI.create("/api/v1/public/juror/123456789")),
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
+            new RequestEntity<>(httpHeaders, HttpMethod.GET, URI.create("/api/v1/public/juror/123456789")),
+            new ParameterizedTypeReference<>() {
             });
 
         assertThat(exchange).describedAs(description).isNotNull();
@@ -215,8 +215,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, invalidPublicJwt);
         ResponseEntity<SpringBootErrorResponse> exchange = template.exchange(
-            new RequestEntity<Void>(httpHeaders, HttpMethod.GET, URI.create("/api/v1/public/juror/123456789")),
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
+            new RequestEntity<>(httpHeaders, HttpMethod.GET, URI.create("/api/v1/public/juror/123456789")),
+            new ParameterizedTypeReference<>() {
             });
 
         assertThat(exchange).describedAs(description).isNotNull();
@@ -241,7 +241,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             .build())
         );
 
-        ResponseEntity<JurorDetailDto> exchange = template.exchange(new RequestEntity<Void>(httpHeaders,
+        ResponseEntity<JurorDetailDto> exchange = template.exchange(new RequestEntity<>(httpHeaders,
             HttpMethod.GET, URI.create("/api/v1/public/juror/209092530")), JurorDetailDto.class);
         assertThat(exchange.getBody()).extracting("jurorNumber", "title", "firstName", "lastName", "postcode")
             .contains("209092530", "Dr", "Jane", "CASTILLO", "AB39RY");
@@ -268,7 +268,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             .build())
         );
 
-        ResponseEntity<JurorDetailDto> exchange = template.exchange(new RequestEntity<Void>(httpHeaders,
+        ResponseEntity<JurorDetailDto> exchange = template.exchange(new RequestEntity<>(httpHeaders,
             HttpMethod.GET, URI.create("/api/v1/public/juror/209092530")), JurorDetailDto.class);
 
         assertThat(exchange.getBody()).isNotNull();
@@ -306,7 +306,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             .build())
         );
 
-        ResponseEntity<String> exchange = template.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+        ResponseEntity<String> exchange = template.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
             URI.create("/api/v1/public/juror/12345")), String.class);
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(exchange.getBody()).contains("Unauthorized");
@@ -550,7 +550,6 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_isSuperUrgentFailedStraightThrough_unhappy.sql")
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     public void respondToSummons_unhappy_failedSuperUrgentCheckOnStraightThrough() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
@@ -1248,7 +1247,6 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/standing_data.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_ageExcusal.sql")
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     public void respondToSummons_happy_ageExcusal_successfulStraightThrough_young() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
@@ -1341,7 +1339,6 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/standing_data.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_ageExcusal.sql")
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     public void respondToSummons_happy_ageExcusal_successfulStraightThrough_old() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");

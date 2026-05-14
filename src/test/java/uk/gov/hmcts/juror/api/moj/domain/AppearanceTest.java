@@ -605,7 +605,6 @@ class AppearanceTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void addExpenseToErrorsIsLessThan() {
         Appearance appearance = new Appearance();
         Map<String, Object> errors = new ConcurrentHashMap<>();

@@ -181,7 +181,6 @@ class TrialServiceImplTest {
 
     @Test
     @SuppressWarnings({
-        "PMD.JUnitAssertionsShouldIncludeMessage",
         "unchecked"
     })
     void testGetTrials() {
@@ -1116,4 +1115,3 @@ class TrialServiceImplTest {
         return jurorPool;
     }
 }
-

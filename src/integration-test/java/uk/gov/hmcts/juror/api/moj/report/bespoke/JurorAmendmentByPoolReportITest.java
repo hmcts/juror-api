@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class JurorAmendmentByPoolReportITest extends AbstractJurorAmendmentReportITest {
     @Autowired
     public JurorAmendmentByPoolReportITest(TestRestTemplate template) {

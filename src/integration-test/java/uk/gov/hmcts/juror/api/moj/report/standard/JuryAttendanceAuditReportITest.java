@@ -21,7 +21,6 @@ import java.util.List;
     "/db/administration/createCourtRooms.sql",
     "/db/mod/reports/JuryAttendanceAuditReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
 class JuryAttendanceAuditReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired

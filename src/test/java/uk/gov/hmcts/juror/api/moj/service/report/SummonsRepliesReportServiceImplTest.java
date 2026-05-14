@@ -57,7 +57,6 @@ class SummonsRepliesReportServiceImplTest {
 
     @Nested
     @DisplayName("Digital Summons Replies report tests")
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") //false positive
     class DigitalSummonsRepliesReportTests {
 
         @Test

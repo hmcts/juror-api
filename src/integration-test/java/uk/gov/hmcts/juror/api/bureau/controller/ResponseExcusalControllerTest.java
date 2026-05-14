@@ -58,7 +58,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
         final String loginName = "testlogin";
         httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwtBureau(loginName));
 
-        ResponseEntity<ExcusalReasonsDto> responseEntity = template.exchange(new RequestEntity<Void>(httpHeaders,
+        ResponseEntity<ExcusalReasonsDto> responseEntity = template.exchange(new RequestEntity<>(httpHeaders,
             HttpMethod.GET, URI.create("/api/v1/bureau/juror/excuse")), ExcusalReasonsDto.class);
 
         assertThat(responseEntity).isNotNull();
@@ -98,7 +98,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
 
         // make request
         ResponseEntity<SpringBootErrorResponse> responseEntity = template.exchange(requestEntity,
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
+            new ParameterizedTypeReference<>() {
             });
 
         // response assertions
@@ -215,7 +215,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
 
         // make request
         ResponseEntity<SpringBootErrorResponse> responseEntity = template.exchange(requestEntity,
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
+            new ParameterizedTypeReference<>() {
             });
 
         // response assertions
@@ -333,7 +333,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
 
         // make request
         ResponseEntity<SpringBootErrorResponse> responseEntity = template.exchange(requestEntity,
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
+            new ParameterizedTypeReference<>() {
             });
 
         // response assertions
@@ -416,7 +416,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
 
         // make request
         ResponseEntity<SpringBootErrorResponse> responseEntity = template.exchange(requestEntity,
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
+            new ParameterizedTypeReference<>() {
             });
 
         // response assertions
@@ -467,7 +467,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
 
         // make request
         ResponseEntity<SpringBootErrorResponse> responseEntity = template.exchange(requestEntity,
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
+            new ParameterizedTypeReference<>() {
             });
 
         // response assertions
@@ -546,7 +546,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
 
         // make request
         ResponseEntity<SpringBootErrorResponse> responseEntity = template.exchange(requestEntity,
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
+            new ParameterizedTypeReference<>() {
             });
 
         // response assertions
@@ -631,7 +631,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
 
         // make request
         ResponseEntity<SpringBootErrorResponse> responseEntity = template.exchange(requestEntity,
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
+            new ParameterizedTypeReference<>() {
             });
 
         // response assertions
@@ -755,7 +755,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
 
         // make request
         ResponseEntity<SpringBootErrorResponse> responseEntity = template.exchange(requestEntity,
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
+            new ParameterizedTypeReference<>() {
             });
 
         // response assertions
@@ -821,7 +821,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
 
         // make request
         ResponseEntity<SpringBootErrorResponse> responseEntity = template.exchange(requestEntity,
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
+            new ParameterizedTypeReference<>() {
             });
 
         // response assertions

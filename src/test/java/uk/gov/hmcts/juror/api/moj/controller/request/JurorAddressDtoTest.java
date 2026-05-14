@@ -6,7 +6,6 @@ import uk.gov.hmcts.juror.api.moj.AbstractValidatorTest;
 import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 @SuppressWarnings({
-    "PMD.JUnitTestsShouldIncludeAssert",//False positive done via inheritance
     "PMD.JUnit5TestShouldBePackagePrivate"
 }
 )

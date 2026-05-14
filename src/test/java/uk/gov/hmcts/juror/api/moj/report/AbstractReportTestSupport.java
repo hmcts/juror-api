@@ -109,7 +109,6 @@ public abstract class AbstractReportTestSupport<
     @Test
     @SuppressWarnings({
         "unchecked",
-        "PMD.JUnitTestsShouldIncludeAssert",
     })
     final void positivePreProcessQueryTypical() {
         JPAQuery<Tuple> query = mock(JPAQuery.class,

@@ -53,12 +53,11 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False positive
     public void testGDisqualifyReasons_happy() {
         final String loginName = "testlogin";
         httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwtBureau(loginName));
 
-        ResponseEntity<DisqualifyReasonsDto> responseEntity = template.exchange(new RequestEntity<Void>(httpHeaders,
+        ResponseEntity<DisqualifyReasonsDto> responseEntity = template.exchange(new RequestEntity<>(httpHeaders,
             HttpMethod.GET, URI.create("/api/v1/bureau/juror/disqualify")), DisqualifyReasonsDto.class);
 
         assertThat(responseEntity).isNotNull();
@@ -103,7 +102,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
 
         // make request
         ResponseEntity<SpringBootErrorResponse> responseEntity = template.exchange(requestEntity,
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
+            new ParameterizedTypeReference<>() {
             });
 
         // response assertions
@@ -215,7 +214,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
 
         // make request
         ResponseEntity<SpringBootErrorResponse> responseEntity = template.exchange(requestEntity,
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
+            new ParameterizedTypeReference<>() {
             });
 
         // response assertions
@@ -305,7 +304,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
 
         // make request
         ResponseEntity<SpringBootErrorResponse> responseEntity = template.exchange(requestEntity,
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
+            new ParameterizedTypeReference<>() {
             });
 
         // response assertions
@@ -382,7 +381,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
 
         // make request
         ResponseEntity<SpringBootErrorResponse> responseEntity = template.exchange(requestEntity,
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
+            new ParameterizedTypeReference<>() {
             });
 
         // response assertions
@@ -457,7 +456,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
 
         // make request
         ResponseEntity<SpringBootErrorResponse> responseEntity = template.exchange(requestEntity,
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
+            new ParameterizedTypeReference<>() {
             });
 
         // response assertions
@@ -532,7 +531,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
 
         // make request
         ResponseEntity<SpringBootErrorResponse> responseEntity = template.exchange(requestEntity,
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
+            new ParameterizedTypeReference<>() {
             });
 
         // response assertions

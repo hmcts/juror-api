@@ -16,7 +16,6 @@ import java.util.List;
  * It enables the response to be read into PageImpl
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-@SuppressWarnings("PMD.UnusedFormalParameter")
 public class CustomPageImpl<T> extends PageImpl<T> {
     @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
     public CustomPageImpl(@JsonProperty("content") List<T> content,

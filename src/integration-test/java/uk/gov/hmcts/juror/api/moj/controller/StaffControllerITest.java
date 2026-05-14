@@ -40,7 +40,6 @@ import static org.springframework.http.HttpMethod.POST;
 @DisplayName("Controller: " + StaffControllerITest.BASE_URL)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Sql(scripts = "/db/mod/truncate.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
-@SuppressWarnings("PMD.TooManyMethods")
 public class StaffControllerITest extends AbstractIntegrationTest {
     static final String BASE_URL = "/api/v1/moj/staff";
 

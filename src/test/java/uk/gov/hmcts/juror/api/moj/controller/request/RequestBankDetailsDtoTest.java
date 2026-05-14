@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.juror.api.moj.AbstractValidatorTest;
 
 @SuppressWarnings({
-    "PMD.JUnitTestsShouldIncludeAssert",//False positive done via inheritance
     "PMD.JUnit5TestShouldBePackagePrivate",
     "PMD.TooManyMethods"
 }

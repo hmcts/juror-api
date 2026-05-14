@@ -80,7 +80,7 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
     @Test
     void testGetCourtLocationsBureauUser() {
         ResponseEntity<CourtLocationListDto> responseEntity =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, GET,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, GET,
                 URI.create("/api/v1/moj/court-location/all-court-locations")), CourtLocationListDto.class);
 
         assertThat(responseEntity.getStatusCode())
@@ -101,7 +101,7 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
     void testGetCourtLocationsCourtUser() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Arrays.asList("415", "462", "767", "774")));
         ResponseEntity<CourtLocationListDto> responseEntity =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, GET,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, GET,
                 URI.create("/api/v1/moj/court-location/all-court-locations")), CourtLocationListDto.class);
 
         assertThat(responseEntity.getStatusCode())
@@ -146,7 +146,6 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//Assertion done in nested method
     void testGetAllCourtLocationsByPostcodeBadRequestException() {
         //Invoke service.
         templateExchangeAllCourtLocationsByPostcode("SE1236LA", BUREAU_USER, "400", HttpStatus.BAD_REQUEST);

@@ -50,9 +50,8 @@ import static org.springframework.http.HttpMethod.POST;
     "/db/administration/createUsers.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(value = "/db/administration/teardownUsers.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @SuppressWarnings({
-    "PMD.JUnitTestsShouldIncludeAssert",
     "PMD.ExcessiveImports",
-    "PMD.JUnitAssertionsShouldIncludeMessage"//False positive
+//False positive
 })
 public class AuthenticationControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/auth/moj";

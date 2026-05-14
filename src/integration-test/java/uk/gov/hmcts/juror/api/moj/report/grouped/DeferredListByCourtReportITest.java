@@ -21,7 +21,6 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/DeferredListByCourtReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
 class DeferredListByCourtReportITest extends AbstractGroupedReportControllerITest {
 
     @Autowired

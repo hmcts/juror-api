@@ -184,7 +184,6 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False positive
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_initPoolMembers.sql"})
     public void respondToSummons_bureauUser_noJurorRecord() {
         final String bureauJwt = createJwtBureau(BUREAU_USER);
@@ -1921,7 +1920,6 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         });
     }
 
-    @SuppressWarnings({"PMD.NcssCount", "PMD.NPathComplexity", "PMD.CognitiveComplexity"})
     private void verifyResponseDtoMapping(JurorPaperResponseDetailDto responseDetailDto, String owner) {
         executeInTransaction(() -> {
             PaperResponse jurorPaperResponse =
@@ -2048,7 +2046,6 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         return jurorPaperResponse;
     }
 
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False Positive
     private void verifyRequestDtoMappingPersonalDetails(PaperResponse jurorPaperResponse,
                                                         JurorPaperResponseDto requestDto) {
         assertThat(jurorPaperResponse.getJurorNumber())

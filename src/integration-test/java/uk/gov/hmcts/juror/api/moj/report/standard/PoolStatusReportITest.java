@@ -40,7 +40,6 @@ class PoolStatusReportITest extends AbstractStandardReportControllerITest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void positiveTypicalBureau() {
         testBuilder()
             .triggerValid()
@@ -49,7 +48,6 @@ class PoolStatusReportITest extends AbstractStandardReportControllerITest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     //False positive
     void negativeInvalidPayload() {
         StandardReportRequest request = getValidPayload();
@@ -61,7 +59,6 @@ class PoolStatusReportITest extends AbstractStandardReportControllerITest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     //False positive
     void negativeUnauthorised() {
         testBuilder()

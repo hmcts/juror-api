@@ -177,7 +177,6 @@ class ManageDeferralsServiceTest {
     class ProcessJurorPostponement {
 
         @Test
-        @SuppressWarnings({"PMD.TooManyFields"})
         void processJurorPostponementHappyPathMoveToActivePoolPoliceChecked() {
             TestUtils.mockBureauUser();
             LocalDate newAttendanceDate = LocalDate.now();
@@ -231,7 +230,6 @@ class ManageDeferralsServiceTest {
         }
 
         @Test
-        @SuppressWarnings({"PMD.TooManyFields"})
         void processJurorPostponementHappyPathMoveToActivePoolNotPoliceChecked() {
             TestUtils.mockBureauUser();
             LocalDate newAttendanceDate = LocalDate.now();
@@ -554,7 +552,6 @@ class ManageDeferralsServiceTest {
     class MoveDeferredJurorToAnotherCourt {
 
         @Test
-        @SuppressWarnings({"PMD.TooManyFields"})
         void moveDeferredJuror() {
             TestUtils.mockBureauUser();
             LocalDate newAttendanceDate = LocalDate.now();
@@ -600,7 +597,6 @@ class ManageDeferralsServiceTest {
         }
 
         @Test
-        @SuppressWarnings({"PMD.TooManyFields"})
         void moveDeferredJurorInvalidStatus() {
             TestUtils.mockBureauUser();
             LocalDate newAttendanceDate = LocalDate.now();
@@ -833,7 +829,6 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void useCourtDeferralsDeferralsUsedNoJurorPool() {
         String courtLocation = "415";
         LocalDate newAttendanceDate = LocalDate.now();
@@ -886,7 +881,6 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void useCourtDeferralsDeferralsUsedNoPoolRequest() {
         String courtLocation = "415";
         LocalDate newAttendanceDate = LocalDate.now();
@@ -1805,7 +1799,6 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void test_getPreferredDeferralDates_threeValidDates() {
         final BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         String jurorNumber = "123456789";
@@ -1836,7 +1829,6 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void testFindActivePoolsForDatesAndLocationCodeHappyPath() {
         TestUtils.mockBureauUser();
         String bureauOwner = "400";
@@ -2007,7 +1999,6 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void testFindActivePoolsForDatesAndLocationCodeNoDates() {
         String bureauOwner = "400";
         String jurorNumber = "123456789";
@@ -2040,7 +2031,6 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void testFindActivePoolsForDatesAndLocationCodeNoLocationCode() {
         String bureauOwner = "400";
         String jurorNumber = "123456789";
@@ -2081,7 +2071,6 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void test_getPreferredDeferralDates_twoValidDates() {
         final BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         String jurorNumber = "123456789";
@@ -2111,7 +2100,6 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void test_getPreferredDeferralDates_oneValidDate() {
         final BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         String jurorNumber = "123456789";

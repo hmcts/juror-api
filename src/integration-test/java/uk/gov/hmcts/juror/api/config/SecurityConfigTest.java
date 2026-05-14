@@ -45,7 +45,7 @@ public class SecurityConfigTest extends ContainerTest {
     @Test
     public void hmacLogin_healthEndpoint_happy() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, HMAC_HEADER_VALID);
-        ResponseEntity<String> exchange = testRestTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+        ResponseEntity<String> exchange = testRestTemplate.exchange(new RequestEntity<>(httpHeaders,
             HttpMethod.GET, URI.create("/health")), String.class);
         assertThat(exchange).isNotNull();
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -55,7 +55,7 @@ public class SecurityConfigTest extends ContainerTest {
     @Test
     @Ignore("Enable when actuator endpoint is secured.")
     public void hmacLogin_healthEndpoint_unhappy_no_token() throws Exception {
-        ResponseEntity<String> exchange = testRestTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+        ResponseEntity<String> exchange = testRestTemplate.exchange(new RequestEntity<>(httpHeaders,
             HttpMethod.GET, URI.create("/health")), String.class);
         assertThat(exchange).isNotNull();
         assertThat(exchange.getStatusCode()).isNotEqualTo(HttpStatus.OK);

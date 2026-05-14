@@ -24,7 +24,6 @@ import java.util.Set;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + AuditControllerITest.BASE_URL)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
 public class AuditControllerITest {
     public static final String BASE_URL = "/api/v1/moj/audit";
     private final TestRestTemplate template;
