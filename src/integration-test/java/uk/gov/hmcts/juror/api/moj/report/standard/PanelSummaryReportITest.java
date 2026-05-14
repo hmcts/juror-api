@@ -36,9 +36,9 @@ class PanelSummaryReportITest extends AbstractStandardReportControllerITest {
     @Override
     protected StandardReportRequest getValidPayload() {
         return addReportType(StandardReportRequest.builder()
-                                 .trialNumber("T100000001")
-                                 .locCode(TestConstants.VALID_COURT_LOCATION)
-                                 .build());
+            .trialNumber("T100000001")
+            .locCode(TestConstants.VALID_COURT_LOCATION)
+            .build());
     }
 
     @Test
@@ -48,8 +48,6 @@ class PanelSummaryReportITest extends AbstractStandardReportControllerITest {
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(getTypicalResponse());
     }
-
-
 
     @Test
     void positiveCurrentJurorsOnlyFalse() {

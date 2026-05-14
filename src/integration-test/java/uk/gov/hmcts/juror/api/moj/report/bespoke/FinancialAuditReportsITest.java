@@ -41,7 +41,6 @@ import java.util.Set;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/FinancialAuditReportsITest_typical.sql"
 })
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class FinancialAuditReportsITest extends AbstractControllerIntegrationTest<Void, FinancialAuditReportResponse> {
     public static final String URL = "/api/v1/moj/reports/financial-audit";
 

@@ -37,9 +37,9 @@ class PanelMembersStatusReportITest extends AbstractStandardReportControllerITes
     @Override
     protected StandardReportRequest getValidPayload() {
         return addReportType(StandardReportRequest.builder()
-                                 .trialNumber("111111")
-                                 .locCode(TestConstants.VALID_COURT_LOCATION)
-                                 .build());
+            .trialNumber("111111")
+            .locCode(TestConstants.VALID_COURT_LOCATION)
+            .build());
     }
 
     @Test

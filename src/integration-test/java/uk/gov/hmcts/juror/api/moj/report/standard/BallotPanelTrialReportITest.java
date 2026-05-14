@@ -18,7 +18,6 @@ import java.util.List;
     "/db/mod/truncate.sql",
     "/db/mod/reports/BallotPanelTrIalITest.sql"
 })
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class BallotPanelTrialReportITest extends AbstractStandardReportControllerITest {
     @Autowired
     public BallotPanelTrialReportITest(TestRestTemplate template) {
@@ -33,8 +32,8 @@ class BallotPanelTrialReportITest extends AbstractStandardReportControllerITest 
     @Override
     protected StandardReportRequest getValidPayload() {
         return addReportType(StandardReportRequest.builder()
-                                 .trialNumber(TestConstants.VALID_TRIAL_NUMBER)
-                                 .build());
+            .trialNumber(TestConstants.VALID_TRIAL_NUMBER)
+            .build());
     }
 
     @Test

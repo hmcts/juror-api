@@ -44,7 +44,8 @@ public class StaffControllerITest extends AbstractIntegrationTest {
     static final String BASE_URL = "/api/v1/moj/staff";
 
     private HttpHeaders httpHeaders;
-    private final TestRestTemplate restTemplate;
+    @Autowired
+    private TestRestTemplate restTemplate;
 
     @Autowired
     private JurorPaperResponseRepositoryMod paperResponseRepositoryMod;
