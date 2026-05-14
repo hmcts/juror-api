@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.controller.response.summonsmanagement;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -16,11 +17,11 @@ import java.util.List;
  */
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Schema(description = "Juror disqualification reasons")
 @Getter
 @Builder
 public class DisqualifyReasonsDto {
-    @JsonProperty("disqualifyReasons")
     @Schema(name = "Disqualify reasons", description = "List of disqualify reasons")
     @NotBlank
     @Singular("disqualifyReason")
@@ -30,23 +31,20 @@ public class DisqualifyReasonsDto {
     @Schema(description = "Disqualification details")
     @Builder
     @Getter
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class DisqualifyReasons {
-        @JsonProperty("code")
         @Schema(description = "Disqualification code")
         @NotBlank
         private String code;
 
-        @JsonProperty("description")
         @Schema(description = "Disqualification description")
         @NotBlank
         private String description;
 
-        @JsonProperty("heritageCode")
         @Schema(description = "Heritage disqualification code")
         @NotBlank
         private String heritageCode;
 
-        @JsonProperty("heritageDescription")
         @Schema(description = "Heritage disqualification description")
         @NotBlank
         private String heritageDescription;

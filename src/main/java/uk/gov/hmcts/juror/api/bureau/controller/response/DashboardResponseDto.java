@@ -42,6 +42,7 @@ public class DashboardResponseDto implements Serializable {
 
     @AllArgsConstructor
     @NoArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Builder
     @Data
     @Schema(description = "Dashboard Cumulative Totals.")
@@ -75,6 +76,7 @@ public class DashboardResponseDto implements Serializable {
 
     @AllArgsConstructor
     @NoArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Builder
     @Data
     @Schema(description = "Dashboard Online Welsh Responses Counts.")
@@ -96,6 +98,7 @@ public class DashboardResponseDto implements Serializable {
 
     @AllArgsConstructor
     @NoArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Builder
     @Data
     @Schema(description = "Dashboard Online Auto Processed Responses Counts.")
@@ -118,6 +121,7 @@ public class DashboardResponseDto implements Serializable {
 
     @AllArgsConstructor
     @NoArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Builder
     @Data
     @Schema(description = "Dashboard Online Third Party Responses Counts.")
@@ -139,6 +143,7 @@ public class DashboardResponseDto implements Serializable {
 
     @AllArgsConstructor
     @NoArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Builder
     @Data
     @Schema(description = "Survey satisfaction totals.")
