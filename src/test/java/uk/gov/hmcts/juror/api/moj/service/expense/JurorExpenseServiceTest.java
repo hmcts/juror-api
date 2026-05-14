@@ -3434,7 +3434,6 @@ class JurorExpenseServiceTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void positiveTypical() {
             CourtLocation courtLocation = mock(CourtLocation.class);
             when(courtLocation.getOwner()).thenReturn(TestConstants.VALID_COURT_LOCATION);
@@ -4551,7 +4550,6 @@ class JurorExpenseServiceTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void positiveTypicalFromDateEquals() {
             Appearance juror1Pool1Appearance1 = mockAppearance(
                 TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER, LocalDate.of(2023, 1, 1));
@@ -4608,7 +4606,6 @@ class JurorExpenseServiceTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void positiveTypicalFromDateIsAfter() {
             Appearance juror1Pool1Appearance1 = mockAppearance(
                 TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER, LocalDate.of(2023, 1, 1));
@@ -4666,7 +4663,6 @@ class JurorExpenseServiceTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void positiveTypicalToDateEquals() {
             Appearance juror1Pool1Appearance1 = mockAppearance(
                 TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER, LocalDate.of(2023, 1, 1));
@@ -4718,7 +4714,6 @@ class JurorExpenseServiceTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void positiveTypicalToDateIsBefore() {
             Appearance juror1Pool1Appearance1 = mockAppearance(
                 TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER, LocalDate.of(2023, 1, 1));
@@ -5853,4 +5848,3 @@ class JurorExpenseServiceTest {
         }
     }
 }
-

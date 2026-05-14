@@ -130,7 +130,6 @@ class JurorPoolServiceImplTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.NcssCount")
         void positiveTypical() {
             JurorDetailsDto jurorDetailsDto1 = mock(JurorDetailsDto.class);
             when(jurorDetailsDto1.getJurorNumber()).thenReturn("111111111");

@@ -34,9 +34,7 @@ import static org.assertj.core.api.BDDAssertions.within;
     "/db/mod/truncate.sql",
     "/db/mod/reports/YieldPerformanceReportITest_typical.sql",
 })
-@SuppressWarnings({"PMD.TooManyMethods",
-    "PMD.JUnitTestsShouldIncludeAssert"}//False positive
-)
+@SuppressWarnings("PMD.TooManyMethods")
 class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<YieldPerformanceReportRequest,
     YieldPerformanceReportResponse> {
     public static final String URL = "/api/v1/moj/reports/yield-performance";

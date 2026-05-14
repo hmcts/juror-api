@@ -20,9 +20,6 @@ import java.util.List;
     "/db/mod/truncate.sql",
     "/db/mod/reports/TrialAttendanceReportITest.sql"
 })
-@SuppressWarnings({
-    "PMD.JUnitTestsShouldIncludeAssert"//False positive
-})
 class TrialAttendanceReportITest extends AbstractGroupedReportControllerITest {
     @Autowired
     public TrialAttendanceReportITest(TestRestTemplate template) {

@@ -4142,7 +4142,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
             void typicalCash() {
                 PendingApprovalList pendingApprovals = triggerValid(COURT_LOCATION, null, null, PaymentMethod.CASH);
                 assertThat(pendingApprovals.getTotalPendingCash()).isEqualTo(2L);
@@ -4307,7 +4306,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
             void typicalToDateFilter() {
                 PendingApprovalList pendingApprovals =
                     triggerValid(COURT_LOCATION, null, LocalDate.of(2025, 1, 9), PaymentMethod.BACS);
@@ -4364,7 +4362,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
             void typicalBothFromAndToFilter() {
                 PendingApprovalList pendingApprovals =
                     triggerValid(COURT_LOCATION, LocalDate.of(2025, 1, 9), LocalDate.of(2025, 1, 10), PaymentMethod
@@ -4423,7 +4420,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
             void canNotApprove() {
                 PendingApprovalList pendingApprovals =
                     triggerValid("COURT_USER2", COURT_LOCATION, LocalDate.of(2025, 1, 9), LocalDate.of(2025, 1, 10),

@@ -18,7 +18,6 @@ import java.util.List;
     "/db/mod/truncate.sql",
     "/db/mod/reports/OnCallReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class OnCallReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired

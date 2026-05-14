@@ -51,7 +51,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     }
 )
 @DisplayName("Controller: " + SjoTasksControllerTest.BASE_URL)
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.JUnitTestsShouldIncludeAssert"})
+@SuppressWarnings("PMD.ExcessiveImports")
 class SjoTasksControllerTest {
     public static final String BASE_URL = "/api/v1/moj/sjo-tasks";
 

@@ -37,7 +37,6 @@ import static org.mockito.Mockito.when;
 
 @SuppressWarnings({
     "unchecked",
-    "PMD.ExcessiveImports",
     "checkstyle:AbbreviationAsWordInName"
 })
 class ReasonableAdjustmentAndCjeReportTest extends AbstractGroupedReportTestSupport<ReasonableAdjustmentAndCjeReport> {

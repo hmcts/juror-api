@@ -20,7 +20,6 @@ import java.util.List;
     "/db/mod/truncate.sql",
     "/db/mod/reports/PoolRatioReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class PoolRatioReportITest extends AbstractStandardReportControllerITest {
     protected static final LocalDate DEFAULT_FROM_DATE = LocalDate.of(2024, 1, 1);
     protected static final LocalDate DEFAULT_TO_DATE = LocalDate.of(2024, 1, 30);

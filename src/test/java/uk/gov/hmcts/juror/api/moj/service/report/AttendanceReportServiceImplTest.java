@@ -80,7 +80,6 @@ class AttendanceReportServiceImplTest {
 
     @Nested
     @DisplayName("Weekend attendance report tests")
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") //false positive
     class WeekendAttendanceReportTests {
 
         @Test

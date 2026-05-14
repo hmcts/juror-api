@@ -36,7 +36,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("PMD.ExcessiveImports")
 class UnpaidAttendanceSummaryReportTest extends AbstractGroupedReportTestSupport<UnpaidAttendanceSummaryReport> {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;

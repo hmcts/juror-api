@@ -112,7 +112,7 @@ class PoolSearchControllerITest extends AbstractIntegrationTest {
             PoolSearchRequestDto request = createRequest(null, "417");
 
             ResponseEntity<PoolRequestSearchListDto> responseEntity =
-                restTemplate.exchange(new RequestEntity<PoolSearchRequestDto>(request, httpHeaders, HttpMethod.POST,
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, HttpMethod.POST,
                     URI.create("/api/v1/moj/pool-search")), PoolRequestSearchListDto.class);
 
             assertThat(responseEntity.getStatusCode())
@@ -138,7 +138,7 @@ class PoolSearchControllerITest extends AbstractIntegrationTest {
             PoolSearchRequestDto request = createRequest(null, "417");
 
             ResponseEntity<PoolRequestSearchListDto> responseEntity =
-                restTemplate.exchange(new RequestEntity<PoolSearchRequestDto>(request, httpHeaders, HttpMethod.POST,
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, HttpMethod.POST,
                     URI.create("/api/v1/moj/pool-search")), PoolRequestSearchListDto.class);
 
             assertThat(responseEntity.getStatusCode())
@@ -152,7 +152,7 @@ class PoolSearchControllerITest extends AbstractIntegrationTest {
             PoolSearchRequestDto request = createRequest(null, null);
 
             ResponseEntity<PoolRequestSearchListDto> responseEntity =
-                restTemplate.exchange(new RequestEntity<PoolSearchRequestDto>(request, httpHeaders, HttpMethod.POST,
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, HttpMethod.POST,
                     URI.create("/api/v1/moj/pool-search")), PoolRequestSearchListDto.class);
 
             assertThat(responseEntity.getStatusCode())
@@ -168,7 +168,7 @@ class PoolSearchControllerITest extends AbstractIntegrationTest {
             PoolSearchRequestDto request = createRequest("417221201", "417");
 
             ResponseEntity<PoolRequestSearchListDto> responseEntity =
-                restTemplate.exchange(new RequestEntity<PoolSearchRequestDto>(request, httpHeaders, HttpMethod.POST,
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, HttpMethod.POST,
                     URI.create("/api/v1/moj/pool-search")), PoolRequestSearchListDto.class);
 
             assertThat(responseEntity.getStatusCode())
@@ -193,7 +193,7 @@ class PoolSearchControllerITest extends AbstractIntegrationTest {
             PoolSearchRequestDto request = createRequest("41", null);
 
             ResponseEntity<PoolRequestSearchListDto> responseEntity =
-                restTemplate.exchange(new RequestEntity<PoolSearchRequestDto>(request, httpHeaders, HttpMethod.POST,
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, HttpMethod.POST,
                     URI.create("/api/v1/moj/pool-search")), PoolRequestSearchListDto.class);
 
             assertThat(responseEntity.getStatusCode())
@@ -207,7 +207,7 @@ class PoolSearchControllerITest extends AbstractIntegrationTest {
             PoolSearchRequestDto request = createRequest("4172212010", null);
 
             ResponseEntity<PoolRequestSearchListDto> responseEntity =
-                restTemplate.exchange(new RequestEntity<PoolSearchRequestDto>(request, httpHeaders, HttpMethod.POST,
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, HttpMethod.POST,
                     URI.create("/api/v1/moj/pool-search")), PoolRequestSearchListDto.class);
 
             assertThat(responseEntity.getStatusCode())

@@ -1284,7 +1284,6 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         static final String URL = "/api/v1/moj/deferral-maintenance/deferrals/415";
 
         @Test
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False positive
         void testGDeferralsByCourtLocationCodeBureauUser() {
             final String bureauJwt = createJwt(BUREAU_USER, OWNER_400);
 
@@ -1302,7 +1301,6 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False positive
         void testGDeferralsByCourtLocationCodeCourtUser() {
             final String courtJwt = createJwt(COURT_USER, OWNER_415);
 
