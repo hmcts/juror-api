@@ -6,7 +6,6 @@ import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -45,7 +44,6 @@ import static org.springframework.http.HttpMethod.POST;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + AuthenticationControllerITest.BASE_URL)
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Sql(value = {"/db/administration/teardownUsers.sql",
     "/db/administration/createUsers.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(value = "/db/administration/teardownUsers.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
@@ -57,7 +55,8 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/auth/moj";
     private static final String EMAIL_SUFFIX = "@email.gov.uk";
 
-    private final TestRestTemplate template;
+    @Autowired
+    private TestRestTemplate template;
     private HttpHeaders httpHeaders;
 
     @Value("${jwt.secret.bureau}")
@@ -165,6 +164,7 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET (POST) " + ViewCourts.URL)
     class CreateJwt extends AbstractControllerIntegrationTest<EmailDto, JwtDto> {
@@ -188,6 +188,8 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
         protected EmailDto getValidPayload() {
             return new EmailDto("test_court_standard" + EMAIL_SUFFIX);
         }
+
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 
         public String toUrl(String locCode) {
             return URL.replace("{loc_code}", locCode);

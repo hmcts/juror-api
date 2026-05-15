@@ -1,7 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
 
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -51,7 +50,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + UserControllerITest.BASE_URL)
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Sql(value = {"/db/administration/teardownUsers.sql",
     "/db/administration/createUsers.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(value = "/db/administration/teardownUsers.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
@@ -61,7 +59,8 @@ public class UserControllerITest extends AbstractIntegrationTest {
     private static final String EMAIL_SUFFIX = "@email.gov.uk";
     private static final String SYSTEM_USER = "test_system";
 
-    private final TestRestTemplate template;
+    @Autowired
+    private TestRestTemplate template;
     private HttpHeaders httpHeaders;
 
     private final UserRepository userRepository;

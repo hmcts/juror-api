@@ -308,6 +308,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Cour
         Assertions.assertThat(data.getDifference()).isEqualTo(-90.90909);
         Assertions.assertThat(data.getComments()).isEqualTo("");
 
+
     }
 
     @SuppressWarnings("PMD.UseUnderscoresInNumericLiterals")

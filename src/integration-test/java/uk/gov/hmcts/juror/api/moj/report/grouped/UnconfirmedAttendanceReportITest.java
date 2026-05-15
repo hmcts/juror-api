@@ -25,6 +25,7 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/UnconfirmedAttendanceReportITest_typical.sql"
 })
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class UnconfirmedAttendanceReportITest extends AbstractGroupedReportControllerITest {
 
     @Autowired
@@ -112,6 +113,8 @@ class UnconfirmedAttendanceReportITest extends AbstractGroupedReportControllerIT
             .triggerInvalid()
             .assertInvalidPathParam("toDate: must not be null");
     }
+
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 
     public GroupByResponse getTypicalGroupBy() {
         return GroupByResponse.builder()

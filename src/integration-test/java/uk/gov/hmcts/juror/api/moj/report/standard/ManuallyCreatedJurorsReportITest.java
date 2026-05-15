@@ -23,6 +23,7 @@ import java.util.Set;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/ManuallyCreatedJurorsReportITest_typical.sql"
 })
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class ManuallyCreatedJurorsReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired

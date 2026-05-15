@@ -22,6 +22,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class SummonedRespondedReportTest extends AbstractStandardReportTestSupport<SummonedRespondedReport> {
     public SummonedRespondedReportTest() {
         super(QJurorPool.jurorPool,

@@ -59,7 +59,8 @@ import static uk.gov.hmcts.juror.api.TestUtils.createJwt;
 @ContextConfiguration(classes = {TrialController.class})
 @SuppressWarnings({
     "PMD.ExcessiveImports",
-    "PMD.TooManyMethods"
+    "PMD.TooManyMethods",
+    "PMD.PublicMemberInNonPublicType"
 })
 class TrialControllerTest {
     private static final String BASE_URL = "/api/v1/moj/trial";

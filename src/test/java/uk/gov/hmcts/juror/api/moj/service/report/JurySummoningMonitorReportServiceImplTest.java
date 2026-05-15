@@ -36,6 +36,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class JurySummoningMonitorReportServiceImplTest {
 
     private final CourtLocationRepository courtLocationRepository;

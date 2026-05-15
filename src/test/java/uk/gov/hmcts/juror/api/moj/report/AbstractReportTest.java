@@ -1239,6 +1239,7 @@ class AbstractReportTest {
         return createReport(QJuror.juror, DataType.JUROR_NUMBER);
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     private static class AbstractReportTestImpl extends AbstractReport<Object> {
 
         public AbstractReportTestImpl(PoolRequestRepository poolRequestRepository,

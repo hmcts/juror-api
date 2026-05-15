@@ -71,7 +71,8 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 @SuppressWarnings({
     "LineLength",
     "PMD.ExcessiveImports",
-    "PMD.TooManyMethods"
+    "PMD.TooManyMethods",
+    "PMD.PublicMemberInNonPublicType"
 })
 class MessagingControllerITest extends AbstractIntegrationTest {
 
@@ -87,18 +88,24 @@ class MessagingControllerITest extends AbstractIntegrationTest {
     private JurorHistoryRepository jurorHistoryRepository;
 
 
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
+
     @BeforeEach
     public void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
 
+@SuppressWarnings({
+    "PMD.PublicMemberInNonPublicType"
+})
     protected static class TestData {
         public static final String ENGLISH_SUBJECT = "Your Jury Service";
         public static final String WELSH_SUBJECT = "Eich Gwasanaeth Rheithgor";
         protected static final String ENGLISH_LOC_CODE = "462";
         protected static final String WELSH_LOC_CODE = "756";
 
+        @SuppressWarnings("PMD.PublicMemberInNonPublicType")
         protected enum Placeholder {
             ENGLISH_COURT_NAME("N/A", "<court_name>", DataType.STRING, false, "WARRINGTON"),
             ENGLISH_COURT_PHONE("N/A", "<court_phone>", DataType.STRING, false, "01244 356726"),
@@ -124,6 +131,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                     .placeholderName(placeholderName)
                     .dataType(dataType)
                     .editable(editable)
+                    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
                     .defaultValue(defaultValue)
                     .build();
             }
@@ -710,6 +718,9 @@ class MessagingControllerITest extends AbstractIntegrationTest {
         }
     }
 
+    @SuppressWarnings({
+        "PMD.PublicMemberInNonPublicType"
+    })
     @Nested
     @DisplayName("GET " + GetMessageDetails.URL)
     class GetMessageDetails {

@@ -81,6 +81,7 @@ class AbstractStandardReportTest {
             DataType.LAST_NAME));
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     private static class AbstractStandardReportTestImpl extends AbstractStandardReport {
 
 

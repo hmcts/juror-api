@@ -19,6 +19,7 @@ import java.util.List;
     "/db/mod/truncate.sql",
     "/db/mod/reports/IncompleteServiceReportITest_typical.sql"
 })
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class IncompleteServiceReportITest extends AbstractStandardReportControllerITest {
     @Autowired
     public IncompleteServiceReportITest(TestRestTemplate template) {

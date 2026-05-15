@@ -19,6 +19,7 @@ import java.util.List;
     "/db/mod/truncate.sql",
     "/db/mod/reports/AttendanceGraphReportITest_typical.sql"
 })
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class AttendanceGraphReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired

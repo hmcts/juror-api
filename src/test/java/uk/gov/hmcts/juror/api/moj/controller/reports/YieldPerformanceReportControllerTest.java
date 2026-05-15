@@ -47,6 +47,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         RestResponseEntityExceptionHandler.class
     }
 )
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 @DisplayName("Controller: " + YieldPerformanceReportControllerTest.BASE_URL)
 class YieldPerformanceReportControllerTest {
     public static final String BASE_URL = "/api/v1/moj/reports";
@@ -78,6 +79,7 @@ class YieldPerformanceReportControllerTest {
     @MockBean
     private SittingDaysReportService sittingDaysReportService;
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST (GET) " + ViewYieldReportHappy.URL)
     class ViewYieldReportHappy {

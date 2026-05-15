@@ -102,9 +102,14 @@ import static uk.gov.hmcts.juror.api.utils.DataConversionUtil.getExceptionDetail
 /**
  * Integration tests for the API endpoints defined in LetterController.
  */
+@SuppressWarnings({
+    "PMD.ExcessiveImports",
+    "PMD.NcssCount",
+    "PMD.PublicMemberInNonPublicType",
+    "PMD.TooManyMethods"
+})
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.NcssCount"})
 class LetterControllerITest extends AbstractIntegrationTest {
     private static final String GET_LETTER_LIST_URI = "/api/v1/moj/letter/court-letter-list";
     private static final String HISTORY_RECORD_ADDED_TEXT = "History record should have been added";
@@ -120,6 +125,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
     private ExcusalCodeRepository excusalCodeRepository;
     @Autowired
     private JurorHistoryRepository jurorHistoryRepository;
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Autowired
     private PoolHistoryRepository poolHistoryRepository;
 
@@ -4119,6 +4125,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initSummonsReminderLetter.sql"})
     @DisplayName("POST /api/v1/moj/letter/reissue-letter-list (summons reminder)")

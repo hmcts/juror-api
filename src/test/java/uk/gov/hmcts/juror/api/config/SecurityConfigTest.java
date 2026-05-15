@@ -60,8 +60,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     JwtServiceImpl.class,
     ApplicationBeans.class
 })
+@SuppressWarnings({
+    "PMD.MutableStaticState",
+    "PMD.PublicMemberInNonPublicType"
+})
 @ActiveProfiles({"development", "test"})
-@SuppressWarnings("PMD.MutableStaticState")
 class SecurityConfigTest {
 
     @MockBean
@@ -161,6 +164,7 @@ class SecurityConfigTest {
             this.jwtType = jwtType;
         }
 
+        @SuppressWarnings("PMD.PublicMemberInNonPublicType")
         private enum JwtType {
             HMAC(SecurityConfigTest.hmacSecret, JwtType::getHmacClaimMap),
             PUBLIC(SecurityConfigTest.publicSecret, JwtType::getPublicClaimMap),
@@ -249,6 +253,7 @@ class SecurityConfigTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @RestController
     public static class SecurityConfigControllerTest {
         @GetMapping({

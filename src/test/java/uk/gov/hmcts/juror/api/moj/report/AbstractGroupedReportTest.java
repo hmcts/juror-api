@@ -151,6 +151,7 @@ class AbstractGroupedReportTest {
     }
 
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     private static class AbstractStandardReportTestImpl extends AbstractGroupedReport {
 
         public AbstractStandardReportTestImpl(PoolRequestRepository poolRequestRepository, EntityPath<?> from,

@@ -13,6 +13,7 @@ import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 class SampleSmokeTest extends ContainerTest {
     protected static final String CONTENT_TYPE_VALUE = "application/json";
