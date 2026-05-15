@@ -7,6 +7,7 @@ buildscript {
         flywayVersion = '10.22.0'
         postgresVersion = '42.7.5'
         envers = '3.5.4'
+        jwtVersion = '0.13.0'
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
@@ -32,12 +33,19 @@ apply plugin: 'io.spring.dependency-management'
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
+// don't want deprecation and removal warnings to be treated as errors as we have some dependencies
+// that are using deprecated APIs and we don't want to fail the build because of that
 tasks.withType(JavaCompile) {
-    options.compilerArgs << "-Xlint:unchecked" //<< "-Werror"
+  options.compilerArgs += [
+    "-Xlint:unchecked",
+    "-Xlint:-deprecation",
+    "-Xlint:-removal",
+    "-Werror"
+  ]
 }
 
 // https://github.com/gradle/gradle/issues/16791
@@ -53,7 +61,7 @@ jacoco {
     toolVersion = "0.8.13"
 }
 
-version = '5.14.0'
+version = '5.25.0'
 
 repositories {
     mavenLocal()
@@ -90,7 +98,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}")
     implementation("org.springframework.data:spring-data-envers:${envers}")
-   // implementation("org.springframework.data:spring-data-envers")
     implementation("org.springframework.boot:spring-boot-starter-security:${springBootVersion}")
     implementation("org.springframework.boot:spring-boot-starter-web:${springBootVersion}")
     implementation("org.springframework.boot:spring-boot-starter-json:${springBootVersion}")
@@ -102,15 +109,13 @@ dependencies {
     implementation "org.flywaydb:flyway-database-postgresql:${flywayVersion}"
     implementation "org.flywaydb:flyway-core:${flywayVersion}"
 
-    implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+    implementation "io.jsonwebtoken:jjwt-api:${jwtVersion}"
     implementation 'javax.mail:mail:1.4.7'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+    runtimeOnly "io.jsonwebtoken:jjwt-impl:${jwtVersion}"
+    runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jwtVersion}"
     implementation 'org.apache.httpcomponents.client5:httpclient5:5.4.4'
 
     implementation('com.google.guava:guava:33.4.0-jre')
-
-    implementation('org.hibernate.orm:hibernate-core:6.3.0.CR1')
 
     // QueryDSL
     implementation("com.querydsl:querydsl-core:${queryDslVersion}")
@@ -150,9 +155,9 @@ dependencies {
 
     testImplementation('net.bytebuddy:byte-buddy:1.17.7')
     testImplementation('junit:junit:4.13.2')
-    testImplementation "org.testcontainers:testcontainers:1.21.3"
-    testImplementation "org.testcontainers:junit-jupiter:1.21.3"
-    testImplementation 'org.testcontainers:postgresql:1.21.3'
+    testImplementation "org.testcontainers:testcontainers:1.21.4"
+    testImplementation "org.testcontainers:junit-jupiter:1.21.4"
+    testImplementation 'org.testcontainers:postgresql:1.21.4'
 
     // Validation
     testImplementation 'org.wiremock:wiremock-standalone:3.10.0'
@@ -213,7 +218,7 @@ flyway {
     user = "$dbUserName"
     password = "$dbPassword"
     locations = [ "$flywayLocations" ]
-    schemas = ['juror_dashboard', 'juror_mod']
+    schemas = ['juror_dashboard', 'juror_mod', 'juror_er']
     defaultSchema = 'juror_mod'
     table = 'schema_history'
     cleanDisabled = System.getenv("FLYWAY_CLEAN_DISABLED") ?: true

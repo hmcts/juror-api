@@ -59,6 +59,7 @@ public class BulkPrintData {
     private String detailRec;
 
     @Column(name = "extracted_flag")
+    @Builder.Default
     private boolean extractedFlag = false;
 
     @Column(name = "digital_comms")

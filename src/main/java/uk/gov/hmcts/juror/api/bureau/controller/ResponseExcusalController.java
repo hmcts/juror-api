@@ -2,6 +2,8 @@ package uk.gov.hmcts.juror.api.bureau.controller;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.jsonwebtoken.lang.Assert;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -38,6 +40,7 @@ import static uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController.
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/bureau/juror/excuse", produces = MediaType.APPLICATION_JSON_VALUE)
+@SuppressWarnings("PMD")
 @Tag(name = "Bureau Juror-Excusal API", description = "Bureau operations relating to manually excusing a juror.")
 public class ResponseExcusalController {
     private final ResponseExcusalService responseExcusalService;
@@ -110,6 +113,7 @@ public class ResponseExcusalController {
      */
     @AllArgsConstructor
     @NoArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Data
     @Schema(description = "List of Excusal Reasons")
     public static class ExcusalReasonsDto {
@@ -125,6 +129,7 @@ public class ResponseExcusalController {
      */
     @AllArgsConstructor
     @NoArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Data
     @Schema(description = "Excusal Reason")
     public static class ExcusalCodeDto {

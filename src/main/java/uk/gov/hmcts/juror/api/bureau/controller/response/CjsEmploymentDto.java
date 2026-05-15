@@ -1,11 +1,14 @@
 package uk.gov.hmcts.juror.api.bureau.controller.response;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
 
 import java.io.Serializable;
 
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Data
 @Schema(description = "Details on a Juror's employments with the CJS")
 public class CjsEmploymentDto implements Serializable {

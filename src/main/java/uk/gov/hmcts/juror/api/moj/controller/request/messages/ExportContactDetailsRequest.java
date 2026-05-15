@@ -1,6 +1,8 @@
 package uk.gov.hmcts.juror.api.moj.controller.request.messages;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.BooleanPath;
@@ -26,6 +28,7 @@ import java.util.function.Function;
 
 @Data
 @Builder
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ExportContactDetailsRequest {
 
     @JsonProperty("export_items")

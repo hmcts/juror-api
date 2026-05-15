@@ -1,6 +1,8 @@
 package uk.gov.hmcts.juror.api.moj.repository;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -407,7 +409,8 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .where(QAppearance.appearance.hideOnUnpaidExpenseAndReports.isFalse())
             .where(QAppearance.appearance.appearanceStage.in(
                 AppearanceStage.EXPENSE_ENTERED, AppearanceStage.EXPENSE_EDITED
-            ))
+            )) // JS-777 hide appearances before 1 Jan 2025.
+            .where(QAppearance.appearance.attendanceDate.goe(LocalDate.of(2025, 1, 1)))
             .join(QJuror.juror)
             .on(QJuror.juror.jurorNumber.eq(QAppearance.appearance.jurorNumber))
             .groupBy(
@@ -496,6 +499,22 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
     }
 
     @Override
+    public int getUnconfirmedAttendanceCountForJurorsAtCourt(List<String> jurorNumbers, String locCode) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        Long count = queryFactory
+            .select(APPEARANCE.count())
+            .from(APPEARANCE)
+            .where(APPEARANCE.jurorNumber.in(jurorNumbers))
+            .where(APPEARANCE.courtLocation.locCode.eq(locCode))
+            .where(APPEARANCE.appearanceStage.in(AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT))
+            .where(APPEARANCE.noShow.isNull().or(APPEARANCE.noShow.isFalse()))
+            .where(APPEARANCE.nonAttendanceDay.isNull().or(APPEARANCE.nonAttendanceDay.isFalse()))
+            .fetchOne();
+
+        return count != null ? count.intValue() : 0;
+    }
+
+    @Override
     public List<String> getCompletedJurorsAtCourt(String locationCode, LocalDate attendanceDate) {
 
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
@@ -560,6 +579,45 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .fetchOne();
 
         return count != null ? count.intValue() : 0;
+    }
+
+    @Override
+    public List<Tuple> getAllWeekendAttendances(List<LocalDate> saturdays, List<LocalDate> sundays,
+                                                List<LocalDate> bankHolidays, List<LocalDate> allDates) {
+
+        NumberExpression<Integer> saturdayExpr =
+            new CaseBuilder()
+                .when(APPEARANCE.attendanceDate.in(saturdays)).then(1)
+                .otherwise(0)
+                .sum();
+
+        NumberExpression<Integer> sundayExpr =
+            new CaseBuilder()
+                .when(APPEARANCE.attendanceDate.in(sundays)).then(1)
+                .otherwise(0)
+                .sum();
+
+        NumberExpression<Integer> holidayExpr =
+            new CaseBuilder()
+                .when(APPEARANCE.attendanceDate.in(bankHolidays)).then(1)
+                .otherwise(0)
+                .sum();
+
+        return getQueryFactory()
+            .select(COURT_LOCATION.name,
+                    COURT_LOCATION.locCode,
+                    saturdayExpr,
+                    sundayExpr,
+                    holidayExpr,
+                    APPEARANCE.totalPaid.sum()
+            )
+            .from(APPEARANCE)
+            .join(COURT_LOCATION).on(APPEARANCE.locCode.eq(COURT_LOCATION.locCode))
+            .where(APPEARANCE.attendanceDate.in(allDates))
+            .groupBy(COURT_LOCATION.name, COURT_LOCATION.locCode)
+            .orderBy(COURT_LOCATION.name.asc())
+            .fetch();
+
     }
 
     JPAQueryFactory getQueryFactory() {

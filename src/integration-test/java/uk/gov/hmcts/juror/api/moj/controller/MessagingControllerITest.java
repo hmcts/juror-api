@@ -965,18 +965,20 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                     MessageType.SendType.SMS);
 
                 addTest(MessageType.BRING_LUNCH_COURT,
-                    "Your jury panel is likely to go into deliberation tomorrow. Please bring a packed lunch to court"
+                    "Your jury panel is likely to go into deliberation on <attend_date>. Please bring a packed lunch to court"
                         + " as you will not be able to leave the deliberation room to get refreshments. Please do not"
                         + " bring metal cutlery or glass. If you have any questions, please contact the jury office "
                         + "on <court_phone>.",
-                    "Mae eich panel rheithgor yn debygol o gychwyn trafod yn yr ystafell ymneilltuo yfory. Dewch â "
+                    "Mae eich panel rheithgor yn debygol o gychwyn y broses trafod ar <attend_date>. Dewch â "
                         + "phecyn bwyd gyda chi i'r llys oherwydd ni chaniateir i chi adael yr ystafell ymneilltuo i "
                         + "nôl bwyd. Peidiwch â dod â chyllell a fforc metel nac unrhyw eitemau gwydr gyda chi. Os "
                         + "oes gennych unrhyw gwestiynau, cysylltwch â'r swyddfa rheithgor drwy ffonio <court_phone>.",
                     List.of(
+                        TestData.Placeholder.ATTEND_DATE.toPlaceholder(),
                         TestData.Placeholder.ENGLISH_COURT_PHONE.toPlaceholder()
                     ),
                     List.of(
+                        TestData.Placeholder.ATTEND_DATE.toPlaceholder(),
                         TestData.Placeholder.WELSH_COURT_PHONE.toPlaceholder()
                     ),
                     MessageType.SendType.EMAIL_AND_SMS);
@@ -2121,19 +2123,20 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 );
                 addTest(
                     MessageType.BRING_LUNCH_COURT,
-                    "Your jury panel is likely to go into deliberation tomorrow. Please bring a packed lunch to court"
+                    "Your jury panel is likely to go into deliberation on 02/01/2023. Please bring a packed lunch to court"
                         + " as you will not be able to leave the deliberation room to get refreshments. Please do not "
                         + "bring metal cutlery or glass. If you have any questions, please contact the jury office on "
                         + "01244 356726.",
-                    "Your jury panel is likely to go into deliberation tomorrow. Please bring a packed lunch to court"
+                    "Your jury panel is likely to go into deliberation on 02/01/2023. Please bring a packed lunch to court"
                         + " as you will not be able to leave the deliberation room to get refreshments. Please do not "
                         + "bring metal cutlery or glass. If you have any questions, please contact the jury office on "
                         + "01792 637000.",
-                    "Mae eich panel rheithgor yn debygol o gychwyn trafod yn yr ystafell ymneilltuo yfory. Dewch â "
+                    "Mae eich panel rheithgor yn debygol o gychwyn y broses trafod ar 02/01/2023. Dewch â "
                         + "phecyn bwyd gyda chi i'r llys oherwydd ni chaniateir i chi adael yr ystafell ymneilltuo i "
                         + "nôl bwyd. Peidiwch â dod â chyllell a fforc metel nac unrhyw eitemau gwydr gyda chi. Os oes "
                         + "gennych unrhyw gwestiynau, cysylltwch â'r swyddfa rheithgor drwy ffonio 01792 637000.",
-                    Map.of(),
+                    Map.of("<attend_date>", "2023-01-02"
+                    ),
                     "Bring lunch",
                     "Welsh Bring Lunch",
                     true,
@@ -3242,19 +3245,20 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 );
                 addTests(
                     MessageType.BRING_LUNCH_COURT,
-                    "Your jury panel is likely to go into deliberation tomorrow. Please bring a packed lunch to court"
+                    "Your jury panel is likely to go into deliberation on 02/01/2023. Please bring a packed lunch to court"
                         + " as you will not be able to leave the deliberation room to get refreshments. Please do not "
                         + "bring metal cutlery or glass. If you have any questions, please contact the jury office on "
                         + "01244 356726.",
-                    "Your jury panel is likely to go into deliberation tomorrow. Please bring a packed lunch to court"
+                    "Your jury panel is likely to go into deliberation on 02/01/2023. Please bring a packed lunch to court"
                         + " as you will not be able to leave the deliberation room to get refreshments. Please do not "
                         + "bring metal cutlery or glass. If you have any questions, please contact the jury office on "
                         + "01792 637000.",
-                    "Mae eich panel rheithgor yn debygol o gychwyn trafod yn yr ystafell ymneilltuo yfory. Dewch â "
+                    "Mae eich panel rheithgor yn debygol o gychwyn y broses trafod ar 02/01/2023. Dewch â "
                         + "phecyn bwyd gyda chi i'r llys oherwydd ni chaniateir i chi adael yr ystafell ymneilltuo i "
                         + "nôl bwyd. Peidiwch â dod â chyllell a fforc metel nac unrhyw eitemau gwydr gyda chi. Os oes "
                         + "gennych unrhyw gwestiynau, cysylltwch â'r swyddfa rheithgor drwy ffonio 01792 637000.",
-                    Map.of(),
+                    Map.of("<attend_date>", "2023-01-02"
+                    ),
                     MessageType.SendType.EMAIL_AND_SMS
                 );
                 addTests(

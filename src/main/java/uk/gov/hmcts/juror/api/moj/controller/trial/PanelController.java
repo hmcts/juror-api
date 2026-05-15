@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,7 +44,7 @@ public class PanelController {
     @Operation(summary = "Retrieves a list of jurors for a court location")
     public ResponseEntity<List<AvailableJurorsDto>> getAvailableJurors(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
-        @RequestParam("court_location_code") @PathVariable("locationCode") @Valid String locationCode) {
+        @RequestParam("court_location_code") @Valid String locationCode) {
         List<AvailableJurorsDto> dto = panelService.getAvailableJurors(locationCode);
         return ResponseEntity.ok().body(dto);
     }
@@ -81,9 +80,9 @@ public class PanelController {
     @Operation(summary = "Retrieves the juror list to be empanelled")
     public ResponseEntity<EmpanelListDto> requestEmpanel(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
-        @RequestParam("trial_number") @PathVariable("trialNumber") String trialNumber,
-        @RequestParam("number_requested") @PathVariable("numberRequested") int numberRequested,
-        @RequestParam("court_location_code") @PathVariable("courtLocationCode") String courtLocationCode) {
+        @RequestParam("trial_number") String trialNumber,
+        @RequestParam("number_requested") int numberRequested,
+        @RequestParam("court_location_code") String courtLocationCode) {
         EmpanelListDto dto = panelService.requestEmpanel(numberRequested, trialNumber, courtLocationCode);
         return ResponseEntity.ok(dto);
     }
@@ -101,8 +100,8 @@ public class PanelController {
     @Operation(summary = "Gets the panel list for a given trial")
     public ResponseEntity<List<PanelListDto>> getPanel(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
-        @RequestParam("trial_number") @PathVariable("trialNumber") String trialNumber,
-        @RequestParam("court_location_code") @PathVariable("courtLocationCode") String courtLocationCode,
+        @RequestParam("trial_number") String trialNumber,
+        @RequestParam("court_location_code") String courtLocationCode,
         @RequestParam(value = "date", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd")
             @Valid LocalDate date) {
         List<PanelListDto> dto = panelService.getPanelSummary(trialNumber, courtLocationCode, date);
@@ -113,8 +112,8 @@ public class PanelController {
     @Operation(summary = "Gets the jury list for a given trial")
     public ResponseEntity<List<PanelListDto>> getJury(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
-        @RequestParam("trial_number") @PathVariable("trialNumber") String trialNumber,
-        @RequestParam("court_location_code") @PathVariable("courtLocationCode") String courtLocationCode) {
+        @RequestParam("trial_number") String trialNumber,
+        @RequestParam("court_location_code") String courtLocationCode) {
         List<PanelListDto> dto = panelService.getJurySummary(trialNumber, courtLocationCode);
         return ResponseEntity.ok(dto);
     }
@@ -122,8 +121,8 @@ public class PanelController {
     @GetMapping("/status")
     @Operation(summary = "Gets the panel creation status")
     public ResponseEntity<Boolean> getPanelCreationStatus(
-        @RequestParam("trial_number") @PathVariable("trialNumber") String trialNumber,
-        @RequestParam("court_location_code") @PathVariable("courtLocationCode") String courtLocationCode) {
+        @RequestParam("trial_number") String trialNumber,
+        @RequestParam("court_location_code") String courtLocationCode) {
         return ResponseEntity.ok(panelService.getPanelStatus(trialNumber, courtLocationCode));
     }
 }

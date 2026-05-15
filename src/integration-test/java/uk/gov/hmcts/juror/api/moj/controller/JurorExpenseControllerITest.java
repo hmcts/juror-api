@@ -225,7 +225,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             assertThat(firstItem.getPoolNumber()).isEqualTo("415230101");
             assertThat(firstItem.getFirstName()).isEqualTo("Fnametwozero");
             assertThat(firstItem.getLastName()).isEqualTo("Lnametwozero");
-            assertThat(firstItem.getLastAttendanceDate()).isEqualTo(LocalDate.of(2023, 1, 8));
+            assertThat(firstItem.getLastAttendanceDate()).isEqualTo(LocalDate.of(2025, 1, 8));
             assertThat(firstItem.getTotalUnapproved()).isEqualTo(new BigDecimal("366.40"));
         }
 
@@ -265,8 +265,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         void happyPathWithDateRange() {
             final String courtLocation = COURT_LOCATION;
             final String jwt = createJwt(COURT_USER, courtLocation);
-            final LocalDate minDate = LocalDate.of(2023, 1, 5);
-            final LocalDate maxDate = LocalDate.of(2023, 1, 10);
+            final LocalDate minDate = LocalDate.of(2025, 1, 5);
+            final LocalDate maxDate = LocalDate.of(2025, 1, 10);
             final URI uri = URI.create(toUrl(courtLocation));
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
@@ -299,8 +299,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         @DisplayName("403 Forbidden - Invalid user")
         void invalidUser() {
             final String jwt = createJwtBureau(COURT_USER);
-            final LocalDate minDate = LocalDate.of(2023, 1, 5);
-            final LocalDate maxDate = LocalDate.of(2023, 1, 10);
+            final LocalDate minDate = LocalDate.of(2025, 1, 5);
+            final LocalDate maxDate = LocalDate.of(2025, 1, 10);
             final URI uri = URI.create(toUrl(COURT_LOCATION));
 
             UnpaidExpenseSummaryRequestDto requestDto =
@@ -540,7 +540,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void invalidJurorNumber() {
                 final String jurorNumber = "INVALID";
                 DailyExpense request = DailyExpense.builder()
-                    .dateOfExpense(LocalDate.of(2023, 1, 5))
+                    .dateOfExpense(LocalDate.of(2025, 1, 5))
                     .paymentMethod(PaymentMethod.BACS)
                     .time(DailyExpenseTime.builder()
                         .payAttendance(PayAttendanceType.FULL_DAY)
@@ -559,7 +559,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void noAttendancesFound() {
                 final String jurorNumber = "123456789";
                 DailyExpense request = DailyExpense.builder()
-                    .dateOfExpense(LocalDate.of(2023, 1, 5))
+                    .dateOfExpense(LocalDate.of(2025, 1, 5))
                     .paymentMethod(PaymentMethod.BACS)
                     .time(DailyExpenseTime.builder()
                         .payAttendance(PayAttendanceType.FULL_DAY)
@@ -571,7 +571,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
                 ResponseEntity<String> response = triggerInvalid(jurorNumber, request);
                 assertNotFound(response, toUrl(COURT_LOCATION, jurorNumber),
-                    "No draft appearance record found for juror: 123456789 on day: 2023-01-05");
+                    "No draft appearance record found for juror: 123456789 on day: 2025-01-05");
             }
         }
 
@@ -609,7 +609,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void negativeExpenseTotal() {
                 final String jurorNumber = "641500021";
                 DailyExpense request = DailyExpense.builder()
-                    .dateOfExpense(LocalDate.of(2023, 1, 5))
+                    .dateOfExpense(LocalDate.of(2025, 1, 5))
                     .paymentMethod(PaymentMethod.BACS)
                     .time(DailyExpenseTime.builder()
                         .travelTime(LocalTime.of(1, 2))
@@ -620,7 +620,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     )
                     .build();
                 assertBusinessRuleViolation(triggerInvalid(jurorNumber, request),
-                    "Total expenses cannot be less than £0. For Day 2023-01-05",
+                    "Total expenses cannot be less than £0. For Day 2025-01-05",
                     MojException.BusinessRuleViolation.ErrorCode.EXPENSES_CANNOT_BE_LESS_THAN_ZERO);
             }
 
@@ -628,7 +628,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void applyToAllWith0Expense() {
                 final String jurorNumber = "641500022";
                 DailyExpense request = DailyExpense.builder()
-                    .dateOfExpense(LocalDate.of(2023, 1, 5))
+                    .dateOfExpense(LocalDate.of(2025, 1, 5))
                     .paymentMethod(PaymentMethod.BACS)
                     .time(DailyExpenseTime.builder()
                         .travelTime(LocalTime.of(1, 2))
@@ -638,7 +638,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     .applyToAllDays(List.of(DailyExpenseApplyToAllDays.OTHER_COSTS))
                     .build();
                 assertBusinessRuleViolation(triggerInvalid(jurorNumber, request),
-                    "Total expenses cannot be less than £0. For Day 2023-01-06",
+                    "Total expenses cannot be less than £0. For Day 2025-01-06",
                     MojException.BusinessRuleViolation.ErrorCode.EXPENSES_CANNOT_BE_LESS_THAN_ZERO);
             }
         }
@@ -651,7 +651,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void typical() {
                 final String jurorNumber = "641500021";
                 DailyExpense request = DailyExpense.builder()
-                    .dateOfExpense(LocalDate.of(2023, 1, 5))
+                    .dateOfExpense(LocalDate.of(2025, 1, 5))
                     .paymentMethod(PaymentMethod.BACS)
                     .time(DailyExpenseTime.builder()
                         .travelTime(LocalTime.of(1, 2))
@@ -713,7 +713,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void financialLossExceeded() {
                 final String jurorNumber = "641500021";
                 DailyExpense request = DailyExpense.builder()
-                    .dateOfExpense(LocalDate.of(2023, 1, 5))
+                    .dateOfExpense(LocalDate.of(2025, 1, 5))
                     .paymentMethod(PaymentMethod.CASH)
                     .time(DailyExpenseTime.builder()
                         .travelTime(LocalTime.of(2, 2))
@@ -780,7 +780,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void applyToAllFinancialLossExceeded() {
                 final String jurorNumber = "641500021";
                 DailyExpense request = DailyExpense.builder()
-                    .dateOfExpense(LocalDate.of(2023, 1, 5))
+                    .dateOfExpense(LocalDate.of(2025, 1, 5))
                     .paymentMethod(PaymentMethod.CASH)
                     .time(DailyExpenseTime.builder()
                         .travelTime(LocalTime.of(2, 2))
@@ -843,7 +843,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void applyToAllDaysMultipleIncludingTravelAndNonAttendedDays() {
                 final String jurorNumber = "641500021";
                 DailyExpense request = DailyExpense.builder()
-                    .dateOfExpense(LocalDate.of(2023, 1, 5))
+                    .dateOfExpense(LocalDate.of(2025, 1, 5))
                     .paymentMethod(PaymentMethod.CASH)
                     .time(DailyExpenseTime.builder()
                         .travelTime(LocalTime.of(2, 2))
@@ -916,7 +916,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void hasTravelExpenses() {
                 final String jurorNumber = "641500021";
                 DailyExpense request = DailyExpense.builder()
-                    .dateOfExpense(LocalDate.of(2023, 1, 7))
+                    .dateOfExpense(LocalDate.of(2025, 1, 7))
                     .paymentMethod(PaymentMethod.BACS)
                     .time(DailyExpenseTime.builder()
                         .payAttendance(PayAttendanceType.FULL_DAY)
@@ -935,7 +935,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void hasFoodAndDrinkExpenses() {
                 final String jurorNumber = "641500021";
                 DailyExpense request = DailyExpense.builder()
-                    .dateOfExpense(LocalDate.of(2023, 1, 7))
+                    .dateOfExpense(LocalDate.of(2025, 1, 7))
                     .paymentMethod(PaymentMethod.BACS)
                     .time(DailyExpenseTime.builder()
                         .payAttendance(PayAttendanceType.FULL_DAY)
@@ -957,7 +957,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void hasTotalTravelTime() {
                 final String jurorNumber = "641500021";
                 DailyExpense request = DailyExpense.builder()
-                    .dateOfExpense(LocalDate.of(2023, 1, 7))
+                    .dateOfExpense(LocalDate.of(2025, 1, 7))
                     .paymentMethod(PaymentMethod.BACS)
                     .time(DailyExpenseTime.builder()
                         .payAttendance(PayAttendanceType.FULL_DAY)
@@ -981,7 +981,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void typical() {
                 final String jurorNumber = "641500021";
                 DailyExpense request = DailyExpense.builder()
-                    .dateOfExpense(LocalDate.of(2023, 1, 7))
+                    .dateOfExpense(LocalDate.of(2025, 1, 7))
                     .paymentMethod(PaymentMethod.BACS)
                     .time(DailyExpenseTime.builder()
                         .payAttendance(PayAttendanceType.FULL_DAY)
@@ -1014,7 +1014,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void financialLossLimitApplied() {
                 final String jurorNumber = "641500021";
                 DailyExpense request = DailyExpense.builder()
-                    .dateOfExpense(LocalDate.of(2023, 1, 7))
+                    .dateOfExpense(LocalDate.of(2025, 1, 7))
                     .paymentMethod(PaymentMethod.BACS)
                     .time(DailyExpenseTime.builder()
                         .payAttendance(PayAttendanceType.HALF_DAY)
@@ -1024,7 +1024,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     )
                     .build();
 
-                ResponseEntity<DailyExpenseResponse[]> response = triggerValid(jurorNumber, request);
+                ResponseEntity<DailyExpenseResponse[]> response =  triggerValid(jurorNumber, request);
                 assertThat(response).isNotNull();
                 assertThat(response.getBody()).isNotNull();
                 assertThat(response.getBody()).hasSize(1);
@@ -1058,7 +1058,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void zero() {
                 final String jurorNumber = "641500021";
                 DailyExpense request = DailyExpense.builder()
-                    .dateOfExpense(LocalDate.of(2023, 1, 7))
+                    .dateOfExpense(LocalDate.of(2025, 1, 7))
                     .paymentMethod(PaymentMethod.BACS)
                     .time(DailyExpenseTime.builder()
                         .payAttendance(PayAttendanceType.FULL_DAY)
@@ -1091,7 +1091,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void applyToAllDaysSingle() {
                 final String jurorNumber = "641500021";
                 DailyExpense request = DailyExpense.builder()
-                    .dateOfExpense(LocalDate.of(2023, 1, 7))
+                    .dateOfExpense(LocalDate.of(2025, 1, 7))
                     .paymentMethod(PaymentMethod.BACS)
                     .time(DailyExpenseTime.builder()
                         .payAttendance(PayAttendanceType.FULL_DAY)
@@ -1132,7 +1132,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void applyToAllDaysMultiple() {
                 final String jurorNumber = "641500021";
                 DailyExpense request = DailyExpense.builder()
-                    .dateOfExpense(LocalDate.of(2023, 1, 7))
+                    .dateOfExpense(LocalDate.of(2025, 1, 7))
                     .paymentMethod(PaymentMethod.CASH)
                     .time(DailyExpenseTime.builder()
                         .payAttendance(PayAttendanceType.FULL_DAY)
@@ -1262,7 +1262,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             @Test
             void positiveDraftExpense() {
-                LocalDate dateOfExpense = LocalDate.of(2023, 1, 5);
+                LocalDate dateOfExpense = LocalDate.of(2025, 1, 5);
                 GetEnteredExpenseRequest request = buildRequest(dateOfExpense);
 
                 ResponseEntity<List<GetEnteredExpenseResponse>> responseEntity = triggerValid(request);
@@ -1305,7 +1305,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             @Test
             void positiveForApprovalExpense() {
-                LocalDate dateOfExpense = LocalDate.of(2023, 1, 8);
+                LocalDate dateOfExpense = LocalDate.of(2025, 1, 8);
                 GetEnteredExpenseRequest request = buildRequest(dateOfExpense);
 
                 ResponseEntity<List<GetEnteredExpenseResponse>> responseEntity = triggerValid(request);
@@ -1348,7 +1348,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             @Test
             void positiveApprovedExpense() {
-                LocalDate dateOfExpense = LocalDate.of(2023, 1, 11);
+                LocalDate dateOfExpense = LocalDate.of(2025, 1, 11);
                 GetEnteredExpenseRequest request = buildRequest(dateOfExpense);
 
                 ResponseEntity<List<GetEnteredExpenseResponse>> responseEntity = triggerValid(request);
@@ -1426,7 +1426,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             @Test
             void unauthorisedBureauUser() {
-                LocalDate dateOfExpense = LocalDate.of(2024, 1, 11);
+                LocalDate dateOfExpense = LocalDate.of(2025, 1, 11);
                 GetEnteredExpenseRequest request = buildRequest(dateOfExpense);
                 final String jwt = createJwtBureau(BUREAU_USER);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
@@ -1462,8 +1462,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
             DateDto payload = new DateDto();
-            List<LocalDate> appearanceDates = List.of(LocalDate.of(2024, 1, 2),
-                LocalDate.of(2024, 1, 3));
+            List<LocalDate> appearanceDates = List.of(LocalDate.of(2025, 1, 2),
+                LocalDate.of(2025, 1, 3));
             payload.setDates(appearanceDates);
 
             RequestEntity<DateDto> request = new RequestEntity<>(payload, httpHeaders, POST,
@@ -1501,7 +1501,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
             DateDto payload = new DateDto();
-            List<LocalDate> appearanceDates = List.of(LocalDate.of(2024, 4, 9));
+            List<LocalDate> appearanceDates = List.of(LocalDate.of(2025, 4, 9));
             payload.setDates(appearanceDates);
 
             RequestEntity<DateDto> request = new RequestEntity<>(payload, httpHeaders, POST,
@@ -1537,7 +1537,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
             DateDto payload = new DateDto();
-            List<LocalDate> appearanceDates = List.of(LocalDate.of(2024, 1, 1));
+            List<LocalDate> appearanceDates = List.of(LocalDate.of(2025, 1, 1));
             payload.setDates(appearanceDates);
 
             RequestEntity<DateDto> request = new RequestEntity<>(payload, httpHeaders, POST,
@@ -1557,7 +1557,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
             DateDto payload = new DateDto();
-            List<LocalDate> appearanceDates = List.of(LocalDate.of(2024, 1, 1));
+            List<LocalDate> appearanceDates = List.of(LocalDate.of(2025, 1, 1));
             payload.setDates(appearanceDates);
 
             RequestEntity<DateDto> request = new RequestEntity<>(payload, httpHeaders, POST,
@@ -1576,7 +1576,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
             DateDto payload = new DateDto();
-            List<LocalDate> appearanceDates = List.of(LocalDate.of(2024, 1, 1));
+            List<LocalDate> appearanceDates = List.of(LocalDate.of(2025, 1, 1));
             payload.setDates(appearanceDates);
 
             RequestEntity<DateDto> request = new RequestEntity<>(payload, httpHeaders, POST,
@@ -1595,7 +1595,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
             DateDto payload = new DateDto();
-            List<LocalDate> appearanceDates = List.of(LocalDate.of(2024, 1, 5));
+            List<LocalDate> appearanceDates = List.of(LocalDate.of(2025, 1, 5));
             payload.setDates(appearanceDates);
 
             RequestEntity<DateDto> request = new RequestEntity<>(payload, httpHeaders, POST,
@@ -1636,7 +1636,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
             DateDto payload = new DateDto();
-            List<LocalDate> appearanceDates = List.of(LocalDate.of(2024, 1, 2));
+            List<LocalDate> appearanceDates = List.of(LocalDate.of(2025, 1, 2));
             payload.setDates(appearanceDates);
 
             RequestEntity<DateDto> request = new RequestEntity<>(payload, httpHeaders, POST,
@@ -1695,7 +1695,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getAppearanceStage())
                 .as("Appearance stage should remain unchanged (still entered)")
                 .isEqualTo(AppearanceStage.EXPENSE_ENTERED);
-            if (appearance.getAttendanceDate().equals(LocalDate.of(2024, 1, 5))) {
+            if (appearance.getAttendanceDate().equals(LocalDate.of(2025, 1, 5))) {
                 assertThat(appearance.isDraftExpense())
                     .as("Is draft expense flag should remain unchanged")
                     .isFalse();
@@ -1769,7 +1769,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertThat(body.getExpenseDetails()).hasSize(3);
                 assertThat(body.getExpenseDetails().get(0)).isEqualTo(
                     SimplifiedExpenseDetailDto.builder()
-                        .attendanceDate(LocalDate.of(2023, 1, 8))
+                        .attendanceDate(LocalDate.of(2025, 1, 8))
                         .financialAuditNumber("F123")
                         .attendanceType(AttendanceType.FULL_DAY)
                         .financialLoss(new BigDecimal("249.00"))
@@ -1779,12 +1779,12 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .totalDue(new BigDecimal("552.97"))
                         .totalPaid(new BigDecimal("0.00"))
                         .balanceToPay(new BigDecimal("552.97"))
-                        .auditCreatedOn(LocalDateTime.of(2023, 1, 11, 9, 31, 1))
+                        .auditCreatedOn(LocalDateTime.of(2025, 1, 11, 9, 31, 1))
                         .build()
                 );
                 assertThat(body.getExpenseDetails().get(1)).isEqualTo(
                     SimplifiedExpenseDetailDto.builder()
-                        .attendanceDate(LocalDate.of(2023, 1, 9))
+                        .attendanceDate(LocalDate.of(2025, 1, 9))
                         .financialAuditNumber("F123")
                         .attendanceType(AttendanceType.FULL_DAY)
                         .financialLoss(new BigDecimal("252.00"))
@@ -1794,12 +1794,12 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .totalDue(new BigDecimal("561.01"))
                         .totalPaid(new BigDecimal("0.00"))
                         .balanceToPay(new BigDecimal("561.01"))
-                        .auditCreatedOn(LocalDateTime.of(2023, 1, 11, 9, 31, 1))
+                        .auditCreatedOn(LocalDateTime.of(2025, 1, 11, 9, 31, 1))
                         .build()
                 );
                 assertThat(body.getExpenseDetails().get(2)).isEqualTo(
                     SimplifiedExpenseDetailDto.builder()
-                        .attendanceDate(LocalDate.of(2023, 1, 10))
+                        .attendanceDate(LocalDate.of(2025, 1, 10))
                         .financialAuditNumber("F123")
                         .attendanceType(AttendanceType.FULL_DAY)
                         .financialLoss(new BigDecimal("255.00"))
@@ -1809,7 +1809,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .totalDue(new BigDecimal("570.00"))
                         .totalPaid(new BigDecimal("0.00"))
                         .balanceToPay(new BigDecimal("570.00"))
-                        .auditCreatedOn(LocalDateTime.of(2023, 1, 11, 9, 31, 1))
+                        .auditCreatedOn(LocalDateTime.of(2025, 1, 11, 9, 31, 1))
                         .build()
                 );
 
@@ -1837,7 +1837,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertThat(body.getExpenseDetails()).hasSize(3);
                 assertThat(body.getExpenseDetails().get(0)).isEqualTo(
                     SimplifiedExpenseDetailDto.builder()
-                        .attendanceDate(LocalDate.of(2023, 1, 11))
+                        .attendanceDate(LocalDate.of(2025, 1, 11))
                         .financialAuditNumber("F321")
                         .attendanceType(AttendanceType.FULL_DAY)
                         .financialLoss(new BigDecimal("99.00"))
@@ -1847,12 +1847,12 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .totalDue(new BigDecimal("552.00"))
                         .totalPaid(new BigDecimal("552.00"))
                         .balanceToPay(new BigDecimal("0.00"))
-                        .auditCreatedOn(LocalDateTime.of(2023, 1, 12, 9, 32, 2))
+                        .auditCreatedOn(LocalDateTime.of(2025, 1, 12, 9, 32, 2))
                         .build()
                 );
                 assertThat(body.getExpenseDetails().get(1)).isEqualTo(
                     SimplifiedExpenseDetailDto.builder()
-                        .attendanceDate(LocalDate.of(2023, 1, 12))
+                        .attendanceDate(LocalDate.of(2025, 1, 12))
                         .financialAuditNumber("F3")
                         .attendanceType(AttendanceType.FULL_DAY)
                         .financialLoss(new BigDecimal("102.00"))
@@ -1862,12 +1862,12 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .totalDue(new BigDecimal("561.00"))
                         .totalPaid(new BigDecimal("561.00"))
                         .balanceToPay(new BigDecimal("0.00"))
-                        .auditCreatedOn(LocalDateTime.of(2023, 1, 13, 9, 33, 3))
+                        .auditCreatedOn(LocalDateTime.of(2025, 1, 13, 9, 33, 3))
                         .build()
                 );
                 assertThat(body.getExpenseDetails().get(2)).isEqualTo(
                     SimplifiedExpenseDetailDto.builder()
-                        .attendanceDate(LocalDate.of(2023, 1, 13))
+                        .attendanceDate(LocalDate.of(2025, 1, 13))
                         .financialAuditNumber("F321")
                         .attendanceType(AttendanceType.FULL_DAY)
                         .financialLoss(new BigDecimal("105.00"))
@@ -1877,7 +1877,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .totalDue(new BigDecimal("570.00"))
                         .totalPaid(new BigDecimal("570.00"))
                         .balanceToPay(new BigDecimal("0.00"))
-                        .auditCreatedOn(LocalDateTime.of(2023, 1, 12, 9, 32, 2))
+                        .auditCreatedOn(LocalDateTime.of(2025, 1, 12, 9, 32, 2))
                         .build()
                 );
 
@@ -1905,7 +1905,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertThat(body.getExpenseDetails()).hasSize(3);
                 assertThat(body.getExpenseDetails().get(0)).isEqualTo(
                     SimplifiedExpenseDetailDto.builder()
-                        .attendanceDate(LocalDate.of(2023, 1, 14))
+                        .attendanceDate(LocalDate.of(2025, 1, 14))
                         .financialAuditNumber("F12345")
                         .attendanceType(AttendanceType.FULL_DAY)
                         .financialLoss(new BigDecimal("129.00"))
@@ -1915,12 +1915,12 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .totalDue(new BigDecimal("662.00"))
                         .totalPaid(new BigDecimal("552.00"))
                         .balanceToPay(new BigDecimal("110.00"))
-                        .auditCreatedOn(LocalDateTime.of(2023, 1, 14, 9, 34, 4))
+                        .auditCreatedOn(LocalDateTime.of(2025, 1, 14, 9, 34, 4))
                         .build()
                 );
                 assertThat(body.getExpenseDetails().get(1)).isEqualTo(
                     SimplifiedExpenseDetailDto.builder()
-                        .attendanceDate(LocalDate.of(2023, 1, 15))
+                        .attendanceDate(LocalDate.of(2025, 1, 15))
                         .financialAuditNumber("F12345")
                         .attendanceType(AttendanceType.FULL_DAY)
                         .financialLoss(new BigDecimal("132.00"))
@@ -1930,12 +1930,12 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .totalDue(new BigDecimal("671.00"))
                         .totalPaid(new BigDecimal("561.00"))
                         .balanceToPay(new BigDecimal("110.00"))
-                        .auditCreatedOn(LocalDateTime.of(2023, 1, 14, 9, 34, 4))
+                        .auditCreatedOn(LocalDateTime.of(2025, 1, 14, 9, 34, 4))
                         .build()
                 );
                 assertThat(body.getExpenseDetails().get(2)).isEqualTo(
                     SimplifiedExpenseDetailDto.builder()
-                        .attendanceDate(LocalDate.of(2023, 1, 16))
+                        .attendanceDate(LocalDate.of(2025, 1, 16))
                         .financialAuditNumber("F12345")
                         .attendanceType(AttendanceType.HALF_DAY)
                         .financialLoss(new BigDecimal("135.00"))
@@ -1945,7 +1945,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .totalDue(new BigDecimal("710.00"))
                         .totalPaid(new BigDecimal("570.00"))
                         .balanceToPay(new BigDecimal("140.00"))
-                        .auditCreatedOn(LocalDateTime.of(2023, 1, 14, 9, 34, 4))
+                        .auditCreatedOn(LocalDateTime.of(2025, 1, 14, 9, 34, 4))
                         .build()
                 );
 
@@ -2128,7 +2128,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertThat(body.getExpenseDetails()).hasSize(3);
                 assertThat(body.getExpenseDetails().get(0)).isEqualTo(
                     ExpenseDetailsDto.builder()
-                        .attendanceDate(LocalDate.of(2023, 1, 5))
+                        .attendanceDate(LocalDate.of(2025, 1, 5))
                         .attendanceType(AttendanceType.FULL_DAY)
                         .lossOfEarnings(new BigDecimal("90.00"))
                         .extraCare(new BigDecimal("70.00"))
@@ -2146,7 +2146,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 );
                 assertThat(body.getExpenseDetails().get(1)).isEqualTo(
                     ExpenseDetailsDto.builder()
-                        .attendanceDate(LocalDate.of(2023, 1, 6))
+                        .attendanceDate(LocalDate.of(2025, 1, 6))
                         .attendanceType(AttendanceType.FULL_DAY)
                         .lossOfEarnings(new BigDecimal("91.00"))
                         .extraCare(new BigDecimal("71.00"))
@@ -2164,7 +2164,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 );
                 assertThat(body.getExpenseDetails().get(2)).isEqualTo(
                     ExpenseDetailsDto.builder()
-                        .attendanceDate(LocalDate.of(2023, 1, 7))
+                        .attendanceDate(LocalDate.of(2025, 1, 7))
                         .attendanceType(AttendanceType.HALF_DAY)
                         .lossOfEarnings(new BigDecimal("92.00"))
                         .extraCare(new BigDecimal("72.00"))
@@ -2299,15 +2299,15 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 ResponseEntity<CombinedExpenseDetailsDto<ExpenseDetailsDto>> response =
                     triggerValid(JUROR_NUMBER,
                         List.of(
-                            LocalDate.of(2023, 1, 5),
-                            LocalDate.of(2023, 1, 8),
-                            LocalDate.of(2023, 1, 14)
+                            LocalDate.of(2025, 1, 5),
+                            LocalDate.of(2025, 1, 8),
+                            LocalDate.of(2025, 1, 14)
                         ));
                 CombinedExpenseDetailsDto<ExpenseDetailsDto> body = response.getBody();
                 assertThat(body.getExpenseDetails()).hasSize(3);
                 assertThat(body.getExpenseDetails().get(0)).isEqualTo(
                     ExpenseDetailsDto.builder()
-                        .attendanceDate(LocalDate.of(2023, 1, 5))
+                        .attendanceDate(LocalDate.of(2025, 1, 5))
                         .attendanceType(AttendanceType.FULL_DAY)
                         .lossOfEarnings(new BigDecimal("90.00"))
                         .extraCare(new BigDecimal("70.00"))
@@ -2325,7 +2325,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 );
                 assertThat(body.getExpenseDetails().get(1)).isEqualTo(
                     ExpenseDetailsDto.builder()
-                        .attendanceDate(LocalDate.of(2023, 1, 8))
+                        .attendanceDate(LocalDate.of(2025, 1, 8))
                         .attendanceType(AttendanceType.FULL_DAY)
                         .lossOfEarnings(new BigDecimal("93.00"))
                         .extraCare(new BigDecimal("73.00"))
@@ -2343,7 +2343,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 );
                 assertThat(body.getExpenseDetails().get(2)).isEqualTo(
                     ExpenseDetailsDto.builder()
-                        .attendanceDate(LocalDate.of(2023, 1, 14))
+                        .attendanceDate(LocalDate.of(2025, 1, 14))
                         .attendanceType(AttendanceType.FULL_DAY)
                         .lossOfEarnings(new BigDecimal("23.00"))
                         .extraCare(new BigDecimal("43.00"))
@@ -2397,7 +2397,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             @Test
             void canNotAccessJurorPool() {
                 assertForbiddenResponse(triggerInvalid(COURT_LOCATION, JUROR_NUMBER, "414", List.of(
-                        LocalDate.of(2023, 1, 5)
+                        LocalDate.of(2025, 1, 5)
                     )),
                     toUrl(COURT_LOCATION, JUROR_NUMBER));
             }
@@ -2405,7 +2405,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             @Test
             void isBureauUser() {
                 assertForbiddenResponse(triggerInvalid("400", JUROR_NUMBER, "400", List.of(
-                        LocalDate.of(2023, 1, 5)
+                        LocalDate.of(2025, 1, 5)
                     )),
                     toUrl("400", JUROR_NUMBER));
             }
@@ -2413,7 +2413,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             @Test
             void oneOrMoreDatesNotFound() {
                 assertNotFound(triggerInvalid(COURT_LOCATION, JUROR_NUMBER, COURT_LOCATION, List.of(
-                        LocalDate.of(2023, 1, 5),
+                        LocalDate.of(2025, 1, 5),
                         LocalDate.of(2020, 1, 8))),
                     toUrl(COURT_LOCATION, JUROR_NUMBER),
                     "Not all dates found");
@@ -2485,15 +2485,15 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     .dateToRevisions(
                         List.of(
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 8))
+                                .attendanceDate(LocalDate.of(2025, 1, 8))
                                 .version(1L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 9))
+                                .attendanceDate(LocalDate.of(2025, 1, 9))
                                 .version(2L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 10))
+                                .attendanceDate(LocalDate.of(2025, 1, 10))
                                 .version(1L)
                                 .build()
                         )
@@ -2513,20 +2513,20 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 long id = assertFinancialAuditDetailsApproved(financialAuditDetails.get(0),
                     LocalDateTime.now(), FinancialAuditDetails.Type.APPROVED_BACS);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(0),
-                    id, LocalDate.of(2023, 1, 8), 3);
+                    id, LocalDate.of(2025, 1, 8), 3);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(1),
-                    id, LocalDate.of(2023, 1, 9), 4);
+                    id, LocalDate.of(2025, 1, 9), 4);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(2),
-                    id, LocalDate.of(2023, 1, 10), 3);
+                    id, LocalDate.of(2025, 1, 10), 3);
 
                 assertApproved(appearanceRepository
-                    .findByLocCodeAndJurorNumberAndAttendanceDate("415", JUROR_NUMBER, LocalDate.of(2023, 1, 8)));
+                    .findByLocCodeAndJurorNumberAndAttendanceDate("415", JUROR_NUMBER, LocalDate.of(2025, 1, 8)));
                 assertApproved(appearanceRepository
-                    .findByLocCodeAndJurorNumberAndAttendanceDate("415", JUROR_NUMBER, LocalDate.of(2023, 1, 9)));
+                    .findByLocCodeAndJurorNumberAndAttendanceDate("415", JUROR_NUMBER, LocalDate.of(2025, 1, 9)));
                 assertApproved(appearanceRepository
-                    .findByLocCodeAndJurorNumberAndAttendanceDate("415", JUROR_NUMBER, LocalDate.of(2023, 1, 10)));
+                    .findByLocCodeAndJurorNumberAndAttendanceDate("415", JUROR_NUMBER, LocalDate.of(2025, 1, 10)));
                 assertJurorHistory(JUROR_NUMBER, HistoryCodeMod.ARAMIS_EXPENSES_FILE_CREATED, "COURT_USER",
-                    "£1,683.98", "415230101", LocalDate.of(2023, 1, 10), "F" + id);
+                    "£1,683.98", "415230101", LocalDate.of(2025, 1, 10), "F" + id);
                 assertPaymentData(JUROR_NUMBER, new BigDecimal("1683.98"), new BigDecimal("702.98"),
                     new BigDecimal("225.00"), new BigDecimal("756.00"));
 
@@ -2540,15 +2540,15 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     .dateToRevisions(
                         List.of(
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 2, 8))
+                                .attendanceDate(LocalDate.of(2025, 2, 8))
                                 .version(1L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 2, 9))
+                                .attendanceDate(LocalDate.of(2025, 2, 9))
                                 .version(1L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 2, 10))
+                                .attendanceDate(LocalDate.of(2025, 2, 10))
                                 .version(1L)
                                 .build()
                         )
@@ -2568,23 +2568,23 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 long id = assertFinancialAuditDetailsApproved(financialAuditDetails.get(0),
                     LocalDateTime.now(), FinancialAuditDetails.Type.APPROVED_CASH);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(0),
-                    id, LocalDate.of(2023, 2, 8), 3);
+                    id, LocalDate.of(2025, 2, 8), 3);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(1),
-                    id, LocalDate.of(2023, 2, 9), 3);
+                    id, LocalDate.of(2025, 2, 9), 3);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(2),
-                    id, LocalDate.of(2023, 2, 10), 3);
+                    id, LocalDate.of(2025, 2, 10), 3);
 
                 assertApproved(
                     appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415", JUROR_NUMBER,
-                        LocalDate.of(2023, 2, 8)));
+                        LocalDate.of(2025, 2, 8)));
                 assertApproved(
                     appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415", JUROR_NUMBER,
-                        LocalDate.of(2023, 2, 9)));
+                        LocalDate.of(2025, 2, 9)));
                 assertApproved(
                     appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415", JUROR_NUMBER,
-                        LocalDate.of(2023, 2, 10)));
+                        LocalDate.of(2025, 2, 10)));
                 assertJurorHistory(JUROR_NUMBER, HistoryCodeMod.CASH_PAYMENT_APPROVAL, "COURT_USER", "£1,683.98",
-                    "415230101", LocalDate.of(2023, 2, 10), "F" + id);
+                    "415230101", LocalDate.of(2025, 2, 10), "F" + id);
                 List<PaymentData> paymentDataList = paymentDataRepository.findByJurorNumber(JUROR_NUMBER);
                 assertThat(paymentDataList).hasSize(0);
             }
@@ -2604,15 +2604,15 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     .dateToRevisions(
                         List.of(
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 14))
+                                .attendanceDate(LocalDate.of(2025, 1, 14))
                                 .version(2L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 15))
+                                .attendanceDate(LocalDate.of(2025, 1, 15))
                                 .version(2L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 16))
+                                .attendanceDate(LocalDate.of(2025, 1, 16))
                                 .version(2L)
                                 .build()
                         )
@@ -2647,25 +2647,25 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 long id = assertFinancialAuditDetailsApproved(financialAuditDetails.get(0),
                     LocalDateTime.now(), FinancialAuditDetails.Type.REAPPROVED_BACS);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(0),
-                    id, LocalDate.of(2023, 1, 14), 4, 12_344L);
+                    id, LocalDate.of(2025, 1, 14), 4, 12_344L);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(1),
-                    id, LocalDate.of(2023, 1, 15), 4, 12_344L);
+                    id, LocalDate.of(2025, 1, 15), 4, 12_344L);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(2),
-                    id, LocalDate.of(2023, 1, 16), 4, 12_344L);
+                    id, LocalDate.of(2025, 1, 16), 4, 12_344L);
 
                 assertApproved(
                     appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(
-                        "415", JUROR_NUMBER, LocalDate.of(2023, 1, 14)));
+                        "415", JUROR_NUMBER, LocalDate.of(2025, 1, 14)));
                 assertApproved(
                     appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(
-                        "415", JUROR_NUMBER, LocalDate.of(2023, 1, 15)));
+                        "415", JUROR_NUMBER, LocalDate.of(2025, 1, 15)));
                 assertApproved(
                     appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate(
-                        "415", JUROR_NUMBER, LocalDate.of(2023, 1, 16)));
+                        "415", JUROR_NUMBER, LocalDate.of(2025, 1, 16)));
 
                 assertJurorHistory(JUROR_NUMBER, HistoryCodeMod.ARAMIS_EXPENSES_FILE_CREATED, "COURT_USER",
                     "£409.00",
-                    "415230101", LocalDate.of(2023, 1, 16), "F" + id);
+                    "415230101", LocalDate.of(2025, 1, 16), "F" + id);
                 assertPaymentData(JUROR_NUMBER, new BigDecimal("409.00"), new BigDecimal("260.00"),
                     new BigDecimal("59.00"), new BigDecimal("90.00"));
 
@@ -2730,7 +2730,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                             .dateToRevisions(
                                 List.of(
                                     ApproveExpenseDto.DateToRevision.builder()
-                                        .attendanceDate(LocalDate.of(2023, 1, 14))
+                                        .attendanceDate(LocalDate.of(2025, 1, 14))
                                         .version(1L)
                                         .build()
                                 )
@@ -2749,15 +2749,15 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                             .dateToRevisions(
                                 List.of(
                                     ApproveExpenseDto.DateToRevision.builder()
-                                        .attendanceDate(LocalDate.of(2023, 1, 14))
+                                        .attendanceDate(LocalDate.of(2025, 1, 14))
                                         .version(2L)
                                         .build(),
                                     ApproveExpenseDto.DateToRevision.builder()
-                                        .attendanceDate(LocalDate.of(2023, 1, 15))
+                                        .attendanceDate(LocalDate.of(2025, 1, 15))
                                         .version(1L)
                                         .build(),
                                     ApproveExpenseDto.DateToRevision.builder()
-                                        .attendanceDate(LocalDate.of(2023, 1, 16))
+                                        .attendanceDate(LocalDate.of(2025, 1, 16))
                                         .version(1L)
                                         .build()
                                 )
@@ -2777,11 +2777,11 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                             .dateToRevisions(
                                 List.of(
                                     ApproveExpenseDto.DateToRevision.builder()
-                                        .attendanceDate(LocalDate.of(2023, 1, 14))
+                                        .attendanceDate(LocalDate.of(2025, 1, 14))
                                         .version(1L)
                                         .build(),
                                     ApproveExpenseDto.DateToRevision.builder()
-                                        .attendanceDate(LocalDate.of(2023, 1, 15))
+                                        .attendanceDate(LocalDate.of(2025, 1, 15))
                                         .version(1L)
                                         .build()
                                 )
@@ -2796,10 +2796,10 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     "INSERT INTO juror_mod.financial_audit_details ("
                         + "id, juror_revision, court_location_revision, type, created_by, created_on, "
                         + "juror_number, loc_code) VALUES ("
-                        + "12345, 1, 6, 'FOR_APPROVAL', 'COURT_USER', '2023-01-01 00:00:00','641500020','415')",
+                        + "12345, 1, 6, 'FOR_APPROVAL', 'COURT_USER', '2025-01-01 00:00:00','641500020','415')",
                     "INSERT INTO juror_mod.financial_audit_details_appearances ("
                         + "financial_audit_id, attendance_date,appearance_version, loc_code) VALUES "
-                        + "(12345, '2023-01-14', 2,'415')"
+                        + "(12345, '2025-01-14', 2,'415')"
                 })
             void negativeUserCanNotApprove() {
                 assertBusinessRuleViolation(triggerInvalid(COURT_LOCATION,
@@ -2811,15 +2811,15 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                             .dateToRevisions(
                                 List.of(
                                     ApproveExpenseDto.DateToRevision.builder()
-                                        .attendanceDate(LocalDate.of(2023, 1, 14))
+                                        .attendanceDate(LocalDate.of(2025, 1, 14))
                                         .version(2L)
                                         .build(),
                                     ApproveExpenseDto.DateToRevision.builder()
-                                        .attendanceDate(LocalDate.of(2023, 1, 15))
+                                        .attendanceDate(LocalDate.of(2025, 1, 15))
                                         .version(2L)
                                         .build(),
                                     ApproveExpenseDto.DateToRevision.builder()
-                                        .attendanceDate(LocalDate.of(2023, 1, 16))
+                                        .attendanceDate(LocalDate.of(2025, 1, 16))
                                         .version(2L)
                                         .build()
                                 )
@@ -2840,15 +2840,15 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                             .dateToRevisions(
                                 List.of(
                                     ApproveExpenseDto.DateToRevision.builder()
-                                        .attendanceDate(LocalDate.of(2023, 1, 8))
+                                        .attendanceDate(LocalDate.of(2025, 1, 8))
                                         .version(1L)
                                         .build(),
                                     ApproveExpenseDto.DateToRevision.builder()
-                                        .attendanceDate(LocalDate.of(2023, 1, 9))
+                                        .attendanceDate(LocalDate.of(2025, 1, 9))
                                         .version(2L)
                                         .build(),
                                     ApproveExpenseDto.DateToRevision.builder()
-                                        .attendanceDate(LocalDate.of(2023, 1, 10))
+                                        .attendanceDate(LocalDate.of(2025, 1, 10))
                                         .version(1L)
                                         .build()
                                 )
@@ -2869,15 +2869,15 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                             .dateToRevisions(
                                 List.of(
                                     ApproveExpenseDto.DateToRevision.builder()
-                                        .attendanceDate(LocalDate.of(2023, 1, 14))
+                                        .attendanceDate(LocalDate.of(2025, 1, 14))
                                         .version(1L)
                                         .build(),
                                     ApproveExpenseDto.DateToRevision.builder()
-                                        .attendanceDate(LocalDate.of(2023, 1, 15))
+                                        .attendanceDate(LocalDate.of(2025, 1, 15))
                                         .version(1L)
                                         .build(),
                                     ApproveExpenseDto.DateToRevision.builder()
-                                        .attendanceDate(LocalDate.of(2023, 1, 16))
+                                        .attendanceDate(LocalDate.of(2025, 1, 16))
                                         .version(1L)
                                         .build()
                                 )
@@ -2898,15 +2898,15 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                             .dateToRevisions(
                                 List.of(
                                     ApproveExpenseDto.DateToRevision.builder()
-                                        .attendanceDate(LocalDate.of(2023, 1, 14))
+                                        .attendanceDate(LocalDate.of(2025, 1, 14))
                                         .version(1L)
                                         .build(),
                                     ApproveExpenseDto.DateToRevision.builder()
-                                        .attendanceDate(LocalDate.of(2023, 1, 15))
+                                        .attendanceDate(LocalDate.of(2025, 1, 15))
                                         .version(1L)
                                         .build(),
                                     ApproveExpenseDto.DateToRevision.builder()
-                                        .attendanceDate(LocalDate.of(2023, 1, 16))
+                                        .attendanceDate(LocalDate.of(2025, 1, 16))
                                         .version(1L)
                                         .build()
                                 )
@@ -2956,7 +2956,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void invalidJurorNumber() {
                 final String jurorNumber = "INVALID";
                 DailyExpense request = DailyExpense.builder()
-                    .dateOfExpense(LocalDate.of(2023, 1, 5))
+                    .dateOfExpense(LocalDate.of(2025, 1, 5))
                     .paymentMethod(PaymentMethod.BACS)
                     .time(DailyExpenseTime.builder()
                         .payAttendance(PayAttendanceType.FULL_DAY)
@@ -2974,7 +2974,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             @Test
             void invalidExpenseType() {
                 DailyExpense request = DailyExpense.builder()
-                    .dateOfExpense(LocalDate.of(2023, 1, 5))
+                    .dateOfExpense(LocalDate.of(2025, 1, 5))
                     .paymentMethod(PaymentMethod.BACS)
                     .time(DailyExpenseTime.builder()
                         .payAttendance(PayAttendanceType.FULL_DAY)
@@ -2994,7 +2994,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void noAttendancesFound() {
                 final String jurorNumber = "123456789";
                 DailyExpense request = DailyExpense.builder()
-                    .dateOfExpense(LocalDate.of(2023, 1, 5))
+                    .dateOfExpense(LocalDate.of(2025, 1, 5))
                     .paymentMethod(PaymentMethod.BACS)
                     .time(DailyExpenseTime.builder()
                         .payAttendance(PayAttendanceType.FULL_DAY)
@@ -3007,14 +3007,14 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 ResponseEntity<String> response = triggerInvalid(jurorNumber, ExpenseType.FOR_REAPPROVAL.name(),
                     request);
                 assertNotFound(response, toUrl(jurorNumber, ExpenseType.FOR_REAPPROVAL),
-                    "No appearance record found for juror: 123456789 on day: 2023-01-05");
+                    "No appearance record found for juror: 123456789 on day: 2025-01-05");
             }
 
             @Test
             void wrongExpenseType() {
                 final String jurorNumber = "641500020";
                 DailyExpense request = DailyExpense.builder()
-                    .dateOfExpense(LocalDate.of(2023, 1, 8))
+                    .dateOfExpense(LocalDate.of(2025, 1, 8))
                     .paymentMethod(PaymentMethod.BACS)
                     .time(DailyExpenseTime.builder()
                         .payAttendance(PayAttendanceType.FULL_DAY)
@@ -3035,7 +3035,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void lessThenAmountAlreadyPaid() {
                 final String jurorNumber = "641500020";
                 DailyExpense request = DailyExpense.builder()
-                    .dateOfExpense(LocalDate.of(2023, 1, 11))
+                    .dateOfExpense(LocalDate.of(2025, 1, 11))
                     .paymentMethod(PaymentMethod.BACS)
                     .time(DailyExpenseTime.builder()
                         .travelTime(LocalTime.of(1, 2))
@@ -3074,7 +3074,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void typicalForApproved() {
                 final String jurorNumber = "641500020";
                 DailyExpense request = DailyExpense.builder()
-                    .dateOfExpense(LocalDate.of(2023, 1, 8))
+                    .dateOfExpense(LocalDate.of(2025, 1, 8))
                     .paymentMethod(PaymentMethod.BACS)
                     .time(DailyExpenseTime.builder()
                         .travelTime(LocalTime.of(1, 2))
@@ -3092,7 +3092,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     .build();
 
                 DailyExpense request2 = DailyExpense.builder()
-                    .dateOfExpense(LocalDate.of(2023, 1, 9))
+                    .dateOfExpense(LocalDate.of(2025, 1, 9))
                     .paymentMethod(PaymentMethod.BACS)
                     .time(DailyExpenseTime.builder()
                         .travelTime(LocalTime.of(1, 2))
@@ -3171,9 +3171,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
                 assertThat(appearance2.getTotalDue()).isEqualTo(doubleToBigDecimal(61.70));
                 assertJurorHistory(jurorNumber, HistoryCodeMod.EDIT_PAYMENTS, "COURT_USER", "£45.34",
-                    "415230101", LocalDate.of(2023, 1, 8), "F2", 2, 0);
+                    "415230101", LocalDate.of(2025, 1, 8), "F2", 2, 0);
                 assertJurorHistory(jurorNumber, HistoryCodeMod.EDIT_PAYMENTS, "COURT_USER", "£61.70",
-                    "415230101", LocalDate.of(2023, 1, 9), "F2", 2, 1);
+                    "415230101", LocalDate.of(2025, 1, 9), "F2", 2, 1);
 
 
                 List<FinancialAuditDetailsAppearances> financialAuditDetailsAppearances = new ArrayList<>();
@@ -3182,10 +3182,10 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     Comparator.comparing(FinancialAuditDetailsAppearances::getAttendanceDate));
                 assertThat(financialAuditDetailsAppearances).hasSize(2);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(0),
-                    2, LocalDate.of(2023, 1, 8), 3);
+                    2, LocalDate.of(2025, 1, 8), 3);
 
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(1),
-                    2, LocalDate.of(2023, 1, 9), 3);
+                    2, LocalDate.of(2025, 1, 9), 3);
             }
 
 
@@ -3193,7 +3193,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void typicalApproved() {
                 final String jurorNumber = "641500020";
                 DailyExpense request = DailyExpense.builder()
-                    .dateOfExpense(LocalDate.of(2023, 1, 11))
+                    .dateOfExpense(LocalDate.of(2025, 1, 11))
                     .paymentMethod(PaymentMethod.BACS)
                     .time(DailyExpenseTime.builder()
                         .travelTime(LocalTime.of(1, 2))
@@ -3248,16 +3248,16 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 financialAuditDetailsAppearancesRepository.findAll().forEach(financialAuditDetailsAppearances::add);
                 assertThat(financialAuditDetailsAppearances).hasSize(1);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(0),
-                    2, LocalDate.of(2023, 1, 11), 3);
+                    2, LocalDate.of(2025, 1, 11), 3);
                 assertJurorHistory(jurorNumber, HistoryCodeMod.EDIT_PAYMENTS, "COURT_USER", "£62.03",
-                    "415230101", LocalDate.of(2023, 1, 11), "F2", 1, 0);
+                    "415230101", LocalDate.of(2025, 1, 11), "F2", 1, 0);
             }
 
             @Test
             void typicalReApproved() {
                 final String jurorNumber = "641500020";
                 DailyExpense request = DailyExpense.builder()
-                    .dateOfExpense(LocalDate.of(2023, 1, 15))
+                    .dateOfExpense(LocalDate.of(2025, 1, 15))
                     .paymentMethod(PaymentMethod.BACS)
                     .time(DailyExpenseTime.builder()
                         .travelTime(LocalTime.of(2, 2))
@@ -3312,9 +3312,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 financialAuditDetailsAppearancesRepository.findAll().forEach(financialAuditDetailsAppearances::add);
                 assertThat(financialAuditDetailsAppearances).hasSize(1);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(0),
-                    2, LocalDate.of(2023, 1, 15), 3);
+                    2, LocalDate.of(2025, 1, 15), 3);
                 assertJurorHistory(jurorNumber, HistoryCodeMod.EDIT_PAYMENTS, "COURT_USER", "£65.54",
-                    "415230101", LocalDate.of(2023, 1, 15), "F2", 1, 0);
+                    "415230101", LocalDate.of(2025, 1, 15), "F2", 1, 0);
             }
         }
     }
@@ -3366,7 +3366,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 CalculateTotalExpenseRequestDto request = CalculateTotalExpenseRequestDto.builder()
                     .expenseList(List.of(
                         DailyExpense.builder()
-                            .dateOfExpense(LocalDate.of(2023, 1, 5))
+                            .dateOfExpense(LocalDate.of(2025, 1, 5))
                             .paymentMethod(PaymentMethod.BACS)
                             .time(DailyExpenseTime.builder()
                                 .travelTime(LocalTime.of(1, 2))
@@ -3383,7 +3383,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                             )
                             .build(),
                         DailyExpense.builder()
-                            .dateOfExpense(LocalDate.of(2023, 1, 11))
+                            .dateOfExpense(LocalDate.of(2025, 1, 11))
                             .paymentMethod(PaymentMethod.BACS)
                             .time(DailyExpenseTime.builder()
                                 .travelTime(LocalTime.of(1, 2))
@@ -3411,7 +3411,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .payAttendance(PayAttendanceType.FULL_DAY)
                         .totalDue(new BigDecimal("45.34"))
                         .totalPaid(new BigDecimal("0.00"))
-                        .attendanceDate(LocalDate.of(2023, 1, 5))
+                        .attendanceDate(LocalDate.of(2025, 1, 5))
                         .attendanceType(AttendanceType.FULL_DAY)
                         .paymentMethod(PaymentMethod.BACS)
                         .lossOfEarnings(new BigDecimal("25.01"))
@@ -3432,7 +3432,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .payAttendance(PayAttendanceType.FULL_DAY)
                         .totalDue(new BigDecimal("76.00"))
                         .totalPaid(new BigDecimal("8.00"))
-                        .attendanceDate(LocalDate.of(2023, 1, 11))
+                        .attendanceDate(LocalDate.of(2025, 1, 11))
                         .attendanceType(AttendanceType.FULL_DAY)
                         .paymentMethod(PaymentMethod.BACS)
                         .lossOfEarnings(new BigDecimal("15.01"))
@@ -3471,7 +3471,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 CalculateTotalExpenseRequestDto request = CalculateTotalExpenseRequestDto.builder()
                     .expenseList(List.of(
                         DailyExpense.builder()
-                            .dateOfExpense(LocalDate.of(2023, 1, 17))
+                            .dateOfExpense(LocalDate.of(2025, 1, 17))
                             .paymentMethod(PaymentMethod.BACS)
                             .time(DailyExpenseTime.builder()
                                 .payAttendance(PayAttendanceType.FULL_DAY)
@@ -3492,7 +3492,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .payAttendance(PayAttendanceType.FULL_DAY)
                         .totalDue(new BigDecimal("33.01"))
                         .totalPaid(new BigDecimal("8.00"))
-                        .attendanceDate(LocalDate.of(2023, 1, 17))
+                        .attendanceDate(LocalDate.of(2025, 1, 17))
                         .attendanceType(AttendanceType.FULL_DAY)
                         .paymentMethod(PaymentMethod.BACS)
                         .lossOfEarnings(new BigDecimal("25.01"))
@@ -3531,7 +3531,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 CalculateTotalExpenseRequestDto request = CalculateTotalExpenseRequestDto.builder()
                     .expenseList(List.of(
                         DailyExpense.builder()
-                            .dateOfExpense(LocalDate.of(2023, 1, 5))
+                            .dateOfExpense(LocalDate.of(2025, 1, 5))
                             .paymentMethod(PaymentMethod.BACS)
                             .time(DailyExpenseTime.builder()
                                       .travelTime(LocalTime.of(1, 2))
@@ -3559,7 +3559,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .payAttendance(PayAttendanceType.FULL_DAY)
                         .totalDue(new BigDecimal("70.28"))
                         .totalPaid(new BigDecimal("0.00"))
-                        .attendanceDate(LocalDate.of(2023, 1, 5))
+                        .attendanceDate(LocalDate.of(2025, 1, 5))
                         .attendanceType(AttendanceType.FULL_DAY)
                         .paymentMethod(PaymentMethod.BACS)
                         .lossOfEarnings(new BigDecimal("50.12"))
@@ -3598,7 +3598,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 CalculateTotalExpenseRequestDto request = CalculateTotalExpenseRequestDto.builder()
                     .expenseList(List.of(
                         DailyExpense.builder()
-                            .dateOfExpense(LocalDate.of(2023, 1, 5))
+                            .dateOfExpense(LocalDate.of(2025, 1, 5))
                             .paymentMethod(PaymentMethod.BACS)
                             .time(DailyExpenseTime.builder()
                                 .travelTime(LocalTime.of(1, 2))
@@ -3626,7 +3626,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .payAttendance(PayAttendanceType.FULL_DAY)
                         .totalDue(new BigDecimal("70.28"))
                         .totalPaid(new BigDecimal("0.00"))
-                        .attendanceDate(LocalDate.of(2023, 1, 5))
+                        .attendanceDate(LocalDate.of(2025, 1, 5))
                         .attendanceType(AttendanceType.FULL_DAY)
                         .paymentMethod(PaymentMethod.BACS)
                         .lossOfEarnings(new BigDecimal("50.12"))
@@ -3665,10 +3665,10 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 CalculateTotalExpenseRequestDto request = CalculateTotalExpenseRequestDto.builder()
                     .expenseList(List.of(
                         DailyExpense.builder()
-                            .dateOfExpense(LocalDate.of(2023, 1, 5))
+                            .dateOfExpense(LocalDate.of(2025, 1, 5))
                             .build(),
                         DailyExpense.builder()
-                            .dateOfExpense(LocalDate.of(2023, 1, 11))
+                            .dateOfExpense(LocalDate.of(2025, 1, 11))
                             .paymentMethod(PaymentMethod.BACS)
                             .time(DailyExpenseTime.builder()
                                 .travelTime(LocalTime.of(1, 2))
@@ -3696,7 +3696,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .payAttendance(PayAttendanceType.FULL_DAY)
                         .totalDue(new BigDecimal("525.00"))
                         .totalPaid(new BigDecimal("0.00"))
-                        .attendanceDate(LocalDate.of(2023, 1, 5))
+                        .attendanceDate(LocalDate.of(2025, 1, 5))
                         .attendanceType(AttendanceType.FULL_DAY)
                         .paymentMethod(PaymentMethod.BACS)
                         .lossOfEarnings(new BigDecimal("90.00"))
@@ -3717,7 +3717,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .payAttendance(PayAttendanceType.FULL_DAY)
                         .totalDue(new BigDecimal("76.00"))
                         .totalPaid(new BigDecimal("8.00"))
-                        .attendanceDate(LocalDate.of(2023, 1, 11))
+                        .attendanceDate(LocalDate.of(2025, 1, 11))
                         .attendanceType(AttendanceType.FULL_DAY)
                         .paymentMethod(PaymentMethod.BACS)
                         .lossOfEarnings(new BigDecimal("15.01"))
@@ -3758,10 +3758,10 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 CalculateTotalExpenseRequestDto request = CalculateTotalExpenseRequestDto.builder()
                     .expenseList(List.of(
                         DailyExpense.builder()
-                            .dateOfExpense(LocalDate.of(2023, 1, 5))
+                            .dateOfExpense(LocalDate.of(2025, 1, 5))
                             .build(),
                         DailyExpense.builder()
-                            .dateOfExpense(LocalDate.of(2023, 1, 11))
+                            .dateOfExpense(LocalDate.of(2025, 1, 11))
                             .paymentMethod(PaymentMethod.BACS)
                             .time(DailyExpenseTime.builder()
                                       .travelTime(LocalTime.of(4, 2))
@@ -3789,7 +3789,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .payAttendance(PayAttendanceType.FULL_DAY)
                         .totalDue(new BigDecimal("525.00"))
                         .totalPaid(new BigDecimal("0.00"))
-                        .attendanceDate(LocalDate.of(2023, 1, 5))
+                        .attendanceDate(LocalDate.of(2025, 1, 5))
                         .attendanceType(AttendanceType.FULL_DAY)
                         .paymentMethod(PaymentMethod.BACS)
                         .lossOfEarnings(new BigDecimal("90.00"))
@@ -3810,7 +3810,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .payAttendance(PayAttendanceType.FULL_DAY)
                         .totalDue(new BigDecimal("76.00"))
                         .totalPaid(new BigDecimal("8.00"))
-                        .attendanceDate(LocalDate.of(2023, 1, 11))
+                        .attendanceDate(LocalDate.of(2025, 1, 11))
                         .attendanceType(AttendanceType.FULL_DAY)
                         .paymentMethod(PaymentMethod.BACS)
                         .lossOfEarnings(new BigDecimal("15.01"))
@@ -3867,7 +3867,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         CalculateTotalExpenseRequestDto.builder()
                             .expenseList(List.of(
                                 DailyExpense.builder()
-                                    .dateOfExpense(LocalDate.of(2023, 1, 17))
+                                    .dateOfExpense(LocalDate.of(2025, 1, 17))
                                     .paymentMethod(PaymentMethod.BACS)
                                     .time(DailyExpenseTime.builder()
                                         .payAttendance(PayAttendanceType.FULL_DAY)
@@ -3888,7 +3888,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     CalculateTotalExpenseRequestDto.builder()
                         .expenseList(List.of(
                             DailyExpense.builder()
-                                .dateOfExpense(LocalDate.of(2023, 1, 17))
+                                .dateOfExpense(LocalDate.of(2025, 1, 17))
                                 .paymentMethod(PaymentMethod.BACS)
                                 .time(DailyExpenseTime.builder()
                                     .payAttendance(PayAttendanceType.FULL_DAY)
@@ -3928,7 +3928,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         CalculateTotalExpenseRequestDto.builder()
                             .expenseList(List.of(
                                 DailyExpense.builder()
-                                    .dateOfExpense(LocalDate.of(2023, 1, 5))
+                                    .dateOfExpense(LocalDate.of(2025, 1, 5))
                                     .paymentMethod(PaymentMethod.BACS)
                                     .time(DailyExpenseTime.builder()
                                         .travelTime(LocalTime.of(1, 2))
@@ -3946,7 +3946,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                     )
                                     .build()
                             ))
-                            .build()), "Total expenses cannot be less than £0. For Day 2023-01-05",
+                            .build()), "Total expenses cannot be less than £0. For Day 2025-01-05",
                     MojException.BusinessRuleViolation.ErrorCode.EXPENSES_CANNOT_BE_LESS_THAN_ZERO);
             }
 
@@ -3956,7 +3956,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         CalculateTotalExpenseRequestDto.builder()
                             .expenseList(List.of(
                                 DailyExpense.builder()
-                                    .dateOfExpense(LocalDate.of(2023, 1, 11))
+                                    .dateOfExpense(LocalDate.of(2025, 1, 11))
                                     .paymentMethod(PaymentMethod.BACS)
                                     .time(DailyExpenseTime.builder()
                                         .travelTime(LocalTime.of(1, 2))
@@ -4159,15 +4159,15 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .canApprove(true)
                         .dateToRevisions(List.of(
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 2, 8))
+                                .attendanceDate(LocalDate.of(2025, 2, 8))
                                 .version(1L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 2, 9))
+                                .attendanceDate(LocalDate.of(2025, 2, 9))
                                 .version(2L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 2, 10))
+                                .attendanceDate(LocalDate.of(2025, 2, 10))
                                 .version(1L)
                                 .build()
                         ))
@@ -4182,11 +4182,11 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .canApprove(true)
                         .dateToRevisions(List.of(
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 2, 1))
+                                .attendanceDate(LocalDate.of(2025, 2, 1))
                                 .version(1L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 2, 2))
+                                .attendanceDate(LocalDate.of(2025, 2, 2))
                                 .version(2L)
                                 .build()
                         ))
@@ -4211,15 +4211,15 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .canApprove(true)
                         .dateToRevisions(List.of(
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 8))
+                                .attendanceDate(LocalDate.of(2025, 1, 8))
                                 .version(1L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 9))
+                                .attendanceDate(LocalDate.of(2025, 1, 9))
                                 .version(2L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 10))
+                                .attendanceDate(LocalDate.of(2025, 1, 10))
                                 .version(1L)
                                 .build()
                         ))
@@ -4234,15 +4234,15 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .canApprove(true)
                         .dateToRevisions(List.of(
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 14))
+                                .attendanceDate(LocalDate.of(2025, 1, 14))
                                 .version(1L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 15))
+                                .attendanceDate(LocalDate.of(2025, 1, 15))
                                 .version(1L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 16))
+                                .attendanceDate(LocalDate.of(2025, 1, 16))
                                 .version(1L)
                                 .build()
                         ))
@@ -4257,15 +4257,15 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .canApprove(true)
                         .dateToRevisions(List.of(
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 8))
+                                .attendanceDate(LocalDate.of(2025, 1, 8))
                                 .version(1L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 9))
+                                .attendanceDate(LocalDate.of(2025, 1, 9))
                                 .version(2L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 10))
+                                .attendanceDate(LocalDate.of(2025, 1, 10))
                                 .version(1L)
                                 .build()
                         ))
@@ -4276,7 +4276,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             @Test
             void typicalFromDateFilter() {
                 PendingApprovalList pendingApprovals =
-                    triggerValid(COURT_LOCATION, LocalDate.of(2023, 1, 14), null, PaymentMethod.BACS);
+                    triggerValid(COURT_LOCATION, LocalDate.of(2025, 1, 14), null, PaymentMethod.BACS);
                 assertThat(pendingApprovals.getTotalPendingCash()).isEqualTo(2L);
                 assertThat(pendingApprovals.getTotalPendingBacs()).isEqualTo(3L);
 
@@ -4291,15 +4291,15 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .canApprove(true)
                         .dateToRevisions(List.of(
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 14))
+                                .attendanceDate(LocalDate.of(2025, 1, 14))
                                 .version(1L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 15))
+                                .attendanceDate(LocalDate.of(2025, 1, 15))
                                 .version(1L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 16))
+                                .attendanceDate(LocalDate.of(2025, 1, 16))
                                 .version(1L)
                                 .build()
                         ))
@@ -4310,7 +4310,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
             void typicalToDateFilter() {
                 PendingApprovalList pendingApprovals =
-                    triggerValid(COURT_LOCATION, null, LocalDate.of(2023, 1, 9), PaymentMethod.BACS);
+                    triggerValid(COURT_LOCATION, null, LocalDate.of(2025, 1, 9), PaymentMethod.BACS);
                 assertThat(pendingApprovals.getTotalPendingCash()).isEqualTo(2L);
                 assertThat(pendingApprovals.getTotalPendingBacs()).isEqualTo(3L);
 
@@ -4325,15 +4325,15 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .canApprove(true)
                         .dateToRevisions(List.of(
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 8))
+                                .attendanceDate(LocalDate.of(2025, 1, 8))
                                 .version(1L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 9))
+                                .attendanceDate(LocalDate.of(2025, 1, 9))
                                 .version(2L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 10))
+                                .attendanceDate(LocalDate.of(2025, 1, 10))
                                 .version(1L)
                                 .build()
                         ))
@@ -4348,15 +4348,15 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .canApprove(true)
                         .dateToRevisions(List.of(
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 8))
+                                .attendanceDate(LocalDate.of(2025, 1, 8))
                                 .version(1L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 9))
+                                .attendanceDate(LocalDate.of(2025, 1, 9))
                                 .version(2L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 10))
+                                .attendanceDate(LocalDate.of(2025, 1, 10))
                                 .version(1L)
                                 .build()
                         ))
@@ -4367,7 +4367,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
             void typicalBothFromAndToFilter() {
                 PendingApprovalList pendingApprovals =
-                    triggerValid(COURT_LOCATION, LocalDate.of(2023, 1, 9), LocalDate.of(2023, 1, 10), PaymentMethod
+                    triggerValid(COURT_LOCATION, LocalDate.of(2025, 1, 9), LocalDate.of(2025, 1, 10), PaymentMethod
                         .BACS);
                 assertThat(pendingApprovals.getTotalPendingCash()).isEqualTo(2L);
                 assertThat(pendingApprovals.getTotalPendingBacs()).isEqualTo(3L);
@@ -4383,15 +4383,15 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .canApprove(true)
                         .dateToRevisions(List.of(
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 8))
+                                .attendanceDate(LocalDate.of(2025, 1, 8))
                                 .version(1L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 9))
+                                .attendanceDate(LocalDate.of(2025, 1, 9))
                                 .version(2L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 10))
+                                .attendanceDate(LocalDate.of(2025, 1, 10))
                                 .version(1L)
                                 .build()
                         ))
@@ -4406,15 +4406,15 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .canApprove(true)
                         .dateToRevisions(List.of(
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 8))
+                                .attendanceDate(LocalDate.of(2025, 1, 8))
                                 .version(1L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 9))
+                                .attendanceDate(LocalDate.of(2025, 1, 9))
                                 .version(2L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 10))
+                                .attendanceDate(LocalDate.of(2025, 1, 10))
                                 .version(1L)
                                 .build()
                         ))
@@ -4426,7 +4426,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
             void canNotApprove() {
                 PendingApprovalList pendingApprovals =
-                    triggerValid("COURT_USER2", COURT_LOCATION, LocalDate.of(2023, 1, 9), LocalDate.of(2023, 1, 10),
+                    triggerValid("COURT_USER2", COURT_LOCATION, LocalDate.of(2025, 1, 9), LocalDate.of(2025, 1, 10),
                         PaymentMethod.BACS);
                 assertThat(pendingApprovals.getTotalPendingCash()).as("Total Pending Cash").isEqualTo(2L);
                 assertThat(pendingApprovals.getTotalPendingBacs()).as("Total Pending Bacs").isEqualTo(3L);
@@ -4442,15 +4442,15 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .canApprove(true)
                         .dateToRevisions(List.of(
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 8))
+                                .attendanceDate(LocalDate.of(2025, 1, 8))
                                 .version(1L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 9))
+                                .attendanceDate(LocalDate.of(2025, 1, 9))
                                 .version(2L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 10))
+                                .attendanceDate(LocalDate.of(2025, 1, 10))
                                 .version(1L)
                                 .build()
                         ))
@@ -4465,15 +4465,15 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .canApprove(false)
                         .dateToRevisions(List.of(
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 8))
+                                .attendanceDate(LocalDate.of(2025, 1, 8))
                                 .version(1L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 9))
+                                .attendanceDate(LocalDate.of(2025, 1, 9))
                                 .version(2L)
                                 .build(),
                             ApproveExpenseDto.DateToRevision.builder()
-                                .attendanceDate(LocalDate.of(2023, 1, 10))
+                                .attendanceDate(LocalDate.of(2025, 1, 10))
                                 .version(1L)
                                 .build()
                         ))
@@ -4563,9 +4563,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
 
         private static final List<LocalDate> ATTENDANCE_DATES = List.of(
-            LocalDate.of(2023, 1, 5),
-            LocalDate.of(2023, 1, 6),
-            LocalDate.of(2023, 1, 7)
+            LocalDate.of(2025, 1, 5),
+            LocalDate.of(2025, 1, 6),
+            LocalDate.of(2025, 1, 7)
         );
 
         public String toUrl(String locCode, String jurorNumber) {
@@ -4685,14 +4685,14 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertBusinessRuleViolation(triggerInvalid(COURT_LOCATION, JUROR_NUMBER,
                         getValidPayload(new BigDecimal("900000.00")),
                         COURT_LOCATION),
-                    "Total expenses cannot be less than £0. For Day 2023-01-05",
+                    "Total expenses cannot be less than £0. For Day 2025-01-05",
                     MojException.BusinessRuleViolation.ErrorCode.EXPENSES_CANNOT_BE_LESS_THAN_ZERO);
             }
 
             @Test
             void negativeNonDraftDays() {
                 ApportionSmartCardRequest payload = getValidPayload(new BigDecimal("90.00"));
-                payload.setDates(List.of(LocalDate.of(2023, 1, 11)));
+                payload.setDates(List.of(LocalDate.of(2025, 1, 11)));
                 assertBusinessRuleViolation(triggerInvalid(
                         COURT_LOCATION, JUROR_NUMBER, payload, COURT_LOCATION),
                     "Can not apportion smart card for non-draft days",

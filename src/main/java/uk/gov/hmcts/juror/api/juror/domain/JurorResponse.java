@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.persistence.Version;
@@ -415,4 +416,26 @@ public class JurorResponse implements Serializable {
     @Convert(converter = org.hibernate.type.YesNoConverter.class)
     @Builder.Default
     private Boolean welsh = Boolean.FALSE;
+
+    @PrePersist
+    private void ensureDefaults() {
+        if (processingStatus == null) {
+            processingStatus = ProcessingStatus.TODO;
+        }
+        if (residency == null) {
+            residency = Boolean.TRUE;
+        }
+        if (mentalHealthAct == null) {
+            mentalHealthAct = Boolean.FALSE;
+        }
+        if (bail == null) {
+            bail = Boolean.FALSE;
+        }
+        if (convictions == null) {
+            convictions = Boolean.FALSE;
+        }
+        if (processingComplete == null) {
+            processingComplete = Boolean.FALSE;
+        }
+    }
 }

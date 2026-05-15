@@ -703,6 +703,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     public void setDeferralPoolMember(JurorPool jurorPool, DeferralReasonRequestDto dto, String auditorUsername,
                                       Boolean incrementNoDefPos) {
 
+        ManageDeferralsService.clearOnCallIfRequired(jurorPool); // clear on_call if set
+
         jurorPool.setDeferralDate(dto.getDeferralDate());
         jurorPool.setNextDate(null);
         jurorPool.setStatus(RepositoryUtils.retrieveFromDatabase(IJurorStatus.DEFERRED, jurorStatusRepository));
@@ -912,7 +914,13 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         JurorPool newJurorPool = new JurorPool();
         BeanUtils.copyProperties(deferredPoolMember, newJurorPool, "pool");
 
-        setupPoolMemberAttributes(poolRequest, userId, sequenceNumber, newJurorPool);
+        Optional<PoolRequest> managedPoolRequest = poolRequestRepository.findById(poolRequest.getPoolNumber());
+
+        if (managedPoolRequest.isPresent()) {
+            setupPoolMemberAttributes(managedPoolRequest.get(), userId, sequenceNumber, newJurorPool);
+        } else {
+            setupPoolMemberAttributes(poolRequest, userId, sequenceNumber, newJurorPool);
+        }
 
         deferredPoolMember.setIsActive(false);  // deactivate the old record
 

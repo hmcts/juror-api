@@ -73,4 +73,9 @@ public interface JurorPoolRepository extends IJurorPoolRepository, JpaRepository
         @Param("toDate") LocalDate toDate) throws SQLException;
 
     List<JurorPool> findByPoolCourtLocationLocCodeAndJurorJurorNumber(String locCode, String jurorNumber);
+
+    List<JurorPool> findByPoolCourtLocationLocCodeAndIsActiveAndJurorJurorNumberIn(
+        String locCode, boolean isActive, List<String> jurorNumber);
+
+
 }

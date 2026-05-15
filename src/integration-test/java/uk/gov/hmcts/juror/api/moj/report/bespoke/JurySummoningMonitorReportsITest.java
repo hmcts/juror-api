@@ -169,7 +169,7 @@ class JurySummoningMonitorReportsITest extends AbstractControllerIntegrationTest
                 .headings(Map.of("court", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Court")
                         .dataType(STRING)
-                        .value("LEWES SITTING AT CHICHESTER (416)")
+                        .value("GUILDFORD SITTING AT CHICHESTER (416)")
                         .build(),
                     "pool_number", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Pool number")

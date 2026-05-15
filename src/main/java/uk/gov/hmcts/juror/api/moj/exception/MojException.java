@@ -105,7 +105,8 @@ public class MojException extends RuntimeException {
             INVALID_JUROR_ATTENDANCE_RECORD,
             INVALID_JUROR_POOL_LOCATION,
             JUROR_MUST_UNDELIVERABLE,
-            MISSING_ELIGIBILITY_DETAILS
+            MISSING_ELIGIBILITY_DETAILS,
+            CANNOT_REINSTATE_JUROR_TO_TRIAL
         }
     }
 

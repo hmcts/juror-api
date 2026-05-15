@@ -127,6 +127,23 @@ class LetterBaseTest {
     }
 
     @Test
+    void courtNamePrefixIsCorrect() {
+        CourtLocation courtLocation = new CourtLocation();
+        courtLocation.setLocCode("127");
+        courtLocation.setLocCourtName("GUILDFORD");
+
+        LetterBase.LetterContext context = LetterBase.LetterContext.builder()
+            .jurorPool(LetterTestUtils.testJurorPool(
+                java.time.LocalDate.of(2017, java.time.Month.FEBRUARY, 6)))
+            .courtLocation(courtLocation)
+            .build();
+
+        String value = LetterBase.LetterDataType.COURT_NAME.getValue(context);
+
+        assertThat(value).isEqualTo("THE CROWN COURT AT GUILDFORD");
+    }
+
+    @Test
     void fieldLengthIsLimitedIsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
             .courtLocation(LetterTestUtils.testCourtLocation())

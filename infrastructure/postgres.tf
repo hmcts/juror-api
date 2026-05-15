@@ -9,16 +9,19 @@ module "postgresql_flexible" {
     azurerm.postgres_network = azurerm.postgres_network
   }
 
-  source              = "git@github.com:hmcts/terraform-module-postgresql-flexible?ref=master"
-  env                 = var.env
-  product             = var.product
-  resource_group_name = local.rg_name
-  component           = var.component
-  business_area       = "sds"
-  location            = var.location
-  pgsql_sku           = "GP_Standard_D4s_v3"
-  pgsql_storage_mb    = var.pgsql_storage_mb
-  pgsql_storage_tier  = var.pgsql_storage_tier
+  source                   = "git@github.com:hmcts/terraform-module-postgresql-flexible?ref=master"
+  env                      = var.env
+  product                  = var.product
+  resource_group_name      = local.rg_name
+  component                = var.component
+  business_area            = "sds"
+  location                 = var.location
+  pgsql_sku                = "GP_Standard_D4s_v3"
+  pgsql_storage_mb         = var.pgsql_storage_mb
+  pgsql_storage_tier       = var.pgsql_storage_tier
+  service_criticality      = var.service_criticality
+  manage_reader_role_on_rg = false
+  enable_qpi               = var.enable_qpi
 
   common_tags          = var.common_tags
   admin_user_object_id = var.jenkins_AAD_objectId
@@ -30,7 +33,7 @@ module "postgresql_flexible" {
   pgsql_server_configuration = [
     {
       name  = "azure.extensions"
-      value = "dblink,tablefunc"
+      value = "dblink,tablefunc,pg_stat_statements"
     },
     {
       name  = "backslash_quote"
@@ -39,7 +42,11 @@ module "postgresql_flexible" {
     {
       name  = "azure.enable_temp_tablespaces_on_local_ssd"
       value = "off"
-    }
+    },
+    {
+      name  = "track_io_timing"
+      value = "ON"
+    },
   ]
   pgsql_version = "16"
 }
@@ -105,4 +112,3 @@ resource "azurerm_postgresql_flexible_server_active_directory_administrator" "ji
 
   depends_on = [module.postgresql_flexible]
 }
-

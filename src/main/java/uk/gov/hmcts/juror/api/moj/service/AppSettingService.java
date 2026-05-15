@@ -102,5 +102,13 @@ public interface AppSettingService {
      */
     String getSmartSurveySummonsResponseExportName();
 
-
+    /**
+     * Notify template ID for Local Authority reminder emails.
+     *
+     * @return the Notify template ID for LA reminder emails
+     */
+    String getNotifyErReminderTemplateId();
 }
+
+
+

@@ -91,6 +91,7 @@ class DeferredListByCourtReportTest extends AbstractGroupedReportTestSupport<Def
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void positivePreProcessQueryTypicalBureau() {
         JPAQuery<Tuple> query = mock(JPAQuery.class,
             withSettings().defaultAnswer(RETURNS_SELF));
