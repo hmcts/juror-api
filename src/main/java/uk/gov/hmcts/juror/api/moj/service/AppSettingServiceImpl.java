@@ -129,11 +129,7 @@ public class AppSettingServiceImpl implements AppSettingService {
     @Override
     public String getWelshTranslation() {
         Optional<AppSetting> welshTranslation = appSettingRepository.findById(WELSH_TRANSLATION);
-        final AppSetting setting = welshTranslation.isPresent()
-            ?
-            welshTranslation.get()
-            :
-                null;
+        final AppSetting setting = welshTranslation.orElse(null);
         if (setting != null) {
             return
                 setting.getValue();
@@ -161,11 +157,7 @@ public class AppSettingServiceImpl implements AppSettingService {
     @Override
     public String getSmartSurveySummonsResponseSurveyId() {
         Optional<AppSetting> surveyId = appSettingRepository.findById(SMART_SURVEY_SUMMONS_RESPONSE_SURVEY_ID);
-        final AppSetting setting = surveyId.isPresent()
-            ?
-            surveyId.get()
-            :
-                null;
+        final AppSetting setting = surveyId.orElse(null);
         if (setting != null) {
             return
                 setting.getValue();
@@ -177,11 +169,7 @@ public class AppSettingServiceImpl implements AppSettingService {
     @Override
     public String getSmartSurveySummonsResponseExportName() {
         Optional<AppSetting> surveyId = appSettingRepository.findById(SMART_SURVEY_SUMMONS_RESPONSE_EXPORT_NAME);
-        final AppSetting setting = surveyId.isPresent()
-            ?
-            surveyId.get()
-            :
-                null;
+        final AppSetting setting = surveyId.orElse(null);
         if (setting != null) {
             return
                 setting.getValue();
