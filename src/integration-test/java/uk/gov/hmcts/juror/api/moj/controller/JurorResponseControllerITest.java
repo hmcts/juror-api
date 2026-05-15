@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -74,12 +73,12 @@ import static org.springframework.http.HttpStatus.OK;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: /api/v1/moj/juror-response/")
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @SuppressWarnings({
     "java:S2259",
     "java:S5960",
     "PMD.ExcessiveImports",
-    "PMD.TooManyMethods"
+    "PMD.TooManyMethods",
+    "PMD.PublicMemberInNonPublicType"
 })
 class JurorResponseControllerITest extends AbstractIntegrationTest {
     private HttpHeaders httpHeaders;
@@ -103,7 +102,8 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
     private static final String OWNER_400 = "400";
     private static final String OWNER_415 = "415";
 
-    private final TestRestTemplate template;
+    @Autowired
+    private TestRestTemplate template;
     private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
     private final JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository;
     private final JurorReasonableAdjustmentRepository jurorReasonableAdjustmentRepository;
@@ -116,6 +116,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
     private final UserRepository userRepository;
     private final JurorResponseCommonRepositoryMod jurorResponseCommonRepositoryMod;
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @BeforeEach
     public void setUp() throws Exception {
         httpHeaders = new HttpHeaders();

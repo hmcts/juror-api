@@ -61,6 +61,7 @@ import static uk.gov.hmcts.juror.api.moj.controller.CompleteServiceControllerTes
         BulkServiceImpl.class
     }
 )
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 @DisplayName("Controller: " + CompleteServiceControllerTest.BASE_URL)
 class CompleteServiceControllerTest {
     public static final String BASE_URL = "/api/v1/moj/complete-service";
@@ -75,6 +76,7 @@ class CompleteServiceControllerTest {
     @MockBean
     private CompleteServiceService completeServiceService;
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("PATCH " + COMPLETE_SERVICE_URL)
     class CompleteService {
@@ -140,6 +142,7 @@ class CompleteServiceControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST " + VALIDATE_COMPLETE_SERVICE_URL)
     class ValidateCompleteService {
@@ -338,6 +341,7 @@ class CompleteServiceControllerTest {
     }
 
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("PATCH " + UncompleteService.URL)
     class UncompleteService {

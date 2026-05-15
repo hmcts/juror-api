@@ -62,6 +62,7 @@ public class ValidateIfValidator implements ConstraintValidator<ValidateIfTrigge
     }
 
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @AllArgsConstructor
     @Data
     static class FieldIf {

@@ -154,7 +154,8 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
     "PMD.NcssCount",
     "PMD.CyclomaticComplexity",
     "PMD.TooManyMethods",
-    "PMD.TooManyFields"
+    "PMD.TooManyFields",
+    "PMD.PublicMemberInNonPublicType"
 })
 class JurorRecordControllerITest extends AbstractIntegrationTest {
 
@@ -197,6 +198,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     private JurorReasonableAdjustmentRepository jurorReasonableAdjustmentRepository;
     private HttpHeaders httpHeaders;
 
+
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 
     @BeforeEach
     public void setUp() throws Exception {

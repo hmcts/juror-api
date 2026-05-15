@@ -27,6 +27,7 @@ import static uk.gov.hmcts.juror.api.TestConstants.INVALID_POOL_NUMBER;
 import static uk.gov.hmcts.juror.api.TestConstants.VALID_COURT_LOCATION;
 import static uk.gov.hmcts.juror.api.TestConstants.VALID_POOL_NUMBER;
 
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class OnCallReportTest extends AbstractStandardReportTestSupport<OnCallReport> {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;

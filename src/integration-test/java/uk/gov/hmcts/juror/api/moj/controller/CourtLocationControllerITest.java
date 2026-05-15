@@ -37,6 +37,7 @@ import static org.springframework.http.HttpMethod.GET;
 /**
  * Integration tests for the API endpoints defined in {@link CourtLocationController}.
  */
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CourtLocationControllerITest extends AbstractIntegrationTest {
@@ -50,6 +51,7 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
 
     private HttpHeaders httpHeaders;
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @BeforeEach
     public void setUp() throws Exception {
         initHeaders();
@@ -176,6 +178,9 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/CourtLocationControllerITest_getCourtRates.sql"})
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
         statements = {"delete from juror_mod.court_location where loc_code in ('001')"})
+    @SuppressWarnings({
+        "PMD.PublicMemberInNonPublicType"
+    })
     class GetCourtRates {
         public static final String URL = BASE_URL + "/{loc_code}/rates";
 

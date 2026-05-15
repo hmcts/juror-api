@@ -24,6 +24,7 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/PostponedListByDateReportITest_typical.sql"
 })
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class PostponedListByDateReportITest extends AbstractGroupedReportControllerITest {
 
     @Autowired
@@ -312,6 +313,8 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
                     .build())
             .build();
     }
+
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 
     public GroupByResponse getTypicalGroupByResponse() {
         return GroupByResponse.builder()

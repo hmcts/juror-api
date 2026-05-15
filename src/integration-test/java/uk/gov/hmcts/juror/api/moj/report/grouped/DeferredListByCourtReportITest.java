@@ -21,6 +21,7 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/DeferredListByCourtReportITest_typical.sql"
 })
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class DeferredListByCourtReportITest extends AbstractGroupedReportControllerITest {
 
     @Autowired

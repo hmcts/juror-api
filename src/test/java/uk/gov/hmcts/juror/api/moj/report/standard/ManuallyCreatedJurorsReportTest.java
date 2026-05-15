@@ -34,6 +34,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class ManuallyCreatedJurorsReportTest extends AbstractStandardReportTestSupport<ManuallyCreatedJurorsReport> {
 
     private static final LocalDate FROM_DATE = LocalDate.of(2024, 1, 1);

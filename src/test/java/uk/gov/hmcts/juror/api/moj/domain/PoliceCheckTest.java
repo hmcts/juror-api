@@ -72,6 +72,7 @@ class PoliceCheckTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("public static PoliceCheck getEffectiveValue(PoliceCheck oldValue, PoliceCheck newValue)")
     class GetEffectiveValue {

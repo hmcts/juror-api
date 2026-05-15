@@ -18,8 +18,11 @@ import java.util.Set;
 import static java.time.LocalDate.now;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@SuppressWarnings({
+    "PMD.PublicMemberInNonPublicType",
+    "PMD.TooManyMethods"
+})
 @ExtendWith(SpringExtension.class)
-@SuppressWarnings("PMD.TooManyMethods")
 class JurorNonAttendanceDtoTest {
 
     private static ValidatorFactory validatorFactory;

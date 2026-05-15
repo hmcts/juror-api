@@ -26,6 +26,7 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class BallotPanelPoolReportTest extends AbstractStandardReportTestSupport<BallotPanelPoolReport> {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;

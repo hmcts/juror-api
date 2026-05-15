@@ -34,7 +34,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({
+    "PMD.PublicMemberInNonPublicType",
+    "unchecked"
+})
 class JuryAttendanceAuditReportTest extends AbstractStandardReportTestSupport<JuryAttendanceAuditReport> {
 
     private JurorAppearanceService appearanceService;

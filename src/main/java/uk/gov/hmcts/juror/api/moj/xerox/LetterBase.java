@@ -189,6 +189,7 @@ public class LetterBase {
     }
 
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @EqualsAndHashCode
     protected static class LetterDataShuffle implements ILetterData {
         private final List<ILetterData> letterDataShuffleList = new ArrayList<>();
@@ -339,6 +340,7 @@ public class LetterBase {
     }
 
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     protected enum ContextType {
         JUROR_POOL(context -> context.getJurorPool() != null),
         COURT_LOCATION(context -> context.getCourtLocation() != null),
