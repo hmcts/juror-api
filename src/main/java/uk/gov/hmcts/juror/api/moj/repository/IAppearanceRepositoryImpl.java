@@ -84,9 +84,9 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
 
         JurorStatusGroup statusGroup;
 
-        if (commonData.getTag().equals(RetrieveAttendanceDetailsTag.PANELLED)) {
+        if (commonData.getTag() == RetrieveAttendanceDetailsTag.PANELLED) {
             statusGroup = JurorStatusGroup.PANELLED;
-        } else if (commonData.getTag().equals(RetrieveAttendanceDetailsTag.CONFIRM_ATTENDANCE)
+        } else if (commonData.getTag() == RetrieveAttendanceDetailsTag.CONFIRM_ATTENDANCE
             || request.isJurorInWaiting()) {
             statusGroup = JurorStatusGroup.IN_WAITING;
         } else {
@@ -97,11 +97,11 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
         JPAQuery<Tuple> query = sqlFetchAppearanceRecords(commonData.getLocationCode(), commonData.getAttendanceDate(),
             statusGroup);
 
-        if (commonData.getTag().equals(RetrieveAttendanceDetailsTag.JUROR_NUMBER)) {
+        if (commonData.getTag() == RetrieveAttendanceDetailsTag.JUROR_NUMBER) {
             query = query.where(APPEARANCE.jurorNumber.in(request.getJuror()));
-        } else if (commonData.getTag().equals(RetrieveAttendanceDetailsTag.NOT_CHECKED_OUT)) {
+        } else if (commonData.getTag() == RetrieveAttendanceDetailsTag.NOT_CHECKED_OUT) {
             query = query.where(APPEARANCE.appearanceStage.eq(AppearanceStage.CHECKED_IN));
-        } else if (commonData.getTag().equals(RetrieveAttendanceDetailsTag.CONFIRM_ATTENDANCE)) {
+        } else if (commonData.getTag() == RetrieveAttendanceDetailsTag.CONFIRM_ATTENDANCE) {
             query = query.where(APPEARANCE.timeIn.isNotNull())
                 .where(APPEARANCE.appearanceStage.in(AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT))
                 .where(APPEARANCE.attendanceAuditNumber.isNull())

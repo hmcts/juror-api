@@ -127,11 +127,11 @@ public final class SecurityUtil {
     }
 
     public static boolean isBureau() {
-        return UserType.BUREAU.equals(getUserType());
+        return getUserType() == UserType.BUREAU;
     }
 
     public static boolean isCourt() {
-        return UserType.COURT.equals(getUserType());
+        return getUserType() == UserType.COURT;
     }
 
     public static boolean isSatellite() {
@@ -165,7 +165,7 @@ public final class SecurityUtil {
     }
 
     public static boolean isAdministration() {
-        return getUserType().equals(UserType.ADMINISTRATOR);
+        return getUserType() == UserType.ADMINISTRATOR;
     }
 
     public static UserType getUserType() {
@@ -199,7 +199,7 @@ public final class SecurityUtil {
     }
 
     public static boolean isSystem() {
-        return AUTO_USER.equals(getUsername()) || getUserType().equals(UserType.SYSTEM);
+        return AUTO_USER.equals(getUsername()) || getUserType() == UserType.SYSTEM;
     }
 
     // ========================================================================

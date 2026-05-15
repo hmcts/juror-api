@@ -253,8 +253,8 @@ public class MessagingServiceImpl implements MessagingService {
             .poolNumber(jurorAndSendType.getPoolNumber())
             .build();
 
-        boolean both = MessageType.SendType.EMAIL_AND_SMS.equals(jurorAndSendType.getType());
-        if (both || MessageType.SendType.EMAIL.equals(jurorAndSendType.getType())) {
+        boolean both = jurorAndSendType.getType() == MessageType.SendType.EMAIL_AND_SMS;
+        if (both || jurorAndSendType.getType() == MessageType.SendType.EMAIL) {
             if (juror.getEmail() == null) {
                 throw new MojException.BusinessRuleViolation(
                     "Email is required for juror: " + juror.getJurorNumber(),
@@ -265,7 +265,7 @@ public class MessagingServiceImpl implements MessagingService {
 
 
 
-        if (both || MessageType.SendType.SMS.equals(jurorAndSendType.getType())) {
+        if (both || jurorAndSendType.getType() == MessageType.SendType.SMS) {
             if (juror.getPhoneNumberCombined() == null) {
                 throw new MojException.BusinessRuleViolation(
                     "Phone number is required for juror: " + juror.getJurorNumber(),

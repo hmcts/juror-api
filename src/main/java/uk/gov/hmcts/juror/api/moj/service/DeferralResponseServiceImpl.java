@@ -79,11 +79,11 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
         int deferralCount = Optional.ofNullable(juror.getNoDefPos()).orElse(0);
         boolean firstDeferral = deferralCount == 0;
 
-        if (firstDeferral && deferralRequestDto.getDeferralDecision().equals(DeferralDecision.REFUSE)) {
+        if (firstDeferral && deferralRequestDto.getDeferralDecision() == DeferralDecision.REFUSE) {
             log.debug("Cannot decline first deferral for juror {}", jurorNumber);
             throw new MojException.BusinessRuleViolation("Cannot decline first deferral request for juror",
                 CANNOT_REFUSE_FIRST_DEFERRAL);
-        } else if (deferralRequestDto.getDeferralDecision().equals(DeferralDecision.REFUSE)) {
+        } else if (deferralRequestDto.getDeferralDecision() == DeferralDecision.REFUSE) {
             log.debug("Begin processing decline deferral juror {} by user {}", jurorNumber, payload.getLogin());
             jurorResponseService.setResponseProcessingStatusToClosed(jurorNumber);
             declineDeferralForJurorPool(payload, deferralRequestDto, jurorPool);
@@ -92,7 +92,7 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
             throw new MojException.BusinessRuleViolation("Juror has been deferred before. Please use "
                 + "allow_multiple_deferrals to bypass this error.",
                 MojException.BusinessRuleViolation.ErrorCode.JUROR_HAS_BEEN_DEFERRED_BEFORE);
-        } else if (deferralRequestDto.getDeferralDecision().equals(DeferralDecision.GRANT)) {
+        } else if (deferralRequestDto.getDeferralDecision() == DeferralDecision.GRANT) {
             log.info("Begin processing grant deferral juror {} by user {}", jurorNumber, payload.getLogin());
             jurorResponseService.setResponseProcessingStatusToClosed(jurorNumber);
             grantDeferralForJurorPool(payload, deferralRequestDto, jurorPool);

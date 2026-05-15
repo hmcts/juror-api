@@ -2323,11 +2323,11 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
                 // verify juror history records have been created
                 assertThat(jurorHistoryRepository.findByJurorNumberOrderById("222222222")
-                    .stream().anyMatch(jh -> jh.getHistoryCode().equals(HistoryCodeMod.JURY_ATTENDANCE)
+                    .stream().anyMatch(jh -> jh.getHistoryCode() == HistoryCodeMod.JURY_ATTENDANCE
                         && "J10123456".equalsIgnoreCase(jh.getOtherInformationRef()))).isTrue();
 
                 assertThat(jurorHistoryRepository.findByJurorNumberOrderById("333333333")
-                    .stream().anyMatch(jh -> jh.getHistoryCode().equals(HistoryCodeMod.JURY_ATTENDANCE)
+                    .stream().anyMatch(jh -> jh.getHistoryCode() == HistoryCodeMod.JURY_ATTENDANCE
                         && "J10123456".equalsIgnoreCase(jh.getOtherInformationRef()))).isTrue();
             });
         }
@@ -2367,7 +2367,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             // verify juror history records have been created
             assertThat(jurorHistoryRepository.findByJurorNumberOrderById("333333333")
-                           .stream().anyMatch(jh -> jh.getHistoryCode().equals(HistoryCodeMod.JURY_ATTENDANCE)
+                           .stream().anyMatch(jh -> jh.getHistoryCode() == HistoryCodeMod.JURY_ATTENDANCE
                     && "J10000012".equalsIgnoreCase(jh.getOtherInformationRef()))).isTrue();
         }
 

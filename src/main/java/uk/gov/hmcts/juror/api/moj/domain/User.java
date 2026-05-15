@@ -115,7 +115,7 @@ public class User implements Serializable {
 
     @Deprecated(forRemoval = true)
     public Boolean isTeamLeader() {
-        return UserType.BUREAU.equals(getUserType()) && hasRole(Role.MANAGER);
+        return getUserType() == UserType.BUREAU && hasRole(Role.MANAGER);
     }
 
     public boolean hasRole(Role role) {
@@ -126,7 +126,7 @@ public class User implements Serializable {
     public Integer getLevel() {
         if (hasRole(Role.SENIOR_JUROR_OFFICER)) {
             return 9;
-        } else if (isTeamLeader() || UserType.COURT.equals(this.getUserType())) {
+        } else if (isTeamLeader() || this.getUserType() == UserType.COURT) {
             return 1;
         } else {
             return 0;

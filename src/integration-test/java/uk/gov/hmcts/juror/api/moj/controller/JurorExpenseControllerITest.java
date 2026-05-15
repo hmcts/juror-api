@@ -464,13 +464,13 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 .publicTransport(doubleToBigDecimal(publicTransport))
                 .taxi(doubleToBigDecimal(taxi));
 
-            if (TravelMethod.CAR.equals(travelMethod)) {
+            if (travelMethod == TravelMethod.CAR) {
                 builder.traveledByCar(true)
                     .jurorsTakenCar(jurorsTaken);
-            } else if (TravelMethod.MOTERCYCLE.equals(travelMethod)) {
+            } else if (travelMethod == TravelMethod.MOTERCYCLE) {
                 builder.traveledByMotorcycle(true)
                     .jurorsTakenMotorcycle(jurorsTaken);
-            } else if (TravelMethod.BICYCLE.equals(travelMethod)) {
+            } else if (travelMethod == TravelMethod.BICYCLE) {
                 builder.traveledByBicycle(true);
             }
 
@@ -815,17 +815,17 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         assertThat(appearance1.getMiscDescription()).isNull();
                         assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(525.00));
                     } else {
-                        if (PayAttendanceType.HALF_DAY.equals(appearance1.getPayAttendanceType())) {
+                        if (appearance1.getPayAttendanceType() == PayAttendanceType.HALF_DAY) {
                             assertThat(appearance1.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(1.01));
                             assertThat(appearance1.getChildcareDue()).isEqualTo(doubleToBigDecimal(31.46));
                             assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(0.00));
                             assertThat(appearance1.getMiscDescription()).isEqualTo("Desc 3");
                             assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(32.47));
-                        } else if (PayAttendanceType.FULL_DAY.equals(appearance1.getPayAttendanceType())) {
+                        } else if (appearance1.getPayAttendanceType() == PayAttendanceType.FULL_DAY) {
                             assertThat(appearance1.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(1.01));
                             assertThat(appearance1.getChildcareDue()).isEqualTo(doubleToBigDecimal(50.00));
                             assertThat(appearance1.getMiscDescription()).isEqualTo("Desc 3");
-                            if (AttendanceType.NON_ATTENDANCE_LONG_TRIAL.equals(appearance1.getAttendanceType())) {
+                            if (appearance1.getAttendanceType() == AttendanceType.NON_ATTENDANCE_LONG_TRIAL) {
                                 assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(35.00));
                                 assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(86.01));
                             } else {
@@ -880,8 +880,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         assertThat(appearance1.getMiscDescription()).isNull();
                         assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(525.00));
                     } else {
-                        if (AttendanceType.NON_ATTENDANCE.equals(appearance1.getAttendanceType())
-                            || AttendanceType.NON_ATTENDANCE_LONG_TRIAL.equals(appearance1.getAttendanceType())) {
+                        if (appearance1.getAttendanceType() == AttendanceType.NON_ATTENDANCE
+                            || appearance1.getAttendanceType() == AttendanceType.NON_ATTENDANCE_LONG_TRIAL) {
                             hasNonAttendanceDay.set(true);
                             assertThat(appearance1.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(0.00));
                             assertThat(appearance1.getChildcareDue()).isEqualTo(doubleToBigDecimal(0.00));

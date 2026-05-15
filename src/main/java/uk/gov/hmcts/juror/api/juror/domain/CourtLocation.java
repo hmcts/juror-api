@@ -201,7 +201,7 @@ public class CourtLocation implements Serializable, ICourtLocation {
     }
 
     public boolean isPrimaryCourt() {
-        return CourtType.MAIN.equals(getType());
+        return getType() == CourtType.MAIN;
     }
 
     public String getNameWithLocCode() {

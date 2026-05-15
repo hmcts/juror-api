@@ -58,8 +58,7 @@ public class UserServiceModImpl implements UserService {
             .approvalLimit(BigDecimalUtils.getOrZero(createUserDto.getApprovalLimit()))
             .build();
 
-        if (UserType.ADMINISTRATOR.equals(createUserDto.getUserType()) || UserType.BUREAU.equals(
-            createUserDto.getUserType())) {
+        if (createUserDto.getUserType() == UserType.ADMINISTRATOR || createUserDto.getUserType() == UserType.BUREAU) {
             user.addCourt(getCourtLocation(SecurityUtil.BUREAU_OWNER));
         }
         userRepository.save(user);
@@ -96,7 +95,7 @@ public class UserServiceModImpl implements UserService {
     public List<CourtDto> getCourts(String email) {
         User user = findUserByEmail(email);
 
-        if (UserType.ADMINISTRATOR.equals(user.getUserType())) {
+        if (user.getUserType() == UserType.ADMINISTRATOR) {
             return List.of(
                 CourtDto.builder()
                     .name("ADMIN")
@@ -122,12 +121,12 @@ public class UserServiceModImpl implements UserService {
         if (!user.isActive()) {
             throw new MojException.Forbidden("User is not active", null);
         }
-        if ("ADMIN".equals(locCode) && !UserType.ADMINISTRATOR.equals(user.getUserType())) {
+        if ("ADMIN".equals(locCode) && user.getUserType() != UserType.ADMINISTRATOR) {
             throw new MojException.Forbidden("User must be an admin", null);
         }
 
         final UserType activeUserType;
-        if (UserType.ADMINISTRATOR.equals(user.getUserType())) {
+        if (user.getUserType() == UserType.ADMINISTRATOR) {
             if ("ADMIN".equals(locCode)) {
                 activeUserType = UserType.ADMINISTRATOR;
                 locCode = "400";
@@ -140,7 +139,7 @@ public class UserServiceModImpl implements UserService {
 
         CourtLocation loggedInCourt = getCourtLocation(locCode);
         List<CourtLocation> courtLocations = getCourtsByOwner(loggedInCourt.getOwner());
-        if (UserType.ADMINISTRATOR.equals(user.getUserType()) || user.hasCourtByOwner(loggedInCourt.getOwner())) {
+        if (user.getUserType() == UserType.ADMINISTRATOR || user.hasCourtByOwner(loggedInCourt.getOwner())) {
             user.setLastLoggedIn(LocalDateTime.now());
             userRepository.save(user);
             return new JwtDto(
@@ -173,11 +172,11 @@ public class UserServiceModImpl implements UserService {
     @Transactional(readOnly = true)
     public PaginatedList<UserDetailsDto> getUsers(UserSearchDto userSearchDto) {
         UserType userType = SecurityUtil.getUserType();
-        if (userType.equals(UserType.COURT)) {
+        if (userType == UserType.COURT) {
             userSearchDto.setUserType(UserType.COURT);
             userSearchDto.setCourt(SecurityUtil.getActiveOwner());
         }
-        if (userType.equals(UserType.BUREAU)) {
+        if (userType == UserType.BUREAU) {
             userSearchDto.setUserType(UserType.BUREAU);
             userSearchDto.setCourt(SecurityUtil.BUREAU_OWNER);
         }
@@ -214,14 +213,14 @@ public class UserServiceModImpl implements UserService {
     @Transactional
     public void changeUserType(String username, UserType userType) {
         User user = findUserByUsername(username);
-        if (userType.equals(user.getUserType())) {
+        if (userType == user.getUserType()) {
             return;
         }
         user.setUserType(userType);
         user.clearCourts();
         user.clearRoles();
 
-        if (UserType.ADMINISTRATOR.equals(userType) || UserType.BUREAU.equals(userType)) {
+        if (userType == UserType.ADMINISTRATOR || userType == UserType.BUREAU) {
             user.addCourt(getCourtLocation(SecurityUtil.BUREAU_OWNER));
         }
     }

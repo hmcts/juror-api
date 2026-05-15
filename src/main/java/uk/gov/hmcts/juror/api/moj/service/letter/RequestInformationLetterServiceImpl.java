@@ -44,7 +44,7 @@ public class RequestInformationLetterServiceImpl implements RequestInformationLe
 
         final ReplyMethod replyMethod = additionalInformationDto.getReplyMethod();
 
-        if (replyMethod.equals(ReplyMethod.PAPER)) {
+        if (replyMethod == ReplyMethod.PAPER) {
             //Basic validation to ensure additional information can be requested for paper responses
             checkIfSignatureMissing(additionalInformationDto.getMissingInformation(), jurorNumber);
         }
@@ -65,7 +65,7 @@ public class RequestInformationLetterServiceImpl implements RequestInformationLe
 
 
         // update the response status
-        if (replyMethod.equals(ReplyMethod.PAPER)) {
+        if (replyMethod == ReplyMethod.PAPER) {
             summonsReplyStatusUpdateService.updateJurorResponseStatus(jurorNumber,
                 ProcessingStatus.AWAITING_CONTACT, payload);
         } else {

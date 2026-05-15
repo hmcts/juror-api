@@ -394,7 +394,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                     HistoryCodeMod.DEFERRED_POOL_MEMBER);
 
                 // Confirmation needs newJurorPool for attendance dates
-                if (payload.getUserType().equals(UserType.BUREAU)) {
+                if (payload.getUserType() == UserType.BUREAU) {
                     printConfirmationLetter(payload.getOwner(), newJurorPool);
                 }
             } else {
@@ -404,7 +404,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
             jurorHistoryService.createPostponementLetterHistory(jurorPool, "");
 
-            if (payload.getUserType().equals(UserType.BUREAU)) {
+            if (payload.getUserType() == UserType.BUREAU) {
                 printPostponementLetter(payload.getOwner(), jurorPool);
             }
             countJurorsPostponed++;
@@ -823,10 +823,10 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
         AbstractJurorResponse jurorResponse = null;
 
-        if (deferralReasonDto.getReplyMethod().equals(ReplyMethod.DIGITAL)) {
+        if (deferralReasonDto.getReplyMethod() == ReplyMethod.DIGITAL) {
             jurorResponse = DataUtils.getJurorDigitalResponse(jurorNumber, digitalResponseRepository);
 
-        } else if (deferralReasonDto.getReplyMethod().equals(ReplyMethod.PAPER)) {
+        } else if (deferralReasonDto.getReplyMethod() == ReplyMethod.PAPER) {
             jurorResponse = DataUtils.getJurorPaperResponse(jurorNumber, paperResponseRepository);
         }
 

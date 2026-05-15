@@ -13,7 +13,7 @@ public enum SortMethod {
     }
 
     public OrderSpecifier<?> from(Expression<? extends Comparable<?>> expressionObject) {
-        if (SortMethod.ASC.equals(this)) {
+        if (this == SortMethod.ASC) {
             return new OrderSpecifier<>(Order.ASC, expressionObject);
         } else {
             return new OrderSpecifier<>(Order.DESC, expressionObject);

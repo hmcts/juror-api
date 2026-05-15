@@ -90,8 +90,8 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
         filterDataBasedOnLetterType(letterType, query, null);
 
         // filter based on date
-        if (SHOW_CAUSE.equals(letterType)
-            || FAILED_TO_ATTEND.equals(letterType)) {
+        if (letterType == SHOW_CAUSE
+            || letterType == FAILED_TO_ATTEND) {
             query.where(APPEARANCE.attendanceDate.eq(letterDate));
         }
 
@@ -127,7 +127,7 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
                                              JPAQuery<Tuple> query, String trialNumber) {
         switch (courtLetterType) {
             case DEFERRAL_GRANTED, POSTPONED -> {
-                if (POSTPONED.equals(courtLetterType)) {
+                if (courtLetterType == POSTPONED) {
                     query.join(POOL_REQUEST).on(POOL_REQUEST.eq(JUROR_POOL.pool))
                         .where(JUROR_POOL.deferralCode.eq(ExcusalCodeEnum.P.getCode()));
                 }

@@ -52,7 +52,7 @@ public class PncCheckServiceClientImpl extends AbstractRemoteRestClient implemen
                 restTemplate.exchange(singleUpdateUrl, HttpMethod.POST, requestUpdate, Void.class);
 
             final HttpStatusCode statusCode = response.getStatusCode();
-            if (!statusCode.equals(HttpStatus.OK)) {
+            if (statusCode != HttpStatus.OK) {
                 throw new MojException.RemoteGatewayException(
                     "Call to PncCheckServiceClientImpl check juror failed ",
                     null);

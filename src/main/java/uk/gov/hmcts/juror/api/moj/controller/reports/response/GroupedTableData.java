@@ -23,7 +23,7 @@ public class GroupedTableData extends LinkedHashMap<String, Object>
 
     @JsonIgnore
     public Long getSize() {
-        if (Type.DATA.equals(type)) {
+        if (type == Type.DATA) {
             return (long) this.size();
         } else {
             return this.values()
@@ -42,7 +42,7 @@ public class GroupedTableData extends LinkedHashMap<String, Object>
     }
 
     public void removeDataKey(String key) {
-        if (Type.DATA.equals(type)) {
+        if (type == Type.DATA) {
             this.remove(key);
         } else {
             removeDataKeyInternal(key, this.values());
@@ -70,7 +70,7 @@ public class GroupedTableData extends LinkedHashMap<String, Object>
             if (o instanceof Collection<?> collection) {
                 addAllDataItemsInternal(dataItems, collection);
             } else if (o instanceof GroupedTableData groupedTableData) {
-                if (Type.DATA.equals(groupedTableData.getType())) {
+                if (groupedTableData.getType() == Type.DATA) {
                     dataItems.add(groupedTableData);
                 } else {
                     addAllDataItemsInternal(dataItems, groupedTableData.values());

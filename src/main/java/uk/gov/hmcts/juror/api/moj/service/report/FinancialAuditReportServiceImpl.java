@@ -58,11 +58,11 @@ public class FinancialAuditReportServiceImpl implements FinancialAuditReportServ
                 .expenses(getExpenses(financialAuditDetails))
                 .jurorDetails(getJurorDetails(financialAuditDetails));
 
-        if (FinancialAuditDetails.Type.GenericType.EDIT.equals(financialAuditDetails.getType().getGenericType())) {
+        if (financialAuditDetails.getType().getGenericType() == FinancialAuditDetails.Type.GenericType.EDIT) {
             builder.originalJurorDetails(getJurorDetails(forApprovalFinancialAuditDetails));
         }
 
-        if (FinancialAuditDetails.Type.GenericType.APPROVED.equals(financialAuditDetails.getType().getGenericType())) {
+        if (financialAuditDetails.getType().getGenericType() == FinancialAuditDetails.Type.GenericType.APPROVED) {
             builder.approvedAt(financialAuditDetails.getCreatedOn())
                 .approvedBy(new UserDetailsSimpleDto(financialAuditDetails.getCreatedBy()));
         }
@@ -88,7 +88,7 @@ public class FinancialAuditReportServiceImpl implements FinancialAuditReportServ
         final Function<Appearance, Appearance> origionalAppearanceFunction;
         ExpenseTotal<ExpenseDetailsWithOriginalDto> expenseTotal = new ExpenseTotal<>(true);
         //If this is an edit report get the original values
-        if (FinancialAuditDetails.Type.GenericType.EDIT.equals(financialAuditDetails.getType().getGenericType())) {
+        if (financialAuditDetails.getType().getGenericType() == FinancialAuditDetails.Type.GenericType.EDIT) {
             origionalAppearanceFunction =
                 appearance -> financialAuditService.getPreviousAppearance(financialAuditDetails, appearance);
         } else if (Set.of(FinancialAuditDetails.Type.REAPPROVED_BACS,

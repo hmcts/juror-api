@@ -464,7 +464,7 @@ class PanelServiceImplTest {
             .createReturnFromPanelHistory(any(), any());
 
         for (Panel member : panelMembers) {
-            if (member.getResult().equals(PanelResult.CHALLENGED) || member.getResult().equals(PanelResult.JUROR)) {
+            if (member.getResult() == PanelResult.CHALLENGED || member.getResult() == PanelResult.JUROR) {
                 Optional<Appearance> memberAppearance =
                     appearanceArgumentCaptor.getAllValues().stream().filter(appearance ->
                         appearance.getJurorNumber().equals(member.getJurorNumber())).findFirst();

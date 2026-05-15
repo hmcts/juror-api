@@ -100,14 +100,14 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
             boolean welsh = BooleanUtils.toBoolean(juror.getWelsh())
                 && CourtLocationUtils.isWelshCourtLocation(welshCourtLocationRepository, SecurityUtil.getLocCode());
             Tuple data;
-            if (printLettersRequestDto.getLetterType().equals(CERTIFICATE_OF_EXEMPTION)) {
+            if (printLettersRequestDto.getLetterType() == CERTIFICATE_OF_EXEMPTION) {
                 CertificateOfExemptionRequestDto exemptionRequestDto =
                     (CertificateOfExemptionRequestDto) printLettersRequestDto;
                 data = courtPrintLetterRepository.retrievePrintInformation(jurorNumber,
                     printLettersRequestDto.getLetterType(), welsh, owner,
                     exemptionRequestDto.getTrialNumber());
-            } else if (CourtLetterType.SHOW_CAUSE.equals(printLettersRequestDto.getLetterType())
-                || CourtLetterType.FAILED_TO_ATTEND.equals(printLettersRequestDto.getLetterType())) {
+            } else if (printLettersRequestDto.getLetterType() == CourtLetterType.SHOW_CAUSE
+                || printLettersRequestDto.getLetterType() == CourtLetterType.FAILED_TO_ATTEND) {
                 data = courtPrintLetterRepository.retrievePrintInformationBasedOnLetterSpecificDate(jurorNumber,
                     printLettersRequestDto.getLetterType(), welsh, owner, entry.getValue());
             } else {
@@ -121,7 +121,7 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
 
             // create the print letter response
             PrintLetterDataResponseDto dto;
-            if (!printLettersRequestDto.getLetterType().equals(CERTIFICATE_OF_EXEMPTION)) {
+            if (printLettersRequestDto.getLetterType() != CERTIFICATE_OF_EXEMPTION) {
                 dto = createPrintLetterDataResponseDto(data, welsh, printLettersRequestDto);
             } else {
                 CertificateOfExemptionRequestDto exemptionRequestDto =
@@ -145,8 +145,8 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
     private Multimap<String, LocalDate> transposeListToMap(PrintLettersRequestDto printLettersRequestDto) {
         Multimap<String, LocalDate> map = LinkedListMultimap.create();
 
-        if (CourtLetterType.SHOW_CAUSE.equals(printLettersRequestDto.getLetterType())
-            || CourtLetterType.FAILED_TO_ATTEND.equals(printLettersRequestDto.getLetterType())) {
+        if (printLettersRequestDto.getLetterType() == CourtLetterType.SHOW_CAUSE
+            || printLettersRequestDto.getLetterType() == CourtLetterType.FAILED_TO_ATTEND) {
             // can print multiple letters for each juror if absent from jury service on more than one day - need to
             // filter based on the given date, e.g. attendanceDate (absentDate)
             printLettersRequestDto.getDetailsPerLetter()
@@ -172,7 +172,7 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
                 jurorHistory.otherInformationRef(data.get(JUROR_POOL.deferralCode));
                 jurorHistory.otherInformationDate(data.get(JUROR_POOL.deferralDate));
 
-                if (DEFERRAL_GRANTED.equals(printLettersRequestDto.getLetterType())) {
+                if (printLettersRequestDto.getLetterType() == DEFERRAL_GRANTED) {
                     jurorHistory.historyCode(HistoryCodeMod.DEFERRED_LETTER);
                     jurorHistory.otherInformation("Print deferral letter");
                 } else {

@@ -53,7 +53,7 @@ public class BureauJwtPayload {
 
     public BureauJwtPayload(User user, UserType activeType, String locCode, List<CourtLocation> courtLocations) {
         this.owner = courtLocations.stream()
-            .filter(courtLocation -> CourtType.MAIN.equals(courtLocation.getType()))
+            .filter(courtLocation -> courtLocation.getType() == CourtType.MAIN)
             .toList().get(0).getOwner();
         this.locCode = locCode;
         this.email = user.getEmail();
@@ -62,7 +62,7 @@ public class BureauJwtPayload {
         this.userType = user.getUserType();
         this.activeUserType = activeType;
 
-        if (UserType.ADMINISTRATOR.equals(user.getUserType())) {
+        if (user.getUserType() == UserType.ADMINISTRATOR) {
             this.roles = List.of(Role.values());
         } else {
             this.roles = user.getRoles()

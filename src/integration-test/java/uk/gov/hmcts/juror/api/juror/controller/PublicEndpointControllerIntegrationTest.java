@@ -395,7 +395,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             Collection<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById("644892530");
             assertThat(history).isNotEmpty();
             Optional<JurorHistory> historyRecord = history.stream().filter(h ->
-                h.getHistoryCode().equals(HistoryCodeMod.RESPONSE_SUBMITTED)).findFirst();
+                h.getHistoryCode() == HistoryCodeMod.RESPONSE_SUBMITTED).findFirst();
             assertThat(historyRecord).isPresent();
             assertThat(historyRecord.get().getCreatedBy()).isEqualTo("SYSTEM");
             assertThat(historyRecord.get().getOtherInformation()).isEqualTo("Digital");
@@ -538,7 +538,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             Collection<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById("644892530");
             assertThat(history).isNotEmpty();
             Optional<JurorHistory> historyRecord = history.stream().filter(h ->
-                                        h.getHistoryCode().equals(HistoryCodeMod.RESPONSE_SUBMITTED)).findFirst();
+                                        h.getHistoryCode() == HistoryCodeMod.RESPONSE_SUBMITTED).findFirst();
             assertThat(historyRecord).isPresent();
             assertThat(historyRecord.get().getCreatedBy()).isEqualTo("SYSTEM");
             assertThat(historyRecord.get().getOtherInformation()).isEqualTo("Digital");
@@ -606,7 +606,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             assertThat(history).isNotEmpty();
             assertThat(history.size()).isEqualTo(1);
             Optional<JurorHistory> historyRecord = history.stream().filter(h ->
-                                           h.getHistoryCode().equals(HistoryCodeMod.RESPONSE_SUBMITTED)).findFirst();
+                                           h.getHistoryCode() == HistoryCodeMod.RESPONSE_SUBMITTED).findFirst();
             assertThat(historyRecord).isPresent();
             assertThat(historyRecord.get().getCreatedBy()).isEqualTo("SYSTEM");
             assertThat(historyRecord.get().getOtherInformation()).isEqualTo("Digital");
@@ -909,13 +909,13 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             Collection<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById("644892530");
             assertThat(history).isNotEmpty();
             Optional<JurorHistory> historyRecord = history.stream().filter(h ->
-                h.getHistoryCode().equals(HistoryCodeMod.RESPONSE_SUBMITTED)).findFirst();
+                h.getHistoryCode() == HistoryCodeMod.RESPONSE_SUBMITTED).findFirst();
             assertThat(historyRecord).isPresent();
             assertThat(historyRecord.get().getCreatedBy()).isEqualTo("SYSTEM");
             assertThat(historyRecord.get().getOtherInformation()).isEqualTo("Digital");
 
             historyRecord = history.stream().filter(h ->
-                h.getHistoryCode().equals(HistoryCodeMod.RESPONDED_POSITIVELY)).findFirst();
+                h.getHistoryCode() == HistoryCodeMod.RESPONDED_POSITIVELY).findFirst();
             assertThat(historyRecord.isPresent()).isFalse();
 
             // check no audit records were created
@@ -1020,13 +1020,13 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             Collection<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById("644892530");
             assertThat(history).isNotEmpty();
             Optional<JurorHistory> historyRecord = history.stream().filter(h ->
-                                            h.getHistoryCode().equals(HistoryCodeMod.RESPONSE_SUBMITTED)).findFirst();
+                                            h.getHistoryCode() == HistoryCodeMod.RESPONSE_SUBMITTED).findFirst();
             assertThat(historyRecord).isPresent();
             assertThat(historyRecord.get().getCreatedBy()).isEqualTo("SYSTEM");
             assertThat(historyRecord.get().getOtherInformation()).isEqualTo("Digital");
 
             historyRecord = history.stream().filter(h ->
-                h.getHistoryCode().equals(HistoryCodeMod.RESPONDED_POSITIVELY)).findFirst();
+                h.getHistoryCode() == HistoryCodeMod.RESPONDED_POSITIVELY).findFirst();
             assertThat(historyRecord.isPresent()).isFalse();
 
             Iterable<JurorResponseAuditMod> jurorResponseAuditMod = jurorResponseAuditRepositoryMod.findAll();
@@ -1104,7 +1104,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             Collection<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById("644892530");
             assertThat(history).isNotEmpty();
             Optional<JurorHistory> historyRecord = history.stream().filter(h ->
-                                        h.getHistoryCode().equals(HistoryCodeMod.RESPONSE_SUBMITTED)).findFirst();
+                                        h.getHistoryCode() == HistoryCodeMod.RESPONSE_SUBMITTED).findFirst();
             assertThat(historyRecord).isPresent();
             assertThat(historyRecord.get().getCreatedBy()).isEqualTo("SYSTEM");
             assertThat(historyRecord.get().getOtherInformation()).isEqualTo("Digital");
@@ -2288,7 +2288,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
     private void checkResponseSubmittedHistory(Collection<JurorHistory> history) {
         Optional<JurorHistory> historyRecord = history.stream().filter(h ->
-                                            h.getHistoryCode().equals(HistoryCodeMod.RESPONSE_SUBMITTED)).findFirst();
+                                            h.getHistoryCode() == HistoryCodeMod.RESPONSE_SUBMITTED).findFirst();
         assertThat(historyRecord).isPresent();
         assertThat(historyRecord.get().getCreatedBy()).isEqualTo("SYSTEM");
         assertThat(historyRecord.get().getOtherInformation()).isEqualTo("Digital");
@@ -2296,7 +2296,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
     private void checkRespondedHistory(Collection<JurorHistory> history) {
         Optional<JurorHistory> historyRecord = history.stream().filter(h ->
-                                        h.getHistoryCode().equals(HistoryCodeMod.RESPONDED_POSITIVELY)).findFirst();
+                                        h.getHistoryCode() == HistoryCodeMod.RESPONDED_POSITIVELY).findFirst();
         assertThat(historyRecord).isPresent();
         assertThat(historyRecord.get().getCreatedBy()).isEqualTo(JurorDigitalApplication.AUTO_USER);
         assertThat(historyRecord.get().getOtherInformation()).isEqualTo("Responded");
@@ -2304,7 +2304,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
     private void checkWithdrawalLetterHistory(Collection<JurorHistory> history) {
         Optional<JurorHistory> historyRecord = history.stream().filter(h ->
-                                            h.getHistoryCode().equals(HistoryCodeMod.WITHDRAWAL_LETTER)).findFirst();
+                                            h.getHistoryCode() == HistoryCodeMod.WITHDRAWAL_LETTER).findFirst();
         assertThat(historyRecord).isPresent();
         assertThat(historyRecord.get().getCreatedBy()).isEqualTo("SYSTEM");
         assertThat(historyRecord.get().getOtherInformationRef()).isEqualTo("A");
@@ -2312,7 +2312,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
     private void checkDisqualifyPoolMemberHistory(Collection<JurorHistory> history) {
         Optional<JurorHistory> historyRecord = history.stream().filter(h ->
-                                        h.getHistoryCode().equals(HistoryCodeMod.DISQUALIFY_POOL_MEMBER)).findFirst();
+                                        h.getHistoryCode() == HistoryCodeMod.DISQUALIFY_POOL_MEMBER).findFirst();
         assertThat(historyRecord).isPresent();
         assertThat(historyRecord.get().getCreatedBy()).isEqualTo("AUTO");
         assertThat(historyRecord.get().getOtherInformationRef()).isEqualTo("A");
