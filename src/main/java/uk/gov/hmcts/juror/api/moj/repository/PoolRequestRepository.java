@@ -37,7 +37,8 @@ public interface PoolRequestRepository extends IPoolRequestRepository, JpaReposi
      *     <li>(7) service_start_date date
      * </ul>
      *
-     * <p>Only counting active jurors.
+     * <p>
+     * (Only counting active jurors)
      *
      * @param locCode 3-digit numeric string to uniquely identify a court location
      * @return List of pools at a court location.
