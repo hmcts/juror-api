@@ -91,10 +91,9 @@ public class GenerateCoronerPoolNumberServiceImpl implements GenerateCoronerPool
             // Increment the previous sequence number by one to get the new sequence number
             int newSequenceNumber = Integer.parseInt(latestSequenceNumber) + 1;
 
-            String newPoolNumber = CORONER_POOL_STARTING_DIGIT + latestYear
+            return CORONER_POOL_STARTING_DIGIT + latestYear
                 + latestMonth
                 + leftPadInteger(newSequenceNumber);
-            return newPoolNumber;
         }
 
         log.debug("Latest Coroner Pool number Year/Month is in the past, generating a new pool number");

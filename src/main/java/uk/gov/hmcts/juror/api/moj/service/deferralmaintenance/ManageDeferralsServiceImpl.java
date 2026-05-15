@@ -1168,7 +1168,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
             int confirmedPoolMembers = NumberUtils.unboxIntegerValues(activePool.get(3, Integer.class));
 
-            if (owner.equalsIgnoreCase(JurorDigitalApplication.JUROR_OWNER)) {
+            if (JurorDigitalApplication.JUROR_OWNER.equalsIgnoreCase(owner)) {
                 log.debug("Calculate current pool utilisation stats for {}", activePool.get(0, String.class));
                 int bureauUtilisation = calculateUtilisation(activePool.get(2, Integer.class), confirmedPoolMembers);
                 log.debug("Calculate current pool utilisation calculated as {}", bureauUtilisation);

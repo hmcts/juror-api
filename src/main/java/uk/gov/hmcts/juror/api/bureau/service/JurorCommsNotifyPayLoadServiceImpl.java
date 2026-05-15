@@ -215,7 +215,7 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
                 } else if (mapperObject.getType() == NotifyTemplateMapperMod.Type.JUROR) {
                     fieldValue = invokeGetter(context, mapperObject);
 
-                    if (field.getTemplateField().equalsIgnoreCase(SERVICE_START_DATE)) {
+                    if (SERVICE_START_DATE.equalsIgnoreCase(field.getTemplateField())) {
                         String formattedDate = ENGLISH_DATE_TIME_FORMATTER.format((LocalDate) fieldValue);
                         String formattedDateWelsh = WELSH_DATE_TIME_FORMATTER.format((LocalDate) fieldValue);
                         String str;
@@ -318,9 +318,7 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
     }
 
     public List<String> setUpWelshMonthDays() {
-        List<String> welshMonthsDays;
-        welshMonthsDays = welshDayMonthTranslationConfig.getWelshDaysMonths();
-        return welshMonthsDays;
+        return welshDayMonthTranslationConfig.getWelshDaysMonths();
     }
 
     public List<String> setUpEnglishDaysWeek() {

@@ -83,7 +83,7 @@ public class PoolSearchController {
     private boolean validateCourtLocation(BureauJwtPayload payload, String locCode, List<String> courts) {
         log.trace(String.format("User %s is searching for pools in court location: %s", payload.getLogin(), locCode));
         return locCode == null || locCode.isEmpty()
-            || payload.getOwner().equalsIgnoreCase(JurorDigitalApplication.JUROR_OWNER)
+            || JurorDigitalApplication.JUROR_OWNER.equalsIgnoreCase(payload.getOwner())
             || courts.contains(locCode);
     }
 }

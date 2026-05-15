@@ -108,12 +108,11 @@ class SecurityConfigTest {
     @ParameterizedTest(name = "[{index}] Unauthorised request expected JWT Type: {0} but got JWT Type {1} for url {2}")
     @MethodSource("unauthorisedRequests")
     void unauthorised(String expectedJwtType, String actualJwtType, String url, String jwt) throws Exception {
-        assertThrows(InvalidJwtAuthenticationException.class, () -> {
+        assertThrows(InvalidJwtAuthenticationException.class, () ->
             mockMvc.perform(get(url)
                     .header(HttpHeaders.AUTHORIZATION, jwt)
                     .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isUnauthorized());
-        });
+                .andExpect(status().isUnauthorized()));
     }
 
     private Stream<Arguments> unauthorisedRequests() {

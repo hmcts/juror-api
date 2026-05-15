@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.PoolTransferWeekday;
 import uk.gov.hmcts.juror.api.moj.domain.QCurrentlyDeferred;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
@@ -27,8 +28,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-
 
 
 @Slf4j
@@ -300,9 +299,9 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
 
         // Apply adjustments
         effectiveDate = effectiveDate.plusDays(weekdayAdjustment);
-        LocalDate latestReturnDate = effectiveDate.plusDays(7);  // 1 week
+        // 1 week
 
-        return latestReturnDate;
+        return effectiveDate.plusDays(7);
     }
 
     private int getWeekdayAdjustmentFromDB(String transferDay, String runDay) {
@@ -313,7 +312,7 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
         String r = runDay.trim();
         return poolTransferDayRepository
             .findByTransferDayAndRunDayIgnoreCase(t, r)
-            .map(ptw -> ptw.getAdjustment())
+            .map(PoolTransferWeekday::getAdjustment)
             .orElse(0);
     }
 

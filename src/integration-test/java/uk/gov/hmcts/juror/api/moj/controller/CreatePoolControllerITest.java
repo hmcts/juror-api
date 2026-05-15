@@ -205,8 +205,8 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
         final SummonsFormRequestDto summonsFormRequest1 =
             new SummonsFormRequestDto("415220110", "415",
-                LocalDateTime.of(2022, 10, 04, 9, 0, 0),
-                140, LocalDate.of(2022, 10, 04));
+                LocalDateTime.of(2022, 10, 4, 9, 0, 0),
+                140, LocalDate.of(2022, 10, 4));
 
 
         final URI uri = URI.create("/api/v1/moj/pool-create/summons-form");

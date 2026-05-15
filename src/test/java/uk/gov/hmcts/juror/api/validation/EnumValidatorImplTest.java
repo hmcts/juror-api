@@ -88,7 +88,7 @@ class EnumValidatorImplTest extends AbstractValidatorTest<EnumValidator> {
 
 
     enum TestEnum {
-        TEST_1, TEST_2, TEST_3;
+        TEST_1, TEST_2, TEST_3
     }
 
 }

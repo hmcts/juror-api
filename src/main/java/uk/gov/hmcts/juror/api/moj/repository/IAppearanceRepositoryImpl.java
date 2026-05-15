@@ -548,9 +548,9 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .where(JUROR.completionDate.isNull().or(JUROR.completionDate.eq(LocalDate.now())));
 
         if (includeNonAttendance) {
-            partialQuery.where((APPEARANCE.appearanceStage.in(AppearanceStage.EXPENSE_ENTERED,
+            partialQuery.where(APPEARANCE.appearanceStage.in(AppearanceStage.EXPENSE_ENTERED,
                                                              AppearanceStage.EXPENSE_AUTHORISED,
-                                                             AppearanceStage.EXPENSE_EDITED))
+                                                             AppearanceStage.EXPENSE_EDITED)
                                    .or(APPEARANCE.nonAttendanceDay.isTrue()));
         } else {
             partialQuery.where(APPEARANCE.nonAttendanceDay.isNull().or(APPEARANCE.nonAttendanceDay.isFalse()))
@@ -560,7 +560,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
         }
 
         if (!includeOnTrial) {
-            partialQuery.where((APPEARANCE.trialNumber.isNull().or(APPEARANCE.trialNumber.isEmpty()))
+            partialQuery.where(APPEARANCE.trialNumber.isNull().or(APPEARANCE.trialNumber.isEmpty())
                 .or(APPEARANCE.trialNumber.isNotNull().and(APPEARANCE.satOnJury.isNull())));
         }
 

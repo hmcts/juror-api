@@ -167,7 +167,7 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
 
                     List<String> res = List.of(result.split(","));
 
-                    if (res.get(1).equals("null")) {
+                    if ("null".equals(res.get(1))) {
                         continue;
                     }
 

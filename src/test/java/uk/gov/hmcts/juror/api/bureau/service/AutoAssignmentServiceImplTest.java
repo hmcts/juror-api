@@ -158,7 +158,7 @@ public class AutoAssignmentServiceImplTest {
         verify(responseRepo, times(1)).saveAll(backlog);
         verify(auditRepo).saveAll(auditCaptor.capture());
         List<UserJurorResponseAudit> auditEntries =
-            Lists.newLinkedList((auditCaptor.getValue()));
+            Lists.newLinkedList(auditCaptor.getValue());
 
         for (DigitalResponse backlogItem : backlog) {
 

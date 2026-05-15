@@ -207,9 +207,8 @@ class ManualAdjustmentsToExpenseLimitsReportTest {
         StandardTableData data = response.getTableData().getData();
         assertThat(data).isNotEmpty();
 
-        data.forEach(row -> {
-            assertThat(row.get("changed_by")).isEqualTo(expectedUsername);
-        });
+        data.forEach(row ->
+            assertThat(row.get("changed_by")).isEqualTo(expectedUsername));
     }
 
     @Test

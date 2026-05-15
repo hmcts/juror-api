@@ -63,7 +63,7 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
     @Sql(value = {"/db/administration/tearDownHolidays.sql",
         "/db/administration/createHolidays.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(value = "/db/administration/tearDownHolidays.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    class ViewBankHolidays {
+    final class ViewBankHolidays {
         public static final String URL = BASE_URL + "/bank-holidays";
 
         private ViewBankHolidays() {

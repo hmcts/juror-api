@@ -409,7 +409,7 @@ public class ResponseUpdateController {
     @NoArgsConstructor
     @EqualsAndHashCode(callSuper = true)
     @Schema(description = "Request body for editing the juror details section of a first person juror response")
-    public static class FirstPersonJurorDetailsDto extends AbstractJurorDetailsDto {
+    public static final class FirstPersonJurorDetailsDto extends AbstractJurorDetailsDto {
         @Builder
         private FirstPersonJurorDetailsDto(Integer version, String notes, String title, String firstName,
                                            String lastName, String address, String address2, String address3,
@@ -440,7 +440,7 @@ public class ResponseUpdateController {
     @EqualsAndHashCode(callSuper = true)
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Schema(description = "Request body for editing the juror details section of a third party juror response")
-    public static class ThirdPartyJurorDetailsDto extends AbstractJurorDetailsDto {
+    public static final class ThirdPartyJurorDetailsDto extends AbstractJurorDetailsDto {
 
         @Schema(description = "Flag for using Jurors phone as contact")
         @JsonProperty("useJurorPhoneDetails")

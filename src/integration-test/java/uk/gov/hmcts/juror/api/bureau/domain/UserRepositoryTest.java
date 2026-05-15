@@ -85,7 +85,7 @@ public class UserRepositoryTest extends AbstractIntegrationTest {
     public void findByActiveOrderByNameAsc_active() {
         final List<User> active = Lists.newArrayList(userRepository.findAll(active(), QUser.user.name.asc()));
         assertThat(active).hasSize(6).isSortedAccordingTo(Comparator.comparing(User::getName))
-            .allMatch(staff -> staff.isActive())
+            .allMatch(User::isActive)
             .extracting("name").containsOnly(
                 "Joanna Powers",
                 "Todd Sanchez",

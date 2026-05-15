@@ -171,7 +171,7 @@ public class ResponseInspectorImpl implements ResponseInspector {
             return true;
         }
 
-        if ((response.getCjsEmployments() != null && !response.getCjsEmployments().isEmpty())) {
+        if (response.getCjsEmployments() != null && !response.getCjsEmployments().isEmpty()) {
             log.debug("Response {} ineligible - CJS employments", response.getJurorNumber());
             return true;
         }

@@ -679,7 +679,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
     @Sql(value = {"/db/administration/tearDownCourts.sql",
         "/db/administration/createCourts.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(value = "/db/administration/tearDownCourts.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    class ViewAllCourtsDetails {
+    final class ViewAllCourtsDetails {
         public static final String URL = BASE_URL + "/courts";
 
         private ViewAllCourtsDetails() {
@@ -782,7 +782,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
     @DisplayName("GET  " + ViewExpenseDetails.URL)
     @Sql({"/db/mod/truncate.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
-    class ViewExpenseDetails {
+    final class ViewExpenseDetails {
         public static final String URL = BASE_URL + "/expenses/rates";
 
         private ViewExpenseDetails() {

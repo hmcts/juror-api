@@ -178,7 +178,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
     private void createPoolHistory(ReissueLetterRequestDto request, Map<String, Integer> poolLetterCount) {
         if (Set.of("5228", "5228C").contains(request.getLetters().get(0).getFormCode())) {
 
-            poolLetterCount.keySet().forEach(poolNumber -> {
+            poolLetterCount.keySet().forEach(poolNumber ->
                 // create pool history
                 poolHistoryService.createPoolHistory(poolNumber, HistoryCode.PHRS,
                     poolLetterCount.get(poolNumber) + " (Number of Reminder letters sent)");
@@ -296,8 +296,8 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
         for (List<Object> datum : data) {
             ArrayList<Object> newData = new ArrayList<>(datum);
 
-            if (newData.get(statusIndex).equals("Deferred")
-                && newData.get(reasonIndex).equals("Postponement of service")) {
+            if ("Deferred".equals(newData.get(statusIndex))
+                && "Postponement of service".equals(newData.get(reasonIndex))) {
                 newData.remove(statusIndex);
                 newData.add(statusIndex, "Postponed");
             }
