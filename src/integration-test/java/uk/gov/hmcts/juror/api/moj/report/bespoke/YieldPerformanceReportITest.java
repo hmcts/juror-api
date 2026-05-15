@@ -34,7 +34,10 @@ import static org.assertj.core.api.BDDAssertions.within;
     "/db/mod/truncate.sql",
     "/db/mod/reports/YieldPerformanceReportITest_typical.sql",
 })
-@SuppressWarnings("PMD.TooManyMethods")
+@SuppressWarnings({
+    "PMD.PublicMemberInNonPublicType",
+    "PMD.TooManyMethods"
+})
 class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<YieldPerformanceReportRequest,
     YieldPerformanceReportResponse> {
     public static final String URL = "/api/v1/moj/reports/yield-performance";
@@ -305,6 +308,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
         Assertions.assertThat(data.getBalance()).isEqualTo(-10);
         Assertions.assertThat(data.getDifference()).isEqualTo(-90.90909);
         Assertions.assertThat(data.getComments()).isEqualTo("");
+
 
     }
 

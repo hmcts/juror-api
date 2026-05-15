@@ -35,6 +35,7 @@ import static uk.gov.hmcts.juror.api.TestConstants.DATE_TO_DISPLAY_NAME;
 import static uk.gov.hmcts.juror.api.TestConstants.DATE_TO_KEY;
 import static uk.gov.hmcts.juror.api.TestConstants.VALID_COURT_LOCATION;
 
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class CompletionOfServiceReportTest extends AbstractGroupedReportTestSupport<CompletionOfServiceReport> {
 
     private static final LocalDate DATE_FROM_TEST_VALUE = LocalDate.of(2023, 3, 1);

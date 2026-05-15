@@ -57,7 +57,8 @@ import static uk.gov.hmcts.juror.api.TestUtils.createJwt;
 @ContextConfiguration(classes = {PanelController.class})
 @SuppressWarnings({
     "PMD.ExcessiveImports",
-    "PMD.TooManyMethods"
+    "PMD.TooManyMethods",
+    "PMD.PublicMemberInNonPublicType"
 })
 class PanelControllerTest {
     private static final String BASE_URL = "/api/v1/moj/trial/panel";
@@ -438,6 +439,7 @@ class PanelControllerTest {
         return panelListDtos;
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     public class PrincipalDetailsArgumentResolver implements HandlerMethodArgumentResolver {
 
         @Override

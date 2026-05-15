@@ -24,6 +24,7 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/UnpaidAttendanceSummaryReportITest_typical.sql"
 })
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportControllerITest {
     @Autowired
     public UnpaidAttendanceSummaryReportITest(TestRestTemplate template) {

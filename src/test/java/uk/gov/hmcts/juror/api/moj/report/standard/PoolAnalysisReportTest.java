@@ -32,7 +32,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("PMD.TooManyMethods")
+@SuppressWarnings({
+    "PMD.PublicMemberInNonPublicType",
+    "PMD.TooManyMethods"
+})
 class PoolAnalysisReportTest extends AbstractStandardReportTestSupport<PoolAnalysisReport> {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;

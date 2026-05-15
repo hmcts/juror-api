@@ -26,6 +26,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
  * Tests for {@link uk.gov.hmcts.juror.api.bureau.scheduler.BureauBatchProcessFactory}.
 */
 
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 @ExtendWith(MockitoExtension.class)
 class BureauBatchProcessFactoryTest {
 

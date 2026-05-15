@@ -45,6 +45,7 @@ public class PoolRatioReport extends AbstractStandardReport {
     }
 
     private StandardTableData getCombinedTableData(AbstractReportResponse.TableData<StandardTableData> tableData) {
+        @SuppressWarnings("PMD.PublicMemberInNonPublicType")
         @Setter
         @Getter
         class TableData {

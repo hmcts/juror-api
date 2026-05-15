@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.jurorer.controller;
 
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -35,7 +34,6 @@ import static org.springframework.http.HttpMethod.POST;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + LaNotificationControllerITest.BASE_URL)
 @SuppressWarnings("PMD")
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Sql(
     scripts = {"/db/jurorer/teardownLaNotificationControllerITest.sql"},
     executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
@@ -53,7 +51,8 @@ public class LaNotificationControllerITest extends AbstractIntegrationTest {
 
     public static final String BASE_URL = "/api/v1/moj/notification";
 
-    private final TestRestTemplate restTemplate;
+    @Autowired
+    private TestRestTemplate restTemplate;
     private final ReminderHistoryRepository reminderHistoryRepository;
 
     private HttpHeaders httpHeaders;

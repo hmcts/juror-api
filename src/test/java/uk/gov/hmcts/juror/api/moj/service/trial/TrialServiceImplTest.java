@@ -80,7 +80,8 @@ import static uk.gov.hmcts.juror.api.TestUtils.staffBuilder;
 @ExtendWith(SpringExtension.class)
 @SuppressWarnings({
     "PMD.ExcessiveImports",
-    "PMD.TooManyMethods"
+    "PMD.TooManyMethods",
+    "PMD.PublicMemberInNonPublicType"
 })
 class TrialServiceImplTest {
 

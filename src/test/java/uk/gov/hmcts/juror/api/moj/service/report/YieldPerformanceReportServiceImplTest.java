@@ -37,6 +37,7 @@ import static uk.gov.hmcts.juror.api.moj.controller.reports.response.YieldPerfor
 import static uk.gov.hmcts.juror.api.moj.controller.reports.response.YieldPerformanceReportResponse.TableHeading.DIFFERENCE;
 import static uk.gov.hmcts.juror.api.moj.controller.reports.response.YieldPerformanceReportResponse.TableHeading.REQUESTED;
 
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class YieldPerformanceReportServiceImplTest {
 
     private final JurorPoolRepository jurorPoolRepository;

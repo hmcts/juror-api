@@ -25,6 +25,7 @@ import static org.assertj.core.api.BDDAssertions.within;
     "/db/mod/truncate.sql",
     "/db/mod/reports/WeekendAttendanceReportITest_typical.sql"
 })
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class WeekendAttendanceReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired

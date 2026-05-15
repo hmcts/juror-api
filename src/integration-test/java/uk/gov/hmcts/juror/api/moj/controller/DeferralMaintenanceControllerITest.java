@@ -1,7 +1,6 @@
 
 package uk.gov.hmcts.juror.api.moj.controller;
 
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -68,7 +67,6 @@ import static uk.gov.hmcts.juror.api.testvalidation.DeferralMaintenanceValidatio
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: /api/v1/moj/deferral-maintenance/")
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest {
 
     static final String JUROR_000000000 = "000000000";
@@ -99,7 +97,8 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
     static final String EXPECT_POOL_UTILISATION = "Expect Pool Utilisation stats to be calculated for the given pool "
         + "request";
 
-    private final TestRestTemplate template;
+    @Autowired
+    private TestRestTemplate template;
     private final CurrentlyDeferredRepository currentlyDeferredRepository;
     private final BulkPrintDataRepository bulkPrintDataRepository;
     private final JurorPoolRepository jurorPoolRepository;

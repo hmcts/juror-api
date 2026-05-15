@@ -85,9 +85,13 @@ import static uk.gov.hmcts.juror.api.utils.DataConversionUtil.getExceptionDetail
 /**
  * Integration tests for the Juror Management controller - attendance/appearance.
  */
+@SuppressWarnings({
+    "PMD.ExcessiveImports",
+    "PMD.PublicMemberInNonPublicType",
+    "PMD.TooManyMethods"
+})
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 class JurorManagementControllerITest extends AbstractIntegrationTest {
 
     private static final String JUROR1 = "111111111";
@@ -118,6 +122,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
     private JurorAppearanceService jurorAppearanceService;
 
     @Autowired
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     private JurorHistoryRepository jurorHistoryRepository;
 
     private HttpHeaders httpHeaders;
@@ -2205,6 +2210,9 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
     }
 
+@SuppressWarnings({
+    "PMD.PublicMemberInNonPublicType"
+})
     @Nested
     @DisplayName("Jurors on Trial tests")
     class JurorsOnTrial {

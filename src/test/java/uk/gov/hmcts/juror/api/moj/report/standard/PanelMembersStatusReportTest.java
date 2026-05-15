@@ -31,6 +31,7 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class PanelMembersStatusReportTest extends AbstractStandardReportTestSupport<PanelMembersStatusReport> {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;

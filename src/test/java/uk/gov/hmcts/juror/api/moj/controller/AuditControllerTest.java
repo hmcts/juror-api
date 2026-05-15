@@ -56,6 +56,7 @@ public class AuditControllerTest {
     @InjectMocks
     private AuditController auditController;
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET " + AuditControllerTest.GetAllPoolAuditsForDay.URL)
     class GetAllPoolAuditsForDay {

@@ -82,8 +82,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     excludeAutoConfiguration = {SecurityAutoConfiguration.class})
 @ContextConfiguration(classes = {JurorExpenseController.class, RestResponseEntityExceptionHandler.class,
     BulkServiceImpl.class})
+@SuppressWarnings({
+    "PMD.ExcessiveImports",
+    "PMD.PublicMemberInNonPublicType"
+})
 @DisplayName("Controller: " + JurorExpenseControllerTest.BASE_URL)
-@SuppressWarnings("PMD.ExcessiveImports")
 class JurorExpenseControllerTest {
     public static final String BASE_URL = "/api/v1/moj/expenses/{loc_code}";
 
@@ -100,6 +103,7 @@ class JurorExpenseControllerTest {
     @MockBean
     private JurorRepository jurorRepository;
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST " + UnpaidExpensesForCourtLocation.URL)
     class UnpaidExpensesForCourtLocation {
@@ -202,6 +206,7 @@ class JurorExpenseControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET " + GetDefaultExpenses.URL)
     class GetDefaultExpenses {
@@ -253,6 +258,7 @@ class JurorExpenseControllerTest {
     }
 
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST " + SetDefaultExpenses.URL)
     class SetDefaultExpenses {
@@ -288,6 +294,7 @@ class JurorExpenseControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST " + SubmitForApproval.URL)
     class SubmitForApproval {
@@ -350,6 +357,7 @@ class JurorExpenseControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST (get) " + GetEnteredExpenseDetails.URL)
     class GetEnteredExpenseDetails {
@@ -418,6 +426,7 @@ class JurorExpenseControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST " + ApproveExpenses.URL)
     final class ApproveExpenses {
@@ -495,6 +504,7 @@ class JurorExpenseControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET " + GetSimplifiedExpenseDetails.URL)
     class GetSimplifiedExpenseDetails {
@@ -584,6 +594,7 @@ class JurorExpenseControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET " + GetDraftExpenses.URL)
     class GetDraftExpenses {
@@ -659,6 +670,7 @@ class JurorExpenseControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET (POST) " + GetExpenses.URL)
     class GetExpenses {
@@ -758,6 +770,7 @@ class JurorExpenseControllerTest {
     }
 
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET " + GetExpensesForApproval.URL)
     class GetExpensesForApproval {
@@ -870,6 +883,7 @@ class JurorExpenseControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET " + GetCounts.URL)
     class GetCounts {
@@ -933,6 +947,7 @@ class JurorExpenseControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("PUT " + PostEditDailyExpense.URL)
     class PostEditDailyExpense {
@@ -1040,6 +1055,7 @@ class JurorExpenseControllerTest {
     }
 
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST " + CalculateTotals.URL)
     final class CalculateTotals {
@@ -1116,6 +1132,7 @@ class JurorExpenseControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("PATCH " + ApportionSmartCard.URL)
     class ApportionSmartCard {

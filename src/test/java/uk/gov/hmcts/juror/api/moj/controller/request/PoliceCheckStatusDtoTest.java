@@ -17,6 +17,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class PoliceCheckStatusDtoTest {
 
     private static ValidatorFactory validatorFactory;

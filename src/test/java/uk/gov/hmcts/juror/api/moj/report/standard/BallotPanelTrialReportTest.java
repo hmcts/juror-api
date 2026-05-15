@@ -23,6 +23,7 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class BallotPanelTrialReportTest extends AbstractStandardReportTestSupport<BallotPanelTrialReport> {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;

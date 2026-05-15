@@ -19,6 +19,7 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/PostponedListByPoolReportITest_typical.sql"
 })
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class PostponedListByPoolReportITest extends AbstractStandardReportControllerITest {
     @Autowired
     public PostponedListByPoolReportITest(TestRestTemplate template) {

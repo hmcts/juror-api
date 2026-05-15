@@ -481,6 +481,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
      *
      * @see #updateAndLogSpecialNeed(String, SpecNeed, String)
      */
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     private enum SpecNeed {
         LIMITED_MOBILITY("L", "Limited Mobility"),
         HEARING_IMPAIRMENT("H", "Hearing Impairment"),

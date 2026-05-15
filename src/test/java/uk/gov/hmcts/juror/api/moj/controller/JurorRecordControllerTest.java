@@ -235,6 +235,7 @@ class JurorRecordControllerTest {
             .getJurorOverview(bureauJwtPayload, JUROR_NUMBER, LOC_CODE);
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     public class PrincipalDetailsArgumentResolver implements HandlerMethodArgumentResolver {
 
         @Override
@@ -1033,6 +1034,7 @@ class JurorRecordControllerTest {
     }
 
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName(UpdatePncCheckStatus.URL)
     class UpdatePncCheckStatus extends AbstractControllerTest<PoliceCheckStatusDto, Void> {
@@ -1077,6 +1079,7 @@ class JurorRecordControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName(UpdatePncCheckStatus.URL)
     class UpdateJurorToFailedToAttend extends AbstractControllerTest<JurorNumberAndPoolNumberDto, Void> {
@@ -1127,6 +1130,7 @@ class JurorRecordControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName(CreateJurorRecord.URL)
     class CreateJurorRecord extends AbstractControllerTest<JurorCreateRequestDto, Void> {
@@ -1229,6 +1233,7 @@ class JurorRecordControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST" + GetJurorBankDetails.URL)
     class GetJurorBankDetails extends JurorBankDetailsDto {

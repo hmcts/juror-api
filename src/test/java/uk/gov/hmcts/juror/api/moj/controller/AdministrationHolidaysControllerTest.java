@@ -60,6 +60,7 @@ public class AdministrationHolidaysControllerTest {
     @InjectMocks
     private AdministrationHolidaysController administrationHolidaysController;
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET " + ViewBankHolidays.URL)
     class ViewBankHolidays {
@@ -84,6 +85,7 @@ public class AdministrationHolidaysControllerTest {
     }
 
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET " + ViewNonSittingDays.URL)
     class ViewNonSittingDays {
@@ -118,6 +120,7 @@ public class AdministrationHolidaysControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("DELETE " + DeleteNonSittingDays.URL)
     class DeleteNonSittingDays {
@@ -161,6 +164,7 @@ public class AdministrationHolidaysControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST " + AddNonSittingDays.URL)
     class AddNonSittingDays {

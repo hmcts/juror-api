@@ -47,6 +47,7 @@ class MessageSendRequestTest extends AbstractValidatorTest<MessageSendRequest> {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     class JurorAndSendTypeTest extends AbstractValidatorTest<MessageSendRequest.JurorAndSendType> {
 

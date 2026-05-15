@@ -28,6 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 @ExtendWith(SpringExtension.class)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "notify.disabled=false")
@@ -48,9 +49,11 @@ class JurorCommsNotifyAdapterImplTest extends ContainerTest {
     //CONFRIM_JUROR_ENG
     private static final String DEV_SENT_TO_COURT_EMAIL_ENG_TEMPLATE_ID = "984B2883-AD40-44D6-A1B0-A0AED98AFF28";
     //SENT_TO_COURT_ENG_EMAIL
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     private static final String DEV_SENT_TO_COURT_SMS_ENG_TEMPLATE_ID = "e95cdb81-e015-4f0b-b306-40d97ccb76f6";
     public static final String TEMPLATE_ID_IS_THE_ONE_PASSED_FROM_THE_MOCK =
         "Template ID is the one passed from the mock.";
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     public static final String JUROR_NUMBER_IS_THE_NOTIFY_REFERENCE = "Juror number is the Notify reference";
     public static final String BODY_IS_NOT_EMPTY_AND_CONTAINS_PAYLOAD_INFORMATION =
         "Body is not empty and contains payload information";

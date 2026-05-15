@@ -38,10 +38,13 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@SuppressWarnings({
+    "PMD.ExcessiveImports",
+    "PMD.PublicMemberInNonPublicType"
+})
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Utilisation Reports Integration Tests at " + UtilisationReportsITest.URL_BASE)
-@SuppressWarnings("PMD.ExcessiveImports")
 class UtilisationReportsITest extends AbstractIntegrationTest {
 
     @Autowired
@@ -49,13 +52,18 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
     @Autowired
     private UtilisationStatsRepository utilisationStatsRepository;
     public static final String URL_BASE = "/api/v1/moj/reports";
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     public static final String DAILY_UTILISATION_REPORT_URL = URL_BASE + "/daily-utilisation";
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     public static final String DAILY_UTILISATION_JURORS_URL = URL_BASE + "/daily-utilisation-jurors";
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     public static final String GENERATE_MONTHLY_UTILISATION_REPORT_URL = URL_BASE + "/generate-monthly-utilisation";
     public static final String VIEW_MONTHLY_UTILISATION_REPORT_URL = URL_BASE + "/view-monthly-utilisation";
     public static final String GET_MONTHLY_UTILISATION_REPORT_URL = URL_BASE + "/monthly-utilisation-reports";
     public static final String COURT_UTILISATION_STATS_REPORT_URL = URL_BASE + "/court-utilisation-stats-report";
     public static final String OVERDUE_UTILISATION_REPORT_URL = URL_BASE + "/overdue-utilisation-report";
+
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 
     private HttpHeaders httpHeaders;
 

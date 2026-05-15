@@ -3938,6 +3938,7 @@ class JurorRecordServiceTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("Juror getJurorBankDetails(String jurorNumber)")
     class GetJurorBankDetails {

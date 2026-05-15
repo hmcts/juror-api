@@ -55,6 +55,7 @@ import static uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService
 import static uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService.TableHeading.SITTING_DAYS;
 import static uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService.TableHeading.UTILISATION;
 
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class UtilisationReportServiceImplTest {
     private final CourtLocationRepository courtLocationRepository;
     private final JurorRepository jurorRepository;

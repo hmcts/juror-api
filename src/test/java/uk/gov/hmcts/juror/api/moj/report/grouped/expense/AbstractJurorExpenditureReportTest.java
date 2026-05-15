@@ -90,6 +90,7 @@ class AbstractJurorExpenditureReportTest {
             );
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     static class TestAbstractJurorExpenditureReportTest extends AbstractJurorExpenditureReport {
 
         public TestAbstractJurorExpenditureReportTest() {

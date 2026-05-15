@@ -31,6 +31,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts;
 
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class JurorExpenditureReportLowLevelReportTest
     extends AbstractJurorExpenditureReportTestSupport<JurorExpenditureReportLowLevelReport> {
 

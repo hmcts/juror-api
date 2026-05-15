@@ -37,7 +37,8 @@ import static org.mockito.Mockito.when;
 
 @SuppressWarnings({
     "unchecked",
-    "checkstyle:AbbreviationAsWordInName"
+    "checkstyle:AbbreviationAsWordInName",
+    "PMD.PublicMemberInNonPublicType"
 })
 class ReasonableAdjustmentAndCjeReportTest extends AbstractGroupedReportTestSupport<ReasonableAdjustmentAndCjeReport> {
 

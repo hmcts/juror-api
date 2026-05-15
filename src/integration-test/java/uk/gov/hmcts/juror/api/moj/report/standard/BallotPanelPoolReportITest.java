@@ -17,6 +17,7 @@ import java.util.List;
     "/db/mod/truncate.sql",
     "/db/mod/reports/BallotPanelPoolReportITest.sql"
 })
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class BallotPanelPoolReportITest extends AbstractStandardReportControllerITest {
     @Autowired
     public BallotPanelPoolReportITest(TestRestTemplate template) {

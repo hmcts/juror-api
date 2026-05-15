@@ -18,6 +18,7 @@ import java.util.Map;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class NextAttendanceDayReportTest extends AbstractStandardReportTestSupport<NextAttendanceDayReport> {
     public NextAttendanceDayReportTest() {
         super(QJurorPool.jurorPool,

@@ -35,6 +35,7 @@ import static org.springframework.http.HttpMethod.GET;
 /**
  * Integration tests for the Management Dashboard controller.
  */
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ManagementDashboardControllerITest extends AbstractIntegrationTest {
