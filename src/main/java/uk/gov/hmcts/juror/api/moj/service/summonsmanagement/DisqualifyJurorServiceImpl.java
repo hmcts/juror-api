@@ -91,15 +91,15 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
         //Check if the current user has access to the Juror record
         final JurorPool jurorPool = checkOfficerIsAuthorisedToAccessJurorRecord(jurorNumber, payload);
 
-        if (!ReplyMethod.NONE.equals(disqualifyJurorDto.getReplyMethod())) {
+        if (disqualifyJurorDto.getReplyMethod() != ReplyMethod.NONE) {
 
             AbstractJurorResponse jurorResponse = null;
 
             // Get the existing juror response for the appropriate reply method, and map to the generic juror
             // response pojo
-            if (ReplyMethod.PAPER.equals(disqualifyJurorDto.getReplyMethod())) {
+            if (disqualifyJurorDto.getReplyMethod() == ReplyMethod.PAPER) {
                 jurorResponse = getJurorPaperResponse(jurorNumber, jurorPaperResponseRepository);
-            } else if (ReplyMethod.DIGITAL.equals(disqualifyJurorDto.getReplyMethod())) {
+            } else if (disqualifyJurorDto.getReplyMethod() == ReplyMethod.DIGITAL) {
                 jurorResponse = getJurorDigitalResponse(jurorNumber, jurorDigitalResponseRepository);
             }
 

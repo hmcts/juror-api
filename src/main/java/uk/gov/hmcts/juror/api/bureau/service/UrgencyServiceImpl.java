@@ -106,7 +106,7 @@ public class UrgencyServiceImpl implements UrgencyService {
         final LocalDate slaBreachWindowStart = addWorkingDays(dateReceived, workingDays - 1);
         log.trace("SLA breach from: {}", slaBreachWindowStart);
 
-        if (!ProcessingStatus.CLOSED.equals(processingStatus)
+        if (processingStatus != ProcessingStatus.CLOSED
             &&                // not closed
             slaBreachWindowStart.isBefore(LocalDate.now())) {  // window start has happened
             log.debug("SLA overdue");

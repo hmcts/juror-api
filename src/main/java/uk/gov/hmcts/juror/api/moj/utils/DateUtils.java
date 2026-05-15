@@ -43,7 +43,7 @@ public final class DateUtils {
     public static LocalDate getStartOfWeekFromDate(LocalDate date) {
         log.debug("Enter getStartOfWeekFromDate for date {}", date);
 
-        if (date.getDayOfWeek().equals(DayOfWeek.MONDAY)) {
+        if (date.getDayOfWeek() == DayOfWeek.MONDAY) {
             log.debug("Provided date {} is already a Monday (start of the working week)", date);
             return date;
         }

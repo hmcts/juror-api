@@ -1572,7 +1572,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
         List<JurorHistory> historyEvents = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
         JurorHistory jurorHistory = historyEvents.stream().filter(hist ->
-            hist.getHistoryCode().equals(HistoryCodeMod.REASSIGN_POOL_MEMBER)).findFirst().orElse(null);
+            hist.getHistoryCode() == HistoryCodeMod.REASSIGN_POOL_MEMBER).findFirst().orElse(null);
         assertThat(jurorHistory).isNotNull();
 
 
@@ -1812,7 +1812,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
             List<JurorHistory> historyEvents = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
             JurorHistory jurorHistory = historyEvents.stream().filter(hist ->
-                hist.getHistoryCode().equals(HistoryCodeMod.REASSIGN_POOL_MEMBER)).findFirst().orElse(null);
+                hist.getHistoryCode() == HistoryCodeMod.REASSIGN_POOL_MEMBER).findFirst().orElse(null);
             assertThat(jurorHistory).isNotNull();
 
             assertThat(jurorHistory.getOtherInformation()).isEqualTo(targetCourt.getNameWithLocCode());
@@ -1870,7 +1870,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
             List<JurorHistory> historyEvents = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
             JurorHistory jurorHistory = historyEvents.stream().filter(hist ->
-                hist.getHistoryCode().equals(HistoryCodeMod.REASSIGN_POOL_MEMBER)).findFirst().orElse(null);
+                hist.getHistoryCode() == HistoryCodeMod.REASSIGN_POOL_MEMBER).findFirst().orElse(null);
             assertThat(jurorHistory).isNotNull();
 
             assertThat(jurorHistory.getOtherInformation()).isEqualTo(targetCourt.getNameWithLocCode());

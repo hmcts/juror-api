@@ -419,8 +419,8 @@ public class Appearance implements Serializable {
     }
 
     public BigDecimal getSmartCardTotalChanged() {
-        if (AppearanceStage.EXPENSE_EDITED.equals(this.getAppearanceStage())
-            || AppearanceStage.EXPENSE_AUTHORISED.equals(this.getAppearanceStage())) {
+        if (this.getAppearanceStage() == AppearanceStage.EXPENSE_EDITED
+            || this.getAppearanceStage() == AppearanceStage.EXPENSE_AUTHORISED) {
             //This will result in a negative as smart card for re-approval becomes a credit
             return getTotalSmartCardAmountDue()
                 .subtract(getTotalSmartCardAmountPaid());
@@ -445,8 +445,8 @@ public class Appearance implements Serializable {
         addExpenseToErrors(errors, "childcare", this.getChildcareDue(), this.getChildcarePaid());
         addExpenseToErrors(errors, "miscAmount", this.getMiscAmountDue(), this.getMiscAmountPaid());
         addExpenseToErrors(errors, "total", this.getTotalDue(), this.getTotalPaid());
-        if ((AppearanceStage.EXPENSE_EDITED.equals(this.getAppearanceStage())
-            || AppearanceStage.EXPENSE_AUTHORISED.equals(this.getAppearanceStage()))
+        if ((this.getAppearanceStage() == AppearanceStage.EXPENSE_EDITED
+            || this.getAppearanceStage() == AppearanceStage.EXPENSE_AUTHORISED)
             && BigDecimalUtils.isLessThan(getOrZero(this.getSmartCardAmountPaid()),
             getOrZero(this.getSmartCardAmountDue()))) {
             errors.put("smartCardAmount",

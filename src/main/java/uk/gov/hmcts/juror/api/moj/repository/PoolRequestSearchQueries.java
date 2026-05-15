@@ -225,7 +225,7 @@ public class PoolRequestSearchQueries implements IPoolRequestSearchQueries {
     @Override
     public void addPoolStagePredicate(JPAQuery<Tuple> query, List<PoolSearchRequestDto.PoolStage> poolStage) {
         if (poolStage.size() == 1) {
-            if (poolStage.get(0).equals(PoolSearchRequestDto.PoolStage.BUREAU)) {
+            if (poolStage.get(0) == PoolSearchRequestDto.PoolStage.BUREAU) {
                 query.where(POOL_REQUEST.owner.eq(JurorDigitalApplication.JUROR_OWNER));
             } else {
                 query.where(POOL_REQUEST.owner.ne(JurorDigitalApplication.JUROR_OWNER));

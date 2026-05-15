@@ -92,7 +92,7 @@ public class JurorExpenseController {
         @PathVariable(name = "juror_number") @JurorNumber @Valid String jurorNumber,
         @Valid @RequestBody @NotNull List<DailyExpense> request
     ) {
-        if (ExpenseType.DRAFT.equals(type)) {
+        if (type == ExpenseType.DRAFT) {
             return ResponseEntity.ok(bulkService.process(request,
                 dailyExpense -> jurorExpenseService.updateDraftExpense(locCode, jurorNumber, dailyExpense)));
         } else {

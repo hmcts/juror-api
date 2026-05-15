@@ -81,13 +81,13 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
                     LocalDate date = LocalDate.parse(res.get(0), DateTimeFormatter.ISO_LOCAL_DATE);
 
                     int workingDays = Integer.parseInt(res.get(1));
-                    if (workingDays == 0 && (date.getDayOfWeek().equals(DayOfWeek.SATURDAY)
-                        || date.getDayOfWeek().equals(DayOfWeek.SUNDAY))) {
+                    if (workingDays == 0 && (date.getDayOfWeek() == DayOfWeek.SATURDAY
+                        || date.getDayOfWeek() == DayOfWeek.SUNDAY)) {
                         // ignore weekends with no working days
                         continue;
                     }
 
-                    if (date.getDayOfWeek().equals(DayOfWeek.MONDAY) || firstPass) {
+                    if (date.getDayOfWeek() == DayOfWeek.MONDAY || firstPass) {
                         week = new DailyUtilisationReportResponse.TableData.Week();
                         initialiseWeek(tableData, week);
                         firstPass = false;
