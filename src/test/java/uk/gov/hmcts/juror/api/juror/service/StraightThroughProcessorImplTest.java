@@ -622,7 +622,6 @@ public class StraightThroughProcessorImplTest {
 
 
     private LocalDate addTime(LocalDate date, int years, int days) {
-        LocalDate realDate = date.plusYears(years).plusDays(days);
-        return realDate;
+        return date.plusYears(years).plusDays(days);
     }
 }

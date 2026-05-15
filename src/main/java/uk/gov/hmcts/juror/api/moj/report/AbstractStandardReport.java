@@ -10,12 +10,12 @@ import java.util.List;
 
 public abstract class AbstractStandardReport extends AbstractReport<StandardTableData> {
 
-    public AbstractStandardReport(EntityPath<?> from,
+    protected AbstractStandardReport(EntityPath<?> from,
                                   IDataType... dataType) {
         this(null, from, dataType);
     }
 
-    public AbstractStandardReport(PoolRequestRepository poolRequestRepository, EntityPath<?> from,
+    protected AbstractStandardReport(PoolRequestRepository poolRequestRepository, EntityPath<?> from,
                                   IDataType... dataType) {
         super(poolRequestRepository, from, dataType);
     }

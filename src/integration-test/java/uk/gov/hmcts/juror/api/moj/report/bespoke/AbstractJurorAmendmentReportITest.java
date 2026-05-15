@@ -16,7 +16,7 @@ import java.util.Set;
 abstract class AbstractJurorAmendmentReportITest
     extends AbstractReportControllerITest<JurorAmendmentReportResponse> {
 
-    public AbstractJurorAmendmentReportITest(TestRestTemplate template,
+    protected AbstractJurorAmendmentReportITest(TestRestTemplate template,
                                              Class<? extends AbstractJurorAmendmentReport> reportClass) {
         super(template, reportClass, JurorAmendmentReportResponse.class);
     }

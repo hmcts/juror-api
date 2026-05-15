@@ -6,7 +6,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.util.List;
 
-public class PostgresqlContainer extends PostgreSQLContainer<PostgresqlContainer> {
+public final class PostgresqlContainer extends PostgreSQLContainer<PostgresqlContainer> {
 
     private static final DockerImageName dockerImageName = DockerImageName
         .parse("hmctsprod.azurecr.io/imported/postgres:16-alpine")

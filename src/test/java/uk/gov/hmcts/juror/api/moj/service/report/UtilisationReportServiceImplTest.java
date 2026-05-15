@@ -334,7 +334,7 @@ class UtilisationReportServiceImplTest {
         void generateMonthlyUtilisationNoResultsAndValidHeadings() {
 
             final String locCode = "415";
-            final LocalDate reportDate = LocalDate.of(2024, 4, 01);
+            final LocalDate reportDate = LocalDate.of(2024, 4, 1);
 
             setupCourt(locCode, "415", locCode);
 
@@ -455,7 +455,7 @@ class UtilisationReportServiceImplTest {
         void viewMonthlyUtilisationNoResultsAndValidHeadings() {
 
             final String locCode = "415";
-            final LocalDate reportDate = LocalDate.of(2024, 4, 01);
+            final LocalDate reportDate = LocalDate.of(2024, 4, 1);
 
             setupCourt(locCode, "415", locCode);
 

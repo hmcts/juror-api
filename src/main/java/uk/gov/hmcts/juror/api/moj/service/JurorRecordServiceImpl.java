@@ -504,7 +504,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         if (Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.SUMMONED)
             || Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.DISQUALIFIED)
             && juror.getSummonsFile() != null
-            && juror.getSummonsFile().equals(DISQUALIFIED_ON_SELECTION)) {
+            && DISQUALIFIED_ON_SELECTION.equals(juror.getSummonsFile())) {
             //return just the common details
             return getJurorOverviewResponseDto(jurorPool);
         }
@@ -1148,8 +1148,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         //check if juror was disqualified exit quick
         if (Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.DISQUALIFIED)
-            && juror.getSummonsFile() != null
-            && juror.getSummonsFile().equals("Disq. on selection")) {
+            && "Disq. on selection".equals(juror.getSummonsFile())) {
             //return just the common details
             return new JurorSummonsReplyResponseDto(jurorPool, jurorStatusRepository, welshCourtLocationRepository,
                 pendingJurorRepository);

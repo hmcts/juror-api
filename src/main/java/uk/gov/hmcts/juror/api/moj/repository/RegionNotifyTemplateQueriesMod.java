@@ -8,7 +8,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QRegionNotifyTemplateMod;
  */
 
 
-public class RegionNotifyTemplateQueriesMod {
+public final class RegionNotifyTemplateQueriesMod {
 
     private static final String MESSAGE_FORMAT_SMS = "SMS";
     private static final String MESSAGE_FORMAT_EMAIL = "EMAIL";

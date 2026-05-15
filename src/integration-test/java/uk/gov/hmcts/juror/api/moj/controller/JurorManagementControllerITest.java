@@ -2148,7 +2148,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(appearanceOpt).isNotEmpty();
             Appearance appearance = appearanceOpt.get();
             assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));
-            assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 00));
+            assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 0));
             assertThat(appearance.getAttendanceType()).isEqualTo(AttendanceType.FULL_DAY);
             assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
 
@@ -2173,7 +2173,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(appearanceOpt).isNotEmpty();
             Appearance appearance = appearanceOpt.get();
             assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));
-            assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 00));
+            assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 0));
             assertThat(appearance.getAttendanceType()).isEqualTo(AttendanceType.FULL_DAY);
             assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
 
@@ -2199,7 +2199,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             confirmAttendanceDto.setAttendanceDate(attendanceDate);
             confirmAttendanceDto.setLocationCode("415");
             confirmAttendanceDto.setCheckInTime(LocalTime.of(9, 30));
-            confirmAttendanceDto.setCheckOutTime(LocalTime.of(17, 00));
+            confirmAttendanceDto.setCheckOutTime(LocalTime.of(17, 0));
             return confirmAttendanceDto;
         }
 
@@ -2302,7 +2302,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                 assertThat(appearanceOpt).isNotEmpty();
                 Appearance appearance = appearanceOpt.get();
                 assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));
-                assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 00));
+                assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 0));
                 assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
                 assertThat(appearance.getTrialNumber()).isEqualTo("T10000001");
                 assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J10123456");
@@ -2391,7 +2391,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             commonData.setAttendanceDate(now().minusDays(2));
             commonData.setLocationCode("415");
             commonData.setCheckInTime(LocalTime.of(9, 30));
-            commonData.setCheckOutTime(LocalTime.of(17, 00));
+            commonData.setCheckOutTime(LocalTime.of(17, 0));
             commonData.setSingleJuror(Boolean.FALSE);
 
             UpdateAttendanceDto request = new UpdateAttendanceDto();

@@ -6,7 +6,7 @@ import uk.gov.hmcts.juror.api.moj.domain.messages.QMessage;
 /**
  * QueryDsl queries for {@Message}.
  */
-public class MessageQueries {
+public final class MessageQueries {
 
     private static final String MESSAGE_NOT_READ = "NR";
 

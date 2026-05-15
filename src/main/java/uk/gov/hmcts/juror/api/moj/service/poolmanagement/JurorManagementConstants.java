@@ -1,6 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.service.poolmanagement;
 
-public class JurorManagementConstants {
+public final class JurorManagementConstants {
 
     protected static final String[] POOL_MEMBER_IGNORE_PROPERTIES = new String[]{"owner", "poolNumber", "startDate",
         "userEdtq", "status", "poolSequence", "court", "nextDate", "completionFlag", "completionDate", "welsh",

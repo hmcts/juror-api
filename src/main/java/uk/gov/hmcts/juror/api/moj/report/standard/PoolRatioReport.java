@@ -106,7 +106,7 @@ public class PoolRatioReport extends AbstractStandardReport {
 
         return new StandardTableData(
             combinedData.entrySet().stream()
-                .map((entry) -> {
+                .map(entry -> {
                     String key = entry.getKey();
                     TableData value = entry.getValue();
                     LinkedHashMap<String, Object> map = new LinkedHashMap<>();

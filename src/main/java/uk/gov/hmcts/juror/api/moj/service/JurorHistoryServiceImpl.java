@@ -387,7 +387,7 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
 
 
     public void createPostponementLetterHistory(JurorPool jurorPool, String confirmationLetter) {
-        if (jurorPool.getDeferralDate() == null || !jurorPool.getDeferralCode().equals("P")) {
+        if (jurorPool.getDeferralDate() == null || !"P".equals(jurorPool.getDeferralCode())) {
             throw new MojException.InternalServerError("A postponed juror_pool record should exist for "
                 + "the juror relating to the original pool they were summoned to and postponed from", null);
         }

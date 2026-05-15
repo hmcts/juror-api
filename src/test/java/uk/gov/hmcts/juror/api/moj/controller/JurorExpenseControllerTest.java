@@ -420,7 +420,7 @@ class JurorExpenseControllerTest {
 
     @Nested
     @DisplayName("POST " + ApproveExpenses.URL)
-    class ApproveExpenses {
+    final class ApproveExpenses {
         public static final String URL = BASE_URL + "/{payment_method}/approve";
 
         private ApproveExpenses() {
@@ -1042,7 +1042,7 @@ class JurorExpenseControllerTest {
 
     @Nested
     @DisplayName("POST " + CalculateTotals.URL)
-    class CalculateTotals {
+    final class CalculateTotals {
         public static final String URL = BASE_URL + "/{juror_number}/calculate/totals";
 
         private CalculateTotals() {
