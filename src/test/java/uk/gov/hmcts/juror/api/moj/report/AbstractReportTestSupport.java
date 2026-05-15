@@ -197,6 +197,21 @@ public abstract class AbstractReportTestSupport<
         if (hasStandardPoolHeaders) {
             standardPoolMappings.putAll(getStandardPoolHeaders());
         }
+
+        // remove time created if present for comparison as it is dynamic
+        if (actualMap.containsKey("time_created")) {
+            actualMap.remove("time_created");
+        }
+        if (standardPoolMappings.containsKey("time_created")) {
+            standardPoolMappings.remove("time_created");
+        }
+        if (actualMap.containsKey("report_created")) {
+            actualMap.remove("report_created");
+        }
+        if (standardPoolMappings.containsKey("report_created")) {
+            standardPoolMappings.remove("report_created");
+        }
+
         assertThat(actualMap).hasSize(standardPoolMappings.size());
         assertThat(actualMap).containsExactlyInAnyOrderEntriesOf(standardPoolMappings);
         if (hasStandardPoolHeaders) {

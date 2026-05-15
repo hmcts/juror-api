@@ -82,7 +82,7 @@ class UnpaidAttendanceReportDetailedReportITest extends AbstractGroupedReportCon
             .jwt(getCourtJwt("416"))
             .triggerValid()
             .responseConsumer(this::verifyAndRemoveReportCreated)
-            .assertEquals(createResponse(0, "LEWES SITTING AT CHICHESTER (416)", new GroupedTableData()));
+            .assertEquals(createResponse(0, "GUILDFORD SITTING AT CHICHESTER (416)", new GroupedTableData()));
     }
 
     @Test

@@ -67,7 +67,8 @@ public class JwtServiceImpl implements JwtService {
         return extractExpiration(jwt, secret).before(new Date(clock.millis()));
     }
 
-    SecretKey getSigningKey(String jwtSecret) {
+    @Override
+    public SecretKey getSigningKey(String jwtSecret) {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
     }
 
@@ -102,7 +103,7 @@ public class JwtServiceImpl implements JwtService {
         );
     }
 
-    private long timeUnitToMilliseconds(String value) {
+    public static long timeUnitToMilliseconds(String value) {
         String lastDigit = value.substring(value.length() - 1).toLowerCase();
         long number = Long.parseLong(value.substring(0, value.length() - 1));
         return switch (lastDigit) {

@@ -4,17 +4,6 @@ RESTART WITH 1;
 ALTER SEQUENCE juror_mod.courtroom_id_seq
 RESTART WITH 1;
 
-delete from juror_mod.juror_response;
-delete from juror_mod.juror_history;
-delete from juror_mod.appearance ;
-delete from juror_mod.juror_pool;
-delete from juror_mod.pool;
-delete from juror_mod.juror;
-delete from juror_mod.trial;
-delete from juror_mod.judge;
-delete from juror_mod.courtroom ;
-delete from juror_mod.juror_trial;
-
 insert into juror_mod.pool (pool_no,owner,return_date,total_no_required, loc_code) values
 ('415231101', '415', current_date, 5, '415'),
 ('415231102', '415', current_date, 5, '415'),

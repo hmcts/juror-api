@@ -16,11 +16,11 @@ import java.util.Optional;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
+@SuppressWarnings("unchecked")
 @ToString(callSuper = true)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ExpenseDetailsWithOriginalTotalsDto extends ExpenseTotal<ExpenseDetailsWithOriginalDto> {
 
-    @JsonProperty("original_total_paid")
     private BigDecimal originalTotalPaid;
 
     public ExpenseDetailsWithOriginalTotalsDto() {

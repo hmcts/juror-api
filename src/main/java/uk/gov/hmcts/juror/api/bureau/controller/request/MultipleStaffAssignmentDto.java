@@ -1,5 +1,7 @@
 package uk.gov.hmcts.juror.api.bureau.controller.request;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -19,6 +21,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Data
 @Schema(description = "Multiple juror response to staff assignment request")
 public class MultipleStaffAssignmentDto implements Serializable {
@@ -37,6 +40,7 @@ public class MultipleStaffAssignmentDto implements Serializable {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Data
     @Schema(description = "Multiple juror response to staff assignment request")
     public static class ResponseMetadata implements Serializable {

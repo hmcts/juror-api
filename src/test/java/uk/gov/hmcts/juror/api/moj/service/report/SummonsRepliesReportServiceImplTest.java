@@ -6,10 +6,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DigitalSummonsRepliesReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.ResponsesCompletedReportResponse;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryModImpl;
+import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseService;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -20,10 +25,13 @@ import java.util.Map;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.BDDAssertions.within;
+import static org.mockito.Mockito.RETURNS_DEFAULTS;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 import static uk.gov.hmcts.juror.api.moj.service.report.SummonsRepliesReportService.TableHeading.DATE;
 import static uk.gov.hmcts.juror.api.moj.service.report.SummonsRepliesReportService.TableHeading.NO_OF_REPLIES;
 
@@ -31,10 +39,14 @@ class SummonsRepliesReportServiceImplTest {
 
     private final JurorDigitalResponseRepositoryModImpl jurorDigitalResponseRepositoryMod;
     private final SummonsRepliesReportService summonsRepliesReportService;
+    private final JurorResponseService jurorResponseService;
 
     public SummonsRepliesReportServiceImplTest() {
         this.jurorDigitalResponseRepositoryMod = mock(JurorDigitalResponseRepositoryModImpl.class);
-        this.summonsRepliesReportService = new SummonsRepliesReportServiceImpl(jurorDigitalResponseRepositoryMod);
+        this.jurorResponseService = mock(JurorResponseService.class);
+        this.summonsRepliesReportService = new SummonsRepliesReportServiceImpl(jurorDigitalResponseRepositoryMod,
+                                                                               jurorResponseService
+        );
     }
 
     @BeforeEach
@@ -109,6 +121,121 @@ class SummonsRepliesReportServiceImplTest {
                                                             DateTimeFormatter.ISO_LOCAL_DATE_TIME);
             assertThat(createdTime).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS))
                 .as("Creation time should be correct");
+        }
+    }
+
+    @Nested
+    @DisplayName("Responses completed report tests")
+    class ResponsesCompletedReportTests {
+
+        @Test
+        @SneakyThrows
+        void responsesCompletedReportNoData() {
+            MockedStatic<SecurityUtil> mockSecurityUtil = mockStatic(SecurityUtil.class,
+                                                                     withSettings().defaultAnswer(RETURNS_DEFAULTS));
+
+            mockSecurityUtil.when(SecurityUtil::isBureauManager).thenReturn(true);
+            final LocalDate monthStartDate = LocalDate.parse("2025-06-01");
+
+            when(jurorResponseService.getResponsesCompletedReport(monthStartDate)).thenReturn(List.of());
+
+            ResponsesCompletedReportResponse response =
+                summonsRepliesReportService.getResponsesCompletedReport(monthStartDate);
+
+            assertThat(response).isNotNull();
+
+            assertThat(response.getHeadings()).isNotNull();
+            Map<String, AbstractReportResponse.DataTypeValue> headings = response.getHeadings();
+
+            validateReportHeadings(headings);
+
+            // validate table data
+            assertThat(response.getTableData()).isNotNull();
+            ResponsesCompletedReportResponse.TableData tableData = response.getTableData();
+            assertThat(tableData.getHeadings()).isNotNull();
+            Assertions.assertThat(tableData.getHeadings()).hasSize(32); // 1 for name + 30 for days in June + 1 total
+
+            validateTableHeadings(tableData);
+            validateTableData(tableData);
+
+            verify(jurorResponseService, times(1)).getResponsesCompletedReport(monthStartDate);
+
+            mockSecurityUtil.close();
+        }
+
+        @Test
+        @SneakyThrows
+        void responsesCompletedReportInvalidUser() {
+            MockedStatic<SecurityUtil> mockSecurityUtil = mockStatic(SecurityUtil.class,
+                                                                     withSettings().defaultAnswer(RETURNS_DEFAULTS));
+
+            mockSecurityUtil.when(SecurityUtil::isBureauManager).thenReturn(false);
+
+            final LocalDate month = LocalDate.parse("2025-06-01");
+
+            Assertions.assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
+                                                     summonsRepliesReportService.getResponsesCompletedReport(month));
+
+            mockSecurityUtil.close();
+        }
+
+        private void validateTableData(ResponsesCompletedReportResponse.TableData tableData) {
+            Assertions.assertThat(tableData.getData()).hasSize(1);
+            ResponsesCompletedReportResponse.TableData.DataRow dataRow = tableData.getData().get(0);
+            assertThat(dataRow.getStaffName()).isEqualTo("Total Responses");
+            Assertions.assertThat(dataRow.getDailyTotals()).hasSize(30);
+            for (Integer dailyTotal : dataRow.getDailyTotals()) {
+                assertThat(dailyTotal).isEqualTo(0);
+            }
+            assertThat(dataRow.getStaffTotal()).isEqualTo(0);
+        }
+
+        private void validateTableHeadings(ResponsesCompletedReportResponse.TableData tableData) {
+            ResponsesCompletedReportResponse.TableData.Heading tablHeading = tableData.getHeadings().get(0);
+            assertThat(tablHeading.getId()).isEqualTo(0);
+            assertThat(tablHeading.getName()).isEqualTo("Staff Name");
+            assertThat(tablHeading.getDataType()).isEqualTo("String");
+
+            LocalDate currentDate = LocalDate.of(2025, 6, 1);
+
+            // dates of month 1 to 30 of June 2025
+            for (int i = 1; i < 30; i++) {
+                tablHeading = tableData.getHeadings().get(i);
+                assertThat(tablHeading.getId()).isEqualTo(i);
+                assertThat(tablHeading.getName())
+                    .isEqualTo(currentDate.toString());
+                assertThat(tablHeading.getDataType()).isEqualTo("Integer");
+                currentDate = currentDate.plusDays(1);
+            }
+
+            // total
+            tablHeading = tableData.getHeadings().get(31);
+            assertThat(tablHeading.getId()).isEqualTo(31);
+            assertThat(tablHeading.getName()).isEqualTo("Total");
+            assertThat(tablHeading.getDataType()).isEqualTo("Integer");
+        }
+
+        private void validateReportHeadings(Map<String, AbstractReportResponse.DataTypeValue> headings) {
+            assertThat(headings.get("report_created")).isEqualTo(AbstractReportResponse.DataTypeValue.builder()
+                .displayName("Report created")
+                .dataType("LocalDate")
+                .value(LocalDate.now().toString())
+                .build());
+
+            AbstractReportResponse.DataTypeValue timeCreated = headings.get("time_created");
+            assertThat(timeCreated.getDisplayName()).isEqualTo("Time created");
+            assertThat(timeCreated.getDataType()).isEqualTo("LocalDateTime");
+            LocalDateTime createdTime = LocalDateTime.parse((String) timeCreated.getValue(),
+                                                            DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            assertThat(createdTime).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS))
+                .as("Creation time should be correct");
+
+            assertThat(headings.get("responses_processed")).isEqualTo(AbstractReportResponse.DataTypeValue.builder()
+                                                                     .displayName("Number of responses processed")
+                                                                     .dataType("Integer")
+                                                                     .value(0)
+                                                                     .build());
+
         }
     }
 

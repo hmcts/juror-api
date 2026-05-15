@@ -14,6 +14,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolMemberFilterRequestQuery;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -39,6 +40,8 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import static uk.gov.hmcts.juror.api.moj.utils.SecurityUtil.BUREAU_OWNER;
+
 
 /**
  * Custom Repository implementation for the JurorPool entity.
@@ -53,6 +56,7 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
     private static final QPoolRequest POOL_REQUEST = QPoolRequest.poolRequest;
     private static final QAppearance APPEARANCE = QAppearance.appearance;
     private static final QPanel PANEL = QPanel.panel;
+    private static final QCourtLocation COURT_LOCATION = QCourtLocation.courtLocation;
 
     @Override
     public String findLatestPoolSequence(String poolNumber) {
@@ -250,7 +254,7 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
             throw new MojException.NotFound("Pool number not found", null);
         }
 
-        if (SecurityUtil.BUREAU_OWNER.equals(owner) || results.contains(SecurityUtil.BUREAU_OWNER)
+        if (BUREAU_OWNER.equals(owner) || results.contains(BUREAU_OWNER)
             || results.contains(owner)) {
 
             return queryFactory.select(JUROR_POOL.juror.jurorNumber)
@@ -290,7 +294,7 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
             .where(JUROR_POOL.isActive.isTrue())
             .where(JUROR_POOL.pool.poolNumber.eq(search.getPoolNumber()));
 
-        if (!SecurityUtil.BUREAU_OWNER.equals(owner)) {
+        if (!BUREAU_OWNER.equals(owner)) {
             partialQuery.where(JUROR_POOL.owner.eq(owner));
         }
 
@@ -427,6 +431,28 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
         } else {
             return count.intValue();
         }
+    }
+
+    @Override
+    public List<Tuple> getIncompleteServiceCountsByCourt() {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+
+        return queryFactory.select(COURT_LOCATION.name,
+                                                COURT_LOCATION.locCode,
+                                                JUROR_POOL.count())
+            .from(JUROR_POOL)
+            .join(POOL_REQUEST).on(POOL_REQUEST.eq(JUROR_POOL.pool))
+            .join(COURT_LOCATION).on(POOL_REQUEST.courtLocation.eq(COURT_LOCATION))
+            .where(JUROR_POOL.isActive.isTrue().and(
+                JUROR_POOL.status.status.in(IJurorStatus.RESPONDED, IJurorStatus.PANEL, IJurorStatus.JUROR))
+                       .and(JUROR_POOL.owner.ne(BUREAU_OWNER)))
+            .where(POOL_REQUEST.returnDate.loe(LocalDate.now()))
+            .groupBy(COURT_LOCATION.name, COURT_LOCATION.locCode)
+            .having(JUROR_POOL.count().goe(10))
+            .orderBy(JUROR_POOL.count().desc())
+            .limit(10)
+            .fetch();
+
     }
 
 

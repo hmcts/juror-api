@@ -172,19 +172,35 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
         );
     }
 
-
-
-
     private PaginatedList<PoolRequestActiveDataDto> getActiveCourtTabRequests(ActivePoolFilterQuery filterQuery) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+
+        // Sum up active jurors only
+        NumberExpression<Integer> activeJurorCountExpr =
+            new CaseBuilder()
+                .when(JUROR_POOL.isActive.isTrue())
+                .then(1)
+                .otherwise(0)
+                .sum()
+                .as("activeJurorCount");
+
+        // Sum up responded jurors only
+        NumberExpression<Integer> respondedJurorCountExpr =
+            new CaseBuilder()
+                .when(JUROR_POOL.status.status.eq(IJurorStatus.RESPONDED))
+                .then(1)
+                .otherwise(0)
+                .sum()
+                .as("respondedJurorCount");
 
         JPAQuery<Tuple> activePoolsQuery = queryFactory.select(
                 POOL_REQUEST.poolNumber,
                 POOL_REQUEST.totalNoRequired,
-                JUROR_POOL.isActive.count(),
+                activeJurorCountExpr,
                 POOL_REQUEST.courtLocation.name,
                 POOL_REQUEST.poolType.description,
-                POOL_REQUEST.returnDate
+                POOL_REQUEST.returnDate,
+                respondedJurorCountExpr
             )
             .from(POOL_REQUEST)
             .leftJoin(JUROR_POOL)
@@ -222,10 +238,11 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
             data -> PoolRequestActiveDataDto.builder()
                 .poolNumber(data.get(POOL_REQUEST.poolNumber))
                 .poolCapacity(data.get(POOL_REQUEST.totalNoRequired).intValue())
-                .jurorsInPool(data.get(JUROR_POOL.isActive.count()).intValue())
+                .jurorsInPool(data.get(activeJurorCountExpr).intValue())
                 .courtName(data.get(POOL_REQUEST.courtLocation.name))
                 .poolType(data.get(POOL_REQUEST.poolType.description))
                 .attendanceDate(data.get(POOL_REQUEST.returnDate))
+                .respondedJurors(data.get(respondedJurorCountExpr).intValue())
                 .build()
         );
     }

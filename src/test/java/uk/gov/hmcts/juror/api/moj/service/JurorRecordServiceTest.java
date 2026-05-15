@@ -3145,6 +3145,13 @@ class JurorRecordServiceTest {
         @Test
         void positiveTypical() {
 
+            TestUtils.mockSecurityUtil(
+                BureauJwtPayload.builder()
+                    .owner("400")
+                    .build()
+            );
+
+
             String poolNumber = "415220502";
             final JurorManualCreationRequestDto requestDto = JurorManualCreationRequestDto.builder()
                 .poolNumber(poolNumber)
@@ -3183,6 +3190,10 @@ class JurorRecordServiceTest {
             when(poolMemberSequenceService.getPoolMemberSequenceNumber(poolNumber)).thenReturn(22);
 
             when(poolMemberSequenceService.leftPadInteger(1)).thenReturn("0022");
+
+            Juror jurorSaved = new Juror();
+            jurorSaved.setJurorNumber("041500022");
+            when(jurorRepository.save(any())).thenReturn(jurorSaved);
 
             jurorRecordService.createJurorManual(requestDto);
 

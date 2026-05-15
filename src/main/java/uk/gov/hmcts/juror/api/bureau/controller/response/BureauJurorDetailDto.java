@@ -2,6 +2,8 @@ package uk.gov.hmcts.juror.api.bureau.controller.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -29,8 +31,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Schema(description = "All Details available on a juror in the system ")
-@SuppressWarnings("PMD.TooManyFields")
+@SuppressWarnings("PMD")
 //TODO: validation
 public class BureauJurorDetailDto implements Serializable, IJurorResponse {
 
@@ -330,7 +333,7 @@ public class BureauJurorDetailDto implements Serializable, IJurorResponse {
     private List<CjsEmploymentDto> cjsEmployments;
 
     @Schema(description = "List of Jurors special needs")
-    private List<SpecialNeedDto> specialNeeds;
+    private List<ReasonableAdjustmentDto> specialNeeds;
 
     /**
      * Flag that this response is urgent.
@@ -448,7 +451,9 @@ public class BureauJurorDetailDto implements Serializable, IJurorResponse {
         this.cjsEmployments =
             jurorDetails.getCjsEmployments().stream().map(CjsEmploymentDto::new).collect(Collectors.toList());
         this.specialNeeds =
-            jurorDetails.getReasonableAdjustments().stream().map(SpecialNeedDto::new).collect(Collectors.toList());
+            jurorDetails.getReasonableAdjustments().stream()
+                .map(ReasonableAdjustmentDto::new)
+                .collect(Collectors.toList());
         this.urgent = jurorDetails.getUrgent();
         this.slaOverdue = jurorDetails.getSlaOverdue();
         this.welsh = jurorDetails.getWelsh();

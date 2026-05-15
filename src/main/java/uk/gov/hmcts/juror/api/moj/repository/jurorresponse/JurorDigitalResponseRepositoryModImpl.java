@@ -11,6 +11,7 @@ import jakarta.persistence.PersistenceContext;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
+import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QUser;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QDigitalResponse;
@@ -59,17 +60,25 @@ public class JurorDigitalResponseRepositoryModImpl implements IJurorDigitalRespo
                 user.name.as("name"),
                 new CaseBuilder()
                     .when(digitalResponse.urgent.isFalse()
-                            .and(QJuror.juror.isNotNull())
-                           .and(digitalResponse.processingStatus.eq(ProcessingStatus.TODO)))
+                              .and(QJuror.juror.isNotNull())
+                              .and(digitalResponse.processingStatus.eq(ProcessingStatus.TODO))
+                    )
                     .then(1L).otherwise(0L).sum().as("nonUrgent"),
                 new CaseBuilder()
-                    .when(digitalResponse.urgent.isTrue().and(QJuror.juror.isNotNull())
-                    .and(digitalResponse.processingStatus.eq(ProcessingStatus.TODO)))
+                    .when(
+                        digitalResponse.urgent.isTrue()
+                            .and(QJuror.juror.isNotNull())
+                            .and(digitalResponse.processingStatus.eq(ProcessingStatus.TODO)
+                            ))
                     .then(1L).otherwise(0L).sum().as("urgent"),
                 new CaseBuilder()
-                    .when(digitalResponse.processingStatus.eq(ProcessingStatus.AWAITING_CONTACT)
-                              .or(digitalResponse.processingStatus.eq(ProcessingStatus.AWAITING_COURT_REPLY))
-                              .or(digitalResponse.processingStatus.eq(ProcessingStatus.AWAITING_TRANSLATION)))
+                    .when(QJuror.juror.isNotNull()
+                              .and(QJurorPool.jurorPool.isNotNull())
+                              .and(digitalResponse.processingStatus.eq(ProcessingStatus.AWAITING_CONTACT)
+                                       .or(digitalResponse.processingStatus.eq(ProcessingStatus.AWAITING_COURT_REPLY))
+                                       .or(digitalResponse.processingStatus.eq(ProcessingStatus.AWAITING_TRANSLATION))
+                              )
+                    )
                     .then(1L).otherwise(0L).sum().as("awaitingInfo"),
                 QJuror.juror.count().as("allReplies")
             ).from(user)
@@ -77,9 +86,12 @@ public class JurorDigitalResponseRepositoryModImpl implements IJurorDigitalRespo
             .where(user.active.isTrue())
             .leftJoin(digitalResponse)
             .on(user.eq(digitalResponse.staff)
-                .and(digitalResponse.processingStatus.ne(ProcessingStatus.CLOSED)))
+                    .and(digitalResponse.processingStatus.ne(ProcessingStatus.CLOSED)))
             .leftJoin(QJuror.juror).on(QJuror.juror.jurorNumber.eq(digitalResponse.jurorNumber)
-                .and(QJuror.juror.bureauTransferDate.isNull()))
+                                           .and(QJuror.juror.bureauTransferDate.isNull()))
+            .leftJoin(QJurorPool.jurorPool).on(QJurorPool.jurorPool.juror.jurorNumber.eq(digitalResponse.jurorNumber)
+                                                   .and(QJurorPool.jurorPool.owner.eq("400"))
+                                                   .and(QJurorPool.jurorPool.isActive.isTrue()))
             .groupBy(user.username, user.name);
         return query.fetch();
     }

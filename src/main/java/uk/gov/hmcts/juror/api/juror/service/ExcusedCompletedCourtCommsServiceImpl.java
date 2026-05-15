@@ -320,7 +320,8 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
             NotificationClient notificationClient = new NotificationClient(regionApikey, gotProxy);
 
 
-            boolean hasEmail = jurorCourtDetailExcusalList.getJuror().getEmail() != null;
+            boolean hasEmail = jurorCourtDetailExcusalList.getJuror().getEmail() != null
+                && !jurorCourtDetailExcusalList.getJuror().getEmail().trim().isEmpty();
             String hasValidPhone;
             if (isValidMobilePhone(jurorCourtDetailExcusalList.getJuror().getPhoneNumberCombined())) {
                 hasValidPhone = jurorCourtDetailExcusalList.getJuror().getPhoneNumberCombined();
@@ -428,8 +429,8 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
         );
 
         return new Metrics(jurorCourtDetailListExcusal.size(), errorCount, successCount,
-            missingEmailAndPhone, missingApiKeyCount,
-            invalidPhoneCount, invalidEmailCount);
+                           missingEmailAndPhone, missingApiKeyCount,
+                           invalidPhoneCount, invalidEmailCount);
     }
 
     @SuppressWarnings("checkstyle:LineLength") // false positive
@@ -448,6 +449,7 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
         int successCount = 0;
         int missingEmailAndPhone = 0;
         int missingApiKeyCount = 0;
+
         for (JurorPool jurorCourtDetailCompletedList : jurorCourtDetailListCompleted) {
 
             log.info("jurorCourtDetailListCompleted PART_NO {}", jurorCourtDetailCompletedList.getJurorNumber());
@@ -524,7 +526,8 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
 
             try {
                 NotificationClient notificationClient = new NotificationClient(regionApikey, gotProxy);
-                boolean hasEmail = jurorCourtDetailCompletedList.getJuror().getEmail() != null;
+                boolean hasEmail = jurorCourtDetailCompletedList.getJuror().getEmail() != null
+                    && !jurorCourtDetailCompletedList.getJuror().getEmail().trim().isEmpty();
 
                 String hasValidPhone;
                 if (isValidMobilePhone(jurorCourtDetailCompletedList.getJuror().getPhoneNumberCombined())) {
@@ -604,7 +607,6 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
                 log.info("Unable to send notify: {}", e.getMessage());
                 jurorCourtDetailCompletedList.getJuror().setServiceCompCommsStatus(updateMessageStatusNotSent);
                 updateCommsStatusFlagCompleted(jurorCourtDetailCompletedList);
-                errorCount++;
                 if (NotifyUtil.isInvalidPhoneNumberError(e)) {
                     invalidPhoneCount++;
                 } else if (NotifyUtil.isInvalidEmailAddressError(e)) {
@@ -641,8 +643,8 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
         );
 
         return new Metrics(jurorCourtDetailListCompleted.size(), errorCount, successCount,
-            missingEmailAndPhone, missingApiKeyCount,
-            invalidPhoneCount, invalidEmailCount);
+                           missingEmailAndPhone, missingApiKeyCount,
+                           invalidPhoneCount, invalidEmailCount);
     }
 
     public record Metrics(int jurorPoolsIdentified, int errorCount, int successCount,

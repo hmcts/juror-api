@@ -9,15 +9,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
-import uk.gov.hmcts.juror.api.juror.service.JurorService;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.EndTrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorPanelReassignRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReinstateJurorsRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReturnJuryDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialSearch;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.CourtroomsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.JudgeDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.trial.PanelListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialSummaryDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
@@ -60,6 +61,7 @@ import java.util.Optional;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_EDIT_COMPLETED_TRIAL;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_EDIT_TRIAL_WITH_JURORS;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_PROCESS_EMPANELLED_JUROR;
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_REINSTATE_JUROR_TO_TRIAL;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_RE_ADD_JUROR_TO_PANEL;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.TRIAL_HAS_MEMBERS;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.UNCONFIRMED_ATTENDANCE_EXISTS;
@@ -86,7 +88,6 @@ public class TrialServiceImpl implements TrialService {
     private final JurorAppearanceService jurorAppearanceService;
     private final JurorHistoryService jurorHistoryService;
     private final AppearanceCreationService appearanceCreationService;
-    private final JurorService juror;
     private final JurorExpenseService jurorExpenseService;
 
     private static final String CANNOT_FIND_TRIAL_ERROR_MESSAGE = "Cannot find trial with number: %s for "
@@ -273,6 +274,93 @@ public class TrialServiceImpl implements TrialService {
             // add history for the juror
             jurorHistoryService.createReassignedToPanelHistory(jurorPool, newPanel);
 
+        });
+
+    }
+
+    @Override
+    public List<PanelListDto> getReturnedJurors(String trialNo, String locCode) {
+        return trialRepository.getReturnedJurors(trialNo, locCode);
+    }
+
+    @Override
+    public int getOriginalEmpanelledJurorCount(String trialNo, String locCode) {
+        return trialRepository.getOriginalEmpanelledJurorCount(trialNo, locCode);
+    }
+
+    @Override
+    @Transactional
+    public void reinstateJurors(ReinstateJurorsRequestDto reinstateJurorsRequest) {
+
+        // check the jurors supplied are in responded status
+        List<JurorPool> jurorPools = jurorPoolRepository.findByPoolCourtLocationLocCodeAndIsActiveAndJurorJurorNumberIn(
+            reinstateJurorsRequest.getCourtLocationCode(),
+            true,
+            reinstateJurorsRequest.getJurors()
+        );
+
+        if (jurorPools.size() != reinstateJurorsRequest.getJurors().size()) {
+            List<String> foundJurors = new ArrayList<>();
+            jurorPools.forEach(jurorPool -> foundJurors.add(jurorPool.getJuror().getJurorNumber()));
+            reinstateJurorsRequest.getJurors().forEach(jurorNumber -> {
+                if (!foundJurors.contains(jurorNumber)) {
+                    throw new MojException.NotFound("Juror %s not found in the pool at court"
+                                                        .formatted(jurorNumber), null);
+                }
+            });
+        }
+
+        jurorPools.forEach(jurorPool -> {
+            if (jurorPool.getStatus().getStatus() != IJurorStatus.RESPONDED) {
+                throw new MojException.BusinessRuleViolation("Juror %s is not in responded status"
+                                                                 .formatted(jurorPool.getJuror()
+                                                                                .getJurorNumber()),
+                                                             CANNOT_REINSTATE_JUROR_TO_TRIAL);
+            }
+        });
+
+        // validate the trial exists in the location specified and is not completed
+        Trial trial = getTrial(reinstateJurorsRequest.getTrialNumber(), reinstateJurorsRequest.getCourtLocationCode());
+        if (trial.getTrialEndDate() != null) {
+            throw new MojException.BusinessRuleViolation("Cannot reinstate jurors to a completed trial",
+                                                         CANNOT_EDIT_COMPLETED_TRIAL);
+        }
+
+        // read the panel records for the jurors supplied
+        List<Panel> panelList = panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumberIn(
+            reinstateJurorsRequest.getTrialNumber(),
+            reinstateJurorsRequest.getCourtLocationCode(),
+            reinstateJurorsRequest.getJurors()
+        );
+
+        if (panelList.size() != reinstateJurorsRequest.getJurors().size()) {
+            List<String> foundJurors = new ArrayList<>();
+            panelList.forEach(panel -> foundJurors.add(panel.getJurorNumber()));
+            reinstateJurorsRequest.getJurors().forEach(jurorNumber -> {
+                if (!foundJurors.contains(jurorNumber)) {
+                    throw new MojException.NotFound("Juror %s not found on the trial"
+                                                        .formatted(jurorNumber), null);
+                }
+            });
+        }
+
+        // update the panel records to remove the return date and set the result to null
+        panelList.forEach(panel -> {
+            panel.setReturnDate(null);
+            panel.setResult(PanelResult.JUROR);
+            panel.setCompleted(true);
+            panelRepository.saveAndFlush(panel);
+
+            // update the juror pool status to juror
+            JurorPool jurorPool = jurorPools.stream().filter(
+                p -> p.getJuror().getJurorNumber().equals(panel.getJurorNumber())).findFirst().get();
+            JurorStatus jurorStatus = new JurorStatus();
+            jurorStatus.setStatus(IJurorStatus.JUROR);
+            jurorPool.setStatus(jurorStatus);
+            jurorPoolRepository.saveAndFlush(jurorPool);
+
+            // add history records for the jurors reinstated
+            jurorHistoryService.createJuryReinstatementHistory(jurorPool, panel);
         });
 
     }

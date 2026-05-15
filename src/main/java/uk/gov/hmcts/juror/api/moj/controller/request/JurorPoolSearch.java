@@ -1,6 +1,8 @@
 package uk.gov.hmcts.juror.api.moj.controller.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.querydsl.core.types.Expression;
 import jakarta.validation.constraints.Min;
 import lombok.Builder;
@@ -16,6 +18,7 @@ import uk.gov.hmcts.juror.api.validation.ValidateIfTrigger;
 @Data
 @Builder
 @Getter
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class JurorPoolSearch implements IsPageable {
 
     @ValidateIf(fields = {"jurorNumber", "postcode"},

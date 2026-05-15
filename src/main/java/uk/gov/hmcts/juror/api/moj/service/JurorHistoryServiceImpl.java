@@ -42,6 +42,12 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     }
 
     @Override
+    public void createJuryReinstatementHistory(JurorPool jurorPool, Panel panelMember) {
+        registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.REINSTATED_TO_JURY, null, null,
+                                               panelMember.getTrial().getTrialNumber());
+    }
+
+    @Override
     public void createPanelCreationHistory(JurorPool jurorPool, Panel panelMember) {
         registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.CREATE_NEW_PANEL, null, null,
             panelMember.getTrial().getTrialNumber());
@@ -362,6 +368,23 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
         registerHistoryLoginUser(jurorPool, HistoryCodeMod.DELETE_REQUEST_MORE_INFO, null);
     }
 
+    @Override
+    public void createResponseSubmittedHistory(JurorPool jurorPool, String otherInfo, String username) {
+        if (username == null) {
+            registerHistorySystem(jurorPool, HistoryCodeMod.RESPONSE_SUBMITTED, otherInfo);
+        } else {
+            registerHistory(jurorPool, HistoryCodeMod.RESPONSE_SUBMITTED, otherInfo, username);
+        }
+    }
+
+    @Override
+    public void createOnCallHistory(JurorPool jurorPool) {
+        registerHistoryLoginUserAdditionalInfo(jurorPool,
+                                               HistoryCodeMod.ON_CALL,
+                                               "Updated notes", null, null);
+    }
+
+
 
     public void createPostponementLetterHistory(JurorPool jurorPool, String confirmationLetter) {
         if (jurorPool.getDeferralDate() == null || !jurorPool.getDeferralCode().equals("P")) {
@@ -389,6 +412,7 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
             appearance.getAttendanceDate(),
             appearance.getAttendanceAuditNumber());
     }
+
 
     private void save(JurorHistory jurorHistory) {
         jurorHistoryRepository.save(jurorHistory);

@@ -121,7 +121,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
 
         for (PoolRequestSearchListDto.PoolRequestSearchDataDto data : results.getData()) {
             assertThat(data.getPoolNumber()).startsWith(locCode);
-            assertThat(data.getCourtName()).isEqualToIgnoringCase("Lewes Sitting At Chichester");
+            assertThat(data.getCourtName()).isEqualToIgnoringCase("Guildford Sitting At Chichester");
         }
     }
 
@@ -142,7 +142,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
 
         PoolRequestSearchListDto.PoolRequestSearchDataDto data = results.getData().get(0);
         assertThat(data.getPoolNumber()).isEqualTo(poolNumber);
-        assertThat(data.getCourtName()).isEqualToIgnoringCase("Lewes Sitting At Chichester");
+        assertThat(data.getCourtName()).isEqualToIgnoringCase("Guildford Sitting At Chichester");
         assertThat(data.getPoolType()).isEqualToIgnoringCase("Civil court");
         assertThat(data.getPoolStatus()).isEqualToIgnoringCase("Nil");
         assertThat(data.getPoolStage()).isEqualToIgnoringCase("With the Bureau");
@@ -182,7 +182,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
 
         PoolRequestSearchListDto.PoolRequestSearchDataDto data = results.getData().get(0);
         assertThat(data.getPoolNumber()).isEqualTo("416230102");
-        assertThat(data.getCourtName()).isEqualToIgnoringCase("Lewes Sitting At Chichester");
+        assertThat(data.getCourtName()).isEqualToIgnoringCase("Guildford Sitting At Chichester");
         assertThat(data.getPoolType()).isEqualToIgnoringCase("Crown court");
         assertThat(data.getPoolStatus()).isEqualToIgnoringCase("Completed");
         assertThat(data.getPoolStage()).isEqualToIgnoringCase("At court");
@@ -209,7 +209,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
 
         PoolRequestSearchListDto.PoolRequestSearchDataDto data = results.getData().get(0);
         assertThat(data.getPoolNumber()).isEqualTo(poolNumber);
-        assertThat(data.getCourtName()).isEqualToIgnoringCase("Lewes Sitting At Chichester");
+        assertThat(data.getCourtName()).isEqualToIgnoringCase("Guildford Sitting At Chichester");
         assertThat(data.getPoolType()).isEqualToIgnoringCase("Crown court");
         assertThat(data.getPoolStatus()).isEqualToIgnoringCase("Active");
         assertThat(data.getPoolStage()).isEqualToIgnoringCase("At court");
@@ -292,7 +292,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
 
         assertThat(data.get(0).getCourtName()).isEqualToIgnoringCase("Chester");
         assertThat(data.get(1).getCourtName()).isEqualToIgnoringCase("Coventry");
-        assertThat(data.get(2).getCourtName()).isEqualToIgnoringCase("Lewes Sitting At Chichester");
+        assertThat(data.get(2).getCourtName()).isEqualToIgnoringCase("Guildford Sitting At Chichester");
     }
 
     @Test
@@ -313,7 +313,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
 
         List<PoolRequestSearchListDto.PoolRequestSearchDataDto> data = results.getData();
 
-        assertThat(data.get(0).getCourtName()).isEqualToIgnoringCase("Lewes Sitting At Chichester");
+        assertThat(data.get(0).getCourtName()).isEqualToIgnoringCase("Guildford Sitting At Chichester");
         assertThat(data.get(1).getCourtName()).isEqualToIgnoringCase("Coventry");
         assertThat(data.get(2).getCourtName()).isEqualToIgnoringCase("Chester");
     }

@@ -86,7 +86,8 @@ class NotifyAdapterModTest extends ContainerTest {
         final String templateId = "8eeb7fb5-5e02-43a7-9557-ed63b08845de";
         final String detailRec = "    McTest     Testy       YYY   " + jurorNumber + "XX     ";
 
-        Map<String, String> payLoad = jurorCommsNotifyPayLoadService.generatePayLoadData(templateId, detailRec, jurorDetails);
+        Map<String, String> payLoad = jurorCommsNotifyPayLoadService.generatePayLoadData(
+            templateId, detailRec, jurorDetails);
 
         final EmailNotification emailNotification = jurorCommsNotificationService
             .createEmailNotification(jurorDetails, JurorCommsNotifyTemplateType.COMMS, templateId, payLoad);

@@ -62,9 +62,14 @@ public interface IAppearanceRepository {
 
     int getUnconfirmedAttendanceCountAtCourt(String locCode);
 
+    int getUnconfirmedAttendanceCountForJurorsAtCourt(List<String> jurorNumbers, String locCode);
+
     int getConfirmedAttendanceCountAtCourt(String locCode, LocalDate attendanceDate,
                                            boolean includeNonAttendance, boolean includeOnTrial);
 
     int getAbsentCountAtCourt(String locationCode, LocalDate attendanceDateFrom,
                               LocalDate attendanceDateTo);
+
+    List<Tuple> getAllWeekendAttendances(List<LocalDate> saturdays, List<LocalDate> sundays,
+                                         List<LocalDate> bankHolidays, List<LocalDate> allDates);
 }
