@@ -39,7 +39,7 @@ public class EditPoolServiceImpl implements EditPoolService {
     public void editPool(BureauJwtPayload payload, PoolEditRequestDto poolEditRequestDto) {
         String payloadOwner = payload.getOwner();
 
-        if (payloadOwner.equals(JurorDigitalApplication.JUROR_OWNER)) {
+        if (JurorDigitalApplication.JUROR_OWNER.equals(payloadOwner)) {
             editPoolJurorsRequested(payload, poolEditRequestDto);
         } else {
             editPoolTotalCapacity(payload, poolEditRequestDto);

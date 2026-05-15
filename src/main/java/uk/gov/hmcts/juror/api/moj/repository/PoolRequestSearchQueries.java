@@ -188,7 +188,7 @@ public class PoolRequestSearchQueries implements IPoolRequestSearchQueries {
             query.having(isRequested()
                 .or(isCreated().and(poolMembersRequested().and(isWithBureau())))
                 .or(isCreated().and(poolMembersRequested().and(hasActivePoolMembers())
-                    .or((isNilPool().or(isStagingPool())).and(hasActiveReturnDate())))));
+                    .or(isNilPool().or(isStagingPool()).and(hasActiveReturnDate())))));
 
         } else if (poolStatus.containsAll(REQUESTED_AND_COMPLETED)) {
             query.where(isRequested().or(isCreated().and(hasElapsedReturnDate())));
@@ -201,9 +201,9 @@ public class PoolRequestSearchQueries implements IPoolRequestSearchQueries {
             query.where(isRequested());
 
         } else if (poolStatus.contains(PoolStatus.ACTIVE)) {
-            query.where((isCreated().and(poolMembersRequested())
+            query.where(isCreated().and(poolMembersRequested())
                 .or(isNilPool().and(hasActiveReturnDate()))
-                .or(isStagingPool())));
+                .or(isStagingPool()));
             query.having(isNilPool().or(hasActivePoolMembers().or(isWithBureau())
                 .or(isStagingPool().and(hasActivePoolMembers().or(hasActiveReturnDate())))));
 

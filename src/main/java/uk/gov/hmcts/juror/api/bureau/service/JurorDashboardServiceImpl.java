@@ -100,14 +100,14 @@ public class JurorDashboardServiceImpl implements JurorDashboardService {
         cumulativeTotal.setRespondedTotal(jurorDashboardCalculateService.totalNoOfResponses(responsesOverTime));
         cumulativeTotal.setNotRespondedTotal(jurorDashboardCalculateService.totalNoOfNotResponded(notResponded));
 
-        int countTotalResponses = (jurorDashboardCalculateService.allResponsesTotal(allResponseTimesTotals));
-        int countTotalNotResponded = (jurorDashboardCalculateService.totalNoOfNotRespondedTotal(notRespondedTotal));
+        int countTotalResponses = jurorDashboardCalculateService.allResponsesTotal(allResponseTimesTotals);
+        int countTotalNotResponded = jurorDashboardCalculateService.totalNoOfNotRespondedTotal(notRespondedTotal);
         int countTotalOnlineResponses =
-            (jurorDashboardCalculateService.onlineResponsesTotal(onlineResponseTimesTotals));
+            jurorDashboardCalculateService.onlineResponsesTotal(onlineResponseTimesTotals);
         int totalSummonses = countTotalResponses + countTotalNotResponded;
-        cumulativeTotal.setTotalNumberSummonsesSent(appSetting.getTotalNumberSummonsesSent() + (totalSummonses));
+        cumulativeTotal.setTotalNumberSummonsesSent(appSetting.getTotalNumberSummonsesSent() + totalSummonses);
         cumulativeTotal.setTotalNumberOnlineReplies(
-            appSetting.getTotalNumberOnlineReplies() + (countTotalOnlineResponses));
+            appSetting.getTotalNumberOnlineReplies() + countTotalOnlineResponses);
         cumulativeTotal.setSummonedTotal(jurorDashboardCalculateService.totalNoOfSummoned(
             cumulativeTotal.getRespondedTotal(),
             cumulativeTotal.getNotRespondedTotal()

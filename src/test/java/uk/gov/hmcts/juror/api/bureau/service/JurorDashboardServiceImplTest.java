@@ -118,7 +118,7 @@ public class JurorDashboardServiceImplTest {
             StatsWelshOnlineResponse.builder().summonsMonth(getDate(today, 0)).welshResponseCount(3).build()
         ));
 
-        channelResp = new HashMap<String, Map<String, Integer>>() {
+        channelResp = new HashMap<>() {
             {
                 put("Paper", new HashMap<String, Integer>() {
                     {

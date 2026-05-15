@@ -542,9 +542,8 @@ class ExcusalResponseServiceImplTest {
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequestNoResponse(ExcusalDecision.GRANT);
 
         Assertions.assertThatExceptionOfType(MojException.Forbidden.class)
-            .isThrownBy(() -> {
-                excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, JUROR_NUMBER2);
-            });
+            .isThrownBy(() ->
+                excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, JUROR_NUMBER2));
 
         verify(jurorPoolService, times(1)).getJurorPoolFromUser(any());
 
@@ -559,9 +558,8 @@ class ExcusalResponseServiceImplTest {
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequestNoResponse(ExcusalDecision.GRANT);
 
         Assertions.assertThatExceptionOfType(MojException.Forbidden.class)
-            .isThrownBy(() -> {
-                excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, JUROR_NUMBER);
-            });
+            .isThrownBy(() ->
+                excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, JUROR_NUMBER));
 
         verify(jurorPoolService, times(1))
             .getJurorPoolFromUser(any());

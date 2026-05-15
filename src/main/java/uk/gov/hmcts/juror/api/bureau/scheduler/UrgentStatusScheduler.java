@@ -86,7 +86,7 @@ public class UrgentStatusScheduler implements ScheduledService {
 
                 log.trace("processing  pool number {} ", jurorDetails.getJurorNumber());
 
-                if ((!backlogItem.isUrgent() && urgencyService.isUrgent(backlogItem, jurorDetails))) {
+                if (!backlogItem.isUrgent() && urgencyService.isUrgent(backlogItem, jurorDetails)) {
 
                     totalUrgentResponses++;
                     urgencyService.setUrgencyFlags(backlogItem, jurorDetails);

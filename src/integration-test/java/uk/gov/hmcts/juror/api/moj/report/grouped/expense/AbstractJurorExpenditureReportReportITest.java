@@ -13,7 +13,7 @@ public abstract class AbstractJurorExpenditureReportReportITest extends Abstract
     protected static final LocalDate DEFAULT_TO_DATE = LocalDate.of(2024, 5, 27);
 
 
-    public AbstractJurorExpenditureReportReportITest(
+    protected AbstractJurorExpenditureReportReportITest(
         TestRestTemplate template,
         Class<? extends AbstractJurorExpenditureReport> reportClass) {
         super(template, reportClass);

@@ -81,15 +81,15 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
 
                         String templateName = printFile.getTemplateName();
 
-                        if (templateName.equals("CONFRIM_JUROR_ENG")
+                        if ("CONFRIM_JUROR_ENG".equals(templateName)
                             ||
-                            templateName.equals("DEF_DENIED_ENG")
+                            "DEF_DENIED_ENG".equals(templateName)
                             ||
-                            templateName.equals("DEF_GRANTED_ENG")
+                            "DEF_GRANTED_ENG".equals(templateName)
                             ||
-                            templateName.equals("EXC_DENIED_ENG")
+                            "EXC_DENIED_ENG".equals(templateName)
                             ||
-                            templateName.equals("POSTPONE_JUROR_ENG")) {
+                            "POSTPONE_JUROR_ENG".equals(templateName)) {
 
 
                             String currentTemplate = printFile.getTemplateName();

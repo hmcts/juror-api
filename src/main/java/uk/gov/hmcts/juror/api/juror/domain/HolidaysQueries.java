@@ -14,7 +14,7 @@ import java.util.Date;
  * QueryDSL queries for {@Link Holidays}.
  */
 @Slf4j
-public class HolidaysQueries {
+public final class HolidaysQueries {
     private static final int BST_ADJUSTMENT = 1;
     private static final int STRING_POSITION_BST_TIME = 16;
 

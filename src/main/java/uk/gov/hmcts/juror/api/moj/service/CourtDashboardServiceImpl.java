@@ -107,9 +107,8 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
                     unpaidAttendances.stream()
                         .filter(a -> a.getAttendanceDate().equals(date))
                         .findFirst()
-                        .ifPresent(appearance -> {
-                            courtAdminInfoDto.setOldestUnpaidJurorNumber(appearance.getJurorNumber());
-                        });
+                        .ifPresent(appearance ->
+                            courtAdminInfoDto.setOldestUnpaidJurorNumber(appearance.getJurorNumber()));
                 });
 
         }

@@ -35,7 +35,7 @@ public @interface EnumValidator {
     Class<? extends Payload>[] payload() default {};
 
     enum Mode {
-        INCLUDE, EXCLUDE;
+        INCLUDE, EXCLUDE
     }
 
     @Target({METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER, TYPE_USE})

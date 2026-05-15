@@ -135,7 +135,7 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
             log.info("Smart Survey system date: {}", currentDate);
             log.info("Smart Survey calculated start date: {}", startDate);
 
-            Map<String, String> vars = new HashMap<String, String>();
+            Map<String, String> vars = new HashMap<>();
             vars.put("surveyId", surveyId);
             vars.put("apiToken", smartSurveyToken);
             vars.put("apiTokenSecret", smartSurveyTokenSecret);
@@ -261,7 +261,7 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
         log.info("Smart Survey export list - total records: {}", jsonArr.length());
 
         // Find the latest survey export matching the name set in the config
-        List<JSONObject> jsonList = new ArrayList<JSONObject>();
+        List<JSONObject> jsonList = new ArrayList<>();
         for (int i = 0; i < jsonArr.length(); i++) {
 
             JSONObject obj = jsonArr.getJSONObject(i);
@@ -290,7 +290,7 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
     private List<SurveyResponse> getExportData(String smartSurveyUrl, Map<String, String> vars,
                                                LocalDate extractStartDate, String surveyId) {
 
-        List<SurveyResponse> surveyResponseList = new ArrayList<SurveyResponse>();
+        List<SurveyResponse> surveyResponseList = new ArrayList<>();
         String smartSurveyExportData;
         RestTemplate restTemplate;
         HttpHeaders headers;

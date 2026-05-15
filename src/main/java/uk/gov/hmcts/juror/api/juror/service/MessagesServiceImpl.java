@@ -128,7 +128,7 @@ public class MessagesServiceImpl implements BureauProcessService {
                 final String phoneNumber = messagesDetail.getPhone();
                 final String email = messagesDetail.getEmail();
                 final String textMessage = messagesDetail.getMessageText();
-                final String reference = (messagesDetail.getJurorNumber());
+                final String reference = messagesDetail.getJurorNumber();
 
                 final String regionId = messagesDetail.getLocationCode().getCourtRegion().getRegionId();
                 final String regionApikey = myRegionMap.get(regionId);
@@ -336,9 +336,7 @@ public class MessagesServiceImpl implements BureauProcessService {
     }
 
     public List<String> setUpNotifyRegionKeys() {
-        List<String> notifyRegionKeys;
-        notifyRegionKeys = notifyRegionsConfigurationProperties.getRegionKeys();
-        return notifyRegionKeys;
+        return notifyRegionsConfigurationProperties.getRegionKeys();
     }
 
     @SuppressWarnings("PMD.LinguisticNaming")

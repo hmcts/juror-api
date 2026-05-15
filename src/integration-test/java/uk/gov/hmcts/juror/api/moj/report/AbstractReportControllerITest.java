@@ -27,7 +27,7 @@ public abstract class AbstractReportControllerITest<R extends AbstractReportResp
     public static final String BASE_URL = "/api/v1/moj/reports/standard";
     private final String reportType;
 
-    public AbstractReportControllerITest(TestRestTemplate template, Class<? extends IReport> reportClass,
+    protected AbstractReportControllerITest(TestRestTemplate template, Class<? extends IReport> reportClass,
                                          Class<R> responseClass) {
         super(HttpMethod.POST, template, HttpStatus.OK, responseClass);
         this.reportType = reportClass.getSimpleName();

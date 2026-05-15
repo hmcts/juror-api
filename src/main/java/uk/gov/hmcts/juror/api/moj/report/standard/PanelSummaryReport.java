@@ -48,9 +48,7 @@ public class PanelSummaryReport extends AbstractStandardReport {
         StandardReportRequest request,
         StandardReportResponse.TableData<StandardTableData> tableData) {
 
-        Map<String, StandardReportResponse.DataTypeValue> map = loadStandardTrialHeaders(request, trialRepository);
-
-        return map;
+        return loadStandardTrialHeaders(request, trialRepository);
     }
 
     @Override

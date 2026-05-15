@@ -8,7 +8,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
  */
 
 @Deprecated(forRemoval = true)
-public class StatsDeferralsQueries {
+public final class StatsDeferralsQueries {
     private static final String bureauSelection = "Bureau";
     private static final String courtSelection = "Court";
 

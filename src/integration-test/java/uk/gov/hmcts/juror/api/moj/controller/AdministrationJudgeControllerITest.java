@@ -262,7 +262,7 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
     @Sql(value = {"/db/administration/tearDownJudges.sql",
         "/db/administration/createJudges.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(value = "/db/administration/tearDownJudges.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    class ViewAllJudgeDetails {
+    final class ViewAllJudgeDetails {
         public static final String URL = BASE_URL;
 
         private ViewAllJudgeDetails() {
@@ -399,7 +399,7 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
     @Sql(value = {"/db/administration/tearDownJudges.sql",
         "/db/administration/createJudges.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(value = "/db/administration/tearDownJudges.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    class CreateJudgeDetails {
+    final class CreateJudgeDetails {
         public static final String URL = BASE_URL;
 
         private CreateJudgeDetails() {

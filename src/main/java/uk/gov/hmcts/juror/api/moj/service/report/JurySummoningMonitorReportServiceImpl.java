@@ -81,7 +81,7 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
     private void setupResponseDto(JurySummoningMonitorReportResponse response, String result) {
         if (result != null && !result.isEmpty()) {
             List<String> values = Arrays.stream(result.split(",")).map(
-                item -> item.equals("null") ? "0" : item).collect(Collectors.toList());
+                item -> "null".equals(item) ? "0" : item).collect(Collectors.toList());
             setupResponse(response, values);
         }
     }

@@ -8,7 +8,7 @@ public abstract class AbstractStandardReportTestSupport
     extends AbstractReportTestSupport<StandardTableData, R> {
 
 
-    public AbstractStandardReportTestSupport(EntityPath<?> from,
+    protected AbstractStandardReportTestSupport(EntityPath<?> from,
                                              Class<?> validatorClass, IDataType... dataTypes) {
         super(from, validatorClass, dataTypes);
     }

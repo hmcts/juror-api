@@ -31,7 +31,7 @@ public abstract class AbstractJurorAmendmentReportTestSupport<R extends Abstract
     protected JurorServiceMod jurorService;
     protected UserService userService;
 
-    public AbstractJurorAmendmentReportTestSupport(Class<?> validatorClass) {
+    protected AbstractJurorAmendmentReportTestSupport(Class<?> validatorClass) {
         this.validatorClass = validatorClass;
     }
 

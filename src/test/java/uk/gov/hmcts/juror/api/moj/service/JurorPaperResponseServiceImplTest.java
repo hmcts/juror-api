@@ -879,7 +879,7 @@ public class JurorPaperResponseServiceImplTest {
             .findByJurorNumber(any());
         assertNull(mockJuror.getReasonableAdjustmentCode(), "Expected reasonable adjustment code to be null");
         assertNull(mockJuror.getReasonableAdjustmentMessage(), "Expected reasonable adjustment message to be null");
-        assertEquals(Collections.EMPTY_LIST, jurorReasonableAdjustmentsRepository
+        assertEquals(Collections.emptyList(), jurorReasonableAdjustmentsRepository
             .findByJurorNumber(mockJuror.getJurorNumber()), "Expected no reasonable adjustments to be present");
     }
 

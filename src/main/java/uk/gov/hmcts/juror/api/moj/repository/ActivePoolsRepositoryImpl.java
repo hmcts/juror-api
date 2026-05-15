@@ -56,9 +56,9 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
 
     @Override
     public PaginatedList<PoolRequestActiveDataDto> getActivePoolRequests(ActivePoolFilterQuery filterQuery) {
-        if (filterQuery.getTab().equals(BUREAU_TAB)) {
+        if (BUREAU_TAB.equals(filterQuery.getTab())) {
             return getActiveBureauTabRequests(filterQuery);
-        } else if (filterQuery.getTab().equals(COURT_TAB)) {
+        } else if (COURT_TAB.equals(filterQuery.getTab())) {
             return getActiveCourtTabRequests(filterQuery);
         } else {
             throw new MojException.BadRequest("Invalid tab type", null);
@@ -67,9 +67,9 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
 
     @Override
     public PaginatedList<PoolRequestActiveDataDto> getActivePoolUnderResponded(ActivePoolFilterQuery filterQuery) {
-        if (filterQuery.getTab().equals(BUREAU_TAB)) {
+        if (BUREAU_TAB.equals(filterQuery.getTab())) {
             return getActiveBureauTabUnderResponded(filterQuery);
-        } else if (filterQuery.getTab().equals(COURT_TAB)) {
+        } else if (COURT_TAB.equals(filterQuery.getTab())) {
             return getActiveCourtTabRequests(filterQuery);
         } else {
             throw new MojException.BadRequest("Invalid tab type", null);

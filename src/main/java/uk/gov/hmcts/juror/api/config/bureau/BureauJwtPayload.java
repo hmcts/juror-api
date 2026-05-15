@@ -125,27 +125,27 @@ public class BureauJwtPayload {
     public static BureauJwtPayload fromClaims(Claims claims) {
         // Handle staff claim - defensive type checking
         Object staffObj = claims.get("staff");
-        Map<String, Object> staffMap = (staffObj instanceof Map) ? (Map<String, Object>) staffObj : null;
+        Map<String, Object> staffMap = staffObj instanceof Map ? (Map<String, Object>) staffObj : null;
 
         final BureauJwtPayload.Staff staff = BureauJwtPayload.Staff.fromClaims(staffMap);
 
         // Handle roles claim - defensive type checking
         Object rolesObj = claims.get("roles");
-        final List<String> roleString = (rolesObj instanceof List) ? (List<String>) rolesObj : Collections.emptyList();
+        final List<String> roleString = rolesObj instanceof List ? (List<String>) rolesObj : Collections.emptyList();
 
         final List<Role> roles = roleString
             .stream()
-            .map(o -> Role.valueOf(String.valueOf(o)))
+            .map(Role::valueOf)
             .toList();
 
         // Handle permissions claim - defensive type checking
         Object permissionsObj = claims.get("permissions");
-        final List<String> permissionString = (permissionsObj instanceof List)
+        final List<String> permissionString = permissionsObj instanceof List
             ? (List<String>) permissionsObj : Collections.emptyList();
 
         final List<Permission> permissions = permissionString
             .stream()
-            .map(o -> Permission.valueOf(String.valueOf(o)))
+            .map(Permission::valueOf)
             .toList();
 
         UserType userType = claims.containsKey("userType")

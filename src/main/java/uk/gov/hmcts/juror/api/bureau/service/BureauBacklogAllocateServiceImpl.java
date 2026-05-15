@@ -197,7 +197,7 @@ public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateSe
             allocation.add(backlogItems.next());
         }
 
-        allocation.forEach((r) -> {
+        allocation.forEach(r -> {
             r.setStaff(staff);
             r.setStaffAssignmentDate(now);
             r.setVersion(r.getVersion() != null
@@ -229,14 +229,13 @@ public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateSe
             throw new StaffAssignmentException("Assigning staff record does not exist!");
         }
 
-        allocation.forEach(r -> {
+        allocation.forEach(r ->
             auditEntries.add(UserJurorResponseAudit.builder()
                 .jurorNumber(r.getJurorNumber())
                 .assignedBy(assignedBy)
                 .assignedTo(staff)
                 .assignedOn(LocalDateTime.now())
-                .build());
-        });
+                .build()));
 
         return auditEntries;
     }

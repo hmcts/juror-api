@@ -97,7 +97,7 @@ public class Voters implements Serializable {
 
     @Column(name = "ADDRESS6")
     @Null
-    private String address6 = null;
+    private String address6;
 
     @Column(name = "ZIP")
     @Pattern(regexp = POSTCODE_REGEX)

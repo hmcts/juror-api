@@ -73,7 +73,7 @@ public class PoolHistoryServiceImpl implements PoolHistoryService {
     }
 
     private void checkAccessForCurrentUser(String owner, PoolRequest poolRequest) {
-        if (!owner.equalsIgnoreCase(JurorDigitalApplication.JUROR_OWNER) && !poolRequest.getOwner().equals(owner)) {
+        if (!JurorDigitalApplication.JUROR_OWNER.equalsIgnoreCase(owner) && !poolRequest.getOwner().equals(owner)) {
             throw new MojException.Forbidden("Court user does not have access to this pool request",
                                              null);
         }

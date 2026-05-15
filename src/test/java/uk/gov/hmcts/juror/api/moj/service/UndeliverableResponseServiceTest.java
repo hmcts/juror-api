@@ -221,7 +221,7 @@ class UndeliverableResponseServiceTest {
         juror.setAddressLine5("");
 
         JurorStatus jurorStatus = new JurorStatus();
-        jurorStatus.setStatus((9));
+        jurorStatus.setStatus(9);
         jurorStatus.setStatusDesc("Responded");
         jurorStatus.setActive(true);
 

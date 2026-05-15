@@ -723,9 +723,8 @@ class ManageDeferralsServiceTest {
 
         when(currentlyDeferredRepository.findById(any())).thenReturn(Optional.empty());
 
-        assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() -> {
-            manageDeferralsService.deleteDeferral(bureauPayload, jurorNumber);
-        });
+        assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
+            manageDeferralsService.deleteDeferral(bureauPayload, jurorNumber));
 
         verify(jurorPoolService, times(1))
             .getJurorPoolFromUser(any());
@@ -1656,8 +1655,8 @@ class ManageDeferralsServiceTest {
             .isEqualTo(2);
 
         DeferralOptionsDto.DeferralOptionDto option2Summary = secondOption.getDeferralOptions().stream()
-            .filter(option -> option.getPoolNumber()
-                .equalsIgnoreCase("415230601")).findFirst().orElse(null);
+            .filter(option -> "415230601"
+                .equalsIgnoreCase(option.getPoolNumber())).findFirst().orElse(null);
         assert option2Summary != null;
         assertThat(option2Summary.getServiceStartDate()).as("Verify service start date")
             .isEqualTo(LocalDate.of(2023, 6, 12));
@@ -1666,7 +1665,7 @@ class ManageDeferralsServiceTest {
             .isEqualTo(PoolUtilisationDescription.NEEDED);
 
         DeferralOptionsDto.DeferralOptionDto option3Summary = secondOption.getDeferralOptions().stream()
-            .filter(option -> option.getPoolNumber().equalsIgnoreCase("415230602"))
+            .filter(option -> "415230602".equalsIgnoreCase(option.getPoolNumber()))
             .findFirst().orElse(null);
         assert option3Summary != null;
         assertThat(option3Summary.getServiceStartDate()).as("Verify service start date")
@@ -1961,8 +1960,8 @@ class ManageDeferralsServiceTest {
             .isEqualTo(2);
 
         DeferralOptionsDto.DeferralOptionDto option2Summary = secondOption.getDeferralOptions().stream()
-            .filter(option -> option.getPoolNumber()
-                .equalsIgnoreCase("415230601")).findFirst().orElse(null);
+            .filter(option -> "415230601"
+                .equalsIgnoreCase(option.getPoolNumber())).findFirst().orElse(null);
         assert option2Summary != null;
         assertThat(option2Summary.getServiceStartDate()).as("Verify service start date")
             .isEqualTo(LocalDate.of(2023, 6, 12));
@@ -1971,7 +1970,7 @@ class ManageDeferralsServiceTest {
             .isEqualTo(PoolUtilisationDescription.NEEDED);
 
         DeferralOptionsDto.DeferralOptionDto option3Summary = secondOption.getDeferralOptions().stream()
-            .filter(option -> option.getPoolNumber().equalsIgnoreCase("415230602"))
+            .filter(option -> "415230602".equalsIgnoreCase(option.getPoolNumber()))
             .findFirst().orElse(null);
         assert option3Summary != null;
         assertThat(option3Summary.getServiceStartDate()).as("Verify service start date")
@@ -2528,7 +2527,7 @@ class ManageDeferralsServiceTest {
         assertThat(firstDateOption.getDeferralOptions().size()).isEqualTo(2);
 
         DeferralOptionsDto.DeferralOptionDto option1ForFirstDate = firstDateOption.getDeferralOptions().stream()
-            .filter(option -> option.getPoolNumber().equalsIgnoreCase("415220502"))
+            .filter(option -> "415220502".equalsIgnoreCase(option.getPoolNumber()))
             .findFirst().orElse(null);
         assert option1ForFirstDate != null;
         assertThat(option1ForFirstDate.getServiceStartDate())
@@ -2538,7 +2537,7 @@ class ManageDeferralsServiceTest {
             .NEEDED);
 
         DeferralOptionsDto.DeferralOptionDto option2ForFirstDate = firstDateOption.getDeferralOptions().stream()
-            .filter(option -> option.getPoolNumber().equalsIgnoreCase("415220401"))
+            .filter(option -> "415220401".equalsIgnoreCase(option.getPoolNumber()))
             .findFirst().orElse(null);
         assert option2ForFirstDate != null;
         assertThat(option2ForFirstDate.getServiceStartDate())
@@ -2555,7 +2554,7 @@ class ManageDeferralsServiceTest {
         assertThat(secondDateOption.getDeferralOptions().size()).isEqualTo(1);
 
         DeferralOptionsDto.DeferralOptionDto option2Summary1 = secondDateOption.getDeferralOptions().stream()
-            .filter(option -> option.getPoolNumber().equalsIgnoreCase("415220503"))
+            .filter(option -> "415220503".equalsIgnoreCase(option.getPoolNumber()))
             .findFirst().orElse(null);
         assert option2Summary1 != null;
         assertThat(option2Summary1.getServiceStartDate())

@@ -32,7 +32,7 @@ public abstract class AbstractJurorExpenditureReportTestSupport<R extends Abstra
     protected CourtLocationService courtLocationService;
     protected MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
-    public AbstractJurorExpenditureReportTestSupport(
+    protected AbstractJurorExpenditureReportTestSupport(
         boolean includeNested,
         IDataType... dataTypes) {
         super(

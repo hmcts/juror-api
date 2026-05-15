@@ -91,8 +91,8 @@ public class PoolRequestSearchListDto {
          * @param queryResult a Tuple object representation of a result row from the Pool Request Search query
          */
         public PoolRequestSearchDataDto(Tuple queryResult) {
-            final boolean ownedByBureau = Objects.requireNonNull(queryResult.get(1, String.class))
-                .equalsIgnoreCase(JurorDigitalApplication.JUROR_OWNER);
+            final boolean ownedByBureau = JurorDigitalApplication.JUROR_OWNER
+                .equalsIgnoreCase(Objects.requireNonNull(queryResult.get(1, String.class)));
             final boolean hasActivePoolMembers = Objects.requireNonNull(queryResult.get(6, Integer.class)) > 0;
             final Integer numberRequested = queryResult.get(7, Integer.class);
             final boolean isNilPool = Objects.requireNonNull(queryResult.get(8, Boolean.class));

@@ -123,11 +123,11 @@ public abstract class AbstractReport<T> implements IReport {
 
     final List<Consumer<StandardReportRequest>> authenticationConsumers;
 
-    public AbstractReport(EntityPath<?> from, IDataType... dataType) {
+    protected AbstractReport(EntityPath<?> from, IDataType... dataType) {
         this(null, from, dataType);
     }
 
-    public AbstractReport(PoolRequestRepository poolRequestRepository,
+    protected AbstractReport(PoolRequestRepository poolRequestRepository,
                           EntityPath<?> from, IDataType... dataType) {
         this.poolRequestRepository = poolRequestRepository;
         this.from = from;

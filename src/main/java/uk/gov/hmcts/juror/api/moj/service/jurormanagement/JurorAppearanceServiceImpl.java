@@ -680,14 +680,13 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             attendanceDate);
 
         // update the response with the number of jurors attended
-        jurorsOnTrialResponseDto.getTrialsList().forEach(jurorsOnTrialData -> {
+        jurorsOnTrialResponseDto.getTrialsList().forEach(jurorsOnTrialData ->
             jurorsAttendanceCounts.forEach(tuple -> {
                 if (jurorsOnTrialData.getTrialNumber().equals(tuple.get(QPanel.panel.trial.trialNumber))) {
                     jurorsOnTrialData.setNumberAttended(tuple.get(QAppearance.appearance.jurorNumber.count()));
                     jurorsOnTrialData.setAttendanceAudit(tuple.get(QAppearance.appearance.attendanceAuditNumber));
                 }
-            });
-        });
+            }));
 
         // return the response
         return jurorsOnTrialResponseDto;
@@ -1362,11 +1361,9 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     }
 
     private Appearance getAppearance(AppearanceId appearanceId, String jurorNumber) {
-        Appearance appearance;
-        appearance = appearanceRepository.findById(appearanceId).orElseThrow(
+        return appearanceRepository.findById(appearanceId).orElseThrow(
             () -> new MojException.InternalServerError("Error reading attendance record for juror " + jurorNumber,
                                                        null));
-        return appearance;
     }
 
     private Appearance getAppearance(Appearance appearance, String jurorNumber) {

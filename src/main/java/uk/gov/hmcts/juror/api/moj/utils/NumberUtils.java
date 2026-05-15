@@ -2,7 +2,7 @@ package uk.gov.hmcts.juror.api.moj.utils;
 
 import java.text.DecimalFormat;
 
-public class NumberUtils {
+public final class NumberUtils {
 
     private NumberUtils() {
 

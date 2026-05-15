@@ -23,7 +23,7 @@ import static org.apache.commons.lang3.StringUtils.deleteWhitespace;
  */
 @SuppressWarnings({"PMD.TooManyFields", "PMD.TooManyMethods"})
 @Deprecated(forRemoval = true)
-public class BureauJurorDetailQueries {
+public final class BureauJurorDetailQueries {
 
     private static final String INWARD_CODE_FRAGMENT = "^([0-9])([A-Z]{0,2})$";
     private static final String OUTWARD_CODE_FRAGMENT = "^([A-Z]{0,2})([0-9]{1,2})$";
@@ -105,8 +105,7 @@ public class BureauJurorDetailQueries {
         BooleanExpression query = bureauJurorDetail.newJurorPostcode.matches(trimmedPostcode);
 
 
-        query = appendToQuery(bureauJurorDetail.newJurorPostcode, query, buildPostcodeMatchers(trimmedPostcode));
-        return query;
+        return appendToQuery(bureauJurorDetail.newJurorPostcode, query, buildPostcodeMatchers(trimmedPostcode));
     }
 
     public static BooleanExpression byAssignmentAndProcessingStatus(String staffLogin, List<String> statuses) {

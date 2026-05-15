@@ -10,7 +10,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Slf4j
-public class JurorPoolQueries {
+public final class JurorPoolQueries {
     private static final int SENT_T_COURT_COMMS_SENT = 9;
     private static final int INFO_COMMS_NOT_SENT = 0;
 

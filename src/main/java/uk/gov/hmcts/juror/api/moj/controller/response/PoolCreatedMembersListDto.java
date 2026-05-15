@@ -77,7 +77,7 @@ public class PoolCreatedMembersListDto {
             this.firstName = juror.getFirstName();
             this.lastName = juror.getLastName();
             this.postcode = juror.getPostcode();
-            this.owner = jurorPool.getOwner().equals("400") ? "Bureau" : "Court";
+            this.owner = "400".equals(jurorPool.getOwner()) ? "Bureau" : "Court";
             this.startDate = jurorPool.getReturnDate();
             this.status = jurorPool.getStatus().getStatusDesc();
         }

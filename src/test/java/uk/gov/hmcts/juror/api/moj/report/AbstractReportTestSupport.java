@@ -59,7 +59,7 @@ public abstract class AbstractReportTestSupport<
 
     public abstract R createReport(PoolRequestRepository poolRequestRepository);
 
-    public AbstractReportTestSupport(EntityPath<?> from,
+    protected AbstractReportTestSupport(EntityPath<?> from,
                                      Class<?> validatorClass, IDataType... dataTypes) {
         ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
         this.validator = validatorFactory.getValidator();

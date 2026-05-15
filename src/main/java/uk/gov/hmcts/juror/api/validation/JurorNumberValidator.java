@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 
 @Slf4j
-public class JurorNumberValidator {
+public final class JurorNumberValidator {
 
     private JurorNumberValidator() {
         // Private constructor to prevent instantiation

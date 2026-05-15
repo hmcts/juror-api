@@ -708,7 +708,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(responseBody.size()).isEqualTo(1);
 
                 List<DeferralLetterData> dataList = responseBody.stream()
-                    .map(data -> (DeferralLetterData) data)
+                    .map(DeferralLetterData.class::cast)
                     .filter(data -> "555555562".equalsIgnoreCase(data.getJurorNumber()))
                     .toList();
 
@@ -748,7 +748,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(responseBody.size()).isEqualTo(5);
 
                 List<DeferralLetterData> dataList = responseBody.stream()
-                    .map(data -> (DeferralLetterData) data)
+                    .map(DeferralLetterData.class::cast)
                     .filter(data -> data.getPostcode().equalsIgnoreCase(postcode)
                         && data.getDatePrinted() == null)
                     .toList();
@@ -788,7 +788,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(responseBody.size()).isEqualTo(6);
 
                 List<DeferralLetterData> dataList = responseBody.stream()
-                    .map(data -> (DeferralLetterData) data)
+                    .map(DeferralLetterData.class::cast)
                     .filter(data -> data.getPostcode().equalsIgnoreCase(postcode))
                     .toList();
 
@@ -832,7 +832,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(responseBody.size()).isEqualTo(3);
 
                 List<DeferralLetterData> dataList = responseBody.stream()
-                    .map(data -> (DeferralLetterData) data)
+                    .map(DeferralLetterData.class::cast)
                     .filter(data -> data.getPoolNumber().equalsIgnoreCase(poolNumber)
                         && data.getDatePrinted() == null)
                     .toList();
@@ -872,7 +872,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(responseBody.size()).isEqualTo(5);
 
                 List<DeferralLetterData> dataList = responseBody.stream()
-                    .map(data -> (DeferralLetterData) data)
+                    .map(DeferralLetterData.class::cast)
                     .filter(data -> data.getPoolNumber().equalsIgnoreCase(poolNumber))
                     .toList();
 
@@ -1124,7 +1124,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(responseBody.size()).isEqualTo(2);
 
                 List<NonDeferralLetterData> dataList = responseBody.stream()
-                    .map(data -> (NonDeferralLetterData) data)
+                    .map(NonDeferralLetterData.class::cast)
                     .filter(data -> "555555566".equalsIgnoreCase(data.getJurorNumber()))
                     .toList();
 
@@ -1136,7 +1136,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
 
                 dataList = responseBody.stream()
-                    .map(data -> (NonDeferralLetterData) data)
+                    .map(NonDeferralLetterData.class::cast)
                     .filter(data -> "555555569".equalsIgnoreCase(data.getJurorNumber()))
                     .toList();
 
@@ -1178,7 +1178,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(responseBody.size()).isEqualTo(3);
 
                 List<NonDeferralLetterData> dataList = responseBody.stream()
-                    .map(data -> (NonDeferralLetterData) data)
+                    .map(NonDeferralLetterData.class::cast)
                     .filter(data -> data.getPostcode().equalsIgnoreCase(postcode)
                         && data.getDatePrinted() == null)
                     .toList();
@@ -1218,7 +1218,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(responseBody.size()).isEqualTo(6);
 
                 List<NonDeferralLetterData> dataList = responseBody.stream()
-                    .map(data -> (NonDeferralLetterData) data)
+                    .map(NonDeferralLetterData.class::cast)
                     .filter(data -> data.getPostcode().equalsIgnoreCase(postcode))
                     .toList();
 
@@ -1263,7 +1263,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(responseBody.size()).isEqualTo(1);
 
                 List<NonDeferralLetterData> dataList = responseBody.stream()
-                    .map(data -> (NonDeferralLetterData) data)
+                    .map(NonDeferralLetterData.class::cast)
                     .filter(data -> data.getPoolNumber().equalsIgnoreCase(poolNumber)
                         && data.getDatePrinted() == null)
                     .toList();
@@ -1303,7 +1303,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(responseBody.size()).isEqualTo(3);
 
                 List<NonDeferralLetterData> dataList = responseBody.stream()
-                    .map(data -> (NonDeferralLetterData) data)
+                    .map(NonDeferralLetterData.class::cast)
                     .filter(data -> data.getPoolNumber().equalsIgnoreCase(poolNumber))
                     .toList();
 
@@ -1549,7 +1549,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(responseBody.size()).isEqualTo(2);
 
             List<ExcusalLetterData> dataList = responseBody.stream()
-                .map(data -> (ExcusalLetterData) data)
+                .map(ExcusalLetterData.class::cast)
                 .filter(data -> "FNAME3".equalsIgnoreCase(data.getFirstName()))
                 .toList();
 
@@ -1586,7 +1586,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(responseBody.size()).isEqualTo(2);
 
             List<ExcusalLetterData> dataList = responseBody.stream()
-                .map(data -> (ExcusalLetterData) data)
+                .map(ExcusalLetterData.class::cast)
                 .filter(data -> data.getPostcode().equalsIgnoreCase(postcode))
                 .toList();
 
@@ -1624,7 +1624,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(responseBody.size()).isEqualTo(5);
 
             List<ExcusalLetterData> dataList = responseBody.stream()
-                .map(data -> (ExcusalLetterData) data)
+                .map(ExcusalLetterData.class::cast)
                 .filter(data -> data.getPostcode().equalsIgnoreCase(postcode))
                 .toList();
 
@@ -1661,7 +1661,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(responseBody.size()).isEqualTo(2);
 
             List<ExcusalLetterData> dataList = responseBody.stream()
-                .map(data -> (ExcusalLetterData) data)
+                .map(ExcusalLetterData.class::cast)
                 .filter(data -> data.getPoolNumber().equalsIgnoreCase(poolNumber))
                 .toList();
 
@@ -1699,7 +1699,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(responseBody.size()).isEqualTo(5);
 
             List<ExcusalLetterData> dataList = responseBody.stream()
-                .map(data -> (ExcusalLetterData) data)
+                .map(ExcusalLetterData.class::cast)
                 .filter(data -> data.getPoolNumber().equalsIgnoreCase(poolNumber))
                 .toList();
 
@@ -4982,7 +4982,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(responseBody.size()).isEqualTo(2);
 
             List<WithdrawalLetterData> dataList = responseBody.stream()
-                .map(data -> (WithdrawalLetterData) data)
+                .map(WithdrawalLetterData.class::cast)
                 .filter(data -> "FNAME3".equalsIgnoreCase(data.getFirstName()))
                 .toList();
 
@@ -5019,7 +5019,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(responseBody.size()).isEqualTo(2);
 
             List<WithdrawalLetterData> dataList = responseBody.stream()
-                .map(data -> (WithdrawalLetterData) data)
+                .map(WithdrawalLetterData.class::cast)
                 .filter(data -> data.getPostcode().equalsIgnoreCase(postcode))
                 .toList();
 
@@ -5057,7 +5057,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(responseBody.size()).isEqualTo(4);
 
             List<WithdrawalLetterData> dataList = responseBody.stream()
-                .map(data -> (WithdrawalLetterData) data)
+                .map(WithdrawalLetterData.class::cast)
                 .filter(data -> data.getPostcode().equalsIgnoreCase(postcode))
                 .toList();
 
@@ -5094,7 +5094,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(responseBody.size()).isEqualTo(2);
 
             List<WithdrawalLetterData> dataList = responseBody.stream()
-                .map(data -> (WithdrawalLetterData) data)
+                .map(WithdrawalLetterData.class::cast)
                 .filter(data -> data.getPoolNumber().equalsIgnoreCase(poolNumber))
                 .toList();
 
@@ -5132,7 +5132,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(responseBody.size()).isEqualTo(4);
 
             List<WithdrawalLetterData> dataList = responseBody.stream()
-                .map(data -> (WithdrawalLetterData) data)
+                .map(WithdrawalLetterData.class::cast)
                 .filter(data -> data.getPoolNumber().equalsIgnoreCase(poolNumber))
                 .toList();
 
@@ -5226,8 +5226,8 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .as("Expect postponed date to be " + LocalDate.now().plusDays(10))
                 .isEqualTo(LocalDate.now().plusDays(10).format(DateTimeFormatter.ofPattern("dd MMMM yyyy")));
             assertThat(dto.getAttendTime())
-                .as("Expect attend time to be " + LocalTime.of(9, 00))
-                .isEqualTo(LocalTime.of(9, 00));
+                .as("Expect attend time to be " + LocalTime.of(9, 0))
+                .isEqualTo(LocalTime.of(9, 0));
         }
     }
 
@@ -5242,7 +5242,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
         @Nested
         @DisplayName("POST - /api/v1/moj/letter/print-certificate-of-exemption")
-        class PrintCertificateOfExemption {
+        final class PrintCertificateOfExemption {
             static final String PRINT_CERTIFICATE_OF_EXEMPTION_URL =
                 "/api/v1/moj/letter/print-certificate-of-exemption";
 
@@ -5436,7 +5436,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
         @Nested
         @DisplayName("GET - /api/v1/moj/letter/trials-exemption-list")
-        class TrialExemptionList {
+        final class TrialExemptionList {
 
             static final String TRIAL_EXEMPTION_URL = "/api/v1/moj/letter/trials-exemption-list";
 
