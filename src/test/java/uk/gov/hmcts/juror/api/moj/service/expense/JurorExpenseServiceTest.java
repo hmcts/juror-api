@@ -1946,17 +1946,17 @@ class JurorExpenseServiceTest {
                 .publicTransport(publicTransport)
                 .taxi(hiredVehicle);
 
-            if (TravelMethod.CAR.equals(travelMethod)) {
+            if (travelMethod == TravelMethod.CAR) {
                 builder.traveledByCar(true)
                     .jurorsTakenCar(2);
                 when(expenseRates.getCarMileageRatePerMile2OrMorePassengers())
                     .thenReturn(travelCost);
-            } else if (TravelMethod.MOTERCYCLE.equals(travelMethod)) {
+            } else if (travelMethod == TravelMethod.MOTERCYCLE) {
                 builder.traveledByMotorcycle(true)
                     .jurorsTakenMotorcycle(2);
                 when(expenseRates.getMotorcycleMileageRatePerMile1Passengers())
                     .thenReturn(travelCost);
-            } else if (TravelMethod.BICYCLE.equals(travelMethod)) {
+            } else if (travelMethod == TravelMethod.BICYCLE) {
                 builder.traveledByBicycle(true);
                 when(expenseRates.getBikeRate())
                     .thenReturn(travelCost);
@@ -1984,11 +1984,11 @@ class JurorExpenseServiceTest {
             verify(travel, times(1)).getTaxi();
 
 
-            if (TravelMethod.CAR.equals(travelMethod)) {
+            if (travelMethod == TravelMethod.CAR) {
                 verify(expenseRates, times(1)).getCarMileageRatePerMile2OrMorePassengers();
-            } else if (TravelMethod.MOTERCYCLE.equals(travelMethod)) {
+            } else if (travelMethod == TravelMethod.MOTERCYCLE) {
                 verify(expenseRates, times(1)).getMotorcycleMileageRatePerMile1Passengers();
-            } else if (TravelMethod.BICYCLE.equals(travelMethod)) {
+            } else if (travelMethod == TravelMethod.BICYCLE) {
                 verify(expenseRates, times(1)).getBikeRate();
             }
 

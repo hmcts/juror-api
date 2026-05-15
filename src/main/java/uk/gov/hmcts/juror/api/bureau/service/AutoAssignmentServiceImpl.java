@@ -256,7 +256,7 @@ public class AutoAssignmentServiceImpl implements AutoAssignmentService {
      */
     private void checkForInvalidStaff(Collection<User> staff) throws AutoAssignException {
         List<User> ineligible =
-            staff.stream().filter(s -> !s.isActive() || !UserType.BUREAU.equals(s.getUserType()) || s.isTeamLeader())
+            staff.stream().filter(s -> !s.isActive() || s.getUserType() != UserType.BUREAU || s.isTeamLeader())
                 .toList();
         if (!ineligible.isEmpty()) {
             final List<String> ineligibleLogins = Lists.transform(ineligible, User::getUsername);

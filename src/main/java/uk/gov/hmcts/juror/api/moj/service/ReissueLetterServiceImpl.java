@@ -313,7 +313,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
                                            ReissueLetterListRequestDto request) {
 
         // only need to set default form code for SUMMOND_REMINDER letter if the code is missing
-        if (!LetterType.SUMMONED_REMINDER.equals(request.getLetterType())) {
+        if (request.getLetterType() != LetterType.SUMMONED_REMINDER) {
             return data;
         }
 

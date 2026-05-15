@@ -275,7 +275,7 @@ public class AbstractJurorResponse extends Address implements Serializable {
     }
 
     public boolean isClosed() {
-        return getProcessingStatus().equals(ProcessingStatus.CLOSED);
+        return getProcessingStatus() == ProcessingStatus.CLOSED;
     }
 
     public void setProcessingStatus(JurorResponseAuditRepositoryMod jurorResponseAuditRepository,

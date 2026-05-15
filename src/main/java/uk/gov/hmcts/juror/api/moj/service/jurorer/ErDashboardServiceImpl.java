@@ -64,11 +64,11 @@ public class ErDashboardServiceImpl implements ErDashboardService {
 
         // find the number of local authorities who have uploaded
         long uploadedCount = localAuthorities.stream()
-            .filter(la -> la.getUploadStatus().equals(UploadStatus.UPLOADED))
+            .filter(la -> la.getUploadStatus() == UploadStatus.UPLOADED)
             .count();
 
         long notUploadedCount = localAuthorities.stream()
-            .filter(la -> la.getUploadStatus().equals(UploadStatus.NOT_UPLOADED))
+            .filter(la -> la.getUploadStatus() == UploadStatus.NOT_UPLOADED)
             .count();
 
         return ErDashboardStatsResponseDto.builder()

@@ -1087,7 +1087,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
     }
 
     private AbstractJurorResponse createGenericJurorResponse(ReplyMethod replyMethod, String jurorNumber) {
-        if (replyMethod.equals(ReplyMethod.PAPER)) {
+        if (replyMethod == ReplyMethod.PAPER) {
             return DataUtils.getJurorPaperResponse(jurorNumber, jurorPaperResponseRepository);
         } else {
             return DataUtils.getJurorDigitalResponse(jurorNumber, jurorDigitalResponseRepository);
@@ -1116,11 +1116,11 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
                     jurorPool.getJurorNumber(), yesterday);
             assertThat(
                 jurorHistoryList.stream()
-                    .anyMatch(ph -> ph.getHistoryCode().equals(HistoryCodeMod.DISQUALIFY_POOL_MEMBER)))
+                    .anyMatch(ph -> ph.getHistoryCode() == HistoryCodeMod.DISQUALIFY_POOL_MEMBER))
                 .as("Expect history record to be created for juror disqualification").isTrue();
             assertThat(
                 jurorHistoryList.stream()
-                    .anyMatch(ph -> ph.getHistoryCode().equals(HistoryCodeMod.WITHDRAWAL_LETTER))).as(
+                    .anyMatch(ph -> ph.getHistoryCode() == HistoryCodeMod.WITHDRAWAL_LETTER)).as(
                 "Expect history record to be created for disqualification letter").isTrue();
 
             List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findByJurorNo(jurorNumber);
@@ -1165,10 +1165,10 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
                     jurorPool.getJurorNumber(), yesterday);
             assertThat(
                 jurorHistoryList.stream()
-                    .anyMatch(ph -> ph.getHistoryCode().equals(HistoryCodeMod.DISQUALIFY_POOL_MEMBER))).as(
+                    .anyMatch(ph -> ph.getHistoryCode() == HistoryCodeMod.DISQUALIFY_POOL_MEMBER)).as(
                 "Expect no history record to be created for juror disqualification").isFalse();
             assertThat(
-                jurorHistoryList.stream().anyMatch(ph -> ph.getHistoryCode().equals(HistoryCodeMod.WITHDRAWAL_LETTER)))
+                jurorHistoryList.stream().anyMatch(ph -> ph.getHistoryCode() == HistoryCodeMod.WITHDRAWAL_LETTER))
                 .as("Expect no history record to be created for disqualification letter").isFalse();
 
             List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findByJurorNo(jurorNumber);

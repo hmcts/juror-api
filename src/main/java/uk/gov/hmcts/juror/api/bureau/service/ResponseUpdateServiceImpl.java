@@ -428,12 +428,12 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
                 domain.setProcessingStatus(responseAuditRepository, ProcessingStatus.CLOSED);
                 domain.setProcessingComplete(Boolean.TRUE);
             } else if (juror.getStatus().getStatus() == IJurorStatus.ADDITIONAL_INFO) {
-                if (status.equals(ProcessingStatus.AWAITING_COURT_REPLY)) {
+                if (status == ProcessingStatus.AWAITING_COURT_REPLY) {
                     domain.setProcessingStatus(responseAuditRepository, ProcessingStatus.AWAITING_COURT_REPLY);
-                } else if (status.equals(ProcessingStatus.AWAITING_CONTACT)) {
+                } else if (status == ProcessingStatus.AWAITING_CONTACT) {
                     domain.setProcessingStatus(responseAuditRepository, ProcessingStatus.AWAITING_CONTACT);
 
-                } else if (status.equals(ProcessingStatus.AWAITING_TRANSLATION)) {
+                } else if (status == ProcessingStatus.AWAITING_TRANSLATION) {
                     domain.setProcessingStatus(responseAuditRepository, ProcessingStatus.AWAITING_TRANSLATION);
                 }
             }

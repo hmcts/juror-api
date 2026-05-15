@@ -218,7 +218,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
             body = errorResponse.updateAndGetBody(this.getMessageSource(), LocaleContextHolder.getLocale());
         }
 
-        if (statusCode.equals(HttpStatus.INTERNAL_SERVER_ERROR) && body == null) {
+        if (statusCode == HttpStatus.INTERNAL_SERVER_ERROR && body == null) {
             request.setAttribute("jakarta.servlet.error.exception", ex, 0);
         }
 

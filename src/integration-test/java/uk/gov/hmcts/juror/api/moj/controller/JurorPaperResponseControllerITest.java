@@ -158,7 +158,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             Collection<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById("111111111");
             assertThat(history).isNotEmpty();
             Optional<JurorHistory> historyRecord = history.stream().filter(h ->
-                h.getHistoryCode().equals(HistoryCodeMod.RESPONSE_SUBMITTED)).findFirst();
+                h.getHistoryCode() == HistoryCodeMod.RESPONSE_SUBMITTED).findFirst();
             assertThat(historyRecord).isPresent();
             assertThat(historyRecord.get().getCreatedBy()).isEqualTo(BUREAU_USER);
             assertThat(historyRecord.get().getOtherInformation()).isEqualTo("Paper");
@@ -303,7 +303,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             Collection<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById("555555555");
             assertThat(history).isNotEmpty();
             Optional<JurorHistory> historyRecord = history.stream().filter(h ->
-                h.getHistoryCode().equals(HistoryCodeMod.RESPONSE_SUBMITTED)).findFirst();
+                h.getHistoryCode() == HistoryCodeMod.RESPONSE_SUBMITTED).findFirst();
             assertThat(historyRecord).isPresent();
         });
     }
@@ -392,7 +392,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             Collection<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById("222222222");
             assertThat(history).isNotEmpty();
             Optional<JurorHistory> historyRecord = history.stream().filter(h ->
-                h.getHistoryCode().equals(HistoryCodeMod.RESPONSE_SUBMITTED)).findFirst();
+                h.getHistoryCode() == HistoryCodeMod.RESPONSE_SUBMITTED).findFirst();
             assertThat(historyRecord).isPresent();
         });
     }
@@ -438,7 +438,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             Collection<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById("444444444");
             assertThat(history).isNotEmpty();
             Optional<JurorHistory> historyRecord = history.stream().filter(h ->
-                h.getHistoryCode().equals(HistoryCodeMod.RESPONSE_SUBMITTED)).findFirst();
+                h.getHistoryCode() == HistoryCodeMod.RESPONSE_SUBMITTED).findFirst();
             assertThat(historyRecord).isPresent();
         });
     }
@@ -490,11 +490,11 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
                 jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, yesterday);
             assertThat(
                 jurorHistoryList.stream()
-                    .anyMatch(ph -> ph.getHistoryCode().equals(HistoryCodeMod.DISQUALIFY_POOL_MEMBER)))
+                    .anyMatch(ph -> ph.getHistoryCode() == HistoryCodeMod.DISQUALIFY_POOL_MEMBER))
                 .as("Expect history record to be created for juror disqualification")
                 .isTrue();
             assertThat(
-                jurorHistoryList.stream().anyMatch(ph -> ph.getHistoryCode().equals(HistoryCodeMod.WITHDRAWAL_LETTER)))
+                jurorHistoryList.stream().anyMatch(ph -> ph.getHistoryCode() == HistoryCodeMod.WITHDRAWAL_LETTER))
                 .as("Expect history record to be created for disqualification letter")
                 .isTrue();
 
@@ -547,7 +547,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             Collection<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById("111111111");
             assertThat(history).isNotEmpty();
             Optional<JurorHistory> historyRecord = history.stream().filter(h ->
-                h.getHistoryCode().equals(HistoryCodeMod.RESPONSE_SUBMITTED)).findFirst();
+                h.getHistoryCode() == HistoryCodeMod.RESPONSE_SUBMITTED).findFirst();
             assertThat(historyRecord).isPresent();
         });
     }
@@ -2244,11 +2244,11 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         List<JurorHistory> jurorHistoryList = jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(
             juror.getJurorNumber(), yesterday);
         assertThat(
-            jurorHistoryList.stream().anyMatch(ph -> ph.getHistoryCode().equals(HistoryCodeMod.DISQUALIFY_POOL_MEMBER)))
+            jurorHistoryList.stream().anyMatch(ph -> ph.getHistoryCode() == HistoryCodeMod.DISQUALIFY_POOL_MEMBER))
             .as("Expect history record to be created for juror disqualification")
             .isTrue();
         assertThat(
-            jurorHistoryList.stream().anyMatch(ph -> ph.getHistoryCode().equals(HistoryCodeMod.WITHDRAWAL_LETTER)))
+            jurorHistoryList.stream().anyMatch(ph -> ph.getHistoryCode() == HistoryCodeMod.WITHDRAWAL_LETTER))
             .as("Expect history record to be created for disqualification letter")
             .isTrue();
 
@@ -2297,11 +2297,11 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         List<JurorHistory> jurorHistoryList = jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(
             juror.getJurorNumber(), yesterday);
         assertThat(
-            jurorHistoryList.stream().anyMatch(ph -> ph.getHistoryCode().equals(HistoryCodeMod.DISQUALIFY_POOL_MEMBER)))
+            jurorHistoryList.stream().anyMatch(ph -> ph.getHistoryCode() == HistoryCodeMod.DISQUALIFY_POOL_MEMBER))
             .as("Expect no history record to be created for juror disqualification")
             .isFalse();
         assertThat(
-            jurorHistoryList.stream().anyMatch(ph -> ph.getHistoryCode().equals(HistoryCodeMod.WITHDRAWAL_LETTER)))
+            jurorHistoryList.stream().anyMatch(ph -> ph.getHistoryCode() == HistoryCodeMod.WITHDRAWAL_LETTER))
             .as("Expect no history record to be created for disqualification letter")
             .isFalse();
 
