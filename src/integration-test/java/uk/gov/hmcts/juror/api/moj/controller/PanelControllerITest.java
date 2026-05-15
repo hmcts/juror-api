@@ -49,11 +49,6 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NUMBER_OF_JURORS_EXCEEDS_LIMITS;
 
 
-@SuppressWarnings({
-    "PMD.ExcessiveImports",
-    "PMD.PublicMemberInNonPublicType",
-    "PMD.TooManyMethods"
-})
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class PanelControllerITest extends AbstractIntegrationTest {

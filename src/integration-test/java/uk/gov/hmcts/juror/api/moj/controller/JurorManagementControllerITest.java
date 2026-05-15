@@ -85,11 +85,6 @@ import static uk.gov.hmcts.juror.api.utils.DataConversionUtil.getExceptionDetail
 /**
  * Integration tests for the Juror Management controller - attendance/appearance.
  */
-@SuppressWarnings({
-    "PMD.ExcessiveImports",
-    "PMD.PublicMemberInNonPublicType",
-    "PMD.TooManyMethods"
-})
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class JurorManagementControllerITest extends AbstractIntegrationTest {

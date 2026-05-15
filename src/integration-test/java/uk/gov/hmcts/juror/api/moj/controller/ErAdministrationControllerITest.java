@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -53,7 +52,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ErAdministrationControllerITest extends AbstractIntegrationTest {
 
     public static final String EXPECT_THE_STATUS_TO_BE_FORBIDDEN = "Expect the status to be forbidden.";
-    private final TestRestTemplate restTemplate;
+    @Autowired
+    private TestRestTemplate restTemplate;
 
     private HttpHeaders httpHeaders;
 

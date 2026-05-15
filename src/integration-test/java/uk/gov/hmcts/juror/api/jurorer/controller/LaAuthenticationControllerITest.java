@@ -6,7 +6,6 @@ import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -46,7 +45,8 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/auth/juror-er";
     private static final String EMAIL_SUFFIX = "@localauthority1.council.uk";
 
-    private final TestRestTemplate template;
+    @Autowired
+    private TestRestTemplate template;
     private HttpHeaders httpHeaders;
 
     @Value("${jwt.secret.er-portal}")

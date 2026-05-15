@@ -60,7 +60,8 @@ public class UserControllerITest extends AbstractIntegrationTest {
     private static final String EMAIL_SUFFIX = "@email.gov.uk";
     private static final String SYSTEM_USER = "test_system";
 
-    private final TestRestTemplate template;
+    @Autowired
+    private TestRestTemplate template;
     private HttpHeaders httpHeaders;
 
     private final UserRepository userRepository;

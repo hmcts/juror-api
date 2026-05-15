@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.jurorer.controller;
 
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -43,7 +42,8 @@ import static org.springframework.http.HttpMethod.POST;
 public class UploadControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/juror-er/upload";
 
-    private final TestRestTemplate restTemplate;
+    @Autowired
+    private TestRestTemplate restTemplate;
     private HttpHeaders httpHeaders;
 
     @BeforeEach

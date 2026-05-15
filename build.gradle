@@ -81,12 +81,18 @@ rewrite {
 configurations {
     dev
     integrationTestImplementation.extendsFrom testImplementation
+    integrationTestCompileOnly.extendsFrom testCompileOnly
+    integrationTestAnnotationProcessor.extendsFrom testAnnotationProcessor
     integrationTestRuntimeOnly.extendsFrom runtimeOnly
 
     functionalTestImplementation.extendsFrom testImplementation
+    functionalTestCompileOnly.extendsFrom testCompileOnly
+    functionalTestAnnotationProcessor.extendsFrom testAnnotationProcessor
     functionalTestRuntimeOnly.extendsFrom runtimeOnly
 
     smokeTestImplementation.extendsFrom testImplementation
+    smokeTestCompileOnly.extendsFrom testCompileOnly
+    smokeTestAnnotationProcessor.extendsFrom testAnnotationProcessor
     smokeTestRuntimeOnly.extendsFrom runtimeOnly
 
     compileOnly {

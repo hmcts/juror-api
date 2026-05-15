@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -58,7 +57,8 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/moj/administration";
 
     private HttpHeaders httpHeaders;
-    private final TestRestTemplate template;
+    @Autowired
+    private TestRestTemplate template;
 
     private final CourtLocationRepository courtLocationRepository;
 

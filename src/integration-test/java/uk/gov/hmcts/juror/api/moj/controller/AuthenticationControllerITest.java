@@ -57,7 +57,8 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/auth/moj";
     private static final String EMAIL_SUFFIX = "@email.gov.uk";
 
-    private final TestRestTemplate template;
+    @Autowired
+    private TestRestTemplate template;
     private HttpHeaders httpHeaders;
 
     @Value("${jwt.secret.bureau}")
@@ -191,7 +192,6 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
         }
 
         @SuppressWarnings("PMD.PublicMemberInNonPublicType")
-
         public String toUrl(String locCode) {
             return URL.replace("{loc_code}", locCode);
         }

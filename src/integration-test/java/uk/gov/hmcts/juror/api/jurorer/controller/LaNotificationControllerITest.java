@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.jurorer.controller;
 
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -53,7 +52,8 @@ public class LaNotificationControllerITest extends AbstractIntegrationTest {
 
     public static final String BASE_URL = "/api/v1/moj/notification";
 
-    private final TestRestTemplate restTemplate;
+    @Autowired
+    private TestRestTemplate restTemplate;
     private final ReminderHistoryRepository reminderHistoryRepository;
 
     private HttpHeaders httpHeaders;

@@ -49,8 +49,6 @@ class PanelListDetailedReportITest extends AbstractStandardReportControllerITest
             .assertEquals(getTypicalResponse());
     }
 
-
-
     @Test
     void positiveCurrentJurorsOnlyFalse() {
         StandardReportRequest request = getValidPayload();

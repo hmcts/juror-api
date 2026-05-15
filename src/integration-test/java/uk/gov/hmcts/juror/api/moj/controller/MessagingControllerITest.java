@@ -717,9 +717,6 @@ class MessagingControllerITest extends AbstractIntegrationTest {
         }
     }
 
-    @SuppressWarnings({
-        "PMD.PublicMemberInNonPublicType"
-    })
     @Nested
     @DisplayName("GET " + GetMessageDetails.URL)
     class GetMessageDetails {

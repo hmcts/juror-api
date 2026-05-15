@@ -1,7 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -49,7 +48,8 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
     public static final String BASE_URL = "/api/v1/moj/administration/judges";
 
     private HttpHeaders httpHeaders;
-    private final TestRestTemplate template;
+    @Autowired
+    private TestRestTemplate template;
 
     @Autowired
     private final JudgeRepository judgeRepository;

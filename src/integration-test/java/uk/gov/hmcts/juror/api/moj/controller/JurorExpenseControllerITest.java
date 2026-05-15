@@ -122,7 +122,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     private static final String URL_UNPAID_SUMMARY = BASE_URL + "/unpaid-summary";
 
 
-    private final TestRestTemplate template;
+    @Autowired
+    private TestRestTemplate template;
     private final AppearanceRepository appearanceRepository;
     private final FinancialAuditDetailsRepository financialAuditDetailsRepository;
     private final FinancialAuditDetailsAppearancesRepository financialAuditDetailsAppearancesRepository;
@@ -335,7 +336,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @SuppressWarnings({
         "PMD.PublicMemberInNonPublicType"
     })
-    
+
     @Nested
     @DisplayName("GET " + GetDefaultExpenses.URL)
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_setUp_default_expenses.sql"})
@@ -452,14 +453,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         }
-
-
     }
 
-    @SuppressWarnings({
-        "PMD.AbstractClassWithoutAbstractMethod",
-        "PMD.PublicMemberInNonPublicType"
-    })
+    @SuppressWarnings("PMD.AbstractClassWithoutAbstractMethod")
     abstract class AbstractDraftDailyExpense {
         public static final String URL = BASE_URL + "/{juror_number}/DRAFT/edit";
         public static final String METHOD_NAME = "postEditDailyExpense";
@@ -1458,7 +1454,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     }
 
 
-    
+
     @Nested
     @DisplayName("POST /api/v1/moj/expenses/submit-for-approval")
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_submitForApprovalSetUp.sql",

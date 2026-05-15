@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -104,7 +103,8 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
     private static final String OWNER_400 = "400";
     private static final String OWNER_415 = "415";
 
-    private final TestRestTemplate template;
+    @Autowired
+    private TestRestTemplate template;
     private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
     private final JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository;
     private final JurorReasonableAdjustmentRepository jurorReasonableAdjustmentRepository;

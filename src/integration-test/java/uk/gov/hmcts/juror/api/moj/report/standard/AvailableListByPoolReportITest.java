@@ -25,6 +25,7 @@ import static uk.gov.hmcts.juror.api.moj.report.AvailableListReportUtil.JUROR_07
     "/db/mod/truncate.sql",
     "/db/mod/reports/AvailableListReportITest_typical.sql"
 })
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class AvailableListByPoolReportITest extends AbstractStandardReportControllerITest {
 
 
