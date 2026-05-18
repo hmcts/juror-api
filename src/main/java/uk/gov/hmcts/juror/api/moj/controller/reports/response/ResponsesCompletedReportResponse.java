@@ -30,6 +30,7 @@ public class ResponsesCompletedReportResponse {
     @NoArgsConstructor
     @ToString
     @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class TableData {
         private List<Heading> headings;
         private List<DataRow> data;
@@ -42,6 +43,7 @@ public class ResponsesCompletedReportResponse {
         @Builder
         @NoArgsConstructor
         @AllArgsConstructor
+        @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
         public static class Heading {
             private int id;
             private String name;
@@ -60,6 +62,7 @@ public class ResponsesCompletedReportResponse {
         @Builder
         @NoArgsConstructor
         @AllArgsConstructor
+        @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
         public static class DataRow {
             private String staffName;
             private List<Integer> dailyTotals; // list of totals for each day in the month

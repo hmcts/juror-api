@@ -42,6 +42,7 @@ public class OverdueUtilisationReportResponse {
 
     @Data
     @NoArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class TableData {
         private List<Heading> headings;
         private List<UtilisationStats> data;
@@ -54,6 +55,7 @@ public class OverdueUtilisationReportResponse {
         @Builder
         @NoArgsConstructor
         @AllArgsConstructor
+        @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
         public static class Heading {
             private UtilisationReportService.TableHeading id;
             private String name;
@@ -65,6 +67,7 @@ public class OverdueUtilisationReportResponse {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class UtilisationStats {
         private String courtName;
         private Double utilisation;
