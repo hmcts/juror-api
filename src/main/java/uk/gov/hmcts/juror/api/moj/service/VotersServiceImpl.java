@@ -37,7 +37,6 @@ public class VotersServiceImpl implements VotersService {
 
     record VoterKey(String firstName, String lastName, String address, String postcode) {}
 
-
     @Autowired
     private JurorService jurorService;
 
