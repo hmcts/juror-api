@@ -311,7 +311,7 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
 
     private DisqualifyReasonsDto templateExchangeDisqualifyReasons() {
         final URI uri = URI.create("/api/v1/moj/disqualify/reasons");
-        httpHeaders = initialiseHeaders(DisqualifyJurorITest.BUREAU_USER, UserType.BUREAU, Set.of(Role.MANAGER), "400");
+        httpHeaders = initialiseHeaders(BUREAU_USER, UserType.BUREAU, Set.of(Role.MANAGER), "400");
 
         RequestEntity<DisqualifyReasonsDto> requestEntity = new RequestEntity<>(httpHeaders, HttpMethod.GET, uri);
         ResponseEntity<DisqualifyReasonsDto> response = template.exchange(requestEntity, DisqualifyReasonsDto.class);

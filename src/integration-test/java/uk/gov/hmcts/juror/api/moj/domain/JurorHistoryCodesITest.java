@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class JurorHistoryCodesITest extends ContainerTest {
     @Autowired
     THistoryCodeRepository historyCodeRepository;
-    
+
     @Test
     public void testJurorHistoryCodesHappy() {
 
@@ -34,7 +34,10 @@ public class JurorHistoryCodesITest extends ContainerTest {
         jurorHistoryCodesIter.forEach(historyCodesRepo::add);
 
         List<String> historyCodesDB = historyCodesRepo.stream().map(THistoryCode::getHistoryCode).sorted().toList();
-        List<String> historyCodes = Arrays.stream(HistoryCodeMod.values()).map(HistoryCodeMod::getCode).sorted().toList();
+        List<String> historyCodes =
+            Arrays.stream(HistoryCodeMod.values()).map(HistoryCodeMod::getCode).sorted().toList();
+
+
 
         // Expect the history codes in DB to match those in the enum
         assertThat(historyCodesDB).as("Expected history codes to match").isEqualTo(historyCodes);

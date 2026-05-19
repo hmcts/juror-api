@@ -57,13 +57,14 @@ import uk.gov.hmcts.juror.api.moj.service.JurorRecordService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
+	import java.util.Collections;
+	import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
+	import static org.mockito.ArgumentMatchers.any;
+	import static uk.gov.hmcts.juror.api.moj.controller.response.JurorBankDetailsDto.builder;
+	import static org.mockito.Mockito.doNothing;
+	import static org.mockito.Mockito.doReturn;
+	import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -1248,10 +1249,10 @@ class JurorRecordControllerTest {
             BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
             when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
-            JurorBankDetailsDto jurorBankDetailsDto = JurorBankDetailsDto.builder()
-                .bankAccountNumber("12345678")
-                .sortCode("115578")
-                .accountHolderName("Mr Fname Lname")
+	            JurorBankDetailsDto jurorBankDetailsDto = builder()
+	                .bankAccountNumber("12345678")
+	                .sortCode("115578")
+	                .accountHolderName("Mr Fname Lname")
                 .addressLineOne("Address Line 1")
                 .addressLineTwo("Address Line 1")
                 .addressLineThree("Address Line 1")

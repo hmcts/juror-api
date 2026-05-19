@@ -125,10 +125,10 @@ public class UserServiceImpl implements UserService {
 
         User assignToUser = null;
         if (staffAssignmentRequestDto.getAssignTo() != null) {
-            if (0 == JurorDigitalApplication.AUTO_USER.compareToIgnoreCase(staffAssignmentRequestDto.getAssignTo())) {
-                log.error("Cannot assign the {} user to responses manually", JurorDigitalApplication.AUTO_USER);
+            if (0 == AUTO_USER.compareToIgnoreCase(staffAssignmentRequestDto.getAssignTo())) {
+                log.error("Cannot assign the {} user to responses manually", AUTO_USER);
                 throw new StaffAssignmentException(
-                    "Cannot change assignment to user " + JurorDigitalApplication.AUTO_USER);
+                    "Cannot change assignment to user " + AUTO_USER);
             }
             assignToUser = userRepository.findByUsername(staffAssignmentRequestDto.getAssignTo());
             if (ObjectUtils.isEmpty(assignToUser)) {

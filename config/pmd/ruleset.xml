@@ -10,7 +10,7 @@
     <exclude name="GuardLogStatement"/>
     <exclude name="UnitTestContainsTooManyAsserts"/>
     <exclude name="UnitTestAssertionsShouldIncludeMessage"/>  <!-- renamed from JUnit* -->
-    <exlude name="LooseCoupling"/>
+    <exclude name="LooseCoupling"/>
   </rule>
   <rule ref="category/java/codestyle.xml">
     <exclude name="AtLeastOneConstructor"/>

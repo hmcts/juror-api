@@ -751,7 +751,7 @@ class ExcusalResponseServiceImplTest {
     private void verifyHappyGrantJurorPoolPathNoLetter() {
         verify(jurorPoolRepository, times(1)).save(any());
         verify(jurorHistoryRepository, times(1)).save(any());
-        verify(printDataService, never()).printExcusalLetter(Mockito.any());
+        verify(printDataService, never()).printExcusalLetter(any());
     }
 
 

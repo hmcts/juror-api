@@ -7,7 +7,7 @@ public class GroupByPoolStatusAndGraphReport extends ReportGroupByWithPreProcess
     public static final String INACTIVE_TEXT = "Inactive pool members";
 
     public GroupByPoolStatusAndGraphReport() {
-        super(ReportGroupByWithPreProcessor.builder()
+        super(builder()
             .dataType(DataType.IS_ACTIVE)
             .removeGroupByFromResponse(true)
             .groupByFunction(

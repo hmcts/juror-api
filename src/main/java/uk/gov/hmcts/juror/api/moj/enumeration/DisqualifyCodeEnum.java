@@ -32,7 +32,7 @@ public enum DisqualifyCodeEnum {
     private final String heritageDescription;
 
     public static DisqualifyCodeEnum fromCode(String code) {
-        for (DisqualifyCodeEnum disqualifyCodeEnum : DisqualifyCodeEnum.values()) {
+        for (DisqualifyCodeEnum disqualifyCodeEnum : values()) {
             if (disqualifyCodeEnum.getCode().equals(code)) {
                 return disqualifyCodeEnum;
             }

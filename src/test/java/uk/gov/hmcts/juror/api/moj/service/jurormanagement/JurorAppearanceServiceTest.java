@@ -3468,13 +3468,13 @@ class JurorAppearanceServiceTest {
             Appearance appearance1 = new Appearance();
             appearance1.setJurorNumber("111111111");
             appearance1.setPoolNumber(TestConstants.VALID_POOL_NUMBER);
-            appearance1.setAppearanceStage(AppearanceStage.CHECKED_IN);
+            appearance1.setAppearanceStage(CHECKED_IN);
             appearance1.setAttendanceDate(now().minusDays(1));
 
             Appearance appearance2 = new Appearance();
             appearance2.setJurorNumber("111111111");
             appearance2.setPoolNumber(TestConstants.VALID_POOL_NUMBER);
-            appearance2.setAppearanceStage(AppearanceStage.CHECKED_IN);
+            appearance2.setAppearanceStage(CHECKED_IN);
             appearance2.setAttendanceDate(now().minusDays(2));
 
 
