@@ -1431,7 +1431,7 @@ class ManageDeferralsServiceTest {
 
         when(jurorPoolService.getJurorPoolFromUser(jurorNumber)).thenReturn(jurorPool);
 
-        MojException.BusinessRuleViolation exception = Assertions.assertThrows(MojException.BusinessRuleViolation.class,
+        MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
             () -> manageDeferralsService.processJurorDeferral(bureauPayload, jurorNumber, dto),
             "Exception should be thrown");
 

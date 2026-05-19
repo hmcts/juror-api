@@ -217,9 +217,9 @@ class JurorPoolServiceImplTest {
                 .findJurorPoolsBySearch(eq(poolSearch), eq("415"), any(), any(), eq(500L));
 
 
-            MojException.NotFound exception = Assertions.assertThrows(MojException.NotFound.class,
-                () -> jurorPoolService.search(poolSearch),
-                "Exception should be thrown");
+	            MojException.NotFound exception = assertThrows(MojException.NotFound.class,
+	                () -> jurorPoolService.search(poolSearch),
+	                "Exception should be thrown");
 
             assertThat(exception).isNotNull();
             assertThat(exception.getCause()).isNull();

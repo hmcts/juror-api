@@ -44,7 +44,7 @@ public enum ExcusalCodeEnum {
     private final String description;
 
     public static ExcusalCodeEnum fromCode(String code) throws MojException {
-        for (ExcusalCodeEnum excusalCodeEnum : ExcusalCodeEnum.values()) {
+        for (ExcusalCodeEnum excusalCodeEnum : values()) {
             if (excusalCodeEnum.getCode().equals(code)) {
                 return excusalCodeEnum;
             }

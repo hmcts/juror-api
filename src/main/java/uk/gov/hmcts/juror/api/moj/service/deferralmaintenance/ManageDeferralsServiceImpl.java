@@ -1180,7 +1180,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             deferralOption.setPoolNumber(activePool.get(0, String.class));
             deferralOption.setServiceStartDate(activePool.get(1, LocalDate.class));
 
-            int confirmedPoolMembers = NumberUtils.unboxIntegerValues(activePool.get(3, Integer.class));
+            int confirmedPoolMembers = unboxIntegerValues(activePool.get(3, Integer.class));
 
             if (JurorDigitalApplication.JUROR_OWNER.equalsIgnoreCase(owner)) {
                 log.debug("Calculate current pool utilisation stats for {}", activePool.get(0, String.class));

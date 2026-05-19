@@ -616,12 +616,12 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
             BeanUtils.copyProperties(updatedDetails, juror, TITLE, FIRST_NAME, LAST_NAME, PHONE_NO, ALT_PHONE_NO,
                                      EMAIL, DATE_OF_BIRTH);
 
-            if (Boolean.TRUE.equals(updatedDetails.getJurorEmailDetails())
+            if (TRUE.equals(updatedDetails.getJurorEmailDetails())
                 && (updatedDetails.getEmail() != null && !updatedDetails.getEmail().isEmpty())) {
                 juror.setEmail(updatedDetails.getEmail());
             }
 
-            if (Boolean.TRUE.equals(updatedDetails.getJurorPhoneDetails())
+            if (TRUE.equals(updatedDetails.getJurorPhoneDetails())
                 && (updatedDetails.getPhoneNumber() != null || updatedDetails.getAltPhoneNumber() != null)) {
                 juror.setPhoneNumber(updatedDetails.getPhoneNumber());
                 juror.setAltPhoneNumber(updatedDetails.getAltPhoneNumber());
