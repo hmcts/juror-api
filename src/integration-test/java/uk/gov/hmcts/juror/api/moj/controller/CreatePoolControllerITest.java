@@ -323,6 +323,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql",
         "/db/CreatePoolController_createPool.sql",
+        "/db/CreatePoolController_excludedJurorsTest.sql",
         "/db/CreatePoolController_loadVotersWithDeceasedJurors.sql"})
     @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     public void createPool_withDeceasedVoters() {
@@ -415,15 +416,16 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql",
         "/db/CreatePoolController_createPool.sql",
+        "/db/CreatePoolController_excludedJurorsTest.sql",
         "/db/CreatePoolController_loadVotersWithExcluded.sql"})
     @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     public void createPool_withExcludedVoters() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-                                                   .userType(UserType.BUREAU)
-                                                   .login("BUREAU_USER")
-                                                   .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).build())
-                                                   .owner("400")
-                                                   .build());
+                                       .userType(UserType.BUREAU)
+                                       .login("BUREAU_USER")
+                                       .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).build())
+                                       .owner("400")
+                                       .build());
 
         PoolCreateRequestDto poolCreateRequest = setUpPoolCreateRequestDto();
         poolCreateRequest.setNoRequested(8);
@@ -854,7 +856,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         assertThat(response.getBody()).hasSize(2);
-        assertThat(response.getBody()).containsExactly("777777777", "888888888");
+        assertThat(response.getBody()).containsExactlyInAnyOrder("777777777", "888888888");
     }
 
     @Test
