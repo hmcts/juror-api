@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
 import lombok.SneakyThrows;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -107,6 +108,7 @@ import static org.springframework.http.HttpMethod.PUT;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + JurorExpenseControllerITest.BASE_URL)
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
     public static final String JUROR_NUMBER = "641500020";
@@ -120,8 +122,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     private static final String URL_UNPAID_SUMMARY = BASE_URL + "/unpaid-summary";
 
 
-    @Autowired
-    private TestRestTemplate template;
+    private final TestRestTemplate template;
     private final AppearanceRepository appearanceRepository;
     private final FinancialAuditDetailsRepository financialAuditDetailsRepository;
     private final FinancialAuditDetailsAppearancesRepository financialAuditDetailsAppearancesRepository;

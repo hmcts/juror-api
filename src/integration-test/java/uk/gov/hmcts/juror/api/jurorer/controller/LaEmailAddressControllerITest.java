@@ -19,6 +19,7 @@ import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.ExportLaEmailAddressResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
+import lombok.RequiredArgsConstructor;
 
 import java.net.URI;
 import java.util.Collections;
@@ -46,12 +47,12 @@ import static org.springframework.http.HttpMethod.GET;
     executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
 )
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class LaEmailAddressControllerITest extends AbstractIntegrationTest {
 
     public static final String BASE_URL = "/api/v1/moj/LaExport";
 
-    @Autowired
-    private TestRestTemplate restTemplate;
+    private final TestRestTemplate restTemplate;
 
     private HttpHeaders httpHeaders;
 

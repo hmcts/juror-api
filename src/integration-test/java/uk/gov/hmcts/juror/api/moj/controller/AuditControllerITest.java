@@ -13,6 +13,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractControllerIntegrationTest;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
+import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -22,10 +23,10 @@ import java.util.Set;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + AuditControllerITest.BASE_URL)
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class AuditControllerITest {
     public static final String BASE_URL = "/api/v1/moj/audit";
-    @Autowired
-    private TestRestTemplate template;
+    private final TestRestTemplate template;
 
 
     @Nested

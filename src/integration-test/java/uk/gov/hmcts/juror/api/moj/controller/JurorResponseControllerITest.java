@@ -51,6 +51,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRep
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCommonRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
+import lombok.RequiredArgsConstructor;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -80,6 +81,7 @@ import static org.springframework.http.HttpStatus.OK;
     "PMD.TooManyMethods",
     "PMD.PublicMemberInNonPublicType"
 })
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 class JurorResponseControllerITest extends AbstractIntegrationTest {
     private HttpHeaders httpHeaders;
 
@@ -102,8 +104,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
     private static final String OWNER_400 = "400";
     private static final String OWNER_415 = "415";
 
-    @Autowired
-    private TestRestTemplate template;
+    private final TestRestTemplate template;
     private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
     private final JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository;
     private final JurorReasonableAdjustmentRepository jurorReasonableAdjustmentRepository;
