@@ -14,6 +14,8 @@ import uk.gov.hmcts.juror.api.bureau.domain.SystemParameterRepository;
 import uk.gov.hmcts.juror.api.juror.service.JurorService;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolCreateRequestDto;
 import uk.gov.hmcts.juror.api.moj.domain.DeceasedJuror;
+import uk.gov.hmcts.juror.api.moj.domain.ExcludedVoters;
+import uk.gov.hmcts.juror.api.moj.domain.QExcludedVoters;
 import uk.gov.hmcts.juror.api.moj.domain.QVoters;
 import uk.gov.hmcts.juror.api.moj.domain.Voters;
 import uk.gov.hmcts.juror.api.moj.repository.VotersRepository;
@@ -78,28 +80,42 @@ public class VotersServiceImpl implements VotersService {
             .limit((long) (citizensToSummon * 1.4))
             .fetch();
 
-        /* Filter out deceased voters -
-        Not running a query to join juror with the voters table as that would be potentially slower
-        (work was done on optimising the performance of the getVoters function)
-        Not using a join with pool for loc_code/owner of user as voters postcodes may cover multiple courts
-        and jurors could have been moved between catchment areas */
+        // need to do some filtering in case excluded or deceased voters were fetched
 
-        // create a list of all postcodes from votersList and iterate through returned jurors to remove any matches
+        // create a list of all distinct postcodes from votersList
         List<String> voterPostcodes = votersList.stream()
             .map(Voters::getPostcode)
             .distinct()
             .toList();
 
         List<DeceasedJuror> deceasedJurors = jurorService.getDeceasedJurors(voterPostcodes);
-
+        
+        // Filter out deceased voters
         votersList.removeIf(voter -> deceasedJurors.stream()
             .anyMatch(juror -> juror.getAddressLine1().trim().equalsIgnoreCase(voter.getAddress().trim())
                 && juror.getLastName().trim().equalsIgnoreCase(voter.getLastName().trim())
                 && juror.getFirstName().trim().equalsIgnoreCase(voter.getFirstName().trim())
                 && juror.getPostcode().trim().equalsIgnoreCase(voter.getPostcode().trim())));
 
+    
+        List<ExcludedVoters> excludedVoters = getExcludedVoters();
+
+        // filter out excluded voters
+        votersList.removeIf(voter -> excludedVoters.stream()
+            .anyMatch(excludedVoter -> excludedVoter.getAddress1().trim().equalsIgnoreCase(voter.getAddress().trim())
+                && excludedVoter.getFirstName().trim().equalsIgnoreCase(voter.getFirstName().trim())
+                && excludedVoter.getLastName().trim().equalsIgnoreCase(voter.getLastName().trim())
+                && excludedVoter.getPostcode().trim().equalsIgnoreCase(voter.getPostcode().trim())));
+
         return votersList;
     }
+
+    @Override
+    public List<ExcludedVoters> getExcludedVoters() {
+        JPAQueryFactory queryFactory = getQueryFactory();
+        return queryFactory.selectFrom(QExcludedVoters.excludedVoters).fetch();
+    }
+
 
     JPAQueryFactory getQueryFactory() {
         return new JPAQueryFactory(entityManager);
