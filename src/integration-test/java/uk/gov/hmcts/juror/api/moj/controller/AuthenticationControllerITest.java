@@ -30,6 +30,7 @@ import uk.gov.hmcts.juror.api.moj.domain.authentication.CourtDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.EmailDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.JwtDto;
 import uk.gov.hmcts.juror.api.moj.enumeration.CourtType;
+import lombok.RequiredArgsConstructor;
 
 import java.time.Clock;
 import java.util.Collections;
@@ -51,12 +52,12 @@ import static org.springframework.http.HttpMethod.POST;
     "PMD.ExcessiveImports",
 //False positive
 })
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class AuthenticationControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/auth/moj";
     private static final String EMAIL_SUFFIX = "@email.gov.uk";
 
-    @Autowired
-    private TestRestTemplate template;
+    private final TestRestTemplate template;
     private HttpHeaders httpHeaders;
 
     @Value("${jwt.secret.bureau}")

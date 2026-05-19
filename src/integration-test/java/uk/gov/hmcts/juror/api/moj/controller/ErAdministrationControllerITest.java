@@ -30,6 +30,7 @@ import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateDeadlineResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateEmailRequestSentDto;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
+import lombok.RequiredArgsConstructor;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -48,11 +49,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 })
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 class ErAdministrationControllerITest extends AbstractIntegrationTest {
 
     public static final String EXPECT_THE_STATUS_TO_BE_FORBIDDEN = "Expect the status to be forbidden.";
-    @Autowired
-    private TestRestTemplate restTemplate;
+    private final TestRestTemplate restTemplate;
 
     private HttpHeaders httpHeaders;
 

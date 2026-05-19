@@ -36,6 +36,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.CourtType;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ExpenseRatesRepository;
+import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
 import java.net.URI;
@@ -52,12 +53,12 @@ import static org.springframework.http.HttpMethod.PUT;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + AdministrationControllerITest.BASE_URL)
 @SuppressWarnings("PMD.ExcessiveImports")
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class AdministrationControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/moj/administration";
 
     private HttpHeaders httpHeaders;
-    @Autowired
-    private TestRestTemplate template;
+    private final TestRestTemplate template;
 
     private final CourtLocationRepository courtLocationRepository;
 
