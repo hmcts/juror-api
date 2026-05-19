@@ -25,6 +25,7 @@ import uk.gov.hmcts.juror.api.moj.controller.jurorer.LocalAuthorityInfoResponseD
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateLocalAuthorityNotesRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateLocalAuthorityNotesResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
+import lombok.RequiredArgsConstructor;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -39,10 +40,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @SuppressWarnings("PMD")
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 class ErDashboardControllerITest extends AbstractIntegrationTest {
 
-    @Autowired
-    private TestRestTemplate restTemplate;
+    private final TestRestTemplate restTemplate;
 
     private HttpHeaders httpHeaders;
 

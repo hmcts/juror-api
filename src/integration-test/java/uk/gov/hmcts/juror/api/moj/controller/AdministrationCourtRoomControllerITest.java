@@ -24,6 +24,7 @@ import uk.gov.hmcts.juror.api.moj.domain.administration.CourtRoomWithIdDto;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.repository.trial.CourtroomRepository;
+import lombok.RequiredArgsConstructor;
 
 import java.net.URI;
 import java.util.Collections;
@@ -38,12 +39,12 @@ import static org.springframework.http.HttpMethod.PUT;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + AdministrationCourtRoomControllerITest.BASE_URL)
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class AdministrationCourtRoomControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/moj/administration/court-rooms";
 
     private HttpHeaders httpHeaders;
-    @Autowired
-    private TestRestTemplate template;
+    private final TestRestTemplate template;
 
     @Autowired
     private final CourtroomRepository courtroomRepository;

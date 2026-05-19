@@ -24,6 +24,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
+import lombok.RequiredArgsConstructor;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -42,12 +43,12 @@ import static org.springframework.http.HttpMethod.POST;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + AdministrationHolidaysControllerITest.BASE_URL)
 @SuppressWarnings("PMD.ExcessiveImports")
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class AdministrationHolidaysControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/moj/administration";
 
     private HttpHeaders httpHeaders;
-    @Autowired
-    private TestRestTemplate template;
+    private final TestRestTemplate template;
 
     private final HolidaysRepository holidaysRepository;
 

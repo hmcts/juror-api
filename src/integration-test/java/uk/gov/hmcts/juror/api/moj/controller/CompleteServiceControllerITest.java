@@ -32,6 +32,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import lombok.RequiredArgsConstructor;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -53,10 +54,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: /api/v1/moj/complete-service")
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 class CompleteServiceControllerITest extends AbstractIntegrationTest {
 
-    @Autowired
-    private TestRestTemplate template;
+    private final TestRestTemplate template;
     private final JurorPoolRepository jurorPoolRepository;
     private final JurorHistoryRepository jurorHistoryRepository;
 

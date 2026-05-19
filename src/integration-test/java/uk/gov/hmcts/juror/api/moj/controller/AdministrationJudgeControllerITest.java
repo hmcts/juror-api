@@ -26,6 +26,7 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.Judge;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.repository.trial.JudgeRepository;
+import lombok.RequiredArgsConstructor;
 
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -43,12 +44,12 @@ import static org.springframework.http.HttpMethod.PUT;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + AdministrationJudgeControllerITest.BASE_URL)
 @SuppressWarnings("PMD.ExcessiveImports")
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class AdministrationJudgeControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/moj/administration/judges";
 
     private HttpHeaders httpHeaders;
-    @Autowired
-    private TestRestTemplate template;
+    private final TestRestTemplate template;
 
     @Autowired
     private final JudgeRepository judgeRepository;

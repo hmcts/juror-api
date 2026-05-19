@@ -37,6 +37,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.CourtType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -53,14 +54,14 @@ import static org.junit.jupiter.api.Assertions.fail;
 @Sql(value = {"/db/administration/teardownUsers.sql",
     "/db/administration/createUsers.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(value = "/db/administration/teardownUsers.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class UserControllerITest extends AbstractIntegrationTest {
 
     public static final String BASE_URL = "/api/v1/moj/users";
     private static final String EMAIL_SUFFIX = "@email.gov.uk";
     private static final String SYSTEM_USER = "test_system";
 
-    @Autowired
-    private TestRestTemplate template;
+    private final TestRestTemplate template;
     private HttpHeaders httpHeaders;
 
     private final UserRepository userRepository;
