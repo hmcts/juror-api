@@ -13,6 +13,7 @@ import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
@@ -376,15 +377,14 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
         Juror capturedJuror = capturedJurorPool.getJuror();
         assertThat(capturedJuror.isResponded()).isEqualTo(true);
         assertThat(capturedJuror.getDisqualifyDate()).isNotNull();
-        assertThat(capturedJurorPool.getUserEdtq()).isEqualTo(DisqualifyJurorDueToAgeServiceImplTest.BUREAU_USER);
+        assertThat(capturedJurorPool.getUserEdtq()).isEqualTo(BUREAU_USER);
         assertThat(capturedJurorPool.getNextDate()).isNull();
-        assertThat(capturedJurorPool.getStatus().getStatus()).isEqualTo(
-            uk.gov.hmcts.juror.api.moj.domain.IJurorStatus.DISQUALIFIED);
+        assertThat(capturedJurorPool.getStatus().getStatus()).isEqualTo(IJurorStatus.DISQUALIFIED);
     }
 
     private PaperResponse createPaperResponse() {
         PaperResponse response = new PaperResponse();
-        response.setJurorNumber(DisqualifyJurorDueToAgeServiceImplTest.JUROR_NUMBER);
+        response.setJurorNumber(JUROR_NUMBER);
         response.setDateReceived(LocalDateTime.now());
 
         response.setFirstName("FName");
@@ -416,7 +416,7 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
     private DigitalResponse createDigitalResponse() {
         DigitalResponse response = new DigitalResponse();
 
-        response.setJurorNumber(DisqualifyJurorDueToAgeServiceImplTest.JUROR_NUMBER);
+        response.setJurorNumber(JUROR_NUMBER);
         response.setDateReceived(LocalDateTime.now());
 
         response.setFirstName("FName");
@@ -469,7 +469,7 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
         poolRequest.setCourtLocation(courtLocation);
 
         Juror juror = new Juror();
-        juror.setJurorNumber(DisqualifyJurorDueToAgeServiceImplTest.JUROR_NUMBER);
+        juror.setJurorNumber(JUROR_NUMBER);
         juror.setFirstName("FIRSTNAME");
         juror.setLastName("LASTNAME");
         juror.setPostcode("M24 4GT");

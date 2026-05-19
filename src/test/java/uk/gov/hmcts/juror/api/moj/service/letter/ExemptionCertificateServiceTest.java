@@ -86,9 +86,9 @@ public class ExemptionCertificateServiceTest {
 
         TestUtils.setUpMockAuthentication("415", "TEST_COURT", "1", List.of("415"));
 
-        Mockito.doReturn(setupPanel(setupTrial().get(0)))
-            .when(panelRepository)
-            .findByTrialTrialNumberAndTrialCourtLocationLocCode(caseNumber, courtLocation);
+	        doReturn(setupPanel(setupTrial().get(0)))
+	            .when(panelRepository)
+	            .findByTrialTrialNumberAndTrialCourtLocationLocCode(caseNumber, courtLocation);
 
         List<JurorForExemptionListDto> jurors = exemptionCertificateService.getJurorsForExemptionList(caseNumber,
             courtLocation);

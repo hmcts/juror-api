@@ -42,7 +42,7 @@ public enum IdCheckCodeEnum {
         if (code == null) {
             return null;
         }
-        for (IdCheckCodeEnum idCheckCode : IdCheckCodeEnum.values()) {
+        for (IdCheckCodeEnum idCheckCode : values()) {
             if (idCheckCode.getCode().equals(code)) {
                 return idCheckCode;
             }

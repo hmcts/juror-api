@@ -76,7 +76,7 @@ public final class DateUtils {
      */
     public static List<LocalDate> getNumberOfStartingWeeks(int numberOfWeeks, LocalDate startDate) {
         List<LocalDate> dates = new ArrayList<>();
-        LocalDate weekCommencing = DateUtils.getStartOfWeekFromDate(startDate);
+        LocalDate weekCommencing = getStartOfWeekFromDate(startDate);
         for (int i = 0;
              i < numberOfWeeks;
              i++) {

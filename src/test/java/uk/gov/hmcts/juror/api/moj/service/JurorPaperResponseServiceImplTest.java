@@ -185,7 +185,7 @@ public class JurorPaperResponseServiceImplTest {
         Mockito.doReturn(jurorPaperResponse).when(jurorPaperResponseRepository)
             .findByJurorNumber(VALID_JUROR_NUMBER_BUREAU);
         Mockito.doReturn(Optional.of(new WelshCourtLocation()))
-            .when(welshCourtLocationRepository).findById(Mockito.anyString());
+            .when(welshCourtLocationRepository).findById(anyString());
 
         JurorPaperResponseDetailDto responseDto = jurorPaperResponseService
             .getJurorPaperResponse(VALID_JUROR_NUMBER_BUREAU, payload);

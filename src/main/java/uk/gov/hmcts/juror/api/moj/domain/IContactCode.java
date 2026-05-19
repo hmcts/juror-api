@@ -51,7 +51,7 @@ public enum IContactCode {
     }
 
     public static IContactCode fromCode(String code) {
-        for (IContactCode contactCode : IContactCode.values()) {
+        for (IContactCode contactCode : values()) {
             if (contactCode.getCode().equals(code)) {
                 return contactCode;
             }

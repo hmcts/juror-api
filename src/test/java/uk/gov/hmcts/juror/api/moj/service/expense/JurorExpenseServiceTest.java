@@ -574,8 +574,8 @@ class JurorExpenseServiceTest {
                     TestConstants.VALID_COURT_LOCATION,
                     TestConstants.VALID_JUROR_NUMBER, attendanceDates);
             verify(appearanceRepository, never())
-                .save(Mockito.any());
-            verify(financialAuditDetailsRepository, never()).save(Mockito.any());
+                .save(any());
+            verify(financialAuditDetailsRepository, never()).save(any());
         }
 
         private Appearance buildTestAppearance(String jurorNumber, LocalDate attendanceDate) {

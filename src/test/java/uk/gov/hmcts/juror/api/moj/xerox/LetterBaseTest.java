@@ -134,7 +134,7 @@ class LetterBaseTest {
 
         LetterBase.LetterContext context = LetterBase.LetterContext.builder()
             .jurorPool(LetterTestUtils.testJurorPool(
-                java.time.LocalDate.of(2017, java.time.Month.FEBRUARY, 6)))
+                LocalDate.of(2017, Month.FEBRUARY, 6)))
             .courtLocation(courtLocation)
             .build();
 

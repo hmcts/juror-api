@@ -95,7 +95,7 @@ class CourtLocationServiceTest {
 
         CourtLocationListDto dto = courtLocationService.buildCourtLocationDataResponse(payload);
 
-        verify(courtLocationRepository, times(1)).findAll(Mockito.any(Predicate.class));
+        verify(courtLocationRepository, times(1)).findAll(any(Predicate.class));
 
         List<CourtLocationDataDto> courtLocationDataList = dto.getData();
         assertThat(courtLocationDataList.size()).isEqualTo(1);
@@ -122,7 +122,7 @@ class CourtLocationServiceTest {
 
         CourtLocationListDto dto = courtLocationService.buildCourtLocationDataResponse(payload);
 
-        verify(courtLocationRepository, times(1)).findAll(Mockito.any(Predicate.class));
+        verify(courtLocationRepository, times(1)).findAll(any(Predicate.class));
 
         List<CourtLocationDataDto> courtLocationDataList = dto.getData();
         assertThat(courtLocationDataList.size()).isEqualTo(2);

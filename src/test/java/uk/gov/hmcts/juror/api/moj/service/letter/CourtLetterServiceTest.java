@@ -148,7 +148,7 @@ public class CourtLetterServiceTest {
                 List.of(createDeferralLetterList(jurorNumber, deferredTo, reason, poolNumber));
 
             when(deferralGrantedLetterListRepository.findJurorsEligibleForDeferralGrantedLetter(
-                Mockito.any())).thenReturn(results);
+                any())).thenReturn(results);
 
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto.builder()
                 .letterType(CourtLetterType.DEFERRAL_GRANTED)
@@ -186,7 +186,7 @@ public class CourtLetterServiceTest {
                     datePrinted));
 
             when(deferralGrantedLetterListRepository.findJurorsEligibleForDeferralGrantedLetter(
-                Mockito.any())).thenReturn(results);
+                any())).thenReturn(results);
 
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto.builder()
                 .letterType(CourtLetterType.DEFERRAL_GRANTED)
@@ -219,7 +219,7 @@ public class CourtLetterServiceTest {
             List<DeferralGrantedLetterList> results = new ArrayList<>();
 
             when(deferralGrantedLetterListRepository.findJurorsEligibleForDeferralGrantedLetter(
-                Mockito.any())).thenReturn(results);
+                any())).thenReturn(results);
 
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto.builder()
                 .letterType(CourtLetterType.DEFERRAL_GRANTED)
@@ -327,7 +327,7 @@ public class CourtLetterServiceTest {
                     createDeferralDeniedLetterList(jurorNumber, statusDesc, dateRefused, otherInformation, poolNumber));
 
             doReturn(results).when(deferralDeniedLetterListRepository)
-                .findJurorsEligibleForDeferralDeniedLetter(Mockito.any(), Mockito.any());
+                .findJurorsEligibleForDeferralDeniedLetter(any(), any());
             doReturn(Optional.of(excusalCode)).when(excusalCodeRepository).findById(reasonCode);
 
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto.builder()
@@ -373,7 +373,7 @@ public class CourtLetterServiceTest {
                     datePrinted));
 
             doReturn(results).when(deferralDeniedLetterListRepository)
-                .findJurorsEligibleForDeferralDeniedLetter(Mockito.any(), Mockito.any());
+                .findJurorsEligibleForDeferralDeniedLetter(any(), any());
             doReturn(Optional.of(excusalCode)).when(excusalCodeRepository).findById(reasonCode);
 
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto.builder()
@@ -408,7 +408,7 @@ public class CourtLetterServiceTest {
             List<DeferralDeniedLetterList> results = new ArrayList<>();
 
             doReturn(results).when(deferralDeniedLetterListRepository)
-                .findJurorsEligibleForDeferralDeniedLetter(Mockito.any(), Mockito.any());
+                .findJurorsEligibleForDeferralDeniedLetter(any(), any());
 
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto.builder()
                 .letterType(CourtLetterType.DEFERRAL_REFUSED)
@@ -511,7 +511,7 @@ public class CourtLetterServiceTest {
                 List.of(createExcusalLetterList(jurorNumber, deferredTo, reason, poolNumber, null));
 
             when(excusalGrantedLetterListRepository.findJurorsEligibleForExcusalGrantedLetter(
-                Mockito.any())).thenReturn(results);
+                any())).thenReturn(results);
 
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto.builder()
                 .letterType(CourtLetterType.EXCUSAL_GRANTED)
@@ -549,7 +549,7 @@ public class CourtLetterServiceTest {
                     datePrinted));
 
             when(excusalGrantedLetterListRepository.findJurorsEligibleForExcusalGrantedLetter(
-                Mockito.any())).thenReturn(results);
+                any())).thenReturn(results);
 
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto.builder()
                 .letterType(CourtLetterType.EXCUSAL_GRANTED)
@@ -582,7 +582,7 @@ public class CourtLetterServiceTest {
             List<ExcusalGrantedLetterList> results = new ArrayList<>();
 
             when(excusalGrantedLetterListRepository.findJurorsEligibleForExcusalGrantedLetter(
-                Mockito.any())).thenReturn(results);
+                any())).thenReturn(results);
 
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto.builder()
                 .letterType(CourtLetterType.EXCUSAL_GRANTED)
@@ -675,8 +675,8 @@ public class CourtLetterServiceTest {
             List<ExcusalRefusedLetterList> results =
                 List.of(createExcusalRefusedLetterList(jurorNumber, deferredTo, reason, poolNumber, null));
 
-            when(excusalRefusalLetterListRepository.findJurorsEligibleForExcusalRefusalLetter(Mockito.any(),
-                Mockito.any())).thenReturn(results);
+            when(excusalRefusalLetterListRepository.findJurorsEligibleForExcusalRefusalLetter(any(),
+                any())).thenReturn(results);
 
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto.builder()
                 .letterType(CourtLetterType.EXCUSAL_REFUSED)
@@ -713,8 +713,8 @@ public class CourtLetterServiceTest {
                 List.of(createExcusalRefusedLetterList(jurorNumber, dateExcused, reason, poolNumber,
                     datePrinted));
 
-            when(excusalRefusalLetterListRepository.findJurorsEligibleForExcusalRefusalLetter(Mockito.any(),
-                Mockito.any())).thenReturn(results);
+            when(excusalRefusalLetterListRepository.findJurorsEligibleForExcusalRefusalLetter(any(),
+                any())).thenReturn(results);
 
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto.builder()
                 .letterType(CourtLetterType.EXCUSAL_REFUSED)
@@ -746,8 +746,8 @@ public class CourtLetterServiceTest {
 
             List<ExcusalRefusedLetterList> results = new ArrayList<>();
 
-            when(excusalRefusalLetterListRepository.findJurorsEligibleForExcusalRefusalLetter(Mockito.any(),
-                Mockito.any())).thenReturn(results);
+            when(excusalRefusalLetterListRepository.findJurorsEligibleForExcusalRefusalLetter(any(),
+                any())).thenReturn(results);
 
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto.builder()
                 .letterType(CourtLetterType.EXCUSAL_REFUSED)
@@ -842,8 +842,8 @@ public class CourtLetterServiceTest {
             List<WithdrawalLetterList> results =
                 List.of(createWithdrawalLetterList(jurorNumber, dateDisqualified, code, poolNumber, null));
 
-            when(withdrawalLetterListRepository.findJurorsEligibleForWithdrawalLetter(Mockito.any(),
-                Mockito.any())).thenReturn(results);
+            when(withdrawalLetterListRepository.findJurorsEligibleForWithdrawalLetter(any(),
+                any())).thenReturn(results);
 
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto.builder()
                 .letterType(CourtLetterType.WITHDRAWAL)
@@ -879,8 +879,8 @@ public class CourtLetterServiceTest {
             List<WithdrawalLetterList> results =
                 List.of(createWithdrawalLetterList(jurorNumber, dateDisqualified, code, poolNumber, datePrinted));
 
-            when(withdrawalLetterListRepository.findJurorsEligibleForWithdrawalLetter(Mockito.any(),
-                Mockito.any())).thenReturn(results);
+            when(withdrawalLetterListRepository.findJurorsEligibleForWithdrawalLetter(any(),
+                any())).thenReturn(results);
 
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto.builder()
                 .letterType(CourtLetterType.WITHDRAWAL)
@@ -912,8 +912,8 @@ public class CourtLetterServiceTest {
 
             List<WithdrawalLetterList> results = new ArrayList<>();
 
-            when(withdrawalLetterListRepository.findJurorsEligibleForWithdrawalLetter(Mockito.any(),
-                Mockito.any())).thenReturn(results);
+            when(withdrawalLetterListRepository.findJurorsEligibleForWithdrawalLetter(any(),
+                any())).thenReturn(results);
 
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto.builder()
                 .letterType(CourtLetterType.WITHDRAWAL)
@@ -1053,8 +1053,8 @@ public class CourtLetterServiceTest {
                 List.of(createCertificateOfAttendanceLetterList(jurorNumber, startDate, completionDate, poolNumber,
                     datePrinted));
 
-            when(certificateOfAttendanceListRepository.findJurorsEligibleForCertificateOfAcceptanceLetter(Mockito.any(),
-                Mockito.any())).thenReturn(results);
+            when(certificateOfAttendanceListRepository.findJurorsEligibleForCertificateOfAcceptanceLetter(any(),
+                any())).thenReturn(results);
 
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto.builder()
                 .letterType(CourtLetterType.CERTIFICATE_OF_ATTENDANCE)
@@ -1092,8 +1092,8 @@ public class CourtLetterServiceTest {
 
             List<CertificateOfAttendanceLetterList> results = new ArrayList<>();
 
-            when(certificateOfAttendanceListRepository.findJurorsEligibleForCertificateOfAcceptanceLetter(Mockito.any(),
-                Mockito.any())).thenReturn(results);
+            when(certificateOfAttendanceListRepository.findJurorsEligibleForCertificateOfAcceptanceLetter(any(),
+                any())).thenReturn(results);
 
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto.builder()
                 .letterType(CourtLetterType.CERTIFICATE_OF_ATTENDANCE)

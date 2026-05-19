@@ -149,7 +149,7 @@ public class JurorResponseUtilsTest {
 
     private Juror createMockJuror() {
         Juror juror = new Juror();
-        juror.setJurorNumber(JurorResponseUtilsTest.JUROR_NUMBER_123456789);
+        juror.setJurorNumber(JUROR_NUMBER_123456789);
         juror.setTitle(null);
         juror.setFirstName("FNAMEONE");
         juror.setLastName("LNAMEONE");
