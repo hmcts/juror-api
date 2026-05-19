@@ -18,6 +18,9 @@ public interface JurorRepository extends RevisionRepository<Juror, String, Long>
 
     Juror findByJurorNumber(String jurorNumber);
 
+    List<Juror> findByJurorNumberIn(List<String> jurorNumber);
+
+
     /**
      * Function to return daily utilisation stats for jurors.
      */

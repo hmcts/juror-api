@@ -380,7 +380,8 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             // There should be at least one juror with overseas flag
             assertThat(juror).isNotNull();
 
-            List<JurorPool> jurorPool = jurorPoolRepository.findByJurorJurorNumberAndIsActive(juror.getJurorNumber(), true);
+            List<JurorPool> jurorPool = jurorPoolRepository
+                                            .findByJurorJurorNumberAndIsActive(juror.getJurorNumber(), true);
             assertThat(jurorPool).isNotEmpty();
             assertThat(jurorPool.size()).isEqualTo(1);
             JurorStatus expectedJurorStatus = jurorPool.get(0).getStatus();

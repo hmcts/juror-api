@@ -424,6 +424,16 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                     MojException.BusinessRuleViolation.ErrorCode.COULD_NOT_FIND_ENOUGH_ELIGIBLE_VOTERS);
             }
 
+            // this prevents overwriting existing juror records, not duplicate juror records. The duplicate is already
+            // blocked by the primary key; the actual risk was saveAll merging into an existing row.
+             List<Juror> alreadyExistingJurors = jurorRepository.findByJurorNumberIn(
+                                                        jurorPools.stream().map(JurorPool::getJurorNumber).toList());
+
+            if (!alreadyExistingJurors.isEmpty()) {
+                log.info("Juror record already exists with same juror number");
+                throw new PoolCreateException.UnableToCreatePool();
+            }
+
             // Saving records (bulk)
             List<Juror> savedJurors = jurorRepository.saveAll(jurorPools.stream().map(JurorPool::getJuror).toList());
 
