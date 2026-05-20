@@ -45,6 +45,7 @@
     <exclude name="LoosePackageCoupling"/>
     <exclude name="DataClass"/>
     <exclude name="LawOfDemeter"/>
+    <exclude name="ImplicitFunctionalInterface"/>
   </rule>
   <rule ref="category/java/design.xml/ExcessiveImports">
     <properties>
