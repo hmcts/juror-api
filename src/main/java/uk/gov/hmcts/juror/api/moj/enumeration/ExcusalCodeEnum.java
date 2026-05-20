@@ -10,6 +10,7 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
+@SuppressWarnings("PMD.ShortVariable")
 public enum ExcusalCodeEnum {
     A("A", "Moved from area"),
     B("B", "Student"),

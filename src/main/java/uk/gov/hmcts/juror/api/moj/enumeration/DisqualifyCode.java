@@ -5,6 +5,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
+@SuppressWarnings("PMD.ShortVariable")
 public enum DisqualifyCode {
 
     A("A", "Age"),
