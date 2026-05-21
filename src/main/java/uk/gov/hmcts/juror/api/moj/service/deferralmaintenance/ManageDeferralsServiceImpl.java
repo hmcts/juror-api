@@ -914,7 +914,13 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         JurorPool newJurorPool = new JurorPool();
         BeanUtils.copyProperties(deferredPoolMember, newJurorPool, "pool");
 
-        setupPoolMemberAttributes(poolRequest, userId, sequenceNumber, newJurorPool);
+        Optional<PoolRequest> managedPoolRequest = poolRequestRepository.findById(poolRequest.getPoolNumber());
+
+        if (managedPoolRequest.isPresent()) {
+            setupPoolMemberAttributes(managedPoolRequest.get(), userId, sequenceNumber, newJurorPool);
+        } else {
+            setupPoolMemberAttributes(poolRequest, userId, sequenceNumber, newJurorPool);
+        }
 
         deferredPoolMember.setIsActive(false);  // deactivate the old record
 

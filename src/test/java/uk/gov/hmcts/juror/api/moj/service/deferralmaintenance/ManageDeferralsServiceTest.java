@@ -2242,6 +2242,7 @@ class ManageDeferralsServiceTest {
 
         //verification code here
         verifyAllocateJurorsToActivePool(jurorNumbers);
+        verify(poolRequestRepository, times(2)).findById(any());
     }
 
     @Test
@@ -2293,7 +2294,6 @@ class ManageDeferralsServiceTest {
     }
 
     private void verifyAllocateJurorsToActivePool(List<String> jurorNumbers) {
-        verify(poolRequestRepository, times(1)).findById(any());
         verify(poolRequestRepository, times(jurorNumbers.size())).save(any());
         verify(jurorPoolRepository, times(jurorNumbers.size())).saveAndFlush(any());
         verify(poolMemberSequenceService, times(jurorNumbers.size()))
@@ -2351,6 +2351,7 @@ class ManageDeferralsServiceTest {
 
         //verification code here
         verifyAllocateJurorsToActivePool(jurorNumbers);
+        verify(poolRequestRepository, times(6)).findById(any());
     }
 
     @Test

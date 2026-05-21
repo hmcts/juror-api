@@ -1,6 +1,3 @@
-DELETE FROM juror_mod.voters;
-DELETE FROM juror_mod.coroner_pool_detail;
-DELETE FROM juror_mod.coroner_pool;
 
 INSERT INTO juror_mod.coroner_pool (COR_POOL_NO,COR_NAME,EMAIL,PHONE,COR_COURT_LOC,COR_REQUEST_DT,COR_SERVICE_DT,
 COR_NO_REQUESTED)

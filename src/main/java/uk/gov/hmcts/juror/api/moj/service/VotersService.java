@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolCreateRequestDto;
+import uk.gov.hmcts.juror.api.moj.domain.ExcludedVoters;
 import uk.gov.hmcts.juror.api.moj.domain.Voters;
 
 import java.sql.Date;
@@ -15,6 +16,8 @@ public interface VotersService {
                            LocalDate attendanceDate,
                            String locCode,
                            boolean isCoroners);
+
+    List<ExcludedVoters> getExcludedVoters();
 
     List<Voters> getVotersForCoronerPool(String postcode, int number, String locCode);
 

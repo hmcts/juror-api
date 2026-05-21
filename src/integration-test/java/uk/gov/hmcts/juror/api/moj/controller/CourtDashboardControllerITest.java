@@ -102,21 +102,20 @@ public class CourtDashboardControllerITest extends AbstractIntegrationTest {
         assertThat(responseBody).isNotNull();
 
         assertThat(responseBody.getUnpaidAttendances())
-            .as("Expect the unpaidAttendances to be 14")
-            .isEqualTo(14);
+            .as("Expect the unpaidAttendances to be 11")
+            .isEqualTo(11);
 
         assertThat(responseBody.getOldestUnpaidAttendanceDate())
-            .as("Expect the oldest Unpaid Attendance Date to be 2024-09-08")
-            .isEqualTo("2024-09-08");
+            .as("Expect the oldest Unpaid Attendance Date to be 290 days ago")
+            .isEqualTo(LocalDate.now().minusDays(290));
 
-        long daysSinceOldest = LocalDate.now().toEpochDay() - LocalDate.of(2024,9,8).toEpochDay();
         assertThat(responseBody.getOldestUnpaidAttendanceDays())
-            .as("Expect the oldest Unpaid Attendance Days to be " + daysSinceOldest)
-            .isEqualTo(daysSinceOldest);
+            .as("Expect the oldest Unpaid Attendance Days to be 290")
+            .isEqualTo(290);
 
         assertThat(responseBody.getOldestUnpaidJurorNumber())
-            .as("Expect the oldest Unpaid Juror Number to be 472008411")
-            .isEqualTo("472008411");
+            .as("Expect the oldest Unpaid Juror Number to be 586856851")
+            .isEqualTo("586856851");
         assertThat(responseBody.getUtilisationReportDate())
             .as("Expect the utilisation report date to be 2025-06-03T08:14:28")
             .isEqualTo("2025-06-03T08:14:28"); // This is a fixed date in the SQL script

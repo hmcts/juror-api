@@ -64,7 +64,7 @@ public class LaUserServiceImpl implements LaUserService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public LaJwtDto createJwt(String email, String laCode) {
         final List<LaUser> userList = findUserByUsername(email);
 

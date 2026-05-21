@@ -83,7 +83,8 @@ public class StandardReportRequest {
         "UnconfirmedAttendanceReport",
         "CompletionOfServiceReport",
         "PoolStatisticsReport",
-        "TrialAttendanceReport"
+        "TrialAttendanceReport",
+        "BallotPanelTrialRepost"
     })
     private String reportType;
 
@@ -152,4 +153,6 @@ public class StandardReportRequest {
 
     @NotNull(groups = AbstractReport.Validators.RequireRevisionNumber.class)
     private Long revisionNumber;
+
+    private Boolean currentJurorsOnly;
 }

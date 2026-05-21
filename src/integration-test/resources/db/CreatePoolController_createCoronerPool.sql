@@ -1,5 +1,3 @@
-DELETE FROM juror_mod.coroner_pool_detail;
-DELETE FROM juror_mod.coroner_pool;
 
 INSERT INTO juror_mod.coroner_pool (COR_POOL_NO,COR_NAME,EMAIL,PHONE,COR_COURT_LOC,COR_REQUEST_DT,COR_SERVICE_DT,COR_NO_REQUESTED)
 VALUES ('923040001','Coroners Name','emailof@coroner.gov.uk','0207 12341234','415',TIMESTAMP'2023-04-03 00:00:00.0',TIMESTAMP'2023-04-03 00:00:00.0',100);
