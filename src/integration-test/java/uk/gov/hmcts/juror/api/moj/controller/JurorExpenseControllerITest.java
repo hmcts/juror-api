@@ -2909,6 +2909,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
+            @SuppressWarnings("PMD.PublicMemberInNonPublicType")
             void negativeUnauthorizedNotManager() {
                 assertForbiddenResponse(
                     triggerInvalid(COURT_LOCATION,
@@ -2927,7 +2928,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                     ApproveExpenseDto.DateToRevision.builder()
                                         .attendanceDate(LocalDate.of(2025, 1, 15))
                                         .version(1L)
-                                        @SuppressWarnings("PMD.PublicMemberInNonPublicType")
                                         .build(),
                                     ApproveExpenseDto.DateToRevision.builder()
                                         .attendanceDate(LocalDate.of(2025, 1, 16))
