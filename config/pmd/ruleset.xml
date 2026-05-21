@@ -19,7 +19,6 @@
     <exclude name="MethodArgumentCouldBeFinal"/>
     <exclude name="OnlyOneReturn"/>
     <exclude name="TooManyStaticImports"/>
-    <exclude name="DefaultPackage"/>
     <exclude name="CommentDefaultAccessModifier"/>
   </rule>
   <rule ref="category/java/codestyle.xml/ClassNamingConventions">
@@ -45,7 +44,6 @@
     <exclude name="LoosePackageCoupling"/>
     <exclude name="DataClass"/>
     <exclude name="LawOfDemeter"/>
-    <exclude name="ImplicitFunctionalInterface"/>
   </rule>
   <rule ref="category/java/design.xml/ExcessiveImports">
     <properties>

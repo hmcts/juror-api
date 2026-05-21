@@ -1705,6 +1705,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getExpenseRates().getId()).isEqualTo(999_999);
         }
 
+        @SuppressWarnings("PMD.PublicMemberInNonPublicType")
         private void verifyExpenseStillInDraft(Appearance appearance) {
             assertThat(appearance.getFinancialAudit())
                 .as("Financial Audit Details object should not be created/associated")
@@ -1716,11 +1717,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             if (appearance.getAttendanceDate().equals(LocalDate.of(2025, 1, 5))) {
                 assertThat(appearance.isDraftExpense())
                     .as("Is draft expense flag should remain unchanged")
-                    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
                     .isFalse();
             } else {
                 assertThat(appearance.isDraftExpense())
-                    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
                     .as("Is draft expense flag should remain unchanged (expense still in draft)")
                     .isTrue();
             }

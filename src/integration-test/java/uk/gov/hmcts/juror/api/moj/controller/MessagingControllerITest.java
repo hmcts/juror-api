@@ -131,7 +131,6 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                     .placeholderName(placeholderName)
                     .dataType(dataType)
                     .editable(editable)
-                    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
                     .defaultValue(defaultValue)
                     .build();
             }
