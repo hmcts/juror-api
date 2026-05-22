@@ -25,7 +25,7 @@ public class HolidaysQueries {
     private static final QHolidays holidaysDetail = QHolidays.holidays;
 
     /**
-     * Query to match JUROR.HOLIDAYS.HOLIDAY where holidayDates
+     * Query to match JUROR.HOLIDAYS.HOLIDAY where holidayDates.
      */
 
     public static BooleanExpression holidayDatesMatched(Date holidayDates) {

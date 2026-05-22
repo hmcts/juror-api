@@ -72,7 +72,7 @@ public class PoolHistoryListDto {
         private String historyDescription;
 
         /**
-         * Initialise an instance of this DTO class using a PoolHistory.PoolHistoryId object to populate its properties
+         * Initialise an instance of this DTO class using a PoolHistory.PoolHistoryId object to populate its properties.
          *
          * @param poolHistory an object representation of a ContactLog record from the database
          */
