@@ -466,6 +466,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         JurorPool newJurorPool = new JurorPool();
         BeanUtils.copyProperties(currentJurorPool, newJurorPool, "pool");
 
+        ManageDeferralsService.clearOnCallIfRequired(newJurorPool); // clear on_call copied from old record
+
         // set the new pool number
         newJurorPool.setPool(newPool);
         newJurorPool.setUserEdtq(SecurityUtil.getActiveLogin());

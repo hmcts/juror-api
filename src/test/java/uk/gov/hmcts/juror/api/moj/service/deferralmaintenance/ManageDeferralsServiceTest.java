@@ -599,6 +599,136 @@ class ManageDeferralsServiceTest {
 
         }
 
+        @DisplayName("Clear on call if required")
+        @Nested
+        class ClearOnCallIfRequired {
+
+            @Test
+            void setDeferralPoolMember_jurorIsOnCall_onCallCleared() {
+                TestUtils.mockBureauUser();
+                final BureauJwtPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
+
+                JurorPool jurorPool = createJurorPool(JUROR_123456789);
+                jurorPool.setOnCall(true);
+
+                doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_123456789);
+
+                DeferralReasonRequestDto dto = createDeferralReasonDtoToDeferralMaintenance(null);
+
+                manageDeferralsService.processJurorDeferral(bureauPayload, JUROR_123456789, dto);
+
+                assertThat(jurorPool.isOnCall())
+                    .as("on_call should be cleared when juror is deferred")
+                    .isFalse();
+            }
+
+            @Test
+            void setDeferralPoolMember_jurorIsNotOnCall_onCallRemainsUnchanged() {
+                TestUtils.mockBureauUser();
+                final BureauJwtPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
+
+                JurorPool jurorPool = createJurorPool(JUROR_123456789);
+                jurorPool.setOnCall(false);
+
+                doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_123456789);
+
+                DeferralReasonRequestDto dto = createDeferralReasonDtoToDeferralMaintenance(null);
+
+                manageDeferralsService.processJurorDeferral(bureauPayload, JUROR_123456789, dto);
+
+                assertThat(jurorPool.isOnCall())
+                    .as("on_call should remain false when juror was not on call")
+                    .isFalse();
+            }
+
+            @Test
+            void moveDeferredJuror_jurorIsOnCall_onCallClearedOnNewPool() {
+                TestUtils.mockBureauUser();
+                LocalDate newAttendanceDate = LocalDate.now();
+
+                final PoolRequest newPoolRequest = createPoolRequest(
+                    BUREAU_OWNER, POOL_111111112, LOC_CODE_415,
+                    newAttendanceDate
+                );
+
+                JurorStatus jurorDeferredStatus = new JurorStatus();
+                jurorDeferredStatus.setStatus(IJurorStatus.DEFERRED);
+                JurorStatus jurorReassignedStatus = new JurorStatus();
+                jurorReassignedStatus.setStatus(IJurorStatus.REASSIGNED);
+
+                doReturn(Optional.of(newPoolRequest)).when(poolRequestRepository).findByPoolNumber(POOL_111111112);
+                doReturn(Optional.of(jurorReassignedStatus))
+                    .when(jurorStatusRepository).findById(IJurorStatus.REASSIGNED);
+
+                JurorPool jurorPool = createJurorPool(JUROR_123456789);
+                jurorPool.setStatus(jurorDeferredStatus);
+                jurorPool.setOnCall(true); // juror is on call before the move
+
+                doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_123456789);
+                doReturn(1).when(poolMemberSequenceService).getPoolMemberSequenceNumber(any());
+                doReturn(Optional.of(newPoolRequest)).when(poolRequestRepository).findByPoolNumber(anyString());
+
+                final ArgumentCaptor<JurorPool> jurorPoolCaptor = ArgumentCaptor.forClass(JurorPool.class);
+
+                DeferredJurorMoveRequestDto request = new DeferredJurorMoveRequestDto();
+                request.setJurorNumbers(Collections.singletonList(JUROR_123456789));
+                request.setPoolNumber(newPoolRequest.getPoolNumber());
+
+                manageDeferralsService.moveDeferredJuror(request);
+
+                verify(jurorPoolRepository, times(2)).save(jurorPoolCaptor.capture());
+
+                // the first save is the new juror pool created by createMovedDeferredJurorPool
+                JurorPool savedNewJurorPool = jurorPoolCaptor.getAllValues().get(0);
+                assertThat(savedNewJurorPool.isOnCall())
+                    .as("on_call should be cleared on the new pool record created from a moved deferred juror")
+                    .isFalse();
+            }
+
+            @Test
+            void moveDeferredJuror_jurorIsNotOnCall_onCallRemainsOnNewPool() {
+                TestUtils.mockBureauUser();
+                LocalDate newAttendanceDate = LocalDate.now();
+
+                final PoolRequest newPoolRequest = createPoolRequest(
+                    BUREAU_OWNER, POOL_111111112, LOC_CODE_415,
+                    newAttendanceDate
+                );
+
+                JurorStatus jurorDeferredStatus = new JurorStatus();
+                jurorDeferredStatus.setStatus(IJurorStatus.DEFERRED);
+                JurorStatus jurorReassignedStatus = new JurorStatus();
+                jurorReassignedStatus.setStatus(IJurorStatus.REASSIGNED);
+
+                doReturn(Optional.of(newPoolRequest)).when(poolRequestRepository).findByPoolNumber(POOL_111111112);
+                doReturn(Optional.of(jurorReassignedStatus))
+                    .when(jurorStatusRepository).findById(IJurorStatus.REASSIGNED);
+
+                JurorPool jurorPool = createJurorPool(JUROR_123456789);
+                jurorPool.setStatus(jurorDeferredStatus);
+                jurorPool.setOnCall(false); // juror is not on call
+
+                doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_123456789);
+                doReturn(1).when(poolMemberSequenceService).getPoolMemberSequenceNumber(any());
+                doReturn(Optional.of(newPoolRequest)).when(poolRequestRepository).findByPoolNumber(anyString());
+
+                final ArgumentCaptor<JurorPool> jurorPoolCaptor = ArgumentCaptor.forClass(JurorPool.class);
+
+                DeferredJurorMoveRequestDto request = new DeferredJurorMoveRequestDto();
+                request.setJurorNumbers(Collections.singletonList(JUROR_123456789));
+                request.setPoolNumber(newPoolRequest.getPoolNumber());
+
+                manageDeferralsService.moveDeferredJuror(request);
+
+                verify(jurorPoolRepository, times(2)).save(jurorPoolCaptor.capture());
+
+                JurorPool savedNewJurorPool = jurorPoolCaptor.getAllValues().get(0);
+                assertThat(savedNewJurorPool.isOnCall())
+                    .as("on_call should remain false on the new pool record when juror was not on call")
+                    .isFalse();
+            }
+        }
+
         @Test
         @SuppressWarnings({"PMD.TooManyFields"})
         void moveDeferredJurorInvalidStatus() {
