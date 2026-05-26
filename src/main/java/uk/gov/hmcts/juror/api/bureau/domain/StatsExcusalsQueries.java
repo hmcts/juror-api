@@ -8,30 +8,28 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 
 @Deprecated(forRemoval = true)
 public final class StatsExcusalsQueries {
-    private static final String bureauSelection = "Bureau";
-    private static final String courtSelection = "Court";
-
+    private static final String BUREAU_SELECTION = "Bureau";
+    private static final String COURT_SELECTION = "Court";
+    private static final QStatsExcusals STATS_EXCUSALS_DETAIL = QStatsExcusals.statsExcusals;
 
     private StatsExcusalsQueries() {
     }
 
-    private static final QStatsExcusals statsExcusalsDetail = QStatsExcusals.statsExcusals;
-
     /**
      * Query to match all excusal records for BUREAU_OR_COURT where Bureau is selected.
      */
-
+    @SuppressWarnings({"PMD.LinguisticNaming"})
     public static BooleanExpression isBureau() {
-        return statsExcusalsDetail.bureauOrCourt.eq(bureauSelection);
+        return STATS_EXCUSALS_DETAIL.bureauOrCourt.eq(BUREAU_SELECTION);
 
     }
 
     /**
      * Query to match all excusal  records for BUREAU_OR_COURT where Court is selected.
      */
-
+    @SuppressWarnings({"PMD.LinguisticNaming"})
     public static BooleanExpression isCourt() {
-        return statsExcusalsDetail.bureauOrCourt.eq(courtSelection);
+        return STATS_EXCUSALS_DETAIL.bureauOrCourt.eq(COURT_SELECTION);
 
     }
 
@@ -40,18 +38,18 @@ public final class StatsExcusalsQueries {
      */
 
     public static BooleanExpression excusalRecordsBetween(String startYearWeek, String endYearWeek) {
-        return statsExcusalsDetail.week.between(startYearWeek, endYearWeek);
+        return STATS_EXCUSALS_DETAIL.week.between(startYearWeek, endYearWeek);
     }
 
     /**
      * Query to match excusal court records where week is between  week parameters.
      */
     public static BooleanExpression excusalsCourtRecordsBetween(String startYearWeek, String endYearWeek) {
-        return statsExcusalsDetail.week.between(startYearWeek, endYearWeek).and(isCourt());
+        return STATS_EXCUSALS_DETAIL.week.between(startYearWeek, endYearWeek).and(isCourt());
     }
 
     public static BooleanExpression excusalBureauRecordsBetween(String startYearWeek, String endYearWeek) {
-        return statsExcusalsDetail.week.between(startYearWeek, endYearWeek).and(isBureau());
+        return STATS_EXCUSALS_DETAIL.week.between(startYearWeek, endYearWeek).and(isBureau());
     }
 
 
