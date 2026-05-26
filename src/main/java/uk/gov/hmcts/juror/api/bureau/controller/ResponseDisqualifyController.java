@@ -78,12 +78,12 @@ public class ResponseDisqualifyController {
         BureauJwtAuthentication jwt,
         @Validated @RequestBody DisqualifyCodeDto disqualifyCodeDto) {
         assertJurorNumberPathVariable(jurorId);
-        final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
         if (null == disqualifyCodeDto.getDisqualifyCode() || null == disqualifyCodeDto.getVersion()) {
             // there is either no body or no version present in the request
             throw new DisqualifyException.RequestIsMissingDetails(jurorId);
         }
 
+        final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
         log.info(
             "Attempting to disqualify juror {} using code {}, by user {}",
             jurorId,
