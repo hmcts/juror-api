@@ -15,6 +15,6 @@ public final class IPoolStatus {
     public static final Long ADDITIONAL_INFO = 11L;
 
     private IPoolStatus() {
-
+        throw new IllegalArgumentException("IPoolStatus should not be instantiated.");
     }
 }
