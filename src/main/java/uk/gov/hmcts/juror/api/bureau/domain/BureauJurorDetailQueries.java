@@ -21,7 +21,7 @@ import static org.apache.commons.lang3.StringUtils.deleteWhitespace;
  *
  * @since JDB-1971
  */
-@SuppressWarnings({"PMD.TooManyFields", "PMD.TooManyMethods"})
+@SuppressWarnings({"PMD.TooManyMethods"})
 @Deprecated(forRemoval = true)
 public final class BureauJurorDetailQueries {
 
