@@ -48,6 +48,7 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
      * @param detailData                   additional data to establish payload for the message.
      * @param smsComms                     is a sms message to be sent.
      */
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     @Override
     public void sendJurorComms(
         final JurorPool jurorDetails,
@@ -96,9 +97,7 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
 
         } catch (NotifyApiException nae) {
             log.warn("Failed to send to Notify service: {}", nae.getMessage());
-            throw new JurorCommsNotificationServiceException("notifyApiAdapter failed to send", nae.getCause());
-        } catch (Exception e) {
-            log.error("Error sending notification! {}", e.getMessage());
+            throw new JurorCommsNotificationServiceException("notifyApiAdapter failed to send", nae);
         }
 
         log.info("Sent Juror Notify Comms.");
@@ -123,7 +122,6 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
                                   final JurorCommsNotifyTemplateType jurorCommsNotifyTemplateType,
                                   final String commsTemplateId, final String detailData, final Boolean smsComms) {
 
-        String templateId;
         final String templateKey = getTemplateKey(jurorDetails, jurorCommsNotifyTemplateType, smsComms);
         // get template for given template key.
         log.debug(" sms template key obtained as {}", templateKey);
@@ -132,7 +130,7 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
             log.error("Missing Template. Cannot determine the sms template to use for this notification.");
             throw new IllegalStateException("Cannot find template");
         }
-        templateId = template.getTemplateId();
+        String templateId = template.getTemplateId();
         log.debug("Inside sendJurorCommsSms: templateId obtained as : {}", templateId);
         //Deal with payload.
         Map<String, String> payLoad = jurorCommsNotifyPayLoadService.generatePayLoadData(templateId, jurorDetails);
@@ -150,9 +148,7 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
 
         } catch (NotifyApiException nae) {
             log.warn("Failed to send SMS to Notify service: {}", nae.getMessage());
-            throw new JurorCommsNotificationServiceException("notifyApiAdapter failed to send SMS", nae.getCause());
-        } catch (Exception e) {
-            log.error("Error sending SMS notification! {}", e.getMessage());
+            throw new JurorCommsNotificationServiceException("notifyApiAdapter failed to send SMS", nae);
         }
 
         log.info("Sent Juror Notify SMS nComms.");
@@ -172,40 +168,36 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
      */
     private String getTemplateKey(JurorPool jurorDetails, JurorCommsNotifyTemplateType jurorCommsNotifyTemplateType,
                                   Boolean smsComms) {
-        try {
-            Boolean isWelsh = Boolean.FALSE;
+        Boolean isWelsh = Boolean.FALSE;
 
-            if (jurorDetails.getJuror().getWelsh() != null) {
-                isWelsh = jurorCommsNotifyPayLoadService.isWelshCourtAndComms(
-                    jurorDetails.getJuror().getWelsh(),
-                    jurorCommsNotifyPayLoadService.getWelshCourtLocation(jurorDetails.getCourt().getLocCode())
-                );
-            }
+        if (jurorDetails.getJuror().getWelsh() != null) {
+            isWelsh = jurorCommsNotifyPayLoadService.isWelshCourtAndComms(
+                jurorDetails.getJuror().getWelsh(),
+                jurorCommsNotifyPayLoadService.getWelshCourtLocation(jurorDetails.getCourt().getLocCode())
+            );
+        }
 
-            // covers TYPE 4 : informational weekly comms
-            if (jurorCommsNotifyTemplateType == JurorCommsNotifyTemplateType.COMMS
-                ||
-                jurorCommsNotifyTemplateType == JurorCommsNotifyTemplateType.TEMP_COMMS) {
-                return jurorCommsNotifyTemplateType.getNotifyTemplateKey(
-                    isWelsh,
-                    jurorDetails.getJuror().getNotifications() + 1
-                );
-            } else if (jurorCommsNotifyTemplateType == JurorCommsNotifyTemplateType.SENT_TO_COURT
-                ||
-                jurorCommsNotifyTemplateType == JurorCommsNotifyTemplateType.SENT_TO_COURT_TEMP) {
+        // covers TYPE 4 : informational weekly comms
+        if (jurorCommsNotifyTemplateType == JurorCommsNotifyTemplateType.COMMS
+            ||
+            jurorCommsNotifyTemplateType == JurorCommsNotifyTemplateType.TEMP_COMMS) {
+            return jurorCommsNotifyTemplateType.getNotifyTemplateKey(
+                isWelsh,
+                jurorDetails.getJuror().getNotifications() + 1
+            );
+        } else if (jurorCommsNotifyTemplateType == JurorCommsNotifyTemplateType.SENT_TO_COURT
+            ||
+            jurorCommsNotifyTemplateType == JurorCommsNotifyTemplateType.SENT_TO_COURT_TEMP) {
 
 
-                // covers TYPE 2, 3 : send to court comms
-                return jurorCommsNotifyTemplateType.getNotifyTemplateKey(
-                    isWelsh,
-                    smsComms
-                );
-            } else {
-                throw new JurorCommsNotificationServiceException("template type: " + jurorCommsNotifyTemplateType);
-            }
-        } catch (Exception e) {
-            log.info(" Here throwing exception ........");
-            throw new JurorCommsNotificationServiceException(e.getMessage(), e);
+            // covers TYPE 2, 3 : send to court comms
+            return jurorCommsNotifyTemplateType.getNotifyTemplateKey(
+                isWelsh,
+                smsComms
+            );
+        } else {
+            log.info("Throwing exception as jurorCommsNotifyTemplateType is: {}", jurorCommsNotifyTemplateType);
+            throw new JurorCommsNotificationServiceException("template type: " + jurorCommsNotifyTemplateType);
         }
     }
 
