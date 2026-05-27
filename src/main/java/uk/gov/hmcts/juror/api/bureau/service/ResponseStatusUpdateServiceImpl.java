@@ -43,6 +43,7 @@ import java.util.Objects;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.GodClass"})
 public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateService, ResponseMergeService {
     private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
     private final JurorPoolRepository jurorDetailsRepository;
@@ -98,11 +99,7 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
                     jurorNumber
                 );
                 throw new ResponseAlreadyCompleted(jurorNumber);
-            } else if (status != ProcessingStatus.CLOSED) {
-                // we're not closing the response, so update without merging
-                log.debug("Updating juror '{}' status to '{}' without merge.", jurorNumber, status);
-                updateJurorResponseWithoutMerge(jurorResponse);
-            } else {
+            } else if (status == ProcessingStatus.CLOSED) {
                 log.debug("Merging juror response for juror {}", jurorNumber);
                 mergeResponse(jurorResponse, auditorUsername);
 
@@ -123,6 +120,10 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
                 history.setPoolNumber(jurorDetails.getPoolNumber());
                 history.setOtherInformationDate(LocalDate.now());
                 historyRepository.save(history);
+            } else {
+                // we're not closing the response, so update without merging
+                log.debug("Updating juror '{}' status to '{}' without merge.", jurorNumber, status);
+                updateJurorResponseWithoutMerge(jurorResponse);
             }
             log.info("Updated juror '{}' processing status to '{}'", jurorNumber, jurorResponse.getProcessingStatus());
 
@@ -140,6 +141,7 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
     }
 
 
+    @SuppressWarnings({"PMD.NcssCount", "PMD.CognitiveComplexity", "PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     @Override
     @Transactional(propagation = Propagation.MANDATORY)
     public void mergeResponse(final DigitalResponse originalDetails, final String auditorUsername) {
@@ -264,14 +266,12 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
             }
         }
 
-        String newAddress = ""
-            + Objects.toString(updatedDetails.getAddressLine1(), "").trim()
+        String newAddress = Objects.toString(updatedDetails.getAddressLine1(), "").trim()
             + Objects.toString(updatedDetails.getAddressLine2(), "").trim()
             + Objects.toString(updatedDetails.getAddressLine3(), "").trim()
             + Objects.toString(updatedDetails.getAddressLine4(), "").trim()
             + Objects.toString(updatedDetails.getAddressLine5(), "").trim();
-        String oldAddress = ""
-            + Objects.toString(jurorDetails.getJuror().getAddressLine1(), "").trim()
+        String oldAddress = Objects.toString(jurorDetails.getJuror().getAddressLine1(), "").trim()
             + Objects.toString(jurorDetails.getJuror().getAddressLine2(), "").trim()
             + Objects.toString(jurorDetails.getJuror().getAddressLine3(), "").trim()
             + Objects.toString(jurorDetails.getJuror().getAddressLine4(), "").trim()
@@ -287,14 +287,14 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
             applyPhoneNumberRules(updatedDetails);
 
             // copy the actual details to pool. Avoid coping 3rd party details.
-            if (!ObjectUtils.isEmpty(updatedDetails.getThirdPartyReason())) {
+            if (ObjectUtils.isEmpty(updatedDetails.getThirdPartyReason())) {
+                BeanUtils.copyProperties(updatedDetails, jurorDetails, "juror");
+                mapDetailsToJuror(updatedDetails, jurorDetails.getJuror(), true, true);
+            } else {
                 log.debug("Response is a third-party response");
                 BeanUtils.copyProperties(updatedDetails, jurorDetails, "phoneNumber", "altPhoneNumber", "email",
                     "juror");
                 mapDetailsToJuror(updatedDetails, jurorDetails.getJuror(), false, false);
-            } else {
-                BeanUtils.copyProperties(updatedDetails, jurorDetails, "juror");
-                mapDetailsToJuror(updatedDetails, jurorDetails.getJuror(), true, true);
             }
 
             //JDB- 3053
