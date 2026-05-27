@@ -14,15 +14,17 @@ public interface ResponseDisqualifyService {
      * Retrieve the list of reasons a juror can be disqualified for.
      *
      * @return DisqualifyReasonsDto dto
+     * @throws DisqualifyException.UnableToRetrieveDisqualifyCodeList
      */
-    List<DisqualifyCodeDto> getDisqualifyReasons() throws DisqualifyException.UnableToRetrieveDisqualifyCodeList;
+    List<DisqualifyCodeDto> getDisqualifyReasons();
 
     /**
      * Disqualify Juror with specified code.
      *
      * @return Boolean representing whether disqualification was successful
+     * @throws DisqualifyException
      */
     boolean disqualifyJuror(String jurorId, DisqualifyCodeDto disqualifyCodeDto,
-                            String login) throws DisqualifyException;
+                            String login);
 
 }
