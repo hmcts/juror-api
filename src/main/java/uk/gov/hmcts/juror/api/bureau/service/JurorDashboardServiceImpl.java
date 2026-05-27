@@ -31,6 +31,7 @@ import java.util.Map;
 
 @Slf4j
 @Service
+@SuppressWarnings({"PMD.CouplingBetweenObjects", "PMD.TooManyMethods"})
 public class JurorDashboardServiceImpl implements JurorDashboardService {
 
     private static final String PAPER = "Paper";
@@ -350,6 +351,7 @@ public class JurorDashboardServiceImpl implements JurorDashboardService {
 
     }
 
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     @Override
     public DashboardResponseDto.SurveySatisfactionData getSurveyResponses(DashboardRequestDto request) {
 
@@ -377,11 +379,7 @@ public class JurorDashboardServiceImpl implements JurorDashboardService {
             throw new DashboardException.NoResponsesFound();
         } else {
             //Get ratings counts
-            for (int i = 0;
-                 i < surveyResponses.size();
-                 i++) {
-                SurveyResponse responseObj = surveyResponses.get(i);
-
+            for (SurveyResponse responseObj : surveyResponses) {
                 switch (responseObj.getSatisfactionDesc().toLowerCase()) {
                     case "very satisfied":
                         responseCount++;
@@ -461,7 +459,7 @@ public class JurorDashboardServiceImpl implements JurorDashboardService {
         Map<String, Map<String, Integer>> channelResponses, String channel) {
 
         Map<String, Integer> timeResponses = channelResponses.getOrDefault(channel, null);
-        return timeResponses != null && timeResponses.size() > 0
+        return timeResponses != null && !timeResponses.isEmpty()
             ?
             DashboardMandatoryKpiData.ResponseMethod.builder()
                 .within7days(timeResponses.getOrDefault(WITHIN7DAYS, 0))
