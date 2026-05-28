@@ -33,8 +33,15 @@ public class BureauJwtAuthenticationProvider implements AuthenticationProvider {
         return BureauJwtAuthentication.class.isAssignableFrom(authentication);
     }
 
+    /**
+     * Authenticates given the Authentication request object
+     *
+     * @param authentication the authentication request object.
+     * @return
+     * @throws AuthenticationException
+     */
     @Override
-    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+    public Authentication authenticate(Authentication authentication) {
         try {
             if (authentication instanceof BureauJwtAuthentication bureauJwtAuthentication) {
                 final Claims body = jwtService
