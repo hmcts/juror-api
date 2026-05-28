@@ -28,6 +28,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.DeferredJurorMoveRequestDto
 import uk.gov.hmcts.juror.api.moj.controller.request.deferralmaintenance.ProcessJurorPostponementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralOptionsDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralAgeDisqualificationResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralResponseDto;
 import uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDeferralsService;
 import uk.gov.hmcts.juror.api.validation.JurorNumber;
@@ -48,7 +49,7 @@ public class DeferralMaintenanceController {
     @PostMapping("/juror/defer/{jurorNumber}")
     @Operation(summary = "deferral for a specific juror",
         description = "Mark a single juror response with a deferral decision")
-    public ResponseEntity<Void> processJurorDeferral(
+    public ResponseEntity<DeferralAgeDisqualificationResponseDto> processJurorDeferral(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Parameter(description = "9-digit numeric string to identify the"
             + " juror") @PathVariable(name = "jurorNumber")
@@ -138,11 +139,11 @@ public class DeferralMaintenanceController {
 
     @PostMapping("/deferrals/allocate-jurors-to-pool")
     @Operation(summary = "Move juror(s) to the selected active pool")
-    public ResponseEntity<Void> moveJurorsToActivePool(
+    public ResponseEntity<DeferralAgeDisqualificationResponseDto> moveJurorsToActivePool(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid DeferralAllocateRequestDto deferralAllocateRequestDto) {
-        manageDeferralsService.allocateJurorsToActivePool(payload, deferralAllocateRequestDto);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok()
+            .body(manageDeferralsService.allocateJurorsToActivePool(payload, deferralAllocateRequestDto));
     }
 
     @PostMapping("/deferrals/change-deferral-date/{jurorNumber}")
@@ -166,7 +167,7 @@ public class DeferralMaintenanceController {
     // postponement is a special case of deferral, this endpoint makes it explicit that it's a postponement
     @PostMapping("/juror/postpone")
     @Operation(summary = "Postpone one or more jurors", description = "Mark one or more jurors as postponed")
-    public ResponseEntity<DeferralResponseDto> processJurorPostponement(
+    public ResponseEntity<DeferralAgeDisqualificationResponseDto> processJurorPostponement(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid ProcessJurorPostponementRequestDto request) {
         return ResponseEntity.ok().body(manageDeferralsService.processJurorPostponement(payload, request));
