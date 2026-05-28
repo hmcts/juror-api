@@ -184,7 +184,6 @@ public class DeferralMaintenanceController {
     @PostMapping("/deferrals/bulk-disqualify-age")
     @Operation(summary = "Bulk disqualify jurors for age",
         description = "Disqualify a list of jurors who are too old to serve")
-    @IsBureauUser
     public ResponseEntity<BulkDisqualifyResponseDto> bulkDisqualifyForAge(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid BulkDisqualifyRequestDto requestDto) {
