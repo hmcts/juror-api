@@ -9,6 +9,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.deferralmaintenance.BulkDis
 import uk.gov.hmcts.juror.api.moj.controller.request.deferralmaintenance.ProcessJurorPostponementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralOptionsDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.BulkDisqualifyResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralAgeDisqualificationResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
@@ -65,7 +66,7 @@ public interface ManageDeferralsService {
 
     DeferralAgeDisqualificationResponseDto moveDeferredJuror(DeferredJurorMoveRequestDto requestDto);
 
-    void bulkDisqualifyForAge(BureauJwtPayload payload, BulkDisqualifyRequestDto requestDto);
+    BulkDisqualifyResponseDto bulkDisqualifyForAge(BureauJwtPayload payload, BulkDisqualifyRequestDto requestDto);
 
     static void checkIfJurorHasAttendances(JurorAppearanceService jurorAppearanceService, String jurorNumber) {
         if (jurorAppearanceService.hasAttendances(jurorNumber)) {

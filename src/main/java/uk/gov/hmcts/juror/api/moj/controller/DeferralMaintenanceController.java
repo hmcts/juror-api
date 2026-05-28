@@ -29,6 +29,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.deferralmaintenance.BulkDis
 import uk.gov.hmcts.juror.api.moj.controller.request.deferralmaintenance.ProcessJurorPostponementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralOptionsDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.BulkDisqualifyResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralAgeDisqualificationResponseDto;
 import uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDeferralsService;
 import uk.gov.hmcts.juror.api.validation.JurorNumber;
@@ -184,10 +185,10 @@ public class DeferralMaintenanceController {
     @Operation(summary = "Bulk disqualify jurors for age",
         description = "Disqualify a list of jurors who are too old to serve")
     @IsBureauUser
-    public ResponseEntity<Void> bulkDisqualifyForAge(
+    public ResponseEntity<BulkDisqualifyResponseDto> bulkDisqualifyForAge(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid BulkDisqualifyRequestDto requestDto) {
-        manageDeferralsService.bulkDisqualifyForAge(payload, requestDto);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok()
+            .body(manageDeferralsService.bulkDisqualifyForAge(payload, requestDto));
     }
 }

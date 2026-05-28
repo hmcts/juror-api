@@ -23,6 +23,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.deferralmaintenance.BulkDis
 import uk.gov.hmcts.juror.api.moj.controller.request.deferralmaintenance.ProcessJurorPostponementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralOptionsDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.BulkDisqualifyResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralAgeDisqualificationResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.CurrentlyDeferred;
@@ -515,27 +516,61 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
     @Override
     @Transactional
-    public void bulkDisqualifyForAge(BureauJwtPayload payload, BulkDisqualifyRequestDto requestDto) {
-        for (BulkDisqualifyRequestDto.AgeDisqualifiedJurorDto jurorDto : requestDto.getJurors()) {
-            JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorDto.getJurorNumber());
-            JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
+    public BulkDisqualifyResponseDto bulkDisqualifyForAge(BureauJwtPayload payload,
+                                                          BulkDisqualifyRequestDto requestDto) {
+        int disqualifiedCount = 0;
+        List<BulkDisqualifyResponseDto.DisqualifiedJurorDto> disqualified = new ArrayList<>();
+        List<BulkDisqualifyResponseDto.DisqualifiedJurorDto> failedToDisqualify = new ArrayList<>();
 
-            Juror juror = jurorPool.getJuror();
-            juror.setDisqualifyDate(LocalDate.now());
-            juror.setDisqualifyCode(DisqualifyCode.A.getCode());
-            juror.setUserEdtq(payload.getLogin());
-            jurorRepository.save(juror);
+        for (String jurorNumber : requestDto.getJurorNumbers()) {
+            try {
+                JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
+                JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
 
-            JurorStatus disqualifiedStatus = jurorStatusRepository.findById(IJurorStatus.DISQUALIFIED)
-                .orElseThrow(() -> new MojException.NotFound("Juror status not found", null));
+                LocalDate dob = resolveDateOfBirth(jurorPool);
+                LocalDate currentServiceStartDate = jurorPool.getReturnDate();
 
-            jurorPool.setStatus(disqualifiedStatus);
-            jurorPool.setUserEdtq(payload.getLogin());
-            jurorPool.setIsActive(false);
-            jurorPoolRepository.save(jurorPool);
+                Juror juror = jurorPool.getJuror();
+                juror.setDisqualifyDate(LocalDate.now());
+                juror.setDisqualifyCode(DisqualifyCode.A.getCode());
+                juror.setUserEdtq(payload.getLogin());
+                jurorRepository.save(juror);
 
-            jurorHistoryService.createDisqualifyHistory(jurorPool, DisqualifyCode.A.getCode());
+                JurorStatus disqualifiedStatus = jurorStatusRepository.findById(IJurorStatus.DISQUALIFIED)
+                    .orElseThrow(() -> new MojException.NotFound("Juror status not found", null));
+
+                jurorPool.setStatus(disqualifiedStatus);
+                jurorPool.setUserEdtq(payload.getLogin());
+                jurorPool.setIsActive(false);
+                jurorPoolRepository.save(jurorPool);
+
+                jurorHistoryService.createDisqualifyHistory(jurorPool, DisqualifyCode.A.getCode());
+
+                disqualified.add(BulkDisqualifyResponseDto.DisqualifiedJurorDto.builder()
+                                     .jurorNumber(jurorNumber)
+                                     .dob(dob)
+                                     .currentServiceStartDate(currentServiceStartDate)
+                                     .newDate(null) // no new date for a direct disqualification
+                                     .build());
+
+                disqualifiedCount++;
+            } catch (Exception e) {
+                log.error("Failed to disqualify juror {} for age: {}", jurorNumber, e.getMessage());
+
+                failedToDisqualify.add(BulkDisqualifyResponseDto.DisqualifiedJurorDto.builder()
+                                           .jurorNumber(jurorNumber)
+                                           .build());
+            }
         }
+
+        log.info("Bulk age disqualification complete. Disqualified: {}, Failed: {}",
+                 disqualifiedCount, failedToDisqualify.size());
+
+        return BulkDisqualifyResponseDto.builder()
+            .disqualifiedCount(disqualifiedCount)
+            .disqualified(disqualified)
+            .failedToDisqualify(failedToDisqualify)
+            .build();
     }
 
     @Override
