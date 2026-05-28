@@ -13,7 +13,7 @@ public interface JurorNotificationService {
      * @throws NotificationServiceException Failed sending message
      */
     void sendResponseReceipt(DigitalResponse digitalResponse,
-                             NotifyTemplateType notifyTemplateType) throws NotificationServiceException;
+                             NotifyTemplateType notifyTemplateType);
 
     /**
      * Build a email.
