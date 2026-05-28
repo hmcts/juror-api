@@ -7,11 +7,15 @@ import java.util.UUID;
 
 @Data
 @AllArgsConstructor
-abstract class NotificationReceipt {
+public class NotificationReceipt {
     private UUID notificationId;
     private String reference;
     private UUID templateId;
     private int templateVersion;
     private String templateUri;
     private String body;
+
+    protected NotificationReceipt() {
+        throw new IllegalArgumentException("NotificationReceipt should not be instantiated.");
+    }
 }
