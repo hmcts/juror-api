@@ -38,6 +38,7 @@ public class SecurityConfig {
     }
 
     @Bean
+    @SuppressWarnings({"PMD.SignatureDeclareThrowsException"}) // .build() throws Exception
     public AuthenticationManager authManager(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder authenticationManagerBuilder =
             http.getSharedObject(AuthenticationManagerBuilder.class);
