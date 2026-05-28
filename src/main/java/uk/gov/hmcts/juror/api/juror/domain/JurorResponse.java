@@ -56,6 +56,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.POSTCODE_REG
 @ToString(exclude = {"specialNeeds", "cjsEmployments"})// lazy init fields
 @EqualsAndHashCode(exclude = {"workPhone", "cjsEmployments", "specialNeeds", "staff"})
 @Deprecated(forRemoval = true)
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyFields"})
 public class JurorResponse implements Serializable {
     /*
      * Constants for field names. MUST match exactly!
@@ -418,6 +419,7 @@ public class JurorResponse implements Serializable {
     private Boolean welsh = Boolean.FALSE;
 
     @PrePersist
+    @SuppressWarnings({"PMD.UnusedPrivateMethod"}) // False positive, called via PrePersist annotation
     private void ensureDefaults() {
         if (processingStatus == null) {
             processingStatus = ProcessingStatus.TODO;
