@@ -6,6 +6,7 @@ import uk.gov.hmcts.juror.api.juror.controller.PublicAuthenticationController.Pu
 /**
  * Authentication service interface for public authentication operations.
  */
+@FunctionalInterface
 public interface PublicAuthenticationService {
     /**
      * Create a authentication response based on provided juror credentials.
