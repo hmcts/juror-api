@@ -36,8 +36,15 @@ public class PublicJwtAuthenticationProvider implements AuthenticationProvider {
         return PublicJwtAuthentication.class.isAssignableFrom(authentication);
     }
 
+    /**
+     * Authenticate given the authentication request object below
+     *
+     * @param authentication the authentication request object.
+     * @return
+     * @throws AuthenticationException
+     */
     @Override
-    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+    public Authentication authenticate(Authentication authentication) {
         try {
             if (authentication instanceof PublicJwtAuthentication publicJwtAuthentication) {
                 final Claims jwt = jwtService
