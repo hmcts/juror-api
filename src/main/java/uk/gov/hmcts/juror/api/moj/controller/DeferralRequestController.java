@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralAgeDisqualificationResponseDto;
 import uk.gov.hmcts.juror.api.moj.service.DeferralResponseService;
 
 @Slf4j
@@ -34,12 +34,11 @@ public class DeferralRequestController {
 
     @PutMapping(path = "/juror/{jurorNumber}")
     @Operation(summary = "Enter and respond to an deferral request from a Juror")
-    public ResponseEntity<Void> respondToDeferralRequest(
+    public ResponseEntity<DeferralAgeDisqualificationResponseDto> respondToDeferralRequest(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid DeferralRequestDto deferralRequestDto) {
         log.info("Begin process for response to deferral request");
-        deferralResponseService.respondToDeferralRequest(payload, deferralRequestDto);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok()
+            .body(deferralResponseService.respondToDeferralRequest(payload, deferralRequestDto));
     }
-
 }
