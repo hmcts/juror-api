@@ -50,7 +50,7 @@ public class UploadController {
         return ResponseEntity.ok(dashboard);
     }
 
-    @PostMapping(value = "/file")
+    @PostMapping("/file")
     @Operation(summary = "Save uploaded file information")
     public ResponseEntity<String> uploadFile(
             @Valid @RequestBody FileUploadRequestDto request) {
