@@ -9,6 +9,7 @@ public class LaUserId implements Serializable {
     private String localAuthority; // Must match the PK type of LocalAuthority (la_code)
 
     public LaUserId() {
+        // Intentionally empty constructor.
     }
 
     public LaUserId(String username, String localAuthority) {
@@ -17,12 +18,12 @@ public class LaUserId implements Serializable {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
+    public boolean equals(Object object) {
+        if (this == object) {
             return true;
         }
 
-        if (!(o instanceof LaUserId that)) {
+        if (!(object instanceof LaUserId that)) {
             return false;
         }
 
