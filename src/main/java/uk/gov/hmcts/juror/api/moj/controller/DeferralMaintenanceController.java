@@ -149,12 +149,12 @@ public class DeferralMaintenanceController {
 
     @PostMapping("/deferrals/change-deferral-date/{jurorNumber}")
     @Operation(summary = "Change the date of a deferred juror")
-    public ResponseEntity<Void> changeJurorsDeferralDate(
+    public ResponseEntity<DeferralAgeDisqualificationResponseDto> changeJurorsDeferralDate(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @PathVariable(name = "jurorNumber") @JurorNumber @Valid String jurorNumber,
         @RequestBody @Valid DeferralReasonRequestDto deferralReasonRequestDto) {
-        manageDeferralsService.changeJurorDeferralDate(payload, jurorNumber, deferralReasonRequestDto);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok()
+            .body(manageDeferralsService.changeJurorDeferralDate(payload, jurorNumber, deferralReasonRequestDto));
     }
 
     @DeleteMapping("/delete-deferral/{jurorNumber}")

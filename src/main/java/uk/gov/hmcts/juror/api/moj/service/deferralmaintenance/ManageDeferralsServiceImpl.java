@@ -226,8 +226,9 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
     @Override
     @Transactional
-    public void changeJurorDeferralDate(BureauJwtPayload payload, String jurorNumber,
-                                        DeferralReasonRequestDto deferralReasonDto) {
+    public DeferralAgeDisqualificationResponseDto changeJurorDeferralDate(BureauJwtPayload payload,
+                                                                          String jurorNumber,
+                                                                          DeferralReasonRequestDto deferralReasonDto) {
         final String auditorUsername = payload.getLogin();
 
         log.info("Processing deferral request for juror: {}", jurorNumber);
@@ -239,6 +240,33 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
 
         ManageDeferralsService.checkIfJurorHasAttendances(jurorAppearanceService, jurorNumber);
+
+        // determine service start date for age check
+        LocalDate currentServiceStartDate = jurorPool.getReturnDate();
+        LocalDate newDate = deferralReasonDto.getDeferralDate();
+
+        if (!StringUtils.isEmpty(deferralReasonDto.getPoolNumber())) {
+            Optional<PoolRequest> targetPool = poolRequestRepository.findByPoolNumber(
+                deferralReasonDto.getPoolNumber());
+            if (targetPool.isPresent()) {
+                newDate = targetPool.get().getReturnDate();
+            }
+        }
+
+        LocalDate dob = resolveDateOfBirth(jurorPool);
+        if (ManageDeferralsService.isAgeDisqualified(dob, newDate)) {
+            return DeferralAgeDisqualificationResponseDto.builder()
+                .eligible(0)
+                .ageDisqualified(List.of(
+                    DeferralAgeDisqualificationResponseDto.AgeDisqualifiedJurorDto.builder()
+                        .jurorNumber(jurorNumber)
+                        .dob(dob)
+                        .currentServiceStartDate(currentServiceStartDate)
+                        .newDate(newDate)
+                        .build()
+                ))
+                .build();
+        }
 
         if (!StringUtils.isEmpty(deferralReasonDto.getPoolNumber())) {
 
@@ -286,6 +314,11 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
             printDeferralLetter(payload.getOwner(), jurorPool);
         }
+
+        return DeferralAgeDisqualificationResponseDto.builder()
+            .eligible(1)
+            .ageDisqualified(List.of())
+            .build();
     }
 
     @Override

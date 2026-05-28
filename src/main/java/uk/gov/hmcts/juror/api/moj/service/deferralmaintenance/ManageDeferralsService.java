@@ -56,7 +56,7 @@ public interface ManageDeferralsService {
 
     DeferralOptionsDto findActivePoolsForCourtLocation(BureauJwtPayload payload, String courtLocation);
 
-    void changeJurorDeferralDate(BureauJwtPayload payload, String jurorNumber,
+    DeferralAgeDisqualificationResponseDto changeJurorDeferralDate(BureauJwtPayload payload, String jurorNumber,
                                  DeferralReasonRequestDto deferralReasonRequestDto);
 
     void deleteDeferral(BureauJwtPayload payload, String jurorNumber);
