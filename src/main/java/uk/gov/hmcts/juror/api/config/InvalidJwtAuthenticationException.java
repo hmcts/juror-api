@@ -10,7 +10,7 @@ public class InvalidJwtAuthenticationException extends RuntimeException {
         super(msg);
     }
 
-    public InvalidJwtAuthenticationException(String msg, Throwable t) {
-        super(msg, t);
+    public InvalidJwtAuthenticationException(String msg, Throwable cause) {
+        super(msg, cause);
     }
 }
