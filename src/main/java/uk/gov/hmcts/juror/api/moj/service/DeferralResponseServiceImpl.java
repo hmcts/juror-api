@@ -110,7 +110,8 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
             // age check - only applies to grant path since we are moving juror to a future date
             LocalDate currentServiceStartDate = jurorPool.getReturnDate();
             LocalDate newDate = deferralRequestDto.getDeferralDate();
-            LocalDate dob = resolveDateOfBirth(jurorPool);
+            LocalDate dob = ManageDeferralsService.resolveDateOfBirth(
+                jurorPool, digitalResponseRepository, paperResponseRepository);
 
             if (ManageDeferralsService.isAgeDisqualified(dob, newDate)) {
                 return DeferralAgeDisqualificationResponseDto.builder()
@@ -139,23 +140,7 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
         }
     }
 
-    private LocalDate resolveDateOfBirth(JurorPool jurorPool) {
-        LocalDate dob = jurorPool.getJuror().getDateOfBirth();
-        if (dob != null) {
-            return dob;
-        }
-        // fall back to digital response record
-        DigitalResponse digital = digitalResponseRepository.findByJurorNumber(jurorPool.getJurorNumber());
-        if (digital != null && digital.getDateOfBirth() != null) {
-            return digital.getDateOfBirth();
-        }
-        // fall back to paper response record
-        PaperResponse paper = paperResponseRepository.findByJurorNumber(jurorPool.getJurorNumber());
-        if (paper != null && paper.getDateOfBirth() != null) {
-            return paper.getDateOfBirth();
-        }
-        return null;
-    }
+
 
     @SuppressWarnings("java:S125")
     private void declineDeferralForJurorPool(BureauJwtPayload payload, DeferralRequestDto deferralRequestDto,

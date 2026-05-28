@@ -160,7 +160,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             }
         }
 
-        LocalDate dob = resolveDateOfBirth(jurorPool);
+        LocalDate dob = ManageDeferralsService.resolveDateOfBirth(
+            jurorPool, digitalResponseRepository, paperResponseRepository);
         if (ManageDeferralsService.isAgeDisqualified(dob, newDate)) {
             return DeferralAgeDisqualificationResponseDto.builder()
                 .eligible(0)
@@ -253,7 +254,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             }
         }
 
-        LocalDate dob = resolveDateOfBirth(jurorPool);
+        LocalDate dob = ManageDeferralsService.resolveDateOfBirth(
+            jurorPool, digitalResponseRepository, paperResponseRepository);
         if (ManageDeferralsService.isAgeDisqualified(dob, newDate)) {
             return DeferralAgeDisqualificationResponseDto.builder()
                 .eligible(0)
@@ -345,7 +347,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
             JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
 
-            LocalDate dob = resolveDateOfBirth(jurorPool);
+            LocalDate dob = ManageDeferralsService.resolveDateOfBirth(
+                jurorPool, digitalResponseRepository, paperResponseRepository);
             if (ManageDeferralsService.isAgeDisqualified(dob, serviceStartDate)) {
                 ageDisqualified.add(
                     DeferralAgeDisqualificationResponseDto.AgeDisqualifiedJurorDto.builder()
@@ -413,7 +416,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                 }
             }
 
-            LocalDate dob = resolveDateOfBirth(jurorPool);
+            LocalDate dob = ManageDeferralsService.resolveDateOfBirth(
+                jurorPool, digitalResponseRepository, paperResponseRepository);
             if (ManageDeferralsService.isAgeDisqualified(dob, newDate)) {
                 ageDisqualified.add(
                     DeferralAgeDisqualificationResponseDto.AgeDisqualifiedJurorDto.builder()
@@ -510,7 +514,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             // check the juror is moving to a different pool
             validateJurorPool(newPool.getPoolNumber(), currentJurorPool);
 
-            LocalDate dob = resolveDateOfBirth(currentJurorPool);
+            LocalDate dob = ManageDeferralsService.resolveDateOfBirth(
+                currentJurorPool, digitalResponseRepository, paperResponseRepository);
             if (ManageDeferralsService.isAgeDisqualified(dob, serviceStartDate)) {
                 ageDisqualified.add(
                     DeferralAgeDisqualificationResponseDto.AgeDisqualifiedJurorDto.builder()
@@ -560,7 +565,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                 JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
                 JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
 
-                LocalDate dob = resolveDateOfBirth(jurorPool);
+                LocalDate dob = ManageDeferralsService.resolveDateOfBirth(
+                    jurorPool, digitalResponseRepository, paperResponseRepository);
                 LocalDate currentServiceStartDate = jurorPool.getReturnDate();
 
                 Juror juror = jurorPool.getJuror();
@@ -842,23 +848,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         jurorRepository.save(juror);
     }
 
-    private LocalDate resolveDateOfBirth(JurorPool jurorPool) {
-        LocalDate dob = jurorPool.getJuror().getDateOfBirth();
-        if (dob != null) {
-            return dob;
-        }
-        // fall back to digital response record
-        DigitalResponse digital = digitalResponseRepository.findByJurorNumber(jurorPool.getJurorNumber());
-        if (digital != null && digital.getDateOfBirth() != null) {
-            return digital.getDateOfBirth();
-        }
-        // fall back to paper response record
-        PaperResponse paper = paperResponseRepository.findByJurorNumber(jurorPool.getJurorNumber());
-        if (paper != null && paper.getDateOfBirth() != null) {
-            return paper.getDateOfBirth();
-        }
-        return null;
-    }
+
 
     private void validateJurorPool(String poolNumber, JurorPool jurorPool) {
         if (jurorPool.getPoolNumber().equalsIgnoreCase(poolNumber)) {

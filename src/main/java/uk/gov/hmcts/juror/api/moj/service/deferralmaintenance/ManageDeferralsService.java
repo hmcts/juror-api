@@ -11,10 +11,13 @@ import uk.gov.hmcts.juror.api.moj.controller.response.DeferralListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralOptionsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.BulkDisqualifyResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralAgeDisqualificationResponseDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 
 import java.time.LocalDate;
@@ -57,12 +60,13 @@ public interface ManageDeferralsService {
     DeferralOptionsDto findActivePoolsForCourtLocation(BureauJwtPayload payload, String courtLocation);
 
     DeferralAgeDisqualificationResponseDto changeJurorDeferralDate(BureauJwtPayload payload, String jurorNumber,
-                                 DeferralReasonRequestDto deferralReasonRequestDto);
+                                                                   DeferralReasonRequestDto deferralReasonRequestDto);
 
     void deleteDeferral(BureauJwtPayload payload, String jurorNumber);
 
     DeferralAgeDisqualificationResponseDto processJurorPostponement(BureauJwtPayload payload,
-                                                                    ProcessJurorPostponementRequestDto processJurorRequestDto);
+                                                                    ProcessJurorPostponementRequestDto
+                                                                        processJurorRequestDto);
 
     DeferralAgeDisqualificationResponseDto moveDeferredJuror(DeferredJurorMoveRequestDto requestDto);
 
@@ -86,5 +90,25 @@ public interface ManageDeferralsService {
             return false;
         }
         return Period.between(dateOfBirth, serviceStartDate).getYears() >= AGE_DISQUALIFICATION_THRESHOLD;
+    }
+
+    static LocalDate resolveDateOfBirth(JurorPool jurorPool,
+                                        JurorDigitalResponseRepositoryMod digitalResponseRepository,
+                                        JurorPaperResponseRepositoryMod paperResponseRepository) {
+        LocalDate dob = jurorPool.getJuror().getDateOfBirth();
+        if (dob != null) {
+            return dob;
+        }
+        // fall back to digital response record
+        DigitalResponse digital = digitalResponseRepository.findByJurorNumber(jurorPool.getJurorNumber());
+        if (digital != null && digital.getDateOfBirth() != null) {
+            return digital.getDateOfBirth();
+        }
+        // fall back to paper response record
+        PaperResponse paper = paperResponseRepository.findByJurorNumber(jurorPool.getJurorNumber());
+        if (paper != null && paper.getDateOfBirth() != null) {
+            return paper.getDateOfBirth();
+        }
+        return null;
     }
 }
