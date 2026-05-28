@@ -10,11 +10,12 @@ import java.util.Map;
 @ToString(callSuper = true)
 @Data
 public final class EmailNotification extends Notification {
+    private String recipientEmail;
+
     public EmailNotification(final String templateId, final String recipientEmail, final Map<String, String> payload) {
+        super();
         this.templateId = templateId;
         this.recipientEmail = recipientEmail;
         this.payload = payload;
     }
-
-    private String recipientEmail;
 }
