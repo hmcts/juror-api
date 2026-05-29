@@ -30,7 +30,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.DeferredJurorMoveRequestDto
 import uk.gov.hmcts.juror.api.moj.controller.request.deferralmaintenance.ProcessJurorPostponementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralOptionsDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralAgeDisqualificationResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.CurrentlyDeferred;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
@@ -206,10 +206,10 @@ class ManageDeferralsServiceTest {
             doReturn(Optional.of(newPoolRequest)).when(poolRequestRepository).findByPoolNumber(anyString());
             doNothing().when(printDataService).printPostponeLetter(any());
 
-            DeferralResponseDto response =
+            DeferralAgeDisqualificationResponseDto response =
                 manageDeferralsService.processJurorPostponement(bureauPayload, createProcessJurorRequestDto());
 
-            assertThat(response.getCountJurorsPostponed()).isEqualTo(1);
+            assertThat(response.getEligible()).isEqualTo(1);
 
             verify(jurorPoolService, times(1))
                 .getJurorPoolFromUser(JUROR_123456789);
@@ -259,10 +259,10 @@ class ManageDeferralsServiceTest {
             doReturn(1).when(poolMemberSequenceService).getPoolMemberSequenceNumber(any());
             doReturn(Optional.of(newPoolRequest)).when(poolRequestRepository).findByPoolNumber(anyString());
 
-            DeferralResponseDto response =
+            DeferralAgeDisqualificationResponseDto response =
                 manageDeferralsService.processJurorPostponement(bureauPayload, createProcessJurorRequestDto());
 
-            assertThat(response.getCountJurorsPostponed()).isEqualTo(1);
+            assertThat(response.getEligible()).isEqualTo(1);
 
             verify(jurorPoolService, times(1))
                 .getJurorPoolFromUser(JUROR_123456789);
@@ -321,9 +321,9 @@ class ManageDeferralsServiceTest {
             jurorNumbers.add(JUROR_111111111);
             request.setJurorNumbers(jurorNumbers);
 
-            DeferralResponseDto response = manageDeferralsService.processJurorPostponement(bureauPayload, request);
+            DeferralAgeDisqualificationResponseDto response = manageDeferralsService.processJurorPostponement(bureauPayload, request);
 
-            assertThat(response.getCountJurorsPostponed()).isEqualTo(2);
+            assertThat(response.getEligible()).isEqualTo(2);
 
             verify(jurorPoolService, times(2))
                 .getJurorPoolFromUser(any());
@@ -480,10 +480,10 @@ class ManageDeferralsServiceTest {
             doReturn(jurorPool).when(jurorPoolService)
                 .getJurorPoolFromUser(JUROR_123456789);
 
-            DeferralResponseDto response = manageDeferralsService.processJurorPostponement(bureauPayload,
+            DeferralAgeDisqualificationResponseDto response = manageDeferralsService.processJurorPostponement(bureauPayload,
                 createProcessJurorRequestDtoToCurrentlyDeferred());
 
-            assertThat(response.getCountJurorsPostponed()).isEqualTo(1);
+            assertThat(response.getEligible()).isEqualTo(1);
 
             verify(jurorPoolRepository, times(0)).saveAndFlush(any());
             verify(jurorPoolRepository, times(2)).save(any());

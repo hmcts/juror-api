@@ -580,7 +580,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
                 jurorPool.setStatus(disqualifiedStatus);
                 jurorPool.setUserEdtq(payload.getLogin());
-                jurorPool.setIsActive(false);
+               // jurorPool.setIsActive(false);
                 jurorPoolRepository.save(jurorPool);
 
                 jurorHistoryService.createDisqualifyHistory(jurorPool, DisqualifyCode.A.getCode());
