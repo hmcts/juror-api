@@ -25,7 +25,6 @@ import uk.gov.hmcts.juror.api.moj.controller.response.DeferralListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralOptionsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.BulkDisqualifyResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralAgeDisqualificationResponseDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.CurrentlyDeferred;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
@@ -161,7 +160,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         }
 
         LocalDate dob = ManageDeferralsService.resolveDateOfBirth(
-            jurorPool, digitalResponseRepository, paperResponseRepository);
+            jurorPool, digitalResponseRepository, paperResponseRepository,
+            deferralReasonDto.getReplyMethod());
         if (ManageDeferralsService.isAgeDisqualified(dob, newDate)) {
             return DeferralAgeDisqualificationResponseDto.builder()
                 .eligible(0)
@@ -255,7 +255,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         }
 
         LocalDate dob = ManageDeferralsService.resolveDateOfBirth(
-            jurorPool, digitalResponseRepository, paperResponseRepository);
+            jurorPool, digitalResponseRepository, paperResponseRepository,null);
         if (ManageDeferralsService.isAgeDisqualified(dob, newDate)) {
             return DeferralAgeDisqualificationResponseDto.builder()
                 .eligible(0)
@@ -348,7 +348,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
 
             LocalDate dob = ManageDeferralsService.resolveDateOfBirth(
-                jurorPool, digitalResponseRepository, paperResponseRepository);
+                jurorPool, digitalResponseRepository, paperResponseRepository,null);
             if (ManageDeferralsService.isAgeDisqualified(dob, serviceStartDate)) {
                 ageDisqualified.add(
                     DeferralAgeDisqualificationResponseDto.AgeDisqualifiedJurorDto.builder()
@@ -417,7 +417,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             }
 
             LocalDate dob = ManageDeferralsService.resolveDateOfBirth(
-                jurorPool, digitalResponseRepository, paperResponseRepository);
+                jurorPool, digitalResponseRepository, paperResponseRepository,null);
             if (ManageDeferralsService.isAgeDisqualified(dob, newDate)) {
                 ageDisqualified.add(
                     DeferralAgeDisqualificationResponseDto.AgeDisqualifiedJurorDto.builder()
@@ -515,7 +515,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             validateJurorPool(newPool.getPoolNumber(), currentJurorPool);
 
             LocalDate dob = ManageDeferralsService.resolveDateOfBirth(
-                currentJurorPool, digitalResponseRepository, paperResponseRepository);
+                currentJurorPool, digitalResponseRepository, paperResponseRepository,null);
             if (ManageDeferralsService.isAgeDisqualified(dob, serviceStartDate)) {
                 ageDisqualified.add(
                     DeferralAgeDisqualificationResponseDto.AgeDisqualifiedJurorDto.builder()
@@ -566,7 +566,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                 JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
 
                 LocalDate dob = ManageDeferralsService.resolveDateOfBirth(
-                    jurorPool, digitalResponseRepository, paperResponseRepository);
+                    jurorPool, digitalResponseRepository, paperResponseRepository,null);
                 LocalDate currentServiceStartDate = jurorPool.getReturnDate();
 
                 Juror juror = jurorPool.getJuror();

@@ -16,8 +16,6 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.exception.ExcusalResponseException;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -111,7 +109,7 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
             LocalDate currentServiceStartDate = jurorPool.getReturnDate();
             LocalDate newDate = deferralRequestDto.getDeferralDate();
             LocalDate dob = ManageDeferralsService.resolveDateOfBirth(
-                jurorPool, digitalResponseRepository, paperResponseRepository);
+                jurorPool, digitalResponseRepository, paperResponseRepository,null);
 
             if (ManageDeferralsService.isAgeDisqualified(dob, newDate)) {
                 return DeferralAgeDisqualificationResponseDto.builder()

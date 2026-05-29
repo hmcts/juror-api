@@ -15,6 +15,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
+import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
@@ -94,17 +95,33 @@ public interface ManageDeferralsService {
 
     static LocalDate resolveDateOfBirth(JurorPool jurorPool,
                                         JurorDigitalResponseRepositoryMod digitalResponseRepository,
-                                        JurorPaperResponseRepositoryMod paperResponseRepository) {
+                                        JurorPaperResponseRepositoryMod paperResponseRepository,
+                                        ReplyMethod replyMethod) {
+        if (replyMethod != null) {
+            if (replyMethod == ReplyMethod.DIGITAL) {
+                DigitalResponse digital = digitalResponseRepository.findByJurorNumber(
+                    jurorPool.getJurorNumber());
+                if (digital != null && digital.getDateOfBirth() != null) {
+                    return digital.getDateOfBirth();
+                }
+            } else if (replyMethod == ReplyMethod.PAPER) {
+                PaperResponse paper = paperResponseRepository.findByJurorNumber(
+                    jurorPool.getJurorNumber());
+                if (paper != null && paper.getDateOfBirth() != null) {
+                    return paper.getDateOfBirth();
+                }
+            }
+        }
+        // null replyMethod or response record has no DOB — fall back to juror entity,
+        // then digital, then paper
         LocalDate dob = jurorPool.getJuror().getDateOfBirth();
         if (dob != null) {
             return dob;
         }
-        // fall back to digital response record
         DigitalResponse digital = digitalResponseRepository.findByJurorNumber(jurorPool.getJurorNumber());
         if (digital != null && digital.getDateOfBirth() != null) {
             return digital.getDateOfBirth();
         }
-        // fall back to paper response record
         PaperResponse paper = paperResponseRepository.findByJurorNumber(jurorPool.getJurorNumber());
         if (paper != null && paper.getDateOfBirth() != null) {
             return paper.getDateOfBirth();
