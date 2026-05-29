@@ -18,10 +18,10 @@ import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 @AllArgsConstructor
 @ToString(callSuper = true)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-@JsonIgnoreProperties(value = {"total_due", "total_paid", "total_outstanding"})
+@JsonIgnoreProperties({"total_due", "total_paid", "total_outstanding"})
 public class ExpenseDetailsWithOriginalDto extends ExpenseDetailsWithTotalsDto {
 
-    @JsonIgnoreProperties(value = {"total_due", "total_paid", "total_outstanding"})
+    @JsonIgnoreProperties({"total_due", "total_paid", "total_outstanding"})
     private ExpenseDetailsWithTotalsDto original;
 
     public ExpenseDetailsWithOriginalDto(Appearance appearance, Appearance originalAppearance) {
