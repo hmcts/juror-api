@@ -59,7 +59,7 @@ import java.util.List;
 @Validated
 @Tag(name = "Summons Management")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
-@SuppressWarnings("PMD.ExcessiveImports")
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 public class LetterController {
 
     @NonNull
