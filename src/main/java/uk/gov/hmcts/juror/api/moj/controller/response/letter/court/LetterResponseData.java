@@ -9,7 +9,7 @@ import java.time.LocalDate;
 
 @Getter
 @AllArgsConstructor
-public abstract class LetterResponseData {
+public class LetterResponseData {
 
     @JsonProperty("juror_number")
     String jurorNumber;
@@ -32,4 +32,8 @@ public abstract class LetterResponseData {
 
     @JsonProperty("pool_number")
     String poolNumber;
+
+    protected LetterResponseData() {
+        throw new IllegalArgumentException("LetterResponseData should not be instantiated");
+    }
 }
