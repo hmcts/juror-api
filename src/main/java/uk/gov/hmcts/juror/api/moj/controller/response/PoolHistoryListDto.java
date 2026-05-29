@@ -47,28 +47,34 @@ public class PoolHistoryListDto {
 
         @JsonProperty("poolNumber")
         @Schema(name = "Pool number", description = "The unique number for a pool request")
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private String poolNumber;
 
         @JsonProperty("datePart")
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm", shape = JsonFormat.Shape.STRING)
         @Schema(name = "History Date", description = "The history date recorded")
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private LocalDateTime historyDate;
 
         @JsonProperty("historyCode")
         @Schema(name = "History Code", description = "The ID for a type of history event on a pool request")
         @Enumerated(EnumType.STRING)
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private HistoryCode historyCode;
 
         @JsonProperty("userId")
         @Schema(name = "User Id", description = "The ID of the current user")
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private String userId;
 
         @JsonProperty("otherInformation")
         @Schema(name = "Other Information", description = "Additional information relating to the history event")
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private String otherInformation;
 
         @JsonProperty("historyDescription")
         @Schema(name = "history description", description = "The description of the history code")
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private String historyDescription;
 
         /**
