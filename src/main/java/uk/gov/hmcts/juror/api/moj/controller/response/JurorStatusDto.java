@@ -21,7 +21,7 @@ public class JurorStatusDto {
         return JurorStatusDto.builder()
             .status(status.getStatus())
             .statusDesc(status.getStatusDesc())
-            .active(status.getActive())
+            .active(status.isActive())
             .build();
     }
 

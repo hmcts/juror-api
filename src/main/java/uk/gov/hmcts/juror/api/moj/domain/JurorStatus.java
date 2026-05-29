@@ -44,7 +44,7 @@ public class JurorStatus implements HasCodeAndDescription<Integer>, HasActive, S
     }
 
     @Override
-    public Boolean getActive() {
+    public Boolean isActive() {
         return this.active;
     }
 }
