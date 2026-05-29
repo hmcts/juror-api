@@ -26,11 +26,12 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @ControllerAdvice(basePackages = {"uk.gov.hmcts.juror.api.moj"})
+@SuppressWarnings({"PMD.TooManyMethods"})
 public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
 
     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -147,7 +148,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         return new ResponseEntity<>(body, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
-    @ExceptionHandler(value = {SQLException.class, PSQLException.class,
+    @ExceptionHandler({SQLException.class, PSQLException.class,
         DateException.DateParseException.class,
         JurorPaperResponseException.UnableToFindJurorRecord.class,
         PoolCreateException.UnableToCreatePool.class,
@@ -170,7 +171,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         MethodArgumentNotValidException ex, HttpHeaders headers,
         HttpStatusCode status, WebRequest request) {
 
-        Map<String, Object> body = new LinkedHashMap<>();
+        Map<String, Object> body = new ConcurrentHashMap<>();
         body.put("timestamp", LocalDateTime.now().format(dateTimeFormatter));
         body.put("status", status.value());
 
@@ -185,7 +186,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     }
 
     private Map<String, Object> createGenericErrorResponseBody(String message) {
-        Map<String, Object> body = new LinkedHashMap<>();
+        Map<String, Object> body = new ConcurrentHashMap<>();
         body.put("timestamp", LocalDateTime.now().format(dateTimeFormatter));
         body.put("message", message);
         return body;
@@ -200,6 +201,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
 
     @Nullable
     @Override
+    @SuppressWarnings({"PMD.AvoidDeeplyNestedIfStmts"})
     protected ResponseEntity<Object> handleExceptionInternal(
         Exception ex, @Nullable Object body, HttpHeaders headers, HttpStatusCode statusCode, WebRequest request) {
         logger.error("Internal server error", ex);
@@ -214,14 +216,16 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
             }
         }
 
+        Object updatedBody = null;
         if (body == null && ex instanceof ErrorResponse errorResponse) {
-            body = errorResponse.updateAndGetBody(this.getMessageSource(), LocaleContextHolder.getLocale());
+            updatedBody = errorResponse.updateAndGetBody(this.getMessageSource(), LocaleContextHolder.getLocale());
         }
 
-        if (statusCode == HttpStatus.INTERNAL_SERVER_ERROR && body == null) {
+        // TODO: review if updatedBody from body migration makes sense in if condition below
+        if (statusCode == HttpStatus.INTERNAL_SERVER_ERROR && updatedBody == null) {
             request.setAttribute("jakarta.servlet.error.exception", ex, 0);
         }
 
-        return this.createResponseEntity(body, headers, statusCode, request);
+        return this.createResponseEntity(updatedBody, headers, statusCode, request);
     }
 }
