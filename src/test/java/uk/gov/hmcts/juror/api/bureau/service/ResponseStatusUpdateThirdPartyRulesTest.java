@@ -109,7 +109,7 @@ public class ResponseStatusUpdateThirdPartyRulesTest {
 
         assertThat(poolDetails.getJuror().getEmail()).isNotEqualTo(THIRD_PARTY_EMAIL_ADDRESS);
 
-        assertThat(jurorResponse.getProcessingComplete()).isTrue();
+        assertThat(jurorResponse.isProcessingComplete()).isTrue();
     }
 
     @Test
@@ -124,7 +124,7 @@ public class ResponseStatusUpdateThirdPartyRulesTest {
 
         assertThat(poolDetails.getJuror().getEmail()).isEqualTo(JUROR_EMAIL_ADDRESS);
 
-        assertThat(jurorResponse.getProcessingComplete()).isTrue();
+        assertThat(jurorResponse.isProcessingComplete()).isTrue();
     }
 
     @Test
@@ -143,7 +143,7 @@ public class ResponseStatusUpdateThirdPartyRulesTest {
         assertThat(jurorResponse.getPhoneNumber()).isEqualTo(JUROR_PRIMARY_PHONE);
         assertThat(jurorResponse.getAltPhoneNumber()).isEqualTo(JUROR_MOBILE_PHONE);
 
-        assertThat(jurorResponse.getProcessingComplete()).isTrue();
+        assertThat(jurorResponse.isProcessingComplete()).isTrue();
     }
 
     @Test
@@ -160,6 +160,6 @@ public class ResponseStatusUpdateThirdPartyRulesTest {
         assertThat(poolDetails.getJuror().getAltPhoneNumber()).isEqualTo(JUROR_PRIMARY_PHONE);
 
         // This is the ONLY field that should change on the juror response object
-        assertThat(jurorResponse.getProcessingComplete()).isTrue();
+        assertThat(jurorResponse.isProcessingComplete()).isTrue();
     }
 }

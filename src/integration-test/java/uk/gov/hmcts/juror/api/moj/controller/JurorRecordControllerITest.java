@@ -3407,7 +3407,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         assertThat(dto.getWelsh())
             .as("Expect Welsh flag property to be mapped from the Juror Response record")
-            .isEqualTo(jurorResponse.getWelsh());
+            .isEqualTo(jurorResponse.isWelsh());
     }
 
     @Nested

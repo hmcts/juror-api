@@ -92,7 +92,7 @@ public class ResponseDisqualifyServiceImpl implements ResponseDisqualifyService 
                 throw new DisqualifyException.JurorNotFound(jurorId);
             }
 
-            if (BooleanUtils.isTrue(savedResponse.getProcessingComplete())) {
+            if (BooleanUtils.isTrue(savedResponse.isProcessingComplete())) {
                 final String message = "Response " + savedResponse.getJurorNumber() + " has previously been merged!";
                 log.error("Response {} has previously been completed at {}.", savedResponse.getJurorNumber(),
                     savedResponse.getCompletedAt()

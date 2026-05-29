@@ -116,7 +116,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
 
         // if response is closed already and new processing status is closed (responded) and juror is not
         // responded then update the juror status to responded and return
-        if (ProcessingStatus.CLOSED == status && TRUE.equals(paperResponse.getProcessingComplete())
+        if (ProcessingStatus.CLOSED == status && TRUE.equals(paperResponse.isProcessingComplete())
             && jurorPool.getStatus().getStatus() != IJurorStatus.RESPONDED) {
             log.info("Juror {} has already responded, marking as responded", jurorNumber);
             updateJurorAsResponded(jurorNumber, payload.getLogin());
@@ -134,7 +134,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
         }
 
         // merge the changes if required/allowed
-        if (TRUE.equals(paperResponse.getProcessingComplete())) {
+        if (TRUE.equals(paperResponse.isProcessingComplete())) {
             log.debug("Unable to update the response status for juror {} as response processing is already complete.",
                 jurorNumber);
             throw new JurorPaperResponseException.JurorPaperResponseAlreadyExists(jurorNumber);
@@ -182,7 +182,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
         final String auditorUsername = payload.getLogin();
         // if response is closed already and new processing status is closed (responded) and juror is not
         // responded then update the juror status to responded and return
-        if (ProcessingStatus.CLOSED == status && TRUE.equals(jurorResponse.getProcessingComplete())
+        if (ProcessingStatus.CLOSED == status && TRUE.equals(jurorResponse.isProcessingComplete())
             && jurorPool.getStatus().getStatus() != IJurorStatus.RESPONDED) {
             log.info("Juror {} has already responded, marking as responded", jurorNumber);
             updateJurorAsResponded(jurorNumber, auditorUsername);
@@ -201,7 +201,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
         jurorResponse.setProcessingStatus(jurorResponseAuditRepositoryMod, status);
 
         // merge the changes if required/allowed
-        if (TRUE.equals(jurorResponse.getProcessingComplete())) {
+        if (TRUE.equals(jurorResponse.isProcessingComplete())) {
             log.debug(
                 "Unable to update the response status for juror {} as response processing is already complete.",
                 jurorNumber
@@ -265,7 +265,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
 
         log.trace("Juror: {}. Enter mergeJurorResponseImplementation", jurorNumber);
 
-        if (TRUE.equals(jurorResponse.getProcessingComplete())) {
+        if (TRUE.equals(jurorResponse.isProcessingComplete())) {
             log.info("Juror: {}. Summons reply has not been merged because it has already been processed", jurorNumber);
             return;
         }
@@ -664,10 +664,10 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
         }
 
         // Derive the value for Welsh
-        if (TRUE.equals(updatedDetails.getWelsh())
+        if (TRUE.equals(updatedDetails.isWelsh())
             && welshCourtLocationRepository.findByLocCode(locCode) != null) {
             juror.setWelsh(TRUE);
-        } else if (TRUE.equals(updatedDetails.getWelsh())
+        } else if (TRUE.equals(updatedDetails.isWelsh())
             && welshCourtLocationRepository.findByLocCode(locCode) == null) {
             log.trace("Unable to provide Welsh language communications as the selected court is not within Wales.");
             juror.setWelsh(null);

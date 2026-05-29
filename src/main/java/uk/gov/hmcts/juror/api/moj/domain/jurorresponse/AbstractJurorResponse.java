@@ -47,7 +47,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REG
 @Setter
 @ToString(exclude = {"reasonableAdjustments", "cjsEmployments", "juror"})// lazy init fields
 @EqualsAndHashCode(callSuper = true, exclude = {"cjsEmployments", "reasonableAdjustments", "staff", "juror"})
-@SuppressWarnings("PMD.TooManyFields")
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyFields"})
 public class AbstractJurorResponse extends Address implements Serializable {
 
     @Id
@@ -250,7 +250,7 @@ public class AbstractJurorResponse extends Address implements Serializable {
         // This constructor is intentionally empty. Nothing special is needed here.
     }
 
-    public Boolean getProcessingComplete() {
+    public Boolean isProcessingComplete() {
         return processingComplete == null ? Boolean.FALSE : processingComplete;
     }
 
@@ -258,7 +258,7 @@ public class AbstractJurorResponse extends Address implements Serializable {
         return processingStatus == null ? ProcessingStatus.TODO : processingStatus;
     }
 
-    public Boolean getWelsh() {
+    public Boolean isWelsh() {
         return welsh == null ? Boolean.FALSE : welsh;
     }
 
@@ -296,6 +296,7 @@ public class AbstractJurorResponse extends Address implements Serializable {
     }
 
     @PrePersist
+    @SuppressWarnings({"PMD.UnusedPrivateMethod"}) // will be used by @PrePersist annotation.
     private void ensureDefaults() {
         if (processingStatus == null) {
             processingStatus = ProcessingStatus.TODO;

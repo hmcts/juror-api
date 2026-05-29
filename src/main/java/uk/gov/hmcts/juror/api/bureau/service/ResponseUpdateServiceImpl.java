@@ -719,7 +719,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
         }
 
         // assert juror response has not already been completed (merged back to Juror)
-        if (null != domain.getProcessingComplete() && domain.getProcessingComplete()) {
+        if (null != domain.isProcessingComplete() && domain.isProcessingComplete()) {
             log.warn("Juror response {} has been completed!", domain.getJurorNumber());
             throw new ResponseAlreadyMergedException();
         }

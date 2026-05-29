@@ -1913,7 +1913,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         summonsReplyStatusUpdateService.mergePaperResponse(paperResponse, auditorUsername);
 
         verify(jurorPaperResponseRepository, times(1)).save(jurorPaperResponseCaptor.capture());
-        assertThat(jurorPaperResponseCaptor.getValue().getProcessingComplete()).isEqualTo(Boolean.TRUE);
+        assertThat(jurorPaperResponseCaptor.getValue().isProcessingComplete()).isEqualTo(Boolean.TRUE);
         assertThat(jurorPaperResponseCaptor.getValue().getCompletedAt()).isNotNull();
 
         verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
@@ -1958,7 +1958,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         summonsReplyStatusUpdateService.mergeDigitalResponse(digitalResponse, auditorUsername);
 
         verify(jurorDigitalResponseRepository, times(1)).save(jurorDigitalResponseCaptor.capture());
-        assertThat(jurorDigitalResponseCaptor.getValue().getProcessingComplete()).isEqualTo(Boolean.TRUE);
+        assertThat(jurorDigitalResponseCaptor.getValue().isProcessingComplete()).isEqualTo(Boolean.TRUE);
         assertThat(jurorDigitalResponseCaptor.getValue().getCompletedAt()).isNotNull();
 
         verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
@@ -2005,7 +2005,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         summonsReplyStatusUpdateService.mergePaperResponse(paperResponse, auditorUsername);
 
         verify(jurorPaperResponseRepository, times(1)).save(jurorPaperResponseCaptor.capture());
-        assertThat(jurorPaperResponseCaptor.getValue().getProcessingComplete()).isEqualTo(Boolean.TRUE);
+        assertThat(jurorPaperResponseCaptor.getValue().isProcessingComplete()).isEqualTo(Boolean.TRUE);
         assertThat(jurorPaperResponseCaptor.getValue().getCompletedAt()).isNotNull();
 
         verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);
@@ -2054,7 +2054,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         summonsReplyStatusUpdateService.mergeDigitalResponse(digitalResponse, auditorUsername);
 
         verify(jurorDigitalResponseRepository, times(1)).save(jurorDigitalResponseCaptor.capture());
-        assertThat(jurorDigitalResponseCaptor.getValue().getProcessingComplete()).isEqualTo(Boolean.TRUE);
+        assertThat(jurorDigitalResponseCaptor.getValue().isProcessingComplete()).isEqualTo(Boolean.TRUE);
         assertThat(jurorDigitalResponseCaptor.getValue().getCompletedAt()).isNotNull();
 
         verify(jurorPoolService, times(1)).getJurorPoolFromUser(jurorNumber);

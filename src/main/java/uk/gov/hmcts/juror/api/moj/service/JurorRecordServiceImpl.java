@@ -1049,7 +1049,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
                 + opticsRefRequestDto.getJurorNumber(), null);
         }
 
-        if (response.getProcessingComplete().equals(true) || response.getProcessingStatus() == ProcessingStatus.CLOSED) {
+        if (response.isProcessingComplete().equals(true) || response.getProcessingStatus() == ProcessingStatus.CLOSED) {
             throw new MojException.BusinessRuleViolation("Cannot check court accommodation - Response has been "
                 + "completed/closed", null);
         }

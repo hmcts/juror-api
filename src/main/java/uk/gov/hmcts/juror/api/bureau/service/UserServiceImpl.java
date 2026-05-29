@@ -112,14 +112,14 @@ public class UserServiceImpl implements UserService {
              * Log conditions where we may wish to stop the assignment based on unconfirmed AC.
              */
             // validate states of response invalid for assignment
-            if (jurorResponse.getProcessingComplete()
+            if (jurorResponse.isProcessingComplete()
                 || ProcessingStatus.CLOSED == jurorResponse.getProcessingStatus()) {
                 // log status of record to trace for now (It's already closed and/or processed)
                 if (log.isTraceEnabled()) {
                     log.trace(
                         "Juror Response {}: processingComplete={} processingStatus={}",
                         jurorResponse.getJurorNumber(),
-                        jurorResponse.getProcessingComplete(),
+                        jurorResponse.isProcessingComplete(),
                         jurorResponse.getProcessingStatus()
                     );
                 }

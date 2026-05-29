@@ -207,7 +207,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
         jurorPaperResponseDetailDto.setSigned(jurorPaperResponse.getSigned());
         jurorPaperResponseDetailDto.setProcessingStatus(jurorPaperResponse.getProcessingStatus().getDescription());
-        jurorPaperResponseDetailDto.setWelsh(jurorPaperResponse.getWelsh());
+        jurorPaperResponseDetailDto.setWelsh(jurorPaperResponse.isWelsh());
 
         jurorPaperResponseDetailDto.setCompletedAt(jurorPaperResponse.getCompletedAt());
 
@@ -364,7 +364,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
     private PaperResponse updateWelshFlagBasedOnResponse(PaperResponse jurorPaperResponse, JurorPool jurorPool) {
         Juror juror = jurorPool.getJuror();
-        juror.setWelsh(jurorPaperResponse.getWelsh());
+        juror.setWelsh(jurorPaperResponse.isWelsh());
         jurorRepository.save(juror);
 
         jurorPaperResponse.setWelsh(jurorPool.getJuror().getWelsh());

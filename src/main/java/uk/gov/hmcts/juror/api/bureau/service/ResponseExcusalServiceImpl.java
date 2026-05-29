@@ -100,7 +100,7 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
                 throw new ExcusalException.JurorNotFound(jurorId);
             }
 
-            if (BooleanUtils.isTrue(savedResponse.getProcessingComplete())) {
+            if (BooleanUtils.isTrue(savedResponse.isProcessingComplete())) {
                 final String message = "Response " + savedResponse.getJurorNumber() + " has previously been merged!";
                 log.error("Response {} has previously been completed at {}.",
                     savedResponse.getJurorNumber(), savedResponse.getCompletedAt()
@@ -201,7 +201,7 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
                 throw new ExcusalException.JurorNotFound(jurorId);
             }
 
-            if (BooleanUtils.isTrue(savedResponse.getProcessingComplete())) {
+            if (BooleanUtils.isTrue(savedResponse.isProcessingComplete())) {
                 final String message = "Response " + savedResponse.getJurorNumber() + " has previously been merged!";
                 log.error("Response {} has previously been completed at {}.",
                     savedResponse.getJurorNumber(), savedResponse.getCompletedAt()

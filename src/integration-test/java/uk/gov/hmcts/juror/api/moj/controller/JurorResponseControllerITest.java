@@ -1080,7 +1080,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             assertThat(juror.isResponded()).isTrue();
             assertThat(jurorPool.getStatus().getStatus()).isEqualTo(statusCode);
 
-            if (Boolean.TRUE.equals(jurorResponse.getWelsh())) {
+            if (Boolean.TRUE.equals(jurorResponse.isWelsh())) {
                 assertThat(juror.getWelsh()).isTrue();
             } else {
                 assertThat(juror.getWelsh()).isNull();
@@ -1141,7 +1141,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
                     .get(0);
             final Juror juror = jurorPool.getJuror();
 
-            assertThat(jurorResponse.getProcessingComplete())
+            assertThat(jurorResponse.isProcessingComplete())
                 .as("No automatic processing, so processing complete flag remains unset").isNotEqualTo(Boolean.TRUE);
             assertThat(jurorResponse.getCompletedAt()).as("No automatic processing, so completed date remains unset")
                 .isNull();

@@ -73,7 +73,7 @@ public class ResponseUpdateServiceImplTest {
 
         // configure mocks
         DigitalResponse domain = mock(DigitalResponse.class);
-        given(domain.getProcessingComplete()).willReturn(false);
+        given(domain.isProcessingComplete()).willReturn(false);
 
         User staff = mock(User.class);
         ResponseUpdateController.JurorEligibilityDto dto = mock(ResponseUpdateController.JurorEligibilityDto.class);
@@ -88,7 +88,7 @@ public class ResponseUpdateServiceImplTest {
         // make assertions/verify execution
         verify(responseRepository).findByJurorNumber(jurorId);
         verify(userRepository).findByUsername(login);
-        verify(domain, times(2)).getProcessingComplete();
+        verify(domain, times(2)).isProcessingComplete();
         verify(responseRepository).save(domain);
     }
 
@@ -101,7 +101,7 @@ public class ResponseUpdateServiceImplTest {
 
         // configure mocks
         DigitalResponse domain = mock(DigitalResponse.class);
-        given(domain.getProcessingComplete()).willReturn(false);
+        given(domain.isProcessingComplete()).willReturn(false);
 
         JurorResponseCjsEmployment policeEntry = mock(JurorResponseCjsEmployment.class);
         given(cjsRepository.findByJurorNumberAndCjsEmployer(jurorId, "Police Force")).willReturn(policeEntry);

@@ -226,7 +226,7 @@ class DeceasedResponseServiceTest {
         PaperResponse paperResponse = PaperResponseCaptor.getValue();
         assertThat(paperResponse.getJurorNumber()).isEqualTo(jurorNumber);
         assertThat(paperResponse.getProcessingStatus()).isEqualTo(ProcessingStatus.CLOSED);
-        assertThat(paperResponse.getProcessingComplete()).isTrue();
+        assertThat(paperResponse.isProcessingComplete()).isTrue();
         assertThat(paperResponse.getCompletedAt()).isNotNull();
 
         final ArgumentCaptor<Juror> jurorArgumentCaptor = ArgumentCaptor.forClass(Juror.class);
@@ -295,7 +295,7 @@ class DeceasedResponseServiceTest {
         DigitalResponse digitalResponse = digitalResponseCaptor.getValue();
         assertThat(digitalResponse.getJurorNumber()).isEqualTo(jurorNumber);
         assertThat(digitalResponse.getProcessingStatus()).isEqualTo(ProcessingStatus.CLOSED);
-        assertThat(digitalResponse.getProcessingComplete()).isTrue();
+        assertThat(digitalResponse.isProcessingComplete()).isTrue();
         assertThat(digitalResponse.getCompletedAt()).isNotNull();
 
         final ArgumentCaptor<Juror> jurorArgumentCaptor = ArgumentCaptor.forClass(Juror.class);

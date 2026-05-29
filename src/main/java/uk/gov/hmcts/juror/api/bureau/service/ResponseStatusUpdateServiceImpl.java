@@ -93,7 +93,7 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
             }
 
             // merge the changes if required/allowed
-            if (jurorResponse.getProcessingComplete()) {
+            if (jurorResponse.isProcessingComplete()) {
                 log.debug(
                     "Unable to update status for juror {} response as processing is already complete.",
                     jurorNumber
@@ -279,8 +279,8 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
         boolean addressChanged = oldAddress.compareToIgnoreCase(newAddress) != 0;
 
         // copy over the juror details only if this has not been completed before
-        if (updatedDetails.getProcessingComplete() != null
-            && !updatedDetails.getProcessingComplete()) {
+        if (updatedDetails.isProcessingComplete() != null
+            && !updatedDetails.isProcessingComplete()) {
 
             applyThirdPartyRules(updatedDetails);
 
@@ -299,7 +299,7 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
 
             //JDB- 3053
             //If Welsh then Y, English - Null
-            if (BooleanUtils.isTrue(originalDetails.getWelsh())
+            if (BooleanUtils.isTrue(originalDetails.isWelsh())
                 && welshCourtLocationRepository.findByLocCode(jurorDetails.getCourt().getLocCode()) != null) {
                 jurorDetails.getJuror().setWelsh(Boolean.TRUE);
             } else {
