@@ -566,35 +566,41 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                 JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
 
                 final LocalDate dob = ManageDeferralsService.resolveDateOfBirth(
-                    jurorPool, digitalResponseRepository, paperResponseRepository,null);
+                    jurorPool, digitalResponseRepository, paperResponseRepository, null);
                 final LocalDate currentServiceStartDate = jurorPool.getReturnDate();
 
+                JurorStatus disqualifiedStatus = jurorStatusRepository.findById(IJurorStatus.DISQUALIFIED)
+                    .orElseThrow(() -> new MojException.NotFound("Juror status not found", null));
+
                 Juror juror = jurorPool.getJuror();
+                juror.setResponded(true);
                 juror.setDisqualifyDate(LocalDate.now());
                 juror.setDisqualifyCode(DisqualifyCode.A.getCode());
                 juror.setUserEdtq(payload.getLogin());
                 jurorRepository.save(juror);
 
-                JurorStatus disqualifiedStatus = jurorStatusRepository.findById(IJurorStatus.DISQUALIFIED)
-                    .orElseThrow(() -> new MojException.NotFound("Juror status not found", null));
-
                 jurorPool.setStatus(disqualifiedStatus);
+                jurorPool.setNextDate(null);
                 jurorPool.setUserEdtq(payload.getLogin());
+                jurorPool.setIsActive(false);
                 jurorPoolRepository.save(jurorPool);
 
                 jurorHistoryService.createDisqualifyHistory(jurorPool, DisqualifyCode.A.getCode());
+
+                if (JurorDigitalApplication.JUROR_OWNER.equals(payload.getOwner())) {
+                    printDataService.printWithdrawalLetter(jurorPool);
+                }
 
                 disqualified.add(BulkDisqualifyResponseDto.DisqualifiedJurorDto.builder()
                                      .jurorNumber(jurorNumber)
                                      .dob(dob)
                                      .currentServiceStartDate(currentServiceStartDate)
-                                     .newDate(null) // no new date for a direct disqualification
+                                     .newDate(null)
                                      .build());
 
                 disqualifiedCount++;
             } catch (Exception e) {
                 log.error("Failed to disqualify juror {} for age: {}", jurorNumber, e.getMessage());
-
                 failedToDisqualify.add(BulkDisqualifyResponseDto.DisqualifiedJurorDto.builder()
                                            .jurorNumber(jurorNumber)
                                            .build());
@@ -610,7 +616,6 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             .failedToDisqualify(failedToDisqualify)
             .build();
     }
-
     @Override
     public DeferralListDto getDeferralsByCourtLocationCode(BureauJwtPayload payload, String courtLocation) {
         List<DeferralListDto.DeferralListDataDto> deferralsList = new ArrayList<>();
