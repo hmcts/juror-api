@@ -214,7 +214,7 @@ public class JurorDetailsResponseDto {
         } else if (!isValidMobilePhone(homePhone) & (!isValidMobilePhone(mobilePhone))) {
             this.primaryPhone = homePhone;
             this.secondaryPhone = mobilePhone;
-        } else if (isValidMobilePhone(homePhone) & (isValidMobilePhone(mobilePhone))) {
+        } else if (isValidMobilePhone(homePhone) & isValidMobilePhone(mobilePhone)) {
             this.primaryPhone = homePhone;
             this.secondaryPhone = mobilePhone;
         } else if (isValidMobilePhone(workPhone) & (workPhone != null)) {
