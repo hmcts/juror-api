@@ -34,6 +34,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.POSTCODE_REG
 @Getter
 @Setter
 @Schema(description = "Juror paper response information submitted by an Officer.")
+@SuppressWarnings({"PMD.TooManyFields"})
 public class JurorPaperResponseDto {
 
     @JsonProperty("jurorNumber")
