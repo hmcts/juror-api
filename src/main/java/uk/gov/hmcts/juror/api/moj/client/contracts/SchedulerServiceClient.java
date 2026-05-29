@@ -7,6 +7,7 @@ import org.hibernate.validator.constraints.Length;
 
 import java.util.Map;
 
+@FunctionalInterface
 public interface SchedulerServiceClient extends Client {
 
     void updateStatus(String jobKey, Long taskId, Result result);
