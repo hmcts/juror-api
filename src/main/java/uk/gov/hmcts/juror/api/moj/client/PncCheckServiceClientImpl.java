@@ -40,6 +40,7 @@ public class PncCheckServiceClientImpl extends AbstractRemoteRestClient implemen
     }
 
     @Override
+    @SuppressWarnings({"PMD.ExceptionAsFlowControl"})
     public void checkJuror(String jurorNumber) {
         log.info("Manual police check requested for juror number: " + jurorNumber);
         JurorCheckRequest jurorCheckRequest = createJurorCheckRequest(jurorNumber);
