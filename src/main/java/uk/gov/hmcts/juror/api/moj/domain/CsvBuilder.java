@@ -35,8 +35,7 @@ public class CsvBuilder {
         }
         String escapedData = data.replaceAll("\\R", " ");
         if (data.contains(",") || data.contains("\"") || data.contains("'")) {
-            data = data.replace("\"", "\"\"");
-            escapedData = "\"" + data + "\"";
+            escapedData = "\"" + data.replace("\"", "\"\"") + "\"";
         }
         return escapedData;
     }
