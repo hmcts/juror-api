@@ -49,7 +49,6 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
-import uk.gov.hmcts.juror.api.moj.repository.PendingJurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolTypeRepository;
@@ -106,7 +105,6 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     private final GenerateCoronerPoolNumberService generateCoronerPoolNumberService;
     private final CoronerPoolDetailRepository coronerPoolDetailRepository;
     private final CoronerPoolRepository coronerPoolRepository;
-    private final PendingJurorRepository pendingJurorRepository;
 
     @Override
     @Transactional
