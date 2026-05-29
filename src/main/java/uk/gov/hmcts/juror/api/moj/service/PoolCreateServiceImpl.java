@@ -424,7 +424,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
 
              // this prevents overwriting existing juror records, not duplicate juror records. The duplicate is already
              // blocked by the primary key; the actual risk was saveAll merging into an existing row.
-             List<Juror> alreadyExistingJurors = jurorRepository.findByJurorNumberIn(
+            List<Juror> alreadyExistingJurors = jurorRepository.findByJurorNumberIn(
                                                         jurorPools.stream().map(JurorPool::getJurorNumber).toList());
 
             if (!alreadyExistingJurors.isEmpty()) {
