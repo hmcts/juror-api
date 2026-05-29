@@ -27,10 +27,16 @@ import uk.gov.hmcts.juror.api.moj.service.UndeliverableResponseService;
 public class UndeliverableResponseController {
     private final UndeliverableResponseService undeliverableResponseService;
 
+    /**
+     * Mark juror as undeliverable
+     * @param jurorNumbers
+     * @return
+     * @throws ExcusalException
+     */
     @Operation(summary = "Mark a Juror as undeliverable with information provided")
     @PatchMapping
     public ResponseEntity<Void> markJurorAsUndeliverable(
-        @RequestBody @Valid JurorNumberListDto jurorNumbers) throws ExcusalException {
+        @RequestBody @Valid JurorNumberListDto jurorNumbers) {
         undeliverableResponseService.markAsUndeliverable(jurorNumbers.getJurorNumbers());
         return ResponseEntity.ok().build();
     }
