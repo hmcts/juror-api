@@ -45,6 +45,7 @@ import java.util.Set;
 @NoArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Schema(description = "Juror overview information for the Juror Record")
+@SuppressWarnings({"PMD.TooManyFields"})
 public class JurorOverviewResponseDto {
 
     @Length(max = 50)
