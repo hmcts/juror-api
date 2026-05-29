@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 /**
  * Constants for <code>JUROR_MOD.JUROR_STATUS</code>.
  */
-public abstract class IJurorStatus {
+public class IJurorStatus {
     public static final int SUMMONED = 1;
     public static final int RESPONDED = 2;
     public static final int PANEL = 3;
@@ -31,5 +31,9 @@ public abstract class IJurorStatus {
                 UNDELIVERABLE, TRANSFERRED, ADDITIONAL_INFO, FAILED_TO_ATTEND, COMPLETED)
             .filter(i -> Arrays.stream(excluding).noneMatch(j -> j == i))
             .collect(Collectors.toList());
+    }
+
+    protected IJurorStatus() {
+        throw new IllegalArgumentException("IJurorStatus must not be instantiated.");
     }
 }
