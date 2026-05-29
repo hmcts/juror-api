@@ -15,7 +15,6 @@ import java.util.Map;
 
 @Data
 @NoArgsConstructor
-@SuppressWarnings("PMD.ShortClassName")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class DailyUtilisationReportJurorsResponse {
 
