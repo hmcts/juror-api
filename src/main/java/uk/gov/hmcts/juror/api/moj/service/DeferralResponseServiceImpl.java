@@ -101,7 +101,7 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
                       jurorNumber);
             throw new MojException.BusinessRuleViolation("Juror has been deferred before. Please use "
                                                              + "allow_multiple_deferrals to bypass this error.",
-                                                         MojException.BusinessRuleViolation.ErrorCode.JUROR_HAS_BEEN_DEFERRED_BEFORE);
+                                     MojException.BusinessRuleViolation.ErrorCode.JUROR_HAS_BEEN_DEFERRED_BEFORE);
         } else if (deferralRequestDto.getDeferralDecision().equals(DeferralDecision.GRANT)) {
             log.info("Begin processing grant deferral juror {} by user {}", jurorNumber, payload.getLogin());
 

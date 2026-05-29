@@ -218,7 +218,7 @@ class ManageDeferralsServiceTest {
             verify(jurorHistoryRepository, times(2)).save(any());
             verify(jurorHistoryService).createPostponementLetterHistory(jurorPool, "");
             verify(poolRequestRepository, times(1)).findByPoolNumber(POOL_111111111);
-            verify(poolRequestRepository, times(1)).findByPoolNumber(POOL_111111112);
+            verify(poolRequestRepository, times(2)).findByPoolNumber(POOL_111111112);
             verify(poolMemberSequenceService, times(1))
                 .getPoolMemberSequenceNumber(any(String.class));
             verify(poolRequestRepository, times(1)).save(any());
@@ -271,7 +271,7 @@ class ManageDeferralsServiceTest {
             verify(jurorHistoryRepository, times(2)).save(any());
             verify(jurorHistoryService).createPostponementLetterHistory(jurorPool, "");
             verify(poolRequestRepository, times(1)).findByPoolNumber(POOL_111111111);
-            verify(poolRequestRepository, times(1)).findByPoolNumber(POOL_111111112);
+            verify(poolRequestRepository, times(2)).findByPoolNumber(POOL_111111112);
             verify(poolMemberSequenceService, times(1))
                 .getPoolMemberSequenceNumber(any(String.class));
             verify(poolRequestRepository, times(1)).save(any());
@@ -321,7 +321,8 @@ class ManageDeferralsServiceTest {
             jurorNumbers.add(JUROR_111111111);
             request.setJurorNumbers(jurorNumbers);
 
-            DeferralAgeDisqualificationResponseDto response = manageDeferralsService.processJurorPostponement(bureauPayload, request);
+            DeferralAgeDisqualificationResponseDto response
+                = manageDeferralsService.processJurorPostponement(bureauPayload, request);
 
             assertThat(response.getEligible()).isEqualTo(2);
 
@@ -332,7 +333,7 @@ class ManageDeferralsServiceTest {
             verify(jurorHistoryRepository, times(4)).save(any());
             verify(jurorHistoryService).createPostponementLetterHistory(jurorPool1, "");
             verify(jurorHistoryService).createPostponementLetterHistory(jurorPool2, "");
-            verify(poolRequestRepository, times(4)).findByPoolNumber(anyString());
+            verify(poolRequestRepository, times(6)).findByPoolNumber(anyString());
             verify(poolMemberSequenceService, times(2))
                 .getPoolMemberSequenceNumber(any(String.class));
             verify(poolRequestRepository, times(2)).save(any());
@@ -390,7 +391,7 @@ class ManageDeferralsServiceTest {
             verify(jurorPoolRepository, never()).save(any());
             verify(jurorHistoryRepository, never()).save(any());
             verify(jurorHistoryService, never()).createPostponementLetterHistory(any(), anyString());
-            verify(poolRequestRepository, never()).findByPoolNumber(anyString());
+            verify(poolRequestRepository, times(1)).findByPoolNumber(anyString());
             verify(poolMemberSequenceService, never()).getPoolMemberSequenceNumber(any(String.class));
             verify(poolRequestRepository, never()).save(any());
             verify(poolRequestRepository, never()).saveAndFlush(any());
@@ -462,7 +463,7 @@ class ManageDeferralsServiceTest {
             verify(jurorPoolService, times(1))
                 .getJurorPoolFromUser(any());
 
-            verify(poolRequestRepository, times(1)).findByPoolNumber(anyString());
+            verify(poolRequestRepository, times(2)).findByPoolNumber(anyString());
 
             // make sure no letters are sent or deferral records created
             verify(printDataService, never()).printConfirmationLetter(any());
@@ -480,7 +481,8 @@ class ManageDeferralsServiceTest {
             doReturn(jurorPool).when(jurorPoolService)
                 .getJurorPoolFromUser(JUROR_123456789);
 
-            DeferralAgeDisqualificationResponseDto response = manageDeferralsService.processJurorPostponement(bureauPayload,
+            DeferralAgeDisqualificationResponseDto response
+                = manageDeferralsService.processJurorPostponement(bureauPayload,
                 createProcessJurorRequestDtoToCurrentlyDeferred());
 
             assertThat(response.getEligible()).isEqualTo(1);
@@ -546,6 +548,43 @@ class ManageDeferralsServiceTest {
             request.setDeferralDate(LocalDate.of(2023, 8, 12));
             return request;
         }
+
+        @Test
+        void processJurorPostponementAgeDisqualified() {
+            TestUtils.mockBureauUser();
+            LocalDate newAttendanceDate = LocalDate.of(2026, 1, 1);
+            LocalDate oldAttendanceDate = LocalDate.of(2023, 6, 6);
+
+            final BureauJwtPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER,
+                               UserType.BUREAU, Collections.singletonList(Role.MANAGER));
+
+            final PoolRequest oldPoolRequest = createPoolRequest(BUREAU_OWNER, POOL_111111111, LOC_CODE_415,
+                                                                 oldAttendanceDate);
+            final PoolRequest newPoolRequest = createPoolRequest(BUREAU_OWNER, POOL_111111112, LOC_CODE_415,
+                                                                 newAttendanceDate);
+
+            JurorPool jurorPool = createJurorPool(JUROR_123456789);
+            // born 1910 - will be 116 on service start date, well over 76
+            jurorPool.getJuror().setDateOfBirth(LocalDate.of(1910, 1, 1));
+
+            doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_123456789);
+            doReturn(Optional.of(newPoolRequest)).when(poolRequestRepository).findByPoolNumber(anyString());
+
+            DeferralAgeDisqualificationResponseDto response =
+                manageDeferralsService.processJurorPostponement(bureauPayload, createProcessJurorRequestDto());
+
+            assertThat(response.getEligible()).isEqualTo(0);
+            assertThat(response.getAgeDisqualified()).hasSize(1);
+            assertThat(response.getAgeDisqualified().get(0).getJurorNumber()).isEqualTo(JUROR_123456789);
+            assertThat(response.getAgeDisqualified().get(0).getDob())
+                .isEqualTo(LocalDate.of(1910, 1, 1));
+
+            verify(jurorPoolRepository, never()).save(any());
+            verify(printDataService, never()).printPostponeLetter(any());
+            verify(printDataService, never()).printConfirmationLetter(any());
+            verify(jurorHistoryRepository, never()).save(any());
+        }
+
     }
 
 
@@ -585,7 +624,11 @@ class ManageDeferralsServiceTest {
             request.setJurorNumbers(jurorNumbers);
             request.setPoolNumber(newPoolRequest.getPoolNumber());
 
-            manageDeferralsService.moveDeferredJuror(request);
+            DeferralAgeDisqualificationResponseDto response =
+                manageDeferralsService.moveDeferredJuror(request);
+
+            assertThat(response.getEligible()).isEqualTo(1);
+            assertThat(response.getAgeDisqualified()).isEmpty();
 
             verify(poolRequestRepository, times(1)).findByPoolNumber(POOL_111111112);
             verify(jurorPoolService, times(1))
