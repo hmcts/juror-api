@@ -4,7 +4,6 @@ import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 
-@SuppressWarnings({"PMD.ImplicitFunctionalInterface"})
 public enum SortMethod {
     DESC, ASC;
 
@@ -21,6 +20,7 @@ public enum SortMethod {
         }
     }
 
+    @FunctionalInterface
     public interface HasComparableExpression {
         Expression<? extends Comparable<?>> getComparableExpression();
     }
