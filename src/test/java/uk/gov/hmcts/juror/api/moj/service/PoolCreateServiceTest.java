@@ -723,11 +723,10 @@ public class PoolCreateServiceTest {
         voter.setAddress3(null);
         voter.setAddress4(null);
         voter.setAddress5(null);
-        voter.setAddress6(null);
         voter.setPostcode("SY2 6LU");
-        voter.setJurorNumber("641500541");
+        voter.setHashId(12345678L);
         voter.setDateOfBirth(LocalDate.of(1990, 6, 1));
-        voter.setRecNumber(91);
+        voter.setLocalAuthorityId(91);
         voter.setRegisterLett("91");
         voter.setPollNumber("91");
 
