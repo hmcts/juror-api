@@ -15,7 +15,6 @@ import java.util.Locale;
 
 @Getter
 @SuppressWarnings({
-    "PMD.ArrayIsStoredDirectly",
     "LineLength"
 })
 public enum PaymentStatusDataTypes implements IDataType {
@@ -60,7 +59,7 @@ public enum PaymentStatusDataTypes implements IDataType {
     }
 
     @Override
-    public final String getId() {
+    public String getId() {
         return this.name().toLowerCase(Locale.ROOT);
     }
 }
