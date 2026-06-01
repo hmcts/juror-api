@@ -46,6 +46,7 @@ import static uk.gov.hmcts.juror.api.moj.utils.SecurityUtil.BUREAU_OWNER;
 /**
  * Custom Repository implementation for the JurorPool entity.
  */
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects", "PMD.TooManyMethods"})
 public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
 
     @PersistenceContext
@@ -279,6 +280,7 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
 
     @Override
     @Transactional(readOnly = true)
+    @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public JPAQuery<Tuple> fetchFilteredPoolMembers(PoolMemberFilterRequestQuery search, String owner) {
         JPAQueryFactory queryFactory = getQueryFactory();
         LocalDate today = LocalDate.now();
