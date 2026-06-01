@@ -50,7 +50,8 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 @SuppressWarnings({
     "PMD.GodClass",
     "PMD.ExcessiveImports",
-    "PMD.TooManyMethods"
+    "PMD.TooManyMethods",
+    "PMD.CouplingBetweenObjects"
 })
 public class MessagingServiceImpl implements MessagingService {
 
@@ -226,7 +227,7 @@ public class MessagingServiceImpl implements MessagingService {
             .existsByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumber(trialNumber, locCode, jurorNumber);
     }
 
-    @SuppressWarnings("PMD.CyclomaticComplexity")
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.CognitiveComplexity", "PMD.AvoidDeeplyNestedIfStmts"})
     Message createMessage(MessageSendRequest.JurorAndSendType jurorAndSendType,
                           MessageType messageType,
                           CourtLocation courtLocation,
