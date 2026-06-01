@@ -73,7 +73,7 @@ public class ResponseDisqualifyServiceImplTest {
     private ResponseDisqualifyServiceImpl responseDisqualifyService;
 
     @Test
-    public void getDisqualifyReasons_happy() throws Exception {
+    public void disqualifyReasons_happy() throws Exception {
         List<DisqualifiedCode> disqualifyReasonsList = new ArrayList<>();
         disqualifyReasonsList.add(new DisqualifiedCode("A", "Description", true));
         disqualifyReasonsList.add(new DisqualifiedCode("B", "Description", true));
