@@ -15,7 +15,7 @@ import static org.mockito.Mockito.when;
 class TravelMethodTest {
 
     @Test
-    void getRateCarNullJurors() {
+    void rateCarNullJurors() {
         BigDecimal rate = new BigDecimal("5.12");
         ExpenseRates expenseRates = mock(ExpenseRates.class);
         when(expenseRates.getCarMileageRatePerMile0Passengers()).thenReturn(rate);
@@ -27,7 +27,7 @@ class TravelMethodTest {
     }
 
     @Test
-    void getRateCar0Jurors() {
+    void rateCar0Jurors() {
         BigDecimal rate = new BigDecimal("5.12");
         ExpenseRates expenseRates = mock(ExpenseRates.class);
         when(expenseRates.getCarMileageRatePerMile0Passengers()).thenReturn(rate);
@@ -39,7 +39,7 @@ class TravelMethodTest {
     }
 
     @Test
-    void getRateCar1Jurors() {
+    void rateCar1Jurors() {
         BigDecimal rate = new BigDecimal("5.12");
         ExpenseRates expenseRates = mock(ExpenseRates.class);
         when(expenseRates.getCarMileageRatePerMile1Passengers()).thenReturn(rate);
@@ -51,7 +51,7 @@ class TravelMethodTest {
     }
 
     @Test
-    void getRateCar2Jurors() {
+    void rateCar2Jurors() {
         BigDecimal rate = new BigDecimal("5.12");
         ExpenseRates expenseRates = mock(ExpenseRates.class);
         when(expenseRates.getCarMileageRatePerMile2OrMorePassengers()).thenReturn(rate);
@@ -63,7 +63,7 @@ class TravelMethodTest {
     }
 
     @Test
-    void getRateCarMoreThan2Jurors() {
+    void rateCarMoreThan2Jurors() {
         BigDecimal rate = new BigDecimal("5.12");
         ExpenseRates expenseRates = mock(ExpenseRates.class);
         when(expenseRates.getCarMileageRatePerMile2OrMorePassengers()).thenReturn(rate);
@@ -75,7 +75,7 @@ class TravelMethodTest {
     }
 
     @Test
-    void getRateMotorCycleNullJurors() {
+    void rateMotorCycleNullJurors() {
         BigDecimal rate = new BigDecimal("5.12");
         ExpenseRates expenseRates = mock(ExpenseRates.class);
         when(expenseRates.getMotorcycleMileageRatePerMile0Passengers()).thenReturn(rate);
@@ -87,7 +87,7 @@ class TravelMethodTest {
     }
 
     @Test
-    void getRateMotorCycle0Jurors() {
+    void rateMotorCycle0Jurors() {
         BigDecimal rate = new BigDecimal("5.12");
         ExpenseRates expenseRates = mock(ExpenseRates.class);
         when(expenseRates.getMotorcycleMileageRatePerMile0Passengers()).thenReturn(rate);
@@ -99,7 +99,7 @@ class TravelMethodTest {
     }
 
     @Test
-    void getRateMotorCycle1Jurors() {
+    void rateMotorCycle1Jurors() {
         BigDecimal rate = new BigDecimal("5.12");
         ExpenseRates expenseRates = mock(ExpenseRates.class);
         when(expenseRates.getMotorcycleMileageRatePerMile1Passengers()).thenReturn(rate);
@@ -111,7 +111,7 @@ class TravelMethodTest {
     }
 
     @Test
-    void getRateMotorCycleMoreThan1Jurors() {
+    void rateMotorCycleMoreThan1Jurors() {
         BigDecimal rate = new BigDecimal("5.12");
         ExpenseRates expenseRates = mock(ExpenseRates.class);
         when(expenseRates.getMotorcycleMileageRatePerMile1Passengers()).thenReturn(rate);
@@ -124,7 +124,7 @@ class TravelMethodTest {
     }
 
     @Test
-    void getRateBike() {
+    void rateBike() {
         BigDecimal rate = new BigDecimal("5.12");
         ExpenseRates expenseRates = mock(ExpenseRates.class);
         when(expenseRates.getBikeRate()).thenReturn(rate);
