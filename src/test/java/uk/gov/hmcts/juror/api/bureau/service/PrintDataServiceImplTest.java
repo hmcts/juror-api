@@ -87,7 +87,7 @@ class PrintDataServiceImplTest {
     @Test
     void bulkPrintSummonsLetterThrowsWithEmptyList() {
         assertThatExceptionOfType(MojException.InternalServerError.class).isThrownBy(() ->
-            printDataService.bulkPrintSummonsLetter(new ArrayList<JurorPool>()));
+            printDataService.bulkPrintSummonsLetter(new ArrayList<>()));
     }
 
     @Test
