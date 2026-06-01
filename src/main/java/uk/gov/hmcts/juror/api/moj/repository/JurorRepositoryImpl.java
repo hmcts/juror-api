@@ -62,7 +62,7 @@ public class JurorRepositoryImpl implements IJurorRepository {
     }
 
     @Override
-    @SuppressWarnings("PMD.CognitiveComplexity")
+    @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.CyclomaticComplexity"})
     public JPAQuery<Tuple> fetchFilteredJurorRecords(JurorRecordFilterRequestQuery query) {
 
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
