@@ -75,7 +75,7 @@ public class ResponseExcusalServiceImplTest {
     private PrintDataService printDataService;
 
     @Test
-    public void getExcusalReasons_happy() throws Exception {
+    public void excusalReasons_happy() throws Exception {
         List<ExcusalCode> excusalReasonsList = new ArrayList<>();
         excusalReasonsList.add(new ExcusalCode("A", "Description",false,true,false,false));
         excusalReasonsList.add(new ExcusalCode("B", "Description",false,true,false,false));
