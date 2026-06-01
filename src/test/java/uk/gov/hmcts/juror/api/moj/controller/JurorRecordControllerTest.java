@@ -61,7 +61,6 @@ import java.time.LocalDate;
 	import java.util.List;
 
 	import static org.mockito.ArgumentMatchers.any;
-	import static uk.gov.hmcts.juror.api.moj.controller.response.JurorBankDetailsDto.builder;
 	import static org.mockito.Mockito.doNothing;
 	import static org.mockito.Mockito.doReturn;
 	import static org.mockito.Mockito.mock;
