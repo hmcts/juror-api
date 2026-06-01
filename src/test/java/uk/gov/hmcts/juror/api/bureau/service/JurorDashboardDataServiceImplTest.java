@@ -50,12 +50,12 @@ public class JurorDashboardDataServiceImplTest {
     private List<StatsWelshOnlineResponse> welshOnlineResponseList = new ArrayList<>();
     private List<StatsAutoProcessed> autoOnlineResponseList = new ArrayList<>();
     private List<StatsThirdPartyOnlineResponse> thirdPartyOnlineRespList = new ArrayList<>();
-    private List<SurveyResponse> surveyResponseList = new ArrayList<>();
+    /*private List<SurveyResponse> surveyResponseList = new ArrayList<>();
 
     private List<StatsResponseTimesTotals> statsResponseTimesTotalsList = new ArrayList<>();
 
     private List<StatsNotRespondedTotals> statsNotRespondedTotals = new ArrayList<>();
-
+*/
     @Mock
     private StatsResponseTimeRepository statsResponseTimeRepository;
 
@@ -74,7 +74,7 @@ public class JurorDashboardDataServiceImplTest {
     @Mock
     private StatsThirdPartyOnlineResponseRepository statsThirdPtyOnlineResponseRepository;
 
-    @Mock
+   /* @Mock
     private SurveyResponseRepository surveyResponseRepository;
 
     @Mock
@@ -82,7 +82,7 @@ public class JurorDashboardDataServiceImplTest {
 
     @Mock
     private StatsNotRespondedTotalsRepsoitory statsNotRespondedTotalsRepsoitory;
-
+*/
     @InjectMocks
     private JurorDashboardDataServiceImpl jurorDashboardDataService;
 
@@ -157,7 +157,7 @@ public class JurorDashboardDataServiceImplTest {
     }
 
     @Test
-    public void getResponsesHappyPath() {
+    public void responsesHappyPath() {
         given(statsResponseTimeRepository.findBySummonsMonthBetween(startDate, endDate)).willReturn(responsesList);
         List<StatsResponseTime> responsesResult = jurorDashboardDataService.getResponsesOverTime(startDate, endDate);
         assertThat(responsesResult).isNotNull();
@@ -167,7 +167,7 @@ public class JurorDashboardDataServiceImplTest {
     }
 
     @Test
-    public void getNotRespondedHappyPath() {
+    public void notRespondedHappyPath() {
         given(statsNotRespondedRepository.findBySummonsMonthBetween(startDate, endDate)).willReturn(notRespondedList);
         List<StatsNotResponded> notRespondedResults = jurorDashboardDataService.getNotResponded(startDate, endDate);
         assertThat(notRespondedResults).isNotNull();
@@ -177,7 +177,7 @@ public class JurorDashboardDataServiceImplTest {
     }
 
     @Test
-    public void getUnprocessedHappyPath() {
+    public void unprocessedHappyPath() {
         given(statsUnprocessedResponseRepository.findAll()).willReturn(unprocessedList);
         List<StatsUnprocessedResponse> unprocessedResponses = jurorDashboardDataService.getUnprocessedOnlineResponses();
         assertThat(unprocessedResponses).isNotNull();
@@ -187,7 +187,7 @@ public class JurorDashboardDataServiceImplTest {
     }
 
     @Test
-    public void getWelshResponsesHappyPath() {
+    public void welshResponsesHappyPath() {
         given(statsWelshOnlineResponseRepository.findBySummonsMonthBetween(startDate, endDate)).willReturn(
             welshOnlineResponseList);
         List<StatsWelshOnlineResponse> welshOnlineResponses =
@@ -198,7 +198,7 @@ public class JurorDashboardDataServiceImplTest {
     }
 
     @Test
-    public void getAuroResponsesHappyPath() {
+    public void auroResponsesHappyPath() {
         given(statsAutoProcessedRepository.findByProcessedDateBetween(startDate, endDate)).willReturn(
             autoOnlineResponseList);
         List<StatsAutoProcessed> autoOnlineResponses = jurorDashboardDataService.getAutoOnlineResponses(startDate,
@@ -209,7 +209,7 @@ public class JurorDashboardDataServiceImplTest {
     }
 
     @Test
-    public void getThirdResponsesHappyPath() {
+    public void thirdResponsesHappyPath() {
         given(statsThirdPtyOnlineResponseRepository.findBySummonsMonthBetween(startDate, endDate))
             .willReturn(thirdPartyOnlineRespList);
         List<StatsThirdPartyOnlineResponse> thirdOnlineResponses = jurorDashboardDataService
