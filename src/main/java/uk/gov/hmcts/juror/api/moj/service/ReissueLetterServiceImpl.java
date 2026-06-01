@@ -28,16 +28,17 @@ import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings({"PMD.CouplingBetweenObjects", "PMD.TooManyMethods"})
 public class ReissueLetterServiceImpl implements ReissueLetterService {
 
     private final JurorPoolRepository jurorPoolRepository;
@@ -48,6 +49,9 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
     private final JurorPoolService jurorPoolService;
     private final JurorRepository jurorRepository;
     private final PoolHistoryService poolHistoryService;
+    private static final List<String> CREATE_LETTER_IF_NOT_EXIST_CODES = List.of(
+        FormCode.ENG_SUMMONS_REMINDER.getCode(),
+        FormCode.BI_SUMMONS_REMINDER.getCode());
 
 
     @Transactional
@@ -113,7 +117,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
 
         validateReissueRequest(request, response);
 
-        Map<String, Integer> poolLetterCount = new HashMap<>();
+        Map<String, Integer> poolLetterCount = new ConcurrentHashMap<>();
 
         // if no jurors with a modified status are found, print the requested letters
         if (response.getJurors().isEmpty()) {
@@ -249,7 +253,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
         List<List<Object>> newLetterData = new ArrayList<>();
 
         for (List<Object> datum : data) {
-            ArrayList<Object> newData = new ArrayList<>(datum);
+            ArrayList<Object> newData = getNewData(datum);
 
             if ("Deferred".equals(newData.get(statusIndex))
                 && "Postponement of service".equals(newData.get(reasonIndex))) {
@@ -259,6 +263,10 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
             newLetterData.add(newData);
         }
         return newLetterData;
+    }
+
+    private static ArrayList<Object> getNewData(List<Object> datum) {
+        return new ArrayList<>(datum);
     }
 
     // If the letter has not been printed previously, the form code will be null (no record in bulk print table),
@@ -281,7 +289,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
         final int jurorNumberIndex = headings.indexOf("Juror number");
         List<List<Object>> newLetterData = new ArrayList<>();
         for (List<Object> datum : data) {
-            ArrayList<Object> newData = new ArrayList<>(datum);
+            ArrayList<Object> newData = getNewData(datum);
 
             if (datum.get(formCodeIndex) == null) {
                 newData.remove(formCodeIndex);
@@ -300,10 +308,6 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
         }
         return newLetterData;
     }
-
-    private static final List<String> CREATE_LETTER_IF_NOT_EXIST_CODES = List.of(
-        FormCode.ENG_SUMMONS_REMINDER.getCode(),
-        FormCode.BI_SUMMONS_REMINDER.getCode());
 
     private void validateRequestedLetter(ReissueLetterRequestDto.@NotNull ReissueLetterRequestData letter,
                                          boolean requirePrintedLetter) {
