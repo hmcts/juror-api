@@ -32,6 +32,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.deferralmaintenance.BulkDis
 import uk.gov.hmcts.juror.api.moj.controller.request.deferralmaintenance.ProcessJurorPostponementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralOptionsDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.BulkDisqualifyResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralAgeDisqualificationResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.CurrentlyDeferred;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;

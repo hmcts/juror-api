@@ -566,10 +566,29 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                 JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
 
                 final LocalDate dob = ManageDeferralsService.resolveDateOfBirth(
-                    jurorPool, digitalResponseRepository, paperResponseRepository,null);
+                    jurorPool, digitalResponseRepository, paperResponseRepository, null);
                 final LocalDate currentServiceStartDate = jurorPool.getReturnDate();
 
+                // close any open digital response
+                DigitalResponse digitalResponse = digitalResponseRepository.findByJurorNumber(jurorNumber);
+                if (digitalResponse != null && !Boolean.TRUE.equals(digitalResponse.getProcessingComplete())) {
+                    digitalResponse.setProcessingStatus(jurorResponseAuditRepositoryMod, ProcessingStatus.CLOSED);
+                    digitalResponse.setProcessingComplete(true);
+                    digitalResponse.setCompletedAt(LocalDateTime.now());
+                    mergeService.mergeDigitalResponse(digitalResponse, payload.getLogin());
+                } else {
+                    // close any open paper response
+                    PaperResponse paperResponse = paperResponseRepository.findByJurorNumber(jurorNumber);
+                    if (paperResponse != null && !Boolean.TRUE.equals(paperResponse.getProcessingComplete())) {
+                        paperResponse.setProcessingStatus(jurorResponseAuditRepositoryMod, ProcessingStatus.CLOSED);
+                        paperResponse.setProcessingComplete(true);
+                        paperResponse.setCompletedAt(LocalDateTime.now());
+                        mergeService.mergePaperResponse(paperResponse, payload.getLogin());
+                    }
+                }
+
                 Juror juror = jurorPool.getJuror();
+                juror.setResponded(true);
                 juror.setDisqualifyDate(LocalDate.now());
                 juror.setDisqualifyCode(DisqualifyCode.A.getCode());
                 juror.setUserEdtq(payload.getLogin());
@@ -579,16 +598,21 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                     .orElseThrow(() -> new MojException.NotFound("Juror status not found", null));
 
                 jurorPool.setStatus(disqualifiedStatus);
+                jurorPool.setNextDate(null);
                 jurorPool.setUserEdtq(payload.getLogin());
                 jurorPoolRepository.save(jurorPool);
 
                 jurorHistoryService.createDisqualifyHistory(jurorPool, DisqualifyCode.A.getCode());
 
+                if (JurorDigitalApplication.JUROR_OWNER.equals(jurorPool.getOwner())) {
+                    printDataService.printWithdrawalLetter(jurorPool);
+                }
+
                 disqualified.add(BulkDisqualifyResponseDto.DisqualifiedJurorDto.builder()
                                      .jurorNumber(jurorNumber)
                                      .dob(dob)
                                      .currentServiceStartDate(currentServiceStartDate)
-                                     .newDate(null) // no new date for a direct disqualification
+                                     .newDate(null)
                                      .build());
 
                 disqualifiedCount++;
