@@ -16,9 +16,6 @@ public class GroupByPaymentStatus implements IReportGroupBy {
     public static final String APPROVED_NOT_SENT = "Approved but not yet sent for payment";
     public static final String SENT_FOR_PAYMENT = "Sent for payment";
 
-    public GroupByPaymentStatus() {
-    }
-
     @Override
     public String getGroupFunction(GroupedTableData groupedTableData) {
         Object extracted = groupedTableData.get(PaymentStatusDataTypes.EXTRACTED.getId());
