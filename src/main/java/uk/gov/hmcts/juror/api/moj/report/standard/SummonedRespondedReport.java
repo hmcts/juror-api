@@ -13,9 +13,9 @@ import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class SummonedRespondedReport extends AbstractStandardReport {
@@ -49,7 +49,7 @@ public class SummonedRespondedReport extends AbstractStandardReport {
         StandardReportRequest request,
         StandardReportResponse.TableData<StandardTableData> tableData) {
 
-        Map<String, StandardReportResponse.DataTypeValue> map = new HashMap<>();
+        Map<String, StandardReportResponse.DataTypeValue> map = new ConcurrentHashMap<>();
         map.put("pool_number", StandardReportResponse.DataTypeValue.builder()
             .displayName("Pool number")
             .dataType("String")
