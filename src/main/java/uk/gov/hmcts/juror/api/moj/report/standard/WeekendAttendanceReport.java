@@ -60,26 +60,27 @@ public class WeekendAttendanceReport extends AbstractStandardReport {
         // get current date (report won't be run for future dates)
         LocalDate toDate = LocalDate.now();
         // build list of saturday dates
-        var saturdayDates = holidaysService.getSaturdayDates(fromDate, toDate);
+        List<LocalDate> saturdayDates = holidaysService.getSaturdayDates(fromDate, toDate);
 
         // build list of sunday dates
-        var sundayDates = holidaysService.getSundayDates(fromDate, toDate);
+        List<LocalDate> sundayDates = holidaysService.getSundayDates(fromDate, toDate);
 
         // bank holidays fetched from a service
-        var bankHolidayDates = holidaysService.viewBankHolidays();
+        Map<Integer, List<HolidayDate>> bankHolidayDates = holidaysService.viewBankHolidays();
 
         List<HolidayDate> bankHolidaysThisMonth = bankHolidayDates.get(LocalDate.now().getYear());
 
         if (bankHolidaysThisMonth == null) {
             bankHolidaysThisMonth = List.of();
         }
-        var bankHolidayDatesInMonth = bankHolidaysThisMonth.stream()
+
+        List<LocalDate> bankHolidayDatesInMonth = bankHolidaysThisMonth.stream()
             .map(HolidayDate::getDate)
             .filter(date -> !date.isBefore(fromDate) && !date.isAfter(toDate))
             .toList();
 
         // combine all dates into a single list
-        var allRelevantDates = new ArrayList<LocalDate>();
+        List<LocalDate> allRelevantDates = new ArrayList<>();
         allRelevantDates.addAll(saturdayDates);
         allRelevantDates.addAll(sundayDates);
         allRelevantDates.addAll(bankHolidayDatesInMonth);
