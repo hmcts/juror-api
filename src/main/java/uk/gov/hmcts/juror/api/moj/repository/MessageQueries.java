@@ -9,12 +9,11 @@ import uk.gov.hmcts.juror.api.moj.domain.messages.QMessage;
 public final class MessageQueries {
 
     private static final String MESSAGE_NOT_READ = "NR";
+    private static final QMessage MESSAGES_DETAIL = QMessage.message;
 
     private MessageQueries() {
 
     }
-
-    private static final QMessage messagesDetail = QMessage.message;
 
     /**
      * Matches Messages records where message_read is equal 'NR' NOT READ.
@@ -22,7 +21,7 @@ public final class MessageQueries {
      */
 
     public static BooleanExpression messageReadStatus() {
-        return messagesDetail.messageRead.eq(MESSAGE_NOT_READ);
+        return MESSAGES_DETAIL.messageRead.eq(MESSAGE_NOT_READ);
     }
 }
 
