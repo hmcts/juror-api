@@ -50,6 +50,7 @@ import static uk.gov.hmcts.juror.api.juror.domain.HolidaysQueries.isCourtHoliday
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects", "PMD.TooManyMethods"})
 public class PoolRequestServiceImpl implements PoolRequestService {
 
     private static final Character NEW_REQUEST_STATE = 'Y';
