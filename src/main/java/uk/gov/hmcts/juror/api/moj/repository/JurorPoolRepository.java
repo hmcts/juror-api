@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
+@SuppressWarnings({"PMD.TooManyMethods"})
 public interface JurorPoolRepository extends IJurorPoolRepository, JpaRepository<JurorPool, JurorPoolId>,
     QuerydslPredicateExecutor<JurorPool> {
 
