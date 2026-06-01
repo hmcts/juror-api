@@ -5,6 +5,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import java.time.LocalDate;
 import java.util.List;
 
+@FunctionalInterface
 public interface IJurorHistoryRepository {
 
     /**

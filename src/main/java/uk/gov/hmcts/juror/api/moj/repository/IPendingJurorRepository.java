@@ -5,6 +5,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PendingJurorStatus;
 
 import java.util.List;
 
+@FunctionalInterface
 public interface IPendingJurorRepository {
 
     List<PendingJurorsResponseDto.PendingJurorsResponseData> findPendingJurorsForCourt(String locCode,
