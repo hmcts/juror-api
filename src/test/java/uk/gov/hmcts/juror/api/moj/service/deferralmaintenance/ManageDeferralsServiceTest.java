@@ -19,6 +19,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
@@ -27,6 +28,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.DeferralAllocateRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralDatesRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralReasonRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferredJurorMoveRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.deferralmaintenance.BulkDisqualifyRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.deferralmaintenance.ProcessJurorPostponementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralOptionsDto;
@@ -43,6 +45,7 @@ import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
+import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCode;
 import uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -105,6 +108,7 @@ class ManageDeferralsServiceTest {
     private static final String BUREAU_OWNER = "400";
     private static final String BUREAU_USER = "BUREAU_USER";
     private static final String LOC_CODE_415 = "415";
+    private static final String OWNER_415 = "415";
     private static final String JUROR_123456789 = "123456789";
     private static final String JUROR_111111111 = "111111111";
     private static final String POOL_111111111 = "111111111";
@@ -2934,6 +2938,332 @@ class ManageDeferralsServiceTest {
         verify(digitalResponseRepository, times(1)).findByJurorNumber(any(String.class));
         verify(poolRequestRepository, never()).findActivePoolsForDateRange(
             any(String.class), any(String.class), any(LocalDate.class), any(LocalDate.class), anyBoolean());
+    }
+
+    @DisplayName("Bulk disqualify jurors for age")
+    @Nested
+    class BulkDisqualifyForAge {
+
+        @Test
+        void bulkDisqualifyForAgeHappyPathSingleJurorNoResponse() {
+            TestUtils.mockBureauUser();
+            // use a court owner so the printWithdrawalLetter branch is NOT triggered
+            final BureauJwtPayload courtPayload = TestUtils.createJwt(OWNER_415, "COURT_USER");
+
+            JurorPool jurorPool = createJurorPool(JUROR_123456789);
+            jurorPool.setOwner(OWNER_415);
+            doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_123456789);
+
+            JurorStatus disqualifiedStatus = new JurorStatus();
+            disqualifiedStatus.setStatus(IJurorStatus.DISQUALIFIED);
+            doReturn(Optional.of(disqualifiedStatus))
+                .when(jurorStatusRepository)
+                .findById(IJurorStatus.DISQUALIFIED);
+
+            doReturn(null).when(digitalResponseRepository).findByJurorNumber(JUROR_123456789);
+            doReturn(null).when(paperResponseRepository).findByJurorNumber(JUROR_123456789);
+
+            BulkDisqualifyRequestDto requestDto =
+                new BulkDisqualifyRequestDto(Collections.singletonList(JUROR_123456789));
+
+            BulkDisqualifyResponseDto response =
+                manageDeferralsService.bulkDisqualifyForAge(courtPayload, requestDto);
+
+            assertThat(response.getDisqualifiedCount()).isEqualTo(1);
+            assertThat(response.getDisqualified()).hasSize(1);
+            assertThat(response.getDisqualified().get(0).getJurorNumber()).isEqualTo(JUROR_123456789);
+            assertThat(response.getDisqualified().get(0).getDob()).isEqualTo(LocalDate.of(1990, 6, 1));
+            assertThat(response.getFailedToDisqualify()).isEmpty();
+
+            verify(jurorRepository, times(1)).save(any());
+            verify(jurorPoolRepository, times(1)).save(any());
+            verify(jurorHistoryService, times(1))
+                .createDisqualifyHistory(jurorPool, DisqualifyCode.A.getCode());
+            verify(printDataService, never()).printWithdrawalLetter(any());
+        }
+
+        @Test
+        void bulkDisqualifyForAgeHappyPathSingleJurorBureauOwnerPrintsLetter() {
+            TestUtils.mockBureauUser();
+            final BureauJwtPayload bureauPayload =
+                TestUtils.createJwt(JurorDigitalApplication.JUROR_OWNER, BUREAU_USER);
+
+            JurorPool jurorPool = createJurorPool(JUROR_123456789);
+            jurorPool.setOwner(JurorDigitalApplication.JUROR_OWNER);
+            doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_123456789);
+
+            JurorStatus disqualifiedStatus = new JurorStatus();
+            disqualifiedStatus.setStatus(IJurorStatus.DISQUALIFIED);
+            doReturn(Optional.of(disqualifiedStatus))
+                .when(jurorStatusRepository)
+                .findById(IJurorStatus.DISQUALIFIED);
+
+            doReturn(null).when(digitalResponseRepository).findByJurorNumber(JUROR_123456789);
+            doReturn(null).when(paperResponseRepository).findByJurorNumber(JUROR_123456789);
+
+            BulkDisqualifyRequestDto requestDto =
+                new BulkDisqualifyRequestDto(Collections.singletonList(JUROR_123456789));
+
+            BulkDisqualifyResponseDto response =
+                manageDeferralsService.bulkDisqualifyForAge(bureauPayload, requestDto);
+
+            assertThat(response.getDisqualifiedCount()).isEqualTo(1);
+            assertThat(response.getDisqualified()).hasSize(1);
+            assertThat(response.getFailedToDisqualify()).isEmpty();
+
+            verify(printDataService, times(1)).printWithdrawalLetter(jurorPool);
+        }
+
+        @Test
+        void bulkDisqualifyForAgeHappyPathWithOpenDigitalResponse() {
+            TestUtils.mockBureauUser();
+            final BureauJwtPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
+
+            JurorPool jurorPool = createJurorPool(JUROR_123456789);
+            doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_123456789);
+
+            JurorStatus disqualifiedStatus = new JurorStatus();
+            disqualifiedStatus.setStatus(IJurorStatus.DISQUALIFIED);
+            doReturn(Optional.of(disqualifiedStatus))
+                .when(jurorStatusRepository)
+                .findById(IJurorStatus.DISQUALIFIED);
+
+            DigitalResponse digitalResponse = new DigitalResponse();
+            digitalResponse.setJurorNumber(JUROR_123456789);
+            digitalResponse.setProcessingComplete(false);
+            doReturn(digitalResponse).when(digitalResponseRepository).findByJurorNumber(JUROR_123456789);
+            doReturn(null).when(paperResponseRepository).findByJurorNumber(JUROR_123456789);
+
+            BulkDisqualifyRequestDto requestDto =
+                new BulkDisqualifyRequestDto(Collections.singletonList(JUROR_123456789));
+
+            BulkDisqualifyResponseDto response =
+                manageDeferralsService.bulkDisqualifyForAge(bureauPayload, requestDto);
+
+            assertThat(response.getDisqualifiedCount()).isEqualTo(1);
+            assertThat(response.getDisqualified()).hasSize(1);
+            assertThat(response.getFailedToDisqualify()).isEmpty();
+
+            verify(mergeService, times(1)).mergeDigitalResponse(eq(digitalResponse), eq(BUREAU_USER));
+            verify(mergeService, never()).mergePaperResponse(any(), any());
+            verify(jurorHistoryService, times(1))
+                .createDisqualifyHistory(jurorPool, DisqualifyCode.A.getCode());
+        }
+
+        @Test
+        void bulkDisqualifyForAgeHappyPathWithOpenPaperResponse() {
+            TestUtils.mockBureauUser();
+            final BureauJwtPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
+
+            JurorPool jurorPool = createJurorPool(JUROR_123456789);
+            doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_123456789);
+
+            JurorStatus disqualifiedStatus = new JurorStatus();
+            disqualifiedStatus.setStatus(IJurorStatus.DISQUALIFIED);
+            doReturn(Optional.of(disqualifiedStatus))
+                .when(jurorStatusRepository)
+                .findById(IJurorStatus.DISQUALIFIED);
+
+            doReturn(null).when(digitalResponseRepository).findByJurorNumber(JUROR_123456789);
+
+            PaperResponse paperResponse = new PaperResponse();
+            paperResponse.setJurorNumber(JUROR_123456789);
+            paperResponse.setProcessingComplete(false);
+            doReturn(paperResponse).when(paperResponseRepository).findByJurorNumber(JUROR_123456789);
+
+            BulkDisqualifyRequestDto requestDto =
+                new BulkDisqualifyRequestDto(Collections.singletonList(JUROR_123456789));
+
+            BulkDisqualifyResponseDto response =
+                manageDeferralsService.bulkDisqualifyForAge(bureauPayload, requestDto);
+
+            assertThat(response.getDisqualifiedCount()).isEqualTo(1);
+            assertThat(response.getDisqualified()).hasSize(1);
+            assertThat(response.getFailedToDisqualify()).isEmpty();
+
+            verify(mergeService, never()).mergeDigitalResponse(any(), any());
+            verify(mergeService, times(1)).mergePaperResponse(eq(paperResponse), eq(BUREAU_USER));
+            verify(jurorHistoryService, times(1))
+                .createDisqualifyHistory(jurorPool, DisqualifyCode.A.getCode());
+        }
+
+        @Test
+        void bulkDisqualifyForAgeSkipsAlreadyCompletedDigitalResponse() {
+            TestUtils.mockBureauUser();
+            final BureauJwtPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
+
+            JurorPool jurorPool = createJurorPool(JUROR_123456789);
+            doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_123456789);
+
+            JurorStatus disqualifiedStatus = new JurorStatus();
+            disqualifiedStatus.setStatus(IJurorStatus.DISQUALIFIED);
+            doReturn(Optional.of(disqualifiedStatus))
+                .when(jurorStatusRepository)
+                .findById(IJurorStatus.DISQUALIFIED);
+
+            DigitalResponse digitalResponse = new DigitalResponse();
+            digitalResponse.setJurorNumber(JUROR_123456789);
+            digitalResponse.setProcessingComplete(true); // already completed - should be skipped
+            doReturn(digitalResponse).when(digitalResponseRepository).findByJurorNumber(JUROR_123456789);
+            doReturn(null).when(paperResponseRepository).findByJurorNumber(JUROR_123456789);
+
+            BulkDisqualifyRequestDto requestDto =
+                new BulkDisqualifyRequestDto(Collections.singletonList(JUROR_123456789));
+
+            BulkDisqualifyResponseDto response =
+                manageDeferralsService.bulkDisqualifyForAge(bureauPayload, requestDto);
+
+            assertThat(response.getDisqualifiedCount()).isEqualTo(1);
+            assertThat(response.getDisqualified()).hasSize(1);
+            assertThat(response.getFailedToDisqualify()).isEmpty();
+
+            // merge should NOT be called since response is already complete
+            verify(mergeService, never()).mergeDigitalResponse(any(), any());
+            verify(mergeService, never()).mergePaperResponse(any(), any());
+            verify(jurorHistoryService, times(1))
+                .createDisqualifyHistory(jurorPool, DisqualifyCode.A.getCode());
+        }
+
+        @Test
+        void bulkDisqualifyForAgeHappyPathMultipleJurors() {
+            TestUtils.mockBureauUser();
+            final BureauJwtPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
+
+            JurorPool jurorPool1 = createJurorPool(JUROR_123456789);
+            JurorPool jurorPool2 = createJurorPool(JUROR_111111111);
+            doReturn(jurorPool1).when(jurorPoolService).getJurorPoolFromUser(JUROR_123456789);
+            doReturn(jurorPool2).when(jurorPoolService).getJurorPoolFromUser(JUROR_111111111);
+
+            JurorStatus disqualifiedStatus = new JurorStatus();
+            disqualifiedStatus.setStatus(IJurorStatus.DISQUALIFIED);
+            doReturn(Optional.of(disqualifiedStatus))
+                .when(jurorStatusRepository)
+                .findById(IJurorStatus.DISQUALIFIED);
+
+            doReturn(null).when(digitalResponseRepository).findByJurorNumber(any());
+            doReturn(null).when(paperResponseRepository).findByJurorNumber(any());
+
+            BulkDisqualifyRequestDto requestDto =
+                new BulkDisqualifyRequestDto(Arrays.asList(JUROR_123456789, JUROR_111111111));
+
+            BulkDisqualifyResponseDto response =
+                manageDeferralsService.bulkDisqualifyForAge(bureauPayload, requestDto);
+
+            assertThat(response.getDisqualifiedCount()).isEqualTo(2);
+            assertThat(response.getDisqualified()).hasSize(2);
+            assertThat(response.getFailedToDisqualify()).isEmpty();
+
+            verify(jurorRepository, times(2)).save(any());
+            verify(jurorPoolRepository, times(2)).save(any());
+            verify(jurorHistoryService, times(2))
+                .createDisqualifyHistory(any(), eq(DisqualifyCode.A.getCode()));
+        }
+
+        @Test
+        void bulkDisqualifyForAgePartialFailure() {
+            TestUtils.mockBureauUser();
+            final BureauJwtPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
+
+            JurorPool jurorPool1 = createJurorPool(JUROR_123456789);
+            doReturn(jurorPool1).when(jurorPoolService).getJurorPoolFromUser(JUROR_123456789);
+
+            // second juror throws an exception simulating a failure
+            doThrow(new MojException.NotFound("Juror not found", null))
+                .when(jurorPoolService)
+                .getJurorPoolFromUser(JUROR_111111111);
+
+            JurorStatus disqualifiedStatus = new JurorStatus();
+            disqualifiedStatus.setStatus(IJurorStatus.DISQUALIFIED);
+            doReturn(Optional.of(disqualifiedStatus))
+                .when(jurorStatusRepository)
+                .findById(IJurorStatus.DISQUALIFIED);
+
+            doReturn(null).when(digitalResponseRepository).findByJurorNumber(any());
+            doReturn(null).when(paperResponseRepository).findByJurorNumber(any());
+
+            BulkDisqualifyRequestDto requestDto =
+                new BulkDisqualifyRequestDto(Arrays.asList(JUROR_123456789, JUROR_111111111));
+
+            BulkDisqualifyResponseDto response =
+                manageDeferralsService.bulkDisqualifyForAge(bureauPayload, requestDto);
+
+            assertThat(response.getDisqualifiedCount()).isEqualTo(1);
+            assertThat(response.getDisqualified()).hasSize(1);
+            assertThat(response.getDisqualified().get(0).getJurorNumber()).isEqualTo(JUROR_123456789);
+            assertThat(response.getFailedToDisqualify()).hasSize(1);
+            assertThat(response.getFailedToDisqualify().get(0).getJurorNumber())
+                .isEqualTo(JUROR_111111111);
+
+            verify(jurorRepository, times(1)).save(any());
+            verify(jurorPoolRepository, times(1)).save(any());
+            verify(jurorHistoryService, times(1))
+                .createDisqualifyHistory(any(), eq(DisqualifyCode.A.getCode()));
+        }
+
+        @Test
+        void bulkDisqualifyForAgeAllFail() {
+            TestUtils.mockBureauUser();
+            final BureauJwtPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
+
+            doThrow(new MojException.NotFound("Juror not found", null))
+                .when(jurorPoolService)
+                .getJurorPoolFromUser(any());
+
+            BulkDisqualifyRequestDto requestDto =
+                new BulkDisqualifyRequestDto(Arrays.asList(JUROR_123456789, JUROR_111111111));
+
+            BulkDisqualifyResponseDto response =
+                manageDeferralsService.bulkDisqualifyForAge(bureauPayload, requestDto);
+
+            assertThat(response.getDisqualifiedCount()).isEqualTo(0);
+            assertThat(response.getDisqualified()).isEmpty();
+            assertThat(response.getFailedToDisqualify()).hasSize(2);
+
+            verify(jurorRepository, never()).save(any());
+            verify(jurorPoolRepository, never()).save(any());
+            verify(jurorHistoryService, never()).createDisqualifyHistory(any(), any());
+            verify(printDataService, never()).printWithdrawalLetter(any());
+        }
+
+        @Test
+        void bulkDisqualifyForAgeSetsCorrectJurorFields() {
+            TestUtils.mockBureauUser();
+            final BureauJwtPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
+
+            JurorPool jurorPool = createJurorPool(JUROR_123456789);
+            doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_123456789);
+
+            JurorStatus disqualifiedStatus = new JurorStatus();
+            disqualifiedStatus.setStatus(IJurorStatus.DISQUALIFIED);
+            doReturn(Optional.of(disqualifiedStatus))
+                .when(jurorStatusRepository)
+                .findById(IJurorStatus.DISQUALIFIED);
+
+            doReturn(null).when(digitalResponseRepository).findByJurorNumber(JUROR_123456789);
+            doReturn(null).when(paperResponseRepository).findByJurorNumber(JUROR_123456789);
+
+            BulkDisqualifyRequestDto requestDto =
+                new BulkDisqualifyRequestDto(Collections.singletonList(JUROR_123456789));
+
+            manageDeferralsService.bulkDisqualifyForAge(bureauPayload, requestDto);
+
+            final ArgumentCaptor<Juror> jurorCaptor = ArgumentCaptor.forClass(Juror.class);
+            verify(jurorRepository).save(jurorCaptor.capture());
+            Juror savedJuror = jurorCaptor.getValue();
+
+            assertThat(savedJuror.isResponded()).isTrue();
+            assertThat(savedJuror.getDisqualifyDate()).isEqualTo(LocalDate.now());
+            assertThat(savedJuror.getDisqualifyCode()).isEqualTo(DisqualifyCode.A.getCode());
+            assertThat(savedJuror.getUserEdtq()).isEqualTo(BUREAU_USER);
+
+            final ArgumentCaptor<JurorPool> jurorPoolCaptor = ArgumentCaptor.forClass(JurorPool.class);
+            verify(jurorPoolRepository).save(jurorPoolCaptor.capture());
+            JurorPool savedPool = jurorPoolCaptor.getValue();
+
+            assertThat(savedPool.getStatus().getStatus()).isEqualTo(IJurorStatus.DISQUALIFIED);
+            assertThat(savedPool.getNextDate()).isNull();
+            assertThat(savedPool.getUserEdtq()).isEqualTo(BUREAU_USER);
+        }
     }
 
     private void setUpDeferralQueryResult(Tuple deferral, String courtLocation,
