@@ -5,6 +5,7 @@ import uk.gov.hmcts.juror.api.moj.domain.letter.court.DeferralGrantedLetterList;
 
 import java.util.List;
 
+@FunctionalInterface
 public interface IDeferralGrantedLetterListRepository {
 
     List<DeferralGrantedLetterList> findJurorsEligibleForDeferralGrantedLetter(

@@ -5,6 +5,7 @@ import uk.gov.hmcts.juror.api.moj.domain.letter.court.ShowCauseLetterList;
 
 import java.util.List;
 
+@FunctionalInterface
 public interface ShowCauseLetterListRepository {
     List<ShowCauseLetterList> findJurorsEligibleForShowCauseLetter(CourtLetterSearchCriteria searchCriteria,
                                                                    String owner);

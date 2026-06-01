@@ -5,6 +5,7 @@ import uk.gov.hmcts.juror.api.moj.domain.letter.court.ExcusalGrantedLetterList;
 
 import java.util.List;
 
+@FunctionalInterface
 public interface IExcusalGrantedLetterListRepository {
 
     List<ExcusalGrantedLetterList> findJurorsEligibleForExcusalGrantedLetter(CourtLetterSearchCriteria searchCriteria);
