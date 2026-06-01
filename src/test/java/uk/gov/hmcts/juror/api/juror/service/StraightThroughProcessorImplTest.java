@@ -566,7 +566,7 @@ public class StraightThroughProcessorImplTest {
     @Test
     public void processAcceptance_response_isUrgent() {
         // configure single jurorResponse property to fail processing
-        setupMock_UrgentSuperUrgent();
+        setupMockUrgentSuperUrgent();
         given(jurorResponse.isUrgent()).willReturn(true);
 
         try {
@@ -586,7 +586,7 @@ public class StraightThroughProcessorImplTest {
     @Test
     public void process_excusal_response_isUrgent() {
         // configure single jurorResponse property to fail processing
-        setupMock_UrgentSuperUrgent();
+        setupMockUrgentSuperUrgent();
 
         try {
             // process response
@@ -601,7 +601,7 @@ public class StraightThroughProcessorImplTest {
         }
     }
 
-    private void setupMock_UrgentSuperUrgent() {
+    private void setupMockUrgentSuperUrgent() {
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
         given(jurorResponse.getTitle()).willReturn("Mr");
