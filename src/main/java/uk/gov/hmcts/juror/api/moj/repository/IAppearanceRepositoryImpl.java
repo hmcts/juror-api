@@ -48,7 +48,7 @@ import static uk.gov.hmcts.juror.api.moj.controller.request.expense.UnpaidExpens
  * Custom Repository implementation for the Appearance entity.
  */
 @Slf4j
-@SuppressWarnings("PMD.TooManyMethods")
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 public class IAppearanceRepositoryImpl implements IAppearanceRepository {
     @PersistenceContext
     EntityManager entityManager;
