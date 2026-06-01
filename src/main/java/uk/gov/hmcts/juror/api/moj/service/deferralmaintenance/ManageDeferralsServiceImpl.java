@@ -569,7 +569,25 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                     jurorPool, digitalResponseRepository, paperResponseRepository, null);
                 final LocalDate currentServiceStartDate = jurorPool.getReturnDate();
 
-                JurorStatus disqualifiedStatus = jurorStatusRepository.findById(IJurorStatus.DISQUALIFIED)
+                // close any open juror response record — same pattern as DisqualifyJurorServiceImpl
+                DigitalResponse digitalResponse = digitalResponseRepository.findByJurorNumber(jurorNumber);
+                PaperResponse paperResponse = paperResponseRepository.findByJurorNumber(jurorNumber);
+
+                if (digitalResponse != null
+                    && !Boolean.TRUE.equals(digitalResponse.getProcessingComplete())) {
+                    digitalResponse.setProcessingStatus(jurorResponseAuditRepositoryMod, ProcessingStatus.CLOSED);
+                    digitalResponse.setProcessingComplete(true);
+                    digitalResponse.setCompletedAt(LocalDateTime.now());
+                    mergeService.mergeDigitalResponse(digitalResponse, payload.getLogin());
+                } else if (paperResponse != null
+                    && !Boolean.TRUE.equals(paperResponse.getProcessingComplete())) {
+                    paperResponse.setProcessingStatus(jurorResponseAuditRepositoryMod, ProcessingStatus.CLOSED);
+                    paperResponse.setProcessingComplete(true);
+                    paperResponse.setCompletedAt(LocalDateTime.now());
+                    mergeService.mergePaperResponse(paperResponse, payload.getLogin());
+                }
+
+                final JurorStatus disqualifiedStatus = jurorStatusRepository.findById(IJurorStatus.DISQUALIFIED)
                     .orElseThrow(() -> new MojException.NotFound("Juror status not found", null));
 
                 Juror juror = jurorPool.getJuror();
@@ -582,7 +600,6 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                 jurorPool.setStatus(disqualifiedStatus);
                 jurorPool.setNextDate(null);
                 jurorPool.setUserEdtq(payload.getLogin());
-                jurorPool.setIsActive(false);
                 jurorPoolRepository.save(jurorPool);
 
                 jurorHistoryService.createDisqualifyHistory(jurorPool, DisqualifyCode.A.getCode());
@@ -616,6 +633,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             .failedToDisqualify(failedToDisqualify)
             .build();
     }
+
     @Override
     public DeferralListDto getDeferralsByCourtLocationCode(BureauJwtPayload payload, String courtLocation) {
         List<DeferralListDto.DeferralListDataDto> deferralsList = new ArrayList<>();
