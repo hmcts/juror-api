@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -70,6 +71,9 @@ class SecurityConfigTest {
     @MockBean
     private CourtLocationRepository courtLocationRepository;
 
+    @Autowired
+    private MockMvc mockMvc;
+
     protected static String bureauSecret;
     protected static String publicSecret;
     protected static String hmacSecret;
@@ -95,8 +99,6 @@ class SecurityConfigTest {
         erportalSecret = secret;
     }
 
-    @Autowired
-    private MockMvc mockMvc;
 
     @ParameterizedTest(name = "[{index}] Authorised request using JWT Type: {0} for url {1}")
     @MethodSource("authorisedRequests")
@@ -199,7 +201,7 @@ class SecurityConfigTest {
                     .roles(new String[]{"juror"})
                     .id("")
                     .build();
-                final Map<String, Object> claimsMap = new HashMap<>();
+                final Map<String, Object> claimsMap = new ConcurrentHashMap<>();
                 claimsMap.put("data", payload);
                 return claimsMap;
             }
@@ -215,7 +217,7 @@ class SecurityConfigTest {
                     .owner("400")
                     .staff(BureauJwtPayload.Staff.builder().courts(Collections.singletonList("415")).build())
                     .build();
-                final Map<String, Object> claimsMap = new HashMap<>();
+                final Map<String, Object> claimsMap = new ConcurrentHashMap<>();
                 claimsMap.put("login", payload.getLogin());
                 claimsMap.put("owner", payload.getOwner());
                 claimsMap.put("userLevel", payload.getUserLevel());
@@ -230,7 +232,7 @@ class SecurityConfigTest {
                     .laName("Local Authority Y")
                     .roles(Collections.singletonList("LA_USER"))
                     .build();
-                final Map<String, Object> claimsMap = new HashMap<>();
+                final Map<String, Object> claimsMap = new ConcurrentHashMap<>();
                 claimsMap.put("username", payload.getUsername());
                 claimsMap.put("laCode", payload.getLaCode());
                 claimsMap.put("laName", payload.getLaName());
