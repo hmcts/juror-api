@@ -129,7 +129,7 @@ public class VotersServiceImpl implements VotersService {
         }
         voters.forEach(voter -> {
             voter.setDateSelected1(attendanceDate);
-            log.info("Voter with Juror number {} has been selected for a pool.", voter.getJurorNumber());
+            log.info("Voter with hash id {} has been selected for a pool.", voter.getHashId());
         });
         votersRepository.saveAll(voters);
     }
