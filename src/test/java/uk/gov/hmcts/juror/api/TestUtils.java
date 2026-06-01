@@ -1,9 +1,11 @@
 package uk.gov.hmcts.juror.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.constraints.NotNull;
 import lombok.SneakyThrows;
 import org.assertj.core.api.Assertions;
+import org.json.JSONException;
 import org.junit.jupiter.api.AfterAll;
 import org.mockito.MockedStatic;
 import org.springframework.security.core.context.SecurityContext;
@@ -132,7 +134,7 @@ public final class TestUtils {
     public static String asJsonString(final Object obj) {
         try {
             return objectMapper.findAndRegisterModules().writeValueAsString(obj);
-        } catch (Exception e) {
+        } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }
