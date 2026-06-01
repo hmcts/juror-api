@@ -29,6 +29,7 @@ public class DeferralDeniedLetterListRepositoryImpl implements IDeferralDeniedLe
     EntityManager entityManager;
 
     @Override
+    @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.AvoidDeeplyNestedIfStmts"})
     public List<DeferralDeniedLetterList> findJurorsEligibleForDeferralDeniedLetter(
         CourtLetterSearchCriteria searchCriteria, String owner) {
 
@@ -87,10 +88,10 @@ public class DeferralDeniedLetterListRepositoryImpl implements IDeferralDeniedLe
                 LocalDate datePrintedDateOnly = datePrinted.toLocalDate();
                 if (datePrintedDateOnly.equals(deferralDeniedLetterList.getRefusalDate())
                     || datePrintedDateOnly.isAfter(deferralDeniedLetterList.getRefusalDate())) {
-                    if (!searchCriteria.includePrinted()) {
-                        deferralDeniedLetterListMap.remove(jurorNumber);
-                    } else {
+                    if (searchCriteria.includePrinted()) {
                         deferralDeniedLetterList.setDatePrinted(datePrinted);
+                    } else {
+                        deferralDeniedLetterListMap.remove(jurorNumber);
                     }
                 }
             }
