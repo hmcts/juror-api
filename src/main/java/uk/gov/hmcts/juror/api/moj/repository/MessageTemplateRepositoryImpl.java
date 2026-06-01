@@ -52,6 +52,7 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
     }
 
     @Override
+    @SuppressWarnings({"PMD.CognitiveComplexity"})
     public PaginatedList<? extends JurorToSendMessageBase> messageSearch(MessageSearch search, String locCode,
                                                                          boolean simpleResponse, Long maxItems) {
         final boolean isCourt = SecurityUtil.isCourt();
