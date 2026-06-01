@@ -566,58 +566,35 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                 JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
 
                 final LocalDate dob = ManageDeferralsService.resolveDateOfBirth(
-                    jurorPool, digitalResponseRepository, paperResponseRepository, null);
+                    jurorPool, digitalResponseRepository, paperResponseRepository,null);
                 final LocalDate currentServiceStartDate = jurorPool.getReturnDate();
 
-                // close any open juror response record — same pattern as DisqualifyJurorServiceImpl
-                DigitalResponse digitalResponse = digitalResponseRepository.findByJurorNumber(jurorNumber);
-                PaperResponse paperResponse = paperResponseRepository.findByJurorNumber(jurorNumber);
-
-                if (digitalResponse != null
-                    && !Boolean.TRUE.equals(digitalResponse.getProcessingComplete())) {
-                    digitalResponse.setProcessingStatus(jurorResponseAuditRepositoryMod, ProcessingStatus.CLOSED);
-                    digitalResponse.setProcessingComplete(true);
-                    digitalResponse.setCompletedAt(LocalDateTime.now());
-                    mergeService.mergeDigitalResponse(digitalResponse, payload.getLogin());
-                } else if (paperResponse != null
-                    && !Boolean.TRUE.equals(paperResponse.getProcessingComplete())) {
-                    paperResponse.setProcessingStatus(jurorResponseAuditRepositoryMod, ProcessingStatus.CLOSED);
-                    paperResponse.setProcessingComplete(true);
-                    paperResponse.setCompletedAt(LocalDateTime.now());
-                    mergeService.mergePaperResponse(paperResponse, payload.getLogin());
-                }
-
-                final JurorStatus disqualifiedStatus = jurorStatusRepository.findById(IJurorStatus.DISQUALIFIED)
-                    .orElseThrow(() -> new MojException.NotFound("Juror status not found", null));
-
                 Juror juror = jurorPool.getJuror();
-                juror.setResponded(true);
                 juror.setDisqualifyDate(LocalDate.now());
                 juror.setDisqualifyCode(DisqualifyCode.A.getCode());
                 juror.setUserEdtq(payload.getLogin());
                 jurorRepository.save(juror);
 
+                JurorStatus disqualifiedStatus = jurorStatusRepository.findById(IJurorStatus.DISQUALIFIED)
+                    .orElseThrow(() -> new MojException.NotFound("Juror status not found", null));
+
                 jurorPool.setStatus(disqualifiedStatus);
-                jurorPool.setNextDate(null);
                 jurorPool.setUserEdtq(payload.getLogin());
                 jurorPoolRepository.save(jurorPool);
 
                 jurorHistoryService.createDisqualifyHistory(jurorPool, DisqualifyCode.A.getCode());
 
-                if (JurorDigitalApplication.JUROR_OWNER.equals(payload.getOwner())) {
-                    printDataService.printWithdrawalLetter(jurorPool);
-                }
-
                 disqualified.add(BulkDisqualifyResponseDto.DisqualifiedJurorDto.builder()
                                      .jurorNumber(jurorNumber)
                                      .dob(dob)
                                      .currentServiceStartDate(currentServiceStartDate)
-                                     .newDate(null)
+                                     .newDate(null) // no new date for a direct disqualification
                                      .build());
 
                 disqualifiedCount++;
             } catch (Exception e) {
                 log.error("Failed to disqualify juror {} for age: {}", jurorNumber, e.getMessage());
+
                 failedToDisqualify.add(BulkDisqualifyResponseDto.DisqualifiedJurorDto.builder()
                                            .jurorNumber(jurorNumber)
                                            .build());
