@@ -107,7 +107,6 @@ public class VotersServiceImpl implements VotersService {
 
         List<ExcludedVoters> excludedVoters = getExcludedVoters();
 
-
         Set<VoterKey> excusedKeys = excludedVoters.stream()
             .map(j -> key(j.getFirstName(), j.getLastName(), j.getAddress1(), j.getPostcode()))
             .collect(Collectors.toSet());
@@ -132,6 +131,7 @@ public class VotersServiceImpl implements VotersService {
             normalise(postcode)
         );
     }
+
     @Override
     public List<ExcludedVoters> getExcludedVoters() {
         JPAQueryFactory queryFactory = getQueryFactory();
