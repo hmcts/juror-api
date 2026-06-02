@@ -9,8 +9,4 @@ public class Notification {
     protected String templateId;
     protected String referenceNumber;
     protected Map<String, String> payload;
-
-    protected Notification() {
-        throw new IllegalArgumentException("Notification should not be instantiated");
-    }
 }

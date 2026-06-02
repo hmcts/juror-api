@@ -131,6 +131,11 @@ public class User implements Serializable {
         }
     }
 
+    @SuppressWarnings({"PMD.UnnecessaryConstructor"}) // see comment below.
+    public User() {
+        // required to have unit tests pass.
+    }
+
     public Set<Role> getRoles() {
         if (roles == null) {
             roles = EnumSet.noneOf(Role.class);
