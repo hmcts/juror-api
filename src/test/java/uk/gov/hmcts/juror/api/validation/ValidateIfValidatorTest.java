@@ -497,7 +497,6 @@ class ValidateIfValidatorTest extends AbstractValidatorTest<ValidateIfTrigger> {
         }
     }
 
-    @SuppressWarnings("PMD.RedundantFieldInitializer")
     public static class NotFoundMethodTestObject {
         @ValidateIf(condition = ValidateIf.Condition.ANY_PRESENT,
             type = ValidateIf.Type.REQUIRE,
