@@ -41,7 +41,7 @@ class CombinedExpenseDetailsDtoTest {
 
         @Test
         void positiveTotalConstructor() {
-            //noinspection RawUseOfParameterized
+            @SuppressWarnings("PMD.UseDiamondOperator")
             ExpenseTotal total = new ExpenseTotal(false);
             assertThat(total.getTotalDays()).isEqualTo(0);
             assertThat(total.getLossOfEarnings()).isEqualTo(BigDecimal.ZERO);
@@ -60,7 +60,7 @@ class CombinedExpenseDetailsDtoTest {
 
         @Test
         void positiveAdd() {
-            //noinspection RawUseOfParameterized
+            @SuppressWarnings("PMD.UseDiamondOperator")
             final ExpenseTotal total = new ExpenseTotal(false);
             ExpenseDetailsDto expenseDetailsDto = new ExpenseDetailsDto();
             expenseDetailsDto.setLossOfEarnings(new BigDecimal("20.01"));
@@ -118,7 +118,7 @@ class CombinedExpenseDetailsDtoTest {
 
         @Test
         void positiveAddWithTotals() {
-            //noinspection RawUseOfParameterized
+            @SuppressWarnings("PMD.UseDiamondOperator")
             final ExpenseTotal total = new ExpenseTotal(true);
             ExpenseDetailsForTotals expenseDetailsDto = new ExpenseDetailsForTotals();
             expenseDetailsDto.setLossOfEarnings(new BigDecimal("20.01"));
@@ -181,7 +181,7 @@ class CombinedExpenseDetailsDtoTest {
 
         @Test
         void positiveGetTotalOutstandingDoesNotHaveTotals() {
-            //noinspection RawUseOfParameterized
+            @SuppressWarnings("PMD.UseDiamondOperator")
             final ExpenseTotal total = spy(new ExpenseTotal(false));
             doReturn(new BigDecimal("20.00")).when(total).getTotalDue();
             doReturn(new BigDecimal("10.00")).when(total).getTotalPaid();
@@ -190,7 +190,7 @@ class CombinedExpenseDetailsDtoTest {
 
         @Test
         void positiveGetTotalOutstandingHasTotals() {
-            //noinspection RawUseOfParameterized
+            @SuppressWarnings("PMD.UseDiamondOperator")
             final ExpenseTotal total = spy(new ExpenseTotal(true));
             doReturn(new BigDecimal("25.00")).when(total).getTotalDue();
             doReturn(new BigDecimal("10.00")).when(total).getTotalPaid();
@@ -199,7 +199,7 @@ class CombinedExpenseDetailsDtoTest {
 
         @Test
         void positiveGetTotalDueDoesNotHaveTotals() {
-            //noinspection RawUseOfParameterized
+            @SuppressWarnings("PMD.UseDiamondOperator")
             final ExpenseTotal total = spy(new ExpenseTotal(false));
             assertThat(total.getTotalDue()).isNull();
 
@@ -207,7 +207,7 @@ class CombinedExpenseDetailsDtoTest {
 
         @Test
         void positiveGetTotalDueHasTotals() {
-            //noinspection RawUseOfParameterized
+            @SuppressWarnings("PMD.UseDiamondOperator")
             final ExpenseTotal total = spy(new ExpenseTotal(true));
             total.setTotalDue(new BigDecimal("20.00"));
             assertThat(total.getTotalDue()).isEqualTo(new BigDecimal("20.00"));
@@ -215,14 +215,14 @@ class CombinedExpenseDetailsDtoTest {
 
         @Test
         void positiveGetTotalPaidDoesNotHaveTotals() {
-            //noinspection RawUseOfParameterized
+            @SuppressWarnings("PMD.UseDiamondOperator")
             final ExpenseTotal total = spy(new ExpenseTotal(false));
             assertThat(total.getTotalPaid()).isNull();
         }
 
         @Test
+        @SuppressWarnings("PMD.UseDiamondOperator")
         void positiveGetTotalHaveTotals() {
-            //noinspection RawUseOfParameterized
             final ExpenseTotal total = spy(new ExpenseTotal(true));
             assertThat(total.getTotalDue()).isEqualTo(BigDecimal.ZERO);
             assertThat(total.getTotalPaid()).isEqualTo(BigDecimal.ZERO);
@@ -231,7 +231,7 @@ class CombinedExpenseDetailsDtoTest {
 
         @Test
         void positiveGetTotalPaidHasTotals() {
-            //noinspection RawUseOfParameterized
+            @SuppressWarnings("PMD.UseDiamondOperator")
             final ExpenseTotal total = spy(new ExpenseTotal(true));
             total.setTotalPaid(new BigDecimal("10.00"));
             assertThat(total.getTotalPaid()).isEqualTo(new BigDecimal("10.00"));
