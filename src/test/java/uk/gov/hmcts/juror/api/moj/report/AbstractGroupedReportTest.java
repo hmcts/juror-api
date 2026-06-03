@@ -113,7 +113,8 @@ class AbstractGroupedReportTest {
         verify(report).getTableDataAsList(data);
     }
 
-    @SuppressWarnings("unchecked")//TODO
+    //TODO
+    @SuppressWarnings({"unchecked", "PMD.ShortVariable"})
     private List<LinkedHashMap<String, Object>> toLinkedHashMapList(Object o) {
         return (List<LinkedHashMap<String, Object>>) o;
     }
