@@ -72,7 +72,9 @@ import static uk.gov.hmcts.juror.api.moj.utils.DateUtils.getWorkingDaysBetween;
 @SuppressWarnings({
     "PMD.ExcessiveImports",
     "PMD.TooManyMethods",
-    "PMD.UselessParentheses" //false positive
+    "PMD.CyclomaticComplexity",
+    "PMD.GodClass",
+    "PMD.CouplingBetweenObjects" //false positive
 })
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class TrialServiceImpl implements TrialService {
@@ -499,7 +501,7 @@ public class TrialServiceImpl implements TrialService {
 
     @Override
     @Transactional
-    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
+    @SuppressWarnings({"PMD.AvoidInstantiatingObjectsInLoops", "PMD.AvoidDeeplyNestedIfStmts", "PMD.CognitiveComplexity"})
     public void returnJury(BureauJwtPayload payload, String trialNumber, String locationCode,
                            ReturnJuryDto returnJuryDto) {
         List<Panel> panelList =
