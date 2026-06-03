@@ -7,7 +7,7 @@ import java.util.List;
  * Custom Repository definition for the PoolComment entity.
  * Allowing for additional query functions to be explicitly declared
  */
-
+@FunctionalInterface
 public interface IPoolCommentRepository {
     List<IPoolCommentRepositoryImpl.PoolComment> findPoolCommentsForLocationsAndDates(
         List<String> locCodes, LocalDate dateFrom, LocalDate dateTo);

@@ -56,6 +56,7 @@ import static uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails.F_AUDIT_PR
 @RequestMapping(value = "/api/v1/moj/reports", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Reports")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 public class ReportController {
 
     private final ReportService reportService;
@@ -93,8 +94,8 @@ public class ReportController {
     @IsCourtUser
     public ResponseEntity<DailyUtilisationReportResponse> viewDailyUtilisationReport(
         @P("locCode") @PathVariable("locCode") @CourtLocationCode @Valid String locCode,
-        @RequestParam(value = "reportFromDate") @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate reportFromDate,
-        @RequestParam(value = "reportToDate") @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate reportToDate
+        @RequestParam("reportFromDate") @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate reportFromDate,
+        @RequestParam("reportToDate") @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate reportToDate
     ) {
 
         return ResponseEntity.ok(utilisationReportService.viewDailyUtilisationReport(locCode, reportFromDate,
@@ -107,7 +108,7 @@ public class ReportController {
     @IsCourtUser
     public ResponseEntity<DailyUtilisationReportJurorsResponse> viewDailyUtilisationJurors(
         @P("locCode") @PathVariable("locCode") @CourtLocationCode @Valid String locCode,
-        @RequestParam(value = "reportDate") @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate reportDate
+        @RequestParam("reportDate") @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate reportDate
     ) {
 
         return ResponseEntity.ok(utilisationReportService.viewDailyUtilisationJurors(locCode, reportDate));
@@ -119,7 +120,7 @@ public class ReportController {
     @IsCourtUser
     public ResponseEntity<MonthlyUtilisationReportResponse> generateMonthlyUtilisationReport(
         @P("locCode") @PathVariable("locCode") @CourtLocationCode @Valid String locCode,
-        @RequestParam(value = "reportDate") @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate reportDate
+        @RequestParam("reportDate") @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate reportDate
     ) {
         return ResponseEntity.ok(utilisationReportService.generateMonthlyUtilisationReport(locCode, reportDate));
     }
@@ -130,7 +131,7 @@ public class ReportController {
     @IsCourtUser
     public ResponseEntity<MonthlyUtilisationReportResponse> viewMonthlyUtilisationReport(
         @P("locCode") @PathVariable("locCode") @CourtLocationCode @Valid String locCode,
-        @RequestParam(value = "reportDate") @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate reportDate,
+        @RequestParam("reportDate") @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate reportDate,
         @RequestParam(value = "previousMonths", required = false) @Valid boolean previousMonths
     ) {
         return ResponseEntity.ok(utilisationReportService.viewMonthlyUtilisationReport(locCode, reportDate,

@@ -34,13 +34,12 @@ import java.util.stream.Collectors;
 public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonResponseRepositoryMod {
     private final PoolTransferDayRepository poolTransferDayRepository;
 
+    @PersistenceContext
+    EntityManager entityManager;
+
     public IJurorCommonResponseRepositoryModImpl(PoolTransferDayRepository poolTransferDayRepository) {
         this.poolTransferDayRepository = poolTransferDayRepository;
     }
-
-    @PersistenceContext
-
-    EntityManager entityManager;
 
     @Override
     public List<Tuple> getJurorResponseDetailsByUsernameAndStatus(String staffLogin,
@@ -308,10 +307,10 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
         if (transferDay == null || runDay == null) {
             return 0;
         }
-        String t = transferDay.trim();
-        String r = runDay.trim();
+        String transferDayTrim = transferDay.trim();
+        String runDayTrim = runDay.trim();
         return poolTransferDayRepository
-            .findByTransferDayAndRunDayIgnoreCase(t, r)
+            .findByTransferDayAndRunDayIgnoreCase(transferDayTrim, runDayTrim)
             .map(PoolTransferWeekday::getAdjustment)
             .orElse(0);
     }

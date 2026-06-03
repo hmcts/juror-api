@@ -144,12 +144,12 @@ public class StaffServiceImpl implements StaffService {
             log.warn("Response '{}' record does not exist!", jurorNumber);
             throw new MojException.NotFound("Juror response record does not exist!", null);
 
-        } else if (Boolean.TRUE.equals(jurorResponse.getProcessingComplete())
+        } else if (Boolean.TRUE.equals(jurorResponse.isProcessingComplete())
             || ProcessingStatus.CLOSED == jurorResponse.getProcessingStatus()) {
 
             log.trace("Juror Response {}: processingComplete={} processingStatus={}",
                 jurorResponse.getJurorNumber(),
-                jurorResponse.getProcessingComplete(),
+                jurorResponse.isProcessingComplete(),
                 jurorResponse.getProcessingStatus());
 
             throw new MojException.BusinessRuleViolation(

@@ -108,8 +108,8 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
             }
 
             //Check the status of the juror response to ensure only responses in the correct status can be updated
-            if (jurorResponse.getProcessingComplete() == null
-                || Boolean.FALSE.equals(jurorResponse.getProcessingComplete())) {
+            if (jurorResponse.isProcessingComplete() == null
+                || Boolean.FALSE.equals(jurorResponse.isProcessingComplete())) {
 
                 log.debug("Juror {} - Juror response is not complete, updating response", jurorNumber);
                 //Save the updated juror response
@@ -238,7 +238,7 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
     private void checkJurorResponseStatus(AbstractJurorResponse jurorResponse) {
         log.trace("Juror {} - Service method checkJurorResponseStatus() invoked", jurorResponse.getJurorNumber());
 
-        if (jurorResponse.getProcessingComplete().equals(Boolean.TRUE)) {
+        if (jurorResponse.isProcessingComplete().equals(Boolean.TRUE)) {
             final String message = String.format(
                 "Juror: %s - Juror cannot be disqualified because the response was completed on %s",
                 jurorResponse.getJurorNumber(),

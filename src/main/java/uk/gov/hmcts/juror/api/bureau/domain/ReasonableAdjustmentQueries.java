@@ -4,7 +4,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QJurorReasonableAdjustment;
 
 @Deprecated(forRemoval = true)
-public abstract class ReasonableAdjustmentQueries {
+public final class ReasonableAdjustmentQueries {
 
     private ReasonableAdjustmentQueries() {
         throw new IllegalStateException("ReasonableAdjustmentQueries should not be instantiated.");

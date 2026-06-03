@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * Define QueryDSL predicates for Court Location Repository operations.
  */
-public abstract class CourtLocationQueries {
+public class CourtLocationQueries {
 
     private static final QCourtLocation COURT_LOCATION = QCourtLocation.courtLocation;
 
@@ -21,6 +21,10 @@ public abstract class CourtLocationQueries {
      */
     public static BooleanExpression filterByLocCodes(final List<String> locCodes) {
         return COURT_LOCATION.locCode.in(locCodes);
+    }
+
+    protected CourtLocationQueries() {
+        throw new IllegalArgumentException("CourtLocationQueries must not be instantiated.");
     }
 
 }

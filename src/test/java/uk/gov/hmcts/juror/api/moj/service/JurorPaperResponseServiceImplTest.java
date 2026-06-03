@@ -1526,7 +1526,7 @@ public class JurorPaperResponseServiceImplTest {
             .as("Expect Juror Record to updated with data mapped from the request DTO")
             .isEqualTo(jurorPaperResponseDto.getAddressPostcode());
 
-        Assertions.assertThat(jurorPaperResponse.getWelsh())
+        Assertions.assertThat(jurorPaperResponse.isWelsh())
             .as("Expect Juror Record to updated with data mapped from the request DTO")
             .isEqualTo(jurorPaperResponseDto.getWelsh());
 

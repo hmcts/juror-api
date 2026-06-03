@@ -18,8 +18,8 @@ import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class AvailableListByDateReportBureau extends AbstractGroupedReport implements AvailableListReport {
@@ -68,7 +68,7 @@ public class AvailableListByDateReportBureau extends AbstractGroupedReport imple
     public Map<String, AbstractReportResponse.DataTypeValue> getHeadings(
         StandardReportRequest request,
         AbstractReportResponse.TableData<GroupedTableData> tableData) {
-        Map<String, AbstractReportResponse.DataTypeValue> headings = new LinkedHashMap<>(
+        Map<String, AbstractReportResponse.DataTypeValue> headings = new ConcurrentHashMap<>(
             getHeadingsInternal(request, tableData));
         headings.put("attendance_date",
             AbstractReportResponse.DataTypeValue.builder()

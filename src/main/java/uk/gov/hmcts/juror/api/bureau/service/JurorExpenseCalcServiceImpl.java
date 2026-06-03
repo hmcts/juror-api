@@ -41,6 +41,7 @@ public class JurorExpenseCalcServiceImpl implements JurorExpenseCalcService {
         this.expensesRatesRepository = expensesRatesRepository;
     }
 
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     @Override
     public JurorExpensesCalcResults getExpensesCalcResults(JurorExpensesCalcRequestDto jurorExpensesCalcRequestDto) {
         log.debug("Called Service : JurorExpenseCalcServiceImpl.getExpensesCalcResults() ");

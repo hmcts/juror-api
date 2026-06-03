@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.bureau.service;
 
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController;
 
+@FunctionalInterface
 public interface ResponsePhoneLogService {
     /**
      * Default phone code for inserted phone logs.
