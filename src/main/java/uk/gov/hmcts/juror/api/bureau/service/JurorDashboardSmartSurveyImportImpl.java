@@ -161,7 +161,10 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
                     objSurveyResponseKey.setId(objSurveyResponse.getId());
                     objSurveyResponseKey.setSurveyId(objSurveyResponse.getSurveyId());
 
-                    if (!surveyResponseRepository.existsById(objSurveyResponseKey)) {
+                    if (surveyResponseRepository.existsById(objSurveyResponseKey)) {
+                        // record already exists
+                        dbSkipCount++;
+                    } else {
                         try {
                             this.surveyResponseRepository.save(objSurveyResponse);
                             dbInsertCount++;
@@ -169,9 +172,6 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
                             errorCount++;
                             log.error("Error inserting survey record: {} - {}", e.getMessage(), objSurveyResponse);
                         }
-                    } else {
-                        // record already exists
-                        dbSkipCount++;
                     }
 
                 }
