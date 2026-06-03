@@ -279,6 +279,7 @@ class ManualAdjustmentsToExpenseLimitsReportTest {
 
     @Test
     @DisplayName("Should include revision_number in data rows")
+    @SuppressWarnings("PMD.UseUnderscoresInNumericLiterals")
     void positiveIncludesRevisionNumber() {
         // Given
         List<String> courtCodes = List.of("415");
@@ -355,6 +356,7 @@ class ManualAdjustmentsToExpenseLimitsReportTest {
 
     @Test
     @DisplayName("Should sort by revision number descending (most recent first)")
+    @SuppressWarnings("PMD.UseUnderscoresInNumericLiterals")
     void positiveSortsByRevisionDescending() {
 
         List<String> courtCodes = List.of("415");
