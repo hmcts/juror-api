@@ -461,7 +461,7 @@ public class JurorDashboardServiceImpl implements JurorDashboardService {
         Map<String, Map<String, Integer>> channelResponses, String channel) {
 
         Map<String, Integer> timeResponses = channelResponses.getOrDefault(channel, null);
-        return timeResponses != null && timeResponses.size() > 0
+        return timeResponses != null && !timeResponses.isEmpty()
             ?
             DashboardMandatoryKpiData.ResponseMethod.builder()
                 .within7days(timeResponses.getOrDefault(WITHIN7DAYS, 0))
