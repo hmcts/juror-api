@@ -369,10 +369,17 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
     }
 
     private boolean hasNullablePropertyChanged(String originalValue, String newValue) {
+        boolean valueChanged = false;
         if (!ObjectUtils.isEmpty(originalValue)) {
-            return !originalValue.equalsIgnoreCase(newValue);
+            if (!originalValue.equalsIgnoreCase(newValue)) {
+                valueChanged = true;
+            }
+        } else {
+            if (!ObjectUtils.isEmpty(newValue)) {
+                valueChanged = true;
+            }
         }
-        return !originalValue.equalsIgnoreCase(newValue);
+        return valueChanged;
     }
 
     private boolean isEligibilityCriteriaValidForStraightThroughAcceptance(PaperResponse paperResponse) {
