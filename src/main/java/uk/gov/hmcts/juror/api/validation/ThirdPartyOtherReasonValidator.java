@@ -4,7 +4,6 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 
-
 public class ThirdPartyOtherReasonValidator implements ConstraintValidator<ThirdPartyOtherReason, JurorResponse> {
 
     @Override
@@ -14,6 +13,7 @@ public class ThirdPartyOtherReasonValidator implements ConstraintValidator<Third
     }
 
     @Override
+    @SuppressWarnings("PMD.SimplifyBooleanReturns")
     public boolean isValid(JurorResponse jurorResponse, ConstraintValidatorContext context) {
         if (jurorResponse != null
             && jurorResponse.getThirdPartyReason() != null
