@@ -27,6 +27,9 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+@SuppressWarnings({
+    "PMD.GodClass"
+})
 @ExtendWith(SpringExtension.class)
 class LetterBaseTest {
     private MockedStatic<Calendar> mockStaticCalendar;
