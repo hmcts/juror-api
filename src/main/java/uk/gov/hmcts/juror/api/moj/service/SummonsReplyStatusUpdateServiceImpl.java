@@ -53,7 +53,7 @@ import static java.lang.Boolean.TRUE;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
-@SuppressWarnings("PMD.CyclomaticComplexity")
+@SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.TooManyMethods"})
 public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUpdateService, SummonsReplyMergeService {
     private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
     private final JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository;
@@ -603,11 +603,16 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
         return !ObjectUtils.isEmpty(number) && number.startsWith("07");
     }
 
+    @SuppressWarnings({"PMD.NPathComplexity", "PMD.CognitiveComplexity"})
     private void updateJurorFromSummonsReply(AbstractJurorResponse updatedDetails, Juror juror,
                                              String locCode) {
         log.trace("Juror: {}. Enter updateJurorPoolFromSummonsReply", juror.getJurorNumber());
 
-        if (!ObjectUtils.isEmpty(updatedDetails.getThirdPartyReason())) {
+        if (ObjectUtils.isEmpty(updatedDetails.getThirdPartyReason())) {
+            // Copy the actual details to juror record.
+            BeanUtils.copyProperties(updatedDetails, juror, TITLE, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH);
+            applyPhoneNumberRules(juror, updatedDetails);
+        } else {
             log.debug(
                 "Juror: {}. Summons reply completed by a third-party, check to see what details to keep",
                 juror.getJurorNumber());
@@ -617,7 +622,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
                                      EMAIL, DATE_OF_BIRTH);
 
             if (TRUE.equals(updatedDetails.getJurorEmailDetails())
-                && (updatedDetails.getEmail() != null && !updatedDetails.getEmail().isEmpty())) {
+                && updatedDetails.getEmail() != null && !updatedDetails.getEmail().isEmpty()) {
                 juror.setEmail(updatedDetails.getEmail());
             }
 
@@ -628,10 +633,6 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
                 applyPhoneNumberRules(juror, updatedDetails);
             }
 
-        } else {
-            // Copy the actual details to juror record.
-            BeanUtils.copyProperties(updatedDetails, juror, TITLE, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH);
-            applyPhoneNumberRules(juror, updatedDetails);
         }
 
 
