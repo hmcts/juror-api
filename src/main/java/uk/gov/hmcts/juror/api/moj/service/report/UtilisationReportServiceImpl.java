@@ -38,6 +38,7 @@ import java.util.Map;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.GodClass", "PMD.CouplingBetweenObjects"})
 public class UtilisationReportServiceImpl implements UtilisationReportService {
     private final CourtLocationRepository courtLocationRepository;
     private final JurorRepository jurorRepository;
@@ -47,7 +48,7 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
 
     @Override
     @Transactional(readOnly = true)
-    @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.CyclomaticComplexity"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.AvoidInstantiatingObjectsInLoops"})
     public DailyUtilisationReportResponse viewDailyUtilisationReport(String locCode, LocalDate reportFromDate,
                                                                      LocalDate reportToDate) {
         log.info("Fetching daily utilisation stats for location: {} from: {} to: {}", locCode, reportFromDate,
@@ -448,6 +449,7 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
         return response;
     }
 
+    @SuppressWarnings("PMD.LinguisticNaming")
     private void getCourtUtilisationStats(List<String> utilisationStats,
                                           CourtUtilisationStatsReportResponse.TableData tableData,
                                           List<String> courtLocCodes) {
@@ -503,7 +505,7 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
         tableData.setTotalSittingDays(tableData.getTotalSittingDays() + stats.getSittingDays());
         tableData.setTotalAttendanceDays(tableData.getTotalAttendanceDays() + stats.getAttendanceDays());
         tableData.setTotalNonAttendanceDays(tableData.getTotalNonAttendanceDays()
-            + (stats.getAvailableDays() - stats.getAttendanceDays()));
+            + stats.getAvailableDays() - stats.getAttendanceDays());
     }
 
     private void updateJurorTotals(DailyUtilisationReportJurorsResponse.TableData tableData,
@@ -651,9 +653,9 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
         TIME_CREATED("Time created", LocalDateTime.class.getSimpleName()),
         COURT_NAME("Court name", String.class.getSimpleName());
 
-        private String displayName;
+        private final String displayName;
 
-        private String dataType;
+        private final String dataType;
 
         ReportHeading(String displayName, String dataType) {
             this.displayName = displayName;
