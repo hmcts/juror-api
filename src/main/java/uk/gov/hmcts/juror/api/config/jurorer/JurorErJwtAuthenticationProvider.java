@@ -33,8 +33,15 @@ public class JurorErJwtAuthenticationProvider implements AuthenticationProvider 
         return JurorErJwtAuthentication.class.isAssignableFrom(authentication);
     }
 
+    /**
+     * Authenticate given the authentication request object below
+     *
+     * @param authentication the authentication request object.
+     * @return
+     * @throws AuthenticationException
+     */
     @Override
-    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+    public Authentication authenticate(Authentication authentication) {
         try {
             if (authentication instanceof JurorErJwtAuthentication jurorErJwtAuthentication) {
                 final Claims body = jwtService

@@ -150,7 +150,7 @@ import static uk.gov.hmcts.juror.api.moj.utils.JurorUtils.checkReadAccessForCurr
 @Slf4j
 @Service
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports",
-    "PMD.TooManyFields"})
+    "PMD.CyclomaticComplexity", "PMD.CouplingBetweenObjects"})
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class JurorRecordServiceImpl implements JurorRecordService {
     private final ContactCodeRepository contactCodeRepository;
@@ -203,6 +203,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     @Override
     @Transactional
+    @SuppressWarnings({"PMD.NcssCount", "PMD.CognitiveComplexity", "PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public void editJurorDetails(BureauJwtPayload payload, EditJurorRecordRequestDto requestDto, String jurorNumber) {
         log.info(String.format("Juror: %s. Start updating details by user %s", jurorNumber, payload.getLogin()));
 
@@ -251,12 +252,6 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         juror.setEmail(requestDto.getEmailAddress());
 
 
-        /**
-         * Ensures that the mobile phone number is saved as the primary phone number if it is valid,
-         * and the primary phone number is not a valid mobile phone number.
-         *
-         * @param requestDto The DTO containing the juror's phone numbers.
-         */
         if (isValidMobilePhone(requestDto.getSecondaryPhone()) && (!isValidMobilePhone(requestDto.getPrimaryPhone()))) {
             juror.setPhoneNumber(requestDto.getSecondaryPhone());
             juror.setAltPhoneNumber(requestDto.getPrimaryPhone());
@@ -1049,7 +1044,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
                 + opticsRefRequestDto.getJurorNumber(), null);
         }
 
-        if (response.getProcessingComplete().equals(true) || response.getProcessingStatus() == ProcessingStatus.CLOSED) {
+        if (response.isProcessingComplete().equals(true) || response.getProcessingStatus() == ProcessingStatus.CLOSED) {
             throw new MojException.BusinessRuleViolation("Cannot check court accommodation - Response has been "
                 + "completed/closed", null);
         }
@@ -1133,6 +1128,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     @Override
     @Transactional
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public JurorSummonsReplyResponseDto getJurorSummonsReply(BureauJwtPayload payload, String jurorNumber,
                                                              String locCode) {
         log.info("Retrieving juror summons reply info for juror {} by user {}", jurorNumber, payload.getLogin());
@@ -1312,6 +1308,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     @Override
     @Transactional
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public PoliceCheckStatusDto updatePncStatus(final String jurorNumber, final PoliceCheck policeCheck) {
         log.info("Attempting to update PNC check status for juror {} to be {}", jurorNumber, policeCheck);
         final JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
@@ -1507,6 +1504,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     }
 
     @Override
+    @SuppressWarnings({"PMD.AvoidDeeplyNestedIfStmts"})
     public JurorPaymentsResponseDto getJurorPayments(String jurorNumber) {
 
         List<Appearance> appearances =
@@ -1559,13 +1557,13 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
                     if (appearance.getFinancialAudit() != null) {
                         final Optional<FinancialAuditDetails> financialAuditDetailsOptional;
-                        if (!auditDetailsMap.containsKey(appearance.getFinancialAudit())) {
+                        if (auditDetailsMap.containsKey(appearance.getFinancialAudit())) {
+                            financialAuditDetailsOptional = auditDetailsMap.get(appearance.getFinancialAudit());
+                        } else {
                             financialAuditDetailsOptional =
                                 financialAuditService.getLastFinancialAuditDetailsFromAppearanceAndGenericType(
                                     appearance, FinancialAuditDetails.Type.GenericType.APPROVED);
                             auditDetailsMap.put(appearance.getFinancialAudit(), financialAuditDetailsOptional);
-                        } else {
-                            financialAuditDetailsOptional = auditDetailsMap.get(appearance.getFinancialAudit());
                         }
                         if (financialAuditDetailsOptional.isPresent()) {
                             FinancialAuditDetails financialAuditDetails = financialAuditDetailsOptional.get();

@@ -26,6 +26,7 @@ import java.util.Objects;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Getter
 @Schema(description = "Pool request search list response")
+@SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class PoolRequestSearchListDto {
 
     private static final String BUREAU_STAGE_TEXT = "With the Bureau";
@@ -105,15 +106,17 @@ public class PoolRequestSearchListDto {
                 .toLowerCase(Locale.ROOT), '.');
             this.serviceStartDate = queryResult.get(4, LocalDate.class);
 
-            if (Objects.requireNonNull(queryResult.get(5, Character.class)) != 'N') {
-                this.poolStatus = "Requested";
-            } else if (isNilPool && numberRequested != null && numberRequested == 0) {
-                this.poolStatus = "Nil";
-            } else if (ownedByBureau || hasActivePoolMembers
-                || (!isNilPool && serviceStartDate.isAfter(LocalDate.now()))) {
-                this.poolStatus = "Active";
+            if (Objects.requireNonNull(queryResult.get(5, Character.class)) == 'N') {
+                if (isNilPool && numberRequested != null && numberRequested == 0) {
+                    this.poolStatus = "Nil";
+                } else if (ownedByBureau || hasActivePoolMembers
+                    || (!isNilPool && serviceStartDate.isAfter(LocalDate.now()))) {
+                    this.poolStatus = "Active";
+                } else {
+                    this.poolStatus = "Completed";
+                }
             } else {
-                this.poolStatus = "Completed";
+                this.poolStatus = "Requested";
             }
         }
 

@@ -39,8 +39,7 @@ public class BureauBatchScheduler {
                 if (scheduledService != null) {
                     result = scheduledService.process();
                 } else {
-                    result = new SchedulerServiceClient.Result(SchedulerServiceClient.Result.Status.FAILED,
-                        "Unknown job type: '" + batchJob + "'", null);
+                    result = unknownBatchJobTypeResult(batchJob);
                     log.info("BureauBatchScheduler: {} job does not exist.", batchJob);
                 }
             }
@@ -60,4 +59,8 @@ public class BureauBatchScheduler {
         }
     }
 
+    private SchedulerServiceClient.Result unknownBatchJobTypeResult(String batchJob) {
+        return new SchedulerServiceClient.Result(SchedulerServiceClient.Result.Status.FAILED,
+                                                 "Unknown job type: '" + batchJob + "'", null);
+    }
 }

@@ -2013,7 +2013,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
                 assertThat(thirdParty.getThirdPartyReason()).isEqualTo(jurorPaperResponse.getThirdPartyReason());
             }
 
-            assertThat(responseDetailDto.getWelsh()).isEqualTo(jurorPaperResponse.getWelsh());
+            assertThat(responseDetailDto.getWelsh()).isEqualTo(jurorPaperResponse.isWelsh());
             assertThat(responseDetailDto.getDateReceived()).isEqualTo(
                 jurorPaperResponse.getDateReceived().toLocalDate());
             assertThat(responseDetailDto.getProcessingStatus()).isEqualTo(
@@ -2212,7 +2212,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         assertThat(juror.isResponded()).isTrue();
         assertThat(jurorPool.getStatus().getStatus()).isEqualTo(statusCode);
 
-        if (summonsReplyData.getWelsh()) {
+        if (summonsReplyData.isWelsh()) {
             assertThat(juror.getWelsh()).isTrue();
         } else {
             assertThat(juror.getWelsh()).isNull();
@@ -2265,7 +2265,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
     private void verifyStraightThroughAgeDisqualificationNotProcessed(PaperResponse jurorPaperResponse,
                                                                       JurorPool jurorPool, int statusCode) {
         final Juror juror = jurorPool.getJuror();
-        assertThat(jurorPaperResponse.getProcessingComplete())
+        assertThat(jurorPaperResponse.isProcessingComplete())
             .as("No automatic processing, so processing complete flag remains unset")
             .isNotEqualTo(Boolean.TRUE);
         assertThat(jurorPaperResponse.getCompletedAt())

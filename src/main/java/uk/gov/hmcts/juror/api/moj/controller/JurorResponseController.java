@@ -67,8 +67,7 @@ public class JurorResponseController {
     public ResponseEntity<Object> updateResponseStatus(
         @Parameter(description = "Juror number") @PathVariable String jurorNumber,
         @Parameter(description = "Status update details") @RequestBody BureauResponseStatusUpdateDto updateDto,
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload)
-        throws BureauOptimisticLockingException {
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload) {
         try {
             summonsReplyStatusUpdateService.updateDigitalJurorResponseStatus(jurorNumber, updateDto.getStatus(),
                 payload);

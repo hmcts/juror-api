@@ -13,6 +13,7 @@ import java.util.Map;
  */
 
 @Slf4j
+@SuppressWarnings({"PMD.ExcessivePublicCount"})
 public class MojException extends RuntimeException {
 
     private MojException(String customErrorMessage, Throwable rootException) {

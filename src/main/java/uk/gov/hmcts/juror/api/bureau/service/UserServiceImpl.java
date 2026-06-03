@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
-import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.bureau.controller.request.AssignmentsMultiRequestDto;
 import uk.gov.hmcts.juror.api.bureau.controller.request.MultipleStaffAssignmentDto;
 import uk.gov.hmcts.juror.api.bureau.controller.request.ReassignResponsesDto;
@@ -69,6 +68,7 @@ import static uk.gov.hmcts.juror.api.bureau.domain.UserQueries.sortNameAsc;
 @Service
 @Slf4j
 @AllArgsConstructor(onConstructor = @__(@Autowired))
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects", "PMD.TooManyMethods"})
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -81,11 +81,19 @@ public class UserServiceImpl implements UserService {
     private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
     private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
 
+    /**
+     * Change Assignment
+     *
+     * @param staffAssignmentRequestDto Staff assignment request payload.
+     * @param currentUser               The user carrying out this operation.
+     * @return
+     * @throws StaffAssignmentException
+     */
+    @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.CyclomaticComplexity"})
     @Transactional
     @Override
     public StaffAssignmentResponseDto changeAssignment(final StaffAssignmentRequestDto staffAssignmentRequestDto,
-                                                       final String currentUser)
-        throws StaffAssignmentException {
+                                                       final String currentUser) {
         // 1. validate input
         log.debug("Update assignment");
         final User assigningUser = userRepository.findByUsername(currentUser);
@@ -104,14 +112,14 @@ public class UserServiceImpl implements UserService {
              * Log conditions where we may wish to stop the assignment based on unconfirmed AC.
              */
             // validate states of response invalid for assignment
-            if (jurorResponse.getProcessingComplete()
+            if (jurorResponse.isProcessingComplete()
                 || ProcessingStatus.CLOSED == jurorResponse.getProcessingStatus()) {
                 // log status of record to trace for now (It's already closed and/or processed)
                 if (log.isTraceEnabled()) {
                     log.trace(
                         "Juror Response {}: processingComplete={} processingStatus={}",
                         jurorResponse.getJurorNumber(),
-                        jurorResponse.getProcessingComplete(),
+                        jurorResponse.isProcessingComplete(),
                         jurorResponse.getProcessingStatus()
                     );
                 }
@@ -292,7 +300,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional
-    public void assignUrgentResponse(final DigitalResponse urgentJurorResponse) throws StaffAssignmentException {
+    public void assignUrgentResponse(final DigitalResponse urgentJurorResponse) {
         if (!urgentJurorResponse.isUrgent()) {
             // this state should be invalid
             log.warn("Not urgent: {}", urgentJurorResponse);
@@ -311,7 +319,12 @@ public class UserServiceImpl implements UserService {
 
         final List<User> availableStaff = new ArrayList<>();
         Iterables.addAll(availableStaff, userRepository.findUsersByCourt(entityManager, courtId));
-        if (!availableStaff.isEmpty()) {
+        if (availableStaff.isEmpty()) {
+            // business logic dictates that if no staff exist for the court leave the response unassigned.
+            log.warn("No staff matched court {}. Leaving juror {} response unassigned!", courtId,
+                urgentJurorResponse.getJurorNumber()
+            );
+        } else {
             // assign a random staff member to the juror response
             final User staffToAssign = availableStaff.get(RandomUtils.nextInt(0, availableStaff.size()));
             updateResponse.setStaff(staffToAssign);
@@ -337,11 +350,6 @@ public class UserServiceImpl implements UserService {
 
             log.trace("Auditing urgent assignment {}", userJurorResponseAudit);
             userJurorResponseAuditRepository.save(userJurorResponseAudit);
-        } else {
-            // business logic dictates that if no staff exist for the court leave the response unassigned.
-            log.warn("No staff matched court {}. Leaving juror {} response unassigned!", courtId,
-                urgentJurorResponse.getJurorNumber()
-            );
         }
 
         if (log.isDebugEnabled()) {
@@ -398,27 +406,31 @@ public class UserServiceImpl implements UserService {
                 assignedTo = jurorResponse.getStaff().getUsername();
             }
 
-            StringBuilder jurorDisplayName = new StringBuilder();
-            String jurorTitle = jurorResponse.getTitle();
-            String jurorFirstName = jurorResponse.getFirstName();
-            String jurorLastName = jurorResponse.getLastName();
-
-            jurorDisplayName.append(jurorTitle != null ? jurorTitle : "");
-            jurorDisplayName.append(jurorFirstName != null ? " " + jurorFirstName : "");
-            jurorDisplayName.append(jurorLastName != null ? " " + jurorLastName : "");
-
-            AssignmentListDataDto assignmentListDataDto = new AssignmentListDataDto(
-                jurorResponse.getJurorNumber(),
-                jurorResponse.getVersion(),
-                assignedTo,
-                jurorResponse.getProcessingStatus(),
-                jurorResponse.isUrgent(),
-                jurorDisplayName.toString().trim()
-            );
+            AssignmentListDataDto assignmentListDataDto = getAssignmentListDataDto(jurorResponse, assignedTo);
             assignmentListDataDtos.add(assignmentListDataDto);
         }
 
         return new AssignmentsListDto(assignmentListDataDtos);
+    }
+
+    private static AssignmentListDataDto getAssignmentListDataDto(JurorResponseCommon jurorResponse, String assignedTo) {
+        StringBuilder jurorDisplayName = new StringBuilder();
+        String jurorTitle = jurorResponse.getTitle();
+        String jurorFirstName = jurorResponse.getFirstName();
+        String jurorLastName = jurorResponse.getLastName();
+
+        jurorDisplayName.append(jurorTitle != null ? jurorTitle : "")
+            .append(jurorFirstName != null ? " " + jurorFirstName : "")
+            .append(jurorLastName != null ? " " + jurorLastName : "");
+
+        return new AssignmentListDataDto(
+            jurorResponse.getJurorNumber(),
+            jurorResponse.getVersion(),
+            assignedTo,
+            jurorResponse.getProcessingStatus(),
+            jurorResponse.isUrgent(),
+            jurorDisplayName.toString().trim()
+        );
     }
 
     /**
@@ -434,7 +446,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public OperationFailureListDto multipleChangeAssignment(
         final MultipleStaffAssignmentDto multipleStaffAssignmentDto,
-        final String currentUser) throws StaffAssignmentException {
+        final String currentUser) {
 
         List<OperationFailureDto> failuresList = new ArrayList<>();
 
@@ -468,6 +480,7 @@ public class UserServiceImpl implements UserService {
         return new OperationFailureListDto(failuresList);
     }
 
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     @Override
     @Transactional
     public void reassignResponses(String auditorUsername, ReassignResponsesDto reassignResponsesDto) {

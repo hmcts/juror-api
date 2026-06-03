@@ -48,7 +48,7 @@ public enum JurorCommsNotifyTemplateType {
     /**
      * weekly comms token in key.
      */
-    static final String[] weeklyCommsSuffixes = {"TH_", "ST_", "ND_", "RD_"};
+    static final String[] WEEKLY_COMMS_SUFFIXES = {"TH_", "ST_", "ND_", "RD_"};
 
     /**
      * type message token in key.h
@@ -65,15 +65,6 @@ public enum JurorCommsNotifyTemplateType {
         SMS = "_SMS";
     }
 
-
-    /**
-     * Suffix to apply to the template key name.
-     */
-    private String adjustSuffix;
-
-    JurorCommsNotifyTemplateType() {
-    }
-
     /**
      * Get weekly the juror comms template id Key for the notify service.
      *
@@ -86,7 +77,7 @@ public enum JurorCommsNotifyTemplateType {
             return null;
         }
 
-        final String weeklyCommsNumber = weeklyNotification + weeklyCommsSuffixes[weeklyNotification];
+        final String weeklyCommsNumber = weeklyNotification + WEEKLY_COMMS_SUFFIXES[weeklyNotification];
         final String suffix = welshLanguage
             ?
             WELSH_TOKEN

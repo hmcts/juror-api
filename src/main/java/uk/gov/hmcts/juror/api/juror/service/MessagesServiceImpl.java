@@ -34,15 +34,16 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 public class MessagesServiceImpl implements BureauProcessService {
     private static final String MESSAGE_PLACEHOLDER_MESSAGE = "MESSAGETEXT";
     private static final String MESSAGE_PLACEHOLDER_JUROR = "JURORNUMBER";
@@ -67,7 +68,8 @@ public class MessagesServiceImpl implements BureauProcessService {
      */
     @Override
     @Transactional
-    @SuppressWarnings("checkstyle:LineLength") // false positive
+    @SuppressWarnings({"checkstyle:LineLength", "PMD.NcssCount", "PMD.CyclomaticComplexity",
+                       "PMD.NPathComplexity", "PMD.CognitiveComplexity", "PMD.ExceptionAsFlowControl"}) // false positive
     public SchedulerServiceClient.Result process() {
         // Process court comms
         SimpleDateFormat dateFormat = new SimpleDateFormat();
@@ -80,7 +82,7 @@ public class MessagesServiceImpl implements BureauProcessService {
         // Hash map of regionID as key and notify region
         // keys as values
 
-        Map<String, String> myRegionMap = new HashMap<>();
+        Map<String, String> myRegionMap = new ConcurrentHashMap<>();
 
         List<String> notifyRegionKeys = setUpNotifyRegionKeys();
         List<String> regionIds = setUpRegionIds();
@@ -99,7 +101,7 @@ public class MessagesServiceImpl implements BureauProcessService {
         log.info("messageDetailList Number of records to process : {}", messageDetailList.size());
 
 
-        Map<String, TemplateDetails> templateDetailsMap = new HashMap<>();
+        Map<String, TemplateDetails> templateDetailsMap = new ConcurrentHashMap<>();
 
         int errorCount = 0;
         int invalidPhoneCount = 0;
@@ -144,9 +146,7 @@ public class MessagesServiceImpl implements BureauProcessService {
                     continue;
                 }
 
-                Map<String, String> personalisation = new HashMap<>();
-                personalisation.put(MESSAGE_PLACEHOLDER_MESSAGE, textMessage);
-                personalisation.put(MESSAGE_PLACEHOLDER_JUROR, jurorNumber);
+                Map<String, String> personalisation = getPersonalisation(textMessage, jurorNumber);
 
 
                 final boolean isEmail = StringUtils.isNotBlank(email);
@@ -170,7 +170,7 @@ public class MessagesServiceImpl implements BureauProcessService {
                         : templateDetails.getRegionNotifyTemplateListSms();
                 }
 
-                NotificationClient notifyClient = new NotificationClient(regionApikey, gotProxy);
+                NotificationClient notifyClient = getNotificationClient(regionApikey, gotProxy);
                 for (RegionNotifyTemplateMod regionNotifyTemplateSms : regionNotifyTemplateMods) {
 
                     String smsTemplateId = regionNotifyTemplateSms != null
@@ -257,6 +257,17 @@ public class MessagesServiceImpl implements BureauProcessService {
             ));
     }
 
+    private static NotificationClient getNotificationClient(String regionApikey, Proxy gotProxy) {
+        return new NotificationClient(regionApikey, gotProxy);
+    }
+
+    private static Map<String, String> getPersonalisation(String textMessage, String jurorNumber) {
+        Map<String, String> personalisation = new ConcurrentHashMap<>();
+        personalisation.put(MESSAGE_PLACEHOLDER_MESSAGE, textMessage);
+        personalisation.put(MESSAGE_PLACEHOLDER_JUROR, jurorNumber);
+        return personalisation;
+    }
+
     private TemplateDetails createTemplateDetails(Message messagesDetail) {
         TemplateDetails templateDetails = new TemplateDetails();
         CourtRegionMod courtRegionMod = messagesDetail.getLocationCode().getCourtRegion();
@@ -330,11 +341,11 @@ public class MessagesServiceImpl implements BureauProcessService {
         return proxy;
     }
 
-    @SuppressWarnings("PMD.LinguisticNaming")
     private void updateMessageFlag(Message messagesDetail) {
         messageRepository.save(messagesDetail);
     }
 
+    @SuppressWarnings("PMD.LinguisticNaming") // False positive
     public List<String> setUpNotifyRegionKeys() {
         return notifyRegionsConfigurationProperties.getRegionKeys();
     }

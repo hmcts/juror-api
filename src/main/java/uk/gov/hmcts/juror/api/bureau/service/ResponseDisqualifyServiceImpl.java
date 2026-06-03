@@ -48,9 +48,13 @@ public class ResponseDisqualifyServiceImpl implements ResponseDisqualifyService 
     private final JurorHistoryService jurorHistoryService;
     private final PrintDataService printDataService;
 
+    /**
+     *
+     * @return
+     * @throws DisqualifyException.UnableToRetrieveDisqualifyCodeList
+     */
     @Override
-    public List<ResponseDisqualifyController.DisqualifyCodeDto> getDisqualifyReasons()
-        throws DisqualifyException.UnableToRetrieveDisqualifyCodeList {
+    public List<ResponseDisqualifyController.DisqualifyCodeDto> getDisqualifyReasons() {
         Iterable<DisqualifiedCode> disqualifyReasonsList = disqualifyCodeRepository.findAll();
         if (!disqualifyReasonsList.iterator().hasNext()) {
             throw new DisqualifyException.UnableToRetrieveDisqualifyCodeList();
@@ -63,10 +67,20 @@ public class ResponseDisqualifyServiceImpl implements ResponseDisqualifyService 
         return myList;
     }
 
+    /**
+     * Checking whether to disqualify juror or not based on below parameters.
+     *
+     * @param jurorId
+     * @param disqualifyCodeDto
+     * @param login
+     * @return
+     * @throws DisqualifyException
+     */
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExceptionAsFlowControl"}) // think exceptions thrown are ok here.
     @Transactional
     @Override
     public boolean disqualifyJuror(String jurorId, DisqualifyCodeDto disqualifyCodeDto,
-                                   String login) throws DisqualifyException {
+                                   String login) {
         if (!isValidDisqualifyCode(jurorId, disqualifyCodeDto.getDisqualifyCode())) {
             return false;
         }
@@ -78,7 +92,7 @@ public class ResponseDisqualifyServiceImpl implements ResponseDisqualifyService 
                 throw new DisqualifyException.JurorNotFound(jurorId);
             }
 
-            if (BooleanUtils.isTrue(savedResponse.getProcessingComplete())) {
+            if (BooleanUtils.isTrue(savedResponse.isProcessingComplete())) {
                 final String message = "Response " + savedResponse.getJurorNumber() + " has previously been merged!";
                 log.error("Response {} has previously been completed at {}.", savedResponse.getJurorNumber(),
                     savedResponse.getCompletedAt()
@@ -110,7 +124,7 @@ public class ResponseDisqualifyServiceImpl implements ResponseDisqualifyService 
                 if (log.isDebugEnabled()) {
                     log.debug("Optimistic locking failure:", e);
                 }
-                throw new DisqualifyException.OptimisticLockingFailure(jurorId);
+                throw new DisqualifyException.OptimisticLockingFailure(jurorId, e);
             }
 
             // update juror pool entry
@@ -142,7 +156,14 @@ public class ResponseDisqualifyServiceImpl implements ResponseDisqualifyService 
         return true;
     }
 
-    private boolean isValidDisqualifyCode(String jurorId, String disqualifyCodeToCheck) throws DisqualifyException {
+    /**
+     *
+     * @param jurorId
+     * @param disqualifyCodeToCheck
+     * @return
+     * @throws DisqualifyException
+     */
+    private boolean isValidDisqualifyCode(String jurorId, String disqualifyCodeToCheck) {
         List<ResponseDisqualifyController.DisqualifyCodeDto> disqualifyCodeDtos = getDisqualifyReasons();
 
         for (ResponseDisqualifyController.DisqualifyCodeDto disqualifyCodeDto : disqualifyCodeDtos) {
