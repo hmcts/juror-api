@@ -174,7 +174,6 @@ class TrialServiceImplTest {
 
     @Test
     @SuppressWarnings({
-        "PMD.JUnitAssertionsShouldIncludeMessage",
         "unchecked"
     })
     void testGetTrials() {
@@ -1029,7 +1028,7 @@ class TrialServiceImplTest {
         return dto;
     }
 
-    public List<Panel> createPanelMembers(int totalMembers, PanelResult panelResult, String trialNumber, int status) {
+    private List<Panel> createPanelMembers(int totalMembers, PanelResult panelResult, String trialNumber, int status) {
         List<Panel> panelList = new ArrayList<>();
         String jurorNumber = "1111111%02d";
         for (int i = 0;
@@ -1046,7 +1045,7 @@ class TrialServiceImplTest {
     }
 
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
-    public List<JurorDetailRequestDto> createJurorDetailRequestDto(List<Panel> panelList) {
+    private List<JurorDetailRequestDto> createJurorDetailRequestDto(List<Panel> panelList) {
         List<JurorDetailRequestDto> dtoList = new ArrayList<>();
         for (Panel panel : panelList) {
             JurorDetailRequestDto dto = new JurorDetailRequestDto();
