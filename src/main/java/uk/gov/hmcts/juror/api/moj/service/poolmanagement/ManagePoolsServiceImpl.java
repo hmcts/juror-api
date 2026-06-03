@@ -33,6 +33,7 @@ import static uk.gov.hmcts.juror.api.moj.utils.NumberUtils.unboxIntegerValues;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings("PMD.TooManyMethods")
 public class ManagePoolsServiceImpl implements ManagePoolsService {
 
     private final CourtLocationRepository courtLocationRepository;
@@ -229,6 +230,7 @@ public class ManagePoolsServiceImpl implements ManagePoolsService {
         return mapAvailablePoolsToDto(activePoolsData, owner);
     }
 
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     private List<AvailablePoolsInCourtLocationDto.AvailablePoolsDto> mapAvailablePoolsToDto(List<Tuple> activePoolsData,
                                                                                             String owner) {
         log.trace("Juror record owner: {} - Enter method - mapActivePoolStatsToDto", owner);
