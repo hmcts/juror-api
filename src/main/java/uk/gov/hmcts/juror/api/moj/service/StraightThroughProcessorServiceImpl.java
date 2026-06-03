@@ -69,6 +69,7 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
      * @return true if the paper summons reply is eligible to be marked as responded immediately, else false
      */
     @Override
+    @SuppressWarnings("PMD.CyclomaticComplexity")
     public boolean isValidForStraightThroughAcceptance(String jurorNumber, String owner,
                                                        boolean canServeOnSummonsDate) {
         log.trace("Enter isValidForStraightThroughAcceptance");
@@ -219,7 +220,7 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
 
         jurorResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.CLOSED);
 
-        processJurorAgeDisqualification(jurorPool, jurorNumber, owner, username);
+        processJurorAgeDisqualification(jurorPool, username);
 
         if (jurorResponse.getReplyType().getType().equals(ReplyMethod.PAPER.getDescription())) {
             PaperResponse jurorPaperResponse = (PaperResponse) jurorResponse;
@@ -277,8 +278,7 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
         return age >= youngestJurorAgeAllowed && age < tooOldJurorAge;
     }
 
-    private void processJurorAgeDisqualification(JurorPool jurorPool, String jurorNumber, String owner,
-                                                 String username) {
+    private void processJurorAgeDisqualification(JurorPool jurorPool, String username) {
         updateJurorPoolForAgeExcusal(jurorPool, username);
         // record juror record disqualification history record
         jurorHistoryService.createDisqualifyHistory(jurorPool, "A");
@@ -306,6 +306,7 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
         return RepositoryUtils.retrieveFromDatabase(poolStatusId, jurorStatusRepository);
     }
 
+    @SuppressWarnings("PMD.CyclomaticComplexity")
     private boolean arePersonalDetailsValidForStraightThroughAcceptance(Juror juror, PaperResponse paperResponse) {
         String jurorNumber = juror.getJurorNumber();
 
@@ -368,17 +369,10 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
     }
 
     private boolean hasNullablePropertyChanged(String originalValue, String newValue) {
-        boolean valueChanged = false;
         if (!ObjectUtils.isEmpty(originalValue)) {
-            if (!originalValue.equalsIgnoreCase(newValue)) {
-                valueChanged = true;
-            }
-        } else {
-            if (!ObjectUtils.isEmpty(newValue)) {
-                valueChanged = true;
-            }
+            return !originalValue.equalsIgnoreCase(newValue);
         }
-        return valueChanged;
+        return !originalValue.equalsIgnoreCase(newValue);
     }
 
     private boolean isEligibilityCriteriaValidForStraightThroughAcceptance(PaperResponse paperResponse) {
