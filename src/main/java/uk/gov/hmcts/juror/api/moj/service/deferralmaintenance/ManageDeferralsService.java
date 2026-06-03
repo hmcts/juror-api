@@ -27,6 +27,7 @@ import java.util.List;
 
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_DEFER_JUROR_WITH_APPEARANCE;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public interface ManageDeferralsService {
 
     int AGE_DISQUALIFICATION_THRESHOLD = 76;
