@@ -899,7 +899,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
                 Juror newJurorRecord = jurorRepository.findByJurorNumber(JUROR_555555558);
                 verifyActiveJurorNewRecord(newJurorRecord,
-                deferralReasonRequestDto.getPoolNumber(), deferralReasonRequestDto.getDeferralDate());
+                    deferralReasonRequestDto.getPoolNumber(), deferralReasonRequestDto.getDeferralDate());
 
                 Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_555555558);
                 assertThat(deferral.isPresent()).isFalse();

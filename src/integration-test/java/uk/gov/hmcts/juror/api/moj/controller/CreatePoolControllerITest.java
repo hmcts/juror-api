@@ -413,7 +413,8 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             assertThat(jurorPool).isNotEmpty();
             assertThat(jurorPool.size()).isEqualTo(1);
             JurorStatus expectedJurorStatus = jurorPool.get(0).getStatus();
-            assertThat(expectedJurorStatus.getStatus()).isEqualTo(IJurorStatus.SUMMONED);
+            // juror could be summoned or disqualified (there is one disqualified juror)
+            assertThat(expectedJurorStatus.getStatus()).isIn(IJurorStatus.SUMMONED, IJurorStatus.DISQUALIFIED);
         });
 
     }
