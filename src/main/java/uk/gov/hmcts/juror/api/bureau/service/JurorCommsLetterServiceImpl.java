@@ -65,7 +65,9 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
         int commsSent = 0;
         int commsfailed = 0;
         int invalidEmailAddress = 0;
-        if (!bulkPrintDataNotifyCommsList.isEmpty()) {
+        if (bulkPrintDataNotifyCommsList.isEmpty()) {
+            log.trace("Letter Comms Processing : No pending records found.");
+        } else {
             Map<String, String> locCodeTemplateMap = getLocCodeTemplateMap();
             Map<String, String> changeTemplateMap = getChangeTemplateMap();
 
@@ -130,8 +132,6 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
             log.info("LetterService : Summary, identified:{}, sent:{}, failed:{},",
                 bulkPrintDataNotifyCommsList.size(), commsSent, commsfailed
             );
-        } else {
-            log.trace("Letter Comms Processing : No pending records found.");
         }
 
         SchedulerServiceClient.Result.Status status = commsfailed == 0
