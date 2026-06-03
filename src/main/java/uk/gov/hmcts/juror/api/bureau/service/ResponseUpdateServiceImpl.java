@@ -583,7 +583,6 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
             JurorReasonableAdjustment savedSpecialNeed;
             if (null != existingSpecNeed) {
                 log.debug("Updating existing special need {}", existingSpecNeed);
-                final String oldValue = existingSpecNeed.getReasonableAdjustmentDetail();
                 existingSpecNeed.setReasonableAdjustmentDetail(value);
                 savedSpecialNeed = bureauJurorSpecialNeedsRepository.save(existingSpecNeed);
             } else {
@@ -630,16 +629,16 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
                 log.debug("Updating existing CJS employment {}", existingCjs);
                 final String oldValue = existingCjs.getCjsEmployerDetails();
                 existingCjs.setCjsEmployerDetails(value);
-                if (value.compareTo(oldValue) != 0) {
+                if (value.compareTo(oldValue) == 0) {
+                    log.trace("No changes for {}", cjsEmploymentType);
+                } else {
                     // value has changed
                     savedCjs = cjsRepository.save(existingCjs);
                     log.debug("Saved {}", savedCjs);
-                } else {
-                    log.trace("No changes for {}", cjsEmploymentType);
                 }
             } else {
                 // insert new employment
-                savedCjs = cjsRepository.save(JurorResponseCjsEmployment.builder()
+                cjsRepository.save(JurorResponseCjsEmployment.builder()
                     .cjsEmployer(cjsEmploymentType.getEmployer())
                     .cjsEmployerDetails(value)
                     .jurorNumber(jurorId)
@@ -686,15 +685,15 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
             equal = (StringUtils.isEmpty(oldValue) && StringUtils.isEmpty(value)) || Objects.equals(oldValue, value);
         }
         // apply changes
-        if (!equal) {
+        if (equal) {
+            log.trace("No change found for {}", fieldName);
+        } else {
             if (log.isTraceEnabled()) {
                 log.trace("Change found for {}", fieldName);
             }
             //upsert the field value
             ReflectionUtils.setField(field, domain, value);
             // create a change log entry for the update
-        } else {
-            log.trace("No change found for {}", fieldName);
         }
     }
 
