@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import static java.lang.String.format;
 
 @Slf4j
+@SuppressWarnings("PMD.ExcessivePublicCount")
 public class LetterBase {
 
     protected final LetterContext letterContext;
@@ -85,8 +86,6 @@ public class LetterBase {
 
     }
 
-
-    @SuppressWarnings("PMD.AvoidRethrowingException")
     public String getLetterString() {
         try {
             return this.data.stream()
