@@ -112,7 +112,7 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
         verify(jurorPaperResponseRepository, times(0)).save(any());
 
         //verification of the SummonsReplyMergeService invocation
-        verifySummonsReplyMergeService_Paper(jurorPaperResponseEntityCaptor, userCaptor);
+        verifySummonsReplyMergeServicePaper(jurorPaperResponseEntityCaptor, userCaptor);
 
         //verification of the JurorPoolRepository invocation
         verifyJurorPoolRepository(jurorPoolEntityCaptor);
@@ -213,8 +213,6 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
             ArgumentCaptor.forClass(PaperResponse.class);
         final ArgumentCaptor<String> userCaptor = ArgumentCaptor.forClass(String.class);
         final ArgumentCaptor<JurorPool> jurorPoolEntityCaptor = ArgumentCaptor.forClass(JurorPool.class);
-        final ArgumentCaptor<JurorResponseAuditMod> jurorResponseAuditArgumentCaptor =
-            ArgumentCaptor.forClass(JurorResponseAuditMod.class);
 
         BureauJwtPayload courtPayload = buildBureauPayload();
         List<JurorPool> jurorPoolList = createJurorPoolList(courtPayload.getOwner());
@@ -243,7 +241,7 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
         verify(jurorPaperResponseRepository, times(2)).save(any());
 
         //verification of the SummonsReplyMergeService invocation
-        verifySummonsReplyMergeService_Paper(jurorPaperResponseEntityCaptor, userCaptor);
+        verifySummonsReplyMergeServicePaper(jurorPaperResponseEntityCaptor, userCaptor);
 
         //verification of the JurorPoolRepository activity
         verifyJurorPoolRepository(jurorPoolEntityCaptor);
@@ -335,7 +333,7 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
     public void disqualifyJurorDueToAge_noActivePoolRecord() {
         BureauJwtPayload courtPayload = buildBureauPayload();
 
-        doReturn(new ArrayList<JurorPool>()).when(jurorPoolRepository)
+        doReturn(new ArrayList<>()).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActive(anyString(), anyBoolean());
 
         Assertions.assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
@@ -359,7 +357,7 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(anyString(), anyBoolean());
     }
 
-    private void verifySummonsReplyMergeService_Paper(ArgumentCaptor<PaperResponse> jurorPaperResponseEntityCaptor,
+    private void verifySummonsReplyMergeServicePaper(ArgumentCaptor<PaperResponse> jurorPaperResponseEntityCaptor,
                                                       ArgumentCaptor<String> userCaptor) {
         verify(summonsReplyMergeService, times(1))
             .mergePaperResponse(jurorPaperResponseEntityCaptor.capture(),
@@ -376,7 +374,7 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
         Juror capturedJuror = capturedJurorPool.getJuror();
         assertThat(capturedJuror.isResponded()).isEqualTo(true);
         assertThat(capturedJuror.getDisqualifyDate()).isNotNull();
-        assertThat(capturedJurorPool.getUserEdtq()).isEqualTo(DisqualifyJurorDueToAgeServiceImplTest.BUREAU_USER);
+        assertThat(capturedJurorPool.getUserEdtq()).isEqualTo(BUREAU_USER);
         assertThat(capturedJurorPool.getNextDate()).isNull();
         assertThat(capturedJurorPool.getStatus().getStatus()).isEqualTo(
             uk.gov.hmcts.juror.api.moj.domain.IJurorStatus.DISQUALIFIED);
@@ -384,7 +382,7 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
 
     private PaperResponse createPaperResponse() {
         PaperResponse response = new PaperResponse();
-        response.setJurorNumber(DisqualifyJurorDueToAgeServiceImplTest.JUROR_NUMBER);
+        response.setJurorNumber(JUROR_NUMBER);
         response.setDateReceived(LocalDateTime.now());
 
         response.setFirstName("FName");
@@ -416,7 +414,7 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
     private DigitalResponse createDigitalResponse() {
         DigitalResponse response = new DigitalResponse();
 
-        response.setJurorNumber(DisqualifyJurorDueToAgeServiceImplTest.JUROR_NUMBER);
+        response.setJurorNumber(JUROR_NUMBER);
         response.setDateReceived(LocalDateTime.now());
 
         response.setFirstName("FName");
@@ -469,7 +467,7 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
         poolRequest.setCourtLocation(courtLocation);
 
         Juror juror = new Juror();
-        juror.setJurorNumber(DisqualifyJurorDueToAgeServiceImplTest.JUROR_NUMBER);
+        juror.setJurorNumber(JUROR_NUMBER);
         juror.setFirstName("FIRSTNAME");
         juror.setLastName("LASTNAME");
         juror.setPostcode("M24 4GT");
