@@ -66,7 +66,6 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 @SuppressWarnings({
     "PMD.ExcessiveImports",
     "PMD.TooManyMethods",
-    "PMD.GodClass"
 })
 class PanelServiceImplTest {
     @Mock
@@ -117,7 +116,7 @@ class PanelServiceImplTest {
         final LocalDate date = now();
         final String locCode = "415";
 
-        ArrayList<String> poolNumbers = new ArrayList<>();
+        List<String> poolNumbers = new ArrayList<>();
         poolNumbers.add("415231201");
 
         doReturn(true).when(trialRepository)
@@ -218,7 +217,7 @@ class PanelServiceImplTest {
         doReturn(Optional.of(createAppearance("111111111"))).when(appearanceRepository)
             .findByCourtLocationLocCodeAndJurorNumberAndAttendanceDate(locCode, "111111111", now());
 
-        ArrayList<String> poolNumbers = new ArrayList<>();
+        List<String> poolNumbers = new ArrayList<>();
         List<PanelListDto> dtoList = panelService.createPanel(2,
             "T100000025",
             poolNumbers,
@@ -465,7 +464,7 @@ class PanelServiceImplTest {
             .createReturnFromPanelHistory(any(), any());
 
         for (Panel member : panelMembers) {
-            if (member.getResult().equals(PanelResult.CHALLENGED) || member.getResult().equals(PanelResult.JUROR)) {
+            if (member.getResult() == PanelResult.CHALLENGED || member.getResult() == PanelResult.JUROR) {
                 Optional<Appearance> memberAppearance =
                     appearanceArgumentCaptor.getAllValues().stream().filter(appearance ->
                         appearance.getJurorNumber().equals(member.getJurorNumber())).findFirst();
