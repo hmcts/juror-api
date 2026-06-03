@@ -65,22 +65,18 @@ public class ResponseInspectorImpl implements ResponseInspector {
 
     @Override
     public boolean isWelshLanguage(@NonNull final DigitalResponse response) {
-        if (appSettingService.isWelshEnabled()) {
-            if (BooleanUtils.isTrue(response.isWelsh())) {
-                log.debug("Juror response {} is Welsh language response.", response.getJurorNumber());
-                return true;
-            }
+        if (appSettingService.isWelshEnabled() && BooleanUtils.isTrue(response.getWelsh())) {
+            log.debug("Juror response {} is Welsh language response.", response.getJurorNumber());
+            return true;
         }
         return false;
     }
 
     @Override
     public String activeContactEmail(@NonNull final DigitalResponse response) {
-        if (isThirdPartyResponse(response)) {
-            if (BooleanUtils.isFalse(response.getJurorEmailDetails())) {
-                log.debug("Active contact email is third party.");
-                return response.getEmailAddress();
-            }
+        if (isThirdPartyResponse(response) && BooleanUtils.isFalse(response.getJurorEmailDetails())) {
+            log.debug("Active contact email is third party.");
+            return response.getEmailAddress();
         }
         log.debug("Active contact email is juroresponse.");
         return response.getEmail();
@@ -196,6 +192,7 @@ public class ResponseInspectorImpl implements ResponseInspector {
             && DECEASED.equalsIgnoreCase(response.getThirdPartyReason());
     }
 
+    @SuppressWarnings("PMD.AvoidUncheckedExceptionsInSignatures")
     @Override
     public int getJurorAgeAtHearingDate(final LocalDate birthDate,
                                         final LocalDate hearingDate) throws IllegalArgumentException {
