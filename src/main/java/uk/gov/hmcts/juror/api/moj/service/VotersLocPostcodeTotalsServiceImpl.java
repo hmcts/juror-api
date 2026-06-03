@@ -9,9 +9,9 @@ import uk.gov.hmcts.juror.api.moj.domain.VotersLocPostcodeTotals;
 import uk.gov.hmcts.juror.api.moj.repository.VotersLocPostcodeTotalsRepository;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Slf4j
@@ -35,18 +35,18 @@ public class VotersLocPostcodeTotalsServiceImpl implements VotersLocPostcodeTota
             return courtCatchmentItemsList;
         }
 
-        Map<String, Integer> postcodeTotals = new HashMap<>();
+        Map<String, Integer> postcodeTotals = new ConcurrentHashMap<>();
         final List<Integer> totalList = new ArrayList<>(List.of(0));
 
         for (VotersLocPostcodeTotals locPostcodeTotals : votersLocPostcodeTotalsList) {
 
             String postcode = locPostcodeTotals.getPostcode(); //get first part of postcode
 
-            if (!isCoronersPool) {
+            if (isCoronersPool) {
+                totalList.set(0, locPostcodeTotals.getTotalCor());
+            } else {
                 totalList.set(0, locPostcodeTotals.getTotal());
 
-            } else {
-                totalList.set(0, locPostcodeTotals.getTotalCor());
             }
             postcodeTotals.computeIfPresent(postcode, (key, val) -> val + totalList.get(0));
             postcodeTotals.putIfAbsent(postcode, totalList.get(0));
