@@ -48,7 +48,6 @@ public class StaffServiceImpl implements StaffService {
 
     @Override
     @Transactional
-    @SuppressWarnings({"PMD.NcssCount", "PMD.CognitiveComplexity", "PMD.NPathComplexity", "PMD.ImplicitFunctionalInterface"})
     public StaffAssignmentResponseDto changeAssignment(final StaffAssignmentRequestDto staffAssignmentRequestDto,
                                                        final String currentUser) {
         log.trace("enter changeAssignment");
