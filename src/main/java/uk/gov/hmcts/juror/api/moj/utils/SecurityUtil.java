@@ -15,10 +15,11 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 
 import java.util.List;
 
+@SuppressWarnings({"PMD.GodClass", "PMD.TooManyMethods"})
 public final class SecurityUtil {
 
     public static final String BUREAU_OWNER = "400";
-    public static String AUTO_USER = "AUTO";
+    public static final String AUTO_USER = "AUTO";
 
     public static final String IS_MANAGER = "hasRole('ROLE_MANAGER')";
     public static final String IS_SJO = "hasRole('ROLE_SENIOR_JUROR_OFFICER')";
@@ -47,18 +48,12 @@ public final class SecurityUtil {
 
     public static boolean hasBureauJwtPayload() {
         SecurityContext securityContext = SecurityContextHolder.getContext();
-        if (securityContext != null) {
-            return securityContext.getAuthentication() instanceof BureauJwtAuthentication;
-        }
-        return false;
+        return securityContext != null && securityContext.getAuthentication() instanceof BureauJwtAuthentication;
     }
 
     public static boolean hasPublicJwtPayload() {
         SecurityContext securityContext = SecurityContextHolder.getContext();
-        if (securityContext != null) {
-            return securityContext.getAuthentication() instanceof PublicJwtAuthentication;
-        }
-        return false;
+        return securityContext != null && securityContext.getAuthentication() instanceof PublicJwtAuthentication;
     }
 
     public static BureauJwtAuthentication getActiveUsersBureauJwtAuthentication() {
@@ -178,7 +173,6 @@ public final class SecurityUtil {
     }
 
     public static boolean isManager() {
-        BureauJwtPayload activeUsersBureauPayload = getActiveUsersBureauPayload();
         return getActiveUsersBureauPayload().getRoles().contains(Role.MANAGER);
     }
 
@@ -213,10 +207,7 @@ public final class SecurityUtil {
      */
     public static boolean isLaUser() {
         SecurityContext securityContext = SecurityContextHolder.getContext();
-        if (securityContext != null) {
-            return securityContext.getAuthentication() instanceof JurorErJwtAuthentication;
-        }
-        return false;
+        return securityContext != null ? securityContext.getAuthentication() instanceof JurorErJwtAuthentication : (securityContext != null && securityContext.getAuthentication() instanceof JurorErJwtAuthentication);
     }
 
     /**
