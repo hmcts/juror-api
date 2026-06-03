@@ -22,6 +22,7 @@ public class GroupedTableData extends LinkedHashMap<String, Object>
     private Type type;
 
     @JsonIgnore
+    @Override
     public Long getSize() {
         if (type == Type.DATA) {
             return (long) this.size();
@@ -88,7 +89,7 @@ public class GroupedTableData extends LinkedHashMap<String, Object>
         return new ArrayList<>();
     }
 
-    public void removeDataTypes(IDataType[] dataTypes) {
+    public void removeDataTypes(IDataType... dataTypes) {
         getAllDataItems().forEach(groupedTableData -> {
             for (IDataType dataType : dataTypes) {
                 groupedTableData.remove(dataType.getId());

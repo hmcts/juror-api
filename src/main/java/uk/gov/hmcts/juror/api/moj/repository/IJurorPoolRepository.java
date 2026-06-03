@@ -22,6 +22,7 @@ import java.util.function.Function;
  * Custom Repository definition for the JurorPool entity.
  * Allowing for additional query functions to be explicitly declared
  */
+@SuppressWarnings({"PMD.TooManyMethods"})
 public interface IJurorPoolRepository {
     StringPath ATTENDANCE = Expressions.stringPath("attendance");
     BooleanPath CHECKED_IN_TODAY = Expressions.booleanPath("checked_in_today");

@@ -31,8 +31,16 @@ public class HmacJwtAuthenticationProvider implements AuthenticationProvider {
         return HmacJwtAuthentication.class.isAssignableFrom(authentication);
     }
 
+    /**
+     * Authenticate given the authentication request object below
+     *
+     * @param authentication the authentication request object.
+     * @return
+     * @throws AuthenticationException
+     */
     @Override
-    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
+    public Authentication authenticate(Authentication authentication) {
         try {
             if (authentication instanceof HmacJwtAuthentication hmacJwtAuthentication) {
                 if (jwtService.isJwtExpired(hmacJwtAuthentication.getToken(), secret)) {

@@ -31,6 +31,7 @@ import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -42,6 +43,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Audited
 @EqualsAndHashCode(exclude = {"courts"})
+@SuppressWarnings({"PMD.ShortClassName"})
 public class User implements Serializable {
 
     @Id
@@ -109,10 +111,6 @@ public class User implements Serializable {
     private String updatedBy;
 
 
-    public User() {
-
-    }
-
     @Deprecated(forRemoval = true)
     public Boolean isTeamLeader() {
         return getUserType() == UserType.BUREAU && hasRole(Role.MANAGER);
@@ -133,16 +131,21 @@ public class User implements Serializable {
         }
     }
 
+    @SuppressWarnings({"PMD.UnnecessaryConstructor"}) // see comment below.
+    public User() {
+        // required to have unit tests pass.
+    }
+
     public Set<Role> getRoles() {
         if (roles == null) {
-            roles = new HashSet<>();
+            roles = EnumSet.noneOf(Role.class);
         }
         return roles;
     }
 
     public Set<Permission> getPermissions() {
         if (permissions == null) {
-            permissions = new HashSet<>();
+            permissions = EnumSet.noneOf(Permission.class);
         }
         return permissions;
     }

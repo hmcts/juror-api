@@ -1,7 +1,14 @@
 package uk.gov.hmcts.juror.api.juror.notify;
 
 public interface NotifyAdapter {
-    EmailNotificationReceipt sendEmail(EmailNotification notification) throws NotifyApiException;
+    /**
+     * Sends Email
+     *
+     * @param notification
+     * @return
+     * @throws NotifyApiException
+     */
+    EmailNotificationReceipt sendEmail(EmailNotification notification);
 
     EmailNotificationReceipt sendCommsEmail(EmailNotification notification);
 

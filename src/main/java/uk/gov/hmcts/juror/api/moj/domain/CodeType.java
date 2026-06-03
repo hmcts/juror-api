@@ -19,7 +19,6 @@ public enum CodeType {
     final EntityPathBase<? extends HasCodeAndDescription<?>> entityPathBase;
     final HasCodeAndDescription<?>[] values;
 
-    @SuppressWarnings("PMD.ArrayIsStoredDirectly")
     CodeType(
         EntityPathBase<? extends HasCodeAndDescription<?>> entityPathBase, HasCodeAndDescription<?>... values) {
         this.entityPathBase = entityPathBase;

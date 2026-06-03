@@ -30,8 +30,15 @@ public class NotifyAdapterImpl implements NotifyAdapter {
         this.notifyClient = notifyClient;
     }
 
+    /**
+     * Sends email.
+     * @param notification
+     * @return
+     * @throws NotifyApiException
+     */
     @Override
-    public EmailNotificationReceipt sendEmail(final EmailNotification notification) throws NotifyApiException {
+    @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.CyclomaticComplexity"})
+    public EmailNotificationReceipt sendEmail(final EmailNotification notification) {
         if (log.isDebugEnabled()) {
             log.debug(MESSAGE_1, notifyProperties.isDisabled());
         }
@@ -40,7 +47,11 @@ public class NotifyAdapterImpl implements NotifyAdapter {
             throw new NotifyApiException("EmailNotification cannot be null");
         }
 
-        if (!notifyProperties.isDisabled()) {
+        if (notifyProperties.isDisabled()) {
+            //just log
+            log.warn("Dummy email notification - logging instead of sending to Notify!");
+            log.debug("{}", notification);
+        } else {
             //send email
             try {
                 log.debug("Sending via notify");
@@ -68,17 +79,20 @@ public class NotifyAdapterImpl implements NotifyAdapter {
             } catch (Exception e) {
                 log.error(MESSAGE_3, e);
             }
-        } else {
-            //just log
-            log.warn("Dummy email notification - logging instead of sending to Notify!");
-            log.debug("{}", notification);
         }
         return null;
     }
 
 
+    /**
+     * Sends Comms Email
+     * @param notification
+     * @return
+     * @throws NotifyApiException
+     */
     @Override
-    public EmailNotificationReceipt sendCommsEmail(final EmailNotification notification) throws NotifyApiException {
+    @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.CyclomaticComplexity"})
+    public EmailNotificationReceipt sendCommsEmail(final EmailNotification notification) {
         if (log.isDebugEnabled()) {
             log.debug(MESSAGE_1, notifyProperties.isDisabled());
         }
@@ -87,7 +101,11 @@ public class NotifyAdapterImpl implements NotifyAdapter {
             throw new NotifyApiException("EmailNotification cannot be null");
         }
 
-        if (!notifyProperties.isDisabled()) {
+        if (notifyProperties.isDisabled()) {
+            //just log
+            log.warn("Dummy email notification - logging instead of sending to Notify!");
+            log.debug("{}", notification);
+        } else {
             //send email
             try {
                 log.debug("Sending Juror Comms via notify");
@@ -115,16 +133,19 @@ public class NotifyAdapterImpl implements NotifyAdapter {
             } catch (Exception e) {
                 log.error(MESSAGE_3, e);
             }
-        } else {
-            //just log
-            log.warn("Dummy email notification - logging instead of sending to Notify!");
-            log.debug("{}", notification);
         }
         return null;
     }
 
+    /**
+     * Sends Comms SMS
+     * @param notification
+     * @return
+     * @throws NotifyApiException
+     */
     @Override
-    public SmsNotificationReceipt sendCommsSms(final SmsNotification notification) throws NotifyApiException {
+    @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.CyclomaticComplexity"})
+    public SmsNotificationReceipt sendCommsSms(final SmsNotification notification) {
         if (log.isDebugEnabled()) {
             log.debug(MESSAGE_1, notifyProperties.isDisabled());
         }
@@ -133,7 +154,11 @@ public class NotifyAdapterImpl implements NotifyAdapter {
             throw new NotifyApiException("SmsNotification cannot be null");
         }
 
-        if (!notifyProperties.isDisabled()) {
+        if (notifyProperties.isDisabled()) {
+            //just log
+            log.warn("Dummy SMS notification - logging instead of sending to Notify!");
+            log.debug("{}", notification);
+        } else {
             //send SMS
             try {
                 log.debug("Sending Juror Comms SMS via notify");
@@ -161,10 +186,6 @@ public class NotifyAdapterImpl implements NotifyAdapter {
             } catch (Exception e) {
                 log.error(MESSAGE_3, e);
             }
-        } else {
-            //just log
-            log.warn("Dummy SMS notification - logging instead of sending to Notify!");
-            log.debug("{}", notification);
         }
         return null;
     }

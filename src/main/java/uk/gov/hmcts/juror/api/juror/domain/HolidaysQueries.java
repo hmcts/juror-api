@@ -17,12 +17,11 @@ import java.util.Date;
 public final class HolidaysQueries {
     private static final int BST_ADJUSTMENT = 1;
     private static final int STRING_POSITION_BST_TIME = 16;
+    private static final QHolidays HOLIDAYS_DETAIL = QHolidays.holidays;
 
     private HolidaysQueries() {
 
     }
-
-    private static final QHolidays holidaysDetail = QHolidays.holidays;
 
     /**
      * Query to match JUROR.HOLIDAYS.HOLIDAY where holidayDates.
@@ -37,14 +36,14 @@ public final class HolidaysQueries {
         int intBstTimeCondition = Integer.parseInt(strBstTimeValue);
 
         if (intBstTimeCondition == BST_ADJUSTMENT) {
-            return holidaysDetail.holiday.eq(
+            return HOLIDAYS_DETAIL.holiday.eq(
                 DateRelatedUtils.convertToLocalDateViaInstant(
                     Date.from(holidayDates.toInstant().atZone(ZoneId.systemDefault())
                         .toInstant().truncatedTo(ChronoUnit.DAYS).minus(1,
                             ChronoUnit.HOURS
                         ))));
         } else {
-            return holidaysDetail.holiday.eq(DateRelatedUtils.convertToLocalDateViaInstant(holidayDates));
+            return HOLIDAYS_DETAIL.holiday.eq(DateRelatedUtils.convertToLocalDateViaInstant(holidayDates));
         }
     }
 
@@ -56,12 +55,13 @@ public final class HolidaysQueries {
      * @param date    the value to check against holidaysDetail.holiday
      * @return Predicate
      */
+    @SuppressWarnings({"PMD.LinguisticNaming"}) // BooleanExpression is fine.
     public static BooleanExpression isCourtHoliday(String locCode, LocalDate date) {
         return locCode == null || locCode.isBlank()
-            ? holidaysDetail.publicHoliday.isTrue().and(holidaysDetail.holiday.eq(date))
-            : holidaysDetail.holiday.eq(date)
-                .and(holidaysDetail.publicHoliday.isTrue()
-                    .or(holidaysDetail.courtLocation.locCode.eq(locCode)));
+            ? HOLIDAYS_DETAIL.publicHoliday.isTrue().and(HOLIDAYS_DETAIL.holiday.eq(date))
+            : HOLIDAYS_DETAIL.holiday.eq(date)
+                .and(HOLIDAYS_DETAIL.publicHoliday.isTrue()
+                    .or(HOLIDAYS_DETAIL.courtLocation.locCode.eq(locCode)));
     }
 
 }

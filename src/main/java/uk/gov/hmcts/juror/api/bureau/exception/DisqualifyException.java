@@ -14,6 +14,10 @@ public class DisqualifyException extends RuntimeException {
         super(message);
     }
 
+    private DisqualifyException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
     /**
      * Exception type thrown when unable to retrieve valid disqualification codes.
      */
@@ -81,6 +85,10 @@ public class DisqualifyException extends RuntimeException {
     public static class OptimisticLockingFailure extends DisqualifyException {
         public OptimisticLockingFailure(final String jurorId) {
             super(String.format("Request to disqualify Juror %s failed due to optimistic locking failure", jurorId));
+        }
+
+        public OptimisticLockingFailure(final String jurorId, Throwable cause) {
+            super(String.format("Request to disqualify Juror %s failed due to optimistic locking failure", jurorId), cause);
         }
     }
 }

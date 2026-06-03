@@ -51,10 +51,13 @@ public class ResponseDisqualifyController {
         this.responseDisqualifyService = responseDisqualifyService;
     }
 
+    /*
+    @throws DisqualifyException
+     */
     @GetMapping
     @Operation(summary = "list of potential disqualification reasons",
         description = "Retrieve list of potential disqualification reasons")
-    public ResponseEntity<DisqualifyReasonsDto> getDisqualifyReasons() throws DisqualifyException {
+    public ResponseEntity<DisqualifyReasonsDto> getDisqualifyReasons() {
         List<DisqualifyCodeDto> disqualifyReasons = responseDisqualifyService.getDisqualifyReasons();
 
         // JDB-1458: We need to remove "E - Electronic Police Check Failure" from the list
@@ -64,20 +67,23 @@ public class ResponseDisqualifyController {
         return ResponseEntity.ok().body(new DisqualifyReasonsDto(disqualifyReasons));
     }
 
+    /*
+    @throws DisqualifyException
+     */
     @PostMapping("/{jurorId}")
     @Operation(summary = "disqualification for a specific juror",
         description = "Mark a single juror with a certain disqualification code by their juror number")
     public ResponseEntity<Void> disqualifyJuror(
         @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,
         BureauJwtAuthentication jwt,
-        @Validated @RequestBody DisqualifyCodeDto disqualifyCodeDto) throws DisqualifyException {
+        @Validated @RequestBody DisqualifyCodeDto disqualifyCodeDto) {
         assertJurorNumberPathVariable(jurorId);
-        final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
         if (null == disqualifyCodeDto.getDisqualifyCode() || null == disqualifyCodeDto.getVersion()) {
             // there is either no body or no version present in the request
             throw new DisqualifyException.RequestIsMissingDetails(jurorId);
         }
 
+        final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
         log.info(
             "Attempting to disqualify juror {} using code {}, by user {}",
             jurorId,

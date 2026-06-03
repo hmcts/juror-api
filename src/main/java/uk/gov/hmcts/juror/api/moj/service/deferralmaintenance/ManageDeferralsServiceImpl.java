@@ -926,7 +926,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             jurorResponse = DataUtils.getJurorPaperResponse(jurorNumber, paperResponseRepository);
         }
 
-        if (BooleanUtils.isTrue(jurorResponse.getProcessingComplete())) {
+        // check to see whether the response has been completed already
+        if (BooleanUtils.isTrue(jurorResponse.isProcessingComplete())) {
             final String message = String.format("Response %s has been previously merged", jurorNumber);
             log.error("Response {} has previously been completed at {}", jurorNumber,
                       jurorResponse.getCompletedAt());

@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.enumeration;
 import lombok.Getter;
 
 @Getter
+@SuppressWarnings({"PMD.ExcessivePublicCount"})
 public enum HistoryCodeMod {
 
     POLICE_CHECK_UNDO("POLX", "Police Check - Undo"),

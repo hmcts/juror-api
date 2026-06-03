@@ -72,7 +72,7 @@ public class JurorResponseUtilsTest {
         assertThat(actualPaperResponse.getAddressLine5()).isEqualTo(mockPaperResponse.getAddressLine5());
         assertThat(actualPaperResponse.getPostcode()).isEqualTo(mockPaperResponse.getPostcode());
         assertThat(actualPaperResponse.getThirdPartyReason()).isEqualTo(mockPaperResponse.getThirdPartyReason());
-        assertThat(actualPaperResponse.getProcessingComplete()).isEqualTo(mockPaperResponse.getProcessingComplete());
+        assertThat(actualPaperResponse.isProcessingComplete()).isEqualTo(mockPaperResponse.isProcessingComplete());
         assertThat(actualPaperResponse.getCompletedAt()).isCloseTo(mockPaperResponse.getCompletedAt(),
             within(10, ChronoUnit.SECONDS));
     }

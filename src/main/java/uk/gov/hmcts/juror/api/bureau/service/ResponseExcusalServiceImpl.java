@@ -53,8 +53,14 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
     private final JurorPoolService jurorPoolService;
 
 
+    /**
+     * Gets excusal reasons.
+     *
+     * @return List of Excusal Codes
+     * @throws ExcusalException.UnableToRetrieveExcusalCodeList
+     */
     @Override
-    public List<ExcusalCodeDto> getExcusalReasons() throws ExcusalException.UnableToRetrieveExcusalCodeList {
+    public List<ExcusalCodeDto> getExcusalReasons() {
         Iterable<uk.gov.hmcts.juror.api.moj.domain.ExcusalCode> excusalReasonsList = excusalCodeRepository.findAll();
         if (!excusalReasonsList.iterator().hasNext()) {
             throw new ExcusalException.UnableToRetrieveExcusalCodeList();
@@ -71,9 +77,18 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
         return myList;
     }
 
+    /**
+     * Check whether or not to excuse juror given parameters below.
+     * @param jurorId
+     * @param excusalCodeDto
+     * @param login
+     * @return
+     * @throws ExcusalException
+     */
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExceptionAsFlowControl"}) // think exceptions are ok here.
     @Transactional
     @Override
-    public boolean excuseJuror(String jurorId, ExcusalCodeDto excusalCodeDto, String login) throws ExcusalException {
+    public boolean excuseJuror(String jurorId, ExcusalCodeDto excusalCodeDto, String login) {
         if (!isValidExcusalCode(jurorId, excusalCodeDto.getExcusalCode())) {
             return false;
         }
@@ -85,7 +100,7 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
                 throw new ExcusalException.JurorNotFound(jurorId);
             }
 
-            if (BooleanUtils.isTrue(savedResponse.getProcessingComplete())) {
+            if (BooleanUtils.isTrue(savedResponse.isProcessingComplete())) {
                 final String message = "Response " + savedResponse.getJurorNumber() + " has previously been merged!";
                 log.error("Response {} has previously been completed at {}.",
                     savedResponse.getJurorNumber(), savedResponse.getCompletedAt()
@@ -160,10 +175,19 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
         return true;
     }
 
+    /**
+     * Checks whether or not to reject excusal request given params below.
+     * @param jurorId
+     * @param excusalCodeDto
+     * @param login
+     * @return
+     * @throws ExcusalException
+     */
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExceptionAsFlowControl"}) // exceptions ok here.
     @Transactional
     @Override
     public boolean rejectExcusalRequest(String jurorId, ExcusalCodeDto excusalCodeDto,
-                                        String login) throws ExcusalException {
+                                        String login) {
         if (!isValidExcusalCode(jurorId, excusalCodeDto.getExcusalCode())) {
             return false;
         }
@@ -177,7 +201,7 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
                 throw new ExcusalException.JurorNotFound(jurorId);
             }
 
-            if (BooleanUtils.isTrue(savedResponse.getProcessingComplete())) {
+            if (BooleanUtils.isTrue(savedResponse.isProcessingComplete())) {
                 final String message = "Response " + savedResponse.getJurorNumber() + " has previously been merged!";
                 log.error("Response {} has previously been completed at {}.",
                     savedResponse.getJurorNumber(), savedResponse.getCompletedAt()
@@ -262,7 +286,15 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
         return true;
     }
 
-    private boolean isValidExcusalCode(String jurorId, String excusalCodeToCheck) throws ExcusalException {
+    /**
+     * Checks if Excusal Code is valid based on params below.
+     *
+     * @param jurorId
+     * @param excusalCodeToCheck
+     * @return
+     * @throws ExcusalException
+     */
+    private boolean isValidExcusalCode(String jurorId, String excusalCodeToCheck) {
         List<ResponseExcusalController.ExcusalCodeDto> excusalCodeDtos = getExcusalReasons();
 
         for (ResponseExcusalController.ExcusalCodeDto excusalCodeDto : excusalCodeDtos) {

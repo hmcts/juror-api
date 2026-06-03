@@ -40,18 +40,22 @@ public class ContactLogListDto {
 
         @JsonProperty("username")
         @Schema(name = "Username", description = "System user identifier")
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private String username;
 
         @JsonProperty("logDate")
         @Schema(name = "Date of log", description = "Date the contact log was originally recorded")
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private String logDate;
 
         @JsonProperty("enquiryType")
         @Schema(name = "Enquiry type", description = "Enquiry type description")
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private String enquiryType;
 
         @JsonProperty("notes")
         @Schema(name = "Notes", description = "Contact log notes/content")
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private String notes;
 
         /**
