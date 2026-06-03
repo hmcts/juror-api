@@ -19,7 +19,7 @@ import java.util.Collection;
 import java.util.Locale;
 
 @Slf4j
-@SuppressWarnings("PMD.UselessParentheses")
+@SuppressWarnings({"PMD.UseObjectForClearerAPI", "PMD.TooManyMethods"})
 public final class DataUtils {
     static final String RESPONSE_UPDATED_LOG = "Juror: %s. %s response will be updated with new value for %s";
 
@@ -145,6 +145,7 @@ public final class DataUtils {
         return value.trim();
     }
 
+    @SuppressWarnings("PMD.InefficientEmptyStringCheck")
     public static String nullIfBlank(String value) {
         if (value == null || value.trim().isBlank()) {
             return null;
