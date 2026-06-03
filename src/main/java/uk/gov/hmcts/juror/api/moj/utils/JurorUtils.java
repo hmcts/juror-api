@@ -126,6 +126,7 @@ public final class JurorUtils {
      * @return integer representation of age in whole years
      * @throws IllegalArgumentException thrown if either argument is null
      */
+    @SuppressWarnings("PMD.AvoidUncheckedExceptionsInSignatures")
     public static int getJurorAgeAtHearingDate(final LocalDate dateOfBirth,
                                                final LocalDate serviceStartDate) throws IllegalArgumentException {
         log.debug("Calculate Juror age using date of birth {} and service start date {}", dateOfBirth,
