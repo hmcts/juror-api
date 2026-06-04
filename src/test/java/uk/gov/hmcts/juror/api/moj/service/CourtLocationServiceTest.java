@@ -39,7 +39,6 @@ import static uk.gov.hmcts.juror.api.moj.domain.CourtLocationQueries.filterByLoc
 
 @ExtendWith(SpringExtension.class)
 @SuppressWarnings({
-
     "PMD.TooManyMethods",
     "PMD.PublicMemberInNonPublicType"
 })
