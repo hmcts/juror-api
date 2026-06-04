@@ -1342,6 +1342,7 @@ class JurorRecordControllerTest {
         }
 
         @Test
+        @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
         void invalidAccountNumber() throws Exception {
             BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,
@@ -1369,6 +1370,7 @@ class JurorRecordControllerTest {
         }
 
         @Test
+        @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
         void wrongSortCode() throws Exception {
             BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,
@@ -1396,6 +1398,7 @@ class JurorRecordControllerTest {
         }
 
         @Test
+        @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
         void wrongAccountName() throws Exception {
             BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,

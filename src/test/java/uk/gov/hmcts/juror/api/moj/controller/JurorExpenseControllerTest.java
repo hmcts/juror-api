@@ -156,6 +156,7 @@ class JurorExpenseControllerTest {
 
         @Test
         @DisplayName("Invalid court location")
+        @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
         void invalidCourtLocation() throws Exception {
             mockMvc.perform(
                     post(toUrl(TestConstants.INVALID_COURT_LOCATION))
@@ -168,6 +169,7 @@ class JurorExpenseControllerTest {
 
         @Test
         @DisplayName("Invalid page number")
+        @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
         void invalidPageNumber() throws Exception {
             UnpaidExpenseSummaryRequestDto requestDto = getValidRequest();
             requestDto.setPageNumber(-1);
@@ -181,6 +183,7 @@ class JurorExpenseControllerTest {
 
         @Test
         @DisplayName("Invalid page Limit")
+        @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
         void invalidPageLimit() throws Exception {
             UnpaidExpenseSummaryRequestDto requestDto = getValidRequest();
             requestDto.setPageLimit(-1);

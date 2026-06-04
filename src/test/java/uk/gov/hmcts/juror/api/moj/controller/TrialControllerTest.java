@@ -221,6 +221,7 @@ class TrialControllerTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void testReturnJuryEmptyTimes() throws Exception {
         final String methodUrl = "/return-jury?trial_number=T10000000&location_code=415";
 
