@@ -1,4 +1,3 @@
-delete from juror_mod.voters;
 
 INSERT INTO juror_mod.voters (hash_id,register_lett,poll_number,title,lname,fname,dob,flags,address,address2,
                               address3,address4,address5,postcode,date_selected1,la_id,perm_disqual,source_id)
