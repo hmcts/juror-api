@@ -44,7 +44,7 @@ class YieldPerformanceReportServiceImplTest {
     private final CourtQueriesRepository courtQueriesRepository;
     private final YieldPerformanceReportService yieldPerformanceReportService;
 
-    public YieldPerformanceReportServiceImplTest() {
+    private  YieldPerformanceReportServiceImplTest() {
         this.jurorPoolRepository = mock(JurorPoolRepository.class);
         this.poolCommentRepository = mock(IPoolCommentRepository.class);
         this.courtQueriesRepository = mock(CourtQueriesRepository.class);
