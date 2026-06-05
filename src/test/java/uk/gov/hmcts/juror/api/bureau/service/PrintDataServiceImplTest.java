@@ -40,6 +40,7 @@ import static org.mockito.Mockito.verify;
 
 
 @ExtendWith(SpringExtension.class)
+@SuppressWarnings("PMD.TooManyMethods")
 class PrintDataServiceImplTest {
     private MockedStatic<RepositoryUtils> mockRepositoryUtils;
     @Mock
