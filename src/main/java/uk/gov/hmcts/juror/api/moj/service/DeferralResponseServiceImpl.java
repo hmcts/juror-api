@@ -98,7 +98,7 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
                 .build();
         } else if (!deferralRequestDto.isAllowMultipleDeferrals() && !firstDeferral) {
             log.debug("Can not defer juror multiple times without allowMultipleDeferrals flag. Juror {}",
-                      jurorNumber);
+                jurorNumber);
             throw new MojException.BusinessRuleViolation("Juror has been deferred before. Please use "
                 + "allow_multiple_deferrals to bypass this error.",
                 MojException.BusinessRuleViolation.ErrorCode.JUROR_HAS_BEEN_DEFERRED_BEFORE);
@@ -133,27 +133,8 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
                 .ageDisqualified(List.of())
                 .build();
         } else {
-            if (deferralRequestDto.getDeferralDecision() == DeferralDecision.REFUSE) {
-                log.debug("Begin processing decline deferral juror {} by user {}", jurorNumber, payload.getLogin());
-                jurorResponseService.setResponseProcessingStatusToClosed(jurorNumber);
-                declineDeferralForJurorPool(payload, deferralRequestDto, jurorPool);
-            } else {
-                if (deferralRequestDto.isAllowMultipleDeferrals() || firstDeferral) {
-                    if (deferralRequestDto.getDeferralDecision() == DeferralDecision.GRANT) {
-                        log.info("Begin processing grant deferral juror {} by user {}", jurorNumber, payload.getLogin());
-                        jurorResponseService.setResponseProcessingStatusToClosed(jurorNumber);
-                        grantDeferralForJurorPool(payload, deferralRequestDto, jurorPool);
-                    } else {
-                        log.error("Invalid deferral decision for juror {}", jurorNumber);
-                        throw new MojException.BadRequest("Invalid deferral decision", null);
-                    }
-                } else {
-                    log.debug("Can not defer juror multiple times without allowMultipleDeferrals flag. Juror {}", jurorNumber);
-                    throw new MojException.BusinessRuleViolation("Juror has been deferred before. Please use "
-                        + "allow_multiple_deferrals to bypass this error.",
-                        MojException.BusinessRuleViolation.ErrorCode.JUROR_HAS_BEEN_DEFERRED_BEFORE);
-                }
-            }
+            log.error("Invalid deferral decision for juror {}", jurorNumber);
+            throw new MojException.BadRequest("Invalid deferral decision", null);
         }
     }
 
@@ -198,14 +179,14 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
             printDataService.printDeferralDeniedLetter(jurorPool);
 
             jurorHistoryRepository.save(JurorHistory.builder()
-                                            .jurorNumber(jurorPool.getJurorNumber())
-                                            .dateCreated(LocalDateTime.now())
-                                            .historyCode(HistoryCodeMod.NON_DEFERRED_LETTER)
-                                            .createdBy(payload.getLogin())
-                                            .poolNumber(jurorPool.getPoolNumber())
-                                            .otherInformation("Deferral Denied")
-                                            .otherInformationRef(deferralRequestDto.getDeferralReason())
-                                            .build());
+                .jurorNumber(jurorPool.getJurorNumber())
+                .dateCreated(LocalDateTime.now())
+                .historyCode(HistoryCodeMod.NON_DEFERRED_LETTER)
+                .createdBy(payload.getLogin())
+                .poolNumber(jurorPool.getPoolNumber())
+                .otherInformation("Deferral Denied")
+                .otherInformationRef(deferralRequestDto.getDeferralReason())
+                .build());
         }
     }
 
