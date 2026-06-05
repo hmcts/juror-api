@@ -184,6 +184,7 @@ class PrintDataServiceImplTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void printPostponeLetterCallsCommit() {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
 
