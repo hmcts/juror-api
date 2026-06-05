@@ -37,11 +37,11 @@ public class PublicJwtAuthenticationProvider implements AuthenticationProvider {
     }
 
     /**
-     * Authenticate given the authentication request object below
+     * Authenticate given the authentication request object below.
      *
      * @param authentication the authentication request object.
-     * @return
-     * @throws AuthenticationException
+     * @return the authenticated principal.
+     * @throws AuthenticationException if authentication fails.
      */
     @Override
     public Authentication authenticate(Authentication authentication) {

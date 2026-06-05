@@ -82,12 +82,12 @@ public class UserServiceImpl implements UserService {
     private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
 
     /**
-     * Change Assignment
+     * Change Assignment.
      *
      * @param staffAssignmentRequestDto Staff assignment request payload.
      * @param currentUser               The user carrying out this operation.
-     * @return
-     * @throws StaffAssignmentException
+     * @return updated assignments.
+     * @throws StaffAssignmentException if assignment fails.
      */
     @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.CyclomaticComplexity"})
     @Transactional
@@ -413,7 +413,8 @@ public class UserServiceImpl implements UserService {
         return new AssignmentsListDto(assignmentListDataDtos);
     }
 
-    private static AssignmentListDataDto getAssignmentListDataDto(JurorResponseCommon jurorResponse, String assignedTo) {
+    private static AssignmentListDataDto getAssignmentListDataDto(JurorResponseCommon jurorResponse,
+                                                                  String assignedTo) {
         StringBuilder jurorDisplayName = new StringBuilder();
         String jurorTitle = jurorResponse.getTitle();
         String jurorFirstName = jurorResponse.getFirstName();

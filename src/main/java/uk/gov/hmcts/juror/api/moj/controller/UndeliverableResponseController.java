@@ -28,10 +28,10 @@ public class UndeliverableResponseController {
     private final UndeliverableResponseService undeliverableResponseService;
 
     /**
-     * Mark juror as undeliverable
-     * @param jurorNumbers
-     * @return
-     * @throws ExcusalException
+     * Mark juror as undeliverable.
+     * @param jurorNumbers juror numbers to mark undeliverable.
+     * @return true when the operation succeeds.
+     * @throws ExcusalException if the excusal operation fails.
      */
     @Operation(summary = "Mark a Juror as undeliverable with information provided")
     @PatchMapping

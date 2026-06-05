@@ -2210,9 +2210,9 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
     }
 
-@SuppressWarnings({
-    "PMD.PublicMemberInNonPublicType"
-})
+    @SuppressWarnings({
+        "PMD.PublicMemberInNonPublicType"
+    })
     @Nested
     @DisplayName("Jurors on Trial tests")
     class JurorsOnTrial {

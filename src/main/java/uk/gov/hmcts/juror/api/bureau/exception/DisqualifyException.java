@@ -88,7 +88,8 @@ public class DisqualifyException extends RuntimeException {
         }
 
         public OptimisticLockingFailure(final String jurorId, Throwable cause) {
-            super(String.format("Request to disqualify Juror %s failed due to optimistic locking failure", jurorId), cause);
+            super(String.format("Request to disqualify Juror %s failed due to optimistic locking failure", jurorId),
+                cause);
         }
     }
 }

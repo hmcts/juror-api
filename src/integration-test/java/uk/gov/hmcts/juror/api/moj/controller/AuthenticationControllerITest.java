@@ -6,6 +6,7 @@ import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -30,7 +31,6 @@ import uk.gov.hmcts.juror.api.moj.domain.authentication.CourtDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.EmailDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.JwtDto;
 import uk.gov.hmcts.juror.api.moj.enumeration.CourtType;
-import lombok.RequiredArgsConstructor;
 
 import java.time.Clock;
 import java.util.Collections;
@@ -190,7 +190,7 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
             return new EmailDto("test_court_standard" + EMAIL_SUFFIX);
         }
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
+        @SuppressWarnings("PMD.PublicMemberInNonPublicType")
 
         public String toUrl(String locCode) {
             return URL.replace("{loc_code}", locCode);

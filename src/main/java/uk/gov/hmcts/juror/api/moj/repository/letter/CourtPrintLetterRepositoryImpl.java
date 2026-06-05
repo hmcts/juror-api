@@ -113,6 +113,9 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
             case DEFERRAL_REFUSED, EXCUSAL_REFUSED, CERTIFICATE_OF_ATTENDANCE -> {
                 // currently not ordered;
             }
+            default -> {
+                // no ordering required
+            }
         }
     }
 
@@ -158,6 +161,9 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
                     .where(APPEARANCE.noShow.isFalse().or(APPEARANCE.noShow.isNull()))
                     .where(APPEARANCE.attendanceType.ne(AttendanceType.ABSENT))
                     .orderBy(APPEARANCE.attendanceDate.desc());
+            default -> {
+                // no filtering required
+            }
         }
     }
 
@@ -212,6 +218,9 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
             }
             case CERTIFICATE_OF_ATTENDANCE -> {
             } // does nothing here
+            default -> {
+                // no expressions required
+            }
         }
     }
 

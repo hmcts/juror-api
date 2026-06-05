@@ -403,14 +403,15 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
     /**
      * Static helper method to resolve PMD for object creation in loop.
      *
-     * @param surveyId
-     * @param surveyUserId
-     * @param surveyUserNo
-     * @param surveyEndDate
-     * @param surveySatisfactionDesc
+     * @param surveyId survey identifier.
+     * @param surveyUserId survey user identifier.
+     * @param surveyUserNo survey user number.
+     * @param surveyEndDate survey end date.
+     * @param surveySatisfactionDesc survey satisfaction description.
      * @return the SurveyResponse corresponding to parameters above.
      */
-    private static SurveyResponse getSurveyResponse(String surveyId, String surveyUserId, int surveyUserNo, Date surveyEndDate, String surveySatisfactionDesc) {
+    private static SurveyResponse getSurveyResponse(String surveyId, String surveyUserId, int surveyUserNo,
+                                                    Date surveyEndDate, String surveySatisfactionDesc) {
         SurveyResponse objSurveyResponse = new SurveyResponse();
         objSurveyResponse.setId(surveyUserId);
         objSurveyResponse.setSurveyId(surveyId);
@@ -424,7 +425,8 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
         // Create base64 encoded Basic Auth header
 
         String authString = user + ":" + password;
-        String encodedAuth = Base64.getEncoder().encodeToString(authString.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        String encodedAuth = Base64.getEncoder().encodeToString(
+            authString.getBytes(java.nio.charset.StandardCharsets.UTF_8));
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add("Authorization", "Basic " + encodedAuth);
@@ -432,7 +434,6 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
     }
 
 }
-
 
 
 

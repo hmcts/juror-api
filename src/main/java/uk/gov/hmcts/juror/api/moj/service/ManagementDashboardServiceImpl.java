@@ -224,7 +224,10 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
         return new ExpenseLimitsReportResponseDto(expenseLimitsRecords);
     }
 
-    private static CourtLocationAuditRecord getCourtLocationAuditRecord(String locCode, String courtName, Double publicTransportSoftLimit, Double taxiSoftLimit, String changedBy, long revisionNumber) {
+    private static CourtLocationAuditRecord getCourtLocationAuditRecord(String locCode, String courtName,
+                                                                        Double publicTransportSoftLimit,
+                                                                        Double taxiSoftLimit, String changedBy,
+                                                                        long revisionNumber) {
         CourtLocationAuditRecord courtLocationAuditRecord = new CourtLocationAuditRecord();
         courtLocationAuditRecord.setLocCode(locCode);
         courtLocationAuditRecord.setCourtName(courtName);

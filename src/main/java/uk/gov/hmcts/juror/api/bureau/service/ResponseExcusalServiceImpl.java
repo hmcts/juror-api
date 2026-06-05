@@ -57,7 +57,7 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
      * Gets excusal reasons.
      *
      * @return List of Excusal Codes
-     * @throws ExcusalException.UnableToRetrieveExcusalCodeList
+     * @throws ExcusalException.UnableToRetrieveExcusalCodeList if excusal codes cannot be retrieved.
      */
     @Override
     public List<ExcusalCodeDto> getExcusalReasons() {
@@ -79,11 +79,11 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
 
     /**
      * Check whether or not to excuse juror given parameters below.
-     * @param jurorId
-     * @param excusalCodeDto
-     * @param login
-     * @return
-     * @throws ExcusalException
+     * @param jurorId juror identifier.
+     * @param excusalCodeDto excusal decision details.
+     * @param login current user login.
+     * @return true when the operation succeeds.
+     * @throws ExcusalException if the excusal operation fails.
      */
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExceptionAsFlowControl"}) // think exceptions are ok here.
     @Transactional
@@ -177,11 +177,11 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
 
     /**
      * Checks whether or not to reject excusal request given params below.
-     * @param jurorId
-     * @param excusalCodeDto
-     * @param login
-     * @return
-     * @throws ExcusalException
+     * @param jurorId juror identifier.
+     * @param excusalCodeDto excusal decision details.
+     * @param login current user login.
+     * @return true when the operation succeeds.
+     * @throws ExcusalException if the excusal operation fails.
      */
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExceptionAsFlowControl"}) // exceptions ok here.
     @Transactional
@@ -289,10 +289,10 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
     /**
      * Checks if Excusal Code is valid based on params below.
      *
-     * @param jurorId
-     * @param excusalCodeToCheck
-     * @return
-     * @throws ExcusalException
+     * @param jurorId juror identifier.
+     * @param excusalCodeToCheck excusal code to validate.
+     * @return true when the operation succeeds.
+     * @throws ExcusalException if the excusal operation fails.
      */
     private boolean isValidExcusalCode(String jurorId, String excusalCodeToCheck) {
         List<ResponseExcusalController.ExcusalCodeDto> excusalCodeDtos = getExcusalReasons();

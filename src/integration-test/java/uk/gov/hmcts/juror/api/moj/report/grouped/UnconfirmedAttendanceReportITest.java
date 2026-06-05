@@ -114,7 +114,7 @@ class UnconfirmedAttendanceReportITest extends AbstractGroupedReportControllerIT
             .assertInvalidPathParam("toDate: must not be null");
     }
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
 
     public GroupByResponse getTypicalGroupBy() {
         return GroupByResponse.builder()

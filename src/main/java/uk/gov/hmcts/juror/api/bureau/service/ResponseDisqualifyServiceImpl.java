@@ -49,9 +49,10 @@ public class ResponseDisqualifyServiceImpl implements ResponseDisqualifyService 
     private final PrintDataService printDataService;
 
     /**
+     * Gets disqualification reasons.
      *
-     * @return
-     * @throws DisqualifyException.UnableToRetrieveDisqualifyCodeList
+     * @return list of disqualification codes.
+     * @throws DisqualifyException.UnableToRetrieveDisqualifyCodeList if disqualify codes cannot be retrieved.
      */
     @Override
     public List<ResponseDisqualifyController.DisqualifyCodeDto> getDisqualifyReasons() {
@@ -70,13 +71,15 @@ public class ResponseDisqualifyServiceImpl implements ResponseDisqualifyService 
     /**
      * Checking whether to disqualify juror or not based on below parameters.
      *
-     * @param jurorId
-     * @param disqualifyCodeDto
-     * @param login
-     * @return
-     * @throws DisqualifyException
+     * @param jurorId juror identifier.
+     * @param disqualifyCodeDto disqualification decision details.
+     * @param login current user login.
+     * @return true when the operation succeeds.
+     * @throws DisqualifyException if disqualification fails.
      */
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExceptionAsFlowControl"}) // think exceptions thrown are ok here.
+    @SuppressWarnings({
+        "PMD.CyclomaticComplexity", "PMD.ExceptionAsFlowControl"
+    }) // think exceptions thrown are ok here.
     @Transactional
     @Override
     public boolean disqualifyJuror(String jurorId, DisqualifyCodeDto disqualifyCodeDto,
@@ -157,11 +160,12 @@ public class ResponseDisqualifyServiceImpl implements ResponseDisqualifyService 
     }
 
     /**
+     * Checks whether the disqualification code is valid.
      *
-     * @param jurorId
-     * @param disqualifyCodeToCheck
-     * @return
-     * @throws DisqualifyException
+     * @param jurorId juror identifier.
+     * @param disqualifyCodeToCheck disqualification code to validate.
+     * @return true when the operation succeeds.
+     * @throws DisqualifyException if disqualification fails.
      */
     private boolean isValidDisqualifyCode(String jurorId, String disqualifyCodeToCheck) {
         List<ResponseDisqualifyController.DisqualifyCodeDto> disqualifyCodeDtos = getDisqualifyReasons();

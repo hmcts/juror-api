@@ -215,6 +215,9 @@ public class PoolRequestSearchServiceImpl implements PoolRequestSearchService {
                 poolSearchRequestDto.getSortDirection());
             case START_DATE -> poolRequestRepository.orderByDateColumn(query, QPoolRequest.poolRequest.returnDate,
                 poolSearchRequestDto.getSortDirection());
+            default -> {
+                // no sorting required
+            }
         }
     }
 
