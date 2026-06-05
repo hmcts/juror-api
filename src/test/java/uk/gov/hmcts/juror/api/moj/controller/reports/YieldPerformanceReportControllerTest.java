@@ -14,7 +14,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import uk.gov.hmcts.juror.api.TestUtils;
-import uk.gov.hmcts.juror.api.moj.controller.reports.request.YieldPerformanceReportRequest;
+import uk.gov.hmcts.juror.api.moj.controller.reports.request.CourtsAndDatesReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.YieldPerformanceReportResponse;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.service.report.AttendanceReportService;
@@ -79,8 +79,8 @@ class YieldPerformanceReportControllerTest {
     class ViewYieldReportHappy {
         public static final String URL = "/yield-performance";
 
-        private YieldPerformanceReportRequest getValidPayload() {
-            return YieldPerformanceReportRequest.builder()
+        private CourtsAndDatesReportRequest getValidPayload() {
+            return CourtsAndDatesReportRequest.builder()
                 .courtLocCodes(List.of("415230701", "415230702"))
                 .toDate(LocalDate.now())
                 .fromDate(LocalDate.now().minusDays(1))
@@ -96,7 +96,7 @@ class YieldPerformanceReportControllerTest {
 
         @Test
         void validSearchByCourt() throws Exception {
-            YieldPerformanceReportRequest request = getValidPayload();
+            CourtsAndDatesReportRequest request = getValidPayload();
             YieldPerformanceReportResponse response = getValidResponse();
 
             doReturn(response).when(yieldPerformanceReportService).viewYieldPerformanceReport(request);
@@ -114,7 +114,7 @@ class YieldPerformanceReportControllerTest {
 
         @Test
         void negativeSearchByCourtButNoFromDate() throws Exception {
-            YieldPerformanceReportRequest request = getValidPayload();
+            CourtsAndDatesReportRequest request = getValidPayload();
             request.setFromDate(null);
             mockMvc.perform(post(BASE_URL + URL)
                     .contentType(MediaType.APPLICATION_JSON)
@@ -126,7 +126,7 @@ class YieldPerformanceReportControllerTest {
 
         @Test
         void negativeSearchByCourtButNoToDate() throws Exception {
-            YieldPerformanceReportRequest request = getValidPayload();
+            CourtsAndDatesReportRequest request = getValidPayload();
             request.setToDate(null);
             mockMvc.perform(post(BASE_URL + URL)
                     .contentType(MediaType.APPLICATION_JSON)

@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.juror.api.moj.controller.reports.request.YieldPerformanceReportRequest;
+import uk.gov.hmcts.juror.api.moj.controller.reports.request.CourtsAndDatesReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.YieldPerformanceReportResponse;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -36,26 +36,26 @@ public class YieldPerformanceReportServiceImpl implements YieldPerformanceReport
 
     @Override
     public YieldPerformanceReportResponse viewYieldPerformanceReport(
-        YieldPerformanceReportRequest yieldPerformanceReportRequest) {
+        CourtsAndDatesReportRequest courtsAndDatesReportRequest) {
 
-        YieldPerformanceReportResponse response = setupResponseHeaders(yieldPerformanceReportRequest);
+        YieldPerformanceReportResponse response = setupResponseHeaders(courtsAndDatesReportRequest);
 
-        List<String> courtLocCodesList = yieldPerformanceReportRequest.isAllCourts()
+        List<String> courtLocCodesList = courtsAndDatesReportRequest.isAllCourts()
             ? courtQueriesRepository.getAllCourtLocCodes(false)
-            : yieldPerformanceReportRequest.getCourtLocCodes();
+            : courtsAndDatesReportRequest.getCourtLocCodes();
 
         String courtLocCodes = String.join(",", courtLocCodesList);
 
         List<JurorPoolRepositoryImpl.YieldPerformanceData>
             yieldPerformanceReportStats = getYieldPerformanceData(jurorPoolRepository,courtLocCodes,
-            yieldPerformanceReportRequest.getFromDate(),
-            yieldPerformanceReportRequest.getToDate());
+            courtsAndDatesReportRequest.getFromDate(),
+            courtsAndDatesReportRequest.getToDate());
 
         List<IPoolCommentRepositoryImpl.PoolComment> poolComments =
             poolCommentRepository.findPoolCommentsForLocationsAndDates(
             courtLocCodesList,
-            yieldPerformanceReportRequest.getFromDate(),
-            yieldPerformanceReportRequest.getToDate());
+            courtsAndDatesReportRequest.getFromDate(),
+            courtsAndDatesReportRequest.getToDate());
 
         Map<String, StringBuilder> poolCommentsMap = new HashMap<>();
         if (poolComments != null) {
@@ -102,22 +102,22 @@ public class YieldPerformanceReportServiceImpl implements YieldPerformanceReport
     }
 
     private YieldPerformanceReportResponse setupResponseHeaders(
-        YieldPerformanceReportRequest yieldPerformanceReportRequest) {
+        CourtsAndDatesReportRequest courtsAndDatesReportRequest) {
 
         log.info("User {} viewing yield performance report",
             SecurityUtil.getActiveLogin());
 
-        if (!yieldPerformanceReportRequest.isAllCourts()
-            && (yieldPerformanceReportRequest.getCourtLocCodes() == null
-            || yieldPerformanceReportRequest.getCourtLocCodes().isEmpty())) {
+        if (!courtsAndDatesReportRequest.isAllCourts()
+            && (courtsAndDatesReportRequest.getCourtLocCodes() == null
+            || courtsAndDatesReportRequest.getCourtLocCodes().isEmpty())) {
             throw new MojException.BadRequest("No court locations provided", null);
         }
 
         YieldPerformanceReportResponse response = new YieldPerformanceReportResponse();
 
         response.setHeadings(getSearchByCourts(
-            yieldPerformanceReportRequest.getFromDate(),
-            yieldPerformanceReportRequest.getToDate()));
+            courtsAndDatesReportRequest.getFromDate(),
+            courtsAndDatesReportRequest.getToDate()));
 
         return response;
     }
