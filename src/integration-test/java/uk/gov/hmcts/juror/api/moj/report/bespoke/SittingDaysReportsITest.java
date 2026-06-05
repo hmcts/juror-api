@@ -26,7 +26,10 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = "jwt.secret.bureau=dGhpcy1pcy1hLXRlc3Qta2V5LWZvci11cy13aGVuLWNyZWF0aW5nLXNlY3JldHM="
+)
 @DisplayName("Controller: " + SittingDaysReportsITest.URL)
 @Sql(
     scripts = {
@@ -88,6 +91,31 @@ class SittingDaysReportsITest extends AbstractControllerIntegrationTest<CourtsAn
     }
 
     @Test
+    void viewSittingDaysStatsForMultipleCourts() {
+        testBuilder()
+            .payload(CourtsAndDatesReportRequest.builder()
+                .allCourts(false)
+                .courtLocCodes(List.of("415", "416"))
+                .fromDate(LocalDate.of(2024, 5, 1))
+                .toDate(LocalDate.of(2024, 5, 31))
+                .build())
+            .triggerValid()
+            .responseConsumer(this::assertValidMultipleCourtResponse);
+    }
+
+    @Test
+    void viewSittingDaysStatsForAllCourts() {
+        testBuilder()
+            .payload(CourtsAndDatesReportRequest.builder()
+                .allCourts(true)
+                .fromDate(LocalDate.of(2024, 5, 1))
+                .toDate(LocalDate.of(2024, 5, 31))
+                .build())
+            .triggerValid()
+            .responseConsumer(this::assertValidAllCourtsResponse);
+    }
+
+    @Test
     void viewSittingDaysStatsInvalidUserType() {
         testBuilder()
             .jwt(createJwtWithPermissions(UserType.BUREAU, Set.of()))
@@ -110,6 +138,68 @@ class SittingDaysReportsITest extends AbstractControllerIntegrationTest<CourtsAn
 
         SittingDaysStatsReportResponse.TableData.DataRow dataRow = response.getTableData().getData().get(0);
         assertThat(dataRow.getCourtLocationNameAndCode()).isEqualTo("CHESTER (415)");
+        assertSittingDaysRow(dataRow);
+
+    }
+
+    private void assertValidMultipleCourtResponse(SittingDaysStatsReportResponse response) {
+        assertThat(response).isNotNull();
+        assertThat(response.getHeadings()).isNotNull();
+        assertThat(response.getHeadings()).containsKeys("date_from", "date_to",
+            "total_number_of_jurors", "total_sitting_days", "report_created");
+        assertThat(response.getHeadings().get("date_from").getValue()).isEqualTo("2024-05-01");
+        assertThat(response.getHeadings().get("date_to").getValue()).isEqualTo("2024-05-31");
+        assertThat(response.getHeadings().get("total_number_of_jurors").getValue()).isEqualTo(366);
+        assertThat(response.getHeadings().get("total_sitting_days").getValue()).isEqualTo(384);
+        assertThat(response.getTableData()).isNotNull();
+        assertThat(response.getTableData().getHeadings()).hasSize(15);
+        assertThat(response.getTableData().getData()).hasSize(2);
+
+        SittingDaysStatsReportResponse.TableData.DataRow chesterRow = response.getTableData().getData().stream()
+            .filter(row -> "CHESTER (415)".equals(row.getCourtLocationNameAndCode()))
+            .findFirst()
+            .orElseThrow();
+        SittingDaysStatsReportResponse.TableData.DataRow bristolRow = response.getTableData().getData().stream()
+            .filter(row -> "BRISTOL (416)".equals(row.getCourtLocationNameAndCode()))
+            .findFirst()
+            .orElseThrow();
+
+        assertSittingDaysRow(chesterRow);
+        assertSittingDaysRow(bristolRow);
+    }
+
+    private void assertValidAllCourtsResponse(SittingDaysStatsReportResponse response) {
+        assertThat(response).isNotNull();
+        assertThat(response.getHeadings()).isNotNull();
+        assertThat(response.getHeadings()).containsKeys("date_from", "date_to",
+            "total_number_of_jurors", "total_sitting_days", "report_created");
+        assertThat(response.getHeadings().get("date_from").getValue()).isEqualTo("2024-05-01");
+        assertThat(response.getHeadings().get("date_to").getValue()).isEqualTo("2024-05-31");
+        assertThat(response.getHeadings().get("total_number_of_jurors").getValue()).isEqualTo(549);
+        assertThat(response.getHeadings().get("total_sitting_days").getValue()).isEqualTo(576);
+        assertThat(response.getTableData()).isNotNull();
+        assertThat(response.getTableData().getHeadings()).hasSize(15);
+        assertThat(response.getTableData().getData()).hasSize(3);
+
+        SittingDaysStatsReportResponse.TableData.DataRow chesterRow = response.getTableData().getData().stream()
+            .filter(row -> "CHESTER (415)".equals(row.getCourtLocationNameAndCode()))
+            .findFirst()
+            .orElseThrow();
+        SittingDaysStatsReportResponse.TableData.DataRow bristolRow = response.getTableData().getData().stream()
+            .filter(row -> "BRISTOL (416)".equals(row.getCourtLocationNameAndCode()))
+            .findFirst()
+            .orElseThrow();
+        SittingDaysStatsReportResponse.TableData.DataRow hoveRow = response.getTableData().getData().stream()
+            .filter(row -> "HOVE (799)".equals(row.getCourtLocationNameAndCode()))
+            .findFirst()
+            .orElseThrow();
+
+        assertSittingDaysRow(chesterRow);
+        assertSittingDaysRow(bristolRow);
+        assertSittingDaysRow(hoveRow);
+    }
+
+    private void assertSittingDaysRow(SittingDaysStatsReportResponse.TableData.DataRow dataRow) {
         assertThat(dataRow.getZeroSittingDays()).isEqualTo(0);
         assertThat(dataRow.getOneSittingDay()).isEqualTo(2);
         assertThat(dataRow.getTwoSittingDays()).isEqualTo(3);
@@ -124,6 +214,5 @@ class SittingDaysReportsITest extends AbstractControllerIntegrationTest<CourtsAn
         assertThat(dataRow.getElevenOrMoreSittingDays()).isEqualTo(11);
         assertThat(dataRow.getTotalJurors()).isEqualTo(183);
         assertThat(dataRow.getTotalSittingDays()).isEqualTo(192);
-
     }
 }

@@ -173,7 +173,8 @@ class SittingDaysReportServiceImplTest {
     private StatsSittingDaysRepository.SittingDaysStatsData getSittingDaysStatsData(String category,
                                                                                    int sittingDays,
                                                                                    int jurors) {
-        StatsSittingDaysRepository.SittingDaysStatsData data = mock(StatsSittingDaysRepository.SittingDaysStatsData.class);
+        StatsSittingDaysRepository.SittingDaysStatsData data =
+            mock(StatsSittingDaysRepository.SittingDaysStatsData.class);
         when(data.getCourtCode()).thenReturn("415");
         when(data.getCourtName()).thenReturn("CHESTER");
         when(data.getSittingDaysCategory()).thenReturn(category);
