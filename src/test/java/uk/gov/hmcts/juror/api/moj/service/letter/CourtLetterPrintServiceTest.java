@@ -1620,7 +1620,7 @@ class CourtLetterPrintServiceTest {
                 .as("Current logged in user")
                 .isEqualTo("TEST_COURTUSER");
             assertThat(
-                history.getDateCreated())//NOPMD - suppressed JUnitAssertionsShouldIncludeMessage - false positive see https://github.com/pmd/pmd/issues/1565
+                history.getDateCreated())
                 .as("Date created")
                 .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.SECONDS));
             assertThat(history.getOtherInformation())
@@ -1764,7 +1764,7 @@ class CourtLetterPrintServiceTest {
                 .as("Username")
                 .isEqualTo("TEST_COURTUSER");
             assertThat(
-                history.getDateCreated())//NOPMD - suppressed JUnitAssertionsShouldIncludeMessage - false positive see https://github.com/pmd/pmd/issues/1565
+                history.getDateCreated())
                 .as("Created date")
                 .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.SECONDS));
             assertThat(history.getOtherInformation())
@@ -1826,7 +1826,7 @@ class CourtLetterPrintServiceTest {
                 .as("Username")
                 .isEqualTo("TEST_COURT");
             assertThat(
-                history.getDateCreated())//NOPMD - suppressed JUnitAssertionsShouldIncludeMessage - false positive see https://github.com/pmd/pmd/issues/1565
+                history.getDateCreated())
                 .as("Created date")
                 .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.SECONDS));
             assertThat(history.getOtherInformation())
