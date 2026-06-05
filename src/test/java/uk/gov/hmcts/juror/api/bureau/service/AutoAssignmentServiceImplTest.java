@@ -42,6 +42,10 @@ import static uk.gov.hmcts.juror.api.bureau.service.AutoAssignmentServiceImpl.DE
  * Unit tests for {@link AutoAssignmentServiceImpl}.
  */
 @RunWith(MockitoJUnitRunner.class)
+@SuppressWarnings({
+    "PMD.ExcessiveImports",
+    "PMD.TooManyMethods"
+})
 public class AutoAssignmentServiceImplTest {
 
     private static final Comparator<DigitalResponse> ASCENDING_DATE_ORDER =
@@ -72,6 +76,7 @@ public class AutoAssignmentServiceImplTest {
     private List<DigitalResponse> backlog;
 
     @Before
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     public void setUp() {
         autoAssignmentService = new AutoAssignmentServiceImpl(responseRepo, userRepo, appSettingService, auditRepo);
         user1 = User.builder().userType(UserType.BUREAU).name("Post Staff 1").username("staff1").active(true).build();
@@ -356,7 +361,7 @@ public class AutoAssignmentServiceImplTest {
      * If the setting in the database is invalid, the fallback default of 60 should be used.
      */
     @Test
-    public void getAutoAssignmentData_errorPath_invalidDefaultCapacitySetInDatabase() {
+    public void autoAssignmentData_errorPath_invalidDefaultCapacitySetInDatabase() {
         doReturn(-5).when(appSettingService).getDefaultCapacity();
 
         assertThat(autoAssignmentService.getAutoAssignmentData().getData()).isNotNull().hasSize(2)
