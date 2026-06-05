@@ -38,6 +38,7 @@ public class BureauBacklogCountServiceImplTest {
 
 
     @Before
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     public void setUp() {
 
         final LocalDateTime now = LocalDateTime.now();
