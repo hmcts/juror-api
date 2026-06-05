@@ -98,10 +98,11 @@ class SittingDaysReportsITest extends AbstractControllerIntegrationTest<CourtsAn
     private void assertValidResponse(SittingDaysStatsReportResponse response) {
         assertThat(response).isNotNull();
         assertThat(response.getHeadings()).isNotNull();
-        Assertions.assertThat(response.getHeadings()).containsKeys("date_from", "date_to", "total_sitting_days",
-            "report_created");
+        Assertions.assertThat(response.getHeadings()).containsKeys("date_from", "date_to",
+            "total_number_of_jurors", "total_sitting_days", "report_created");
         Assertions.assertThat(response.getHeadings().get("date_from").getValue()).isEqualTo("2024-05-01");
         Assertions.assertThat(response.getHeadings().get("date_to").getValue()).isEqualTo("2024-05-31");
+        Assertions.assertThat(response.getHeadings().get("total_number_of_jurors").getValue()).isEqualTo(183);
         Assertions.assertThat(response.getHeadings().get("total_sitting_days").getValue()).isEqualTo(192);
         Assertions.assertThat(response.getTableData()).isNotNull();
         Assertions.assertThat(response.getTableData().getHeadings()).hasSize(15);

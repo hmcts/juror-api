@@ -76,7 +76,7 @@ class SittingDaysReportServiceImplTest {
 
             SittingDaysStatsReportResponse response = sittingDaysReportService.getSittingDaysStats(request);
 
-            validateReportHeadings(response.getHeadings(), 0);
+            validateReportHeadings(response.getHeadings(), 0, 0);
             validateTableHeadings(response.getTableData());
             assertThat(response.getTableData().getData()).isEmpty();
             verify(statsSittingDaysRepository, times(1))
@@ -92,7 +92,7 @@ class SittingDaysReportServiceImplTest {
 
             SittingDaysStatsReportResponse response = sittingDaysReportService.getSittingDaysStats(request);
 
-            validateReportHeadings(response.getHeadings(), 780);
+            validateReportHeadings(response.getHeadings(), 665, 780);
             validateTableHeadings(response.getTableData());
 
             assertThat(response.getTableData().getData()).hasSize(1);
@@ -203,14 +203,19 @@ class SittingDaysReportServiceImplTest {
     }
 
     private void validateReportHeadings(Map<String, AbstractReportResponse.DataTypeValue> headings,
+                                        int totalJurors,
                                         int totalSittingDays) {
-        assertThat(headings).containsKeys("date_from", "date_to", "total_sitting_days", "report_created");
+        assertThat(headings).containsKeys("date_from", "date_to", "total_number_of_jurors",
+            "total_sitting_days", "report_created");
         assertThat(headings.get("date_from").getDisplayName()).isEqualTo("Date from");
         assertThat(headings.get("date_from").getDataType()).isEqualTo("LocalDate");
         assertThat(headings.get("date_from").getValue()).isEqualTo("2024-05-01");
         assertThat(headings.get("date_to").getDisplayName()).isEqualTo("Date to");
         assertThat(headings.get("date_to").getDataType()).isEqualTo("LocalDate");
         assertThat(headings.get("date_to").getValue()).isEqualTo("2024-05-31");
+        assertThat(headings.get("total_number_of_jurors").getDisplayName()).isEqualTo("Total jurors");
+        assertThat(headings.get("total_number_of_jurors").getDataType()).isEqualTo("Integer");
+        assertThat(headings.get("total_number_of_jurors").getValue()).isEqualTo(totalJurors);
         assertThat(headings.get("total_sitting_days").getDisplayName()).isEqualTo("Total sitting days");
         assertThat(headings.get("total_sitting_days").getDataType()).isEqualTo("Integer");
         assertThat(headings.get("total_sitting_days").getValue()).isEqualTo(totalSittingDays);

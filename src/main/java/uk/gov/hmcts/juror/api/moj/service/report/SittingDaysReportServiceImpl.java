@@ -46,7 +46,7 @@ public class SittingDaysReportServiceImpl implements SittingDaysReportService {
 
         List<SittingDaysStatsReportResponse.TableData.DataRow> dataRows = toDataRows(stats);
         SittingDaysStatsReportResponse response = new SittingDaysStatsReportResponse(getReportHeadings(
-            request.getFromDate(), request.getToDate(), getTotalSittingDays(dataRows)));
+            request.getFromDate(), request.getToDate(), getTotalJurors(dataRows), getTotalSittingDays(dataRows)));
         response.getTableData().setData(dataRows);
 
         return response;
@@ -97,6 +97,12 @@ public class SittingDaysReportServiceImpl implements SittingDaysReportService {
         }
     }
 
+    private int getTotalJurors(List<SittingDaysStatsReportResponse.TableData.DataRow> dataRows) {
+        return dataRows.stream()
+            .mapToInt(SittingDaysStatsReportResponse.TableData.DataRow::getTotalJurors)
+            .sum();
+    }
+
     private int getTotalSittingDays(List<SittingDaysStatsReportResponse.TableData.DataRow> dataRows) {
         return dataRows.stream()
             .mapToInt(SittingDaysStatsReportResponse.TableData.DataRow::getTotalSittingDays)
@@ -117,6 +123,7 @@ public class SittingDaysReportServiceImpl implements SittingDaysReportService {
 
     private Map<String, AbstractReportResponse.DataTypeValue> getReportHeadings(LocalDate reportFrom,
                                                                                  LocalDate reportTo,
+                                                                                 Integer totalJurors,
                                                                                  Integer totalSittingDays) {
         return Map.of(
             "date_from", AbstractReportResponse.DataTypeValue.builder()
@@ -128,6 +135,11 @@ public class SittingDaysReportServiceImpl implements SittingDaysReportService {
                 .displayName(ReportHeading.DATE_TO.getDisplayName())
                 .dataType(ReportHeading.DATE_TO.getDataType())
                 .value(reportTo.format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .build(),
+            "total_number_of_jurors", AbstractReportResponse.DataTypeValue.builder()
+                .displayName(ReportHeading.TOTAL_JURORS_DAYS.getDisplayName())
+                .dataType(ReportHeading.TOTAL_JURORS_DAYS.getDataType())
+                .value(totalJurors)
                 .build(),
             "total_sitting_days", AbstractReportResponse.DataTypeValue.builder()
                 .displayName(ReportHeading.TOTAL_SITTING_DAYS.getDisplayName())
@@ -145,6 +157,7 @@ public class SittingDaysReportServiceImpl implements SittingDaysReportService {
     public enum ReportHeading {
         DATE_FROM("Date from", LocalDate.class.getSimpleName()),
         DATE_TO("Date to", LocalDate.class.getSimpleName()),
+        TOTAL_JURORS_DAYS("Total jurors", Integer.class.getSimpleName()),
         TOTAL_SITTING_DAYS("Total sitting days", Integer.class.getSimpleName()),
         REPORT_CREATED("Report created", LocalDateTime.class.getSimpleName());
 
