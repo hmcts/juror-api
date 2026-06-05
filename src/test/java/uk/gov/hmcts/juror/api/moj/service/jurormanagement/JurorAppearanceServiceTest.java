@@ -149,7 +149,7 @@ class JurorAppearanceServiceTest {
     private static final String JUROR_POOL_1 = "123456789";
 
     @BeforeEach
-    public void setUp() {
+     void setUp() {
         TestUtils.setUpMockAuthentication("415", "COURT_USER", "1", List.of("415"));
     }
 
@@ -805,7 +805,7 @@ class JurorAppearanceServiceTest {
         CourtLocation courtLocation = getCourtLocation();
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findById(anyString());
 
-        doReturn(new ArrayList<Tuple>()).when(appearanceRepository).getAppearanceRecords(anyString(),
+        doReturn(new ArrayList<>()).when(appearanceRepository).getAppearanceRecords(anyString(),
             any(), anyString(), any());
 
         JurorAppearanceResponseDto jurorAppearanceResponseDto =
@@ -3468,13 +3468,13 @@ class JurorAppearanceServiceTest {
             Appearance appearance1 = new Appearance();
             appearance1.setJurorNumber("111111111");
             appearance1.setPoolNumber(TestConstants.VALID_POOL_NUMBER);
-            appearance1.setAppearanceStage(AppearanceStage.CHECKED_IN);
+            appearance1.setAppearanceStage(CHECKED_IN);
             appearance1.setAttendanceDate(now().minusDays(1));
 
             Appearance appearance2 = new Appearance();
             appearance2.setJurorNumber("111111111");
             appearance2.setPoolNumber(TestConstants.VALID_POOL_NUMBER);
-            appearance2.setAppearanceStage(AppearanceStage.CHECKED_IN);
+            appearance2.setAppearanceStage(CHECKED_IN);
             appearance2.setAttendanceDate(now().minusDays(2));
 
 
