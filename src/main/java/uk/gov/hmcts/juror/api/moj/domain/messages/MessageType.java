@@ -32,11 +32,11 @@ public enum MessageType {
         this.sendType = sendType;
     }
 
-        public enum SendType {
-            EMAIL, SMS, EMAIL_AND_SMS;
+    public enum SendType {
+        EMAIL, SMS, EMAIL_AND_SMS;
 
-            public boolean supports(SendType sendType) {
+        public boolean supports(SendType sendType) {
             return this == EMAIL_AND_SMS || sendType == EMAIL_AND_SMS || this == sendType;
-            }
         }
+    }
 }

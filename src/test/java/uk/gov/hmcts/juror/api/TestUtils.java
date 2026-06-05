@@ -153,9 +153,9 @@ public final class TestUtils {
 
     public static void setUpMockAuthentication(String owner, String username, String userLevel, List<String> courts) {
 
-	        BureauJwtAuthentication auth = mock(BureauJwtAuthentication.class);
-	        when(auth.getPrincipal())
-	            .thenReturn(createJwt(owner, username, userLevel, courts));
+        BureauJwtAuthentication auth = mock(BureauJwtAuthentication.class);
+        when(auth.getPrincipal())
+            .thenReturn(createJwt(owner, username, userLevel, courts));
 
         SecurityContext securityContext = mock(SecurityContext.class);
         when(securityContext.getAuthentication()).thenReturn(auth);

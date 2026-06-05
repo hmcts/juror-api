@@ -321,13 +321,13 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
         private String message;
         private String path;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
+        @SuppressWarnings("PMD.PublicMemberInNonPublicType")
 
         public void setException(Class<? extends Exception> exceptionClass) {
             this.exception = exceptionClass == null ? null : exceptionClass.getName();
         }
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
+        @SuppressWarnings("PMD.PublicMemberInNonPublicType")
 
         public void setStatusCode(HttpStatus status) {
             this.status = status.value();

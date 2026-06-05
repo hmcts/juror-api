@@ -504,7 +504,7 @@ class JurySummoningMonitorReportsITest extends AbstractControllerIntegrationTest
     }
 
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
 
     public void verifyAndRemoveTimeCreated(JurySummoningMonitorReportResponse response) {
         Assertions.assertThat(response).isNotNull();

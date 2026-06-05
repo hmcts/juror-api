@@ -49,10 +49,11 @@ public class JurorNotificationServiceImpl implements JurorNotificationService {
      * Sends response receipt.
      * @param digitalResponse      Response to send the notification for.
      * @param notifyTemplateType Template type to use for the message
-     * @throws NotificationServiceException
+     * @throws NotificationServiceException if the notification cannot be sent.
      */
     @Override
-    public void sendResponseReceipt(final DigitalResponse digitalResponse, final NotifyTemplateType notifyTemplateType) {
+    public void sendResponseReceipt(final DigitalResponse digitalResponse,
+                                    final NotifyTemplateType notifyTemplateType) {
         final EmailNotification emailNotification = createEmailNotification(digitalResponse, notifyTemplateType);
 
         try {

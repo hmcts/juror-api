@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.jurorer.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -21,7 +22,6 @@ import uk.gov.hmcts.juror.api.jurorer.controller.dto.LaNotificationRequestDto;
 import uk.gov.hmcts.juror.api.jurorer.domain.ReminderHistory;
 import uk.gov.hmcts.juror.api.jurorer.repository.ReminderHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
-import lombok.RequiredArgsConstructor;
 
 import java.net.URI;
 import java.util.Collections;

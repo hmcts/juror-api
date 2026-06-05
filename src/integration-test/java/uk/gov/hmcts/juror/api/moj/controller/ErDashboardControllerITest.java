@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -25,7 +26,6 @@ import uk.gov.hmcts.juror.api.moj.controller.jurorer.LocalAuthorityInfoResponseD
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateLocalAuthorityNotesRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateLocalAuthorityNotesResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
-import lombok.RequiredArgsConstructor;
 
 import java.net.URI;
 import java.time.LocalDate;

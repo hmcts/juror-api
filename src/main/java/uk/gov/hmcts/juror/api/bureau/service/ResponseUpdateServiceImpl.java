@@ -319,6 +319,8 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
                 updateAndLog(DEFERRAL_REASON, domain, null);
                 updateAndLog(DEFERRAL_DATE, domain, null);
                 break;
+            default:
+                break;
         }
 
         // JDB-2685: if no staff assigned, assign current login
@@ -759,8 +761,8 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
     /**
      * Save changelog and juror response to the database catching and wrapping a optimistic locking exception.
      *
-     * @param domain Updated DETATCHED juror response entity
-     * @throws BureauOptimisticLockingException
+     * @param domain Updated DETATCHED juror response entity.
+     * @throws BureauOptimisticLockingException if optimistic locking fails.
      */
     private void saveUpdatesOptimistically(final DigitalResponse domain) {
         try {

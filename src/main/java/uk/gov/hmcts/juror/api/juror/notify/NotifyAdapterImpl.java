@@ -32,9 +32,9 @@ public class NotifyAdapterImpl implements NotifyAdapter {
 
     /**
      * Sends email.
-     * @param notification
-     * @return
-     * @throws NotifyApiException
+     * @param notification notification to send.
+     * @return notification receipt.
+     * @throws NotifyApiException if Notify rejects the request.
      */
     @Override
     @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.CyclomaticComplexity"})
@@ -85,10 +85,10 @@ public class NotifyAdapterImpl implements NotifyAdapter {
 
 
     /**
-     * Sends Comms Email
-     * @param notification
-     * @return
-     * @throws NotifyApiException
+     * Sends Comms Email.
+     * @param notification notification to send.
+     * @return notification receipt.
+     * @throws NotifyApiException if Notify rejects the request.
      */
     @Override
     @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.CyclomaticComplexity"})
@@ -138,10 +138,10 @@ public class NotifyAdapterImpl implements NotifyAdapter {
     }
 
     /**
-     * Sends Comms SMS
-     * @param notification
-     * @return
-     * @throws NotifyApiException
+     * Sends Comms SMS.
+     * @param notification notification to send.
+     * @return notification receipt.
+     * @throws NotifyApiException if Notify rejects the request.
      */
     @Override
     @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.CyclomaticComplexity"})

@@ -17,6 +17,7 @@ import java.util.List;
  */
 public interface IJurorRepository {
     StringPath JUROR_FULL_NAME = Expressions.stringPath("jurorName");
+
     Juror findByJurorNumberAndIsActiveAndCourt(String jurorNumber, boolean isActive, CourtLocation locCode);
 
     List<Juror> findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(List<String> jurorNumbers,

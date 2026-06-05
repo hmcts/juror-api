@@ -41,7 +41,7 @@ class SummonsRepliesReportsITest extends AbstractIntegrationTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
 
     public static final String URL_BASE = "/api/v1/moj/reports";
 

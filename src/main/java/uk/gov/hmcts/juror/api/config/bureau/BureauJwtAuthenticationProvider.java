@@ -34,11 +34,11 @@ public class BureauJwtAuthenticationProvider implements AuthenticationProvider {
     }
 
     /**
-     * Authenticates given the Authentication request object
+     * Authenticates given the Authentication request object.
      *
      * @param authentication the authentication request object.
-     * @return
-     * @throws AuthenticationException
+     * @return the authenticated principal.
+     * @throws AuthenticationException if authentication fails.
      */
     @Override
     public Authentication authenticate(Authentication authentication) {
