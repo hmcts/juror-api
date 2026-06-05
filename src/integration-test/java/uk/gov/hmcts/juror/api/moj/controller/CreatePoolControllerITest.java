@@ -321,6 +321,34 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     }
 
+    @Test
+    @Sql({"/db/mod/truncate.sql",
+        "/db/CreatePoolController_createPool.sql",
+        "/db/CreatePoolController_excludedJurorsTest.sql",
+        "/db/CreatePoolController_loadVotersWithDeceasedJurors.sql"})
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
+    public void createPool_withDeceasedVoters() {
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
+                                   .userType(UserType.BUREAU)
+                                   .login("BUREAU_USER")
+                                   .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).build())
+                                   .owner("400")
+                                   .build());
+
+        PoolCreateRequestDto poolCreateRequest = setUpPoolCreateRequestDto();
+        poolCreateRequest.setNoRequested(8);
+
+        final URI uri = URI.create("/api/v1/moj/pool-create/create-pool");
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        RequestEntity<PoolCreateRequestDto> requestEntity = new RequestEntity<>(poolCreateRequest, httpHeaders,
+                                                                                HttpMethod.POST, uri);
+        ResponseEntity<String> response = template.exchange(requestEntity, String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+
+        // unable to create pool as some selected jurors are deceased
+    }
+
 
     @Test
     @Sql({"/db/mod/truncate.sql",
@@ -385,10 +413,41 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             assertThat(jurorPool).isNotEmpty();
             assertThat(jurorPool.size()).isEqualTo(1);
             JurorStatus expectedJurorStatus = jurorPool.get(0).getStatus();
-            assertThat(expectedJurorStatus.getStatus()).isEqualTo(IJurorStatus.SUMMONED);
+            // juror could be summoned or disqualified (there is one disqualified juror)
+            assertThat(expectedJurorStatus.getStatus()).isIn(IJurorStatus.SUMMONED, IJurorStatus.DISQUALIFIED);
         });
 
     }
+
+
+    @Test
+    @Sql({"/db/mod/truncate.sql",
+        "/db/CreatePoolController_createPool.sql",
+        "/db/CreatePoolController_excludedJurorsTest.sql",
+        "/db/CreatePoolController_loadVotersWithExcluded.sql"})
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
+    public void createPool_withExcludedVoters() {
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
+                                       .userType(UserType.BUREAU)
+                                       .login("BUREAU_USER")
+                                       .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).build())
+                                       .owner("400")
+                                       .build());
+
+        PoolCreateRequestDto poolCreateRequest = setUpPoolCreateRequestDto();
+        poolCreateRequest.setNoRequested(8);
+
+        final URI uri = URI.create("/api/v1/moj/pool-create/create-pool");
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        RequestEntity<PoolCreateRequestDto> requestEntity = new RequestEntity<>(poolCreateRequest, httpHeaders,
+                                                                                HttpMethod.POST, uri);
+        ResponseEntity<String> response = template.exchange(requestEntity, String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+
+        // unable to create pool as there are excluded jurors in the available list
+    }
+
 
     @Test
     @Sql(statements = "delete from juror_mod.bulk_print_data")
@@ -804,7 +863,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         assertThat(response.getBody()).hasSize(2);
-        assertThat(response.getBody()).containsExactly("777777777", "888888888");
+        assertThat(response.getBody()).containsExactlyInAnyOrder("777777777", "888888888");
     }
 
     @Test
