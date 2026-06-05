@@ -903,20 +903,18 @@ public class ReissueLetterServiceTest {
 
         private static BulkPrintData getBulkPrintData(
             ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData) {
-            final BulkPrintData bulkPrintData = BulkPrintData.builder()
+            return BulkPrintData.builder()
                 .jurorNo(reissueLetterRequestData.getJurorNumber())
                 .formAttribute(FormAttribute.builder().formType(reissueLetterRequestData.getFormCode()).build())
                 .creationDate(reissueLetterRequestData.getDatePrinted())
                 .build();
-            return bulkPrintData;
         }
 
         private static ReissueLetterRequestDto getReissueLetterRequestDto(
             ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData) {
-            final ReissueLetterRequestDto reissueLetterRequestDto = ReissueLetterRequestDto.builder()
+            return ReissueLetterRequestDto.builder()
                 .letters(List.of(reissueLetterRequestData))
                 .build();
-            return reissueLetterRequestDto;
         }
 
         @Test
@@ -1041,12 +1039,10 @@ public class ReissueLetterServiceTest {
     }
 
     private static ReissueLetterRequestDto.ReissueLetterRequestData getReissueLetterRequestData(String formCode) {
-        final ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData =
-            ReissueLetterRequestDto.ReissueLetterRequestData.builder()
-                .jurorNumber("555555561")
-                .formCode(formCode)
-                .datePrinted(LocalDate.now().minusDays(1))
-                .build();
-        return reissueLetterRequestData;
+        return ReissueLetterRequestDto.ReissueLetterRequestData.builder()
+            .jurorNumber("555555561")
+            .formCode(formCode)
+            .datePrinted(LocalDate.now().minusDays(1))
+            .build();
     }
 }
