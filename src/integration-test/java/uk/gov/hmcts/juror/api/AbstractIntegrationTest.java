@@ -42,7 +42,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("test")
 @SuppressWarnings({
     "PMD.TooManyMethods",
-    "PMD.ExcessiveImports"
+    "PMD.ExcessiveImports",
+    "PMD.CouplingBetweenObjects"
 })
 public abstract class AbstractIntegrationTest extends ContainerTest {
 
@@ -302,19 +303,18 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
     }
 
     @Data
-    private static class InvalidPayload {
+    private static final class InvalidPayload {
         private int status;
         private List<RestResponseEntityExceptionHandler.FieldError> errors;
     }
 
     @Data
-    private static class InvalidPathParam {
+    private static final class InvalidPathParam {
         private String message;
     }
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Data
-    private static class ErrorResponse {
+    private static final class ErrorResponse {
         private int status;
         private String error;
         private String exception;
