@@ -26,7 +26,6 @@ import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Attendance Reports Integration Tests at " + AttendanceReportsITest.URL_BASE)
@@ -41,7 +40,7 @@ class AttendanceReportsITest extends AbstractIntegrationTest {
 
     private HttpHeaders httpHeaders;
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
+    @SuppressWarnings({"PMD.PublicMemberInNonPublicType", "PMD.SignatureDeclareThrowsException"})
     @BeforeEach
     public void setUp() throws Exception {
         initHeaders();
