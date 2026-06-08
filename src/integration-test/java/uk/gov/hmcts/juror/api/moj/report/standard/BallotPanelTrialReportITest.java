@@ -129,37 +129,6 @@ class BallotPanelTrialReportITest extends AbstractStandardReportControllerITest 
             .build();
     }
 
-    private StandardReportResponse getCurrentJurorsOnlyResponse() {
-        return StandardReportResponse.builder()
-            .headings(new ReportHashMap<>())
-            .tableData(
-                StandardReportResponse.TableData.<StandardTableData>builder()
-                    .headings(getStandardHeadings())
-                    .data(StandardTableData.of(
-                        // 200000001, 200000002, 200000003 — result J, empanelled, no return date
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number", "200000001")
-                            .add("first_name", "John1")
-                            .add("last_name", "Smith1")
-                            .add("juror_postcode", "AD1 2HP"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number", "200000002")
-                            .add("first_name", "John2")
-                            .add("last_name", "Smith2")
-                            .add("juror_postcode", "AD2 2HP"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number", "200000003")
-                            .add("first_name", "John3")
-                            .add("last_name", "Smith3")
-                            .add("juror_postcode", "AD3 2HP")
-                    // 200000007 excluded — result NU
-                    // 200000008 excluded — result CD
-                    // 200000009 excluded — result J but return_date set
-                    ))
-                    .build())
-            .build();
-    }
-
     private StandardReportResponse getAnonymousResponse() {
         return StandardReportResponse.builder()
             .headings(new ReportHashMap<>())
