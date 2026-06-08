@@ -78,7 +78,7 @@ import static org.springframework.http.HttpStatus.OK;
     "java:S5960",
     "PMD.ExcessiveImports",
     "PMD.TooManyMethods",
-    "PMD.PublicMemberInNonPublicType"
+    "PMD.CouplingBetweenObjects"
 })
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 class JurorResponseControllerITest extends AbstractIntegrationTest {
@@ -117,7 +117,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
     private final UserRepository userRepository;
     private final JurorResponseCommonRepositoryMod jurorResponseCommonRepositoryMod;
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
+    @SuppressWarnings({"PMD.PublicMemberInNonPublicType", "PMD.SignatureDeclareThrowsException"})
     @BeforeEach
     public void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
