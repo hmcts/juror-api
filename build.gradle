@@ -373,17 +373,7 @@ dependencyCheck {
         // Disable scanning of .NET related binaries
         assemblyEnabled = false
     }
-    skipConfigurations = [
-            "checkstyle",
-            "compileOnly",
-            "pmd",
-            "integrationTest",
-            "functionalTest",
-            "test",
-            "smokeTest",
-            "contractTestRuntimeClasspath",
-            "contractTestCompileClasspath"
-    ]
+    scanConfigurations = ['runtimeClasspath', 'compileClasspath']
 }
 
 project.tasks['check'].dependsOn integration
