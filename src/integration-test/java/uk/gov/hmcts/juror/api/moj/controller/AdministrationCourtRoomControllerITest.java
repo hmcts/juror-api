@@ -48,6 +48,7 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
     @Autowired
     private final CourtroomRepository courtroomRepository;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
     public void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
