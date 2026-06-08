@@ -54,6 +54,7 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
     @Autowired
     private final JudgeRepository judgeRepository;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
     public void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
