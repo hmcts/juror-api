@@ -51,7 +51,7 @@ import static org.springframework.http.HttpMethod.PUT;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + AdministrationControllerITest.BASE_URL)
-@SuppressWarnings("PMD.ExcessiveImports")
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class AdministrationControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/moj/administration";
