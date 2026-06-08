@@ -2,6 +2,8 @@ package uk.gov.hmcts.juror.api.moj.controller.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -23,9 +25,9 @@ import java.util.List;
 @Setter
 @Builder
 @Schema(description = "Reissue Juror letters request")
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ReissueLetterRequestDto implements Serializable {
 
-    @JsonProperty("letters_list")
     @NotEmpty
     @Schema(description = "List of letters to be reissued", required = true)
     private List<@NotNull ReissueLetterRequestData> letters;
@@ -34,18 +36,15 @@ public class ReissueLetterRequestDto implements Serializable {
     @Builder
     public static class ReissueLetterRequestData {
 
-        @JsonProperty(value = "juror_number", required = true)
         @JurorNumber
         @NotBlank
         @Schema(description = "Unique juror number")
         private String jurorNumber;
 
-        @JsonProperty(value = "form_code", required = true)
         @NotBlank
         @Schema(name = "letter type", description = "Code indicating the type of letter to be sent")
         private String formCode;
 
-        @JsonProperty(value = "date_printed", required = true)
         @NotNull
         @JsonFormat(pattern = "yyyy-MM-dd")
         @Schema(description = "The date the letter was printed", example = "2024-01-31")

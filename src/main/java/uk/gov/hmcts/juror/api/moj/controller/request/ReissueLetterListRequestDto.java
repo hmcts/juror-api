@@ -1,6 +1,8 @@
 package uk.gov.hmcts.juror.api.moj.controller.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -25,9 +27,9 @@ import java.io.Serializable;
 @Builder
 @Schema(description = "Reissue Juror letter list request by juror number or pool number (or only pending letters)")
 @ValidateIfTrigger(classToValidate = ReissueLetterListRequestDto.class)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ReissueLetterListRequestDto implements Serializable {
 
-    @JsonProperty("juror_number")
     @JurorNumber
     @Schema(description = "Unique juror number")
     @ValidateIf(fields = {"poolNumber", "jurorName", "jurorPostcode", "showAllQueued"},
@@ -38,7 +40,6 @@ public class ReissueLetterListRequestDto implements Serializable {
         type = ValidateIf.Type.REQUIRE)
     private String jurorNumber;
 
-    @JsonProperty("pool_number")
     @PoolNumber
     @Schema(description = "Unique pool number")
     @ValidateIf(fields = {"jurorNumber", "jurorName", "jurorPostcode", "showAllQueued"},
@@ -49,7 +50,6 @@ public class ReissueLetterListRequestDto implements Serializable {
         type = ValidateIf.Type.REQUIRE)
     private String poolNumber;
 
-    @JsonProperty("juror_name")
     @ValidateIf(fields = {"jurorNumber", "poolNumber", "jurorPostcode", "showAllQueued"},
         condition = ValidateIf.Condition.ANY_PRESENT,
         type = ValidateIf.Type.EXCLUDE)
@@ -58,7 +58,6 @@ public class ReissueLetterListRequestDto implements Serializable {
         type = ValidateIf.Type.REQUIRE)
     private String jurorName;
 
-    @JsonProperty("juror_postcode")
     @ValidateIf(fields = {"jurorNumber", "poolNumber", "jurorName", "showAllQueued"},
         condition = ValidateIf.Condition.ANY_PRESENT,
         type = ValidateIf.Type.EXCLUDE)
@@ -68,12 +67,10 @@ public class ReissueLetterListRequestDto implements Serializable {
     @Pattern(regexp = ValidationConstants.POSTCODE_REGEX)
     private String jurorPostcode;
 
-    @JsonProperty(value = "letter_type", required = true)
     @NotNull
     @Schema(name = "letter type", description = "Code indicating the type of letter to be sent")
     private LetterType letterType;
 
-    @JsonProperty("show_all_queued")
     @Schema(description = "Flag to indicate if only queued letters should be listed")
     @ValidateIf(fields = {"jurorNumber", "poolNumber", "jurorName", "jurorPostcode"},
         condition = ValidateIf.Condition.ANY_PRESENT,
