@@ -38,6 +38,7 @@ public class LaUserControllerITest extends AbstractIntegrationTest {
     private TestRestTemplate restTemplate;
     private HttpHeaders httpHeaders;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
     public void setUp() throws Exception {
         initHeadersLaUsers("001");
