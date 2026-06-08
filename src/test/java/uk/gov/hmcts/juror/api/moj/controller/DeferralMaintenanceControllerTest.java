@@ -23,7 +23,7 @@ import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralDatesRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.deferralmaintenance.ProcessJurorPostponementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralOptionsDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralAgeDisqualificationResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
@@ -331,14 +331,14 @@ class DeferralMaintenanceControllerTest {
         void happyPath() throws Exception {
             BureauJwtAuthentication mockPrincipal = getBureauJwtAuthentication();
             ProcessJurorPostponementRequestDto request = getProcessJurorPostponementRequestDto();
-            DeferralResponseDto response = getDeferralResponseDto();
+            DeferralAgeDisqualificationResponseDto response = getDeferralAgeDisqualificationResponseDto();
 
             when(deferralsService.processJurorPostponement(jwtPayload, request)).thenReturn(response);
 
             mockMvc.perform(post(URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtils.asJsonString(request))
-                    .principal(mockPrincipal))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(TestUtils.asJsonString(request))
+                                .principal(mockPrincipal))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk());
 
@@ -350,14 +350,14 @@ class DeferralMaintenanceControllerTest {
         void invalidUrl() throws Exception {
             BureauJwtAuthentication mockPrincipal = getBureauJwtAuthentication();
             ProcessJurorPostponementRequestDto request = getProcessJurorPostponementRequestDto();
-            DeferralResponseDto response = getDeferralResponseDto();
+            DeferralAgeDisqualificationResponseDto response = getDeferralAgeDisqualificationResponseDto();
 
             when(deferralsService.processJurorPostponement(jwtPayload, request)).thenReturn(response);
 
             mockMvc.perform(post(URL + "/123456789")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtils.asJsonString(request))
-                    .principal(mockPrincipal))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(TestUtils.asJsonString(request))
+                                .principal(mockPrincipal))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isNotFound());
 
@@ -371,14 +371,14 @@ class DeferralMaintenanceControllerTest {
             ProcessJurorPostponementRequestDto request = getProcessJurorPostponementRequestDto();
             request.setJurorNumbers(new ArrayList<>());
 
-            DeferralResponseDto response = getDeferralResponseDto();
+            DeferralAgeDisqualificationResponseDto response = getDeferralAgeDisqualificationResponseDto();
 
             when(deferralsService.processJurorPostponement(jwtPayload, request)).thenReturn(response);
 
             mockMvc.perform(post(URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtils.asJsonString(request))
-                    .principal(mockPrincipal))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(TestUtils.asJsonString(request))
+                                .principal(mockPrincipal))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest());
 
@@ -392,14 +392,14 @@ class DeferralMaintenanceControllerTest {
             ProcessJurorPostponementRequestDto request = getProcessJurorPostponementRequestDto();
             request.setJurorNumbers(null);
 
-            DeferralResponseDto response = getDeferralResponseDto();
+            DeferralAgeDisqualificationResponseDto response = getDeferralAgeDisqualificationResponseDto();
 
             when(deferralsService.processJurorPostponement(jwtPayload, request)).thenReturn(response);
 
             mockMvc.perform(post(URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtils.asJsonString(request))
-                    .principal(mockPrincipal))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(TestUtils.asJsonString(request))
+                                .principal(mockPrincipal))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest());
 
@@ -411,14 +411,14 @@ class DeferralMaintenanceControllerTest {
         void invalidPayloadHttpMethod() throws Exception {
             BureauJwtAuthentication mockPrincipal = getBureauJwtAuthentication();
             ProcessJurorPostponementRequestDto request = getProcessJurorPostponementRequestDto();
-            DeferralResponseDto response = getDeferralResponseDto();
+            DeferralAgeDisqualificationResponseDto response = getDeferralAgeDisqualificationResponseDto();
 
             when(deferralsService.processJurorPostponement(jwtPayload, request)).thenReturn(response);
 
             mockMvc.perform(get(URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtils.asJsonString(request))
-                    .principal(mockPrincipal))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(TestUtils.asJsonString(request))
+                                .principal(mockPrincipal))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isMethodNotAllowed());
 
@@ -441,9 +441,10 @@ class DeferralMaintenanceControllerTest {
             return request;
         }
 
-        private static DeferralResponseDto getDeferralResponseDto() {
-            return DeferralResponseDto.builder()
-                .countJurorsPostponed(1)
+        private static DeferralAgeDisqualificationResponseDto getDeferralAgeDisqualificationResponseDto() {
+            return DeferralAgeDisqualificationResponseDto.builder()
+                .eligible(1)
+                .ageDisqualified(List.of())
                 .build();
         }
     }

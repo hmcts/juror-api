@@ -1,5 +1,3 @@
-DELETE FROM juror_mod.voters;
-UPDATE juror_mod.court_location set voters_lock = 0;
 
 Insert into juror_mod.court_catchment_area (POSTCODE,LOC_CODE) values ('CH1','415');
 Insert into juror_mod.court_catchment_area (POSTCODE,LOC_CODE) values ('CH2','415');

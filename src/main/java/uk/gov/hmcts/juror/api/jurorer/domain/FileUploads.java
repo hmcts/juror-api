@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
- * Entity mapping for juror_er.file_uploads
+ * Entity mapping for juror_er.file_uploads.
  */
 @Entity
 @Table(name = "file_uploads", schema = "juror_er")
