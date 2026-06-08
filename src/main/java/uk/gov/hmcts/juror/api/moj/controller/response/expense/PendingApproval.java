@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.controller.response.expense;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
@@ -30,11 +29,9 @@ public class PendingApproval extends JurorNumberAndPoolNumberDto {
 
     private BigDecimal amountDue;
 
-
     private ExpenseType expenseType;
 
     private boolean canApprove;
 
-    @JsonProperty("revisions")
     private List<ApproveExpenseDto.DateToRevision> dateToRevisions;
 }

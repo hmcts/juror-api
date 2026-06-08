@@ -79,7 +79,7 @@ public class PoolRequestSearchListDto {
          * Tuple[5] - POOL_REQUEST.NEW_REQUEST
          * Tuple[6] - SUM EXPRESSION (Count of active pool members)
          * Tuple[7] - POOL_REQUEST.NUMBER_REQUESTED
-         * Tuple[8] - POOL_REQUEST.NIL_POOL
+         * Tuple[8] - POOL_REQUEST.NIL_POOL.
          *
          * @param queryResult a Tuple object representation of a result row from the Pool Request Search query
          */

@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.report.grouped;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -9,7 +10,9 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedReportRespo
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.QReportsJurorPayments;
+import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
+import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReport;
 import uk.gov.hmcts.juror.api.moj.report.ReportGroupBy;
 import uk.gov.hmcts.juror.api.moj.report.datatypes.ReportsJurorPaymentsDataTypes;
@@ -56,6 +59,21 @@ public class TrialAttendanceReport extends AbstractGroupedReport {
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QReportsJurorPayments.reportsJurorPayments.trialNumber.eq(request.getTrialNumber()));
         query.where(QReportsJurorPayments.reportsJurorPayments.locCode.eq(SecurityUtil.getLocCode()));
+
+        if (Boolean.TRUE.equals(request.getCurrentJurorsOnly())) {
+            query.where(QReportsJurorPayments.reportsJurorPayments.jurorNumber.in(
+                JPAExpressions.select(QPanel.panel.juror.jurorNumber)
+                    .from(QPanel.panel)
+                    .where(QPanel.panel.trial.trialNumber.eq(request.getTrialNumber()))
+                    .where(QPanel.panel.result.isNull()
+                               .or(QPanel.panel.result.eq(PanelResult.JUROR)))
+                    .where(QPanel.panel.returnDate.isNull())
+            ));
+        }
+
+
+
+
         query.orderBy(QReportsJurorPayments.reportsJurorPayments.jurorNumber.asc());
     }
 

@@ -215,7 +215,7 @@ public class StraightThroughProcessorServiceImplTest {
     }
 
     @Test
-    public void test_paper_isValidResponseForStraightThroughProcessing_invalid_completedByThirdParty() {
+    public void test_paper_isValidResponseForStraightThroughProcessing_valid_completedByThirdParty() {
         LocalDate serviceStartDate = LocalDate.now().plusWeeks(8);
         LocalDate dateOfBirth = serviceStartDate.minusYears(80);
 
@@ -225,9 +225,10 @@ public class StraightThroughProcessorServiceImplTest {
         paperResponse.setRelationship("Some Relation");
         paperResponse.setThirdPartyReason("Example Third Party Reason");
 
+        // Paper responses can be auto processed even if submitted by a third party (JS-885)
         Assertions.assertThat(
             straightThroughProcessorService.isValidForStraightThroughAgeDisqualification(paperResponse,
-                serviceStartDate, jurorPool)).isFalse();
+                serviceStartDate, jurorPool)).isTrue();
     }
 
     @Test
@@ -836,8 +837,9 @@ public class StraightThroughProcessorServiceImplTest {
             .getJurorPoolFromUser(jurorNumber);
         Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
+        // Paper response can be auto processed even when submitted by a third party (JS-885)
         Assertions.assertThat(straightThroughProcessorService
-            .isValidForStraightThroughAcceptance(jurorNumber, bureauOwner, true)).isFalse();
+            .isValidForStraightThroughAcceptance(jurorNumber, bureauOwner, true)).isTrue();
     }
 
     @Test

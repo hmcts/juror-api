@@ -50,6 +50,7 @@ public class WeekendAttendanceReportResponse {
     @NoArgsConstructor
     @ToString
     @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class TableData {
         private List<Heading> headings;
         private List<DataRow> data;
@@ -62,6 +63,7 @@ public class WeekendAttendanceReportResponse {
         @Builder
         @NoArgsConstructor
         @AllArgsConstructor
+        @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
         public static class Heading {
             private AttendanceReportServiceImpl.TableHeading id;
             private String name;
@@ -72,6 +74,7 @@ public class WeekendAttendanceReportResponse {
         @Builder
         @NoArgsConstructor
         @AllArgsConstructor
+        @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
         public static class DataRow {
             private String courtLocationNameAndCode;
             private Integer saturdayTotal;

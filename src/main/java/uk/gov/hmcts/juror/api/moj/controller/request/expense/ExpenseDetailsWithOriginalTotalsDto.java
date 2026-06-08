@@ -21,7 +21,6 @@ import java.util.Optional;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ExpenseDetailsWithOriginalTotalsDto extends ExpenseTotal<ExpenseDetailsWithOriginalDto> {
 
-    @JsonProperty("original_total_paid")
     private BigDecimal originalTotalPaid;
 
     public ExpenseDetailsWithOriginalTotalsDto() {

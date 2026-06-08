@@ -116,4 +116,6 @@ public interface JurorHistoryService {
 
     void createResponseSubmittedHistory(JurorPool jurorPool, String otherInfo, String username);
 
+    void createOnCallHistory(JurorPool jurorPool);
+
 }

@@ -9,6 +9,7 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResp
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardTableData;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
+import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
@@ -39,6 +40,13 @@ public class BallotPanelTrialReport extends AbstractStandardReport {
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QPanel.panel.trial.trialNumber.eq(request.getTrialNumber()));
         query.where(QPanel.panel.trial.courtLocation.locCode.in(SecurityUtil.getCourts()));
+
+        if (Boolean.TRUE.equals(request.getCurrentJurorsOnly())) {
+            query.where(QPanel.panel.result.isNull()
+                            .or(QPanel.panel.result.eq(PanelResult.JUROR)));
+            query.where(QPanel.panel.returnDate.isNull());
+        }
+
         query.orderBy(QPanel.panel.juror.lastName.asc(), QPanel.panel.juror.jurorNumber.asc());
     }
 

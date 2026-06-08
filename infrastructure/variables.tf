@@ -55,3 +55,9 @@ variable "service_criticality" {
   type        = number
   default     = 1
 }
+
+variable "enable_qpi" {
+  description = "Enables Query Performance Insight. Creates Log Analytics workspace and diagnostic setting needed"
+  type        = bool
+  default     = false
+}

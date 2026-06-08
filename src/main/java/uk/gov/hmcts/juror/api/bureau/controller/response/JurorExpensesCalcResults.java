@@ -1,5 +1,7 @@
 package uk.gov.hmcts.juror.api.bureau.controller.response;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
@@ -19,6 +21,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 @Data
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Schema(description = "Expense calculator results dto.")
 public class JurorExpensesCalcResults implements Serializable {
 

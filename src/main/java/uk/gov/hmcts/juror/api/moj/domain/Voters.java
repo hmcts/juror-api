@@ -5,7 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -18,7 +17,6 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Date;
 
-import static uk.gov.hmcts.juror.api.validation.ValidationConstants.JUROR_NUMBER;
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REGEX;
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.POSTCODE_REGEX;
 
@@ -30,11 +28,9 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.POSTCODE_REG
 public class Voters implements Serializable {
 
     @Id
-    @Column(name = "PART_NO")
-    @Pattern(regexp = JUROR_NUMBER)
-    @Length(max = 9)
+    @Column(name = "HASH_ID")
     @NotNull
-    private String jurorNumber;
+    private Long hashId;
 
     @Column(name = "REGISTER_LETT")
     @Length(max = 5)
@@ -43,10 +39,6 @@ public class Voters implements Serializable {
     @Column(name = "POLL_NUMBER")
     @Length(max = 5)
     private String pollNumber;
-
-    @Column(name = "NEW_MARKER")
-    @Length(max = 1)
-    private String newMarker;
 
     @Column(name = "TITLE")
     @Length(max = 10)
@@ -95,11 +87,7 @@ public class Voters implements Serializable {
     @Pattern(regexp = NO_PIPES_REGEX)
     private String address5;
 
-    @Column(name = "ADDRESS6")
-    @Null
-    private String address6 = null;
-
-    @Column(name = "ZIP")
+    @Column(name = "POSTCODE")
     @Pattern(regexp = POSTCODE_REGEX)
     @Length(max = 10)
     private String postcode;
@@ -110,8 +98,8 @@ public class Voters implements Serializable {
     @Column(name = "DATE_SELECTED1")
     private Date dateSelected1;
 
-    @Column(name = "REC_NUM")
-    private Integer recNumber;
+    @Column(name = "LA_ID")
+    private Integer localAuthorityId;
 
     @Size(max = 1)
     @Column(name = "PERM_DISQUAL")
