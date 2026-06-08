@@ -27,6 +27,8 @@ import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.service.poolmanagement.JurorManagementConstants;
 import uk.gov.hmcts.juror.api.moj.service.poolmanagement.JurorManagementServiceImpl;
@@ -85,6 +87,10 @@ public class JurorManagementServiceImplTest {
     private JurorAppearanceService appearanceService;
     @Mock
     private ReissueLetterService reissueLetterService;
+    @Mock
+    private JurorDigitalResponseRepositoryMod digitalResponseRepositoryMod;
+    @Mock
+    private JurorPaperResponseRepositoryMod paperResponseRepositoryMod;
 
     @InjectMocks
     JurorManagementServiceImpl jurorManagementService;
