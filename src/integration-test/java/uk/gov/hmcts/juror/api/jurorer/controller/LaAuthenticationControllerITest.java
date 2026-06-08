@@ -27,6 +27,7 @@ import uk.gov.hmcts.juror.api.jurorer.domain.LaRoles;
 import uk.gov.hmcts.juror.api.jurorer.domain.LocalAuthority;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.EmailDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.JwtDto;
+import lombok.RequiredArgsConstructor;
 
 import java.time.Clock;
 import java.util.Collections;
@@ -47,16 +48,16 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
 
     @Autowired
     private TestRestTemplate template;
-    private HttpHeaders httpHeaders;
 
     @Value("${jwt.secret.er-portal}")
     private String erPortalSecret;
 
     private final Clock clock;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
     public void setUp() throws Exception {
-        httpHeaders = new HttpHeaders();
+        HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
 
