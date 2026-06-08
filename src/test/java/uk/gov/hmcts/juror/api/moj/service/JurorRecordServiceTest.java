@@ -1993,7 +1993,7 @@ class JurorRecordServiceTest {
         JurorNameDetailsDto dto = new JurorNameDetailsDto();
         BeanUtils.copyProperties(jurorPool, dto);
 
-        doReturn(new ArrayList<JurorPool>()).when(jurorPoolRepository)
+        doReturn(new ArrayList<>()).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActive(jurorNumber, true);
 
         assertThatExceptionOfType(MojException.NotFound.class)
@@ -3953,7 +3953,7 @@ class JurorRecordServiceTest {
     @DisplayName("Juror getJurorBankDetails(String jurorNumber)")
     class GetJurorBankDetails {
 
-        public static final String JUROR_NUMBER = "123456789";
+        private static final String JUROR_NUMBER = "123456789";
 
         @Test
         void positiveTypical() {
