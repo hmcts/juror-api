@@ -120,15 +120,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -154,8 +146,7 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
     "PMD.NcssCount",
     "PMD.CyclomaticComplexity",
     "PMD.TooManyMethods",
-    "PMD.TooManyFields",
-    "PMD.PublicMemberInNonPublicType"
+    "PMD.TooManyFields"
 })
 class JurorRecordControllerITest extends AbstractIntegrationTest {
 
@@ -199,12 +190,13 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     private HttpHeaders httpHeaders;
 
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
+@SuppressWarnings({"PMD.PublicMemberInNonPublicType", "PMD.SignatureDeclareThrowsException"})
     @BeforeEach
     public void setUp() throws Exception {
         initHeaders();
     }
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     private void initHeaders() throws Exception {
 
         BureauJwtPayload.Staff staff = new BureauJwtPayload.Staff();
@@ -2121,6 +2113,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             .isEqualTo(HttpStatus.FORBIDDEN);
     }
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     private String initCourtsJwt(String owner, List<String> courts, UserType userType, Role... roles) throws Exception {
 
         return mintBureauJwt(BureauJwtPayload.builder()
@@ -3151,6 +3144,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             .isEqualTo(HttpStatus.FORBIDDEN);
     }
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     private void updateNotesForEtag() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userType(UserType.BUREAU)
@@ -5517,9 +5511,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 .notes("A manually created juror")
                 .build();
 
-            Set<Role> roles = new HashSet<>();
+            EnumSet<Role> roles = EnumSet.noneOf(Role.class);
             roles.add(Role.MANAGER);
-            Set<Permission> permissions = new HashSet<>();
+            EnumSet<Permission> permissions = EnumSet.noneOf(Permission.class);
             permissions.add(Permission.CREATE_JUROR);
             User user = User.builder()
                 .username("BUREAU_USER")
@@ -5609,9 +5603,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 .notes("A manually created juror")
                 .build();
 
-            Set<Role> roles = new HashSet<>();
+            EnumSet<Role> roles = EnumSet.noneOf(Role.class);
             roles.add(Role.MANAGER);
-            Set<Permission> permissions = new HashSet<>();
+            EnumSet<Permission> permissions = EnumSet.noneOf(Permission.class);
             User user = User.builder()
                 .username("BUREAU2")
                 .roles(roles)
@@ -6205,6 +6199,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     private record JurorHistoryExpectedValues(String historyCode, String info, LocalDate date, String ref) {
     }
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     private String initPayloadWithStaffRank(String owner, String username, UserType userType,
                                             Role... roles) throws Exception {
         return mintBureauJwt(BureauJwtPayload.builder()
