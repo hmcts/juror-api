@@ -34,6 +34,8 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
+@SuppressWarnings({"PMD.CouplingBetweenObjects",
+    "PMD.TooManyMethods"})
 public abstract class AbstractValidatorTest<T> {
 
     protected ValidatorFactory validatorFactory;
@@ -264,6 +266,7 @@ public abstract class AbstractValidatorTest<T> {
 
 
         @TestFactory
+        @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
         Stream<DynamicTest> tests() {
             return tests.stream();
         }

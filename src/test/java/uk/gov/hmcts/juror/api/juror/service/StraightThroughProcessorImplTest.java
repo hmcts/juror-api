@@ -47,7 +47,7 @@ import static uk.gov.hmcts.juror.api.JurorDigitalApplication.AUTO_USER;
 /**
  * Unit test of {@link StraightThroughProcessorImpl}.
  */
-@SuppressWarnings({"Duplicates", "PMD.TooManyMethods", "PMD.ExcessiveImports"})
+@SuppressWarnings({"Duplicates", "PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.TooManyFields"})
 @RunWith(MockitoJUnitRunner.class)
 public class StraightThroughProcessorImplTest {
 

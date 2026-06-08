@@ -34,7 +34,8 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-@SuppressWarnings("Duplicates")
+@SuppressWarnings({"Duplicates",
+    "PMD.SingularField"})
 @RunWith(MockitoJUnitRunner.class)
 public class JurorDashboardServiceImplTest {
 

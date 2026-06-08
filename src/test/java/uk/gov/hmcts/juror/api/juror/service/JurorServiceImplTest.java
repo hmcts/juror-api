@@ -55,7 +55,10 @@ import static org.mockito.Mockito.when;
 /**
  * Unit test of {@link JurorServiceImpl}.
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked",
+    "PMD.ExcessiveImports",
+    "PMD.CouplingBetweenObjects",
+    "PMD.TooManyFields"})
 @RunWith(MockitoJUnitRunner.StrictStubs.class)
 public class JurorServiceImplTest {
 
@@ -165,6 +168,7 @@ public class JurorServiceImplTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.NcssCount")
     public void convertJurorResponseDtoToEntityTest() throws Exception {
         final String jurorNumber = "546547731";
         final LocalDate dob = LocalDate.now();

@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("ManualAdjustmentsToExpenseLimitsReportTest")
+@SuppressWarnings("PMD.TooManyMethods")
 class ManualAdjustmentsToExpenseLimitsReportTest {
 
     @Mock
@@ -344,6 +345,7 @@ class ManualAdjustmentsToExpenseLimitsReportTest {
 
     @Test
     @DisplayName("Should validate request properly")
+    @SuppressWarnings("PMD.UnusedLocalVariable")
     void positiveRequestValidation() {
 
         StandardReportRequest request = StandardReportRequest.builder()

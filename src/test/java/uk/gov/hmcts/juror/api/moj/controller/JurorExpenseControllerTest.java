@@ -84,7 +84,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     BulkServiceImpl.class})
 @SuppressWarnings({
     "PMD.ExcessiveImports",
-    "PMD.PublicMemberInNonPublicType"
+    "PMD.PublicMemberInNonPublicType",
+    "PMD.CouplingBetweenObjects"
 })
 @DisplayName("Controller: " + JurorExpenseControllerTest.BASE_URL)
 class JurorExpenseControllerTest {

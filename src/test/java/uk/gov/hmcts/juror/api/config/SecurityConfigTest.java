@@ -63,7 +63,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 @SuppressWarnings({
     "PMD.MutableStaticState",
-    "PMD.PublicMemberInNonPublicType"
+    "PMD.PublicMemberInNonPublicType",
+    "PMD.ExcessiveImports",
+    "PMD.UnitTestShouldIncludeAssert"
 })
 @ActiveProfiles({"development", "test"})
 class SecurityConfigTest {

@@ -27,6 +27,7 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+@SuppressWarnings("PMD.JUnit5TestShouldBePackagePrivate")
 public class AttendanceGraphReportTest extends AbstractStandardReportTestSupport<AttendanceGraphReport> {
 
     private static final LocalDate FROM_DATE = LocalDate.of(2024, 1, 1);

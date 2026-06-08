@@ -60,7 +60,8 @@ import static uk.gov.hmcts.juror.api.TestUtils.createJwt;
 @SuppressWarnings({
     "PMD.ExcessiveImports",
     "PMD.TooManyMethods",
-    "PMD.PublicMemberInNonPublicType"
+    "PMD.PublicMemberInNonPublicType",
+    "PMD.SingularField"
 })
 class TrialControllerTest {
     private static final String BASE_URL = "/api/v1/moj/trial";

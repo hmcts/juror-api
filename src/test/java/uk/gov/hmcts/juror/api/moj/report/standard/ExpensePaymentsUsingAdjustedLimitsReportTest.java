@@ -31,6 +31,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("ExpensePaymentsUsingAdjustedLimitsReport Tests")
+@SuppressWarnings("PMD.TooManyMethods")
 class ExpensePaymentsUsingAdjustedLimitsReportTest {
 
     @Mock

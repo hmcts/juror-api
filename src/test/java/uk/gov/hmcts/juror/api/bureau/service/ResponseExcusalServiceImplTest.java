@@ -43,6 +43,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
+@SuppressWarnings("PMD.ExcessiveImports")
 public class ResponseExcusalServiceImplTest {
 
     @Mock
