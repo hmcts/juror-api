@@ -61,6 +61,7 @@ class ErAdministrationControllerITest extends AbstractIntegrationTest {
     private final DeadlineRepository deadlineRepository;
     private final LaUserRepository laUserRepository;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
     public void setUp() throws Exception {
         initHeadersBureau();
