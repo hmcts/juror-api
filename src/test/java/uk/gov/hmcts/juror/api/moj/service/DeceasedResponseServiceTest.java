@@ -218,12 +218,12 @@ class DeceasedResponseServiceTest {
         verify(jurorResponseCommonRepositoryMod, times(1))
             .findByJurorNumber(jurorNumber);
 
-        final ArgumentCaptor<PaperResponse> PaperResponseCaptor = ArgumentCaptor.forClass(PaperResponse.class);
+        final ArgumentCaptor<PaperResponse> paperResponseCaptor = ArgumentCaptor.forClass(PaperResponse.class);
 
         verify(jurorPaperResponseRepository, times(1))
-            .save(PaperResponseCaptor.capture());
+            .save(paperResponseCaptor.capture());
 
-        PaperResponse paperResponse = PaperResponseCaptor.getValue();
+        PaperResponse paperResponse = paperResponseCaptor.getValue();
         assertThat(paperResponse.getJurorNumber()).isEqualTo(jurorNumber);
         assertThat(paperResponse.getProcessingStatus()).isEqualTo(ProcessingStatus.CLOSED);
         assertThat(paperResponse.getProcessingComplete()).isTrue();
