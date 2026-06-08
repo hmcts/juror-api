@@ -1,4 +1,3 @@
-
 package uk.gov.hmcts.juror.api.moj.controller;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -63,7 +62,7 @@ import static uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription.
 import static uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription.SURPLUS;
 import static uk.gov.hmcts.juror.api.testvalidation.DeferralMaintenanceValidation.validateDeferralMaintenanceOptions;
 
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.CouplingBetweenObjects"})
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: /api/v1/moj/deferral-maintenance/")
@@ -107,6 +106,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
     private HttpHeaders httpHeaders;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
     public void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
