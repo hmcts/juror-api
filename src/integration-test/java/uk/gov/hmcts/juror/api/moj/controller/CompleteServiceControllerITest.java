@@ -65,6 +65,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
 
     private static final String BASE_URL = "/api/v1/moj/complete-service";
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
     public void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
