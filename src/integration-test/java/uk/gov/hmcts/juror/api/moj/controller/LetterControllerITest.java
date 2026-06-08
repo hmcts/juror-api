@@ -106,7 +106,8 @@ import static uk.gov.hmcts.juror.api.utils.DataConversionUtil.getExceptionDetail
     "PMD.ExcessiveImports",
     "PMD.NcssCount",
     "PMD.PublicMemberInNonPublicType",
-    "PMD.TooManyMethods"
+    "PMD.TooManyMethods",
+    "PMD.CouplingBetweenObjects"
 })
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -125,12 +126,12 @@ class LetterControllerITest extends AbstractIntegrationTest {
     private ExcusalCodeRepository excusalCodeRepository;
     @Autowired
     private JurorHistoryRepository jurorHistoryRepository;
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Autowired
     private PoolHistoryRepository poolHistoryRepository;
 
     private HttpHeaders httpHeaders;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
     public void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
@@ -4299,6 +4300,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             verifyResponse(dataIndex12, "564", "2024-01-20", false, "5228");
         }
 
+        @SuppressWarnings("PMD.SignatureDeclareThrowsException")
         protected ReissueLetterListResponseDto triggerValid(ReissueLetterListRequestDto requestDto) throws Exception {
             final String jwt = createJwtBureau("BUREAU_USER");
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
