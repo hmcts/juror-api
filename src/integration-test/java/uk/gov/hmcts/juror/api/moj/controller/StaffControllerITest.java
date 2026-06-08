@@ -53,6 +53,7 @@ public class StaffControllerITest extends AbstractIntegrationTest {
     private JurorDigitalResponseRepositoryMod digitalResponseRepositoryMod;
 
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
     public void setUp() throws Exception {
         initHeadersTeamLeader();
