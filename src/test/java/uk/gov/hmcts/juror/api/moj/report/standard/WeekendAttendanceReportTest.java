@@ -36,7 +36,7 @@ class WeekendAttendanceReportTest extends AbstractStandardReportTestSupport<Week
     private CourtLocationService courtLocationService;
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
-    public WeekendAttendanceReportTest() {
+    WeekendAttendanceReportTest() {
         super(QAppearance.appearance,
             WeekendAttendanceReport.RequestValidator.class,
             DataType.JUROR_NUMBER,
