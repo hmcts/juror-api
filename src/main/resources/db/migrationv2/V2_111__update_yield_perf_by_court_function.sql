@@ -44,18 +44,20 @@ group by p.loc_code),
 
 
 no_requested_from_snapshot as (select p.loc_code,
-sum(p.no_requested)::integer as no_requested
+p.pool_no,
+p.no_requested::integer as no_requested
 from juror_mod.bureau_snapshot bs
 join juror_mod.pool p on bs.pool_number = p.pool_no and p.loc_code in (select unnest(string_to_array(p_loc_code_list, ','))) and p.return_date between p_start_date and p_end_date
 and p."owner" <> '400'
-group by p.loc_code),
+group by p.loc_code, p.pool_no, p.no_requested),
 
 
 sum_snaphsot_requested as (
     select nrs.loc_code,
-           nrs.no_requested,                              -- already summed above
+           sum(nrs.no_requested)::integer as no_requested,
            0::integer as supplied
-    from no_requested_from_snapshot nrs),
+    from no_requested_from_snapshot nrs
+    group by nrs.loc_code),
 
 
 
