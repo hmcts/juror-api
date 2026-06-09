@@ -19,7 +19,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 class PoolSelectionReportTest extends AbstractStandardReportTestSupport<PoolSelectionListReport> {
-    public PoolSelectionReportTest() {
+    PoolSelectionReportTest() {
         super(QJurorPool.jurorPool,
             PoolSelectionListReport.RequestValidator.class,
             DataType.JUROR_NUMBER,
