@@ -1,3 +1,5 @@
+DELETE FROM juror_mod.voters;
+UPDATE juror_mod.court_location set voters_lock = 0;
 
 INSERT INTO juror_mod.voters (hash_id,register_lett,poll_number,title,lname,fname,dob,flags,address,address2,address3,address4,address5,postcode,date_selected1,la_id,perm_disqual,source_id)
 VALUES
@@ -20,3 +22,11 @@ VALUES
 (641500020,'20','20',NULL,'LNAMETWOZERO','FNAMETWOZERO',NULL,NULL,'20 STREET NAME','ANYTOWN',NULL,NULL,NULL,'CH1 2AR',TIMESTAMP'2022-04-17 00:00:00.0',20,NULL,NULL),
 (641500022,'22','22',NULL,'LNAMETWOTWO','FNAMETWOTWO',TIMESTAMP'1943-04-17 00:00:00.0',NULL,'22 STREET NAME','ANYTOWN',NULL,NULL,NULL,'CH1 2AR',NULL,22,NULL,NULL),
 (641500023,'23','23',NULL,'LNAMETWOTHREE','FNAMETWOTHREE',current_date - 6200,NULL,'23 STREET NAME','ANYTOWN',NULL,NULL,NULL,'CH1 2AN',NULL,23,NULL,NULL);
+
+
+INSERT INTO juror_mod.juror (juror_number, last_name, first_name, address_line_1, address_line_4, postcode, responded, excusal_code)
+VALUES
+('641600095', 'LNAMEFOUR', 'FNAMEFOUR', '4 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, 'D'),
+('641600096', 'LNAMEFIVE', 'FNAMEFIVE', '5 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, 'D'),
+('641600097', 'LNAMESIX', 'FNAMESIX', '6 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, 'D'),
+('641600098', 'LNAMENOMATCH', 'FNAMENOMATCH', '6 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, 'D');

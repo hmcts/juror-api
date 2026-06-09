@@ -853,7 +853,7 @@ public class JurorPaperResponseServiceImplTest {
 
     /**
      * Ensures juror reasonable adjustments can be updated with an empty request body (i.e., juror no longer requires
-     * any reasonable adjustments, so any pre-existing reasonable adjustments are erased)
+     * any reasonable adjustments, so any pre-existing reasonable adjustments are erased).
      */
     @Test
     public void testUpdatePaperResponseSpecialNeedsEmptyReasonableAdjustmentsHappyBureauUserBureauOwner() {
