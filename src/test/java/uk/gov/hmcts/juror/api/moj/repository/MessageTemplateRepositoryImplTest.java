@@ -140,7 +140,7 @@ class MessageTemplateRepositoryImplTest {
         verify(jpaQuery, times(1)).limit(4L);
         verify(jpaQuery, times(1)).offset(0L);
         verify(jpaQuery, times(1)).orderBy(
-            new OrderSpecifier<?>[]{SortMethod.ASC.from(MessageSearch.SortField.JUROR_NUMBER)});
+            SortMethod.ASC.from(MessageSearch.SortField.JUROR_NUMBER));
         verify(jpaQuery, times(1)).fetchResults();
 
         verify(jpaQuery, times(1)).where(JUROR_POOL.isActive.isTrue());
@@ -228,7 +228,7 @@ class MessageTemplateRepositoryImplTest {
         verify(jpaQuery, times(1)).limit(4L);
         verify(jpaQuery, times(1)).offset(0L);
         verify(jpaQuery, times(1)).orderBy(
-            new OrderSpecifier<?>[]{SortMethod.ASC.from(MessageSearch.SortField.JUROR_NUMBER)});
+            SortMethod.ASC.from(MessageSearch.SortField.JUROR_NUMBER));
         verify(jpaQuery, times(1)).fetchResults();
 
 
@@ -314,7 +314,7 @@ class MessageTemplateRepositoryImplTest {
         verify(jpaQuery, times(1)).limit(4L);
         verify(jpaQuery, times(1)).offset(0L);
         verify(jpaQuery, times(1)).orderBy(
-            new OrderSpecifier<?>[]{SortMethod.ASC.from(MessageSearch.SortField.JUROR_NUMBER)});
+            SortMethod.ASC.from(MessageSearch.SortField.JUROR_NUMBER));
         verify(jpaQuery, times(1)).fetchResults();
 
 
@@ -406,7 +406,7 @@ class MessageTemplateRepositoryImplTest {
         verify(jpaQuery, times(1)).limit(4L);
         verify(jpaQuery, times(1)).offset(0L);
         verify(jpaQuery, times(1)).orderBy(
-            new OrderSpecifier<?>[]{SortMethod.ASC.from(MessageSearch.SortField.JUROR_NUMBER)});
+            SortMethod.ASC.from(MessageSearch.SortField.JUROR_NUMBER));
         verify(jpaQuery, times(1)).fetchResults();
 
 
@@ -508,7 +508,7 @@ class MessageTemplateRepositoryImplTest {
         verify(jpaQuery, times(1)).limit(4L);
         verify(jpaQuery, times(1)).offset(0L);
         verify(jpaQuery, times(1)).orderBy(
-            new OrderSpecifier<?>[]{SortMethod.ASC.from(MessageSearch.SortField.JUROR_NUMBER)});
+            SortMethod.ASC.from(MessageSearch.SortField.JUROR_NUMBER));
         verify(jpaQuery, times(1)).fetchResults();
 
 
