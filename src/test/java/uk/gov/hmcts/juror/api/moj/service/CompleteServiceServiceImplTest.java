@@ -36,7 +36,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @DisplayName("CompleteServiceServiceImpl")
-@SuppressWarnings("PMD.ExcessiveImports")
 class CompleteServiceServiceImplTest {
 
     private JurorPoolRepository jurorPoolRepository;
