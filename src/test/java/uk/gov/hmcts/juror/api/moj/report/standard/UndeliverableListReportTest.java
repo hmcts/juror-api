@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 class UndeliverableListReportTest extends AbstractStandardReportTestSupport<UndeliverableListReport> {
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
-    public UndeliverableListReportTest() {
+    UndeliverableListReportTest() {
         super(QJurorPool.jurorPool,
             UndeliverableListReport.RequestValidator.class,
             DataType.JUROR_NUMBER,
