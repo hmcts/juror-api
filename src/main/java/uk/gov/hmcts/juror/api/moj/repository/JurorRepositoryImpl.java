@@ -7,10 +7,12 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorRecordFilterRequestQuery;
+import uk.gov.hmcts.juror.api.moj.domain.DeceasedJuror;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -126,5 +128,28 @@ public class JurorRepositoryImpl implements IJurorRepository {
             JUROR_POOL.pool.courtLocation.name,
             JUROR_POOL.status.statusDesc,
             JUROR_POOL.pool.courtLocation.locCode);
+    }
+
+    @Override
+    public List<DeceasedJuror> findDeceasedJurors(List<String> postcodes) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+
+        List<Tuple> deceasedJurors = queryFactory.select(JUROR.firstName,
+                                                         JUROR.lastName,
+                                                         JUROR.addressLine1,
+                                                         JUROR.postcode)
+            .from(JUROR)
+            .where(JUROR.excusalCode.eq(ExcusalCodeEnum.D.getCode()))
+            .where(JUROR.postcode.in(postcodes))
+            .fetch();
+
+        return deceasedJurors.stream()
+            .map(tuple -> new DeceasedJuror(
+                tuple.get(JUROR.firstName),
+                tuple.get(JUROR.lastName),
+                tuple.get(JUROR.addressLine1),
+                tuple.get(JUROR.postcode)))
+            .toList();
+
     }
 }

@@ -8,7 +8,7 @@ import java.util.List;
 public interface HolidaysDateService {
 
     /**
-     * Get Holiday dates from the JUROR_HOLIDAYS.holiday that match Selected Juror Date
+     * Get Holiday dates from the JUROR_HOLIDAYS.holiday that match Selected Juror Date.
      *
      * @return List
      */

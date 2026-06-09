@@ -61,7 +61,7 @@ jacoco {
     toolVersion = "0.8.13"
 }
 
-version = '5.25.0'
+version = '5.26.0'
 
 repositories {
     mavenLocal()
@@ -288,7 +288,7 @@ sourceSets {
 }
 checkstyle {
     maxWarnings = 1
-    toolVersion = '10.17.0'
+    toolVersion = '10.26.1'
     getConfigDirectory().set(new File(rootDir, 'config/checkstyle'))
 }
 
