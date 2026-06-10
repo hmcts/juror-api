@@ -26,6 +26,7 @@ public class GroupByPaymentType implements IReportGroupBy {
     }
 
     @Override
+    @SuppressWarnings({"PMD.LinguisticNaming"}) // casting is done after init
     public String getGroupFunction(GroupedTableData groupedTableData) {
         Object isCash = groupedTableData.get(ExpenseDataTypes.IS_CASH.getId());
         if (isCash != null && (Boolean) isCash) {

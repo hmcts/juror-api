@@ -35,7 +35,6 @@ import static org.springframework.http.HttpMethod.POST;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + LaNotificationControllerITest.BASE_URL)
 @SuppressWarnings("PMD")
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Sql(
     scripts = {"/db/jurorer/teardownLaNotificationControllerITest.sql"},
     executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
@@ -49,6 +48,7 @@ import static org.springframework.http.HttpMethod.POST;
     executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
 )
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class LaNotificationControllerITest extends AbstractIntegrationTest {
 
     public static final String BASE_URL = "/api/v1/moj/notification";

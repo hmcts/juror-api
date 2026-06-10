@@ -19,7 +19,7 @@ import java.util.List;
     "/db/mod/truncate.sql",
     "/db/mod/reports/ElectronicPoliceCheckReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class ElectronicPoliceCheckReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired

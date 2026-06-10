@@ -47,11 +47,14 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+@SuppressWarnings({
+    "PMD.ExcessiveImports",
+    "PMD.PublicMemberInNonPublicType"
+})
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: /api/v1/moj/complete-service")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@SuppressWarnings("PMD.ExcessiveImports")
 class CompleteServiceControllerITest extends AbstractIntegrationTest {
 
     private final TestRestTemplate template;
@@ -600,6 +603,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
             actual.getLastName(), "Last name should match");
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("PATCH " + UncompleteService.URL)
     @Sql({"/db/mod/truncate.sql", "/db/UncompleteServiceController.sql"})

@@ -74,8 +74,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.gov.hmcts.juror.api.moj.controller.response.JurorBankDetailsDto.builder;
 
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.ExcessivePublicCount"})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = JurorRecordController.class, excludeAutoConfiguration = {SecurityAutoConfiguration.class})
 @ContextConfiguration(classes = {JurorRecordController.class, BulkServiceImpl.class})
@@ -235,6 +236,7 @@ class JurorRecordControllerTest {
             .getJurorOverview(bureauJwtPayload, JUROR_NUMBER, LOC_CODE);
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     public class PrincipalDetailsArgumentResolver implements HandlerMethodArgumentResolver {
 
         @Override
@@ -1033,6 +1035,7 @@ class JurorRecordControllerTest {
     }
 
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName(UpdatePncCheckStatus.URL)
     class UpdatePncCheckStatus extends AbstractControllerTest<PoliceCheckStatusDto, Void> {
@@ -1077,6 +1080,7 @@ class JurorRecordControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName(UpdatePncCheckStatus.URL)
     class UpdateJurorToFailedToAttend extends AbstractControllerTest<JurorNumberAndPoolNumberDto, Void> {
@@ -1127,6 +1131,7 @@ class JurorRecordControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName(CreateJurorRecord.URL)
     class CreateJurorRecord extends AbstractControllerTest<JurorCreateRequestDto, Void> {
@@ -1229,6 +1234,7 @@ class JurorRecordControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST" + GetJurorBankDetails.URL)
     class GetJurorBankDetails extends JurorBankDetailsDto {
@@ -1243,7 +1249,7 @@ class JurorRecordControllerTest {
             BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
             when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
-            JurorBankDetailsDto jurorBankDetailsDto = JurorBankDetailsDto.builder()
+            JurorBankDetailsDto jurorBankDetailsDto = builder()
                 .bankAccountNumber("12345678")
                 .sortCode("115578")
                 .accountHolderName("Mr Fname Lname")
@@ -1337,7 +1343,6 @@ class JurorRecordControllerTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void invalidAccountNumber() throws Exception {
             BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,
@@ -1365,7 +1370,6 @@ class JurorRecordControllerTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void wrongSortCode() throws Exception {
             BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,
@@ -1393,7 +1397,6 @@ class JurorRecordControllerTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void wrongAccountName() throws Exception {
             BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,

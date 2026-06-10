@@ -49,8 +49,12 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NUMBER_OF_JURORS_EXCEEDS_LIMITS;
 
 
+@SuppressWarnings({
+    "PMD.ExcessiveImports",
+    "PMD.PublicMemberInNonPublicType",
+    "PMD.TooManyMethods"
+})
 @ExtendWith(SpringExtension.class)
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class PanelControllerITest extends AbstractIntegrationTest {
 
@@ -70,6 +74,8 @@ class PanelControllerITest extends AbstractIntegrationTest {
 
     @Autowired
     private JurorHistoryRepository jurorHistoryRepository;
+
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
 
     @Autowired
     private AppearanceRepository appearanceRepository;
@@ -402,7 +408,7 @@ class PanelControllerITest extends AbstractIntegrationTest {
         Appearance appearance =
             appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415", panelMember.getJurorNumber(),
                 LocalDate.now()).orElseThrow(() ->
-                new MojException.NotFound("No appearance record found", null));
+                    new MojException.NotFound("No appearance record found", null));
         JurorPool jurorPool = PanelUtils.getAssociatedJurorPool(jurorPoolRepository, panelMember);
         assertThat(appearance.getPoolNumber())
             .as("Expected value to be the current juror's pool number")

@@ -24,6 +24,7 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/PostponedListByDateReportITest_typical.sql"
 })
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class PostponedListByDateReportITest extends AbstractGroupedReportControllerITest {
 
     @Autowired
@@ -45,9 +46,6 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
     }
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
     void positiveTypicalCourt() {
         testBuilder()
             .triggerValid()
@@ -56,9 +54,6 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
     }
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
     void positiveTypicalBureau() {
         testBuilder()
             .jwt(getBureauJwt())
@@ -69,9 +64,6 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
 
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
     void positiveNotFound() {
         testBuilder()
             .jwt(getCourtJwt("414"))
@@ -321,6 +313,8 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
                     .build())
             .build();
     }
+
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
 
     public GroupByResponse getTypicalGroupByResponse() {
         return GroupByResponse.builder()

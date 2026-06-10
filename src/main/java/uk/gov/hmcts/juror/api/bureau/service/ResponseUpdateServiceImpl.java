@@ -89,6 +89,7 @@ import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.TITLE;
 @Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__(@Autowired))
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects", "PMD.TooManyMethods"})
 public class ResponseUpdateServiceImpl implements ResponseUpdateService {
     private final ContactCodeRepository contactCodeRepository;
     static final String HASH_SALT = "445NlwAglWA78Vh9DKbVwN5vPHsvy2kA";
@@ -319,8 +320,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
                 updateAndLog(DEFERRAL_DATE, domain, null);
                 break;
             default:
-                log.error("Unsupported DeferralExcusalUpdateType!");
-                throw new IllegalStateException("Unsupported DeferralExcusalUpdateType: " + dto.getExcusal().name());
+                break;
         }
 
         // JDB-2685: if no staff assigned, assign current login
@@ -406,6 +406,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
         log.info("Bureau user {} updated CJS employments section for {}", login, jurorId);
     }
 
+    @SuppressWarnings({"PMD.AvoidDeeplyNestedIfStmts"})
     @Transactional
     @Override
     public void updateResponseStatus(String jurorId, ProcessingStatus status, Integer version, String login) {
@@ -428,12 +429,12 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
                 domain.setProcessingStatus(responseAuditRepository, ProcessingStatus.CLOSED);
                 domain.setProcessingComplete(Boolean.TRUE);
             } else if (juror.getStatus().getStatus() == IJurorStatus.ADDITIONAL_INFO) {
-                if (status.equals(ProcessingStatus.AWAITING_COURT_REPLY)) {
+                if (status == ProcessingStatus.AWAITING_COURT_REPLY) {
                     domain.setProcessingStatus(responseAuditRepository, ProcessingStatus.AWAITING_COURT_REPLY);
-                } else if (status.equals(ProcessingStatus.AWAITING_CONTACT)) {
+                } else if (status == ProcessingStatus.AWAITING_CONTACT) {
                     domain.setProcessingStatus(responseAuditRepository, ProcessingStatus.AWAITING_CONTACT);
 
-                } else if (status.equals(ProcessingStatus.AWAITING_TRANSLATION)) {
+                } else if (status == ProcessingStatus.AWAITING_TRANSLATION) {
                     domain.setProcessingStatus(responseAuditRepository, ProcessingStatus.AWAITING_TRANSLATION);
                 }
             }
@@ -481,6 +482,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
      *
      * @see #updateAndLogSpecialNeed(String, SpecNeed, String)
      */
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     private enum SpecNeed {
         LIMITED_MOBILITY("L", "Limited Mobility"),
         HEARING_IMPAIRMENT("H", "Hearing Impairment"),
@@ -582,7 +584,6 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
             JurorReasonableAdjustment savedSpecialNeed;
             if (null != existingSpecNeed) {
                 log.debug("Updating existing special need {}", existingSpecNeed);
-                final String oldValue = existingSpecNeed.getReasonableAdjustmentDetail();
                 existingSpecNeed.setReasonableAdjustmentDetail(value);
                 savedSpecialNeed = bureauJurorSpecialNeedsRepository.save(existingSpecNeed);
             } else {
@@ -614,6 +615,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
      * @param cjsEmploymentType Enumerated type of the special need being updated
      * @param value             Value being set for the CJS detail in the domain object
      */
+    @SuppressWarnings({"PMD.AvoidDeeplyNestedIfStmts"})
     private void updateAndLogCjs(final String jurorId, final CjsEmployment cjsEmploymentType, final String value) {
         // find existing CJS entry
         final String key = cjsEmploymentType.getEmployer();
@@ -629,16 +631,16 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
                 log.debug("Updating existing CJS employment {}", existingCjs);
                 final String oldValue = existingCjs.getCjsEmployerDetails();
                 existingCjs.setCjsEmployerDetails(value);
-                if (value.compareTo(oldValue) != 0) {
+                if (value.compareTo(oldValue) == 0) {
+                    log.trace("No changes for {}", cjsEmploymentType);
+                } else {
                     // value has changed
                     savedCjs = cjsRepository.save(existingCjs);
                     log.debug("Saved {}", savedCjs);
-                } else {
-                    log.trace("No changes for {}", cjsEmploymentType);
                 }
             } else {
                 // insert new employment
-                savedCjs = cjsRepository.save(JurorResponseCjsEmployment.builder()
+                cjsRepository.save(JurorResponseCjsEmployment.builder()
                     .cjsEmployer(cjsEmploymentType.getEmployer())
                     .cjsEmployerDetails(value)
                     .jurorNumber(jurorId)
@@ -685,15 +687,15 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
             equal = (StringUtils.isEmpty(oldValue) && StringUtils.isEmpty(value)) || Objects.equals(oldValue, value);
         }
         // apply changes
-        if (!equal) {
+        if (equal) {
+            log.trace("No change found for {}", fieldName);
+        } else {
             if (log.isTraceEnabled()) {
                 log.trace("Change found for {}", fieldName);
             }
             //upsert the field value
             ReflectionUtils.setField(field, domain, value);
             // create a change log entry for the update
-        } else {
-            log.trace("No change found for {}", fieldName);
         }
     }
 
@@ -719,7 +721,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
         }
 
         // assert juror response has not already been completed (merged back to Juror)
-        if (null != domain.getProcessingComplete() && domain.getProcessingComplete()) {
+        if (null != domain.isProcessingComplete() && domain.isProcessingComplete()) {
             log.warn("Juror response {} has been completed!", domain.getJurorNumber());
             throw new ResponseAlreadyMergedException();
         }
@@ -759,10 +761,10 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
     /**
      * Save changelog and juror response to the database catching and wrapping a optimistic locking exception.
      *
-     * @param domain Updated DETATCHED juror response entity
+     * @param domain Updated DETATCHED juror response entity.
+     * @throws BureauOptimisticLockingException if optimistic locking fails.
      */
-    private void saveUpdatesOptimistically(final DigitalResponse domain)
-        throws BureauOptimisticLockingException {
+    private void saveUpdatesOptimistically(final DigitalResponse domain) {
         try {
             log.debug("Saving updates.");
             responseRepository.save(domain);

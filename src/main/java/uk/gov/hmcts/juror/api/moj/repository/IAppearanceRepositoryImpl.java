@@ -48,7 +48,7 @@ import static uk.gov.hmcts.juror.api.moj.controller.request.expense.UnpaidExpens
  * Custom Repository implementation for the Appearance entity.
  */
 @Slf4j
-@SuppressWarnings("PMD.TooManyMethods")
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 public class IAppearanceRepositoryImpl implements IAppearanceRepository {
     @PersistenceContext
     EntityManager entityManager;
@@ -84,9 +84,9 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
 
         JurorStatusGroup statusGroup;
 
-        if (commonData.getTag().equals(RetrieveAttendanceDetailsTag.PANELLED)) {
+        if (commonData.getTag() == RetrieveAttendanceDetailsTag.PANELLED) {
             statusGroup = JurorStatusGroup.PANELLED;
-        } else if (commonData.getTag().equals(RetrieveAttendanceDetailsTag.CONFIRM_ATTENDANCE)
+        } else if (commonData.getTag() == RetrieveAttendanceDetailsTag.CONFIRM_ATTENDANCE
             || request.isJurorInWaiting()) {
             statusGroup = JurorStatusGroup.IN_WAITING;
         } else {
@@ -97,11 +97,11 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
         JPAQuery<Tuple> query = sqlFetchAppearanceRecords(commonData.getLocationCode(), commonData.getAttendanceDate(),
             statusGroup);
 
-        if (commonData.getTag().equals(RetrieveAttendanceDetailsTag.JUROR_NUMBER)) {
+        if (commonData.getTag() == RetrieveAttendanceDetailsTag.JUROR_NUMBER) {
             query = query.where(APPEARANCE.jurorNumber.in(request.getJuror()));
-        } else if (commonData.getTag().equals(RetrieveAttendanceDetailsTag.NOT_CHECKED_OUT)) {
+        } else if (commonData.getTag() == RetrieveAttendanceDetailsTag.NOT_CHECKED_OUT) {
             query = query.where(APPEARANCE.appearanceStage.eq(AppearanceStage.CHECKED_IN));
-        } else if (commonData.getTag().equals(RetrieveAttendanceDetailsTag.CONFIRM_ATTENDANCE)) {
+        } else if (commonData.getTag() == RetrieveAttendanceDetailsTag.CONFIRM_ATTENDANCE) {
             query = query.where(APPEARANCE.timeIn.isNotNull())
                 .where(APPEARANCE.appearanceStage.in(AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT))
                 .where(APPEARANCE.attendanceAuditNumber.isNull())
@@ -545,9 +545,9 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .where(JUROR.completionDate.isNull().or(JUROR.completionDate.eq(LocalDate.now())));
 
         if (includeNonAttendance) {
-            partialQuery.where((APPEARANCE.appearanceStage.in(AppearanceStage.EXPENSE_ENTERED,
+            partialQuery.where(APPEARANCE.appearanceStage.in(AppearanceStage.EXPENSE_ENTERED,
                                                              AppearanceStage.EXPENSE_AUTHORISED,
-                                                             AppearanceStage.EXPENSE_EDITED))
+                                                             AppearanceStage.EXPENSE_EDITED)
                                    .or(APPEARANCE.nonAttendanceDay.isTrue()));
         } else {
             partialQuery.where(APPEARANCE.nonAttendanceDay.isNull().or(APPEARANCE.nonAttendanceDay.isFalse()))
@@ -557,7 +557,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
         }
 
         if (!includeOnTrial) {
-            partialQuery.where((APPEARANCE.trialNumber.isNull().or(APPEARANCE.trialNumber.isEmpty()))
+            partialQuery.where(APPEARANCE.trialNumber.isNull().or(APPEARANCE.trialNumber.isEmpty())
                 .or(APPEARANCE.trialNumber.isNotNull().and(APPEARANCE.satOnJury.isNull())));
         }
 

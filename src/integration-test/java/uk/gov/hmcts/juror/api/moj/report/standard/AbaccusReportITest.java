@@ -22,6 +22,7 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/letter/LetterController_initSummonsReminderLetter.sql"
 })
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class AbaccusReportITest extends AbstractStandardReportControllerITest {
     @Autowired
     public AbaccusReportITest(TestRestTemplate template) {
@@ -43,7 +44,6 @@ class AbaccusReportITest extends AbstractStandardReportControllerITest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void positiveTypicalBureau() {
         testBuilder()
             .triggerValid()
@@ -111,7 +111,6 @@ class AbaccusReportITest extends AbstractStandardReportControllerITest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void negativeInvalidPayload() {
         StandardReportRequest request = getValidPayload();
         request.setToDate(null);
@@ -122,7 +121,6 @@ class AbaccusReportITest extends AbstractStandardReportControllerITest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void negativeUnauthorised() {
         testBuilder()
             .jwt(getCourtJwt("414"))

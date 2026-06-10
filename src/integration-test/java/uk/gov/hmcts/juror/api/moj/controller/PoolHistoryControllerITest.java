@@ -55,7 +55,7 @@ public class PoolHistoryControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql","/db/PoolHistoryController_createInitialPoolHistories.sql"})
     public void testGetPoolHistory_Happy_Path() {
         ResponseEntity<PoolHistoryListDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, GET,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, GET,
                 URI.create("/api/v1/moj/pool-history/111111111")), PoolHistoryListDto.class);
 
         assertThat(response.getStatusCode())

@@ -39,7 +39,10 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
-@SuppressWarnings("PMD.ExcessiveImports")
+@SuppressWarnings({
+    "PMD.ExcessiveImports",
+    "PMD.PublicMemberInNonPublicType"
+})
 class PostponedListByDateReportTest extends AbstractGroupedReportTestSupport<PostponedListByDateReport> {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
@@ -186,7 +189,6 @@ class PostponedListByDateReportTest extends AbstractGroupedReportTestSupport<Pos
     @Test
     @SuppressWarnings({
         "unchecked",
-        "PMD.UseConcurrentHashMap"
     })
     void positiveGetHeadingsTypicalBureau() {
         StandardReportRequest request = mock(StandardReportRequest.class);

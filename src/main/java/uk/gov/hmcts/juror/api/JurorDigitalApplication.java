@@ -31,10 +31,6 @@ public class JurorDigitalApplication {
         SpringApplication.run(JurorDigitalApplication.class, args);
     }
 
-    public JurorDigitalApplication() {
-
-    }
-
     @PostConstruct
     public void init() {
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"));

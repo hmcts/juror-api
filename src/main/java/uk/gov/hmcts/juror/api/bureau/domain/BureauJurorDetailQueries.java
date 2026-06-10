@@ -21,9 +21,9 @@ import static org.apache.commons.lang3.StringUtils.deleteWhitespace;
  *
  * @since JDB-1971
  */
-@SuppressWarnings({"PMD.TooManyFields", "PMD.TooManyMethods"})
+@SuppressWarnings({"PMD.TooManyMethods"})
 @Deprecated(forRemoval = true)
-public class BureauJurorDetailQueries {
+public final class BureauJurorDetailQueries {
 
     private static final String INWARD_CODE_FRAGMENT = "^([0-9])([A-Z]{0,2})$";
     private static final String OUTWARD_CODE_FRAGMENT = "^([A-Z]{0,2})([0-9]{1,2})$";
@@ -31,7 +31,7 @@ public class BureauJurorDetailQueries {
     private static final String YES = "Y";
     private static final String OWNER_IS_BUREAU = "400";
 
-    private static final QModJurorDetail bureauJurorDetail = QModJurorDetail.modJurorDetail;
+    private static final QModJurorDetail BUREAU_JUROR_DETAIL = QModJurorDetail.modJurorDetail;
 
 
     private BureauJurorDetailQueries() {
@@ -46,7 +46,7 @@ public class BureauJurorDetailQueries {
      * @return QueryDSL filter.
      */
     public static BooleanExpression byJurorNumber(final String jurorNumber) {
-        return bureauJurorDetail.jurorNumber.eq(jurorNumber);
+        return BUREAU_JUROR_DETAIL.jurorNumber.eq(jurorNumber);
     }
 
     /**
@@ -60,7 +60,7 @@ public class BureauJurorDetailQueries {
      * @return QueryDSL filterß
      */
     public static BooleanExpression byLastName(final String lastName) {
-        return bureauJurorDetail.newLastName.equalsIgnoreCase(lastName);
+        return BUREAU_JUROR_DETAIL.newLastName.equalsIgnoreCase(lastName);
     }
 
     /**
@@ -71,7 +71,7 @@ public class BureauJurorDetailQueries {
      * @return QueryDSL filter.
      */
     public static BooleanExpression byPoolNumber(final String poolNumber) {
-        return bureauJurorDetail.poolNumber.eq(poolNumber);
+        return BUREAU_JUROR_DETAIL.poolNumber.eq(poolNumber);
     }
 
     /**
@@ -83,7 +83,7 @@ public class BureauJurorDetailQueries {
      * @return QueryDSL filter.
      */
     public static BooleanExpression byCourtCode(final String courtCode) {
-        return bureauJurorDetail.courtCode.eq(courtCode);
+        return BUREAU_JUROR_DETAIL.courtCode.eq(courtCode);
     }
 
     /**
@@ -102,11 +102,10 @@ public class BureauJurorDetailQueries {
          */
         final String trimmedPostcode = postcode.toUpperCase().trim();
         //Removed wildcard search - JDB 3192
-        BooleanExpression query = bureauJurorDetail.newJurorPostcode.matches(trimmedPostcode);
+        BooleanExpression query = BUREAU_JUROR_DETAIL.newJurorPostcode.matches(trimmedPostcode);
 
 
-        query = appendToQuery(bureauJurorDetail.newJurorPostcode, query, buildPostcodeMatchers(trimmedPostcode));
-        return query;
+        return appendToQuery(BUREAU_JUROR_DETAIL.newJurorPostcode, query, buildPostcodeMatchers(trimmedPostcode));
     }
 
     public static BooleanExpression byAssignmentAndProcessingStatus(String staffLogin, List<String> statuses) {
@@ -118,11 +117,11 @@ public class BureauJurorDetailQueries {
                                                   LocalDateTime endOfSearchPeriod) {
         return byMemberOfStaffAssigned(staffLogin)
             .and(byStatus(Collections.singletonList(ProcessingStatus.CLOSED.name())))
-            .and(bureauJurorDetail.completedAt.between(startOfSearchPeriod, endOfSearchPeriod));
+            .and(BUREAU_JUROR_DETAIL.completedAt.between(startOfSearchPeriod, endOfSearchPeriod));
     }
 
     public static BooleanExpression filterByActiveStatus() {
-        return bureauJurorDetail.isActive.isTrue();
+        return BUREAU_JUROR_DETAIL.isActive.isTrue();
     }
 
     /**
@@ -204,7 +203,7 @@ public class BureauJurorDetailQueries {
      * @return QueryDSL filter.
      */
     public static BooleanExpression urgentsOnly() {
-        return bureauJurorDetail.urgent.isTrue();
+        return BUREAU_JUROR_DETAIL.urgent.isTrue();
     }
 
     /**
@@ -213,7 +212,7 @@ public class BureauJurorDetailQueries {
      * @return QueryDSL filter.
      */
     public static BooleanExpression byMemberOfStaffAssigned(String staffMemberLogin) {
-        return bureauJurorDetail.assignedStaffMember.username.equalsIgnoreCase(staffMemberLogin);
+        return BUREAU_JUROR_DETAIL.assignedStaffMember.username.equalsIgnoreCase(staffMemberLogin);
     }
 
     /**
@@ -222,7 +221,7 @@ public class BureauJurorDetailQueries {
      * @return QueryDSL filter.
      */
     public static BooleanExpression byStatus(List<String> statuses) {
-        return bureauJurorDetail.processingStatus.in(statuses);
+        return BUREAU_JUROR_DETAIL.processingStatus.in(statuses);
     }
 
     /**
@@ -232,7 +231,7 @@ public class BureauJurorDetailQueries {
      * @since JDB-2142.
      */
     public static OrderSpecifier dateReceivedAscending() {
-        return bureauJurorDetail.dateReceived.asc();
+        return BUREAU_JUROR_DETAIL.dateReceived.asc();
     }
 
 
@@ -242,7 +241,7 @@ public class BureauJurorDetailQueries {
      */
 
     public static BooleanExpression byReadOnly() {
-        return bureauJurorDetail.owner.ne(OWNER_IS_BUREAU);
+        return BUREAU_JUROR_DETAIL.owner.ne(OWNER_IS_BUREAU);
 
     }
 
@@ -252,7 +251,7 @@ public class BureauJurorDetailQueries {
      */
 
     public static BooleanExpression byPoolStatusSummoned() {
-        return bureauJurorDetail.status.eq((long) IJurorStatus.SUMMONED);
+        return BUREAU_JUROR_DETAIL.status.eq((long) IJurorStatus.SUMMONED);
     }
 
     /**
@@ -261,7 +260,7 @@ public class BureauJurorDetailQueries {
      */
 
     public static BooleanExpression byPoolStatusNotSummoned() {
-        return bureauJurorDetail.status.ne((long) IJurorStatus.SUMMONED);
+        return BUREAU_JUROR_DETAIL.status.ne((long) IJurorStatus.SUMMONED);
     }
 
     /**
@@ -288,7 +287,7 @@ public class BureauJurorDetailQueries {
      * Processing Status not equal TODO.
      */
     public static BooleanExpression processingStatusToDo() {
-        return bureauJurorDetail.processingStatus.eq(TODO);
+        return BUREAU_JUROR_DETAIL.processingStatus.eq(TODO);
     }
 
 }

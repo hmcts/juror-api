@@ -1619,8 +1619,7 @@ class CourtLetterPrintServiceTest {
             assertThat(history.getCreatedBy())
                 .as("Current logged in user")
                 .isEqualTo("TEST_COURTUSER");
-            assertThat(
-                history.getDateCreated())
+            assertThat(history.getDateCreated())
                 .as("Date created")
                 .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.SECONDS));
             assertThat(history.getOtherInformation())
@@ -1763,8 +1762,7 @@ class CourtLetterPrintServiceTest {
             assertThat(history.getCreatedBy())
                 .as("Username")
                 .isEqualTo("TEST_COURTUSER");
-            assertThat(
-                history.getDateCreated())
+            assertThat(history.getDateCreated())
                 .as("Created date")
                 .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.SECONDS));
             assertThat(history.getOtherInformation())
@@ -1825,8 +1823,7 @@ class CourtLetterPrintServiceTest {
             assertThat(history.getCreatedBy())
                 .as("Username")
                 .isEqualTo("TEST_COURT");
-            assertThat(
-                history.getDateCreated())
+            assertThat(history.getDateCreated())
                 .as("Created date")
                 .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.SECONDS));
             assertThat(history.getOtherInformation())
@@ -2507,4 +2504,3 @@ class CourtLetterPrintServiceTest {
 
     }
 }
-

@@ -26,7 +26,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.DeferredJurorMoveRequestDto
 import uk.gov.hmcts.juror.api.moj.controller.request.deferralmaintenance.ProcessJurorPostponementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralOptionsDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralAgeDisqualificationResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.CurrentlyDeferred;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -834,34 +834,30 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
         @Test
         void bureauProcessJurorActivePoolPaper() {
-
             final String bureauJwt = createJwt(BUREAU_USER, OWNER_400);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
             DeferralReasonRequestDto deferralReasonRequestDto =
                 createDeferralReasonRequestDtoToActivePool(ReplyMethod.PAPER);
             RequestEntity<DeferralReasonRequestDto> requestEntity = new RequestEntity<>(deferralReasonRequestDto,
-                httpHeaders, POST, URI.create(URL_PREFIX + JUROR_555555561));
-            ResponseEntity<DeferralReasonRequestDto> response = template.exchange(requestEntity,
-                DeferralReasonRequestDto.class);
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+                                                        httpHeaders, POST, URI.create(URL_PREFIX + JUROR_555555561));
+            ResponseEntity<DeferralAgeDisqualificationResponseDto> response = template.exchange(requestEntity,
+                                                        DeferralAgeDisqualificationResponseDto.class);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(requireNonNull(response.getBody()).getEligible()).isEqualTo(1);
+            assertThat(requireNonNull(response.getBody()).getAgeDisqualified()).isEmpty();
             executeInTransaction(() -> {
-                // grab old record to verify the properties have been updated correctly updated
                 List<JurorPool> jurorPools = jurorPoolRepository.findByJurorJurorNumberAndIsActive(JUROR_555555561,
-                    false);
-
+                                                                                                   false);
                 assertThat(jurorPools.size()).isGreaterThan(0);
                 verifyActivePoolOldRecord(jurorPools.get(0));
 
-                // grab new record to verify it has been created and the properties have been updated correctly
                 Juror newJurorRecord = jurorRepository.findByJurorNumber(JUROR_555555561);
-
                 verifyActiveJurorNewRecord(newJurorRecord,
-                    deferralReasonRequestDto.getPoolNumber(), deferralReasonRequestDto.getDeferralDate());
+                       deferralReasonRequestDto.getPoolNumber(), deferralReasonRequestDto.getDeferralDate());
                 assertThat(newJurorRecord.getOpticRef())
                     .as(String.format("Expected optic ref to be %s", OPTIC_REF_12345678)).isEqualTo(OPTIC_REF_12345678);
 
-                // check to make sure no record was created for the deferral maintenance table
                 Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_555555561);
                 assertThat(deferral.isPresent()).isFalse();
             });
@@ -889,23 +885,22 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             DeferralReasonRequestDto deferralReasonRequestDto =
                 createDeferralReasonRequestDtoToActivePool(ReplyMethod.DIGITAL);
             RequestEntity<DeferralReasonRequestDto> requestEntity = new RequestEntity<>(deferralReasonRequestDto,
-                httpHeaders, POST, URI.create(URL_PREFIX + JUROR_555555558));
-            ResponseEntity<DeferralReasonRequestDto> response = template.exchange(requestEntity,
-                DeferralReasonRequestDto.class);
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+                                httpHeaders, POST, URI.create(URL_PREFIX + JUROR_555555558));
+            ResponseEntity<DeferralAgeDisqualificationResponseDto> response = template.exchange(requestEntity,
+                                            DeferralAgeDisqualificationResponseDto.class);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(requireNonNull(response.getBody()).getEligible()).isEqualTo(1);
+            assertThat(requireNonNull(response.getBody()).getAgeDisqualified()).isEmpty();
             executeInTransaction(() -> {
-                // grab old record to verify the properties have been updated correctly
                 List<JurorPool> jurorPools = jurorPoolRepository.findByJurorJurorNumberAndIsActive(JUROR_555555558,
-                    false);
+                                                                                                   false);
                 assertThat(jurorPools.size()).isGreaterThan(0);
                 verifyActivePoolOldRecord(jurorPools.get(0));
 
-                // grab new record to verify it has been created and the properties have been updated correctly
                 Juror newJurorRecord = jurorRepository.findByJurorNumber(JUROR_555555558);
                 verifyActiveJurorNewRecord(newJurorRecord,
                     deferralReasonRequestDto.getPoolNumber(), deferralReasonRequestDto.getDeferralDate());
 
-                // check to make sure no record was created for the deferral maintenance table
                 Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_555555558);
                 assertThat(deferral.isPresent()).isFalse();
 
@@ -923,12 +918,13 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             DeferralReasonRequestDto deferralReasonRequestDto =
                 createDeferralReasonDtoToDeferralMaintenance(ReplyMethod.PAPER);
             RequestEntity<DeferralReasonRequestDto> requestEntity = new RequestEntity<>(deferralReasonRequestDto,
-                httpHeaders, POST, URI.create(URL_PREFIX + JUROR_555555562));
-            ResponseEntity<DeferralReasonRequestDto> response = template.exchange(requestEntity,
-                DeferralReasonRequestDto.class);
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+                                    httpHeaders, POST, URI.create(URL_PREFIX + JUROR_555555562));
+            ResponseEntity<DeferralAgeDisqualificationResponseDto> response = template.exchange(requestEntity,
+                                    DeferralAgeDisqualificationResponseDto.class);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(requireNonNull(response.getBody()).getEligible()).isEqualTo(1);
+            assertThat(requireNonNull(response.getBody()).getAgeDisqualified()).isEmpty();
 
-            // check to make sure no record was created for the deferral maintenance table
             Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_555555562);
             assertThat(deferral.isPresent()).isTrue();
         }
@@ -941,12 +937,13 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             DeferralReasonRequestDto deferralReasonRequestDto =
                 createDeferralReasonDtoToDeferralMaintenance(ReplyMethod.DIGITAL);
             RequestEntity<DeferralReasonRequestDto> requestEntity = new RequestEntity<>(deferralReasonRequestDto,
-                httpHeaders, POST, URI.create(URL_PREFIX + JUROR_555555559));
-            ResponseEntity<DeferralReasonRequestDto> response = template.exchange(requestEntity,
-                DeferralReasonRequestDto.class);
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+                                            httpHeaders, POST, URI.create(URL_PREFIX + JUROR_555555559));
+            ResponseEntity<DeferralAgeDisqualificationResponseDto> response = template.exchange(requestEntity,
+                                            DeferralAgeDisqualificationResponseDto.class);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(requireNonNull(response.getBody()).getEligible()).isEqualTo(1);
+            assertThat(requireNonNull(response.getBody()).getAgeDisqualified()).isEmpty();
 
-            // check to make sure no record was created for the deferral maintenance table
             Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_555555559);
             assertThat(deferral.isPresent()).isTrue();
         }
@@ -1022,17 +1019,16 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
             DeferralReasonRequestDto deferralReasonRequestDto = createDeferralReasonDtoToDeferralMaintenance(null);
             RequestEntity<DeferralReasonRequestDto> requestEntity = new RequestEntity<>(deferralReasonRequestDto,
-                httpHeaders, POST, URI.create(URL_PREFIX + JUROR_555555552));
-            ResponseEntity<DeferralReasonRequestDto> response = template.exchange(requestEntity,
-                DeferralReasonRequestDto.class);
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+                                        httpHeaders, POST, URI.create(URL_PREFIX + JUROR_555555552));
+            ResponseEntity<DeferralAgeDisqualificationResponseDto> response = template.exchange(requestEntity,
+                                        DeferralAgeDisqualificationResponseDto.class);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(requireNonNull(response.getBody()).getEligible()).isEqualTo(1);
+            assertThat(requireNonNull(response.getBody()).getAgeDisqualified()).isEmpty();
 
-            // check to make sure record was created for the deferral maintenance table
             Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_555555552);
             assertThat(deferral.isPresent()).isTrue();
-
-            assertThat(deferral.get().getDeferredTo()).isEqualTo(
-                deferralReasonRequestDto.getDeferralDate());
+            assertThat(deferral.get().getDeferredTo()).isEqualTo(deferralReasonRequestDto.getDeferralDate());
         }
 
         @Test
@@ -1042,11 +1038,12 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
             DeferralReasonRequestDto deferralReasonRequestDto = createDeferralReasonRequestDtoToActivePool(null);
             RequestEntity<DeferralReasonRequestDto> requestEntity = new RequestEntity<>(deferralReasonRequestDto,
-                httpHeaders, POST, URI.create(URL_PREFIX + JUROR_555555551));
-            ResponseEntity<DeferralReasonRequestDto> response = template.exchange(requestEntity,
-                DeferralReasonRequestDto.class);
-
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+                                            httpHeaders, POST, URI.create(URL_PREFIX + JUROR_555555551));
+            ResponseEntity<DeferralAgeDisqualificationResponseDto> response = template.exchange(requestEntity,
+                                            DeferralAgeDisqualificationResponseDto.class);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(requireNonNull(response.getBody()).getEligible()).isEqualTo(1);
+            assertThat(requireNonNull(response.getBody()).getAgeDisqualified()).isEmpty();
         }
 
         @Test
@@ -1056,15 +1053,15 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
             DeferralReasonRequestDto deferralReasonRequestDto = createDeferralReasonDtoToDeferralMaintenance(null);
             RequestEntity<DeferralReasonRequestDto> requestEntity = new RequestEntity<>(deferralReasonRequestDto,
-                httpHeaders, POST, URI.create(URL_PREFIX + JUROR_555555558));
-            ResponseEntity<DeferralReasonRequestDto> response = template.exchange(requestEntity,
-                DeferralReasonRequestDto.class);
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+                                            httpHeaders, POST, URI.create(URL_PREFIX + JUROR_555555558));
+            ResponseEntity<DeferralAgeDisqualificationResponseDto> response = template.exchange(requestEntity,
+                                            DeferralAgeDisqualificationResponseDto.class);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(requireNonNull(response.getBody()).getEligible()).isEqualTo(1);
+            assertThat(requireNonNull(response.getBody()).getAgeDisqualified()).isEmpty();
 
-            // check to make sure record was created for the deferral maintenance table
             Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_555555558);
             assertThat(deferral.isPresent()).isTrue();
-
             assertThat(deferral.get().getDeferredTo()).isEqualTo(deferralReasonRequestDto.getDeferralDate());
         }
 
@@ -1075,25 +1072,24 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
             DeferralReasonRequestDto deferralReasonRequestDto = createDeferralReasonRequestDtoToActivePool(null);
             RequestEntity<DeferralReasonRequestDto> requestEntity = new RequestEntity<>(deferralReasonRequestDto,
-                httpHeaders, POST, URI.create(URL_PREFIX + JUROR_555555558));
-            ResponseEntity<DeferralReasonRequestDto> response = template.exchange(requestEntity,
-                DeferralReasonRequestDto.class);
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+                                            httpHeaders, POST, URI.create(URL_PREFIX + JUROR_555555558));
+            ResponseEntity<DeferralAgeDisqualificationResponseDto> response = template.exchange(requestEntity,
+                                            DeferralAgeDisqualificationResponseDto.class);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(requireNonNull(response.getBody()).getEligible()).isEqualTo(1);
+            assertThat(requireNonNull(response.getBody()).getAgeDisqualified()).isEmpty();
             executeInTransaction(() -> {
-                // grab old record to verify the properties have been updated correctly
                 List<JurorPool> jurorPools =
                     jurorPoolRepository.findByJurorJurorNumberAndIsActive(JUROR_555555558, false);
                 assertThat(jurorPools.size()).isGreaterThan(0);
 
                 verifyActivePoolOldRecordChangeDate(jurorPools.get(0), deferralReasonRequestDto.getPoolNumber());
 
-                // grab new record to verify it has been created and the properties have been updated correctly
                 jurorPools = jurorPoolRepository.findByJurorJurorNumberAndIsActive(JUROR_555555558, true);
 
                 verifyActivePoolNewRecordChangeDate(jurorPools.get(0),
-                    deferralReasonRequestDto.getPoolNumber(), deferralReasonRequestDto.getDeferralDate());
+                                deferralReasonRequestDto.getPoolNumber(), deferralReasonRequestDto.getDeferralDate());
 
-                // check to make sure no record was created for the deferral maintenance table
                 Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_555555558);
                 assertThat(deferral.isPresent()).isFalse();
             });
@@ -1109,7 +1105,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
                 new RequestEntity<>(deferralReasonRequestDto,
                                     httpHeaders, POST, URI.create(URL_PREFIX + JUROR_555555560));
             ResponseEntity<DeferralReasonRequestDto> response = template.exchange(requestEntity,
-                                                                                  DeferralReasonRequestDto.class);
+                                  DeferralReasonRequestDto.class);
             assertThat(response.getStatusCode()).as("Expect the status to be unprocessable entity")
                 .isEqualTo(UNPROCESSABLE_ENTITY);
         }
@@ -1162,8 +1158,11 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
             RequestEntity<DeferralAllocateRequestDto> requestEntity = new RequestEntity<>(deferralAllocateRequestDto,
                 httpHeaders, POST, URI.create(URL));
-            ResponseEntity<Void> response = template.exchange(requestEntity, Void.class);
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+            ResponseEntity<DeferralAgeDisqualificationResponseDto> response
+                = template.exchange(requestEntity, DeferralAgeDisqualificationResponseDto.class);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(requireNonNull(response.getBody()).getEligible()).isEqualTo(1);
+            assertThat(requireNonNull(response.getBody()).getAgeDisqualified()).isEmpty();
             executeInTransaction(() -> {
                 // check to make sure the juror has been removed from maintenance
                 Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_555555557);
@@ -1204,8 +1203,11 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
             RequestEntity<DeferralAllocateRequestDto> requestEntity = new RequestEntity<>(deferralAllocateRequestDto,
                 httpHeaders, POST, URI.create(URL));
-            ResponseEntity<Void> response = template.exchange(requestEntity, Void.class);
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+            ResponseEntity<DeferralAgeDisqualificationResponseDto> response
+                = template.exchange(requestEntity, DeferralAgeDisqualificationResponseDto.class);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(requireNonNull(response.getBody()).getEligible()).isEqualTo(3);
+            assertThat(requireNonNull(response.getBody()).getAgeDisqualified()).isEmpty();
             executeInTransaction(() -> {
                 // check to make sure the jurors has been removed from maintenance
                 for (String jurorNumber : jurorNumbers) {
@@ -1282,7 +1284,6 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         static final String URL = "/api/v1/moj/deferral-maintenance/deferrals/415";
 
         @Test
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False positive
         void testGDeferralsByCourtLocationCodeBureauUser() {
             final String bureauJwt = createJwt(BUREAU_USER, OWNER_400);
 
@@ -1300,7 +1301,6 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False positive
         void testGDeferralsByCourtLocationCodeCourtUser() {
             final String courtJwt = createJwt(COURT_USER, OWNER_415);
 
@@ -1448,9 +1448,10 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             RequestEntity<ProcessJurorPostponementRequestDto> requestEntity = new RequestEntity<>(request,
                 httpHeaders, POST, URI.create(URL));
 
-            ResponseEntity<DeferralResponseDto> response = template.exchange(requestEntity, DeferralResponseDto.class);
+            ResponseEntity<DeferralAgeDisqualificationResponseDto> response
+                = template.exchange(requestEntity, DeferralAgeDisqualificationResponseDto.class);
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-            assertThat(requireNonNull(response.getBody()).getCountJurorsPostponed()).isEqualTo(1);
+            assertThat(requireNonNull(response.getBody()).getEligible()).isEqualTo(1);
 
             // check to ensure pool member was postponed and current record logically deleted
             List<JurorPool> jurorPools = jurorPoolRepository.findByJurorJurorNumberAndIsActive(JUROR_555555551,
@@ -1492,9 +1493,10 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             RequestEntity<ProcessJurorPostponementRequestDto> requestEntity = new RequestEntity<>(request,
                 httpHeaders, POST, URI.create(URL));
 
-            ResponseEntity<DeferralResponseDto> response = template.exchange(requestEntity, DeferralResponseDto.class);
+            ResponseEntity<DeferralAgeDisqualificationResponseDto> response
+                = template.exchange(requestEntity, DeferralAgeDisqualificationResponseDto.class);
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-            assertThat(requireNonNull(response.getBody()).getCountJurorsPostponed()).isEqualTo(1);
+            assertThat(requireNonNull(response.getBody()).getEligible()).isEqualTo(1);
 
             // check to ensure pool member was postponed and current record logically deleted
             List<JurorPool> jurorPools = jurorPoolRepository.findByJurorJurorNumberAndIsActive(JUROR_555555559,
@@ -1538,9 +1540,10 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             RequestEntity<ProcessJurorPostponementRequestDto> requestEntity = new RequestEntity<>(request,
                 httpHeaders, POST, URI.create(URL));
 
-            ResponseEntity<DeferralResponseDto> response = template.exchange(requestEntity, DeferralResponseDto.class);
+            ResponseEntity<DeferralAgeDisqualificationResponseDto> response
+                = template.exchange(requestEntity, DeferralAgeDisqualificationResponseDto.class);
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-            assertThat(requireNonNull(response.getBody()).getCountJurorsPostponed()).isEqualTo(1);
+            assertThat(requireNonNull(response.getBody()).getEligible()).isEqualTo(1);
 
             // check to ensure pool member was postponed but still active
             List<JurorPool> jurorPools = jurorPoolRepository.findByJurorJurorNumberAndIsActive(
@@ -1699,10 +1702,12 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             request.setJurorNumbers(jurorNumbers);
             request.setPoolNumber("416220502");
 
-            ResponseEntity<Void> response = template.exchange(new RequestEntity<>(
-                request, httpHeaders, POST, URI.create(URL)), Void.class);
+            ResponseEntity<DeferralAgeDisqualificationResponseDto> response = template.exchange(new RequestEntity<>(
+                request, httpHeaders, POST, URI.create(URL)), DeferralAgeDisqualificationResponseDto.class);
 
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(requireNonNull(response.getBody()).getEligible()).isEqualTo(1);
+            assertThat(requireNonNull(response.getBody()).getAgeDisqualified()).isEmpty();
             executeInTransaction(() -> {
                 checkMovedDeferredJurors(JUROR_123456789, "415220502", "416220502");
             });
@@ -1721,10 +1726,12 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             request.setJurorNumbers(jurorNumbers);
             request.setPoolNumber("416220502");
 
-            ResponseEntity<Void> response = template.exchange(new RequestEntity<>(
-                request, httpHeaders, POST, URI.create(URL)), Void.class);
+            ResponseEntity<DeferralAgeDisqualificationResponseDto> response = template.exchange(new RequestEntity<>(
+                request, httpHeaders, POST, URI.create(URL)), DeferralAgeDisqualificationResponseDto.class);
 
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(requireNonNull(response.getBody()).getEligible()).isEqualTo(4);
+            assertThat(requireNonNull(response.getBody()).getAgeDisqualified()).isEmpty();
             executeInTransaction(() -> {
                 for (String jurorNumber : jurorNumbers) {
                     checkMovedDeferredJurors(jurorNumber, "415220502", "416220502");

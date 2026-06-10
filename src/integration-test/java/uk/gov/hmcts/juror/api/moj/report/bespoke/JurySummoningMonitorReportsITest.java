@@ -35,8 +35,7 @@ import static org.assertj.core.api.BDDAssertions.within;
     "/db/mod/truncate.sql",
     "/db/mod/reports/JurySummoningMonitor_typical.sql",
 })
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert"//False positive
-)
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class JurySummoningMonitorReportsITest extends AbstractControllerIntegrationTest<JurySummoningMonitorReportRequest,
     JurySummoningMonitorReportResponse> {
     public static final String URL = "/api/v1/moj/reports/jury-summoning-monitor";
@@ -504,6 +503,8 @@ class JurySummoningMonitorReportsITest extends AbstractControllerIntegrationTest
         );
     }
 
+
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
 
     public void verifyAndRemoveTimeCreated(JurySummoningMonitorReportResponse response) {
         Assertions.assertThat(response).isNotNull();

@@ -40,9 +40,8 @@ import static org.springframework.http.HttpMethod.POST;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + LaAuthenticationControllerITest.BASE_URL)
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@SuppressWarnings({"PMD.JUnitAssertionsShouldIncludeMessage", "PMD.JUnitTestsShouldIncludeAssert"}) // false positive
 @Sql({"/db/jurorer/teardownUsers.sql", "/db/jurorer/createUsers.sql"})
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/auth/juror-er";
     private static final String EMAIL_SUFFIX = "@localauthority1.council.uk";

@@ -74,6 +74,7 @@ public class AdministrationCourtRoomControllerTest {
             .build();
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET " + ViewCourtRoomsDetails.URL)
     class ViewCourtRoomsDetails {
@@ -109,6 +110,7 @@ public class AdministrationCourtRoomControllerTest {
     }
 
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST " + CreateCourtRoom.URL)
     class CreateCourtRoom {
@@ -158,6 +160,7 @@ public class AdministrationCourtRoomControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET " + ViewCourtRoomDetails.URL)
     class ViewCourtRoomDetails {
@@ -201,6 +204,7 @@ public class AdministrationCourtRoomControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("PUT " + UpdateCourtRoom.URL)
     class UpdateCourtRoom {

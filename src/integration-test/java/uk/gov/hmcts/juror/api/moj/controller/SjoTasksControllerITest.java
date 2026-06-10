@@ -80,10 +80,13 @@ public class SjoTasksControllerITest extends AbstractIntegrationTest {
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
 
+    @SuppressWarnings({
+        "PMD.PublicMemberInNonPublicType",
+        "PMD.TooManyMethods"
+    })
     @Nested
     @DisplayName("POST " + GetCompleteJurors.URL)
     @Sql({"/db/mod/truncate.sql", "/db/CompleteServiceControllerSearch.sql"})
-    @SuppressWarnings("PMD.TooManyMethods")
     class GetCompleteJurors {
         public static final String URL = BASE_URL + "/juror/search";
 

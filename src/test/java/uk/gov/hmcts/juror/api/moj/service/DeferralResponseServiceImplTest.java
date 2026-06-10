@@ -165,9 +165,8 @@ public class DeferralResponseServiceImplTest {
         DeferralRequestDto deferralRequestDto = createTestDeferralRequestDto(jurorNumber);
 
         Assertions.assertThatExceptionOfType(MojException.Forbidden.class)
-            .isThrownBy(() -> {
-                deferralResponseService.respondToDeferralRequest(payload, deferralRequestDto);
-            });
+            .isThrownBy(() ->
+                deferralResponseService.respondToDeferralRequest(payload, deferralRequestDto));
 
         verify(jurorPoolService, times(1))
             .getJurorPoolFromUser(any());

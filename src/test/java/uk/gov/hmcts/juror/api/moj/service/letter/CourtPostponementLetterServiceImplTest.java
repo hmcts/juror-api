@@ -67,7 +67,6 @@ class CourtPostponementLetterServiceImplTest {
 
         @Test
         @DisplayName("getEligibleList - exclude printed")
-        @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
         void eligibleListExcludePrinted() {
             String owner = "415";
             mockCurrentUser(owner);
@@ -104,7 +103,6 @@ class CourtPostponementLetterServiceImplTest {
 
         @Test
         @DisplayName("getEligibleList - include printed")
-        @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
         void eligibleListIncludePrinted() {
             String owner = "415";
             mockCurrentUser(owner);

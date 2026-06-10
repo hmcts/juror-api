@@ -32,6 +32,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Summons replies Reports Integration Tests at " + SummonsRepliesReportsITest.URL_BASE)
@@ -40,10 +41,13 @@ class SummonsRepliesReportsITest extends AbstractIntegrationTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
+
     public static final String URL_BASE = "/api/v1/moj/reports";
 
     private HttpHeaders httpHeaders;
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @BeforeEach
     public void setUp() throws Exception {
         initHeaders();
@@ -77,7 +81,7 @@ class SummonsRepliesReportsITest extends AbstractIntegrationTest {
         void digitalSummonsRepliesReportsHappyAug2025() {
 
             ResponseEntity<DigitalSummonsRepliesReportResponse> responseEntity =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                         URI.create(URL_BASE + "/digital-summons-replies-report/2025-08-01")),
                                       DigitalSummonsRepliesReportResponse.class);
 
@@ -122,7 +126,7 @@ class SummonsRepliesReportsITest extends AbstractIntegrationTest {
         void digitalSummonsRepliesReportsHappySep2025() {
 
             ResponseEntity<DigitalSummonsRepliesReportResponse> responseEntity =
-                    restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                    restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                                     URI.create(URL_BASE + "/digital-summons-replies-report/2025-09-01")),
                             DigitalSummonsRepliesReportResponse.class);
 
@@ -149,7 +153,7 @@ class SummonsRepliesReportsITest extends AbstractIntegrationTest {
         void digitalSummonsRepliesReportsNoData() {
 
             ResponseEntity<DigitalSummonsRepliesReportResponse> responseEntity =
-                    restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                    restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                                     URI.create(URL_BASE + "/digital-summons-replies-report/2025-10-01")),
                             DigitalSummonsRepliesReportResponse.class);
 
@@ -173,7 +177,7 @@ class SummonsRepliesReportsITest extends AbstractIntegrationTest {
         void digitalSummonsRepliesReportsInvalidDate() {
 
             ResponseEntity<DigitalSummonsRepliesReportResponse> responseEntity =
-                    restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                    restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                                     URI.create(URL_BASE + "/digital-summons-replies-report/20sdf")),
                     DigitalSummonsRepliesReportResponse.class);
 
@@ -190,7 +194,7 @@ class SummonsRepliesReportsITest extends AbstractIntegrationTest {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
 
             ResponseEntity<DigitalSummonsRepliesReportResponse> responseEntity =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                         URI.create(URL_BASE + "/digital-summons-replies-report/2025-09-01")),
                                       DigitalSummonsRepliesReportResponse.class);
 
@@ -227,7 +231,7 @@ class SummonsRepliesReportsITest extends AbstractIntegrationTest {
 
             ResponseEntity<ResponsesCompletedReportResponse> responseEntity =
                 restTemplate.exchange(
-                    new RequestEntity<Void>(
+                    new RequestEntity<>(
                         httpHeaders, HttpMethod.GET,
                         URI.create(URL_BASE + "/responses-completed/2025-08-01")
                     ),
@@ -294,7 +298,7 @@ class SummonsRepliesReportsITest extends AbstractIntegrationTest {
 
             ResponseEntity<ResponsesCompletedReportResponse> responseEntity =
                 restTemplate.exchange(
-                    new RequestEntity<Void>(
+                    new RequestEntity<>(
                         httpHeaders, HttpMethod.GET,
                         URI.create(URL_BASE + "/responses-completed/2025-08-01")
                     ),
@@ -313,7 +317,7 @@ class SummonsRepliesReportsITest extends AbstractIntegrationTest {
 
             ResponseEntity<ResponsesCompletedReportResponse> responseEntity =
                 restTemplate.exchange(
-                    new RequestEntity<Void>(
+                    new RequestEntity<>(
                         httpHeaders, HttpMethod.GET,
                         URI.create(URL_BASE + "/responses-completed/20dr-08-t1")
                     ),

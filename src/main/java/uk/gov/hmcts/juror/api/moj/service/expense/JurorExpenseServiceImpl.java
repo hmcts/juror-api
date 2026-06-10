@@ -177,7 +177,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
         appearances.forEach(appearance -> applyDefaultExpenses(appearance, getJuror(appearance.getJurorNumber())));
         List<Appearance> filteredAppearances = appearances.stream()
-            .filter(appearance -> !AttendanceType.ABSENT.equals(appearance.getAttendanceType())).toList();
+            .filter(appearance -> appearance.getAttendanceType() != AttendanceType.ABSENT).toList();
 
         saveAppearancesWithExpenseRateIdUpdate(filteredAppearances);
     }
@@ -185,7 +185,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     @Transactional
     @Override
     public void applyDefaultExpenses(Appearance appearance, Juror juror) {
-        if (AttendanceType.ABSENT.equals(appearance.getAttendanceType())) {
+        if (appearance.getAttendanceType() == AttendanceType.ABSENT) {
             return;
         }
 
@@ -208,7 +208,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         }
         if (juror.getFinancialLoss() == null) {
             appearance.setLossOfEarningsDue(null);
-        } else if (PayAttendanceType.FULL_DAY.equals(payAttendanceType)) {
+        } else if (payAttendanceType == PayAttendanceType.FULL_DAY) {
             appearance.setLossOfEarningsDue(juror.getFinancialLoss());
         } else {
             appearance.setLossOfEarningsDue(juror.getFinancialLoss()
@@ -272,7 +272,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         }
         if (appearances.stream()
             .anyMatch(appearance -> !appearance.isDraftExpense()
-                || !AppearanceStage.EXPENSE_ENTERED.equals(appearance.getAppearanceStage()))) {
+                || appearance.getAppearanceStage() != AppearanceStage.EXPENSE_ENTERED)) {
             throw new MojException.BusinessRuleViolation(
                 "All appearances must be in draft and have stage EXPENSE_ENTERED",
                 MojException.BusinessRuleViolation.ErrorCode.INVALID_APPEARANCES_STATUS);
@@ -329,9 +329,9 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
 
     boolean isAttendanceDay(Appearance appearance) {
-        return !AttendanceType.NON_ATTENDANCE.equals(appearance.getAttendanceType())
-            && !AttendanceType.NON_ATTENDANCE_LONG_TRIAL.equals(appearance.getAttendanceType())
-            && !AttendanceType.NON_ATT_EXTRA_LONG_TRIAL.equals(appearance.getAttendanceType());
+        return appearance.getAttendanceType() != AttendanceType.NON_ATTENDANCE
+            && appearance.getAttendanceType() != AttendanceType.NON_ATTENDANCE_LONG_TRIAL
+            && appearance.getAttendanceType() != AttendanceType.NON_ATT_EXTRA_LONG_TRIAL;
     }
 
     @Transactional
@@ -340,7 +340,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         DailyExpenseResponse dailyExpenseResponse = new DailyExpenseResponse();
 
         DailyExpenseTime time = request.getTime();
-        appearance.setPayCash(PaymentMethod.CASH.equals(request.getPaymentMethod()));
+        appearance.setPayCash(request.getPaymentMethod() == PaymentMethod.CASH);
         updateDraftTimeExpense(appearance, time);
         dailyExpenseResponse.setFinancialLossWarning(
             updateDraftFinancialLossExpense(appearance, request.getFinancialLoss()));
@@ -532,31 +532,31 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         List<BiConsumer<Appearance, DailyExpense>> updateAppearanceConsumer = new ArrayList<>();
         AtomicBoolean hasFinancialLoss = new AtomicBoolean(false);
         request.getApplyToAllDays().forEach(dailyExpenseApplyToAllDays -> {
-            if (DailyExpenseApplyToAllDays.TRAVEL_COSTS.equals(dailyExpenseApplyToAllDays)) {
+            if (dailyExpenseApplyToAllDays == DailyExpenseApplyToAllDays.TRAVEL_COSTS) {
                 updateAppearanceConsumer.add((appearance, dailyExpense) -> {
                     if (isAttendanceDay(appearance)) {
                         updateDraftTravelExpense(appearance, request.getTravel());
                     }
                 });
             }
-            if (DailyExpenseApplyToAllDays.PAY_CASH.equals(dailyExpenseApplyToAllDays)) {
+            if (dailyExpenseApplyToAllDays == DailyExpenseApplyToAllDays.PAY_CASH) {
                 appearances.forEach(appearance -> appearance.setPayCash(
-                    PaymentMethod.CASH.equals(request.getPaymentMethod())));
+                    request.getPaymentMethod() == PaymentMethod.CASH));
             }
 
             final DailyExpenseFinancialLoss financialLoss = request.getFinancialLoss();
             if (financialLoss != null) {
-                if (DailyExpenseApplyToAllDays.LOSS_OF_EARNINGS.equals(dailyExpenseApplyToAllDays)) {
+                if (dailyExpenseApplyToAllDays == DailyExpenseApplyToAllDays.LOSS_OF_EARNINGS) {
                     hasFinancialLoss.set(true);
                     updateAppearanceConsumer.add((appearance, dailyExpense) ->
                         appearance.setLossOfEarningsDue(financialLoss.getLossOfEarningsOrBenefits()));
                 }
-                if (DailyExpenseApplyToAllDays.EXTRA_CARE_COSTS.equals(dailyExpenseApplyToAllDays)) {
+                if (dailyExpenseApplyToAllDays == DailyExpenseApplyToAllDays.EXTRA_CARE_COSTS) {
                     hasFinancialLoss.set(true);
                     updateAppearanceConsumer.add((appearance, dailyExpense) -> appearance.setChildcareDue(
                         financialLoss.getExtraCareCost()));
                 }
-                if (DailyExpenseApplyToAllDays.OTHER_COSTS.equals(dailyExpenseApplyToAllDays)) {
+                if (dailyExpenseApplyToAllDays == DailyExpenseApplyToAllDays.OTHER_COSTS) {
                     hasFinancialLoss.set(true);
                     updateAppearanceConsumer.add((appearance, dailyExpense) -> {
                         appearance.setMiscAmountDue(financialLoss.getOtherCosts());
@@ -783,7 +783,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     @Override
     @Transactional
     public void realignExpenseDetails(Appearance appearance) {
-        if (AttendanceType.ABSENT.equals(appearance.getAttendanceType())) {
+        if (appearance.getAttendanceType() == AttendanceType.ABSENT) {
             appearance.clearExpenses(true);
         } else if (!isAttendanceDay(appearance)) {
             appearance.clearTravelExpenses(true);
@@ -898,7 +898,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     @Override
     @Transactional
     public void updateExpense(String locCode, String jurorNumber, ExpenseType type, List<DailyExpense> request) {
-        boolean isDraft = ExpenseType.DRAFT.equals(type);
+        boolean isDraft = type == ExpenseType.DRAFT;
         List<Appearance> appearances = request.stream()
             .map(dailyExpense -> {
                 Appearance appearance = getAppearance(locCode, jurorNumber, dailyExpense.getDateOfExpense());
@@ -913,7 +913,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 } else {
                     updateExpenseInternal(appearance, dailyExpense);
                 }
-                if (AppearanceStage.EXPENSE_AUTHORISED.equals(appearance.getAppearanceStage())) {
+                if (appearance.getAppearanceStage() == AppearanceStage.EXPENSE_AUTHORISED) {
                     appearance.setAppearanceStage(AppearanceStage.EXPENSE_EDITED);
                 }
 
@@ -1012,7 +1012,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 .findAllByCourtLocationLocCodeAndAppearanceStageAndPayCashAndIsDraftExpenseFalse(
                     locCode,
                     AppearanceStage.EXPENSE_ENTERED,
-                    PaymentMethod.CASH.equals(paymentMethod)),
+                    paymentMethod == PaymentMethod.CASH),
             false,
             fromInclusive, toInclusive
         ));
@@ -1022,7 +1022,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 .findAllByCourtLocationLocCodeAndAppearanceStageAndPayCashAndIsDraftExpenseFalse(
                     locCode,
                     AppearanceStage.EXPENSE_EDITED,
-                    PaymentMethod.CASH.equals(paymentMethod)),
+                    paymentMethod == PaymentMethod.CASH),
             true,
             fromInclusive, toInclusive
         ));
@@ -1150,7 +1150,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 CAN_NOT_APPROVE_MORE_THAN_LIMIT);
         }
         JurorPool jurorPool =  jurorPoolService.getLastJurorPoolForJuror(locCode, dto.getJurorNumber());
-        if (!PaymentMethod.CASH.equals(paymentMethod)) {
+        if (paymentMethod != PaymentMethod.CASH) {
             createAndSavePaymentDataWhereApplicable(dto.getJurorNumber(), jurorPool.getCourt(), appearances);
         }
         appearances.forEach(this::approveAppearance);
@@ -1160,7 +1160,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         FinancialAuditDetails financialAuditDetails =
             financialAuditService.createFinancialAuditDetail(dto.getJurorNumber(),
                 jurorPool.getCourt().getLocCode(),
-                dto.getApprovalType().toApproveType(PaymentMethod.CASH.equals(paymentMethod)),
+                dto.getApprovalType().toApproveType(paymentMethod == PaymentMethod.CASH),
                 appearances);
 
         LocalDate latestAppearanceDate = appearances.stream()
@@ -1168,7 +1168,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             .max(Comparator.naturalOrder())
             .get();
 
-        if (PaymentMethod.CASH.equals(paymentMethod)) {
+        if (paymentMethod == PaymentMethod.CASH) {
             jurorHistoryService.createExpenseApproveCash(
                 jurorPool,
                 financialAuditDetails,

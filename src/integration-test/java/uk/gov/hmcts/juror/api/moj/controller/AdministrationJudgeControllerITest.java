@@ -43,8 +43,8 @@ import static org.springframework.http.HttpMethod.PUT;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + AdministrationJudgeControllerITest.BASE_URL)
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @SuppressWarnings("PMD.ExcessiveImports")
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class AdministrationJudgeControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/moj/administration/judges";
 
@@ -64,6 +64,7 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
     @DisplayName("GET  " + ViewJudgeDetails.URL)
     @Sql(value = {"/db/administration/tearDownJudges.sql",
         "/db/administration/createJudges.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Sql(value = "/db/administration/tearDownJudges.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     class ViewJudgeDetails {
         public static final String URL = BASE_URL + "/{judge_id}";
@@ -169,6 +170,7 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
     @DisplayName("DELETE  " + DeleteJudge.URL)
     @Sql(value = {"/db/administration/tearDownJudges.sql",
         "/db/administration/createJudges.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Sql(value = "/db/administration/tearDownJudges.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     class DeleteJudge {
         public static final String URL = BASE_URL + "/{judge_id}";
@@ -261,8 +263,11 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
     @DisplayName("GET  " + ViewAllJudgeDetails.URL)
     @Sql(value = {"/db/administration/tearDownJudges.sql",
         "/db/administration/createJudges.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @SuppressWarnings({
+        "PMD.PublicMemberInNonPublicType"
+    })
     @Sql(value = "/db/administration/tearDownJudges.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    class ViewAllJudgeDetails {
+    final class ViewAllJudgeDetails {
         public static final String URL = BASE_URL;
 
         private ViewAllJudgeDetails() {
@@ -398,8 +403,9 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
     @DisplayName("POST  " + CreateJudgeDetails.URL)
     @Sql(value = {"/db/administration/tearDownJudges.sql",
         "/db/administration/createJudges.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Sql(value = "/db/administration/tearDownJudges.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    class CreateJudgeDetails {
+    final class CreateJudgeDetails {
         public static final String URL = BASE_URL;
 
         private CreateJudgeDetails() {
@@ -484,6 +490,7 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
 
     @Nested
     @DisplayName("PUT  " + UpdateJudgeDetails.URL)
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Sql(value = {"/db/administration/tearDownJudges.sql",
         "/db/administration/createJudges.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(value = "/db/administration/tearDownJudges.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)

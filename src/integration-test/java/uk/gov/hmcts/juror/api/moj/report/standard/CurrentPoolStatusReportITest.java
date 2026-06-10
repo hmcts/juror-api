@@ -19,6 +19,7 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/CurrentPoolStatusReportControllerITest_typical.sql"
 })
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class CurrentPoolStatusReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired
@@ -40,7 +41,6 @@ class CurrentPoolStatusReportITest extends AbstractStandardReportControllerITest
 
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void positiveTypicalCourt() {
         testBuilder()
             .triggerValid()
@@ -49,7 +49,6 @@ class CurrentPoolStatusReportITest extends AbstractStandardReportControllerITest
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void positiveTypicalBureau() {
         testBuilder()
             .jwt(getBureauJwt())
@@ -59,7 +58,6 @@ class CurrentPoolStatusReportITest extends AbstractStandardReportControllerITest
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void negativeInvalidPayload() {
         StandardReportRequest request = getValidPayload();
         request.setPoolNumber(null);
@@ -70,7 +68,6 @@ class CurrentPoolStatusReportITest extends AbstractStandardReportControllerITest
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void negativeUnauthorised() {
         testBuilder()
             .jwt(getCourtJwt("414"))

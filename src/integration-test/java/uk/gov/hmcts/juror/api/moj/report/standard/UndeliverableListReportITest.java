@@ -19,6 +19,7 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/UndeliverableListReportITest_typical.sql"
 })
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class UndeliverableListReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired
@@ -39,7 +40,6 @@ class UndeliverableListReportITest extends AbstractStandardReportControllerITest
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void positiveTypicalBureau() {
         testBuilder()
             .triggerValid()
@@ -48,7 +48,6 @@ class UndeliverableListReportITest extends AbstractStandardReportControllerITest
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void negativeCourtUser() {
         testBuilder()
             .jwt(getCourtJwt("414"))
@@ -57,7 +56,6 @@ class UndeliverableListReportITest extends AbstractStandardReportControllerITest
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void negativeInvalidPayload() {
         StandardReportRequest request = getValidPayload();
         request.setPoolNumber(null);

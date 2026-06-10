@@ -1040,9 +1040,9 @@ public class ReissueLetterServiceTest {
 
     private static ReissueLetterRequestDto.ReissueLetterRequestData getReissueLetterRequestData(String formCode) {
         return ReissueLetterRequestDto.ReissueLetterRequestData.builder()
-            .jurorNumber("555555561")
-            .formCode(formCode)
-            .datePrinted(LocalDate.now().minusDays(1))
-            .build();
+                .jurorNumber("555555561")
+                .formCode(formCode)
+                .datePrinted(LocalDate.now().minusDays(1))
+                .build();
     }
 }

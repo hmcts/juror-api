@@ -35,7 +35,6 @@ class AbstractGroupedReportTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void positiveConstructor() {
         IReportGroupBy groupBy = createGroupBy();
         AbstractGroupedReport report = new AbstractStandardReportTestImpl(
@@ -73,7 +72,6 @@ class AbstractGroupedReportTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void positiveGetTableData() {
         final List<Tuple> data = List.of(mock(Tuple.class), mock(Tuple.class));
 
@@ -153,6 +151,7 @@ class AbstractGroupedReportTest {
     }
 
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     private static class AbstractStandardReportTestImpl extends AbstractGroupedReport {
 
         public AbstractStandardReportTestImpl(PoolRequestRepository poolRequestRepository, EntityPath<?> from,

@@ -43,10 +43,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Integration tests for the ER Administration controller.
  */
+@SuppressWarnings({
+    "PMD.ExcessiveImports",
+    "PMD.PublicMemberInNonPublicType"
+})
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@SuppressWarnings("PMD.ExcessiveImports") // false positive, the test needs to import a lot of classes
 class ErAdministrationControllerITest extends AbstractIntegrationTest {
 
     public static final String EXPECT_THE_STATUS_TO_BE_FORBIDDEN = "Expect the status to be forbidden.";
@@ -187,7 +190,6 @@ class ErAdministrationControllerITest extends AbstractIntegrationTest {
     @Nested
     @DisplayName("PUT /api/v1/moj/er-administration/deadline")
     @Sql({"/db/mod/truncate.sql","/db/jurorer/ErDashboardData.sql"})
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     class ChangeDeadlineTest {
 
         @Test
@@ -266,7 +268,6 @@ class ErAdministrationControllerITest extends AbstractIntegrationTest {
     @Nested
     @DisplayName("PUT /api/v1/moj/er-administration/mark-delivered")
     @Sql({"/db/mod/truncate.sql","/db/jurorer/ErDashboardData.sql"})
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     class MarkAsDeliveredTest {
 
         @Test
@@ -329,7 +330,6 @@ class ErAdministrationControllerITest extends AbstractIntegrationTest {
     @Nested
     @DisplayName("PUT /api/v1/moj/er-administration/email-sent")
     @Sql({"/db/mod/truncate.sql","/db/jurorer/ErDashboardData.sql"})
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     class UpdateEmailRequestSentTest {
 
         @Test

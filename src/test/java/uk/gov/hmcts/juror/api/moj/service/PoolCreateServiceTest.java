@@ -549,12 +549,11 @@ class PoolCreateServiceTest {
 
         poolCreateService.getJurorPoolsList(payload, createPoolFilterQuery(poolNumber));
 
-        mockStaticPaginationUtil.verify(() -> {
+        mockStaticPaginationUtil.verify(() ->
             PaginationUtil.toPaginatedList(Mockito.eq(mockData), Mockito.eq(createPoolFilterQuery(poolNumber)),
                                            Mockito.eq(PoolMemberFilterRequestQuery.SortField.JUROR_NUMBER),
                                            Mockito.eq(SortMethod.ASC), dataMapperCaptor.capture(),
-                                           Mockito.eq(500L));
-        });
+                                           Mockito.eq(500L)));
 
         Function<Tuple, FilterPoolMember> dataMapper = dataMapperCaptor.getValue();
 
@@ -591,12 +590,11 @@ class PoolCreateServiceTest {
 
         poolCreateService.getJurorPoolsList(payload, createPoolFilterQuery(poolNumber));
 
-        mockStaticPaginationUtil.verify(() -> {
+        mockStaticPaginationUtil.verify(() ->
             PaginationUtil.toPaginatedList(Mockito.eq(mockData), Mockito.eq(createPoolFilterQuery(poolNumber)),
                                            Mockito.eq(PoolMemberFilterRequestQuery.SortField.JUROR_NUMBER),
                                            Mockito.eq(SortMethod.ASC), dataMapperCaptor.capture(),
-                                           Mockito.eq(500L));
-        });
+                                           Mockito.eq(500L)));
 
         Function<Tuple, FilterPoolMember> dataMapper = dataMapperCaptor.getValue();
 

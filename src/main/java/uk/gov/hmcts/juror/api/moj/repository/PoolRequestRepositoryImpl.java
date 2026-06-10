@@ -43,7 +43,7 @@ public class PoolRequestRepositoryImpl extends PoolRequestSearchQueries implemen
 
 
     /**
-     * Retrieves a list of distinct pools for a given court, year and month from JUROR_DIGITAL_USER.POOL_REQUEST view
+     * Retrieves a list of distinct pools for a given court, year and month from JUROR_DIGITAL_USER.POOL_REQUEST view.
      *
      * @param poolNumberPrefix the first 7 characters of a pool number containing the court location code,
      *                         attendance date year (yy) and attendance date month (mm)
@@ -62,7 +62,7 @@ public class PoolRequestRepositoryImpl extends PoolRequestSearchQueries implemen
 
     /**
      * Retrieve database records from the JUROR_DIGITAL_USER.POOL_REQUEST view using a LIKE expression to filter
-     * results, returning only those where the pool number start with a defined prefix
+     * results, returning only those where the pool number start with a defined prefix.
      *
      * @param poolNumberPrefix The first 7 characters of a Pool Number containing the Court Location Code,
      *                         Attendance Date Year (YY) and Attendance Date Month (MM)
@@ -115,7 +115,7 @@ public class PoolRequestRepositoryImpl extends PoolRequestSearchQueries implemen
     /**
      * Check for active pools (NEW_REQUEST = 'Y' and READ_ONLY = 'N') excluding nil pools (NO_REQUESTED <> 0) for a
      * given court location (based on POOL_REQUEST.LOC_CODE) and, optionally between a given date range
-     * where POOR_REQUEST.RETURN_DATE >= minDate (if provided) and POOR_REQUEST.RETURN_DATE >= maxDate (if provided)
+     * where POOR_REQUEST.RETURN_DATE >= minDate (if provided) and POOR_REQUEST.RETURN_DATE >= maxDate (if provided).
      * <p/>
      * Include summons statistics for the pool request by counting the number of active pool members in a summoned or
      * responded state
@@ -154,7 +154,7 @@ public class PoolRequestRepositoryImpl extends PoolRequestSearchQueries implemen
             .groupBy(POOL_REQUEST.returnDate)
             .groupBy(POOL_REQUEST.numberRequested);
 
-        if (owner.equalsIgnoreCase(JurorDigitalApplication.JUROR_OWNER) || isReassign) {
+        if (JurorDigitalApplication.JUROR_OWNER.equalsIgnoreCase(owner) || isReassign) {
             query.where(POOL_REQUEST.owner.eq(owner));
         }
 

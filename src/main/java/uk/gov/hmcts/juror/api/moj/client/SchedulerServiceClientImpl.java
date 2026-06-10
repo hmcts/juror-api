@@ -27,6 +27,7 @@ public class SchedulerServiceClientImpl extends AbstractRemoteRestClient impleme
     }
 
     @Override
+    @SuppressWarnings({"PMD.ExceptionAsFlowControl"})
     public void updateStatus(String jobKey, Long taskId, Result payload) {
         try {
             log.debug("JobKey: " + jobKey + ".\n"
@@ -42,7 +43,7 @@ public class SchedulerServiceClientImpl extends AbstractRemoteRestClient impleme
                 restTemplate.exchange(updateStatusUrl, HttpMethod.PUT, requestUpdate, Void.class, jobKey, taskId);
 
             final HttpStatusCode statusCode = response.getStatusCode();
-            if (!statusCode.equals(HttpStatus.ACCEPTED)) {
+            if (statusCode != HttpStatus.ACCEPTED) {
                 throw new MojException.RemoteGatewayException(
                     "Call to SchedulerServiceClient.updateStatus(jobKey, taskId, result, duration) failed status code"
                         + " was: "

@@ -79,6 +79,7 @@ public class AdministrationControllerTest {
     @InjectMocks
     private AdministrationController administrationController;
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET " + ViewCodeAndDescriptions.URL)
     class ViewCodeAndDescriptions {
@@ -127,6 +128,7 @@ public class AdministrationControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET " + ViewCourtDetails.URL)
     class ViewCourtDetails {
@@ -162,6 +164,7 @@ public class AdministrationControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("PUT " + UpdateCourtRates.URL)
     class UpdateCourtRates {
@@ -217,6 +220,7 @@ public class AdministrationControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("PUT " + UpdateCourtDetails.URL)
     class UpdateCourtDetails {
@@ -274,6 +278,7 @@ public class AdministrationControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET " + ViewAllCourtsDetails.URL)
     class ViewAllCourtsDetails {
@@ -297,6 +302,7 @@ public class AdministrationControllerTest {
     }
 
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET " + ViewExpenseDetails.URL)
     class ViewExpenseDetails {
@@ -393,6 +399,7 @@ public class AdministrationControllerTest {
 
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("PUT " + UpdateExpenseDetails.URL)
     class UpdateExpenseDetails {

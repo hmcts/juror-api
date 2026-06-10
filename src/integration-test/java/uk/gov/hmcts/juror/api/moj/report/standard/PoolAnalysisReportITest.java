@@ -19,7 +19,7 @@ import java.util.List;
     "/db/mod/truncate.sql",
     "/db/mod/reports/PoolAnalysisReportITest_Typical.sql"
 })
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class PoolAnalysisReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired

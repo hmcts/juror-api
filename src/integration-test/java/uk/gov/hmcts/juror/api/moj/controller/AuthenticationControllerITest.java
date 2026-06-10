@@ -45,15 +45,14 @@ import static org.springframework.http.HttpMethod.POST;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + AuthenticationControllerITest.BASE_URL)
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Sql(value = {"/db/administration/teardownUsers.sql",
     "/db/administration/createUsers.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(value = "/db/administration/teardownUsers.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @SuppressWarnings({
-    "PMD.JUnitTestsShouldIncludeAssert",
     "PMD.ExcessiveImports",
-    "PMD.JUnitAssertionsShouldIncludeMessage"//False positive
+//False positive
 })
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class AuthenticationControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/auth/moj";
     private static final String EMAIL_SUFFIX = "@email.gov.uk";
@@ -166,6 +165,7 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET (POST) " + ViewCourts.URL)
     class CreateJwt extends AbstractControllerIntegrationTest<EmailDto, JwtDto> {
@@ -189,6 +189,8 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
         protected EmailDto getValidPayload() {
             return new EmailDto("test_court_standard" + EMAIL_SUFFIX);
         }
+
+        @SuppressWarnings("PMD.PublicMemberInNonPublicType")
 
         public String toUrl(String locCode) {
             return URL.replace("{loc_code}", locCode);

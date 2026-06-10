@@ -299,7 +299,6 @@ class MessageSearchTest {
     }
 
     @TestFactory
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     Stream<DynamicTest> sortFieldTests() {
         return Stream.of(
             sortFieldTest(MessageSearch.SortField.JUROR_NUMBER, QJuror.juror.jurorNumber),
@@ -328,7 +327,6 @@ class MessageSearchTest {
     }
 
     @TestFactory
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     Stream<DynamicTest> filterTests() {
         return Stream.of(
             filterTest(MessageSearch.Filter.INCLUDE_ON_CALL, true, QJurorPool.jurorPool.onCall.eq(true)),

@@ -4,6 +4,7 @@ import com.querydsl.core.Tuple;
 
 import java.util.List;
 
+@FunctionalInterface
 public interface ICourtroomRepository {
     List<Tuple> getCourtroomsForLocation(List<String> courts);
 }

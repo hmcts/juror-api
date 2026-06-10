@@ -35,7 +35,10 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({
+    "PMD.PublicMemberInNonPublicType",
+    "unchecked"
+})
 class PersonAttendingDetailReportTest extends AbstractGroupedReportTestSupport<PersonAttendingDetailReport> {
 
     private CourtLocationRepository courtLocationRepository;

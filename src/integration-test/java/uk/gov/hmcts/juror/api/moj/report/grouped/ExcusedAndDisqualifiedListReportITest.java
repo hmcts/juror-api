@@ -20,7 +20,7 @@ import java.util.List;
     "/db/mod/truncate.sql",
     "/db/mod/reports/ExcusedAndDisqualifiedListReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class ExcusedAndDisqualifiedListReportITest extends AbstractGroupedReportControllerITest {
 
     @Autowired

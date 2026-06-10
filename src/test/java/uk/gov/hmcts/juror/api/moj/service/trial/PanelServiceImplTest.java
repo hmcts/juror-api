@@ -748,14 +748,13 @@ class PanelServiceImplTest {
                 final LocalDate date = now();
                 String locCode = "415";
                 TestUtils.setUpMockAuthentication(locCode, "COURT_USER", "99", Collections.singletonList(locCode));
-                MojException.NotFound exception = assertThrows(MojException.NotFound.class, () -> {
+                MojException.NotFound exception = assertThrows(MojException.NotFound.class, () ->
                     panelService.addPanelMembers(2,
                         "T100000025",
                         new ArrayList<>(),
                         locCode,
                         date
-                    );
-                });
+                    ));
                 assertThat(exception.getMessage())
                     .as("Exception message")
                     .isEqualTo("Cannot find trial with number: T100000025 for court location 415");
@@ -782,14 +781,13 @@ class PanelServiceImplTest {
                 doReturn(Optional.of(createTrial())).when(trialRepository)
                     .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
                 MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
-                    () -> {
+                    () ->
                         panelService.addPanelMembers(2,
                             "T100000025",
                             new ArrayList<>(),
                             locCode,
                             date
-                        );
-                    });
+                        ));
                 assertThat(exception.getMessage())
                     .isEqualTo("Cannot add panel members - panel has not been created for trial");
 
@@ -817,14 +815,13 @@ class PanelServiceImplTest {
                 doReturn(createPanelMembers(2)).when(panelRepository)
                     .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", locCode);
                 MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
-                    () -> {
+                    () ->
                         panelService.addPanelMembers(0,
                             "T100000025",
                             new ArrayList<>(),
                             locCode,
                             date
-                        );
-                    });
+                        ));
                 assertThat(exception.getMessage())
                     .isEqualTo("Cannot add panel members - Number requested must be between 1 and 1000");
 
@@ -852,14 +849,13 @@ class PanelServiceImplTest {
                 doReturn(createPanelMembers(1000)).when(panelRepository)
                     .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", locCode);
                 MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
-                    () -> {
+                    () ->
                         panelService.addPanelMembers(0,
                             "T100000025",
                             new ArrayList<>(),
                             locCode,
                             date
-                        );
-                    });
+                        ));
                 assertThat(exception.getMessage())
                     .isEqualTo("Cannot add panel members - Number requested must be between 1 and 1000");
 
@@ -887,14 +883,13 @@ class PanelServiceImplTest {
                 doReturn(createPanelMembers(2)).when(panelRepository)
                     .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", locCode);
                 MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
-                    () -> {
+                    () ->
                         panelService.addPanelMembers(3,
                             "T100000025",
                             new ArrayList<>(),
                             locCode,
                             date
-                        );
-                    });
+                        ));
                 assertThat(exception.getMessage())
                     .isEqualTo("Cannot create panel - Not enough jurors available");
 
@@ -922,14 +917,13 @@ class PanelServiceImplTest {
                 doReturn(Optional.of(trial)).when(trialRepository)
                     .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
                 MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
-                    () -> {
+                    () ->
                         panelService.addPanelMembers(2,
                             "T100000025",
                             new ArrayList<>(),
                             locCode,
                             date
-                        );
-                    });
+                        ));
                 assertThat(exception.getMessage())
                     .isEqualTo("Cannot add panel members - Trial has ended");
 
@@ -962,14 +956,13 @@ class PanelServiceImplTest {
                     appearanceRepository).retrieveAllJurors(locCode, date);
 
                 MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
-                    () -> {
+                    () ->
                         panelService.addPanelMembers(1,
                             "T100000025",
                             Collections.singletonList("1"),
                             locCode,
                             date
-                        );
-                    });
+                        ));
 
                 assertThat(exception.getMessage()).isEqualTo("Cannot create panel - Not enough jurors available");
 

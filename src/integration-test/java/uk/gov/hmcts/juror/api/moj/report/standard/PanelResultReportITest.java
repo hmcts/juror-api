@@ -22,7 +22,7 @@ import java.util.List;
     "/db/administration/createJudges.sql",
     "/db/mod/reports/TrialStatisticsReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class PanelResultReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired

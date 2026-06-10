@@ -50,8 +50,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         JurorPoolService.class,
     }
 )
+@SuppressWarnings({
+    "PMD.ExcessiveImports",
+    "PMD.PublicMemberInNonPublicType"
+})
 @DisplayName("Controller: " + SjoTasksControllerTest.BASE_URL)
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.JUnitTestsShouldIncludeAssert"})
 class SjoTasksControllerTest {
     public static final String BASE_URL = "/api/v1/moj/sjo-tasks";
 
@@ -67,6 +70,7 @@ class SjoTasksControllerTest {
     @MockBean
     private JurorPoolService jurorPoolService;
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST " + GetFailedToAttendJurors.URL)
     class GetFailedToAttendJurors {
@@ -129,6 +133,7 @@ class SjoTasksControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("PATCH " + UndoFailedToAttendJurors.URL)
     class UndoFailedToAttendJurors {
@@ -177,6 +182,7 @@ class SjoTasksControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST " + GetCompleteJurors.URL)
     class GetCompleteJurors {

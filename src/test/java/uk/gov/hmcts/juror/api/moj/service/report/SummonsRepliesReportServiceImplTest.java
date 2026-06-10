@@ -35,6 +35,7 @@ import static org.mockito.Mockito.withSettings;
 import static uk.gov.hmcts.juror.api.moj.service.report.SummonsRepliesReportService.TableHeading.DATE;
 import static uk.gov.hmcts.juror.api.moj.service.report.SummonsRepliesReportService.TableHeading.NO_OF_REPLIES;
 
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class SummonsRepliesReportServiceImplTest {
 
     private final JurorDigitalResponseRepositoryModImpl jurorDigitalResponseRepositoryMod;
@@ -57,7 +58,6 @@ class SummonsRepliesReportServiceImplTest {
 
     @Nested
     @DisplayName("Digital Summons Replies report tests")
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") //false positive
     class DigitalSummonsRepliesReportTests {
 
         @Test

@@ -24,7 +24,7 @@ public enum JurorStatusEnum {
     private final int status;
 
     public static JurorStatusEnum fromStatus(int status) {
-        for (JurorStatusEnum jurorStatus : JurorStatusEnum.values()) {
+        for (JurorStatusEnum jurorStatus : values()) {
             if (jurorStatus.getStatus() == status) {
                 return jurorStatus;
             }

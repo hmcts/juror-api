@@ -337,9 +337,6 @@ class CompleteServiceServiceImplTest {
         }
 
         @Test
-        @SuppressWarnings({
-            "PMD.JUnitTestsShouldIncludeAssert"//False positive
-        })
         void positiveTypicalMultiple() {
 
             final String firstName1 = RandomStringUtils.randomAlphabetic(20);

@@ -57,6 +57,7 @@ public class AuthenticationControllerTest {
     @InjectMocks
     private AuthenticationController authenticationController;
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST " + ViewCourts.URL)
     class ViewCourts {
@@ -94,6 +95,7 @@ public class AuthenticationControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET " + CreateJwt.URL)
     class CreateJwt {

@@ -52,7 +52,8 @@ import static uk.gov.hmcts.juror.api.TestUtils.createJwt;
 @WebMvcTest(controllers = JudgeController.class, excludeAutoConfiguration = {SecurityAutoConfiguration.class})
 @ContextConfiguration(classes = {JudgeController.class})
 @SuppressWarnings({
-    "PMD.ExcessiveImports"
+    "PMD.ExcessiveImports",
+    "PMD.PublicMemberInNonPublicType"
 })
 class JudgeControllerTest {
     private static final String BASE_URL = "/api/v1/moj/trial/judge";

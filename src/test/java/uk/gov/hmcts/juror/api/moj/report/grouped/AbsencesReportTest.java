@@ -33,7 +33,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
-@SuppressWarnings("PMD.LawOfDemeter")
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class AbsencesReportTest extends AbstractGroupedReportTestSupport<AbsencesReport> {
 
     private CourtLocationRepository courtLocationRepository;

@@ -65,7 +65,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
         JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, owner);
 
-        if (excusalDecisionDto.getExcusalDecision().equals(ExcusalDecision.GRANT)) {
+        if (excusalDecisionDto.getExcusalDecision() == ExcusalDecision.GRANT) {
             jurorResponseService.setResponseProcessingStatusToClosed(jurorNumber);
             grantExcusalForJuror(payload, excusalDecisionDto, jurorPool);
             if (!ExcusalCodeEnum.D.getCode().equals(excusalDecisionDto.getExcusalReasonCode())

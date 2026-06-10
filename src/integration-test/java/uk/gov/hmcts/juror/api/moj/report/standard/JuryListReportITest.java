@@ -21,7 +21,7 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/JuryListITest_typical.sql"
 })
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class JuryListReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired

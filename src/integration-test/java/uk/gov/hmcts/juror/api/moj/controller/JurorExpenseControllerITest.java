@@ -100,11 +100,15 @@ import static org.springframework.http.HttpMethod.PATCH;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 
+@SuppressWarnings({
+    "PMD.ExcessiveImports",
+    "PMD.PublicMemberInNonPublicType",
+    "PMD.TooManyMethods"
+})
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + JurorExpenseControllerITest.BASE_URL)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
     public static final String JUROR_NUMBER = "641500020";
@@ -129,6 +133,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     private TransactionTemplate transactionTemplate;
 
     private HttpHeaders httpHeaders;
+
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
 
     @Autowired
     private Clock clock;
@@ -181,6 +187,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         assertThat(financialAuditDetailsAppearance.getLastApprovedFAudit()).isEqualTo(lastApprovedAuditNumber);
     }
 
+    @SuppressWarnings({
+        "PMD.PublicMemberInNonPublicType"
+    })
     @Nested
     @DisplayName("POST " + URL_UNPAID_SUMMARY)
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_setUp.sql"})
@@ -323,6 +332,10 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         }
     }
 
+    @SuppressWarnings({
+        "PMD.PublicMemberInNonPublicType"
+    })
+    
     @Nested
     @DisplayName("GET " + GetDefaultExpenses.URL)
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_setUp_default_expenses.sql"})
@@ -386,6 +399,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @DisplayName("POST " + SetDefaultExpenses.URL)
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_setUp_default_expenses.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     class SetDefaultExpenses {
 
         public static final String URL = BASE_URL + "/{juror_number}/default-expenses";
@@ -439,9 +453,13 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         }
 
+
     }
 
-    @SuppressWarnings("PMD.AbstractClassWithoutAbstractMethod")
+    @SuppressWarnings({
+        "PMD.AbstractClassWithoutAbstractMethod",
+        "PMD.PublicMemberInNonPublicType"
+    })
     abstract class AbstractDraftDailyExpense {
         public static final String URL = BASE_URL + "/{juror_number}/DRAFT/edit";
         public static final String METHOD_NAME = "postEditDailyExpense";
@@ -464,13 +482,13 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 .publicTransport(doubleToBigDecimal(publicTransport))
                 .taxi(doubleToBigDecimal(taxi));
 
-            if (TravelMethod.CAR.equals(travelMethod)) {
+            if (travelMethod == TravelMethod.CAR) {
                 builder.traveledByCar(true)
                     .jurorsTakenCar(jurorsTaken);
-            } else if (TravelMethod.MOTERCYCLE.equals(travelMethod)) {
+            } else if (travelMethod == TravelMethod.MOTERCYCLE) {
                 builder.traveledByMotorcycle(true)
                     .jurorsTakenMotorcycle(jurorsTaken);
-            } else if (TravelMethod.BICYCLE.equals(travelMethod)) {
+            } else if (travelMethod == TravelMethod.BICYCLE) {
                 builder.traveledByBicycle(true);
             }
 
@@ -815,17 +833,17 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         assertThat(appearance1.getMiscDescription()).isNull();
                         assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(525.00));
                     } else {
-                        if (PayAttendanceType.HALF_DAY.equals(appearance1.getPayAttendanceType())) {
+                        if (appearance1.getPayAttendanceType() == PayAttendanceType.HALF_DAY) {
                             assertThat(appearance1.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(1.01));
                             assertThat(appearance1.getChildcareDue()).isEqualTo(doubleToBigDecimal(31.46));
                             assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(0.00));
                             assertThat(appearance1.getMiscDescription()).isEqualTo("Desc 3");
                             assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(32.47));
-                        } else if (PayAttendanceType.FULL_DAY.equals(appearance1.getPayAttendanceType())) {
+                        } else if (appearance1.getPayAttendanceType() == PayAttendanceType.FULL_DAY) {
                             assertThat(appearance1.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(1.01));
                             assertThat(appearance1.getChildcareDue()).isEqualTo(doubleToBigDecimal(50.00));
                             assertThat(appearance1.getMiscDescription()).isEqualTo("Desc 3");
-                            if (AttendanceType.NON_ATTENDANCE_LONG_TRIAL.equals(appearance1.getAttendanceType())) {
+                            if (appearance1.getAttendanceType() == AttendanceType.NON_ATTENDANCE_LONG_TRIAL) {
                                 assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(35.00));
                                 assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(86.01));
                             } else {
@@ -880,8 +898,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         assertThat(appearance1.getMiscDescription()).isNull();
                         assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(525.00));
                     } else {
-                        if (AttendanceType.NON_ATTENDANCE.equals(appearance1.getAttendanceType())
-                            || AttendanceType.NON_ATTENDANCE_LONG_TRIAL.equals(appearance1.getAttendanceType())) {
+                        if (appearance1.getAttendanceType() == AttendanceType.NON_ATTENDANCE
+                            || appearance1.getAttendanceType() == AttendanceType.NON_ATTENDANCE_LONG_TRIAL) {
                             hasNonAttendanceDay.set(true);
                             assertThat(appearance1.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(0.00));
                             assertThat(appearance1.getChildcareDue()).isEqualTo(doubleToBigDecimal(0.00));
@@ -1181,6 +1199,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @DisplayName("GET " + GetEnteredExpenseDetails.URL)
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_getEnteredExpenseDetails.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     class GetEnteredExpenseDetails {
         public static final String URL = BASE_URL + "/{juror_number}/entered";
 
@@ -1439,10 +1458,12 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     }
 
 
+    
     @Nested
     @DisplayName("POST /api/v1/moj/expenses/submit-for-approval")
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_submitForApprovalSetUp.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     class SubmitForApproval {
 
         public static final String URL = BASE_URL + "/{juror_number}/submit-for-approval";
@@ -1687,6 +1708,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getExpenseRates().getId()).isEqualTo(999_999);
         }
 
+        @SuppressWarnings("PMD.PublicMemberInNonPublicType")
         private void verifyExpenseStillInDraft(Appearance appearance) {
             assertThat(appearance.getFinancialAudit())
                 .as("Financial Audit Details object should not be created/associated")
@@ -1709,6 +1731,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
     @Nested
     @DisplayName("GET " + GetEnteredExpenseDetails.URL)
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_simplifiedExpenseSetUp.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class GetSimplifiedExpenseDetails {
@@ -2070,8 +2093,10 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     String.class);
             }
 
+            @SuppressWarnings("PMD.PublicMemberInNonPublicType")
             @Test
             void forbiddenIsBureauUser() {
+                @SuppressWarnings("PMD.PublicMemberInNonPublicType")
                 final String type = ExpenseType.FOR_APPROVAL.name();
                 assertForbiddenResponse(triggerInvalid("641500021", type, "400"),
                     toUrl("400", "641500021", type));
@@ -2079,11 +2104,11 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         }
     }
 
-
     @Nested
     @DisplayName("GET " + GetDraftExpenses.URL)
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_draftExpenseSetUp.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     class GetDraftExpenses {
         public static final String URL = BASE_URL + "/{juror_number}/DRAFT/view";
 
@@ -2259,6 +2284,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @DisplayName("GET (POST) " + GetExpenses.URL)
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_draftExpenseSetUp.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     class GetExpenses {
         public static final String URL = BASE_URL + "/{juror_number}/view";
 
@@ -2419,8 +2445,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     "Not all dates found");
             }
         }
-    }
 
+
+    }
 
     @Nested
     @DisplayName("POST " + ApproveExpenses.URL)
@@ -2428,6 +2455,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         "/db/truncate.sql",
         "/db/JurorExpenseControllerITest_approveExpenseSetUp.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     class ApproveExpenses {
         public static final String URL = BASE_URL + "/{payment_method}/approve";
 
@@ -2886,6 +2914,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
+            @SuppressWarnings("PMD.PublicMemberInNonPublicType")
             void negativeUnauthorizedNotManager() {
                 assertForbiddenResponse(
                     triggerInvalid(COURT_LOCATION,
@@ -2920,6 +2949,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @DisplayName("POST " + PostEditAttendedDayDailyExpense.URL)
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_editExpenseSetUp.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     class PostEditAttendedDayDailyExpense extends AbstractDraftDailyExpense {
 
         public static final String URL = BASE_URL + "/{juror_number}/{type}/edit";
@@ -3323,6 +3353,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @DisplayName("POST " + CalculateTotals.URL)
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_calculateTotalExpenseSetUp.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     class CalculateTotals extends AbstractDraftDailyExpense {
         public static final String URL = BASE_URL + "/{juror_number}/calculate/totals";
 
@@ -3962,14 +3993,15 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                         .travelTime(LocalTime.of(1, 2))
                                         .payAttendance(PayAttendanceType.FULL_DAY)
                                         .build())
-                                    .financialLoss(
-                                        createDailyExpenseFinancialLoss(15.01, 6.00, 0.20, "Desc")
-                                    )
-                                    .travel(
-                                        createDailyExpenseTravel(TravelMethod.CAR, 3, 15, 13.25, 12.1, 9.4)
-                                    )
-                                    .foodAndDrink(
-                                        createDailyExpenseFoodAndDrink(FoodDrinkClaimType.MORE_THAN_10_HOURS, 4.1)
+                                        .financialLoss(
+                                            createDailyExpenseFinancialLoss(15.01, 6.00, 0.20, "Desc")
+                                        )
+                                        .travel(
+                                            createDailyExpenseTravel(TravelMethod.CAR, 3, 15, 13.25, 12.1, 9.4)
+                                        )
+                                        .foodAndDrink(
+                                            createDailyExpenseFoodAndDrink(
+                                                FoodDrinkClaimType.MORE_THAN_10_HOURS, 4.1)
                                     )
                                     .build()
                             ))
@@ -3984,6 +4016,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @DisplayName("GET /api/v1/moj/expenses/submit-for-approval")
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_draftExpenseSetUp.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     class GetCounts {
 
         public static final String URL = BASE_URL + "/{juror_number}/counts";
@@ -4082,6 +4115,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @DisplayName("GET " + GetExpensesForApproval.URL)
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_getApproveExpenseSetUp.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     class GetExpensesForApproval {
         public static final String URL = BASE_URL + "/{payment_method}/pending-approval";
 
@@ -4142,7 +4176,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
             void typicalCash() {
                 PendingApprovalList pendingApprovals = triggerValid(COURT_LOCATION, null, null, PaymentMethod.CASH);
                 assertThat(pendingApprovals.getTotalPendingCash()).isEqualTo(2L);
@@ -4307,7 +4340,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
             void typicalToDateFilter() {
                 PendingApprovalList pendingApprovals =
                     triggerValid(COURT_LOCATION, null, LocalDate.of(2025, 1, 9), PaymentMethod.BACS);
@@ -4364,7 +4396,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
             void typicalBothFromAndToFilter() {
                 PendingApprovalList pendingApprovals =
                     triggerValid(COURT_LOCATION, LocalDate.of(2025, 1, 9), LocalDate.of(2025, 1, 10), PaymentMethod
@@ -4423,7 +4454,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
             void canNotApprove() {
                 PendingApprovalList pendingApprovals =
                     triggerValid("COURT_USER2", COURT_LOCATION, LocalDate.of(2025, 1, 9), LocalDate.of(2025, 1, 10),
@@ -4556,6 +4586,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @DisplayName("PATCH " + ApportionSmartCard.URL)
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_draftExpenseSetUp.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     class ApportionSmartCard {
         public static final String URL = BASE_URL + "/{juror_number}/smartcard";
 

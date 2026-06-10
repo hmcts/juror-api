@@ -1944,17 +1944,17 @@ class JurorExpenseServiceTest {
                 .publicTransport(publicTransport)
                 .taxi(hiredVehicle);
 
-            if (TravelMethod.CAR == travelMethod) {
+            if (travelMethod == TravelMethod.CAR) {
                 builder.traveledByCar(true)
                     .jurorsTakenCar(2);
                 when(expenseRates.getCarMileageRatePerMile2OrMorePassengers())
                     .thenReturn(travelCost);
-            } else if (TravelMethod.MOTERCYCLE == travelMethod) {
+            } else if (travelMethod == TravelMethod.MOTERCYCLE) {
                 builder.traveledByMotorcycle(true)
                     .jurorsTakenMotorcycle(2);
                 when(expenseRates.getMotorcycleMileageRatePerMile1Passengers())
                     .thenReturn(travelCost);
-            } else if (TravelMethod.BICYCLE == travelMethod) {
+            } else if (travelMethod == TravelMethod.BICYCLE) {
                 builder.traveledByBicycle(true);
                 when(expenseRates.getBikeRate())
                     .thenReturn(travelCost);
@@ -1982,11 +1982,11 @@ class JurorExpenseServiceTest {
             verify(travel, times(1)).getTaxi();
 
 
-            if (TravelMethod.CAR == travelMethod) {
+            if (travelMethod == TravelMethod.CAR) {
                 verify(expenseRates, times(1)).getCarMileageRatePerMile2OrMorePassengers();
-            } else if (TravelMethod.MOTERCYCLE == travelMethod) {
+            } else if (travelMethod == TravelMethod.MOTERCYCLE) {
                 verify(expenseRates, times(1)).getMotorcycleMileageRatePerMile1Passengers();
-            } else if (TravelMethod.BICYCLE == travelMethod) {
+            } else if (travelMethod == TravelMethod.BICYCLE) {
                 verify(expenseRates, times(1)).getBikeRate();
             }
 
@@ -3434,7 +3434,6 @@ class JurorExpenseServiceTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void positiveTypical() {
             CourtLocation courtLocation = mock(CourtLocation.class);
             when(courtLocation.getOwner()).thenReturn(TestConstants.VALID_COURT_LOCATION);
@@ -4551,7 +4550,6 @@ class JurorExpenseServiceTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void positiveTypicalFromDateEquals() {
             Appearance juror1Pool1Appearance1 = mockAppearance(
                 TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER, LocalDate.of(2023, 1, 1));
@@ -4608,7 +4606,6 @@ class JurorExpenseServiceTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void positiveTypicalFromDateIsAfter() {
             Appearance juror1Pool1Appearance1 = mockAppearance(
                 TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER, LocalDate.of(2023, 1, 1));
@@ -4666,7 +4663,6 @@ class JurorExpenseServiceTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void positiveTypicalToDateEquals() {
             Appearance juror1Pool1Appearance1 = mockAppearance(
                 TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER, LocalDate.of(2023, 1, 1));
@@ -4718,7 +4714,6 @@ class JurorExpenseServiceTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void positiveTypicalToDateIsBefore() {
             Appearance juror1Pool1Appearance1 = mockAppearance(
                 TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER, LocalDate.of(2023, 1, 1));
@@ -5853,4 +5848,3 @@ class JurorExpenseServiceTest {
         }
     }
 }
-

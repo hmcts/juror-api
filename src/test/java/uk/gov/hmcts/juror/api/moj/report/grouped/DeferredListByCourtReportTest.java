@@ -33,6 +33,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class DeferredListByCourtReportTest extends AbstractGroupedReportTestSupport<DeferredListByCourtReport> {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;

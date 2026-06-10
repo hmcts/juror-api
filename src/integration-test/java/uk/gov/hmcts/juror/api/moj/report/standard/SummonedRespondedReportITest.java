@@ -19,7 +19,7 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/CurrentPoolStatusReportControllerITest_typical.sql"
 })
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class SummonedRespondedReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired

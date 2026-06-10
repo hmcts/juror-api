@@ -95,9 +95,9 @@ public class StraightThroughProcessorServiceImplTest {
         Mockito.doReturn(null).when(jurorDigitalResponseRepository).save(any());
 
         Mockito.doReturn(new ArrayList<>()).when(jurorResponseCjsEmploymentRepository)
-            .findByJurorNumber(Mockito.anyString());
+            .findByJurorNumber(any());
         Mockito.doReturn(new ArrayList<>()).when(jurorReasonableAdjustmentRepository)
-            .findByJurorNumber(Mockito.anyString());
+            .findByJurorNumber(any());
     }
 
     //Interface method: isValidResponseForStraightThroughProcessing

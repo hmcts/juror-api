@@ -71,7 +71,8 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 @SuppressWarnings({
     "LineLength",
     "PMD.ExcessiveImports",
-    "PMD.TooManyMethods"
+    "PMD.TooManyMethods",
+    "PMD.PublicMemberInNonPublicType"
 })
 class MessagingControllerITest extends AbstractIntegrationTest {
 
@@ -87,18 +88,24 @@ class MessagingControllerITest extends AbstractIntegrationTest {
     private JurorHistoryRepository jurorHistoryRepository;
 
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
+
     @BeforeEach
     public void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
 
+    @SuppressWarnings({
+        "PMD.PublicMemberInNonPublicType"
+    })
     protected static class TestData {
         public static final String ENGLISH_SUBJECT = "Your Jury Service";
         public static final String WELSH_SUBJECT = "Eich Gwasanaeth Rheithgor";
         protected static final String ENGLISH_LOC_CODE = "462";
         protected static final String WELSH_LOC_CODE = "756";
 
+        @SuppressWarnings("PMD.PublicMemberInNonPublicType")
         protected enum Placeholder {
             ENGLISH_COURT_NAME("N/A", "<court_name>", DataType.STRING, false, "WARRINGTON"),
             ENGLISH_COURT_PHONE("N/A", "<court_phone>", DataType.STRING, false, "01244 356726"),
@@ -710,6 +717,9 @@ class MessagingControllerITest extends AbstractIntegrationTest {
         }
     }
 
+    @SuppressWarnings({
+        "PMD.PublicMemberInNonPublicType"
+    })
     @Nested
     @DisplayName("GET " + GetMessageDetails.URL)
     class GetMessageDetails {
@@ -1050,9 +1060,6 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @TestFactory
             @DisplayName("Generated")
-            @SuppressWarnings({
-                "PMD.JUnitTestsShouldIncludeAssert"//False positive
-            })
             Stream<DynamicContainer> tests() {
                 return tests.stream();
             }
@@ -2343,9 +2350,6 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @TestFactory
             @DisplayName("Generated")
-            @SuppressWarnings({
-                "PMD.JUnitTestsShouldIncludeAssert"//False positive
-            })
             Stream<DynamicContainer> tests() {
                 return tests.stream();
             }
@@ -2358,8 +2362,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 validateMessage(message,
                     ENGLISH_JUROR_NUMBER_WELSH_FLAG_FALSE,
                     TestData.ENGLISH_LOC_CODE,
-                    MessageType.SendType.SMS.equals(sendType) ? "07777000002" : null,
-                    MessageType.SendType.EMAIL.equals(sendType) ? "FNAME02.LNAME02@email.com" : null,
+                    sendType == MessageType.SendType.SMS ? "07777000002" : null,
+                    sendType == MessageType.SendType.EMAIL ? "FNAME02.LNAME02@email.com" : null,
                     ENGLISH_POOL_NUMBER_WELSH_FLAG_FALSE,
                     TestData.ENGLISH_SUBJECT,
                     messageText,
@@ -2374,8 +2378,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 validateMessage(message,
                     ENGLISH_JUROR_NUMBER_WELSH_FLAG_TRUE,
                     TestData.ENGLISH_LOC_CODE,
-                    MessageType.SendType.SMS.equals(sendType) ? "07777000004" : null,
-                    MessageType.SendType.EMAIL.equals(sendType) ? "FNAME04.LNAME04@email.com" : null,
+                    sendType == MessageType.SendType.SMS ? "07777000004" : null,
+                    sendType == MessageType.SendType.EMAIL ? "FNAME04.LNAME04@email.com" : null,
                     ENGLISH_POOL_NUMBER_WELSH_FLAG_TRUE,
                     TestData.ENGLISH_SUBJECT,
                     messageText,
@@ -2390,8 +2394,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 validateMessage(message,
                     WELSH_JUROR_NUMBER_WELSH_FLAG_FALSE,
                     TestData.WELSH_LOC_CODE,
-                    MessageType.SendType.SMS.equals(sendType) ? "07777000014" : null,
-                    MessageType.SendType.EMAIL.equals(sendType) ? "FNAME14.LNAME14@email.com" : null,
+                    sendType == MessageType.SendType.SMS ? "07777000014" : null,
+                    sendType == MessageType.SendType.EMAIL ? "FNAME14.LNAME14@email.com" : null,
                     WELSH_POOL_NUMBER_WELSH_FLAG_FALSE,
                     TestData.ENGLISH_SUBJECT,
                     messageText,
@@ -2406,8 +2410,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 validateMessage(message,
                     WELSH_JUROR_NUMBER_WELSH_FLAG_TRUE,
                     TestData.WELSH_LOC_CODE,
-                    MessageType.SendType.SMS.equals(sendType) ? "07777000001" : null,
-                    MessageType.SendType.EMAIL.equals(sendType) ? "FNAME01.LNAME01@email.com" : null,
+                    sendType == MessageType.SendType.SMS ? "07777000001" : null,
+                    sendType == MessageType.SendType.EMAIL ? "FNAME01.LNAME01@email.com" : null,
                     WELSH_POOL_NUMBER_WELSH_FLAG_TRUE,
                     TestData.WELSH_SUBJECT,
                     messageText,
@@ -3343,9 +3347,6 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @TestFactory
             @DisplayName("Generated")
-            @SuppressWarnings({
-                "PMD.JUnitTestsShouldIncludeAssert"//False positive
-            })
             Stream<DynamicContainer> tests() {
                 return tests.stream();
             }
@@ -3498,7 +3499,6 @@ class MessagingControllerITest extends AbstractIntegrationTest {
     @Nested
     @DisplayName("POST " + GetMessageDetailsPopulated.URL)
     @Sql({"/db/mod/truncate.sql", "/db/MessagingControllerITest_toCsv.sql"})
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     class ToCsv extends AbstractControllerIntegrationTest<ExportContactDetailsRequest, String> {
 
         private static final String URL = BASE_URL + "/csv/{loc_code}";

@@ -15,7 +15,6 @@ import java.time.LocalTime;
 import java.time.Month;
 
 //False positive this class is used to set up test data instead of running tests
-@SuppressWarnings("PMD.UnitTestShouldUseTestAnnotation")
 public final class LetterTestUtils {
 
     private LetterTestUtils() {

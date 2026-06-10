@@ -109,7 +109,6 @@ class AbstractReportTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void jurorToJurorPool() {
             assertThat(AbstractReport.CLASS_TO_JOIN.containsKey(QJuror.juror)).isTrue();
             Map<EntityPath<?>, Predicate[]> map = AbstractReport.CLASS_TO_JOIN.get(QJuror.juror);
@@ -121,7 +120,6 @@ class AbstractReportTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void jurorToPendingJuror() {
             assertThat(AbstractReport.CLASS_TO_JOIN.containsKey(QJuror.juror)).isTrue();
             Map<EntityPath<?>, Predicate[]> map = AbstractReport.CLASS_TO_JOIN.get(QJuror.juror);
@@ -133,7 +131,6 @@ class AbstractReportTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void jurorToAppearance() {
             assertThat(AbstractReport.CLASS_TO_JOIN.containsKey(QJuror.juror)).isTrue();
             Map<EntityPath<?>, Predicate[]> map = AbstractReport.CLASS_TO_JOIN.get(QJuror.juror);
@@ -145,7 +142,6 @@ class AbstractReportTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void jurorToLowLevelFinancialAuditDetailsIncludingApprovedAmounts() {
             assertThat(AbstractReport.CLASS_TO_JOIN.containsKey(QJuror.juror)).isTrue();
             Map<EntityPath<?>, Predicate[]> map = AbstractReport.CLASS_TO_JOIN
@@ -271,7 +267,6 @@ class AbstractReportTest {
 
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void positiveConstructorTest() {
         AbstractReport<?> report = new AbstractReportTestImpl(
             poolRequestRepository, QJuror.juror, DataType.JUROR_NUMBER, DataType.FIRST_NAME,
@@ -300,7 +295,6 @@ class AbstractReportTest {
     @DisplayName("public StandardReportResponse getStandardReportResponse(StandardReportRequest request)")
     class GetStandardReportResponse {
         @Test
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void positiveTypical() {
             AbstractReport<Object> report = createReport();
             StandardReportRequest request = mock(StandardReportRequest.class);
@@ -1245,6 +1239,7 @@ class AbstractReportTest {
         return createReport(QJuror.juror, DataType.JUROR_NUMBER);
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     private static class AbstractReportTestImpl extends AbstractReport<Object> {
 
         public AbstractReportTestImpl(PoolRequestRepository poolRequestRepository,

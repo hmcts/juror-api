@@ -9,6 +9,7 @@ import java.util.List;
  * Custom Repository definition for the Currently Deferred entity.
  * Allowing for additional query functions to be explicitly declared
  */
+@FunctionalInterface
 public interface ICurrentlyDeferredRepository {
 
     List<Tuple> getDeferralsByCourtLocationCode(BureauJwtPayload payload, String courtLocation);

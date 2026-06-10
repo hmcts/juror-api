@@ -45,6 +45,7 @@ import java.util.Set;
 @NoArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Schema(description = "Juror overview information for the Juror Record")
+@SuppressWarnings({"PMD.TooManyFields"})
 public class JurorOverviewResponseDto {
 
     @Length(max = 50)
@@ -138,12 +139,12 @@ public class JurorOverviewResponseDto {
 
 
         this.attendances = appearanceList.stream()
-            .filter(appearance -> !AttendanceType.ABSENT.equals(appearance.getAttendanceType()))
-            .filter(appearance -> !AttendanceType.NON_ATTENDANCE.equals(appearance.getAttendanceType()))
-            .filter(appearance -> !AttendanceType.NON_ATTENDANCE_LONG_TRIAL.equals(appearance.getAttendanceType()))
+            .filter(appearance -> appearance.getAttendanceType() != AttendanceType.ABSENT)
+            .filter(appearance -> appearance.getAttendanceType() != AttendanceType.NON_ATTENDANCE)
+            .filter(appearance -> appearance.getAttendanceType() != AttendanceType.NON_ATTENDANCE_LONG_TRIAL)
             .count();
         this.absences = appearanceList.stream()
-            .filter(appearance -> AttendanceType.ABSENT.equals(appearance.getAttendanceType()))
+            .filter(appearance -> appearance.getAttendanceType() == AttendanceType.ABSENT)
             .count();
         this.trials = panelRepository.countByJurorJurorNumberAndTrialCourtLocationLocCode(
             jurorPool.getJurorNumber(),

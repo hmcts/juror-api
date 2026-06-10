@@ -314,7 +314,6 @@ class TrialControllerITest extends AbstractIntegrationTest {
     }
 
     @Nested
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     class TrialList {
         static final String URL = "/api/v1/moj/trial/list";
 
@@ -453,7 +452,6 @@ class TrialControllerITest extends AbstractIntegrationTest {
     }
 
     @Nested
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     class TrialSummary {
         static final String URL = "/api/v1/moj/trial/summary?";
         static final String URL_TRIAL_SUMMARY = URL + "trial_number=%s&location_code=%s";
@@ -750,7 +748,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
                 Appearance appearance =
                     appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415", panel.getJurorNumber(),
                         LocalDate.now()).orElseThrow(() ->
-                        new MojException.NotFound("No appearance record found", null));
+                            new MojException.NotFound("No appearance record found", null));
 
                 assertThat(appearance.getAttendanceAuditNumber()).isNotNull();
 
@@ -817,7 +815,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
                 Appearance appearance =
                     appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415", panel.getJurorNumber(),
                         LocalDate.now()).orElseThrow(() ->
-                        new MojException.NotFound("No appearance record found", null));
+                            new MojException.NotFound("No appearance record found", null));
                 assertThat(appearance.getTimeIn()).as("Expect time in to be null").isEqualTo(LocalTime.of(9, 30));
                 assertThat(appearance.getTimeOut()).as("Expect time out to be null").isNull();
                 assertThat(panel.isCompleted()).as("Expected panel completed status to be true").isTrue();
@@ -833,7 +831,6 @@ class TrialControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/trial/ReturnJuryPanel.sql", "/db/JurorExpenseControllerITest_expenseRates.sql"})
     @SuppressWarnings({
         "PMD.AvoidInstantiatingObjectsInLoops",
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
     })
     void testReturnJuryConfirmAttendanceAndCompleteService() {
         final String url = "/api/v1/moj/trial/return-jury?"
@@ -872,7 +869,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
                 Appearance appearance =
                     appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415", panel.getJurorNumber(),
                         LocalDate.now()).orElseThrow(() ->
-                        new MojException.NotFound("No appearance record found", null));
+                            new MojException.NotFound("No appearance record found", null));
 
                 assertThat(appearance.getTimeIn()).as("Expect time in to not be null").isNotNull();
                 assertThat(appearance.getTimeIn()).as("Expect time in to be 09:00").isEqualTo(LocalTime.parse(
@@ -1029,7 +1026,6 @@ class TrialControllerITest extends AbstractIntegrationTest {
 
 
     @Nested
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     class ReassignJurors {
 
 
@@ -1146,7 +1142,6 @@ class TrialControllerITest extends AbstractIntegrationTest {
 
 
     @Nested
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     class ReturnedJurors {
 
         @Test

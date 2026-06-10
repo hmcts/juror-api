@@ -37,6 +37,7 @@ import static org.springframework.http.HttpMethod.GET;
 /**
  * Integration tests for the API endpoints defined in {@link CourtLocationController}.
  */
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CourtLocationControllerITest extends AbstractIntegrationTest {
@@ -50,6 +51,7 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
 
     private HttpHeaders httpHeaders;
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @BeforeEach
     public void setUp() throws Exception {
         initHeaders();
@@ -80,7 +82,7 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
     @Test
     void testGetCourtLocationsBureauUser() {
         ResponseEntity<CourtLocationListDto> responseEntity =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, GET,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, GET,
                 URI.create("/api/v1/moj/court-location/all-court-locations")), CourtLocationListDto.class);
 
         assertThat(responseEntity.getStatusCode())
@@ -101,7 +103,7 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
     void testGetCourtLocationsCourtUser() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Arrays.asList("415", "462", "767", "774")));
         ResponseEntity<CourtLocationListDto> responseEntity =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, GET,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, GET,
                 URI.create("/api/v1/moj/court-location/all-court-locations")), CourtLocationListDto.class);
 
         assertThat(responseEntity.getStatusCode())
@@ -146,7 +148,6 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//Assertion done in nested method
     void testGetAllCourtLocationsByPostcodeBadRequestException() {
         //Invoke service.
         templateExchangeAllCourtLocationsByPostcode("SE1236LA", BUREAU_USER, "400", HttpStatus.BAD_REQUEST);
@@ -177,6 +178,9 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/CourtLocationControllerITest_getCourtRates.sql"})
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
         statements = {"delete from juror_mod.court_location where loc_code in ('001')"})
+    @SuppressWarnings({
+        "PMD.PublicMemberInNonPublicType"
+    })
     class GetCourtRates {
         public static final String URL = BASE_URL + "/{loc_code}/rates";
 

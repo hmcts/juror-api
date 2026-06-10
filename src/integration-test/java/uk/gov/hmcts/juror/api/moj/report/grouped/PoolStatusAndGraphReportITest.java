@@ -20,7 +20,7 @@ import java.util.List;
     "/db/mod/truncate.sql",
     "/db/mod/reports/PoolStatusAndGraphReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class PoolStatusAndGraphReportITest extends AbstractGroupedReportControllerITest {
     @Autowired
     public PoolStatusAndGraphReportITest(TestRestTemplate template) {

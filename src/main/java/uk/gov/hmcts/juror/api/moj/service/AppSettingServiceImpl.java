@@ -135,9 +135,8 @@ public class AppSettingServiceImpl implements AppSettingService {
             :
                 null;
         if (setting != null) {
-            final String welshTranslationText = setting.getValue();
             return
-                (welshTranslationText);
+                setting.getValue();
         }
 
         return null;
@@ -168,9 +167,8 @@ public class AppSettingServiceImpl implements AppSettingService {
             :
                 null;
         if (setting != null) {
-            final String surveyIdText = setting.getValue();
             return
-                (surveyIdText);
+                setting.getValue();
         }
 
         return null;
@@ -185,9 +183,8 @@ public class AppSettingServiceImpl implements AppSettingService {
             :
                 null;
         if (setting != null) {
-            final String surveyIdText = setting.getValue();
             return
-                (surveyIdText);
+                setting.getValue();
         }
 
         return null;

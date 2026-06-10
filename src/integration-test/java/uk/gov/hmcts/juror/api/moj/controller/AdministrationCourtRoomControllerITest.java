@@ -40,7 +40,6 @@ import static org.springframework.http.HttpMethod.PUT;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + AdministrationCourtRoomControllerITest.BASE_URL)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@SuppressWarnings("PMD.ExcessiveImports")
 public class AdministrationCourtRoomControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/moj/administration/court-rooms";
 
@@ -80,6 +79,7 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
     @DisplayName("GET " + ViewCourtRoomsDetails.URL)
     @Sql(value = {"/db/administration/tearDownCourtRooms.sql",
         "/db/administration/createCourtRooms.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Sql(value = "/db/administration/tearDownCourtRooms.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     class ViewCourtRoomsDetails {
         public static final String URL = BASE_URL + "/{loc_code}";
@@ -184,6 +184,7 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST " + CreateCourtRoom.URL)
     class CreateCourtRoom {
@@ -288,6 +289,9 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
     @DisplayName("GET " + ViewCourtRoomDetails.URL)
     @Sql(value = {"/db/administration/tearDownCourtRooms.sql",
         "/db/administration/createCourtRooms.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @SuppressWarnings({
+        "PMD.PublicMemberInNonPublicType"
+    })
     @Sql(value = "/db/administration/tearDownCourtRooms.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     class ViewCourtRoomDetails {
         public static final String URL = BASE_URL + "/{loc_code}/{id}";
@@ -386,6 +390,7 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
     @DisplayName("PUT " + UpdateCourtRoom.URL)
     @Sql(value = {"/db/administration/tearDownCourtRooms.sql",
         "/db/administration/createCourtRooms.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Sql(value = "/db/administration/tearDownCourtRooms.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     class UpdateCourtRoom {
         public static final String URL = BASE_URL + "/{loc_code}/{id}";

@@ -50,8 +50,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         RestResponseEntityExceptionHandler.class
     }
 )
+@SuppressWarnings({
+    "PMD.ExcessiveImports",
+    "PMD.PublicMemberInNonPublicType"
+})
 @DisplayName("Controller: " + UserControllerTest.BASE_URL)
-@SuppressWarnings("PMD.ExcessiveImports")
 class UserControllerTest {
 
     public static final String BASE_URL = "/api/v1/moj/users";
@@ -65,6 +68,7 @@ class UserControllerTest {
     private UserController userController;
 
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST " + ViewAllUsers.URL)
     class ViewAllUsers {
@@ -98,7 +102,6 @@ class UserControllerTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void negativeInvalidPayload() throws Exception {
             mockMvc.perform(post(URL)
                     .contentType(MediaType.APPLICATION_JSON)
@@ -108,6 +111,7 @@ class UserControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST " + CreateUser.URL)
     class CreateUser {
@@ -150,6 +154,7 @@ class UserControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET " + GetUser.URL)
     class GetUser {
@@ -179,6 +184,7 @@ class UserControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("PUT " + UpdateUser.URL)
     class UpdateUser {
@@ -223,6 +229,7 @@ class UserControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("PATCH " + UpdateUser.URL)
     class AddCourt {
@@ -262,6 +269,7 @@ class UserControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("DELETE " + RemoveCourt.URL)
     class RemoveCourt {
@@ -300,6 +308,7 @@ class UserControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("PATCH " + UpdateUserType.URL)
     class UpdateUserType {

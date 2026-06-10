@@ -34,6 +34,7 @@ import static uk.gov.hmcts.juror.api.moj.service.report.AttendanceReportService.
 import static uk.gov.hmcts.juror.api.moj.service.report.AttendanceReportService.TableHeading.SUNDAY_TOTAL;
 import static uk.gov.hmcts.juror.api.moj.service.report.AttendanceReportService.TableHeading.TOTAL_PAID;
 
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class AttendanceReportServiceImplTest {
 
     private final AttendanceReportServiceImpl attendanceReportService;
@@ -75,7 +76,6 @@ class AttendanceReportServiceImplTest {
 
     @Nested
     @DisplayName("Weekend attendance report tests")
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") //false positive
     class WeekendAttendanceReportTests {
 
         @Test

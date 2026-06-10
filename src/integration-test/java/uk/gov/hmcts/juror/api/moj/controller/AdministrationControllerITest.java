@@ -52,8 +52,8 @@ import static org.springframework.http.HttpMethod.PUT;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + AdministrationControllerITest.BASE_URL)
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @SuppressWarnings("PMD.ExcessiveImports")
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class AdministrationControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/moj/administration";
 
@@ -70,6 +70,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET  " + ViewCodeAndDescriptions.URL)
     class ViewCodeAndDescriptions {
@@ -288,6 +289,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
     @DisplayName("GET  " + ViewCourtDetails.URL)
     @Sql(value = {"/db/administration/tearDownCourts.sql",
         "/db/administration/createCourts.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Sql(value = "/db/administration/tearDownCourts.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     class ViewCourtDetails {
         public static final String URL = BASE_URL + "/courts/{loc_code}";
@@ -419,6 +421,9 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
     @DisplayName("PUT  " + UpdateCourtRates.URL)
     @Sql(value = {"/db/administration/tearDownCourts.sql",
         "/db/administration/createCourts.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @SuppressWarnings({
+        "PMD.PublicMemberInNonPublicType"
+    })
     @Sql(value = "/db/administration/tearDownCourts.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     class UpdateCourtRates {
         public static final String URL = BASE_URL + "/courts/{loc_code}/rates";
@@ -539,6 +544,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
     @DisplayName("PUT  " + UpdateCourtDetails.URL)
     @Sql(value = {"/db/administration/tearDownCourts.sql",
         "/db/administration/createCourts.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Sql(value = "/db/administration/tearDownCourts.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     class UpdateCourtDetails {
         public static final String URL = BASE_URL + "/courts/{loc_code}";
@@ -676,10 +682,11 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
 
     @Nested
     @DisplayName("GET  " + ViewAllCourtsDetails.URL)
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Sql(value = {"/db/administration/tearDownCourts.sql",
         "/db/administration/createCourts.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(value = "/db/administration/tearDownCourts.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    class ViewAllCourtsDetails {
+    final class ViewAllCourtsDetails {
         public static final String URL = BASE_URL + "/courts";
 
         private ViewAllCourtsDetails() {
@@ -778,11 +785,12 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
     }
 
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET  " + ViewExpenseDetails.URL)
     @Sql({"/db/mod/truncate.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
-    class ViewExpenseDetails {
+    final class ViewExpenseDetails {
         public static final String URL = BASE_URL + "/expenses/rates";
 
         private ViewExpenseDetails() {

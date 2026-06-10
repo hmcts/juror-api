@@ -44,7 +44,8 @@ import static org.mockito.Mockito.when;
 
 @SuppressWarnings({
     "PMD.ExcessiveImports",
-    "PMD.TooManyMethods"
+    "PMD.TooManyMethods",
+    "PMD.PublicMemberInNonPublicType"
 })
 class JurorHistoryServiceImplTest {
     private final JurorHistoryService jurorHistoryService;

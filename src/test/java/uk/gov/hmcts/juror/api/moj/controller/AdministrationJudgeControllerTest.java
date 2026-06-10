@@ -59,6 +59,7 @@ public class AdministrationJudgeControllerTest {
     @InjectMocks
     private AdministrationJudgeController administrationJudgeController;
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET " + ViewJudgeDetails.URL)
     class ViewJudgeDetails {
@@ -99,6 +100,7 @@ public class AdministrationJudgeControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("DELETE " + DeleteJudge.URL)
     class DeleteJudge {
@@ -132,6 +134,7 @@ public class AdministrationJudgeControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("PUT " + UpdateJudgeDetails.URL)
     class UpdateJudgeDetails {
@@ -195,6 +198,7 @@ public class AdministrationJudgeControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET " + ViewAllJudgeDetails.URL)
     class ViewAllJudgeDetails {
@@ -261,6 +265,7 @@ public class AdministrationJudgeControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST " + CreateJudgeDetails.URL)
     class CreateJudgeDetails {

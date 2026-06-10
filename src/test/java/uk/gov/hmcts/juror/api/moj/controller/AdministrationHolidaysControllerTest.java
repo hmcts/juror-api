@@ -60,13 +60,13 @@ public class AdministrationHolidaysControllerTest {
     @InjectMocks
     private AdministrationHolidaysController administrationHolidaysController;
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET " + ViewBankHolidays.URL)
     class ViewBankHolidays {
         public static final String URL = BASE_URL + "/bank-holidays";
 
         @Test
-        @SuppressWarnings("PMD.UseConcurrentHashMap")//False positive
         void positiveTypical() throws Exception {
             Map<Integer, List<HolidayDate>> response = Map.of(
                 2024, List.of(new HolidayDate(LocalDate.now(), "Some bank holiday"))
@@ -85,6 +85,7 @@ public class AdministrationHolidaysControllerTest {
     }
 
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET " + ViewNonSittingDays.URL)
     class ViewNonSittingDays {
@@ -119,6 +120,7 @@ public class AdministrationHolidaysControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("DELETE " + DeleteNonSittingDays.URL)
     class DeleteNonSittingDays {
@@ -162,6 +164,7 @@ public class AdministrationHolidaysControllerTest {
         }
     }
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST " + AddNonSittingDays.URL)
     class AddNonSittingDays {

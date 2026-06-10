@@ -24,7 +24,7 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/ReasonableAdjustmentAndCJEReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class ReasonableAdjustmentAndCjeReportITest extends AbstractGroupedReportControllerITest {
 
     @Autowired
@@ -263,6 +263,8 @@ class ReasonableAdjustmentAndCjeReportITest extends AbstractGroupedReportControl
                         ))).build())
             .build();
     }
+
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
 
     public GroupByResponse getTypicalGroupByResponse() {
         return GroupByResponse.builder()
