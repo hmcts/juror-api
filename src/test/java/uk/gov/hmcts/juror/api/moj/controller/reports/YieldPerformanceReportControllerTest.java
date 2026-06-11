@@ -21,6 +21,7 @@ import uk.gov.hmcts.juror.api.moj.service.report.AttendanceReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.FinancialAuditReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.JurySummoningMonitorReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.ReportService;
+import uk.gov.hmcts.juror.api.moj.service.report.SittingDaysReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.SummonsRepliesReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.YieldPerformanceReportService;
@@ -73,6 +74,9 @@ class YieldPerformanceReportControllerTest {
 
     @MockBean
     private AttendanceReportService attendanceReportService;
+
+    @MockBean
+    private SittingDaysReportService sittingDaysReportService;
 
     @Nested
     @DisplayName("POST (GET) " + ViewYieldReportHappy.URL)
