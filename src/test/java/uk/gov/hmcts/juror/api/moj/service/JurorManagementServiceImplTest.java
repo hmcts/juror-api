@@ -647,6 +647,7 @@ public class JurorManagementServiceImplTest {
 
         sourcePoolRequest.setCourtLocation(primaryCourtLocation);
         targetpoolRequest.setCourtLocation(primaryCourtLocation);
+        targetpoolRequest.setLastUpdate(LocalDateTime.now());
 
         JurorStatus respondedStatus = new JurorStatus();
         respondedStatus.setStatus(2);

@@ -41,6 +41,7 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -197,7 +198,14 @@ public class JurorManagementServiceImpl implements JurorManagementService {
             }
         }
 
-        poolRequestRepository.saveAndFlush(targetPoolRequest);
+        // remove a target pool created for court users if no jurors were reassigned into it
+        if (reassignedJurorsCount == 0 && !owner.equals(JurorDigitalApplication.JUROR_OWNER)
+            && targetPoolRequest.getLastUpdate().isAfter(LocalDateTime.now().minusMinutes(1))
+            && targetPoolRequest.getNumberRequested() == null) {
+            poolRequestRepository.delete(targetPoolRequest);
+        } else {
+            poolRequestRepository.saveAndFlush(targetPoolRequest);
+        }
 
         log.trace("Finished reassignJurors method");
 
@@ -637,6 +645,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         targetPoolRequest.setPoolType(sourcePoolRequest.getPoolType());
         // explicitly set number requested to null (not 0) so we can differentiate between these pools and nil pools
         targetPoolRequest.setNumberRequested(null);
+        targetPoolRequest.setDateCreated(LocalDateTime.now());
         log.trace("Pool: {} created to receive transferred pool members", targetPoolRequest.getPoolNumber());
         return poolRequestRepository.save(targetPoolRequest);
     }
