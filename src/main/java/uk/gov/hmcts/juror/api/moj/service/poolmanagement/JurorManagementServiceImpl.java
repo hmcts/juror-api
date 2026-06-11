@@ -646,6 +646,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         // explicitly set number requested to null (not 0) so we can differentiate between these pools and nil pools
         targetPoolRequest.setNumberRequested(null);
         targetPoolRequest.setDateCreated(LocalDateTime.now());
+        targetPoolRequest.setLastUpdate(LocalDateTime.now());
         log.trace("Pool: {} created to receive transferred pool members", targetPoolRequest.getPoolNumber());
         return poolRequestRepository.save(targetPoolRequest);
     }
