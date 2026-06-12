@@ -84,11 +84,55 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
 
         List<List<Object>> data = letters.stream()
             .sorted((o1, o2) -> letterType.getTupleComparator().compare(o1, o2))
-            .map(tuple -> letterType.getReissueDataTypes()
-                .stream()
-                .map(dataType -> dataType.transform(tuple.get(dataType.getExpression())))
-                .toList())
+            .map(tuple -> {
+                // Retrieve the form code using the same expression instance already projected
+                // into the tuple by DataType.FORM_CODE, so tuple.get() will resolve correctly.
+                Object formCodeValue = tuple.get(DataType.FORM_CODE.getExpression());
+                String formCode = formCodeValue != null ? formCodeValue.toString() : "";
+
+                return letterType.getReissueDataTypes()
+                    .stream()
+                    .map(dataType -> {
+                        // The bilingual summons (5221C) has no barcode field, so Date of Attendance
+                        // sits 9 bytes earlier than in the English summons (5221).
+                        // 5221  offset: 315-347 (0-indexed) - "13 AUGUST, 2026        DYDD IAU "
+                        // 5221C offset:
+                        //   English Date of Attendance: 306-338 (0-indexed) - "THURSDAY 13 AUGUST, 2026"
+                        //   Welsh Date of Attendance:    338-370 (0-indexed) - "DYDD IAU 13 AWST, 2026"
+                        // For 5221C the displayed value combines the English date (without its
+                        // leading day name) with the Welsh day name only, e.g. "13 AUGUST, 2026 DYDD IAU"
+                        if (dataType == DataType.SUMMONS_DATE) {
+                            Object detailRecValue = tuple.get(dataType.getExpression());
+                            if (detailRecValue == null) {
+                                return null;
+                            }
+                            String rec = detailRecValue.toString();
+                            if ("5221C".equals(formCode)) {
+                                String englishDate = rec.substring(306, 338).trim();
+                                String welshDate = rec.substring(338, 370).trim();
+
+                                // Strip the leading English day name (e.g. "THURSDAY ")
+                                int spaceIndex = englishDate.indexOf(' ');
+                                String englishDateNoDay = spaceIndex >= 0
+                                    ? englishDate.substring(spaceIndex + 1)
+                                    : englishDate;
+
+                                // Keep only the leading Welsh day name (e.g. "DYDD IAU")
+                                String[] welshParts = welshDate.split(" ", 3);
+                                String welshDayName = welshParts.length >= 2
+                                    ? welshParts[0] + " " + welshParts[1]
+                                    : welshDate;
+
+                                return englishDateNoDay + " " + welshDayName;
+                            }
+                            return rec.substring(315, 347).trim();
+                        }
+                        return dataType.transform(tuple.get(dataType.getExpression()));
+                    })
+                    .toList();
+            })
             .toList();
+
         final List<String> headings = letterType.getReissueDataTypes().stream()
             .map(DataType::getDisplayText)
             .toList();
@@ -137,7 +181,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
             poolLetterCount.keySet().forEach(poolNumber -> {
                 // create pool history
                 poolHistoryService.createPoolHistory(poolNumber, HistoryCode.PHRS,
-                         poolLetterCount.get(poolNumber) + " (Number of Reminder letters sent)");
+                poolLetterCount.get(poolNumber) + " (Number of Reminder letters sent)");
             });
 
         }
