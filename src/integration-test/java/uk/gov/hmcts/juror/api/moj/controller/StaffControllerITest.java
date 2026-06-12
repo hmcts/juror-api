@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

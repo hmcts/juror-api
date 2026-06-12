@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -68,7 +69,9 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
     final class ViewBankHolidays {
         public static final String URL = BASE_URL + "/bank-holidays";
 
-        private ViewBankHolidays() {}
+        private ViewBankHolidays() {
+
+        }
 
         @Nested
         @DisplayName("Positive")
