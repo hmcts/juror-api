@@ -46,7 +46,7 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
     private TestRestTemplate template;
 
     @Autowired
-    private final CourtroomRepository courtroomRepository;
+    private CourtroomRepository courtroomRepository;
 
     @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
