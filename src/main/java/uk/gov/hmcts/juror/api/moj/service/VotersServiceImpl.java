@@ -23,7 +23,10 @@ import uk.gov.hmcts.juror.api.moj.repository.VotersRepository;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -31,6 +34,9 @@ import java.util.Optional;
 public class VotersServiceImpl implements VotersService {
     static final int AGE_LOWER_SP_ID = 101;
     static final int AGE_UPPER_SP_ID = 100;
+
+    record VoterKey(String firstName, String lastName, String address, String postcode) {}
+
 
     @Autowired
     private JurorService jurorService;
@@ -89,25 +95,41 @@ public class VotersServiceImpl implements VotersService {
             .toList();
 
         List<DeceasedJuror> deceasedJurors = jurorService.getDeceasedJurors(voterPostcodes);
-        
-        // Filter out deceased voters
-        votersList.removeIf(voter -> deceasedJurors.stream()
-            .anyMatch(juror -> juror.getAddressLine1().trim().equalsIgnoreCase(voter.getAddress().trim())
-                && juror.getLastName().trim().equalsIgnoreCase(voter.getLastName().trim())
-                && juror.getFirstName().trim().equalsIgnoreCase(voter.getFirstName().trim())
-                && juror.getPostcode().trim().equalsIgnoreCase(voter.getPostcode().trim())));
 
-    
+        Set<VoterKey> deceasedKeys = deceasedJurors.stream()
+            .map(j -> key(j.getFirstName(), j.getLastName(), j.getAddressLine1(), j.getPostcode()))
+            .collect(Collectors.toSet());
+
+        // Filter out deceased voters
+        votersList.removeIf(voter -> deceasedKeys.contains(
+            key(voter.getFirstName(), voter.getLastName(), voter.getAddress(), voter.getPostcode())
+        ));
+
         List<ExcludedVoters> excludedVoters = getExcludedVoters();
 
+        Set<VoterKey> excusedKeys = excludedVoters.stream()
+            .map(j -> key(j.getFirstName(), j.getLastName(), j.getAddress1(), j.getPostcode()))
+            .collect(Collectors.toSet());
+
         // filter out excluded voters
-        votersList.removeIf(voter -> excludedVoters.stream()
-            .anyMatch(excludedVoter -> excludedVoter.getAddress1().trim().equalsIgnoreCase(voter.getAddress().trim())
-                && excludedVoter.getFirstName().trim().equalsIgnoreCase(voter.getFirstName().trim())
-                && excludedVoter.getLastName().trim().equalsIgnoreCase(voter.getLastName().trim())
-                && excludedVoter.getPostcode().trim().equalsIgnoreCase(voter.getPostcode().trim())));
+        votersList.removeIf(voter -> excusedKeys.contains(
+            key(voter.getFirstName(), voter.getLastName(), voter.getAddress(), voter.getPostcode())
+        ));
 
         return votersList;
+    }
+
+    private static String normalise(String value) {
+        return value == null ? "" : value.trim().toUpperCase(Locale.ROOT);
+    }
+
+    private static VoterKey key(String firstName, String lastName, String address, String postcode) {
+        return new VoterKey(
+            normalise(firstName),
+            normalise(lastName),
+            normalise(address),
+            normalise(postcode)
+        );
     }
 
     @Override
@@ -129,7 +151,7 @@ public class VotersServiceImpl implements VotersService {
         }
         voters.forEach(voter -> {
             voter.setDateSelected1(attendanceDate);
-            log.info("Voter with Juror number {} has been selected for a pool.", voter.getJurorNumber());
+            log.info("Voter with hash id {} has been selected for a pool.", voter.getHashId());
         });
         votersRepository.saveAll(voters);
     }

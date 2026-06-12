@@ -109,6 +109,7 @@ public abstract class AbstractValidatorTest<T> {
     }
 
 
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     protected void assertExpectViolations(T objectToValidate, FieldTestSupport fieldTestSupport,
                                           List<Violation> expectedViolations) {
         assertExpectViolations(objectToValidate, expectedViolations, getGroups(fieldTestSupport), false);
@@ -164,6 +165,7 @@ public abstract class AbstractValidatorTest<T> {
         private Violation[] violations;
         private Class<?>[] groups;
 
+        @SuppressWarnings("PMD.LinguisticNaming")
         public FieldTestSupport setGroups(Class<?>... groups) {
             this.groups = groups.clone();
             return this;

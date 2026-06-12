@@ -115,13 +115,13 @@ public class FinancialAuditDetails implements Serializable {
             APPROVED,
             EDIT;
 
-                public Set<Type> getTypes() {
-                    return Arrays.stream(Type.values())
+            public Set<Type> getTypes() {
+                return Arrays.stream(Type.values())
                     .filter(type -> type.getGenericType() == this)
                     .collect(Collectors.toSet());
-                }
             }
         }
+    }
 
     @AllArgsConstructor
     @NoArgsConstructor

@@ -74,6 +74,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.gov.hmcts.juror.api.moj.controller.response.JurorBankDetailsDto.builder;
 
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.CouplingBetweenObjects"})
 @ExtendWith(SpringExtension.class)
@@ -1248,10 +1249,10 @@ class JurorRecordControllerTest {
             BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
             when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
-	            JurorBankDetailsDto jurorBankDetailsDto = builder()
-	                .bankAccountNumber("12345678")
-	                .sortCode("115578")
-	                .accountHolderName("Mr Fname Lname")
+            JurorBankDetailsDto jurorBankDetailsDto = builder()
+                .bankAccountNumber("12345678")
+                .sortCode("115578")
+                .accountHolderName("Mr Fname Lname")
                 .addressLineOne("Address Line 1")
                 .addressLineTwo("Address Line 1")
                 .addressLineThree("Address Line 1")

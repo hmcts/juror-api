@@ -44,7 +44,13 @@ public enum ExcusalCodeEnum {
     private final String code;
     private final String description;
 
-    public static ExcusalCodeEnum fromCode(String code) throws MojException {
+    /**
+     * Gets ExcusalCodeEnum for string code.
+     * @param code excusal code.
+     * @return matching excusal code enum.
+     * @throws MojException if the code is invalid.
+     */
+    public static ExcusalCodeEnum fromCode(String code) {
         for (ExcusalCodeEnum excusalCodeEnum : values()) {
             if (excusalCodeEnum.getCode().equals(code)) {
                 return excusalCodeEnum;

@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.constraints.NotNull;
 import lombok.SneakyThrows;
@@ -135,7 +134,7 @@ public final class TestUtils {
     public static String asJsonString(final Object obj) {
         try {
             return OBJECT_MAPPER.findAndRegisterModules().writeValueAsString(obj);
-        } catch (JsonProcessingException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -156,9 +155,9 @@ public final class TestUtils {
 
     public static void setUpMockAuthentication(String owner, String username, String userLevel, List<String> courts) {
 
-	        BureauJwtAuthentication auth = mock(BureauJwtAuthentication.class);
-	        when(auth.getPrincipal())
-	            .thenReturn(createJwt(owner, username, userLevel, courts));
+        BureauJwtAuthentication auth = mock(BureauJwtAuthentication.class);
+        when(auth.getPrincipal())
+            .thenReturn(createJwt(owner, username, userLevel, courts));
 
         SecurityContext securityContext = mock(SecurityContext.class);
         when(securityContext.getAuthentication()).thenReturn(auth);

@@ -10,6 +10,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
@@ -158,7 +159,7 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
         doReturn(null).when(jurorPoolRepository).save(any(JurorPool.class));
 
         assertThat(digitalResponse.getProcessingStatus()).isEqualTo(ProcessingStatus.TODO);
-        assertThat(digitalResponse.getProcessingComplete()).isEqualTo(false);
+        assertThat(digitalResponse.isProcessingComplete()).isEqualTo(false);
 
         //call the 'actual' service method
         disqualifyJurorServiceImpl.disqualifyJurorDueToAgeOutOfRange(JUROR_NUMBER, courtPayload);
@@ -179,7 +180,7 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
                 userCaptor.capture());
         assertThat(jurorDigitalResponseEntityCaptor.getValue().getProcessingStatus())
             .isEqualTo(ProcessingStatus.CLOSED);
-        assertThat(jurorDigitalResponseEntityCaptor.getValue().getProcessingComplete()).isTrue();
+        assertThat(jurorDigitalResponseEntityCaptor.getValue().isProcessingComplete()).isTrue();
         assertThat(jurorDigitalResponseEntityCaptor.getValue().getCompletedAt()).isNotNull();
         assertThat(userCaptor.getValue()).isEqualTo(BUREAU_USER);
 
@@ -366,7 +367,7 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
             .mergePaperResponse(jurorPaperResponseEntityCaptor.capture(),
                 userCaptor.capture());
         assertThat(jurorPaperResponseEntityCaptor.getValue().getProcessingStatus()).isEqualTo(ProcessingStatus.CLOSED);
-        assertThat(jurorPaperResponseEntityCaptor.getValue().getProcessingComplete()).isTrue();
+        assertThat(jurorPaperResponseEntityCaptor.getValue().isProcessingComplete()).isTrue();
         assertThat(jurorPaperResponseEntityCaptor.getValue().getCompletedAt()).isNotNull();
         assertThat(userCaptor.getValue()).isEqualTo(BUREAU_USER);
     }

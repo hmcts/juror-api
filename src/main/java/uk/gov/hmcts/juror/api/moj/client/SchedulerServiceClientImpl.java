@@ -27,6 +27,7 @@ public class SchedulerServiceClientImpl extends AbstractRemoteRestClient impleme
     }
 
     @Override
+    @SuppressWarnings({"PMD.ExceptionAsFlowControl"})
     public void updateStatus(String jobKey, Long taskId, Result payload) {
         try {
             log.debug("JobKey: " + jobKey + ".\n"

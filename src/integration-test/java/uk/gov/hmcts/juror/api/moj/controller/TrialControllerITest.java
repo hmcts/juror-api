@@ -748,7 +748,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
                 Appearance appearance =
                     appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415", panel.getJurorNumber(),
                         LocalDate.now()).orElseThrow(() ->
-                        new MojException.NotFound("No appearance record found", null));
+                            new MojException.NotFound("No appearance record found", null));
 
                 assertThat(appearance.getAttendanceAuditNumber()).isNotNull();
 
@@ -815,7 +815,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
                 Appearance appearance =
                     appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415", panel.getJurorNumber(),
                         LocalDate.now()).orElseThrow(() ->
-                        new MojException.NotFound("No appearance record found", null));
+                            new MojException.NotFound("No appearance record found", null));
                 assertThat(appearance.getTimeIn()).as("Expect time in to be null").isEqualTo(LocalTime.of(9, 30));
                 assertThat(appearance.getTimeOut()).as("Expect time out to be null").isNull();
                 assertThat(panel.isCompleted()).as("Expected panel completed status to be true").isTrue();
@@ -869,7 +869,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
                 Appearance appearance =
                     appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415", panel.getJurorNumber(),
                         LocalDate.now()).orElseThrow(() ->
-                        new MojException.NotFound("No appearance record found", null));
+                            new MojException.NotFound("No appearance record found", null));
 
                 assertThat(appearance.getTimeIn()).as("Expect time in to not be null").isNotNull();
                 assertThat(appearance.getTimeIn()).as("Expect time in to be 09:00").isEqualTo(LocalTime.parse(

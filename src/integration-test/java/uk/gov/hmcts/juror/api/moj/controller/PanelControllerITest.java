@@ -75,7 +75,7 @@ class PanelControllerITest extends AbstractIntegrationTest {
     @Autowired
     private JurorHistoryRepository jurorHistoryRepository;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
 
     @Autowired
     private AppearanceRepository appearanceRepository;
@@ -408,7 +408,7 @@ class PanelControllerITest extends AbstractIntegrationTest {
         Appearance appearance =
             appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415", panelMember.getJurorNumber(),
                 LocalDate.now()).orElseThrow(() ->
-                new MojException.NotFound("No appearance record found", null));
+                    new MojException.NotFound("No appearance record found", null));
         JurorPool jurorPool = PanelUtils.getAssociatedJurorPool(jurorPoolRepository, panelMember);
         assertThat(appearance.getPoolNumber())
             .as("Expected value to be the current juror's pool number")

@@ -26,6 +26,7 @@ public final class UserQueries {
         return isBureau().and(active());
     }
 
+    @SuppressWarnings({"PMD.LinguisticNaming"})
     public static BooleanExpression isBureau() {
         return USER.userType.eq(UserType.BUREAU);
     }

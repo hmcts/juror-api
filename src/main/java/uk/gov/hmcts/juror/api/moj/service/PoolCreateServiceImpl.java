@@ -75,10 +75,10 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 @SuppressWarnings({"PMD.TooManyMethods",
-    "PMD.PossibleGodClass",
+    "PMD.GodClass",
     "PMD.ExcessiveImports",
-    "PMD.TooManyFields",
-    "PMD.CyclomaticComplexity"})
+    "PMD.CyclomaticComplexity",
+    "PMD.CouplingBetweenObjects"})
 public class PoolCreateServiceImpl implements PoolCreateService {
 
     private static final String AGE_DISQ_CODE = "A";
@@ -422,6 +422,16 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                     MojException.BusinessRuleViolation.ErrorCode.COULD_NOT_FIND_ENOUGH_ELIGIBLE_VOTERS);
             }
 
+            // this prevents overwriting existing juror records, not duplicate juror records. The duplicate is already
+            // blocked by the primary key; the actual risk was saveAll merging into an existing row.
+            List<Juror> alreadyExistingJurors = jurorRepository.findByJurorNumberIn(
+                                                        jurorPools.stream().map(JurorPool::getJurorNumber).toList());
+
+            if (!alreadyExistingJurors.isEmpty()) {
+                log.info("Juror record already exists with same juror number");
+                throw new PoolCreateException.UnableToCreatePool();
+            }
+
             // Saving records (bulk)
             List<Juror> savedJurors = jurorRepository.saveAll(jurorPools.stream().map(JurorPool::getJuror).toList());
 
@@ -452,7 +462,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
             throw businessRuleViolation;
         } catch (Exception e) {
             log.error("Exception occurred when adding members to pool - {}", e.getMessage());
-            throw new PoolCreateException.UnableToCreatePool();
+            throw new PoolCreateException.UnableToCreatePool(e);
         } finally {
             //make sure to unlock the voters lock
             unlockVoters(locCode);
@@ -501,7 +511,10 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         jurorPool.setOwner(owner);
         jurorPool.setPool(poolRequest);
 
-        juror.setJurorNumber(voter.getJurorNumber());
+        // read the next juror sequence number and assign to the juror
+        Long jurorNumber = jurorRepository.getJurorSequenceNumber();
+        juror.setJurorNumber(String.format("%09d", jurorNumber));
+
         juror.setPollNumber(voter.getPollNumber());
         juror.setTitle(voter.getTitle());
         juror.setFirstName(voter.getFirstName());
@@ -518,6 +531,13 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         juror.setDateOfBirth(voter.getDateOfBirth());
         juror.setResponded(false);
         juror.setContactPreference(null);
+
+        // add the hash id and date created for the juror record, this combination should be unique for
+        // each juror and prevent duplicate juror records being created for the same voter on the same day
+        juror.setHashId(voter.getHashId());
+        juror.setSummonedDate(LocalDate.now());
+
+        juror.setDateCreated(LocalDateTime.now());
 
         jurorPool.setIsActive(true);
 
@@ -935,7 +955,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                 throw businessRuleViolation;
             } catch (Exception e) {
                 log.error("Exception occurred when adding members to coroner pool - {}", e.getMessage());
-                throw new PoolCreateException.UnableToCreatePool();
+                throw new PoolCreateException.UnableToCreatePool(e);
             } finally {
                 //make sure to unlock the voters lock
                 unlockVoters(locCode);
@@ -976,7 +996,11 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     private void createCoronerJurorPool(String poolNumber, Voters voter) {
         CoronerPoolDetail coronerPoolDetail = new CoronerPoolDetail();
         coronerPoolDetail.setPoolNumber(poolNumber);
-        coronerPoolDetail.setJurorNumber(voter.getJurorNumber());
+
+        // read the next juror sequence number and assign to the juror
+        Long jurorNumber = jurorRepository.getJurorSequenceNumber();
+        coronerPoolDetail.setJurorNumber(String.format("%09d", jurorNumber));
+
         coronerPoolDetail.setTitle(voter.getTitle());
         coronerPoolDetail.setFirstName(voter.getFirstName());
         coronerPoolDetail.setLastName(voter.getLastName());

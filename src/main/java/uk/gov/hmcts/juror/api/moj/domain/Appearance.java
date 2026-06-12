@@ -42,9 +42,9 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils.getOrZero;
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.JUROR_NUMBER;
@@ -59,7 +59,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.JUROR_NUMBER
 @Setter
 @Audited
 @ToString
-@SuppressWarnings({"PMD.TooManyFields", "PMD.TooManyImports"})
+@SuppressWarnings({"PMD.TooManyFields", "PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.ExcessivePublicCount"})
 public class Appearance implements Serializable {
     private static final int ROUNDING_PRECISION = 2;
 
@@ -128,6 +128,7 @@ public class Appearance implements Serializable {
 
     @Column(name = "pay_cash")
     @Builder.Default
+    @SuppressWarnings({"PMD.RedundantFieldInitializer"}) // Builder.Default needs this value
     private boolean payCash = false;
 
     @Column(name = "last_updated_by")
@@ -245,6 +246,7 @@ public class Appearance implements Serializable {
     @Column(name = "hide_on_unpaid_expense_and_reports")
     @Builder.Default
     @NotAudited
+    @SuppressWarnings({"PMD.RedundantFieldInitializer"}) // Builder.Default needs this value
     private boolean hideOnUnpaidExpenseAndReports = false;
 
     /**
@@ -433,7 +435,7 @@ public class Appearance implements Serializable {
     }
 
     public Map<String, Object> getExpensesWhereDueIsLessThenPaid() {
-        Map<String, Object> errors = new HashMap<>();
+        Map<String, Object> errors = new ConcurrentHashMap<>();
         addExpenseToErrors(errors, "publicTransport", this.getPublicTransportDue(), this.getPublicTransportPaid());
         addExpenseToErrors(errors, "hiredVehicle", this.getHiredVehicleDue(), this.getHiredVehiclePaid());
         addExpenseToErrors(errors, "motorcycle", this.getMotorcycleDue(), this.getMotorcyclePaid());
@@ -627,6 +629,7 @@ public class Appearance implements Serializable {
     }
 
     @PrePersist
+    @SuppressWarnings({"PMD.UnusedPrivateMethod"}) // PrePersist will make it used, false positive.
     private void prePersist() {
         preUpdate();
     }

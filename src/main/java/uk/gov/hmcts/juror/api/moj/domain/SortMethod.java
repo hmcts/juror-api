@@ -20,6 +20,7 @@ public enum SortMethod {
         }
     }
 
+    @FunctionalInterface
     public interface HasComparableExpression {
         Expression<? extends Comparable<?>> getComparableExpression();
     }

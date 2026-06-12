@@ -1,7 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
-import lombok.SneakyThrows;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -134,7 +134,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
     private HttpHeaders httpHeaders;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
 
     @Autowired
     private Clock clock;
@@ -187,9 +187,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         assertThat(financialAuditDetailsAppearance.getLastApprovedFAudit()).isEqualTo(lastApprovedAuditNumber);
     }
 
-@SuppressWarnings({
-    "PMD.PublicMemberInNonPublicType"
-})
+    @SuppressWarnings({
+        "PMD.PublicMemberInNonPublicType"
+    })
     @Nested
     @DisplayName("POST " + URL_UNPAID_SUMMARY)
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_setUp.sql"})
@@ -332,9 +332,10 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         }
     }
 
-@SuppressWarnings({
-    "PMD.PublicMemberInNonPublicType"
-})
+    @SuppressWarnings({
+        "PMD.PublicMemberInNonPublicType"
+    })
+    
     @Nested
     @DisplayName("GET " + GetDefaultExpenses.URL)
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_setUp_default_expenses.sql"})
@@ -393,6 +394,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         }
     }
+
     @Nested
     @DisplayName("POST " + SetDefaultExpenses.URL)
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_setUp_default_expenses.sql",
@@ -448,8 +450,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 URI.create(toUrl(COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER)));
             ResponseEntity<Void> response = template.exchange(request, Void.class);
 
-	            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-	        }
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        }
 
 
     }
@@ -1446,16 +1448,17 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 LocalDate dateOfExpense = LocalDate.of(2025, 1, 11);
                 GetEnteredExpenseRequest request = buildRequest(dateOfExpense);
                 final String jwt = createJwtBureau(BUREAU_USER);
-	                httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
-	                assertForbiddenResponse(template.exchange(
-	                        new RequestEntity<>(request, httpHeaders, POST, URI.create(
-	                            toUrl(COURT_LOCATION, JUROR_NUMBER))), String.class),
-	                    toUrl(COURT_LOCATION, JUROR_NUMBER));
-	            }
+                httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
+                assertForbiddenResponse(template.exchange(
+                        new RequestEntity<>(request, httpHeaders, POST, URI.create(
+                            toUrl(COURT_LOCATION, JUROR_NUMBER))), String.class),
+                    toUrl(COURT_LOCATION, JUROR_NUMBER));
+            }
         }
     }
 
 
+    
     @Nested
     @DisplayName("POST /api/v1/moj/expenses/submit-for-approval")
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_submitForApprovalSetUp.sql",
@@ -2100,6 +2103,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
         }
     }
+
     @Nested
     @DisplayName("GET " + GetDraftExpenses.URL)
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_draftExpenseSetUp.sql",
@@ -2262,15 +2266,15 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     String.class);
             }
 
-	            @Test
-	            void canNotAccessJurorPool() {
-	                assertForbiddenResponse(triggerInvalid("415", JUROR_NUMBER, "414"),
-	                    toUrl("415", JUROR_NUMBER));
-	            }
+            @Test
+            void canNotAccessJurorPool() {
+                assertForbiddenResponse(triggerInvalid("415", JUROR_NUMBER, "414"),
+                    toUrl("415", JUROR_NUMBER));
+            }
 
-	            @Test
-	            void isBureauUser() {
-	                assertForbiddenResponse(triggerInvalid("400", JUROR_NUMBER, "400"),
+            @Test
+            void isBureauUser() {
+                assertForbiddenResponse(triggerInvalid("400", JUROR_NUMBER, "400"),
                     toUrl("400", JUROR_NUMBER));
             }
         }
@@ -2432,17 +2436,18 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     toUrl("400", JUROR_NUMBER));
             }
 
-	            @Test
-	            void oneOrMoreDatesNotFound() {
-	                assertNotFound(triggerInvalid(COURT_LOCATION, JUROR_NUMBER, COURT_LOCATION, List.of(
-	                        LocalDate.of(2025, 1, 5),
-	                        LocalDate.of(2020, 1, 8))),
-	                    toUrl(COURT_LOCATION, JUROR_NUMBER),
-	                    "Not all dates found");
-	            }
-	        }
-	    }
+            @Test
+            void oneOrMoreDatesNotFound() {
+                assertNotFound(triggerInvalid(COURT_LOCATION, JUROR_NUMBER, COURT_LOCATION, List.of(
+                        LocalDate.of(2025, 1, 5),
+                        LocalDate.of(2020, 1, 8))),
+                    toUrl(COURT_LOCATION, JUROR_NUMBER),
+                    "Not all dates found");
+            }
+        }
 
+
+    }
 
     @Nested
     @DisplayName("POST " + ApproveExpenses.URL)
@@ -3330,12 +3335,12 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertThat(appearance.getSubsistenceDue()).isEqualTo(doubleToBigDecimal(5.71));
 
 
-	                assertThat(appearance.getTotalDue()).isEqualTo(doubleToBigDecimal(65.54));
+                assertThat(appearance.getTotalDue()).isEqualTo(doubleToBigDecimal(65.54));
 
 
-	                List<FinancialAuditDetailsAppearances> financialAuditDetailsAppearances = new ArrayList<>();
-	                financialAuditDetailsAppearancesRepository.findAll().forEach(financialAuditDetailsAppearances::add);
-	                assertThat(financialAuditDetailsAppearances).hasSize(1);
+                List<FinancialAuditDetailsAppearances> financialAuditDetailsAppearances = new ArrayList<>();
+                financialAuditDetailsAppearancesRepository.findAll().forEach(financialAuditDetailsAppearances::add);
+                assertThat(financialAuditDetailsAppearances).hasSize(1);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(0),
                     2, LocalDate.of(2025, 1, 15), 3);
                 assertJurorHistory(jurorNumber, HistoryCodeMod.EDIT_PAYMENTS, "COURT_USER", "£65.54",
@@ -3988,14 +3993,15 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                         .travelTime(LocalTime.of(1, 2))
                                         .payAttendance(PayAttendanceType.FULL_DAY)
                                         .build())
-	                                    .financialLoss(
-	                                        createDailyExpenseFinancialLoss(15.01, 6.00, 0.20, "Desc")
-	                                    )
-	                                    .travel(
-	                                        createDailyExpenseTravel(TravelMethod.CAR, 3, 15, 13.25, 12.1, 9.4)
-	                                    )
-	                                    .foodAndDrink(
-	                                        createDailyExpenseFoodAndDrink(FoodDrinkClaimType.MORE_THAN_10_HOURS, 4.1)
+                                        .financialLoss(
+                                            createDailyExpenseFinancialLoss(15.01, 6.00, 0.20, "Desc")
+                                        )
+                                        .travel(
+                                            createDailyExpenseTravel(TravelMethod.CAR, 3, 15, 13.25, 12.1, 9.4)
+                                        )
+                                        .foodAndDrink(
+                                            createDailyExpenseFoodAndDrink(
+                                                FoodDrinkClaimType.MORE_THAN_10_HOURS, 4.1)
                                     )
                                     .build()
                             ))
@@ -4568,11 +4574,11 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     "INVALID is the incorrect data type or is not in the expected format (payment_method)");
             }
 
-	            @Test
-	            void unauthorizedLocCodeNotPartOfUser() {
-	                assertForbiddenResponse(triggerInvalid(COURT_LOCATION, "414", null, null, PaymentMethod.BACS.name()),
-	                    toUrl("414", PaymentMethod.BACS.name(), null, null));
-	            }
+            @Test
+            void unauthorizedLocCodeNotPartOfUser() {
+                assertForbiddenResponse(triggerInvalid(COURT_LOCATION, "414", null, null, PaymentMethod.BACS.name()),
+                    toUrl("414", PaymentMethod.BACS.name(), null, null));
+            }
         }
     }
 

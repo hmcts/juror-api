@@ -27,7 +27,7 @@ public class CodeDescriptionResponse {
         this.description = hasCodeAndDescription.getDescription();
 
         if (hasCodeAndDescription instanceof HasActive isActive) {
-            this.isActive = isActive.getActive();
+            this.isActive = isActive.isActive();
         }
     }
 }

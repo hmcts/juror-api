@@ -26,15 +26,15 @@ public class UserCourtDto {
     private List<CourtDto> satelliteCourts;
 
     public UserCourtDto(List<CourtLocation> courts) {
-	        this.primaryCourt = new CourtDto(
-	            courts.stream()
-	                .filter(courtLocation -> courtLocation.getType() == CourtType.MAIN)
-	                .toList().get(0));
+        this.primaryCourt = new CourtDto(
+            courts.stream()
+                .filter(courtLocation -> courtLocation.getType() == CourtType.MAIN)
+                .toList().get(0));
 
-	        this.satelliteCourts = courts.stream()
-	            .filter(courtLocation -> courtLocation.getType() == CourtType.SATELLITE)
-	            .map(CourtDto::new)
-	            .sorted(Comparator.comparing(CourtDto::getLocCode))
-	            .toList();
-	    }
+        this.satelliteCourts = courts.stream()
+            .filter(courtLocation -> courtLocation.getType() == CourtType.SATELLITE)
+            .map(CourtDto::new)
+            .sorted(Comparator.comparing(CourtDto::getLocCode))
+            .toList();
+    }
 }

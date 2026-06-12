@@ -20,9 +20,9 @@ import uk.gov.hmcts.juror.api.moj.enumeration.CourtType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Bureau authentication Json Web Token payload.
@@ -107,7 +107,7 @@ public class BureauJwtPayload {
     }
 
     public Map<String, Object> toClaims() {
-        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> data = new ConcurrentHashMap<>();
         data.put("owner", owner);
         data.put("locCode", locCode);
         data.put("email", email);

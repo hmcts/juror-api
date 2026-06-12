@@ -5,6 +5,7 @@ import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 /**
  * Operations for updating the status of a Juror's response by a Bureau officer.
  */
+@FunctionalInterface
 public interface ResponseStatusUpdateService {
     /**
      * Update the processing status of a Juror response within Juror Digital.

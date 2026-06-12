@@ -102,6 +102,7 @@ public class ExcusalRefusalLetterListRepositoryImpl implements IExcusalRefusalLe
         return excusalRefusedLetterListMap;
     }
 
+    @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.AvoidDeeplyNestedIfStmts"})
     private void updateDatePrinted(CourtLetterSearchCriteria searchCriteria,
                                   ConcurrentHashMap<String, ExcusalRefusedLetterList> excusalRefusedLetterListMap,
                                   List<Tuple> printedDates) {
@@ -112,17 +113,14 @@ public class ExcusalRefusalLetterListRepositoryImpl implements IExcusalRefusalLe
                 ExcusalRefusedLetterList excusalRefusedLetterList = excusalRefusedLetterListMap.get(jurorNumber);
                 LocalDateTime datePrinted = tuple.get(QJurorHistory.jurorHistory.dateCreated);
 
-                if (datePrinted == null) {
-                    // do nothing
-                    return;
-                } else {
+                if (datePrinted != null) {
                     LocalDate datePrintedDateOnly = datePrinted.toLocalDate();
                     if (datePrintedDateOnly.equals(excusalRefusedLetterList.getDateExcused())
                         || datePrintedDateOnly.isAfter(excusalRefusedLetterList.getDateExcused())) {
-                        if (!searchCriteria.includePrinted()) {
-                            excusalRefusedLetterListMap.remove(jurorNumber);
-                        } else {
+                        if (searchCriteria.includePrinted()) {
                             excusalRefusedLetterList.setDatePrinted(datePrinted);
+                        } else {
+                            excusalRefusedLetterListMap.remove(jurorNumber);
                         }
                     }
                 }

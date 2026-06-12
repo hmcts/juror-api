@@ -853,7 +853,7 @@ public class JurorPaperResponseServiceImplTest {
 
     /**
      * Ensures juror reasonable adjustments can be updated with an empty request body (i.e., juror no longer requires
-     * any reasonable adjustments, so any pre-existing reasonable adjustments are erased)
+     * any reasonable adjustments, so any pre-existing reasonable adjustments are erased).
      */
     @Test
     public void testUpdatePaperResponseSpecialNeedsEmptyReasonableAdjustmentsHappyBureauUserBureauOwner() {
@@ -1526,7 +1526,7 @@ public class JurorPaperResponseServiceImplTest {
             .as("Expect Juror Record to updated with data mapped from the request DTO")
             .isEqualTo(jurorPaperResponseDto.getAddressPostcode());
 
-        Assertions.assertThat(jurorPaperResponse.getWelsh())
+        Assertions.assertThat(jurorPaperResponse.isWelsh())
             .as("Expect Juror Record to updated with data mapped from the request DTO")
             .isEqualTo(jurorPaperResponseDto.getWelsh());
 

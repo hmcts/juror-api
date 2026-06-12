@@ -66,7 +66,7 @@ public class ResponseInspectorImpl implements ResponseInspector {
     @Override
     public boolean isWelshLanguage(@NonNull final DigitalResponse response) {
         if (appSettingService.isWelshEnabled()) {
-            if (BooleanUtils.isTrue(response.getWelsh())) {
+            if (BooleanUtils.isTrue(response.isWelsh())) {
                 log.debug("Juror response {} is Welsh language response.", response.getJurorNumber());
                 return true;
             }

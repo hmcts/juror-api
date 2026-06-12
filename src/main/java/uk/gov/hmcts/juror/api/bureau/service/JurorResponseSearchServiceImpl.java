@@ -220,7 +220,7 @@ public class JurorResponseSearchServiceImpl implements JurorResponseSearchServic
 
     @Builder
     @Data
-    private static class SearchResults {
+    private static final class SearchResults {
         private final List<ModJurorDetail> results;
         private final Integer maximumNumberOfMatches;
         private final Long totalNumberOfMatches;

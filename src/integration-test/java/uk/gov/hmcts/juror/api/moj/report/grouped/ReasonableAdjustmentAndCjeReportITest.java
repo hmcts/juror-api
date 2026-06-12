@@ -264,7 +264,7 @@ class ReasonableAdjustmentAndCjeReportITest extends AbstractGroupedReportControl
             .build();
     }
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
 
     public GroupByResponse getTypicalGroupByResponse() {
         return GroupByResponse.builder()

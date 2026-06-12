@@ -32,15 +32,16 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 @Configuration
 @Slf4j
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@SuppressWarnings({"PMD.CouplingBetweenObjects"})
 public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService {
 
     private final AppSettingService appSetting;
@@ -53,7 +54,8 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
      * Implements a specific job execution.
      * Process retrieval of satisfaction survey responses via the smart survey rest api.
      */
-    @SuppressWarnings("checkstyle:LineLength") // false positive
+    @SuppressWarnings({"checkstyle:LineLength", "PMD.NcssCount", "PMD.CognitiveComplexity", "PMD.CyclomaticComplexity",
+        "PMD.AvoidDeeplyNestedIfStmts"}) // false positive
     @Override
     @Transactional
     public SchedulerServiceClient.Result process() {
@@ -90,10 +92,7 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
         log.info("Smart Survey config enabled: {}", smartSurveyEnabled);
         log.info("Smart Survey config exports url: {}", smartSurveyExportsUrl);
 
-        if (!smartSurveyEnabled) {
-            log.info("Smart Survey data import disabled in application settings");
-        } else {
-
+        if (smartSurveyEnabled) {
             if (smartSurveyExportsUrl == null || smartSurveyExportsUrl.isEmpty()) {
                 log.error("Smart Survey URL not set in config, unable to process survey responses");
                 throw new IllegalStateException("smartsurvey exportsurl null or empty");
@@ -135,7 +134,7 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
             log.info("Smart Survey system date: {}", currentDate);
             log.info("Smart Survey calculated start date: {}", startDate);
 
-            Map<String, String> vars = new HashMap<>();
+            Map<String, String> vars = new ConcurrentHashMap<>();
             vars.put("surveyId", surveyId);
             vars.put("apiToken", smartSurveyToken);
             vars.put("apiTokenSecret", smartSurveyTokenSecret);
@@ -157,11 +156,12 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
 
                 for (SurveyResponse objSurveyResponse : surveyResponseList) {
 
-                    SurveyResponseKey objSurveyResponseKey = new SurveyResponseKey();
-                    objSurveyResponseKey.setId(objSurveyResponse.getId());
-                    objSurveyResponseKey.setSurveyId(objSurveyResponse.getSurveyId());
+                    SurveyResponseKey objSurveyResponseKey = getSurveyResponseKey(objSurveyResponse);
 
-                    if (!surveyResponseRepository.existsById(objSurveyResponseKey)) {
+                    if (surveyResponseRepository.existsById(objSurveyResponseKey)) {
+                        // record already exists
+                        dbSkipCount++;
+                    } else {
                         try {
                             this.surveyResponseRepository.save(objSurveyResponse);
                             dbInsertCount++;
@@ -169,9 +169,6 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
                             errorCount++;
                             log.error("Error inserting survey record: {} - {}", e.getMessage(), objSurveyResponse);
                         }
-                    } else {
-                        // record already exists
-                        dbSkipCount++;
                     }
 
                 }
@@ -181,7 +178,8 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
                 log.info("Records with error: {}", errorCount);
 
             }
-
+        } else {
+            log.info("Smart Survey data import disabled in application settings");
         }
 
         SchedulerServiceClient.Result.Status status = errorCount == 0
@@ -211,6 +209,12 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
             ));
     }
 
+    private static SurveyResponseKey getSurveyResponseKey(SurveyResponse objSurveyResponse) {
+        SurveyResponseKey objSurveyResponseKey = new SurveyResponseKey();
+        objSurveyResponseKey.setId(objSurveyResponse.getId());
+        objSurveyResponseKey.setSurveyId(objSurveyResponse.getSurveyId());
+        return objSurveyResponseKey;
+    }
 
     /**
      * Obtain list of available exports from Smart Survey API.
@@ -251,7 +255,7 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
             smartSurveyExportList = response.getBody();
 
         } catch (Exception e) {
-            throw new IllegalStateException("call to smart survey API failed: " + e.getMessage());
+            throw new IllegalStateException("call to smart survey API failed: ", e);
         }
 
         // Parse the returned list of exports
@@ -287,6 +291,7 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
      * Obtain survey export CSV data from smart survey API.
      * Parse the data and return records from the specified start date to current date.
      */
+    @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.CyclomaticComplexity"})
     private List<SurveyResponse> getExportData(String smartSurveyUrl, Map<String, String> vars,
                                                LocalDate extractStartDate, String surveyId) {
 
@@ -320,7 +325,7 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
             smartSurveyExportData = response.getBody();
 
         } catch (Exception e) {
-            throw new IllegalStateException("call to smart survey API failed: " + e.getMessage());
+            throw new IllegalStateException("call to smart survey API failed", e);
         }
 
         if (smartSurveyExportData == null || smartSurveyExportData.isEmpty()) {
@@ -367,16 +372,18 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
 
                     // Populate list of survey response records
                     if (!ldSurveyEndDate.isBefore(extractStartDate)) {
-                        SurveyResponseKey objSurveyResponseKey = new SurveyResponseKey();
+                        // Commented out the below as unsure where needed + resolving PMD.
+                        /*SurveyResponseKey objSurveyResponseKey = new SurveyResponseKey();
                         objSurveyResponseKey.setId(surveyUserId);
-                        objSurveyResponseKey.setSurveyId(surveyId);
+                        objSurveyResponseKey.setSurveyId(surveyId);*/
 
-                        SurveyResponse objSurveyResponse = new SurveyResponse();
-                        objSurveyResponse.setId(surveyUserId);
-                        objSurveyResponse.setSurveyId(surveyId);
-                        objSurveyResponse.setUserNo(surveyUserNo);
-                        objSurveyResponse.setSurveyResponseDate(surveyEndDate);
-                        objSurveyResponse.setSatisfactionDesc(surveySatisfactionDesc);
+                        SurveyResponse objSurveyResponse = getSurveyResponse(
+                            surveyId,
+                            surveyUserId,
+                            surveyUserNo,
+                            surveyEndDate,
+                            surveySatisfactionDesc
+                        );
 
                         surveyResponseList.add(objSurveyResponse);
                     }
@@ -393,11 +400,33 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
 
     }
 
+    /**
+     * Static helper method to resolve PMD for object creation in loop.
+     *
+     * @param surveyId survey identifier.
+     * @param surveyUserId survey user identifier.
+     * @param surveyUserNo survey user number.
+     * @param surveyEndDate survey end date.
+     * @param surveySatisfactionDesc survey satisfaction description.
+     * @return the SurveyResponse corresponding to parameters above.
+     */
+    private static SurveyResponse getSurveyResponse(String surveyId, String surveyUserId, int surveyUserNo,
+                                                    Date surveyEndDate, String surveySatisfactionDesc) {
+        SurveyResponse objSurveyResponse = new SurveyResponse();
+        objSurveyResponse.setId(surveyUserId);
+        objSurveyResponse.setSurveyId(surveyId);
+        objSurveyResponse.setUserNo(surveyUserNo);
+        objSurveyResponse.setSurveyResponseDate(surveyEndDate);
+        objSurveyResponse.setSatisfactionDesc(surveySatisfactionDesc);
+        return objSurveyResponse;
+    }
+
     private HttpHeaders createHttpHeaders(String user, String password) {
         // Create base64 encoded Basic Auth header
 
         String authString = user + ":" + password;
-        String encodedAuth = Base64.getEncoder().encodeToString(authString.getBytes());
+        String encodedAuth = Base64.getEncoder().encodeToString(
+            authString.getBytes(java.nio.charset.StandardCharsets.UTF_8));
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add("Authorization", "Basic " + encodedAuth);
@@ -405,7 +434,6 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
     }
 
 }
-
 
 
 

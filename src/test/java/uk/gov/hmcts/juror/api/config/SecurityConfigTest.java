@@ -168,12 +168,12 @@ class SecurityConfigTest {
             this.jwtType = jwtType;
         }
 
-	        @SuppressWarnings("PMD.PublicMemberInNonPublicType")
-	        private enum JwtType {
-	            HMAC(hmacSecret, JwtType::getHmacClaimMap),
-	            PUBLIC(publicSecret, JwtType::getPublicClaimMap),
-	            BUREAU(bureauSecret, JwtType::getBureauClaimMap),
-	            JURORER(erportalSecret, JwtType::getJurorErClaimMap);
+        @SuppressWarnings("PMD.PublicMemberInNonPublicType")
+        private enum JwtType {
+            HMAC(hmacSecret, JwtType::getHmacClaimMap),
+            PUBLIC(publicSecret, JwtType::getPublicClaimMap),
+            BUREAU(bureauSecret, JwtType::getBureauClaimMap),
+            JURORER(erportalSecret, JwtType::getJurorErClaimMap);
 
             private final String secret;
             private final Supplier<Map<String, Object>> jwtClaimMapSupplier;

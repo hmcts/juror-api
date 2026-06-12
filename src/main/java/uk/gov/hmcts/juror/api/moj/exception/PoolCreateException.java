@@ -13,6 +13,10 @@ public class PoolCreateException extends RuntimeException {
         super(message);
     }
 
+    private PoolCreateException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
     /**
      * Exception type thrown when an invalid value is supplied for the no of Citizens to summon.
      */
@@ -68,6 +72,10 @@ public class PoolCreateException extends RuntimeException {
 
         public UnableToCreatePool() {
             super("Error occurred on Pool creation");
+        }
+
+        public UnableToCreatePool(Throwable cause) {
+            super("Error occured on Pool creation", cause);
         }
     }
 

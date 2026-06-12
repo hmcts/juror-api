@@ -5,10 +5,11 @@ import uk.gov.hmcts.juror.api.juror.domain.Holidays;
 import java.util.Date;
 import java.util.List;
 
+@FunctionalInterface
 public interface HolidaysDateService {
 
     /**
-     * Get Holiday dates from the JUROR_HOLIDAYS.holiday that match Selected Juror Date
+     * Get Holiday dates from the JUROR_HOLIDAYS.holiday that match Selected Juror Date.
      *
      * @return List
      */

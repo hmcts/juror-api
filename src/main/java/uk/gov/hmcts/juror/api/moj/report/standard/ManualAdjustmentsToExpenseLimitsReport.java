@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Component
+@SuppressWarnings({"PMD.TooManyMethods"})
 public class ManualAdjustmentsToExpenseLimitsReport extends AbstractStandardReport {
 
     private final CourtLocationRepository courtLocationRepository;
@@ -264,6 +265,7 @@ public class ManualAdjustmentsToExpenseLimitsReport extends AbstractStandardRepo
     /**
      * Build expense limit changes by comparing consecutive audit records.
      */
+    @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.CyclomaticComplexity"})
     private List<ExpenseLimitChange> buildExpenseLimitChanges(List<CourtLocationAuditRecord> auditRecords) {
         List<ExpenseLimitChange> expenseLimitChanges = new ArrayList<>();
 
@@ -351,19 +353,24 @@ public class ManualAdjustmentsToExpenseLimitsReport extends AbstractStandardRepo
         StandardTableData tableData = new StandardTableData();
 
         for (ExpenseLimitChange change : changes) {
-            LinkedHashMap<String, Object> row = new LinkedHashMap<>();
-            row.put("court_location_name_and_code", change.getCourtLocationNameAndCode());
-            row.put("transport_type", change.getTransportType());
-            row.put("old_limit", String.format("£%.2f", change.getOldLimit()));
-            row.put("new_limit", String.format("£%.2f", change.getNewLimit()));
-            row.put("changed_by", change.getChangedBy());
-            row.put("change_date", change.getChangeDate());  // Actual date from revision_timestamp
-            row.put("revision_number", change.getRevisionNumber());  // Hidden field for drill-down
+            LinkedHashMap<String, Object> row = getStringObjectLinkedHashMap(change);
 
             tableData.add(row);
         }
 
         return tableData;
+    }
+
+    private static LinkedHashMap<String, Object> getStringObjectLinkedHashMap(ExpenseLimitChange change) {
+        LinkedHashMap<String, Object> row = new LinkedHashMap<>();
+        row.put("court_location_name_and_code", change.getCourtLocationNameAndCode());
+        row.put("transport_type", change.getTransportType());
+        row.put("old_limit", String.format("£%.2f", change.getOldLimit()));
+        row.put("new_limit", String.format("£%.2f", change.getNewLimit()));
+        row.put("changed_by", change.getChangedBy());
+        row.put("change_date", change.getChangeDate());  // Actual date from revision_timestamp
+        row.put("revision_number", change.getRevisionNumber());  // Hidden field for drill-down
+        return row;
     }
 
 
@@ -386,7 +393,7 @@ public class ManualAdjustmentsToExpenseLimitsReport extends AbstractStandardRepo
 
     @lombok.Builder
     @lombok.Getter
-    private static class CourtLocationAuditRecord {
+    private static final class CourtLocationAuditRecord {
         private String locCode;
         private String courtName;
         private Double publicTransportSoftLimit;
@@ -399,7 +406,7 @@ public class ManualAdjustmentsToExpenseLimitsReport extends AbstractStandardRepo
 
     @lombok.Builder
     @lombok.Getter
-    private static class ExpenseLimitChange {
+    private static final class ExpenseLimitChange {
         private String courtLocationNameAndCode;
         private String transportType;
         private Double oldLimit;

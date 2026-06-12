@@ -1189,7 +1189,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             Appearance appearance1 =
                 appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415", JUROR1, request.getCommonData()
                     .getAttendanceDate()).orElseThrow(() ->
-                    new MojException.NotFound("No appearance record found", null));
+                        new MojException.NotFound("No appearance record found", null));
             assertThat(appearance1.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
             assertThat(appearance1.getAttendanceAuditNumber()).isEqualTo("P10000000");
             assertThat(appearance1.isAppearanceConfirmed()).isTrue();
@@ -1197,7 +1197,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             Appearance appearance2 =
                 appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415", JUROR6, request.getCommonData()
                     .getAttendanceDate()).orElseThrow(() ->
-                    new MojException.NotFound("No appearance record found", null));
+                        new MojException.NotFound("No appearance record found", null));
             assertThat(appearance2.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
             assertThat(appearance2.getAttendanceAuditNumber()).isEqualTo("P10000000");
             assertThat(appearance2.isAppearanceConfirmed()).isTrue();
@@ -2210,9 +2210,9 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
     }
 
-@SuppressWarnings({
-    "PMD.PublicMemberInNonPublicType"
-})
+    @SuppressWarnings({
+        "PMD.PublicMemberInNonPublicType"
+    })
     @Nested
     @DisplayName("Jurors on Trial tests")
     class JurorsOnTrial {

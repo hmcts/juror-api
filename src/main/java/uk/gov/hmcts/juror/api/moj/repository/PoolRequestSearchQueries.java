@@ -62,6 +62,7 @@ import java.util.Objects;
  *     <li>High Court</li>
  * </ul>
  */
+@SuppressWarnings({"PMD.TooManyMethods"})
 public class PoolRequestSearchQueries implements IPoolRequestSearchQueries {
 
     @PersistenceContext
@@ -310,38 +311,47 @@ public class PoolRequestSearchQueries implements IPoolRequestSearchQueries {
         }
     }
 
+    @SuppressWarnings({"PMD.LinguisticNaming"}) // BooleanExpression is fine here.
     private static BooleanExpression hasActivePoolMembers() {
         return countActivePoolMembers().gt(0);
     }
 
+    @SuppressWarnings({"PMD.LinguisticNaming"}) // BooleanExpression is fine here.
     private static BooleanExpression hasNoActivePoolMembers() {
         return countActivePoolMembers().eq(0);
     }
 
+    @SuppressWarnings({"PMD.LinguisticNaming"}) // BooleanExpression is fine here.
     private static BooleanExpression isRequested() {
         return POOL_REQUEST.newRequest.ne('N');
     }
 
+    @SuppressWarnings({"PMD.LinguisticNaming"}) // BooleanExpression is fine here.
     private static BooleanExpression isCreated() {
         return POOL_REQUEST.newRequest.eq('N');
     }
 
+    @SuppressWarnings({"PMD.LinguisticNaming"}) // BooleanExpression is fine here.
     private static BooleanExpression isWithBureau() {
         return POOL_REQUEST.owner.eq(JurorDigitalApplication.JUROR_OWNER);
     }
 
+    @SuppressWarnings({"PMD.LinguisticNaming"}) // BooleanExpression is fine here.
     private static BooleanExpression hasActiveReturnDate() {
         return POOL_REQUEST.returnDate.goe(LocalDate.now());
     }
 
+    @SuppressWarnings({"PMD.LinguisticNaming"}) // BooleanExpression is fine here.
     private static BooleanExpression hasElapsedReturnDate() {
         return POOL_REQUEST.returnDate.before(LocalDate.now());
     }
 
+    @SuppressWarnings({"PMD.LinguisticNaming"}) // BooleanExpression is fine here.
     private static BooleanExpression isNilPool() {
         return POOL_REQUEST.nilPool.eq(true).and(POOL_REQUEST.numberRequested.eq(0));
     }
 
+    @SuppressWarnings({"PMD.LinguisticNaming"}) // BooleanExpression is fine here.
     private static BooleanExpression isStagingPool() {
         return POOL_REQUEST.numberRequested.isNull();
     }

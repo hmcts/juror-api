@@ -248,7 +248,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     }
 
     /**
-     * A JUROR_MOD.POOL entry with ATTEND_TIME set overrides the LOC_ATTEND_TIME column in JUROR_MOD.COURT_LOCATION
+     * A JUROR_MOD.POOL entry with ATTEND_TIME set overrides the LOC_ATTEND_TIME column in JUROR_MOD.COURT_LOCATION.
      *
      * @throws Exception if the test falls over
      * @since JDB-2042

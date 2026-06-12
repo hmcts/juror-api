@@ -45,7 +45,7 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
     private static final String COURT_TAB = "court";
     private static final int ACTIVE_POOL_DAYS_LIMIT = 28;
 
-    public static NumberExpression<Integer> CONFIRMED_FROM_BUREAU = new CaseBuilder()
+    public static final NumberExpression<Integer> CONFIRMED_FROM_BUREAU = new CaseBuilder()
         .when(JUROR_POOL.owner.eq(SecurityUtil.BUREAU_OWNER)
             .and(JUROR_POOL.status.status.eq(IJurorStatus.RESPONDED)))
         .then(1)
@@ -237,12 +237,12 @@ public class ActivePoolsRepositoryImpl implements IActivePoolsRepository {
             SortMethod.ASC,
             data -> PoolRequestActiveDataDto.builder()
                 .poolNumber(data.get(POOL_REQUEST.poolNumber))
-                .poolCapacity(data.get(POOL_REQUEST.totalNoRequired).intValue())
-                .jurorsInPool(data.get(activeJurorCountExpr).intValue())
+                .poolCapacity(data.get(POOL_REQUEST.totalNoRequired))
+                .jurorsInPool(data.get(activeJurorCountExpr))
                 .courtName(data.get(POOL_REQUEST.courtLocation.name))
                 .poolType(data.get(POOL_REQUEST.poolType.description))
                 .attendanceDate(data.get(POOL_REQUEST.returnDate))
-                .respondedJurors(data.get(respondedJurorCountExpr).intValue())
+                .respondedJurors(data.get(respondedJurorCountExpr))
                 .build()
         );
     }

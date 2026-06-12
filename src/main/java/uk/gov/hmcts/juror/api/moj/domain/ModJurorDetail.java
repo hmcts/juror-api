@@ -38,6 +38,7 @@ import java.util.List;
 @Getter
 @Setter
 @Table(name = "mod_juror_detail", schema = "juror_mod")
+@SuppressWarnings({"PMD.TooManyFields"})
 public class ModJurorDetail implements Serializable {
 
     @Id
