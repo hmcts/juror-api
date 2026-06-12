@@ -207,7 +207,7 @@ public final class SecurityUtil {
      */
     public static boolean isLaUser() {
         SecurityContext securityContext = SecurityContextHolder.getContext();
-        return securityContext != null ? securityContext.getAuthentication() instanceof JurorErJwtAuthentication : (securityContext != null && securityContext.getAuthentication() instanceof JurorErJwtAuthentication);
+        return securityContext != null && securityContext.getAuthentication() instanceof JurorErJwtAuthentication;
     }
 
     /**
