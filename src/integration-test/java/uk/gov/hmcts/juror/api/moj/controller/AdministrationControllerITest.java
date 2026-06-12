@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -64,6 +65,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
 
     private final ExpenseRatesRepository expenseRatesRepository;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
     public void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
@@ -851,7 +853,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class UpdateExpenseDetails {
-        public static final String URL = BASE_URL + "/expenses/rates";
+        static final String URL = BASE_URL + "/expenses/rates";
 
 
         private ExpenseRatesDto getValidPayload() {
