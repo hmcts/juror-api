@@ -2,9 +2,6 @@
 <suppressions
 	xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
 	<suppress>
-		<cve>CVE-2023-35116</cve>
-	</suppress>
-	<suppress>
 		<notes><![CDATA[
 		Jenkins PR-1153 dependency-check finding for hibernate-validator-8.0.3.Final.jar.
 		]]></notes>
