@@ -48,10 +48,12 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
     public static final String BASE_URL = "/api/v1/moj/administration";
 
     private HttpHeaders httpHeaders;
-    private final TestRestTemplate template;
+    @Autowired
+    private TestRestTemplate template;
 
     private final HolidaysRepository holidaysRepository;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
     public void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
@@ -62,13 +64,13 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
     @DisplayName("GET  " + ViewBankHolidays.URL)
     @Sql(value = {"/db/administration/tearDownHolidays.sql",
         "/db/administration/createHolidays.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Sql(value = "/db/administration/tearDownHolidays.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     final class ViewBankHolidays {
         public static final String URL = BASE_URL + "/bank-holidays";
 
         private ViewBankHolidays() {
-    
+
         }
 
         @Nested

@@ -53,7 +53,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ErAdministrationControllerITest extends AbstractIntegrationTest {
 
     public static final String EXPECT_THE_STATUS_TO_BE_FORBIDDEN = "Expect the status to be forbidden.";
-    private final TestRestTemplate restTemplate;
+    @Autowired
+    private TestRestTemplate restTemplate;
 
     private HttpHeaders httpHeaders;
 
@@ -61,6 +62,7 @@ class ErAdministrationControllerITest extends AbstractIntegrationTest {
     private final DeadlineRepository deadlineRepository;
     private final LaUserRepository laUserRepository;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
     public void setUp() throws Exception {
         initHeadersBureau();

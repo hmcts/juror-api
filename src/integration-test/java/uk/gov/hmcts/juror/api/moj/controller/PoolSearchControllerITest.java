@@ -39,7 +39,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Integration tests for the API endpoints defined in {@link PoolSearchController}.
  */
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class PoolSearchControllerITest extends AbstractIntegrationTest {
@@ -49,12 +48,13 @@ class PoolSearchControllerITest extends AbstractIntegrationTest {
 
     private HttpHeaders httpHeaders;
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
+    @SuppressWarnings({"PMD.SignatureDeclareThrowsException", "PMD.PublicMemberInNonPublicType"})
     @BeforeEach
     public void setUp() throws Exception {
         initHeaders();
     }
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     private void initHeaders() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userType(UserType.BUREAU)
@@ -68,6 +68,7 @@ class PoolSearchControllerITest extends AbstractIntegrationTest {
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     private String initCourtsJwt(String owner, List<String> courts) throws Exception {
 
         return mintBureauJwt(BureauJwtPayload.builder()

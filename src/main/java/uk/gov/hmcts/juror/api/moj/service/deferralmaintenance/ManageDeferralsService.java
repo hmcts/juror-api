@@ -21,6 +21,7 @@ import java.util.List;
 
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_DEFER_JUROR_WITH_APPEARANCE;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public interface ManageDeferralsService {
 
     int AGE_DISQUALIFICATION_THRESHOLD = 76;
@@ -80,4 +81,47 @@ public interface ManageDeferralsService {
         }
     }
 
+    static boolean isAgeDisqualified(LocalDate dateOfBirth, LocalDate serviceStartDate) {
+        if (dateOfBirth == null || serviceStartDate == null) {
+            return false;
+        }
+        return Period.between(dateOfBirth, serviceStartDate).getYears() >= AGE_DISQUALIFICATION_THRESHOLD;
+    }
+
+    @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.CyclomaticComplexity", "PMD.AvoidDeeplyNestedIfStmts"})
+    static LocalDate resolveDateOfBirth(JurorPool jurorPool,
+                                        JurorDigitalResponseRepositoryMod digitalResponseRepository,
+                                        JurorPaperResponseRepositoryMod paperResponseRepository,
+                                        ReplyMethod replyMethod) {
+        if (replyMethod != null) {
+            if (replyMethod == ReplyMethod.DIGITAL) {
+                DigitalResponse digital = digitalResponseRepository.findByJurorNumber(
+                    jurorPool.getJurorNumber());
+                if (digital != null && digital.getDateOfBirth() != null) {
+                    return digital.getDateOfBirth();
+                }
+            } else if (replyMethod == ReplyMethod.PAPER) {
+                PaperResponse paper = paperResponseRepository.findByJurorNumber(
+                    jurorPool.getJurorNumber());
+                if (paper != null && paper.getDateOfBirth() != null) {
+                    return paper.getDateOfBirth();
+                }
+            }
+        }
+        // null replyMethod or response record has no DOB — fall back to juror entity,
+        // then digital, then paper
+        LocalDate dob = jurorPool.getJuror().getDateOfBirth();
+        if (dob != null) {
+            return dob;
+        }
+        DigitalResponse digital = digitalResponseRepository.findByJurorNumber(jurorPool.getJurorNumber());
+        if (digital != null && digital.getDateOfBirth() != null) {
+            return digital.getDateOfBirth();
+        }
+        PaperResponse paper = paperResponseRepository.findByJurorNumber(jurorPool.getJurorNumber());
+        if (paper != null && paper.getDateOfBirth() != null) {
+            return paper.getDateOfBirth();
+        }
+        return null;
+    }
 }

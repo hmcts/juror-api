@@ -52,18 +52,20 @@ import static org.springframework.http.HttpMethod.PUT;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + AdministrationControllerITest.BASE_URL)
-@SuppressWarnings("PMD.ExcessiveImports")
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class AdministrationControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/moj/administration";
 
     private HttpHeaders httpHeaders;
-    private final TestRestTemplate template;
+    @Autowired
+    private TestRestTemplate template;
 
     private final CourtLocationRepository courtLocationRepository;
 
     private final ExpenseRatesRepository expenseRatesRepository;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
     public void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
@@ -851,7 +853,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class UpdateExpenseDetails {
-        public static final String URL = BASE_URL + "/expenses/rates";
+        static final String URL = BASE_URL + "/expenses/rates";
 
 
         private ExpenseRatesDto getValidPayload() {

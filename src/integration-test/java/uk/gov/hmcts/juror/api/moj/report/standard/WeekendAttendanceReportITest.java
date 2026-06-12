@@ -63,6 +63,7 @@ class WeekendAttendanceReportITest extends AbstractStandardReportControllerITest
             .responseConsumer(this::verifyReportResponse);
     }
 
+    @SuppressWarnings("PMD.StringToString")
     @Test
     void negativeInvalidCourtLocCode() {
         StandardReportRequest request = getValidPayload();

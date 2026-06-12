@@ -49,7 +49,6 @@ class JurorCommsNotifyAdapterImplTest extends ContainerTest {
     //CONFRIM_JUROR_ENG
     private static final String DEV_SENT_TO_COURT_EMAIL_ENG_TEMPLATE_ID = "984B2883-AD40-44D6-A1B0-A0AED98AFF28";
     //SENT_TO_COURT_ENG_EMAIL
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     private static final String DEV_SENT_TO_COURT_SMS_ENG_TEMPLATE_ID = "e95cdb81-e015-4f0b-b306-40d97ccb76f6";
     public static final String TEMPLATE_ID_IS_THE_ONE_PASSED_FROM_THE_MOCK =
         "Template ID is the one passed from the mock.";

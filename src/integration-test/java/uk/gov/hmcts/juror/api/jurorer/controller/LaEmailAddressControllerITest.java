@@ -52,7 +52,8 @@ public class LaEmailAddressControllerITest extends AbstractIntegrationTest {
 
     public static final String BASE_URL = "/api/v1/moj/LaExport";
 
-    private final TestRestTemplate restTemplate;
+    @Autowired
+    private TestRestTemplate restTemplate;
 
     private HttpHeaders httpHeaders;
 

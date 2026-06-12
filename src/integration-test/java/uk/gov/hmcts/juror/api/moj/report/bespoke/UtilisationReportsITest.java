@@ -40,7 +40,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SuppressWarnings({
     "PMD.ExcessiveImports",
-    "PMD.PublicMemberInNonPublicType"
+    "PMD.PublicMemberInNonPublicType",
+    "PMD.CouplingBetweenObjects"
 })
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -63,10 +64,9 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
     public static final String COURT_UTILISATION_STATS_REPORT_URL = URL_BASE + "/court-utilisation-stats-report";
     public static final String OVERDUE_UTILISATION_REPORT_URL = URL_BASE + "/overdue-utilisation-report";
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
-
     private HttpHeaders httpHeaders;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
     public void setUp() throws Exception {
         initHeaders();

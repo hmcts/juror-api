@@ -64,6 +64,7 @@ public class SjoTasksControllerITest extends AbstractIntegrationTest {
 
     private HttpHeaders httpHeaders;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
     public void setUp() throws Exception {
         initHeaders();
@@ -90,6 +91,7 @@ public class SjoTasksControllerITest extends AbstractIntegrationTest {
     class GetCompleteJurors {
         public static final String URL = BASE_URL + "/juror/search";
 
+        @SuppressWarnings("PMD.SignatureDeclareThrowsException")
         ResponseEntity<PaginatedList<JurorDetailsDto>> triggerValid(JurorPoolSearch search) throws Exception {
             RequestEntity<JurorPoolSearch> request = new RequestEntity<>(search, httpHeaders,
                 HttpMethod.POST, URI.create(URL));

@@ -77,7 +77,12 @@ import static uk.gov.hmcts.juror.api.moj.utils.JurorUtils.checkOwnershipForCurre
 import static uk.gov.hmcts.juror.api.moj.utils.JurorUtils.getActiveJurorRecord;
 import static uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils.unboxOptionalRecord;
 
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.GodClass", "PMD.CyclomaticComplexity"})
+@SuppressWarnings({
+    "PMD.TooManyMethods",
+    "PMD.ExcessiveImports",
+    "PMD.CyclomaticComplexity",
+    "PMD.CouplingBetweenObjects"
+})
 @Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor = @__({@Autowired}))
@@ -409,6 +414,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             request.getCheckOutTime());
     }
 
+    @SuppressWarnings("PMD.AvoidReassigningParameters")
     private void modifyConfirmedAttendance(Appearance appearance,
                                            ModifyConfirmedAttendanceDto.ModifyAttendanceType modifyAttendanceType,
                                            LocalTime checkInTime,
@@ -594,6 +600,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
     @Override
     @Transactional
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     public void addNonAttendanceBulk(List<JurorNonAttendanceDto> requests) {
         BureauJwtPayload payload = SecurityUtil.getActiveUsersBureauPayload();
 
@@ -693,7 +700,6 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     }
 
     @Override
-    @SuppressWarnings("PMD.CognitiveComplexity")
     @Transactional
     public void confirmJuryAttendance(UpdateAttendanceDto request) {
         log.info("Confirming jury attendance for jurors on trial");
@@ -711,15 +717,15 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         final String juryAttendancePrefix = "J";
         String juryAttendanceNumber;
 
-        if (!appearances.isEmpty()) {
+        if (appearances.isEmpty()) {
+            juryAttendanceNumber = getAttendanceAuditNumber(juryAttendancePrefix);
+        } else {
             // check if there is an attendance_audit_number already set and retrieve it
             juryAttendanceNumber = appearances.stream()
                 .map(Appearance::getAttendanceAuditNumber)
                 .filter(ObjectUtils::isNotEmpty)
                 .filter(auditNumber -> auditNumber.startsWith(juryAttendancePrefix))
                 .findFirst().orElse(getAttendanceAuditNumber(juryAttendancePrefix));
-        } else {
-            juryAttendanceNumber = getAttendanceAuditNumber(juryAttendancePrefix);
         }
 
         CourtLocation courtLocation =
@@ -1391,6 +1397,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     }
 
     @Override
+    @SuppressWarnings("PMD.AvoidDeeplyNestedIfStmts")
     public void realignAttendanceType(String jurorNumber) {
         List<Appearance> appearances = getAllAppearances(jurorNumber);
         Juror juror = jurorRepository.findById(jurorNumber)
@@ -1642,11 +1649,13 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
     }
 
+    @Override
     public Appearance saveAppearance(Appearance appearance) {
         return appearanceRepository.save(appearance);
     }
 
 
+    @SuppressWarnings("PMD.CognitiveComplexity")
     private void realignAttendanceTypeInternal(Appearance appearance, boolean isLongTrialDay,
                                                boolean isExtraLongTrialDay) {
         if ((!Boolean.TRUE.equals(appearance.getNonAttendanceDay())

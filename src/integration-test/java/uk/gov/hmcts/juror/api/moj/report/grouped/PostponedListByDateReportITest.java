@@ -315,7 +315,6 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
     }
 
     @SuppressWarnings("PMD.PublicMemberInNonPublicType")
-
     public GroupByResponse getTypicalGroupByResponse() {
         return GroupByResponse.builder()
             .name(DataType.POOL_NUMBER.name())

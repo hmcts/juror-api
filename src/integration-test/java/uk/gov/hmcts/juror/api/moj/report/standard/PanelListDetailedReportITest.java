@@ -20,11 +20,10 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/PanelListDetailedReportITest_typical.sql"
 })
-@SuppressWarnings({"PMD.JUnitTestsShouldIncludeAssert", "PMD.PublicMemberInNonPublicType"})
 class PanelListDetailedReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired
-    public PanelListDetailedReportITest(TestRestTemplate template) {
+    PanelListDetailedReportITest(TestRestTemplate template) {
         super(template, PanelListDetailedReport.class);
     }
 
@@ -36,9 +35,9 @@ class PanelListDetailedReportITest extends AbstractStandardReportControllerITest
     @Override
     protected StandardReportRequest getValidPayload() {
         return addReportType(StandardReportRequest.builder()
-                                 .trialNumber("T100000001")
-                                 .locCode(TestConstants.VALID_COURT_LOCATION)
-                                 .build());
+            .trialNumber("T100000001")
+            .locCode(TestConstants.VALID_COURT_LOCATION)
+            .build());
     }
 
     @Test
@@ -48,8 +47,6 @@ class PanelListDetailedReportITest extends AbstractStandardReportControllerITest
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(getTypicalResponse());
     }
-
-
 
     @Test
     void positiveCurrentJurorsOnlyFalse() {
@@ -234,52 +231,6 @@ class PanelListDetailedReportITest extends AbstractStandardReportControllerITest
                                 .add("other_phone", "44776-301-1115")
                                 .add("work_phone", "44141201-1115")
                                 .add("email", "Smith6@email.com"))))
-                    .build())
-            .build();
-    }
-
-    private StandardReportResponse getCurrentJurorsOnlyResponse() {
-        return StandardReportResponse.builder()
-            .headings(getStandardResponseHeadings())
-            .tableData(
-                StandardReportResponse.TableData.<StandardTableData>builder()
-                    .headings(getStandardTableHeadings())
-                    .data(StandardTableData.of(
-                              // 415000001, 415000002, 415000003 — result J, empanelled, no return date
-                              new ReportLinkedMap<String, Object>()
-                                  .add("juror_number", "415000001")
-                                  .add("first_name", "Jenna")
-                                  .add("last_name", "Magura")
-                                  .add("juror_postcode", "G46 6JF")
-                                  .add("contact_details", new ReportLinkedMap<String, Object>()
-                                      .add("main_phone", "44141101-1110")
-                                      .add("other_phone", "44776-301-1110")
-                                      .add("work_phone", "44141201-1110")
-                                      .add("email", "Magura0@email.com")),
-                              new ReportLinkedMap<String, Object>()
-                                  .add("juror_number", "415000002")
-                                  .add("first_name", "Rhonda")
-                                  .add("last_name", "Lovejoy")
-                                  .add("juror_postcode", "G46 6JF")
-                                  .add("contact_details", new ReportLinkedMap<String, Object>()
-                                      .add("main_phone", "44141101-1111")
-                                      .add("other_phone", "44776-301-1111")
-                                      .add("work_phone", "44141201-1111")
-                                      .add("email", "Lovejoy1@email.com")),
-                              new ReportLinkedMap<String, Object>()
-                                  .add("juror_number", "415000003")
-                                  .add("first_name", "Clarine")
-                                  .add("last_name", "Rowsey")
-                                  .add("juror_postcode", "G466JF")
-                                  .add("contact_details", new ReportLinkedMap<String, Object>()
-                                      .add("main_phone", "44141101-1112")
-                                      .add("other_phone", "44776-301-1112")
-                                      .add("work_phone", "44141201-1112")
-                                      .add("email", "Rowsey2@email.com")))
-                    // 415000004 excluded — result NU
-                    // 415000005 excluded — result CD
-                    // 415000006 excluded — result J but return_date set
-                    )
                     .build())
             .build();
     }

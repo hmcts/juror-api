@@ -242,7 +242,6 @@ public final class BureauJurorDetailQueries {
 
     public static BooleanExpression byReadOnly() {
         return BUREAU_JUROR_DETAIL.owner.ne(OWNER_IS_BUREAU);
-
     }
 
     /**
@@ -272,7 +271,6 @@ public final class BureauJurorDetailQueries {
         return byPoolStatusSummoned().and(byReadOnly());
     }
 
-
     /**
      * Matches records where that need to be closed.
      * jurorDetail@return
@@ -289,5 +287,4 @@ public final class BureauJurorDetailQueries {
     public static BooleanExpression processingStatusToDo() {
         return BUREAU_JUROR_DETAIL.processingStatus.eq(TODO);
     }
-
 }

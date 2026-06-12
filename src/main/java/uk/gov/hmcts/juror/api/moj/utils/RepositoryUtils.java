@@ -17,6 +17,7 @@ public final class RepositoryUtils {
 
     }
 
+    @SuppressWarnings("PMD.AvoidUncheckedExceptionsInSignatures")
     @Transactional(readOnly = true)
     public static <T, I extends Serializable> T retrieveFromDatabase(I id, ReadOnlyRepository<T, I> repository)
         throws IllegalArgumentException {
@@ -29,6 +30,7 @@ public final class RepositoryUtils {
         }
     }
 
+    @SuppressWarnings("PMD.AvoidUncheckedExceptionsInSignatures")
     @Transactional(readOnly = true)
     public static <T> T retrieveFromDatabase(String id, CrudRepository<T, String> repository)
         throws IllegalArgumentException {
@@ -36,6 +38,7 @@ public final class RepositoryUtils {
         return unboxOptionalRecord(opt, id);
     }
 
+    @SuppressWarnings("PMD.AvoidUncheckedExceptionsInSignatures")
     @Transactional(readOnly = true)
     public static <T, I extends Serializable> List<T> retrieveAllRecordsFromDatabase(
         ReadOnlyRepository<T, I> repository)

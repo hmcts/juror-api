@@ -53,7 +53,8 @@ public class LaNotificationControllerITest extends AbstractIntegrationTest {
 
     public static final String BASE_URL = "/api/v1/moj/notification";
 
-    private final TestRestTemplate restTemplate;
+    @Autowired
+    private TestRestTemplate restTemplate;
     private final ReminderHistoryRepository reminderHistoryRepository;
 
     private HttpHeaders httpHeaders;

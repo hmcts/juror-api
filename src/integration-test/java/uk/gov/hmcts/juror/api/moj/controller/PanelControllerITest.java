@@ -52,7 +52,8 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 @SuppressWarnings({
     "PMD.ExcessiveImports",
     "PMD.PublicMemberInNonPublicType",
-    "PMD.TooManyMethods"
+    "PMD.TooManyMethods",
+    "PMD.CouplingBetweenObjects"
 })
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -75,11 +76,10 @@ class PanelControllerITest extends AbstractIntegrationTest {
     @Autowired
     private JurorHistoryRepository jurorHistoryRepository;
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
-
     @Autowired
     private AppearanceRepository appearanceRepository;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
     public void setUp() throws Exception {
         httpHeaders = new HttpHeaders();

@@ -45,7 +45,7 @@ import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.getJurorPaperResponse;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.CouplingBetweenObjects"})
 public class DisqualifyJurorITest extends AbstractIntegrationTest {
 
     @Autowired
@@ -65,8 +65,6 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
 
     @Autowired
     private TestRestTemplate restTemplate;
-
-    private HttpHeaders httpHeaders;
 
     private static final String URI_DISQUALIFY_JUROR = "/api/v1/moj/disqualify/juror/%s";
     private static final String JUROR_NUMBER_123456789 = "123456789";
@@ -301,7 +299,7 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
         String owner,
         HttpStatus httpStatus) {
         final URI uri = URI.create(String.format(URI_DISQUALIFY_JUROR, jurorNumber));
-        httpHeaders = initialiseHeaders(login, userType, Set.of(Role.MANAGER), owner);
+        HttpHeaders httpHeaders = initialiseHeaders(login, userType, Set.of(Role.MANAGER), owner);
 
         RequestEntity<DisqualifyJurorDto> requestEntity = new RequestEntity<>(disqualifyJurorDto, httpHeaders,
             HttpMethod.PATCH, uri);
@@ -311,7 +309,7 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
 
     private DisqualifyReasonsDto templateExchangeDisqualifyReasons() {
         final URI uri = URI.create("/api/v1/moj/disqualify/reasons");
-        httpHeaders = initialiseHeaders(BUREAU_USER, UserType.BUREAU, Set.of(Role.MANAGER), "400");
+        HttpHeaders httpHeaders = initialiseHeaders(BUREAU_USER, UserType.BUREAU, Set.of(Role.MANAGER), "400");
 
         RequestEntity<DisqualifyReasonsDto> requestEntity = new RequestEntity<>(httpHeaders, HttpMethod.GET, uri);
         ResponseEntity<DisqualifyReasonsDto> response = template.exchange(requestEntity, DisqualifyReasonsDto.class);

@@ -23,6 +23,7 @@ import java.util.List;
 @Schema(description = "Response DTO for bulk age disqualification operation")
 public class BulkDisqualifyResponseDto {
 
+    @SuppressWarnings("PMD.RedundantFieldInitializer")
     @Schema(description = "Count of jurors successfully disqualified")
     @Builder.Default
     private int disqualifiedCount = 0;

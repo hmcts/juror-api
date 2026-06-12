@@ -35,9 +35,11 @@ import static org.springframework.http.HttpMethod.GET;
 public class LaUserControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/juror-er/users";
 
-    private final TestRestTemplate restTemplate;
+    @Autowired
+    private TestRestTemplate restTemplate;
     private HttpHeaders httpHeaders;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
     public void setUp() throws Exception {
         initHeadersLaUsers("001");

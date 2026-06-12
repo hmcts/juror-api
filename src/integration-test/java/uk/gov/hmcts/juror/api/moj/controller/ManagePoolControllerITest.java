@@ -73,7 +73,9 @@ import static uk.gov.hmcts.juror.api.TestUtil.getValuesInJsonObject;
     "PMD.ExcessivePublicCount",
     "PMD.TooManyMethods",
     "PMD.ExcessiveImports",
-    "PMD.CyclomaticComplexity"})
+    "PMD.CyclomaticComplexity",
+    "PMD.CouplingBetweenObjects"
+})
 public class ManagePoolControllerITest extends AbstractIntegrationTest {
     private static final String URI_AVAILABLE_POOLS = "/api/v1/moj/manage-pool/available-pools/%s";
     private static final String URI_MANAGE_POOL_SUMMARY = "/api/v1/moj/manage-pool/summary?poolNumber=%s";
