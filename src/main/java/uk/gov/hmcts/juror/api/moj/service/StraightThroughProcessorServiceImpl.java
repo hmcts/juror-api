@@ -39,6 +39,7 @@ import java.util.Objects;
 @Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings({"PMD.CouplingBetweenObjects", "PMD.GodClass", "PMD.TooManyMethods"})
 public class StraightThroughProcessorServiceImpl implements StraightThroughProcessorService {
 
     private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
@@ -369,17 +370,9 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
     }
 
     private boolean hasNullablePropertyChanged(String originalValue, String newValue) {
-        boolean valueChanged = false;
-        if (!ObjectUtils.isEmpty(originalValue)) {
-            if (!originalValue.equalsIgnoreCase(newValue)) {
-                valueChanged = true;
-            }
-        } else {
-            if (!ObjectUtils.isEmpty(newValue)) {
-                valueChanged = true;
-            }
-        }
-        return valueChanged;
+        return ObjectUtils.isEmpty(originalValue)
+            ? !ObjectUtils.isEmpty(newValue)
+            : !originalValue.equalsIgnoreCase(newValue);
     }
 
     private boolean isEligibilityCriteriaValidForStraightThroughAcceptance(PaperResponse paperResponse) {

@@ -53,7 +53,12 @@ import static java.lang.Boolean.TRUE;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
-@SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.TooManyMethods"})
+@SuppressWarnings({
+    "PMD.CyclomaticComplexity",
+    "PMD.TooManyMethods",
+    "PMD.ExcessiveImports",
+    "PMD.CouplingBetweenObjects"
+})
 public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUpdateService, SummonsReplyMergeService {
     private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
     private final JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository;

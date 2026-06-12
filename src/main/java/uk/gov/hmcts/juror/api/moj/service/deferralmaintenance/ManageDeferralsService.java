@@ -94,6 +94,7 @@ public interface ManageDeferralsService {
         return Period.between(dateOfBirth, serviceStartDate).getYears() >= AGE_DISQUALIFICATION_THRESHOLD;
     }
 
+    @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.CyclomaticComplexity", "PMD.AvoidDeeplyNestedIfStmts"})
     static LocalDate resolveDateOfBirth(JurorPool jurorPool,
                                         JurorDigitalResponseRepositoryMod digitalResponseRepository,
                                         JurorPaperResponseRepositoryMod paperResponseRepository,

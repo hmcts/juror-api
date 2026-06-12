@@ -51,7 +51,7 @@ import static uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType.DEFE
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
-@SuppressWarnings({"PMD.GodClass", "PMD.ExcessiveImports"})
+@SuppressWarnings({"PMD.GodClass", "PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
 
     private final SystemParameterRepositoryMod systemParameterRepository;
@@ -78,7 +78,7 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
     private final CertificateOfAttendanceListRepository certificateOfAttendanceListRepository;
 
     @Override
-    @SuppressWarnings("PMD.CyclomaticComplexity")
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.CognitiveComplexity"})
     public List<PrintLetterDataResponseDto> getPrintLettersData(PrintLettersRequestDto printLettersRequestDto,
                                                                 String login) {
         Multimap<String, LocalDate> lettersDataMap = transposeListToMap(printLettersRequestDto);
@@ -161,7 +161,7 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
         return map;
     }
 
-    @SuppressWarnings("PMD.CyclomaticComplexity")
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExhaustiveSwitchHasDefault"})
     private void addHistoryItem(PrintLettersRequestDto printLettersRequestDto, String login, String jurorNumber,
                                 Tuple data) {
         JurorHistory.JurorHistoryBuilder jurorHistory = JurorHistory.builder()
@@ -226,13 +226,19 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
                 jurorHistory.historyCode(HistoryCodeMod.CERTIFICATE_OF_RECOGNITION);
                 jurorHistory.otherInformation("Certificate of Attendance");
             }
+            default -> throw new MojException.NotImplemented("letter type not implemented", null);
         }
 
         JurorHistory history = jurorHistory.build();
         jurorHistoryRepository.save(history);
     }
 
-    @SuppressWarnings({"checkstyle:WhitespaceAround", "PMD.CyclomaticComplexity", "PMD.NcssCount"})
+    @SuppressWarnings({
+        "checkstyle:WhitespaceAround",
+        "PMD.CyclomaticComplexity",
+        "PMD.NcssCount",
+        "PMD.ExhaustiveSwitchHasDefault"
+    })
     private PrintLetterDataResponseDto createPrintLetterDataResponseDto(Tuple data, boolean welsh,
                                                                         PrintLettersRequestDto dto) {
         PrintLetterDataResponseDto.PrintLetterDataResponseDtoBuilder builder = PrintLetterDataResponseDto.builder();
@@ -333,6 +339,8 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
             case FAILED_TO_ATTEND -> builder
                 .attendanceDate(formatDate(Objects.requireNonNull(data.get(APPEARANCE.attendanceDate)), welsh))
                 .replyByDate(formatDate(LocalDate.now().plusDays(7), welsh));
+            default -> throw new MojException.NotImplemented("letter type not implemented",
+                null);
         }
 
         return builder.build();
@@ -348,21 +356,21 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
     private String formatWelshCourtName(String courtName) {
 
         String rest = courtName.substring(1).toLowerCase();
+        String formattedCourtName = switch (courtName.substring(0, 1).toLowerCase()) {
+            case "b", "m" -> "ym M" + rest;
+            case "c" -> "yng Ngh" + rest;
+            case "d" -> "yn N" + rest;
+            case "g" -> "yng Ng" + rest;
+            case "p" -> "ym Mh" + rest;
+            case "t" -> "yn Nh" + rest;
+            default -> "yn" + courtName.charAt(0) + rest;
+        };
 
-        return "Llys y Goron\n" +
-            switch (courtName.substring(0, 1).toLowerCase()) {
-                case "b", "m" -> "ym M" + rest;
-                case "c" -> "yng Ngh" + rest;
-                case "d" -> "yn N" + rest;
-                case "g" -> "yng Ng" + rest;
-                case "p" -> "ym Mh" + rest;
-                case "t" -> "yn Nh" + rest;
-                default -> "yn" + courtName.charAt(0) + rest;
-            };
+        return "Llys y Goron\n" + formattedCourtName;
     }
 
     // todo - refactor this out to reusable utility class for welsh translations and reduce cyclomatic complexity
-    @SuppressWarnings("PMD.CyclomaticComplexity")
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExhaustiveSwitchHasDefault"})
     private String formatDate(LocalDate date, boolean welsh) {
 
         String formattedDate = date.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"));
@@ -384,32 +392,28 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
             case OCTOBER -> formattedDate = formattedDate.replace("October", "Hydref");
             case NOVEMBER -> formattedDate = formattedDate.replace("November", "Tachwedd");
             case DECEMBER -> formattedDate = formattedDate.replace("December", "Rhagfyr");
+            default -> throw new MojException.InternalServerError(
+                "Cannot replace month, something is wrong with the provided date", null);
         }
 
         return formattedDate;
     }
 
     private String formatCourtManager(boolean welsh) {
-        if (!welsh) {
-            return "The Court Manager";
-        }
-        return "Y Rheolwr Llys";
+        return welsh ? "Y Rheolwr Llys" : "The Court Manager";
     }
 
     @SuppressWarnings({"PMD.ConfusingTernary", "PMD.InsufficientStringBufferDeclaration"})
     private String formatSignature(String signature, String locCode, boolean welsh) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(signature)
-        .append(NEW_LINE)
-        .append(NEW_LINE);
+            .append(NEW_LINE)
+            .append(NEW_LINE);
 
         if (!welsh) {
-            stringBuilder.append("An Officer of the ");
-            if (!ROYAL_COURTS_OF_JUSTICE.equalsIgnoreCase(locCode)) {
-                stringBuilder.append("Crown ");
-            }
-            stringBuilder.append("Court");
-
+            stringBuilder.append("An Officer of the ")
+                .append(ROYAL_COURTS_OF_JUSTICE.equalsIgnoreCase(locCode) ? "" : "Crown ")
+                .append("Court");
         } else {
             stringBuilder.append("Swyddog Llys");
         }

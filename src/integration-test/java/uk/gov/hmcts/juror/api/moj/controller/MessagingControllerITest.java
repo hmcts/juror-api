@@ -87,16 +87,16 @@ class MessagingControllerITest extends AbstractIntegrationTest {
     @Autowired
     private JurorHistoryRepository jurorHistoryRepository;
 
-@SuppressWarnings({"PMD.PublicMemberInNonPublicType", "PMD.SignatureDeclareThrowsException"})
+    @SuppressWarnings({"PMD.PublicMemberInNonPublicType", "PMD.SignatureDeclareThrowsException"})
     @BeforeEach
     public void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
 
-@SuppressWarnings({
-    "PMD.PublicMemberInNonPublicType"
-})
+    @SuppressWarnings({
+        "PMD.PublicMemberInNonPublicType"
+    })
     protected static class TestData {
         public static final String ENGLISH_SUBJECT = "Your Jury Service";
         public static final String WELSH_SUBJECT = "Eich Gwasanaeth Rheithgor";

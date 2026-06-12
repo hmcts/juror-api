@@ -35,8 +35,6 @@ public class VotersServiceImpl implements VotersService {
     static final int AGE_LOWER_SP_ID = 101;
     static final int AGE_UPPER_SP_ID = 100;
 
-    record VoterKey(String firstName, String lastName, String address, String postcode) {}
-
     @Autowired
     private JurorService jurorService;
 
@@ -46,6 +44,9 @@ public class VotersServiceImpl implements VotersService {
     @PersistenceContext
     EntityManager entityManager;
 
+    record VoterKey(String firstName, String lastName, String address, String postcode) {
+
+    }
 
     @Override
     public List<Voters> getVotersForCoronerPool(String postcode, int number, String locCode) {

@@ -93,9 +93,12 @@ import static uk.gov.hmcts.juror.api.moj.utils.NumberUtils.unboxIntegerValues;
  */
 @Slf4j
 @Service
-@SuppressWarnings({"PMD.ExcessiveImports",
+@SuppressWarnings({
+    "PMD.ExcessiveImports",
     "PMD.TooManyMethods",
-    "PMD.CyclomaticComplexity"})
+    "PMD.CyclomaticComplexity",
+    "PMD.CouplingBetweenObjects"
+})
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
@@ -218,7 +221,11 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             updateJurorResponse(jurorNumber, deferralReasonDto, auditorUsername);
         }
 
-        if (!StringUtils.isEmpty(deferralReasonDto.getPoolNumber())) {
+        if (StringUtils.isEmpty(deferralReasonDto.getPoolNumber())) {
+            // this is for the deferral journey to move them to deferred state
+            setupDeferralEntry(deferralReasonDto, auditorUsername, jurorPool);
+            printDeferralLetter(payload.getOwner(), jurorPool);
+        } else {
 
             // only check the DOB if there is no reply method as the DOB may not be present yet
             if (deferralReasonDto.getReplyMethod() == null) {
@@ -250,10 +257,6 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
             printDeferralLetter(payload.getOwner(), jurorPool);
             printConfirmationLetter(payload.getOwner(), newJurorPool);
-        } else {
-            // this is for the deferral journey to move them to deferred state
-            setupDeferralEntry(deferralReasonDto, auditorUsername, jurorPool);
-            printDeferralLetter(payload.getOwner(), jurorPool);
         }
 
         return DeferralAgeDisqualificationResponseDto.builder()
@@ -307,7 +310,22 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                 .build();
         }
 
-        if (!StringUtils.isEmpty(deferralReasonDto.getPoolNumber())) {
+        if (StringUtils.isEmpty(deferralReasonDto.getPoolNumber())) {
+            // this is for the deferral journey to move them to DEFER_DBF
+            setDeferralPoolMember(jurorPool, deferralReasonDto, auditorUsername, false);
+            jurorPoolRepository.save(jurorPool);
+
+            if (jurorPool.getCourt() == null || jurorPool.getCourt().getLocCode() == null) {
+                throw new MojException.NotFound(
+                    String.format("Court location for pool member %s cannot be found",
+                                  jurorPool.getJurorNumber()), null);
+            }
+
+            updateJurorHistory(jurorPool, jurorPool.getPoolNumber(), auditorUsername, JurorHistory.ADDED,
+                               HistoryCodeMod.DEFERRED_POOL_MEMBER);
+
+            printDeferralLetter(payload.getOwner(), jurorPool);
+        } else {
 
             checkDobPresent(jurorNumber, jurorPool);
 
@@ -337,21 +355,6 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             printConfirmationLetter(payload.getOwner(), newJurorPool);
             printDeferralLetter(payload.getOwner(), jurorPool);
 
-        } else {
-            // this is for the deferral journey to move them to DEFER_DBF
-            setDeferralPoolMember(jurorPool, deferralReasonDto, auditorUsername, false);
-            jurorPoolRepository.save(jurorPool);
-
-            if (jurorPool.getCourt() == null || jurorPool.getCourt().getLocCode() == null) {
-                throw new MojException.NotFound(
-                    String.format("Court location for pool member %s cannot be found",
-                                  jurorPool.getJurorNumber()), null);
-            }
-
-            updateJurorHistory(jurorPool, jurorPool.getPoolNumber(), auditorUsername, JurorHistory.ADDED,
-                               HistoryCodeMod.DEFERRED_POOL_MEMBER);
-
-            printDeferralLetter(payload.getOwner(), jurorPool);
         }
 
         return DeferralAgeDisqualificationResponseDto.builder()
@@ -417,6 +420,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
     @Override
     @Transactional
+    @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.AvoidInstantiatingObjectsInLoops"})
     public DeferralAgeDisqualificationResponseDto processJurorPostponement(BureauJwtPayload payload,
                                                                            ProcessJurorPostponementRequestDto request) {
         final String auditorUsername = payload.getLogin();
@@ -468,7 +472,10 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             }
 
             // start the process to postpone and move the juror to the active pool
-            if (!StringUtils.isEmpty(request.getPoolNumber())) {
+            if (StringUtils.isEmpty(request.getPoolNumber())) {
+                // move juror into to DEFER_DBF and update history
+                setupDeferralEntry(request, auditorUsername, jurorPool);
+            } else {
 
                 // checking if DOB is present when postponing into a pool as police check will be made
                 checkDobPresent(jurorPool.getJurorNumber(), jurorPool);
@@ -500,9 +507,6 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                 if (payload.getUserType() == UserType.BUREAU) {
                     printConfirmationLetter(payload.getOwner(), newJurorPool);
                 }
-            } else {
-                // move juror into to DEFER_DBF and update history
-                setupDeferralEntry(request, auditorUsername, jurorPool);
             }
 
             jurorHistoryService.createPostponementLetterHistory(jurorPool, "");
@@ -592,6 +596,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
     @Override
     @Transactional
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     public BulkDisqualifyResponseDto bulkDisqualifyForAge(BureauJwtPayload payload,
                                                           BulkDisqualifyRequestDto requestDto) {
         int disqualifiedCount = 0;

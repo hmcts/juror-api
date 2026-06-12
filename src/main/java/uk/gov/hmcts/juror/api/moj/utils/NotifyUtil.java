@@ -13,6 +13,7 @@ public final class NotifyUtil {
         return doesMessageContain(e, "phone_number is a required property")
             || doesMessageContain(e, "InvalidPhoneError");
     }
+    
     @SuppressWarnings("PMD.ShortVariable")
     public static boolean isInvalidEmailAddressError(Throwable e) {
         return doesMessageContain(e, "email_address is a required property")

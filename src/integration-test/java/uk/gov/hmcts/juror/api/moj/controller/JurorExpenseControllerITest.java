@@ -135,8 +135,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
     private HttpHeaders httpHeaders;
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
-
     @Autowired
     private Clock clock;
 
@@ -1703,7 +1701,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getExpenseRates().getId()).isEqualTo(999_999);
         }
 
-        @SuppressWarnings("PMD.PublicMemberInNonPublicType")
         private void verifyExpenseStillInDraft(Appearance appearance) {
             assertThat(appearance.getFinancialAudit())
                 .as("Financial Audit Details object should not be created/associated")
@@ -2088,10 +2085,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     String.class);
             }
 
-            @SuppressWarnings("PMD.PublicMemberInNonPublicType")
             @Test
             void forbiddenIsBureauUser() {
-                @SuppressWarnings("PMD.PublicMemberInNonPublicType")
                 final String type = ExpenseType.FOR_APPROVAL.name();
                 assertForbiddenResponse(triggerInvalid("641500021", type, "400"),
                     toUrl("400", "641500021", type));

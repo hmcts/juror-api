@@ -501,7 +501,11 @@ public class TrialServiceImpl implements TrialService {
 
     @Override
     @Transactional
-    @SuppressWarnings({"PMD.AvoidInstantiatingObjectsInLoops", "PMD.AvoidDeeplyNestedIfStmts", "PMD.CognitiveComplexity"})
+    @SuppressWarnings({
+        "PMD.AvoidInstantiatingObjectsInLoops",
+        "PMD.AvoidDeeplyNestedIfStmts",
+        "PMD.CognitiveComplexity"
+    })
     public void returnJury(BureauJwtPayload payload, String trialNumber, String locationCode,
                            ReturnJuryDto returnJuryDto) {
         List<Panel> panelList =

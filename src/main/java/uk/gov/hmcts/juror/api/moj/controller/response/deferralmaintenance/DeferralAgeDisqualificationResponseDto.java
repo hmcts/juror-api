@@ -24,6 +24,7 @@ import java.util.List;
     + "for a deferral operation")
 public class DeferralAgeDisqualificationResponseDto {
 
+    @SuppressWarnings("PMD.RedundantFieldInitializer")
     @Schema(description = "Count of jurors successfully processed")
     @Builder.Default
     private int eligible = 0;

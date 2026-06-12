@@ -77,7 +77,12 @@ import static uk.gov.hmcts.juror.api.moj.utils.JurorUtils.checkOwnershipForCurre
 import static uk.gov.hmcts.juror.api.moj.utils.JurorUtils.getActiveJurorRecord;
 import static uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils.unboxOptionalRecord;
 
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.CyclomaticComplexity"})
+@SuppressWarnings({
+    "PMD.TooManyMethods",
+    "PMD.ExcessiveImports",
+    "PMD.CyclomaticComplexity",
+    "PMD.CouplingBetweenObjects"
+})
 @Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor = @__({@Autowired}))

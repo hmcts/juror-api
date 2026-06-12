@@ -41,6 +41,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@SuppressWarnings({"PMD.GodClass", "PMD.TooManyMethods"})
 public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLoadService {
 
     private static final String SERVICE_START_DATE = "SERVICESTARTDATE";

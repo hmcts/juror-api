@@ -102,7 +102,7 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
         return query.fetchOne();
     }
 
-    @SuppressWarnings({"PMD.CyclomaticComplexity"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExhaustiveSwitchHasDefault"})
     private void orderResultsBasedOnLetterType(JPAQuery<Tuple> query, CourtLetterType courtLetterType) {
         switch (courtLetterType) {
             case DEFERRAL_GRANTED, POSTPONED -> query.orderBy(JUROR_POOL.deferralDate.desc());
@@ -124,7 +124,7 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
         query.where(JUROR_POOL.owner.eq(owner));
     }
 
-    @SuppressWarnings({"PMD.CyclomaticComplexity"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExhaustiveSwitchHasDefault"})
     private void filterDataBasedOnLetterType(CourtLetterType courtLetterType,
                                              JPAQuery<Tuple> query, String trialNumber) {
         switch (courtLetterType) {
@@ -184,7 +184,7 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
         return query;
     }
 
-    @SuppressWarnings("PMD.CyclomaticComplexity")
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExhaustiveSwitchHasDefault"})
     private static void buildExpressionsBasedOnLetterType(CourtLetterType courtLetterType,
                                                           List<Expression<?>> expressions) {
         switch (courtLetterType) {

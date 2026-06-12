@@ -98,11 +98,16 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
     @Autowired
     private TestRestTemplate template;
-    private final CurrentlyDeferredRepository currentlyDeferredRepository;
-    private final BulkPrintDataRepository bulkPrintDataRepository;
-    private final JurorPoolRepository jurorPoolRepository;
-    private final JurorRepository jurorRepository;
-    private final PoolRequestRepository poolRequestRepository;
+    @Autowired
+    private CurrentlyDeferredRepository currentlyDeferredRepository;
+    @Autowired
+    private BulkPrintDataRepository bulkPrintDataRepository;
+    @Autowired
+    private JurorPoolRepository jurorPoolRepository;
+    @Autowired
+    private JurorRepository jurorRepository;
+    @Autowired
+    private PoolRequestRepository poolRequestRepository;
 
     private HttpHeaders httpHeaders;
 

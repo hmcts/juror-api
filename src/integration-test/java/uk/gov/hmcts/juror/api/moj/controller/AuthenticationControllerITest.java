@@ -167,7 +167,6 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
         }
     }
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET (POST) " + ViewCourts.URL)
     class CreateJwt extends AbstractControllerIntegrationTest<EmailDto, JwtDto> {

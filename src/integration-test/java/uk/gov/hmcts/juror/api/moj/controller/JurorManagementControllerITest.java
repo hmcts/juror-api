@@ -123,7 +123,6 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
     private JurorAppearanceService jurorAppearanceService;
 
     @Autowired
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     private JurorHistoryRepository jurorHistoryRepository;
 
     private HttpHeaders httpHeaders;
